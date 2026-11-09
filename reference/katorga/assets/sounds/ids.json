@@ -1,0 +1,720 @@
+{
+  "_source": "All game sounds come from ONE atlas, assets/sounds/build/atlas.ogg, built by scripts/build-sounds.mjs from VoxeLibre sounds (CC BY-SA 3.0/4.0, CC BY 3.0, CC0 — see assets/thirdparty/voxelibre/ATTRIBUTION.md) [владелец 21.10]. The owner uploads it once with scripts/upload-audio.mjs (Open Cloud key): atlasId and every files[*].id become that asset. files[name].segments = [start, length] in seconds inside the atlas; one variant is picked at random and played with Sound.TimePosition, stopped after its length (Sfx.luau, BlockBreak.luau). Until the upload, sounds with a fallback (Roblox-licensed ProSoundEffects clips) play that, the rest stay silent. Minecraft semantics [ваниль]: hit = step sound while digging every 0.2 s at pitch 0.5 / volume 0.25, break = dig sound at pitch 0.8 / volume 1; steps while walking by the material under the feet.",
+  "files": {
+    "stone_hit": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          0,
+          0.28
+        ],
+        [
+          0.43,
+          0.28
+        ],
+        [
+          0.861,
+          0.28
+        ]
+      ],
+      "fallback": {
+        "id": "rbxassetid://9119049891",
+        "segments": [
+          [
+            0,
+            0.22
+          ]
+        ]
+      }
+    },
+    "stone_break": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          1.291,
+          0.277
+        ],
+        [
+          1.718,
+          0.276
+        ],
+        [
+          2.144,
+          0.277
+        ]
+      ],
+      "fallback": {
+        "id": "rbxassetid://9119043400",
+        "segments": [
+          [
+            0,
+            0.7
+          ]
+        ]
+      }
+    },
+    "gravel_hit": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          2.571,
+          0.267
+        ],
+        [
+          2.988,
+          0.515
+        ],
+        [
+          3.653,
+          0.297
+        ],
+        [
+          4.1,
+          0.36
+        ]
+      ],
+      "fallback": {
+        "id": "rbxassetid://9114084245",
+        "segments": [
+          [
+            0,
+            0.22
+          ]
+        ]
+      }
+    },
+    "gravel_break": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          4.61,
+          0.28
+        ],
+        [
+          5.041,
+          0.28
+        ],
+        [
+          5.471,
+          0.28
+        ]
+      ],
+      "fallback": {
+        "id": "rbxassetid://9114083746",
+        "segments": [
+          [
+            0,
+            0.6
+          ]
+        ]
+      }
+    },
+    "grass": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          5.901,
+          0.76
+        ],
+        [
+          6.811,
+          0.76
+        ],
+        [
+          7.721,
+          0.76
+        ]
+      ],
+      "fallback": {
+        "id": "rbxassetid://9114084427",
+        "segments": [
+          [
+            0,
+            0.3
+          ]
+        ]
+      }
+    },
+    "leaves_break": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          8.631,
+          0.29
+        ]
+      ]
+    },
+    "sand": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          9.072,
+          0.28
+        ],
+        [
+          9.502,
+          0.29
+        ],
+        [
+          9.942,
+          0.28
+        ]
+      ],
+      "fallback": {
+        "id": "rbxassetid://9118770616",
+        "segments": [
+          [
+            0,
+            0.3
+          ]
+        ]
+      }
+    },
+    "wood_hit": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          10.372,
+          0.157
+        ],
+        [
+          10.679,
+          0.158
+        ]
+      ],
+      "fallback": {
+        "id": "rbxassetid://9120809592",
+        "segments": [
+          [
+            0,
+            0.25
+          ]
+        ]
+      }
+    },
+    "wood_break": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          10.987,
+          0.28
+        ],
+        [
+          11.417,
+          0.275
+        ],
+        [
+          11.842,
+          0.28
+        ]
+      ],
+      "fallback": {
+        "id": "rbxassetid://9120808574",
+        "segments": [
+          [
+            0,
+            0.7
+          ]
+        ]
+      }
+    },
+    "glass_hit": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          12.272,
+          0.231
+        ]
+      ]
+    },
+    "glass_break": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          12.653,
+          0.547
+        ],
+        [
+          13.35,
+          0.806
+        ],
+        [
+          14.306,
+          0.671
+        ]
+      ]
+    },
+    "metal_hit": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          15.127,
+          0.249
+        ],
+        [
+          15.526,
+          0.171
+        ],
+        [
+          15.847,
+          0.226
+        ]
+      ]
+    },
+    "metal_break": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          16.222,
+          0.497
+        ],
+        [
+          16.87,
+          0.497
+        ]
+      ]
+    },
+    "ice_hit": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          17.517,
+          0.227
+        ],
+        [
+          17.894,
+          0.227
+        ],
+        [
+          18.271,
+          0.227
+        ]
+      ]
+    },
+    "ice_break": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          18.648,
+          0.488
+        ]
+      ]
+    },
+    "wool": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          19.286,
+          1.672
+        ],
+        [
+          21.108,
+          1.672
+        ],
+        [
+          22.93,
+          1.672
+        ],
+        [
+          24.751,
+          1.669
+        ]
+      ]
+    },
+    "snow": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          26.57,
+          0.464
+        ],
+        [
+          27.185,
+          0.689
+        ],
+        [
+          28.024,
+          0.647
+        ],
+        [
+          28.821,
+          0.66
+        ]
+      ]
+    },
+    "water_step": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          29.63,
+          2.403
+        ],
+        [
+          32.184,
+          2.148
+        ],
+        [
+          34.481,
+          2.47
+        ]
+      ]
+    },
+    "place": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          37.102,
+          0.479
+        ],
+        [
+          37.73,
+          0.479
+        ],
+        [
+          38.359,
+          0.479
+        ]
+      ]
+    },
+    "player_hurt": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          38.987,
+          0.269
+        ]
+      ],
+      "fallback": {
+        "id": "rbxassetid://9120417141",
+        "segments": [
+          [
+            0,
+            0.4
+          ]
+        ]
+      }
+    },
+    "player_fall": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          39.407,
+          0.401
+        ]
+      ]
+    },
+    "eat": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          39.958,
+          0.303
+        ],
+        [
+          40.41,
+          0.352
+        ]
+      ]
+    },
+    "pickup": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          40.913,
+          0.026
+        ]
+      ]
+    },
+    "xp": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          41.089,
+          2.201
+        ]
+      ]
+    },
+    "level_up": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          43.44,
+          5.137
+        ]
+      ]
+    },
+    "chest_open": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          48.727,
+          0.557
+        ]
+      ]
+    },
+    "chest_close": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          49.434,
+          0.651
+        ]
+      ]
+    },
+    "ender_open": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          50.235,
+          1.114
+        ]
+      ]
+    },
+    "ender_close": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          51.499,
+          1.112
+        ]
+      ]
+    },
+    "enchant": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          52.761,
+          3.022
+        ],
+        [
+          55.933,
+          3.042
+        ],
+        [
+          59.125,
+          3.031
+        ]
+      ]
+    },
+    "armor_equip": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          62.306,
+          0.166
+        ]
+      ]
+    },
+    "armor_equip_leather": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          62.622,
+          0.444
+        ]
+      ]
+    },
+    "armor_equip_chain": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          63.216,
+          0.572
+        ]
+      ]
+    },
+    "armor_equip_iron": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          63.937,
+          0.436
+        ]
+      ]
+    },
+    "armor_equip_diamond": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          64.523,
+          0.379
+        ]
+      ]
+    },
+    "tool_break": {
+      "id": "rbxassetid://97593679894065",
+      "segments": [
+        [
+          65.052,
+          0.285
+        ]
+      ]
+    },
+    "swing": {
+      "id": "rbxassetid://9120972444",
+      "segments": [
+        [
+          0,
+          0.5
+        ]
+      ]
+    },
+    "hit": {
+      "id": "rbxassetid://111982142063703",
+      "segments": [
+        [
+          0,
+          0.34
+        ]
+      ]
+    },
+    "hit_heavy": {
+      "id": "rbxassetid://133951524018082",
+      "segments": [
+        [
+          0,
+          0.28
+        ]
+      ]
+    },
+    "crit": {
+      "id": "rbxassetid://101374399980498",
+      "segments": [
+        [
+          0,
+          0.3
+        ]
+      ]
+    },
+    "block": {
+      "id": "rbxassetid://9118269934",
+      "segments": [
+        [
+          0,
+          0.55
+        ]
+      ]
+    },
+    "rat_hurt": {
+      "id": "rbxassetid://9118057950",
+      "segments": [
+        [
+          0,
+          0.45
+        ]
+      ]
+    },
+    "rat_death": {
+      "id": "rbxassetid://9118055004",
+      "segments": [
+        [
+          0,
+          0.9
+        ]
+      ]
+    }
+  },
+  "materials": {
+    "stone": {
+      "hit": "stone_hit",
+      "break": "stone_break",
+      "step": "stone_hit"
+    },
+    "gravel": {
+      "hit": "gravel_hit",
+      "break": "gravel_break",
+      "step": "gravel_hit"
+    },
+    "dirt": {
+      "hit": "gravel_hit",
+      "break": "gravel_break",
+      "step": "gravel_hit"
+    },
+    "grass": {
+      "hit": "grass",
+      "break": "grass",
+      "step": "grass"
+    },
+    "leaves": {
+      "hit": "grass",
+      "break": "leaves_break",
+      "step": "grass"
+    },
+    "sand": {
+      "hit": "sand",
+      "break": "sand",
+      "step": "sand"
+    },
+    "wood": {
+      "hit": "wood_hit",
+      "break": "wood_break",
+      "step": "wood_hit"
+    },
+    "glass": {
+      "hit": "glass_hit",
+      "break": "glass_break",
+      "step": "glass_hit"
+    },
+    "metal": {
+      "hit": "metal_hit",
+      "break": "metal_break",
+      "step": "metal_hit"
+    },
+    "ice": {
+      "hit": "ice_hit",
+      "break": "ice_break",
+      "step": "ice_hit"
+    },
+    "wool": {
+      "hit": "wool",
+      "break": "wool",
+      "step": "wool"
+    },
+    "snow": {
+      "hit": "snow",
+      "break": "snow",
+      "step": "snow"
+    },
+    "water": {
+      "hit": "water_step",
+      "break": "water_step",
+      "step": "water_step"
+    }
+  },
+  "blockMaterial": {
+    "_source": "[ваниль] Minecraft sound types: dirt → GRAVEL, grass → GRASS, leaves → GRASS step / leaves break, sand/red sand/soul sand → SAND, logs/planks/melon/pumpkin → WOOD, glass, metal blocks (iron/gold/diamond/lapis blocks) → METAL, ice → GLASS-like ICE, wool/cobweb → WOOL, snow → SNOW, the rest (stone/ores/concrete/bricks) → STONE",
+    "dirt": "dirt",
+    "grass": "grass",
+    "sand": "sand",
+    "red_sand": "sand",
+    "soul_sand": "sand",
+    "gravel": "gravel",
+    "oak_log": "wood",
+    "cherry_log": "wood",
+    "melon": "wood",
+    "pumpkin": "wood",
+    "jack_o_lantern": "wood",
+    "planks": "wood",
+    "wisteria_leaves": "leaves",
+    "dark_oak_leaves": "leaves",
+    "white_wool": "wool",
+    "yellow_wool": "wool",
+    "red_wool": "wool",
+    "lime_wool": "wool",
+    "pink_wool": "wool",
+    "green_wool": "wool",
+    "cobweb": "wool",
+    "snow": "snow",
+    "_default": "stone",
+    "ice": "ice",
+    "packed_ice": "ice",
+    "black_glass": "glass",
+    "iron_block": "metal",
+    "gold_block": "metal",
+    "diamond_block": "metal",
+    "lapis_block": "metal",
+    "netherite": "metal"
+  },
+  "atlasId": "rbxassetid://97593679894065",
+  "_combat": "[владелец 22.10: бой удобнее и приятнее] combat sounds from the Creator Store (Pro Sound Effects: swing 9120972444, block 9118269934, rat 9118057950 / 9118055004; free community clips: hit 111982142063703, hit_heavy 133951524018082, crit 101374399980498) — single files, not the atlas"
+}
