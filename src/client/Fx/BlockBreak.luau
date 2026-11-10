@@ -68,12 +68,12 @@ function BlockBreak.cracks(
 				damage.y,
 				win.front + damage.dRel
 			)]
-		local base = cell and cell.part:FindFirstChild("OrePixels")
+		local base = cell and cell.primary
 		local stage = if windup
 			then math.clamp(math.ceil((windup * 2 - (i - 1) / math.max(1, #front)) * 4), 0, 4)
 			elseif damage then math.clamp(math.ceil(damage.amount / 255 * 4), 1, 4)
 			else 0
-		if base and base.Enabled and stage > 0 then
+		if base and stage > 0 then
 			item.gui.Face = base.Face
 			item.image.ImageRectOffset = Vector2.new((stage - 1) * 20, 48)
 			item.image.ImageColor3 = tint or Color3.new(1, 1, 1)
@@ -108,14 +108,20 @@ function BlockBreak.hit(
 	local budget = if quality == 1 then 54 else 80
 	local maxActive = if quality == 1 then 28 else #fx.chips
 	local origin = position + (if wave then Vector3.zero else direction * (size * 0.53))
+	local across = direction:Cross(Vector3.yAxis)
 	local made = 0
 	for i = 1, maxActive do
 		local chip = fx.chips[i]
 		if chip.untilAt <= now and (not wave or fx.chipCount < budget) then
 			local p = chip.part
+			local start = if wave
+				then origin
+				else origin
+					+ across * rng:NextNumber(-0.13, 0.13) * size
+					+ Vector3.yAxis * rng:NextNumber(-0.13, 0.13) * size
 			p.Color, p.Size, p.Position, p.Transparency, p.Parent =
-				color, Vector3.one * rng:NextNumber(0.17, 0.39), origin, 0, fx.parent
-			chip.origin, chip.at, chip.untilAt = origin, now, now + LIFE
+				color, Vector3.one * rng:NextNumber(0.17, 0.39), start, 0, fx.parent
+			chip.origin, chip.at, chip.untilAt = start, now, now + LIFE
 			chip.velocity = Vector3.new(
 				rng:NextNumber(-7, 7),
 				rng:NextNumber(3, 9),

@@ -803,7 +803,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 			lastShown, lastVisible = shown, visible
 		end
-		Wall.glint(r, window.front, now, active and phase == "idle" and not reduced)
 		if phase == "windup" then
 			Break.cracks(breaking, r, shown, State.cellKey, progress, color)
 		end
@@ -876,6 +875,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			cap
 		)
 		local camera = workspace.CurrentCamera
+		if camera then
+			Wall.textures(r, camera, offset)
+		end
+		Wall.glint(r, window.front, now, active and phase == "idle" and not reduced)
 		local aimed: any = nil
 		if camera and canHit() then
 			if UserInputService.TouchEnabled then
