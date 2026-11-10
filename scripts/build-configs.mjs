@@ -2,6 +2,16 @@
 // Usage: node scripts/build-configs.mjs [--input <path>]
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import {
+  mine as balanceMine, worlds as balanceWorlds, oreSlots, hitSizes, rarities,
+  pickLevel, gold, cards, cardGrowth, cardEffects,
+} from "./balance/data.mjs";
+
+const whatIf = ["G", "V", "HARD", "CUPS", "ULT"].filter((name) => process.env[name]);
+if (whatIf.length) {
+  console.error("Clear balance simulation overrides before building configs: " + whatIf.join(", "));
+  process.exit(1);
+}
 
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const isPositive = (n) => Number.isFinite(n) && n > 0;
@@ -33,8 +43,8 @@ function validateMine(data) {
       !data.passThrough.every((n, i, levels) => Number.isFinite(n) && n >= 1 && (!i || n > levels[i - 1]))) {
     errors.push("mine.passThrough must contain three increasing thresholds of at least 1");
   }
-  if (!isPositive(data.plate?.ultPlateHits) || !isPositive(data.plate?.ultMultiplier)) {
-    errors.push("mine.plate must have positive ultPlateHits and ultMultiplier");
+  if (![data.plate?.hits, data.plate?.cap, data.plate?.ultMultiplier, data.ultCharge].every(isPositiveInteger)) {
+    errors.push("mine must have positive plate and ultimate rules");
   }
   return errors;
 }
@@ -59,6 +69,7 @@ function validateWorlds(data, decisions) {
   const ids = new Set();
   const chunk = decisions.mine?.chunk;
   let totalDepth = 0;
+  if (data.length !== balanceWorlds.length) errors.push("worlds must match all ten balance worlds");
   for (const [i, world] of data.entries()) {
     const prefix = `worlds[${i}]`;
     if (!isObject(world)) {
@@ -91,13 +102,10 @@ function validateWorlds(data, decisions) {
         sum += share;
       }
       if (Math.abs(sum - 1) > 1e-9) errors.push(`${prefix}.ores shares must sum to 1 (got ${sum})`);
-      if (!isPositiveInteger(world.rareFrom) || world.rareFrom > world.ores.length) {
-        errors.push(`${prefix}.rareFrom must index one of the world's ores`);
-      }
+      if (world.ores.length !== oreSlots.length) errors.push(`${prefix}.ores must contain the five balance slots`);
     }
-    if (!isFraction(world.richness)) errors.push(`${prefix}.richness must be in [0, 1]`);
-    if (!isPositive(world.durability?.base) || !isPositive(world.durability?.growthInWorld)) {
-      errors.push(`${prefix}.durability must have positive base and growthInWorld`);
+    if (!isPositive(world.hardStart) || !isPositive(world.hardEnd) || world.hardEnd < world.hardStart) {
+      errors.push(`${prefix} must have increasing positive hardness`);
     }
     if (!isPositive(world.plate?.recommendedStrength) || !isPositive(world.plate?.hp) || !isPositive(world.plate?.reward)) {
       errors.push(`${prefix}.plate must have positive recommendedStrength, hp and reward`);
@@ -135,22 +143,96 @@ function validateMineStrings(decisions) {
       }
     }
   }
+  for (const [i, world] of (Array.isArray(decisions.worlds) ? decisions.worlds : []).entries()) {
+    const canonical = balanceWorlds[i];
+    if (!canonical || !isId(world?.id) || !Array.isArray(world.ores)) continue;
+    if (entries.get("world_" + world.id)?.get("ru") !== canonical.name) {
+      errors.push(`world_${world.id} must use the Russian name from balance/data.mjs`);
+    }
+    for (const [slot, pair] of world.ores.entries()) {
+      const id = pair?.[0];
+      if (id && entries.get("ore_" + id)?.get("ru") !== canonical.ores[slot]) {
+        errors.push(`ore_${id} must use the Russian name from balance/data.mjs`);
+      }
+    }
+  }
   return errors;
 }
 
-function validatePickaxes(data, decisions) {
+function validatePickaxes(data) {
   const errors = [];
   for (const [id, family] of [["starter", null], ["storm_common", "storm"]]) {
     const pick = data[id];
-    if (pick?.family !== family || pick.shape !== "single" || !isPositive(pick.strength) ||
-        !isPositive(pick.interval) || !isPositiveInteger(pick.ultLayers) ||
-        pick.ultLayers > decisions.mine?.window || pick.ultCharge !== 45) {
-      errors.push(`pickaxes.${id} has invalid stage 2 settings`);
+    if (pick?.family !== family || pick?.rarity !== (id === "starter" ? "wood" : "common")) {
+      errors.push(`pickaxes.${id} must reference its balance rarity`);
     }
   }
   const storm = data.storm_common?.storm;
   if (storm?.jumps?.[0] !== 3 || storm.jumps[1] !== 5 || storm.pickRareWithin !== 2) {
     errors.push("pickaxes.storm_common.storm must specify 3–5 jumps and radius 2");
+  }
+  return errors;
+}
+
+function withBalance(input) {
+  const shapes = ["single", "wide2", "wide3", "cross5", "square3", "square3"];
+  const progress = {
+    widths: balanceMine.widths,
+    hitSizes: hitSizes.map(({ id, blocks, interval, price }, index) => ({ id, shape: shapes[index], blocks, interval, price })),
+    rarities: Object.fromEntries(rarities.map(({ id, stars, power, cap, ult, lvlC0 }) => [id, { stars, power, cap, ult, lvlC0 }])),
+    pickLevel,
+    gold,
+    cards: Object.fromEntries(cards.map(({ id, name, ...rule }) => [id, rule])),
+    cardGrowth,
+    cardEffects,
+  };
+  const mine = !isObject(input.mine) ? input.mine : {
+    ...input.mine,
+    startWidth: balanceMine.widths[0].w,
+    height: balanceMine.height,
+    maxHitsPerBlock: balanceMine.maxHitsPerBlock,
+    passThrough: balanceMine.pierce.map((level) => level.ratio),
+    plate: { hits: balanceMine.plateHits, cap: balanceMine.plateCap, ultMultiplier: balanceMine.plateUltMultiplier },
+    ultCharge: balanceMine.ultCharge,
+  };
+  const worlds = !Array.isArray(input.worlds) ? input.worlds : input.worlds.map((palette, index) => {
+    const world = balanceWorlds[index];
+    if (!world || !isObject(palette) || !Array.isArray(palette.oreIds)) return palette;
+    return {
+      id: palette.id,
+      color: palette.color,
+      length: world.length,
+      rockValue: world.rockValue,
+      hardStart: world.hardStart,
+      hardEnd: world.hardEnd,
+      ores: palette.oreIds.map((id, slot) => [id, oreSlots[slot]?.share]),
+      prices: Object.fromEntries(palette.oreIds.map((id, slot) => [id, world.rockValue * oreSlots[slot]?.mult])),
+      plate: { recommendedStrength: world.hardEnd, hp: balanceMine.plateHits * world.hardEnd, reward: balanceMine.plateReward * world.rockValue },
+      specials: { perChunk: 0, kinds: [["chest", 1]] },
+    };
+  });
+  const pickaxes = !isObject(input.pickaxes) ? input.pickaxes : {
+    ...input.pickaxes,
+    ...Object.fromEntries(rarities.slice(1).map(({ id }) => ["plain_" + id, { rarity: id }])),
+  };
+  return { ...input, mine, worlds, pickaxes, progress };
+}
+
+function duplicateBalance(input) {
+  const errors = [];
+  const check = (value, fields, label) => {
+    if (!isObject(value)) return;
+    for (const field of fields) {
+      if (Object.hasOwn(value, field)) errors.push(`${label}.${field} comes from balance/data.mjs`);
+    }
+  };
+  check(input, ["progress"], "config");
+  check(input.mine, ["startWidth", "height", "maxHitsPerBlock", "passThrough", "plate", "ultCharge"], "mine");
+  for (const [index, world] of (Array.isArray(input.worlds) ? input.worlds : []).entries()) {
+    check(world, ["length", "ores", "prices", "rareFrom", "richness", "durability", "hardStart", "hardEnd", "rockValue", "plate", "specials"], `worlds[${index}]`);
+  }
+  for (const [id, pick] of Object.entries(isObject(input.pickaxes) ? input.pickaxes : {})) {
+    check(pick, ["strength", "shape", "interval", "ultLayers", "ultCharge"], "pickaxes." + id);
   }
   return errors;
 }
@@ -201,6 +283,7 @@ const sections = [
     emit: withoutNotes,
   },
   { name: "pickaxes", validate: validatePickaxes, emit: withoutNotes },
+  { name: "progress", validate: () => [], emit: withoutNotes },
   {
     name: "fx",
     validate: ({ ult, depth, impactTime }) =>
@@ -278,11 +361,13 @@ if (!isObject(decisions)) {
   console.error(`${input}: expected a JSON object`);
   process.exit(1);
 }
-const errors = sections.flatMap(({ name, list, validate }) => {
+const errors = duplicateBalance(decisions);
+decisions = withBalance(decisions);
+errors.push(...sections.flatMap(({ name, list, validate }) => {
   const data = decisions[name];
   if (list ? Array.isArray(data) && data.length > 0 : isObject(data)) return validate(data, decisions);
   return [`${name} must be ${list ? "a nonempty array" : "an object"}`];
-});
+}));
 errors.push(...validateMineStrings(decisions));
 if (errors.length > 0) {
   for (const error of errors) console.error(`${input}: ${error}`);

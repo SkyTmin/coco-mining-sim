@@ -1,527 +1,552 @@
 [
   {
     "id": "meadow",
-    "length": 500,
-    "ores": [
-      [
-        "dirt",
-        0.55
-      ],
-      [
-        "stone",
-        0.3
-      ],
-      [
-        "coal",
-        0.12
-      ],
-      [
-        "copper",
-        0.03
-      ]
-    ],
-    "rareFrom": 3,
-    "richness": 0.6,
-    "prices": {
-      "dirt": 1,
-      "stone": 2,
-      "coal": 5,
-      "copper": 25
-    },
-    "durability": {
-      "base": 1,
-      "growthInWorld": 2.5
-    },
-    "plate": {
-      "recommendedStrength": 5,
-      "hp": 200,
-      "reward": 500
-    },
-    "specials": {
-      "perChunk": 0.05,
-      "kinds": [
-        [
-          "chest",
-          1
-        ]
-      ]
-    },
     "color": [
       140,
       100,
       60
-    ]
-  },
-  {
-    "id": "copper_caves",
-    "length": 1100,
+    ],
+    "length": 500,
+    "rockValue": 1,
+    "hardStart": 1,
+    "hardEnd": 1.5,
     "ores": [
       [
+        "dirt",
+        0.7
+      ],
+      [
+        "stone",
+        0.2
+      ],
+      [
+        "coal",
+        0.08
+      ],
+      [
         "copper",
-        0.55
+        0.018
       ],
       [
-        "tin",
-        0.3
-      ],
-      [
-        "malachite",
-        0.12
-      ],
-      [
-        "turquoise",
-        0.03
+        "firefly_amber",
+        0.002
       ]
     ],
-    "rareFrom": 3,
-    "richness": 0.6,
     "prices": {
-      "copper": 3,
-      "tin": 6,
-      "malachite": 15,
-      "turquoise": 75
-    },
-    "durability": {
-      "base": 2.5,
-      "growthInWorld": 2.5
+      "dirt": 1,
+      "stone": 3,
+      "coal": 10,
+      "copper": 50,
+      "firefly_amber": 500
     },
     "plate": {
-      "recommendedStrength": 12.5,
-      "hp": 500,
-      "reward": 1500
+      "recommendedStrength": 1.5,
+      "hp": 30,
+      "reward": 500
     },
     "specials": {
-      "perChunk": 0.05,
+      "perChunk": 0,
       "kinds": [
         [
           "chest",
           1
         ]
       ]
-    },
+    }
+  },
+  {
+    "id": "copper_caves",
     "color": [
       154,
       93,
       64
-    ]
-  },
-  {
-    "id": "quartz_veins",
-    "length": 2400,
+    ],
+    "length": 1100,
+    "rockValue": 2,
+    "hardStart": 20,
+    "hardEnd": 30,
     "ores": [
       [
-        "quartz",
-        0.55
+        "red_stone",
+        0.7
       ],
       [
-        "iron",
-        0.3
+        "copper",
+        0.2
       ],
       [
-        "rose_quartz",
-        0.12
+        "tin",
+        0.08
       ],
       [
-        "amethyst",
-        0.03
+        "malachite",
+        0.018
+      ],
+      [
+        "turquoise",
+        0.002
       ]
     ],
-    "rareFrom": 3,
-    "richness": 0.6,
     "prices": {
-      "quartz": 9,
-      "iron": 18,
-      "rose_quartz": 45,
-      "amethyst": 225
-    },
-    "durability": {
-      "base": 6.25,
-      "growthInWorld": 2.5
+      "red_stone": 2,
+      "copper": 6,
+      "tin": 20,
+      "malachite": 100,
+      "turquoise": 1000
     },
     "plate": {
-      "recommendedStrength": 31.25,
-      "hp": 1250,
-      "reward": 4500
+      "recommendedStrength": 30,
+      "hp": 600,
+      "reward": 1000
     },
     "specials": {
-      "perChunk": 0.05,
+      "perChunk": 0,
       "kinds": [
         [
           "chest",
           1
         ]
       ]
-    },
+    }
+  },
+  {
+    "id": "quartz_veins",
     "color": [
       213,
       164,
       186
-    ]
-  },
-  {
-    "id": "gold_river",
-    "length": 5300,
+    ],
+    "length": 2400,
+    "rockValue": 4,
+    "hardStart": 400,
+    "hardEnd": 600,
     "ores": [
       [
-        "silver",
-        0.55
+        "white_stone",
+        0.7
       ],
       [
-        "gold",
-        0.3
+        "quartz",
+        0.2
       ],
       [
-        "river_pearl",
-        0.12
+        "iron",
+        0.08
       ],
       [
-        "nugget",
-        0.03
+        "rose_quartz",
+        0.018
+      ],
+      [
+        "amethyst",
+        0.002
       ]
     ],
-    "rareFrom": 3,
-    "richness": 0.6,
     "prices": {
-      "silver": 27,
-      "gold": 54,
-      "river_pearl": 135,
-      "nugget": 675
-    },
-    "durability": {
-      "base": 15.625,
-      "growthInWorld": 2.5
+      "white_stone": 4,
+      "quartz": 12,
+      "iron": 40,
+      "rose_quartz": 200,
+      "amethyst": 2000
     },
     "plate": {
-      "recommendedStrength": 78.125,
-      "hp": 3125,
-      "reward": 13500
+      "recommendedStrength": 600,
+      "hp": 12000,
+      "reward": 2000
     },
     "specials": {
-      "perChunk": 0.05,
+      "perChunk": 0,
       "kinds": [
         [
           "chest",
           1
         ]
       ]
-    },
+    }
+  },
+  {
+    "id": "gold_river",
     "color": [
       186,
       154,
       79
-    ]
-  },
-  {
-    "id": "ice_grottoes",
-    "length": 11650,
+    ],
+    "length": 5300,
+    "rockValue": 8,
+    "hardStart": 8000,
+    "hardEnd": 12000,
     "ores": [
       [
-        "ice",
-        0.55
+        "sandstone",
+        0.7
       ],
       [
-        "froststone",
-        0.3
+        "silver",
+        0.2
       ],
       [
-        "sapphire",
-        0.12
+        "gold",
+        0.08
       ],
       [
-        "eternal_ice",
-        0.03
+        "river_pearl",
+        0.018
+      ],
+      [
+        "nugget",
+        0.002
       ]
     ],
-    "rareFrom": 3,
-    "richness": 0.6,
     "prices": {
-      "ice": 81,
-      "froststone": 162,
-      "sapphire": 405,
-      "eternal_ice": 2025
-    },
-    "durability": {
-      "base": 39.0625,
-      "growthInWorld": 2.5
+      "sandstone": 8,
+      "silver": 24,
+      "gold": 80,
+      "river_pearl": 400,
+      "nugget": 4000
     },
     "plate": {
-      "recommendedStrength": 195.3125,
-      "hp": 7812.5,
-      "reward": 40500
+      "recommendedStrength": 12000,
+      "hp": 240000,
+      "reward": 4000
     },
     "specials": {
-      "perChunk": 0.05,
+      "perChunk": 0,
       "kinds": [
         [
           "chest",
           1
         ]
       ]
-    },
+    }
+  },
+  {
+    "id": "ice_grottoes",
     "color": [
       111,
       178,
       218
-    ]
-  },
-  {
-    "id": "mushroom_forest",
-    "length": 25650,
+    ],
+    "length": 11650,
+    "rockValue": 16,
+    "hardStart": 160000,
+    "hardEnd": 240000,
     "ores": [
       [
-        "sporite",
-        0.55
+        "frozen_stone",
+        0.7
       ],
       [
-        "glowshroom",
-        0.3
+        "ice",
+        0.2
       ],
       [
-        "topaz",
-        0.12
+        "froststone",
+        0.08
       ],
       [
-        "moonstone",
-        0.03
+        "sapphire",
+        0.018
+      ],
+      [
+        "eternal_ice",
+        0.002
       ]
     ],
-    "rareFrom": 3,
-    "richness": 0.6,
     "prices": {
-      "sporite": 243,
-      "glowshroom": 486,
-      "topaz": 1215,
-      "moonstone": 6075
-    },
-    "durability": {
-      "base": 97.65625,
-      "growthInWorld": 2.5
+      "frozen_stone": 16,
+      "ice": 48,
+      "froststone": 160,
+      "sapphire": 800,
+      "eternal_ice": 8000
     },
     "plate": {
-      "recommendedStrength": 488.28125,
-      "hp": 19531.25,
-      "reward": 121500
+      "recommendedStrength": 240000,
+      "hp": 4800000,
+      "reward": 8000
     },
     "specials": {
-      "perChunk": 0.05,
+      "perChunk": 0,
       "kinds": [
         [
           "chest",
           1
         ]
       ]
-    },
+    }
+  },
+  {
+    "id": "mushroom_forest",
     "color": [
       105,
       75,
       142
-    ]
-  },
-  {
-    "id": "giant_bones",
-    "length": 56450,
+    ],
+    "length": 25650,
+    "rockValue": 32,
+    "hardStart": 3200000,
+    "hardEnd": 4800000,
     "ores": [
       [
-        "limestone",
-        0.55
+        "mycelium",
+        0.7
       ],
       [
-        "amber",
-        0.3
+        "sporite",
+        0.2
       ],
       [
-        "bone_ore",
-        0.12
+        "glowshroom",
+        0.08
       ],
       [
-        "dragon_amber",
-        0.03
+        "topaz",
+        0.018
+      ],
+      [
+        "moonstone",
+        0.002
       ]
     ],
-    "rareFrom": 3,
-    "richness": 0.6,
     "prices": {
-      "limestone": 729,
-      "amber": 1458,
-      "bone_ore": 3645,
-      "dragon_amber": 18225
-    },
-    "durability": {
-      "base": 244.140625,
-      "growthInWorld": 2.5
+      "mycelium": 32,
+      "sporite": 96,
+      "glowshroom": 320,
+      "topaz": 1600,
+      "moonstone": 16000
     },
     "plate": {
-      "recommendedStrength": 1220.703125,
-      "hp": 48828.125,
-      "reward": 364500
+      "recommendedStrength": 4800000,
+      "hp": 96000000,
+      "reward": 16000
     },
     "specials": {
-      "perChunk": 0.05,
+      "perChunk": 0,
       "kinds": [
         [
           "chest",
           1
         ]
       ]
-    },
+    }
+  },
+  {
+    "id": "giant_bones",
     "color": [
       197,
       174,
       128
-    ]
-  },
-  {
-    "id": "lost_city",
-    "length": 124200,
+    ],
+    "length": 56450,
+    "rockValue": 64,
+    "hardStart": 64000000,
+    "hardEnd": 96000000,
     "ores": [
       [
-        "bronze",
-        0.55
+        "limestone",
+        0.7
       ],
       [
-        "jade",
-        0.3
+        "bone_ore",
+        0.2
       ],
       [
-        "lapis_lazuli",
-        0.12
+        "amber",
+        0.08
       ],
       [
-        "ancient_gold",
-        0.03
+        "onyx",
+        0.018
+      ],
+      [
+        "dragon_amber",
+        0.002
       ]
     ],
-    "rareFrom": 3,
-    "richness": 0.6,
     "prices": {
-      "bronze": 2187,
-      "jade": 4374,
-      "lapis_lazuli": 10935,
-      "ancient_gold": 54675
-    },
-    "durability": {
-      "base": 610.3515625,
-      "growthInWorld": 2.5
+      "limestone": 64,
+      "bone_ore": 192,
+      "amber": 640,
+      "onyx": 3200,
+      "dragon_amber": 32000
     },
     "plate": {
-      "recommendedStrength": 3051.7578125,
-      "hp": 122070.3125,
-      "reward": 1093500
+      "recommendedStrength": 96000000,
+      "hp": 1920000000,
+      "reward": 32000
     },
     "specials": {
-      "perChunk": 0.05,
+      "perChunk": 0,
       "kinds": [
         [
           "chest",
           1
         ]
       ]
-    },
+    }
+  },
+  {
+    "id": "lost_city",
     "color": [
       160,
       100,
       75
-    ]
-  },
-  {
-    "id": "magma_springs",
-    "length": 273250,
+    ],
+    "length": 124200,
+    "rockValue": 128,
+    "hardStart": 1280000000,
+    "hardEnd": 1920000000,
     "ores": [
       [
-        "basalt",
-        0.55
+        "terracotta",
+        0.7
       ],
       [
-        "obsidian",
-        0.3
+        "bronze",
+        0.2
       ],
       [
-        "ruby",
-        0.12
+        "jade",
+        0.08
       ],
       [
-        "fire_ruby",
-        0.03
+        "lapis_lazuli",
+        0.018
+      ],
+      [
+        "ancient_gold",
+        0.002
       ]
     ],
-    "rareFrom": 3,
-    "richness": 0.6,
     "prices": {
-      "basalt": 6561,
-      "obsidian": 13122,
-      "ruby": 32805,
-      "fire_ruby": 164025
-    },
-    "durability": {
-      "base": 1525.87890625,
-      "growthInWorld": 2.5
+      "terracotta": 128,
+      "bronze": 384,
+      "jade": 1280,
+      "lapis_lazuli": 6400,
+      "ancient_gold": 64000
     },
     "plate": {
-      "recommendedStrength": 7629.39453125,
-      "hp": 305175.78125,
-      "reward": 3280500
+      "recommendedStrength": 1920000000,
+      "hp": 38400000000,
+      "reward": 64000
     },
     "specials": {
-      "perChunk": 0.05,
+      "perChunk": 0,
       "kinds": [
         [
           "chest",
           1
         ]
       ]
-    },
+    }
+  },
+  {
+    "id": "magma_springs",
     "color": [
       72,
       56,
       56
-    ]
-  },
-  {
-    "id": "core",
-    "length": 601150,
+    ],
+    "length": 273250,
+    "rockValue": 256,
+    "hardStart": 25600000000,
+    "hardEnd": 38400000000,
     "ores": [
       [
-        "core_crystal",
-        0.65
+        "basalt",
+        0.7
       ],
       [
-        "sunstone",
-        0.3
+        "obsidian",
+        0.2
       ],
       [
-        "core_shard",
-        0.05
+        "garnet",
+        0.08
+      ],
+      [
+        "ruby",
+        0.018
+      ],
+      [
+        "fire_ruby",
+        0.002
       ]
     ],
-    "rareFrom": 3,
-    "richness": 0.6,
     "prices": {
-      "core_crystal": 19683,
-      "sunstone": 39366,
-      "core_shard": 98415
-    },
-    "durability": {
-      "base": 3814.697265625,
-      "growthInWorld": 2.5
+      "basalt": 256,
+      "obsidian": 768,
+      "garnet": 2560,
+      "ruby": 12800,
+      "fire_ruby": 128000
     },
     "plate": {
-      "recommendedStrength": 19073.486328125,
-      "hp": 762939.453125,
-      "reward": 9841500
+      "recommendedStrength": 38400000000,
+      "hp": 768000000000,
+      "reward": 128000
     },
     "specials": {
-      "perChunk": 0.05,
+      "perChunk": 0,
       "kinds": [
         [
           "chest",
           1
         ]
       ]
-    },
+    }
+  },
+  {
+    "id": "core",
     "color": [
       237,
       216,
       156
-    ]
+    ],
+    "length": 601150,
+    "rockValue": 512,
+    "hardStart": 512000000000,
+    "hardEnd": 768000000000,
+    "ores": [
+      [
+        "lightstone",
+        0.7
+      ],
+      [
+        "core_crystal",
+        0.2
+      ],
+      [
+        "sunstone",
+        0.08
+      ],
+      [
+        "stardust",
+        0.018
+      ],
+      [
+        "core_shard",
+        0.002
+      ]
+    ],
+    "prices": {
+      "lightstone": 512,
+      "core_crystal": 1536,
+      "sunstone": 5120,
+      "stardust": 25600,
+      "core_shard": 256000
+    },
+    "plate": {
+      "recommendedStrength": 768000000000,
+      "hp": 15360000000000,
+      "reward": 256000
+    },
+    "specials": {
+      "perChunk": 0,
+      "kinds": [
+        [
+          "chest",
+          1
+        ]
+      ]
+    }
   }
 ]

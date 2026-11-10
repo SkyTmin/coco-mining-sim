@@ -1,4 +1,4 @@
-// Balance v1 — single source for docs/design/wiki/18-balans-chisla.md and (later) scripts/design-decisions.json.
+// Balance v1 — single source for docs/design/wiki/18-balans-chisla.md and generated game configs.
 // Every number here is [решение] until the stage-3 simulator on real game code confirms it.
 // Run: node scripts/balance/model.mjs [hours] [-v]   (coarse pacing model; env G, CUPS, REB, EFF, PASS for what-ifs)
 //      node scripts/balance/build-doc.mjs           (writes docs/design/wiki/18-balans-chisla.md)
@@ -10,7 +10,10 @@ export const mine = {
 	widths: [ { w: 5, price: 0 }, { w: 7, price: 5_000, world: 2 }, { w: 9, price: 500_000, world: 4 } ],
 	height: 3,
 	plateHits: 20, // hits to break the Guard Slab at recommended strength
-	ultCharge: Number(process.env.ULT ?? 45), // hits to charge the ult (pass «Быстрая ульта»: 34)
+	plateCap: 160,
+	plateUltMultiplier: 3,
+	plateReward: 500, // [решение ТЗ-03] times the rock value of the broken world
+	ultCharge: Number(process.env.ULT || 45), // hits to charge the ult (pass «Быстрая ульта»: 34)
 };
 
 export const oreSlots = [
@@ -22,9 +25,9 @@ export const oreSlots = [
 ];
 
 const E = process.env;
-const HARD_GROWTH = Number(E.G ?? 20); // per world
+const HARD_GROWTH = Number(E.G || 20); // per world
 const HARD_INNER = 1.5; // from world start to world end
-const VALUE_GROWTH = Number(E.V ?? 2); // per world
+const VALUE_GROWTH = Number(E.V || 2); // per world
 const lengths = [500, 1100, 2400, 5300, 11650, 25650, 56450, 124200, 273250, 601150];
 const names = [
 	['Луговой слой', ['Земля', 'Камень', 'Уголь', 'Медь', 'Светлячковый янтарь']],
@@ -51,11 +54,11 @@ export const worlds = lengths.map((len, i) => ({
 
 // «Размер удара» — the former starter line: a shape upgrade for whatever pickaxe is in hand. Burns on rebirth.
 export const hitSizes = [
-	{ id: 1, shape: '1 блок', blocks: 1, eff: 1, interval: 0.35, price: 0 },
-	{ id: 2, shape: '1×2', blocks: 2, eff: 0.94, interval: 0.35, price: 150 },
-	{ id: 3, shape: '1×3', blocks: 3, eff: 1, interval: 0.35, price: 1_500 },
-	{ id: 4, shape: 'крест (5)', blocks: 5, eff: 0.8, interval: 0.35, price: 12_000 },
-	{ id: 5, shape: '3×3', blocks: 9, eff: 0.85, interval: 0.35, price: 90_000 },
+	{ id: 1, shape: '1 блок', blocks: 1, eff: 1, interval: mine.interval, price: 0 },
+	{ id: 2, shape: '1×2', blocks: 2, eff: 0.94, interval: mine.interval, price: 150 },
+	{ id: 3, shape: '1×3', blocks: 3, eff: 1, interval: mine.interval, price: 1_500 },
+	{ id: 4, shape: 'крест (5)', blocks: 5, eff: 0.8, interval: mine.interval, price: 12_000 },
+	{ id: 5, shape: '3×3', blocks: 9, eff: 0.85, interval: mine.interval, price: 90_000 },
 	{ id: 6, shape: '3×3 быстрый', blocks: 9, eff: 0.85, interval: 0.30, price: 700_000 },
 ];
 
@@ -76,6 +79,11 @@ export const cards = [
 	{ id: 'keys', name: 'Ключи', c0: 1_000, per: 0.05, world: 3, cap: 20, steps: [10, 20] },
 ];
 export const cardGrowth = 1.3;
+export const cardEffects = {
+	heavyEvery: 10, heavyMultiplier: 5, powerPierce: 1,
+	rainChance: 0.02, rainMultiplier: 10,
+	critMultiplier: 3, megaEvery: 10, megaMultiplier: 10, critPierce: 1,
+};
 
 // Family skills: permanent (never reset), bought with coins, only for the family chosen for the current circle.
 export const familyRules = {

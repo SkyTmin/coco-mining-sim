@@ -1,6 +1,7 @@
 --!strict
 
 local fs = require("@lune/fs")
+local serde = require("@lune/serde")
 local process = require("@lune/process")
 local Test = require("./lib/expect")
 local Loader = require("./lib/loader")
@@ -19,6 +20,27 @@ Test.describe("Config", function()
 		end
 		expect(config.game._note).toBe(nil)
 		expect(config.creative._note).toBe(nil)
+	end)
+	Test.it("generates canonical balance without editable duplicates", function()
+		local config = Loader.load("src/shared/Config")
+		local decisions = serde.decode("json", fs.readFile("scripts/design-decisions.json"))
+		expect(config.worlds[2].length).toBe(1100)
+		expect(config.progress.hitSizes[5].price).toBe(90000)
+		expect(config.mine.ultCharge).toBe(45)
+		expect(decisions.worlds[2].length).toBe(nil)
+		expect(decisions.progress).toBe(nil)
+		expect(decisions.mine.ultCharge).toBe(nil)
+	end)
+	Test.it("rejects simulation overrides for production config", function()
+		for _, name in { "G", "V", "HARD", "CUPS", "ULT" } do
+			local result = process.exec(
+				"node",
+				{ "scripts/build-configs.mjs" },
+				{ env = { [name] = "18" } }
+			)
+			expect(result.code).toBe(1)
+			assert(result.stderr:find("Clear balance simulation overrides", 1, true), result.stderr)
+		end
 	end)
 	Test.it("reports all invalid sections and exits with code one", function()
 		fs.writeDir("build")

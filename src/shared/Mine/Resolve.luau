@@ -156,7 +156,7 @@ function Resolve.ult(st: State, pick: Pick): HitResult
 	MineState.removeLayers(st, st.front, finish, out)
 	tally(st, res, out)
 	if barrier < DEPTH_END and (finish > barrier or st.front == barrier) then
-		hitPlate(st, barrier, mine.plate.ultPlateHits * mine.plate.ultMultiplier, res)
+		hitPlate(st, barrier, pick.strength * mine.plate.ultMultiplier, res)
 	end
 	return res
 end

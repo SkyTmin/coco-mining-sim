@@ -1,13 +1,13 @@
 {
   "blockSize": 5,
-  "startWidth": 5,
-  "height": 3,
   "maxWidth": 15,
   "maxHeight": 7,
   "maxDepth": 2147483647,
   "chunk": 50,
   "window": 20,
   "maxHoles": 4000,
+  "startWidth": 5,
+  "height": 3,
   "maxHitsPerBlock": 8,
   "passThrough": [
     10,
@@ -15,7 +15,9 @@
     1000
   ],
   "plate": {
-    "ultPlateHits": 10,
+    "hits": 20,
+    "cap": 160,
     "ultMultiplier": 3
-  }
+  },
+  "ultCharge": 45
 }

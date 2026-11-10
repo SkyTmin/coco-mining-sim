@@ -45,7 +45,7 @@ function Storm.chain(
 			end
 			if distance <= cfg.pickRareWithin and distance < rareDistance then
 				local ore = Gen.cellAt(st.seed, point.x, point.y, point.d)
-				if ore >= Worlds.of(point.d).rareFrom then
+				if Worlds.isRare(ore) then
 					bestRare, rareDistance = i, distance
 				end
 			end

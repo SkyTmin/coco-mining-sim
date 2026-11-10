@@ -1,47 +1,207 @@
 {
   "_note": "[решение ТЗ-01] тестовые миры по 10 000 слоёв, отдельные от боевого конфига",
   "mine": {
-    "startWidth": 5, "height": 3, "maxWidth": 15, "maxHeight": 7, "maxDepth": 2147483647,
-    "chunk": 50, "window": 20, "maxHoles": 4000, "maxHitsPerBlock": 8,
-    "passThrough": [10, 100, 1000], "plate": { "ultPlateHits": 10, "ultMultiplier": 3 }
+    "startWidth": 5,
+    "height": 3,
+    "maxWidth": 15,
+    "maxHeight": 7,
+    "maxDepth": 2147483647,
+    "chunk": 50,
+    "window": 20,
+    "maxHoles": 4000,
+    "maxHitsPerBlock": 8,
+    "passThrough": [
+      10,
+      100,
+      1000
+    ],
+    "plate": {
+      "ultMultiplier": 3,
+      "hits": 20,
+      "cap": 160
+    }
   },
-  "ores": [{"id":"dirt","color":[120,84,52]},{"id":"stone","color":[128,126,122]},{"id":"coal","color":[48,47,50]},{"id":"copper","color":[193,109,64]}],
+  "ores": [
+    {
+      "id": "dirt",
+      "color": [
+        120,
+        84,
+        52
+      ]
+    },
+    {
+      "id": "stone",
+      "color": [
+        128,
+        126,
+        122
+      ]
+    },
+    {
+      "id": "coal",
+      "color": [
+        48,
+        47,
+        50
+      ]
+    },
+    {
+      "id": "copper",
+      "color": [
+        193,
+        109,
+        64
+      ]
+    }
+  ],
   "worlds": [
     {
       "id": "test_first",
       "length": 10000,
-      "ores": [["dirt",0.55],["stone",0.3],["coal",0.12],["copper",0.03]],
-      "rareFrom": 3,
-      "richness": 0.6,
-      "prices": {"dirt":1,"stone":2,"coal":5,"copper":25},
-      "durability": {"base":1,"growthInWorld":2.5},
-      "plate": {"recommendedStrength":3,"hp":120,"reward":500},
-      "specials": {"perChunk":0.05,"kinds":[["chest",1]]},
-      "color": [140,100,60]
+      "ores": [
+        [
+          "dirt",
+          0.55
+        ],
+        [
+          "stone",
+          0.3
+        ],
+        [
+          "coal",
+          0.12
+        ],
+        [
+          "copper",
+          0.03
+        ]
+      ],
+      "prices": {
+        "dirt": 1,
+        "stone": 2,
+        "coal": 5,
+        "copper": 25
+      },
+      "plate": {
+        "recommendedStrength": 3,
+        "hp": 120,
+        "reward": 500
+      },
+      "specials": {
+        "perChunk": 0.05,
+        "kinds": [
+          [
+            "chest",
+            1
+          ]
+        ]
+      },
+      "color": [
+        140,
+        100,
+        60
+      ],
+      "hardStart": 1,
+      "hardEnd": 2.5
     },
     {
       "id": "test_second",
       "length": 10000,
-      "ores": [["stone",0.5],["dirt",0.3],["copper",0.15],["coal",0.05]],
-      "rareFrom": 3,
-      "richness": 0.6,
-      "prices": {"dirt":11,"stone":12,"coal":15,"copper":35},
-      "durability": {"base":2.5,"growthInWorld":2.5},
-      "plate": {"recommendedStrength":6,"hp":240,"reward":1000},
-      "specials": {"perChunk":1,"kinds":[["chest",1]]},
-      "color": [140,100,60]
+      "ores": [
+        [
+          "stone",
+          0.5
+        ],
+        [
+          "dirt",
+          0.3
+        ],
+        [
+          "copper",
+          0.15
+        ],
+        [
+          "coal",
+          0.05
+        ]
+      ],
+      "prices": {
+        "dirt": 11,
+        "stone": 12,
+        "coal": 15,
+        "copper": 35
+      },
+      "plate": {
+        "recommendedStrength": 6,
+        "hp": 240,
+        "reward": 1000
+      },
+      "specials": {
+        "perChunk": 1,
+        "kinds": [
+          [
+            "chest",
+            1
+          ]
+        ]
+      },
+      "color": [
+        140,
+        100,
+        60
+      ],
+      "hardStart": 2.5,
+      "hardEnd": 6.25
     },
     {
       "id": "test_last",
       "length": 10000,
-      "ores": [["dirt",0.55],["stone",0.3],["coal",0.12],["copper",0.03]],
-      "rareFrom": 3,
-      "richness": 0.6,
-      "prices": {"dirt":21,"stone":22,"coal":25,"copper":45},
-      "durability": {"base":6.25,"growthInWorld":2.5},
-      "plate": {"recommendedStrength":9,"hp":360,"reward":1500},
-      "specials": {"perChunk":0.05,"kinds":[["chest",1]]},
-      "color": [140,100,60]
+      "ores": [
+        [
+          "dirt",
+          0.55
+        ],
+        [
+          "stone",
+          0.3
+        ],
+        [
+          "coal",
+          0.12
+        ],
+        [
+          "copper",
+          0.03
+        ]
+      ],
+      "prices": {
+        "dirt": 21,
+        "stone": 22,
+        "coal": 25,
+        "copper": 45
+      },
+      "plate": {
+        "recommendedStrength": 9,
+        "hp": 360,
+        "reward": 1500
+      },
+      "specials": {
+        "perChunk": 0.05,
+        "kinds": [
+          [
+            "chest",
+            1
+          ]
+        ]
+      },
+      "color": [
+        140,
+        100,
+        60
+      ],
+      "hardStart": 6.25,
+      "hardEnd": 15.625
     }
   ]
 }

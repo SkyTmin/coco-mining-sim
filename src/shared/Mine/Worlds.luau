@@ -55,8 +55,12 @@ end
 
 function Worlds.durability(d: number): number
 	local world = Worlds.of(d)
-	local t = math.clamp(d - world.start, 0, world.length - 1) / world.length
-	return world.durability.base * world.durability.growthInWorld ^ t
+	local t = math.clamp(d - world.start, 0, world.length - 1) / (world.length - 1)
+	return world.hardStart + (world.hardEnd - world.hardStart) * t
+end
+
+function Worlds.isRare(ore: number): boolean
+	return ore >= 3
 end
 
 function Worlds.price(worldIndex: number, oreIndex: number): number

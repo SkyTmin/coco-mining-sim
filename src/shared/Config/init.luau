@@ -23,17 +23,48 @@ export type MineConfig = {
 	maxHoles: number,
 	maxHitsPerBlock: number,
 	passThrough: { number },
-	plate: { ultPlateHits: number, ultMultiplier: number },
+	plate: { hits: number, cap: number, ultMultiplier: number },
+	ultCharge: number,
 }
 
 export type PickaxeConfig = {
 	family: string?,
+	rarity: string,
 	shape: string,
 	strength: number,
 	interval: number,
 	ultLayers: number,
 	ultCharge: number,
 	storm: { jumps: { number }, pickRareWithin: number }?,
+}
+export type RarityConfig = { stars: number, power: number, cap: number, ult: number, lvlC0: number }
+export type CardConfig = {
+	c0: number,
+	per: number,
+	mult: boolean?,
+	world: number,
+	cap: number?,
+	steps: { number },
+}
+export type ProgressConfig = {
+	widths: { { w: number, price: number, world: number? } },
+	hitSizes: { { id: number, shape: string, blocks: number, interval: number, price: number } },
+	rarities: { [string]: RarityConfig },
+	pickLevel: { powerPerLevel: number, ultPerLevel: number, costGrowth: number },
+	gold: { power: number, capBonus: number },
+	cards: { [string]: CardConfig },
+	cardGrowth: number,
+	cardEffects: {
+		heavyEvery: number,
+		heavyMultiplier: number,
+		powerPierce: number,
+		rainChance: number,
+		rainMultiplier: number,
+		critMultiplier: number,
+		megaEvery: number,
+		megaMultiplier: number,
+		critPierce: number,
+	},
 }
 export type PlotConfig = {
 	count: number,
@@ -91,21 +122,39 @@ export type WorldConfig = {
 	id: string,
 	length: number,
 	ores: { { string | number } },
-	rareFrom: number,
-	richness: number,
 	prices: { [string]: number },
-	durability: { base: number, growthInWorld: number },
+	hardStart: number,
+	hardEnd: number,
+	rockValue: number,
 	plate: { recommendedStrength: number, hp: number, reward: number },
 	specials: { perChunk: number, kinds: { { string | number } } },
 	color: { number },
 }
 
+local mine = require(script:WaitForChild("mine")) :: MineConfig
+local progress = require(script:WaitForChild("progress")) :: ProgressConfig
+local pickaxes: { [string]: PickaxeConfig } = {}
+for id, definition in require(script:WaitForChild("pickaxes")) do
+	local rarity = progress.rarities[definition.rarity]
+	pickaxes[id] = {
+		rarity = definition.rarity,
+		family = definition.family,
+		storm = definition.storm,
+		shape = progress.hitSizes[1].shape,
+		strength = rarity.power,
+		interval = progress.hitSizes[1].interval,
+		ultLayers = rarity.ult,
+		ultCharge = mine.ultCharge,
+	}
+end
+
 return {
 	game = require(script:WaitForChild("game")) :: GameConfig,
 	creative = require(script:WaitForChild("creative")) :: CreativeConfig,
-	mine = require(script:WaitForChild("mine")) :: MineConfig,
+	mine = mine,
 	plots = require(script:WaitForChild("plots")) :: PlotConfig,
-	pickaxes = require(script:WaitForChild("pickaxes")) :: { [string]: PickaxeConfig },
+	pickaxes = pickaxes,
+	progress = progress,
 	fx = require(script:WaitForChild("fx")) :: FxConfig,
 	sounds = require(script:WaitForChild("sounds")) :: SoundsConfig,
 	cascade = require(script:WaitForChild("cascade")) :: CascadeConfig,

@@ -45,8 +45,7 @@ Test.describe("Storm", function()
 			local st = State.new(seed, 5, 3)
 			local close = Gen.cellAt(seed, 0, 0, 0)
 			local far = Gen.cellAt(seed, 2, 1, 0)
-			local rare = Worlds.of(0).rareFrom
-			if close > 0 and close < rare and far >= rare then
+			if close > 0 and not Worlds.isRare(close) and Worlds.isRare(far) then
 				selected = st
 				break
 			end
@@ -59,7 +58,7 @@ Test.describe("Storm", function()
 		}, 0, 1, 0, Config.pickaxes.storm_common.storm)
 		local p = route[1]
 		assert(p and math.abs(p.x) + math.abs(p.y - 1) + p.d <= 2)
-		assert(Gen.cellAt(st.seed, p.x, p.y, p.d) >= Worlds.of(p.d).rareFrom)
+		assert(Worlds.isRare(Gen.cellAt(st.seed, p.x, p.y, p.d)))
 	end)
 end)
 
