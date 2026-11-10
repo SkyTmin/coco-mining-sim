@@ -12,8 +12,8 @@
   },
   "mine": {
     "blockSize": 5, "maxWidth": 15, "maxHeight": 7, "maxDepth": 2147483647,
-    "chunk": 50, "window": 20, "maxHoles": 4000,
-    "_note": "[решение ТЗ-01] формат шахты, размер блока, порции данных и лимиты хранения"
+    "chunk": 50, "window": 60, "nearWindow": 25, "layerBatch": 12, "maxHoles": 4000,
+    "_note": "[решение ТЗ-01] формат шахты и размер блока; [владелец] ТЗ-03б §2, окно 60 и трещины до 25 слоёв; [решение] дальние порции по 12 слоёв"
   },
   "plots": {
     "count": 8, "entranceRadius": 65, "frameWidth": 7, "platformDepth": 6, "spectatorDepth": 3,
@@ -31,14 +31,14 @@
     "_note": "[решение 06] бюджет каскада на удар"
   },
   "fx": {
-    "depth": { "fogStart": 550, "fogEnd": 1500, "simpleFrom": 300, "lampSpacing": 20, "distantSpacing": 40 },
+    "depth": { "fogStart": 1500, "fogEnd": 4000, "simpleFrom": 300, "lampSpacing": 20, "middleSpacing": 40, "distantSpacing": 80 },
     "impactTime": 0.13,
     "ult": {
       "windup": 0.15, "fractureMin": 0.5, "fractureMax": 0.9, "fracturePerLog": 0.108,
       "empty": 0.30, "approachBase": 0.45, "approachPerLog": 0.35,
-      "distanceBase": 155, "distancePerLog": 100, "distanceDeep": 120
+      "distanceBase": 155, "distancePerLog": 100, "distanceDeep": 430
     },
-    "_note": "[владелец] ТЗ-02б §1 и ТЗ-02в §2; [решение] дальние крепи реже, дальность больших проломов растёт по логарифму с квадратичной поправкой"
+    "_note": "[владелец] ТЗ-03б §2, туман 1500–4000 и дальние лампы через 80; [решение] глубокий пролом до дальней зоны при неизменной длительности фаз"
   },
   "sounds": {
     "atlasId": null,

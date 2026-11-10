@@ -4,7 +4,7 @@
 -- Server -> client: Toast(key, args?), ServerLog(message, isError).
 -- Client -> server: Creative(op, ...), MineIntent(buffer), CameraView(mode or preference patch).
 -- Client -> server: UpgradeIntent(op, idOrCount?, count?).
--- Server -> plot subscribers: MineResult(buffer), MineWindow(buffer).
+-- Server -> plot subscribers: MineWindow(kind, buffer), an ordered stream of windows, results and distant layers.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")

@@ -41,7 +41,6 @@ local S = mine.blockSize
 local PENTATONIC = { 1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2 }
 local STORM = Color3.fromRGB(139, 225, 255)
 local WARM = Color3.fromRGB(255, 207, 144)
-local RENDER_DEPTH = { 12, 16, 20 }
 
 local function oldWindow(win: any): any
 	local copy = table.clone(win)
@@ -66,7 +65,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local player = Players.LocalPlayer
 	local intent = Remotes.event("MineIntent")
 	local windowRemote = Remotes.event("MineWindow")
-	local resultRemote = Remotes.event("MineResult")
 	local studio = RunService:IsStudio()
 	local world = Instance.new("Folder")
 	world.Name, world.Parent = "LocalMine", workspace
@@ -267,7 +265,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		intent:FireServer(Wire.encodeIntent(kind, seq, cell.x, cell.y, cell.dRel))
 	end
 
-	windowRemote.OnClientEvent:Connect(function(packet)
+	local function onWindow(packet: any)
 		local win = Wire.decodeWindow(packet)
 		if
 			not win
@@ -278,9 +276,27 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		window, pending, ride, dirty = win, nil, nil, true
 		table.clear(events)
 		setup(win.plot)
-	end)
+	end
 
-	resultRemote.OnClientEvent:Connect(function(packet)
+	local function onLayers(packet: any)
+		local part = Wire.decodeLayers(packet)
+		if
+			not part
+			or not window
+			or part.plot ~= window.plot
+			or part.front ~= window.front
+			or part.width ~= window.width
+			or part.height ~= window.height
+		then
+			return
+		end
+		for i, layer in part.layers do
+			window.layers[part.offset + i] = layer
+		end
+		dirty = true
+	end
+
+	local function onResult(packet: any)
 		local res = Wire.decodeResult(packet)
 		local r = renderer
 		if not r or not res or not window or res.plot ~= window.plot then
@@ -329,15 +345,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 		end
 		if res.delta > 0 then
-			local fresh = {}
-			local keep = math.max(0, mine.window - res.delta)
-			for i = 1, keep do
-				fresh[i] = window.layers[i + res.delta]
-			end
-			for i, layer in res.layers do
-				fresh[keep + i] = layer
-			end
-			window.layers, window.front = fresh, res.front
+			window.layers, window.front = res.layers, res.front
 		end
 		window.charge, window.damage, window.plateDamage = res.charge, res.damage, res.plateDamage
 		if res.ability or res.delta > 0 then
@@ -419,6 +427,16 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			if expected then
 				player:SetAttribute("Stage02LastFeedbackMs", (now - expected.at) * 1000)
 			end
+		end
+	end
+
+	windowRemote.OnClientEvent:Connect(function(kind, packet)
+		if kind == "window" then
+			onWindow(packet)
+		elseif kind == "layers" then
+			onLayers(packet)
+		elseif kind == "result" then
+			onResult(packet)
 		end
 	end)
 
@@ -546,9 +564,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if cleared >= broken then
 			return nil, 0, waveDepth
 		end
-		return ride.slice or old,
-			math.min(RENDER_DEPTH[override], broken - cleared),
-			cleared * S + 0.03
+		return ride.slice or old, math.min(mine.window, broken - cleared), cleared * S + 0.03
 	end
 
 	hud.eye.Activated:Connect(toggle)
@@ -674,7 +690,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				DepthSign.step(sign, now, depth, false, reduced, false)
 			end
 		end
-		local shown, visible, offset = window, RENDER_DEPTH[override], 0
+		local shown, visible, offset = window, #window.layers, 0
 		local waveDepth, survivor = nil, false
 		local color = if ride then ride.color else WARM
 		if phase == "windup" then
@@ -754,10 +770,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			if shown then
 				Wall.moves(r, shown, offset, parts, moves)
 			end
-			local farLayers = if survivor
-				then 0
-				elseif phase == "fracture" then visible
-				else mine.window
+			local farLayers = if survivor then 0 else visible
 			Tunnel.moves(
 				tunnel,
 				sceneWindow,

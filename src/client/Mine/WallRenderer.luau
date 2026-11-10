@@ -145,9 +145,15 @@ local function tint(ore: number, x: number, y: number, d: number): Color3
 	)
 end
 
-local function showTexture(part: Part, tile: { atlas: string, rect: { number } }?)
-	local surface = part:FindFirstChild("OrePixels") :: SurfaceGui?
-	if not tile then
+local function showTexture(
+	part: Part,
+	name: string,
+	tile: { atlas: string, rect: { number } }?,
+	face: Enum.NormalId?,
+	treasure: boolean
+)
+	local surface = part:FindFirstChild(name) :: SurfaceGui?
+	if not tile or not face then
 		if surface then
 			surface.Enabled = false
 		end
@@ -155,9 +161,8 @@ local function showTexture(part: Part, tile: { atlas: string, rect: { number } }
 	end
 	if not surface then
 		surface = Instance.new("SurfaceGui")
-		surface.Name, surface.Face, surface.SizingMode =
-			"OrePixels", Enum.NormalId.Back, Enum.SurfaceGuiSizingMode.FixedSize
-		surface.CanvasSize, surface.LightInfluence = Vector2.new(128, 128), 0.28
+		surface.Name, surface.SizingMode = name, Enum.SurfaceGuiSizingMode.FixedSize
+		surface.CanvasSize = Vector2.new(64, 64)
 		local pixels = Instance.new("ImageLabel")
 		pixels.Name, pixels.Size, pixels.BackgroundTransparency = "Pixels", UDim2.fromScale(1, 1), 1
 		pixels.ResampleMode, pixels.Parent = Enum.ResamplerMode.Pixelated, surface
@@ -168,8 +173,17 @@ local function showTexture(part: Part, tile: { atlas: string, rect: { number } }
 	pixels.Image = Config.art.textures[tile.atlas]
 	pixels.ImageRectOffset, pixels.ImageRectSize =
 		Vector2.new(rect[1], rect[2]), Vector2.new(rect[3], rect[4])
-	surface.Enabled = true
+	surface.Face, surface.LightInfluence, surface.Enabled =
+		face, if treasure then 0.12 else 0.42, true
 end
+
+local directions = {
+	{ face = Enum.NormalId.Back, x = 0, y = 0, d = -1 },
+	{ face = Enum.NormalId.Left, x = -1, y = 0, d = 0 },
+	{ face = Enum.NormalId.Right, x = 1, y = 0, d = 0 },
+	{ face = Enum.NormalId.Top, x = 0, y = 1, d = 0 },
+	{ face = Enum.NormalId.Bottom, x = 0, y = -1, d = 0 },
+}
 
 local function addCell(
 	r: Renderer,
@@ -194,11 +208,31 @@ local function addCell(
 	cell.part.Color = tint(ore, x, y, d)
 	local world = Worlds.of(d)
 	local depth = d - win.front
-	cell.part.Material = if ore == Wire.CHEST or (world.index <= 3 and ore == #world.ores)
-		then Enum.Material.Neon
-		else Enum.Material.SmoothPlastic
-	showTexture(cell.part, Config.art.ores[world.id][ore])
-	cell.part.Transparency = if depth >= 15 then math.min(0.42, (depth - 14) * 0.07) else 0
+	local treasure = ore == #world.ores
+	cell.part.Material = if treasure then Enum.Material.Neon else Enum.Material.SmoothPlastic
+	local first, second: Enum.NormalId? = nil, nil
+	for _, side in directions do
+		if
+			(depth == 0 and side.d == -1)
+			or layerValue(win, x + side.x, y + side.y, depth + side.d) == 0
+		then
+			if not first then
+				first = side.face
+			else
+				second = side.face
+				break
+			end
+		end
+	end
+	local tile = Config.art.ores[world.id][ore]
+	showTexture(cell.part, "OrePixels", tile, first, treasure)
+	showTexture(
+		cell.part,
+		"OreSide",
+		tile,
+		if depth < Config.mine.nearWindow then second else nil,
+		treasure
+	)
 	return cell
 end
 

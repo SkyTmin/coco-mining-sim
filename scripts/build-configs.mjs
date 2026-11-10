@@ -41,7 +41,11 @@ function validateMine(data) {
   if (!isPositiveInteger(data.chunk) || data.chunk < 2) {
     errors.push("mine.chunk must be an integer of at least 2");
   }
-  for (const field of ["window", "maxHoles", "maxHitsPerBlock", "blockSize"]) {
+  if (!Number.isInteger(data.window) || data.window < 60 || data.window > 100 ||
+      data.nearWindow !== 25 || !isPositiveInteger(data.layerBatch) || data.layerBatch > 16) {
+    errors.push("mine must have a 60–100 layer window, 25 near layers and bounded distant batches");
+  }
+  for (const field of ["maxHoles", "maxHitsPerBlock", "blockSize"]) {
     if (!isPositiveInteger(data[field])) errors.push(`mine.${field} must be a positive integer`);
   }
   if (!Array.isArray(data.passThrough) || data.passThrough.length !== 3 ||
@@ -362,10 +366,10 @@ const sections = [
       ult.empty >= 0.25 && ult.empty <= 0.35 &&
       ult.approachBase === 0.45 && ult.approachPerLog === 0.35 &&
       [ult.fracturePerLog, ult.distanceBase, ult.distancePerLog, ult.distanceDeep, impactTime].every(isPositive) &&
-      depth?.fogStart === 550 && depth.fogEnd === 1500 && depth.simpleFrom === 300 &&
-      [depth.lampSpacing, depth.distantSpacing].every(isPositiveInteger) &&
-      depth.distantSpacing >= depth.lampSpacing && impactTime <= 0.15
-      ? [] : ["fx must specify the ultimate timing and stage 2c tunnel distances"],
+      depth?.fogStart === 1500 && depth.fogEnd === 4000 && depth.simpleFrom === 300 && depth.distantSpacing === 80 &&
+      [depth.lampSpacing, depth.middleSpacing].every(isPositiveInteger) &&
+      depth.middleSpacing >= depth.lampSpacing && impactTime <= 0.15
+      ? [] : ["fx must specify the ultimate timing and stage 3b tunnel distances"],
     emit: withoutNotes,
   },
   {
