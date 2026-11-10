@@ -3,6 +3,7 @@
  "worlds": [
   {
    "world": 1,
+   "id": "meadow",
    "rock": "pebble",
    "ores": [
     {
@@ -30,10 +31,16 @@
      "glow": true
     }
    ],
-   "lining": "pebble_lining"
+   "lining": "pebble_lining",
+   "light": "#ffe2a8",
+   "env": {
+    "beams": "wood",
+    "props": "grass"
+   }
   },
   {
    "world": 2,
+   "id": "copper_caves",
    "rock": "red_stone",
    "ores": [
     {
@@ -61,10 +68,16 @@
      "glow": true
     }
    ],
-   "lining": "red_stone_lining"
+   "lining": "red_stone_lining",
+   "light": "#ffb36b",
+   "env": {
+    "beams": "copper",
+    "props": "pipes"
+   }
   },
   {
    "world": 3,
+   "id": "quartz_veins",
    "rock": "white_stone",
    "ores": [
     {
@@ -92,7 +105,271 @@
      "glow": true
     }
    ],
-   "lining": "white_stone_lining"
+   "lining": "white_stone_lining",
+   "light": "#ffd2ef",
+   "env": {
+    "beams": null,
+    "props": "pink_crystals"
+   }
+  },
+  {
+   "world": 4,
+   "id": "gold_river",
+   "rock": "sandstone",
+   "ores": [
+    {
+     "id": "silver",
+     "texture": "silver",
+     "rarity": "common",
+     "glow": false
+    },
+    {
+     "id": "gold",
+     "texture": "gold",
+     "rarity": "rare",
+     "glow": false
+    },
+    {
+     "id": "river_pearl",
+     "texture": "river_pearl",
+     "rarity": "gem",
+     "glow": false
+    },
+    {
+     "id": "nugget",
+     "texture": "nugget",
+     "rarity": "treasure",
+     "glow": true
+    }
+   ],
+   "lining": "sandstone_lining",
+   "light": "#ffe58a",
+   "env": {
+    "beams": "wood",
+    "props": "river"
+   }
+  },
+  {
+   "world": 5,
+   "id": "ice_grottoes",
+   "rock": "frozen_stone",
+   "ores": [
+    {
+     "id": "ice",
+     "texture": "ice",
+     "rarity": "common",
+     "glow": false
+    },
+    {
+     "id": "froststone",
+     "texture": "froststone",
+     "rarity": "rare",
+     "glow": false
+    },
+    {
+     "id": "sapphire",
+     "texture": "sapphire",
+     "rarity": "gem",
+     "glow": false
+    },
+    {
+     "id": "eternal_ice",
+     "texture": "eternal_ice",
+     "rarity": "treasure",
+     "glow": true
+    }
+   ],
+   "lining": "frozen_stone_lining",
+   "light": "#bfeaff",
+   "env": {
+    "beams": null,
+    "props": "icicles"
+   }
+  },
+  {
+   "world": 6,
+   "id": "mushroom_forest",
+   "rock": "mycelium",
+   "ores": [
+    {
+     "id": "sporite",
+     "texture": "sporite",
+     "rarity": "common",
+     "glow": false
+    },
+    {
+     "id": "glowshroom",
+     "texture": "glowshroom",
+     "rarity": "rare",
+     "glow": false
+    },
+    {
+     "id": "topaz",
+     "texture": "topaz",
+     "rarity": "gem",
+     "glow": false
+    },
+    {
+     "id": "moonstone",
+     "texture": "moonstone",
+     "rarity": "treasure",
+     "glow": true
+    }
+   ],
+   "lining": "mycelium_lining",
+   "light": "#7ff5d8",
+   "env": {
+    "beams": null,
+    "props": "mushrooms"
+   }
+  },
+  {
+   "world": 7,
+   "id": "giant_bones",
+   "rock": "limestone",
+   "ores": [
+    {
+     "id": "bone_ore",
+     "texture": "bone_ore",
+     "rarity": "common",
+     "glow": false
+    },
+    {
+     "id": "amber",
+     "texture": "amber",
+     "rarity": "rare",
+     "glow": false
+    },
+    {
+     "id": "onyx",
+     "texture": "onyx",
+     "rarity": "gem",
+     "glow": false
+    },
+    {
+     "id": "dragon_amber",
+     "texture": "dragon_amber",
+     "rarity": "treasure",
+     "glow": true
+    }
+   ],
+   "lining": "limestone_lining",
+   "light": "#ffc58a",
+   "env": {
+    "beams": null,
+    "props": "ribs"
+   }
+  },
+  {
+   "world": 8,
+   "id": "lost_city",
+   "rock": "terracotta",
+   "ores": [
+    {
+     "id": "bronze",
+     "texture": "bronze",
+     "rarity": "common",
+     "glow": false
+    },
+    {
+     "id": "jade",
+     "texture": "jade",
+     "rarity": "rare",
+     "glow": false
+    },
+    {
+     "id": "lapis_lazuli",
+     "texture": "lapis_lazuli",
+     "rarity": "gem",
+     "glow": false
+    },
+    {
+     "id": "ancient_gold",
+     "texture": "ancient_gold",
+     "rarity": "treasure",
+     "glow": true
+    }
+   ],
+   "lining": "terracotta_lining",
+   "light": "#a8ffb0",
+   "env": {
+    "beams": "stone",
+    "props": "vines"
+   }
+  },
+  {
+   "world": 9,
+   "id": "magma_springs",
+   "rock": "basalt",
+   "ores": [
+    {
+     "id": "obsidian",
+     "texture": "obsidian",
+     "rarity": "common",
+     "glow": false
+    },
+    {
+     "id": "garnet",
+     "texture": "garnet",
+     "rarity": "rare",
+     "glow": false
+    },
+    {
+     "id": "ruby",
+     "texture": "ruby",
+     "rarity": "gem",
+     "glow": false
+    },
+    {
+     "id": "fire_ruby",
+     "texture": "fire_ruby",
+     "rarity": "treasure",
+     "glow": true
+    }
+   ],
+   "lining": "basalt_lining",
+   "light": "#ff7a3a",
+   "env": {
+    "beams": null,
+    "props": "lava"
+   }
+  },
+  {
+   "world": 10,
+   "id": "core",
+   "rock": "lightstone",
+   "ores": [
+    {
+     "id": "core_crystal",
+     "texture": "core_crystal",
+     "rarity": "common",
+     "glow": false
+    },
+    {
+     "id": "sunstone",
+     "texture": "sunstone",
+     "rarity": "rare",
+     "glow": false
+    },
+    {
+     "id": "stardust",
+     "texture": "stardust",
+     "rarity": "gem",
+     "glow": false
+    },
+    {
+     "id": "core_shard",
+     "texture": "core_shard",
+     "rarity": "treasure",
+     "glow": true
+    }
+   ],
+   "lining": "lightstone_lining",
+   "light": "#fff2c0",
+   "env": {
+    "beams": null,
+    "props": "stars"
+   }
   }
  ]
 }

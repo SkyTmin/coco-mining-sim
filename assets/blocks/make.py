@@ -3,6 +3,7 @@
 # Writes assets/blocks/px/<id>.png (32×32: stone drawn at 16 px ×2, candy ore at 32 px) and assets/blocks/upload/<id>.png (×4 = 128×128, nearest
 # neighbour — Roblox filters textures, so pixels must be pre-scaled), plus crack overlays crack_1..4 (transparent).
 import json
+import sys
 import math
 import os
 import random
@@ -10,6 +11,7 @@ import random
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
 PX = os.path.join(HERE, "px")
 UP = os.path.join(HERE, "upload")
 os.makedirs(PX, exist_ok=True)
@@ -87,7 +89,7 @@ def frame(px, base):
 
 # ---------------------------------------------------------------- candy ore at 32 px (stone stays 16 px, ×2)
 M = 32  # final texture size
-LO32, HI32 = 5, 26  # ore incl. its 2-px outline stays inside; the frame is 0..3 / 28..31
+LO32, HI32 = 4, 27  # ore incl. its 2-px outline stays inside; the frame is 0..3 / 28..31
 
 
 def mask(kind, cx, cy, r):
@@ -114,34 +116,58 @@ def dilate(cells, n):
     return cells
 
 
-def candy_ore(px, kind, cx, cy, r, fill, light, outline):
+def candy_ore(px, kind, cx, cy, r, fill, light, outline, rock=None, seed=0):
+    """Ore set INTO the stone: a dark socket around it, a lit lip on the lower-right, a thin outline in the ore's
+    own dark tone, stone chips overlapping the edge, and a faint mineral stain on the surrounding stone."""
+    rnd = random.Random(seed * 7919 + int(cx * 31 + cy * 17))
     body = mask(kind, cx, cy, r)
-    ring = dilate(body, 2) - body
     inside = lambda q: LO32 <= q[0] <= HI32 and LO32 <= q[1] <= HI32  # noqa: E731
-    shadow = {(x + 2, y + 2) for x, y in body | ring} - body - ring
-    for q in shadow:
-        if inside(q):
-            px[q] = shade(px[q], -0.25)
-    for q in ring:
-        if inside(q):
-            px[q] = outline
+    socket = dilate(body, 1) - body
+    lip = dilate(body, 2) - body - socket
+    stain = dilate(body, 4) - body - socket - lip
+    if rock is not None:
+        for q in stain:
+            if inside(q):
+                px[q] = mix(px[q], fill, 0.14)
+        for x, y in lip:
+            if inside((x, y)) and (x + 0.5 - cx) + (y + 0.5 - cy) > 0:
+                px[x, y] = shade(px[x, y], 0.22)
+        for x, y in socket:
+            if inside((x, y)):
+                upper = (x + 0.5 - cx) + (y + 0.5 - cy) < 0
+                px[x, y] = shade(px[x, y], -0.55 if upper else -0.32)
+    edge = shade(fill, -0.55)
     dark = shade(fill, -0.3)
+    rim = {(x, y) for x, y in body if any((x + dx, y + dy) not in body for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
     for x, y in body:
         dx, dy = x + 0.5 - cx, y + 0.5 - cy
-        px[x, y] = dark if dx + dy > r * 0.75 else fill
-    hx, hy, hr = cx - r * 0.38, cy - r * 0.38, max(0.9, r * 0.3)
-    for x, y in body:
+        px[x, y] = edge if (x, y) in rim else (dark if dx + dy > r * 0.7 else fill)
+    hx, hy, hr = cx - r * 0.36, cy - r * 0.36, max(0.9, r * 0.32)
+    for x, y in body - rim:
         if (x + 0.5 - hx) ** 2 + (y + 0.5 - hy) ** 2 <= hr * hr:
             px[x, y] = light
-    sx, sy = round(cx - r * 0.55), round(cy - r * 0.05)
-    if (sx, sy) in body and r >= 4:
+    sx, sy = round(cx - r * 0.5), round(cy - r * 0.15)
+    if (sx, sy) in body - rim and r >= 4:
         px[sx, sy] = WHITE
+    # stone chips over the lower-left edge: the gem sits under the surface, not on top of it
+    if False:  # stone chips read as "bites" — dropped (owner check 10.11)
+        for _ in range(rnd.choice((1, 2))):
+            a = rnd.uniform(1.9, 3.0)  # angle around the lower-left
+            ex, ey = cx + math.cos(a) * r * 0.95, cy + math.sin(a) * r * 0.95
+            cr = rnd.uniform(1.2, 1.9)
+            for y in range(int(ey - 3), int(ey + 4)):
+                for x in range(int(ex - 3), int(ex + 4)):
+                    d = math.hypot(x + 0.5 - ex, y + 0.5 - ey)
+                    if d < cr and inside((x, y)):
+                        px[x, y] = shade(rock, 0.12 if (x + 0.5 - ex) + (y + 0.5 - ey) < 0 else -0.1)
+                    elif d < cr + 0.8 and inside((x, y)) and (x, y) in body:
+                        px[x, y] = shade(rock, -0.45)
 
 
 LAYOUT = {  # bigger = rarer; extras stand apart with a clear gap (owner 10.11: no clusters, no equal sizes)
     "common": [(15.5, 15.5, 6.0)],
-    "rare": [(13, 13, 5.6), (22, 22, 2.4)],
-    "gem": [(14, 14, 6.8), (23, 23, 1.6)],
+    "rare": [(13, 13, 5.4), (22, 21.5, 3.2)],
+    "gem": [(13.5, 13.5, 6.6), (22.5, 22.5, 2.6)],
     "treasure": [(15.5, 15.5, 8.3)],
 }
 
@@ -160,20 +186,45 @@ def frame32(px, base):
             px[M - 1 - k, i] = shade(base, -0.22)
 
 
-def compose(fill_fn, rock_hex, ore=None, seed=3):
+def scale2x(im):
+    """EPX / Scale2x: doubles pixel art and rounds its corners (stone matches the 32-px ore)."""
+    w, h = im.size
+    src = im.load()
+    out = Image.new("RGB", (w * 2, h * 2))
+    o = out.load()
+    for y in range(h):
+        for x in range(w):
+            p = src[x, y]
+            a = src[x, (y - 1) % h]
+            b = src[(x + 1) % w, y]
+            c = src[(x - 1) % w, y]
+            d = src[x, (y + 1) % h]
+            o[2 * x, 2 * y] = a if c == a and c != d and a != b else p
+            o[2 * x + 1, 2 * y] = b if a == b and a != c and b != d else p
+            o[2 * x, 2 * y + 1] = c if d == c and d != b and c != a else p
+            o[2 * x + 1, 2 * y + 1] = d if b == d and b != a and d != c else p
+    return out
+
+
+def compose(fill_fn, rock_hex, ore=None, seed=3, stone_post=None):
     """fill_fn draws the 16-px stone; ore = (shape, rarity, fill_hex, light_hex) or None."""
     base = hexrgb(rock_hex)
     im = Image.new("RGB", (N, N), base)
     fill_fn(im.load(), base, seed)
-    im = im.resize((M, M), Image.NEAREST)
+    im = scale2x(im)
     px = im.load()
     frame32(px, base)
+    if stone_post:
+        im = stone_post(im)
+        px = im.load()
     if ore:
-        shape, rarity, f, li = ore
+        shape, rarity, f, li = ore[:4]
+        layout = ore[4] if len(ore) > 4 and ore[4] else [(shape, *spot) for spot in LAYOUT[rarity]]
         f, li = hexrgb(f), hexrgb(li)
         outline = INK if sum(f) > 200 else (13, 13, 20)
-        for cx, cy, r in LAYOUT[rarity]:
-            candy_ore(px, shape, cx, cy, r, f, li, outline)
+        jr = random.Random(seed)
+        for sh, cx, cy, r in layout:
+            candy_ore(px, sh, cx + jr.uniform(-1, 1), cy + jr.uniform(-1, 1), r, f, li, outline, rock=base, seed=seed)
         if rarity == "treasure":
             for x, y in ((25, 6), (6, 25), (25, 25)):
                 px[x, y] = WHITE
@@ -182,23 +233,7 @@ def compose(fill_fn, rock_hex, ore=None, seed=3):
     return im
 
 
-WORLDS = [
-    {"fill": pebbles, "rock": ("pebble", "#a7a2b4"),
-     "ores": [("flint", "common", "shard", "#5d6a8a", "#a9b8de"),
-              ("coal", "rare", "round", "#3a3a48", "#8a8aa6"),
-              ("copper", "gem", "round", "#e2803e", "#ffc08a"),
-              ("firefly_amber", "treasure", "round", "#ffb21f", "#fff1a0")]},
-    {"fill": strata, "rock": ("red_stone", "#cf7a4e"),
-     "ores": [("copper", "common", "round", "#e2803e", "#ffc08a"),
-              ("tin", "rare", "oval", "#dfe4ee", "#ffffff"),
-              ("malachite", "gem", "oval", "#25b36f", "#9bf0bf"),
-              ("turquoise", "treasure", "hex", "#3fd6c8", "#c8fff6")]},
-    {"fill": facets, "rock": ("white_stone", "#ddd6ea"),
-     "ores": [("quartz", "common", "shard", "#f4f1ff", "#ffffff"),
-              ("iron", "rare", "oval", "#d9a27a", "#ffe2c6"),
-              ("rose_quartz", "gem", "hex", "#ff8fc0", "#ffe0ee"),
-              ("amethyst", "treasure", "hex", "#a35cf0", "#e8cfff")]},
-]
+from worlds import WORLDS  # noqa: E402
 
 
 def save(im, name):
@@ -259,10 +294,12 @@ if __name__ == "__main__":
         rock_id, rock_hex = world["rock"]
         im = compose(world["fill"], rock_hex)
         save(im, rock_id)
-        entry = {"world": wi, "rock": rock_id, "ores": [], "lining": f"{rock_id}_lining"}
-        save(Image.eval(im, lambda v: int(v * 0.62)), f"{rock_id}_lining")
-        for oi, (ore, rarity, shape, fill, light) in enumerate(world["ores"]):
-            im = compose(world["fill"], rock_hex, (shape, rarity, fill, light), 11 + oi)
+        entry = {"world": wi, "id": world["id"], "rock": rock_id, "ores": [], "lining": f"{rock_id}_lining",
+                 "light": world["light"], "env": world["env"]}
+        k = world["lining"]
+        save(Image.eval(im, lambda v: int(v * k)), f"{rock_id}_lining")
+        for oi, (ore, rarity, shape, fill, light, layout) in enumerate(world["ores"]):
+            im = compose(world["fill"], rock_hex, (shape, rarity, fill, light, layout), 11 + oi)
             name = ore if wi == 1 or ore != "copper" else "copper_w2"
             save(im, name)
             entry["ores"].append({"id": ore, "texture": name, "rarity": rarity, "glow": rarity == "treasure"})
