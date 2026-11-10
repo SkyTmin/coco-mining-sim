@@ -1,0 +1,25 @@
+{
+  "starter": {
+    "family": null,
+    "shape": "single",
+    "strength": 1,
+    "interval": 0.35,
+    "ultLayers": 10,
+    "ultCharge": 45
+  },
+  "storm_common": {
+    "family": "storm",
+    "shape": "single",
+    "strength": 1,
+    "interval": 0.35,
+    "ultLayers": 10,
+    "ultCharge": 45,
+    "storm": {
+      "jumps": [
+        3,
+        5
+      ],
+      "pickRareWithin": 2
+    }
+  }
+}

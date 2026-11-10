@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage.Shared
 local Config = require(Shared.Config)
 local Remotes = require(Shared.Remotes)
 local ProfileService = require(script.Parent.ProfileService)
+local HitService = require(script.Parent.HitService)
 
 local studio = RunService:IsStudio()
 local creatorId: number? = if game.CreatorType == Enum.CreatorType.User then game.CreatorId else nil
@@ -47,7 +48,7 @@ end
 function CreativeService.Start()
 	local creative = Remotes.event("Creative")
 	local toast = Remotes.event("Toast")
-	creative.OnServerEvent:Connect(function(player: Player, op: any, delta: any)
+	creative.OnServerEvent:Connect(function(player: Player, op: any, delta: any, b: any, c: any)
 		if player:GetAttribute("CreativeAllowed") ~= true or not withinRate(player) then
 			return
 		end
@@ -71,6 +72,9 @@ function CreativeService.Start()
 				end
 				profile.loadFailed = loadFailed
 			end)
+			HitService.Creative(player, "reset", nil, nil, nil)
+		elseif type(op) == "string" and op:sub(1, 5) == "mine." then
+			HitService.Creative(player, op, delta, b, c)
 		end
 	end)
 

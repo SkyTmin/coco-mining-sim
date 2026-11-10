@@ -1,0 +1,96 @@
+--!strict
+
+local Players = game:GetService("Players")
+local Shared = game:GetService("ReplicatedStorage").Shared
+local Config = require(Shared.Config)
+local Remotes = require(Shared.Remotes)
+local ProfileService = require(script.Parent.ProfileService)
+local PickaxeService = {}
+local cameraAt: { [Player]: number } = {}
+
+function PickaxeService.get(id: string?): Config.PickaxeConfig
+	return (id and Config.pickaxes[id]) or Config.pickaxes.starter
+end
+
+local function attach(character: Model, id: string)
+	local hand = character:WaitForChild("RightHand", 5)
+	if not hand or not hand:IsA("BasePart") or not character.Parent then
+		return
+	end
+	local old = character:FindFirstChild("MinePickaxe")
+	if old then
+		old:Destroy()
+	end
+	local model = Instance.new("Model")
+	model.Name = "MinePickaxe"
+	local color = if id == "storm_common"
+		then Color3.fromRGB(139, 225, 255)
+		else Color3.fromRGB(182, 193, 203)
+	local function piece(name: string, size: Vector3, relative: CFrame, tint: Color3): Part
+		local p = Instance.new("Part")
+		p.Name, p.Size, p.Color, p.CFrame = name, size, tint, hand.CFrame * relative
+		p.Massless, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
+		p.Material = Enum.Material.SmoothPlastic
+		p.Parent = model
+		return p
+	end
+	local grip = CFrame.new(0, -hand.Size.Y * 0.17, -0.12) * CFrame.Angles(math.rad(-70), 0, 0)
+	local handle = piece("Handle", Vector3.new(0.20, 1.65, 0.20), grip, Color3.fromRGB(108, 76, 53))
+	local head = piece("Head", Vector3.new(1.25, 0.29, 0.33), grip * CFrame.new(0, 0.74, 0), color)
+	local weld = Instance.new("WeldConstraint")
+	weld.Part0, weld.Part1, weld.Parent = handle, head, handle
+	local motor = Instance.new("Motor6D")
+	motor.Name, motor.Part0, motor.Part1, motor.C0 = "PickaxeGrip", hand, handle, grip
+	motor.Parent = handle
+	model.Parent = character
+end
+
+function PickaxeService.equip(player: Player, id: string)
+	if not Config.pickaxes[id] then
+		return
+	end
+	ProfileService.Mutate(player, function(profile)
+		profile.pickaxe = id
+	end)
+	player:SetAttribute("MinePickaxe", id)
+	if player.Character then
+		task.defer(attach, player.Character, id)
+	end
+end
+
+function PickaxeService.Start()
+	ProfileService.OnLoaded(function(player)
+		local function loadedCharacter(character: Model)
+			local id = ProfileService.Read(player, function(p)
+				return p.pickaxe
+			end) or "starter"
+			if not Config.pickaxes[id] then
+				id = "starter"
+			end
+			player:SetAttribute("MinePickaxe", id)
+			attach(character, id)
+		end
+		player.CharacterAdded:Connect(loadedCharacter)
+		if player.Character then
+			task.spawn(loadedCharacter, player.Character)
+		end
+	end)
+	Remotes.event("CameraView").OnServerEvent:Connect(function(player: Player, mode: any)
+		if mode ~= "first" and mode ~= "third" then
+			return
+		end
+		local now = os.clock()
+		if now - (cameraAt[player] or -math.huge) < 0.2 then
+			return
+		end
+		cameraAt[player] = now
+		ProfileService.Mutate(player, function(p)
+			p.settings.camera = mode
+		end)
+	end)
+	Players.PlayerRemoving:Connect(function(player)
+		cameraAt[player] = nil
+	end)
+end
+
+return PickaxeService

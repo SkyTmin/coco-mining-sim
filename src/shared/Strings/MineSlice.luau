@@ -1,0 +1,67 @@
+--!strict
+
+return {
+	mine_world_progress = {
+		en = "World {1} · {2}%",
+		ru = "Мир {1} · {2}%",
+		es = "Mundo {1} · {2}%",
+		fr = "Monde {1} · {2}%",
+	},
+	mine_plate = {
+		en = "HP {1} · Strength {3}/{2}",
+		ru = "ОЗ {1} · Сила {3}/{2}",
+		es = "PV {1} · Fuerza {3}/{2}",
+		fr = "PV {1} · Force {3}/{2}",
+	},
+	mine_coins = { en = "{1}", ru = "{1}", es = "{1}", fr = "{1}" },
+	mine_coin_gain = { en = "+{1}", ru = "+{1}", es = "+{1}", fr = "+{1}" },
+	mine_layers_gain = {
+		en = "+{1} layers",
+		ru = "+{1} сл.",
+		es = "+{1} capas",
+		fr = "+{1} couches",
+	},
+	mine_ult_value = {
+		en = "−{1} blocks · +{2} coins",
+		ru = "−{1} блоков · +{2} монет",
+		es = "−{1} bloques · +{2} monedas",
+		fr = "−{1} blocs · +{2} pièces",
+	},
+	mine_ult_icon = { en = "⚡", ru = "⚡", es = "⚡", fr = "⚡" },
+	mine_arrow = { en = "➤", ru = "➤", es = "➤", fr = "➤" },
+	mine_equip_starter = {
+		en = "Starter",
+		ru = "Стартовая",
+		es = "Inicial",
+		fr = "Départ",
+	},
+	mine_equip_storm = { en = "Storm", ru = "Гроза", es = "Tormenta", fr = "Orage" },
+	mine_drill = { en = "Drill 5000", ru = "Бур 5000", es = "Perfora 5000", fr = "Fore 5000" },
+	mine_layers = { en = "100 layers", ru = "100 сл.", es = "100 capas", fr = "100 couches" },
+	mine_to_plate = {
+		en = "To guardian",
+		ru = "К Плите",
+		es = "A la losa",
+		fr = "À la dalle",
+	},
+	mine_reset = {
+		en = "Reset mine",
+		ru = "Сброс шахты",
+		es = "Rein. mina",
+		fr = "Réinit. mine",
+	},
+	mine_charge = { en = "Charge", ru = "Зарядить", es = "Cargar", fr = "Charger" },
+	mine_stats = { en = "Mine stats", ru = "Замеры", es = "Datos mina", fr = "Stats mine" },
+	mine_stats_value = {
+		en = "Front {1} · Holes {2} · {3} B · Hit {4} ms · Ult {5} ms",
+		ru = "Фасад {1} · Дыры {2} · {3} Б · Удар {4} мс · Ульта {5} мс",
+		es = "Frente {1} · Huecos {2} · {3} B · Golpe {4} ms · Ulti {5} ms",
+		fr = "Front {1} · Trous {2} · {3} o · Coup {4} ms · Ultime {5} ms",
+	},
+	mine_perf = {
+		en = "{1} FPS · {2} blocks · hit {3} ms",
+		ru = "{1} FPS · {2} блоков · удар {3} мс",
+		es = "{1} FPS · {2} bloques · golpe {3} ms",
+		fr = "{1} IPS · {2} blocs · coup {3} ms",
+	},
+}

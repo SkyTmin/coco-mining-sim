@@ -12,6 +12,7 @@ export type CreativeConfig = {
 }
 
 export type MineConfig = {
+	blockSize: number,
 	startWidth: number,
 	height: number,
 	maxWidth: number,
@@ -24,6 +25,24 @@ export type MineConfig = {
 	passThrough: { number },
 	plate: { ultPlateHits: number, ultMultiplier: number },
 }
+
+export type PickaxeConfig = {
+	family: string?,
+	shape: string,
+	strength: number,
+	interval: number,
+	ultLayers: number,
+	ultCharge: number,
+	storm: { jumps: { number }, pickRareWithin: number }?,
+}
+export type PlotConfig = {
+	count: number,
+	entranceRadius: number,
+	frameWidth: number,
+	platformDepth: number,
+	spectatorDepth: number,
+}
+export type CascadeConfig = { maxGen: number, maxCells: number, maxRuns: number }
 
 export type OreConfig = { id: string, color: { number } }
 export type WorldConfig = {
@@ -43,6 +62,10 @@ return {
 	game = require(script:WaitForChild("game")) :: GameConfig,
 	creative = require(script:WaitForChild("creative")) :: CreativeConfig,
 	mine = require(script:WaitForChild("mine")) :: MineConfig,
+	plots = require(script:WaitForChild("plots")) :: PlotConfig,
+	pickaxes = require(script:WaitForChild("pickaxes")) :: { [string]: PickaxeConfig },
+	sounds = require(script:WaitForChild("sounds")) :: { [string]: { id: string, segments: { { number } }, fallback: string? } },
+	cascade = require(script:WaitForChild("cascade")) :: CascadeConfig,
 	ores = require(script:WaitForChild("ores")) :: { OreConfig },
 	worlds = require(script:WaitForChild("worlds")) :: { WorldConfig },
 }

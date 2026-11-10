@@ -26,7 +26,7 @@ function validateMine(data) {
   if (!isPositiveInteger(data.chunk) || data.chunk < 2) {
     errors.push("mine.chunk must be an integer of at least 2");
   }
-  for (const field of ["window", "maxHoles", "maxHitsPerBlock"]) {
+  for (const field of ["window", "maxHoles", "maxHitsPerBlock", "blockSize"]) {
     if (!isPositiveInteger(data[field])) errors.push(`mine.${field} must be a positive integer`);
   }
   if (!Array.isArray(data.passThrough) || data.passThrough.length !== 3 ||
@@ -138,6 +138,23 @@ function validateMineStrings(decisions) {
   return errors;
 }
 
+function validatePickaxes(data, decisions) {
+  const errors = [];
+  for (const [id, family] of [["starter", null], ["storm_common", "storm"]]) {
+    const pick = data[id];
+    if (pick?.family !== family || pick.shape !== "single" || !isPositive(pick.strength) ||
+        !isPositive(pick.interval) || !isPositiveInteger(pick.ultLayers) ||
+        pick.ultLayers > decisions.mine?.window || pick.ultCharge !== 45) {
+      errors.push(`pickaxes.${id} has invalid stage 2 settings`);
+    }
+  }
+  const storm = data.storm_common?.storm;
+  if (storm?.jumps?.[0] !== 3 || storm.jumps[1] !== 5 || storm.pickRareWithin !== 2) {
+    errors.push("pickaxes.storm_common.storm must specify 3–5 jumps and radius 2");
+  }
+  return errors;
+}
+
 function withoutNotes(value) {
   if (Array.isArray(value)) return value.map(withoutNotes);
   if (!isObject(value)) return value;
@@ -176,6 +193,31 @@ const sections = [
     emit: withoutNotes,
   },
   { name: "mine", validate: validateMine, emit: withoutNotes },
+  {
+    name: "plots",
+    validate: (data) => data.count === 8 && data.frameWidth === 9 &&
+      [data.entranceRadius, data.platformDepth, data.spectatorDepth].every(isPositiveInteger)
+      ? [] : ["plots must specify eight radial plots, a 9-block frame and positive dimensions"],
+    emit: withoutNotes,
+  },
+  { name: "pickaxes", validate: validatePickaxes, emit: withoutNotes },
+  {
+    name: "sounds",
+    validate: (data) => ["stone_hit", "stone_break", "gravel_hit", "gravel_break", "note", "wind", "thunder"].flatMap((name) => {
+      const sound = data[name];
+      return typeof sound?.id === "string" && Array.isArray(sound.segments) && sound.segments.length &&
+        sound.segments.every((pair) => Array.isArray(pair) && pair.length === 2 &&
+          Number.isFinite(pair[0]) && pair[0] >= 0 && isPositive(pair[1]))
+        ? [] : [`sounds.${name} requires an asset and valid atlas segments`];
+    }),
+    emit: withoutNotes,
+  },
+  {
+    name: "cascade",
+    validate: (data) => data.maxGen === 3 && data.maxCells === 400 && data.maxRuns === 8
+      ? [] : ["cascade must specify the 3/400/8 stage 2 budget"],
+    emit: withoutNotes,
+  },
   { name: "ores", list: true, validate: validateOres, emit: withoutNotes },
   { name: "worlds", list: true, validate: validateWorlds, emit: withoutNotes },
 ];

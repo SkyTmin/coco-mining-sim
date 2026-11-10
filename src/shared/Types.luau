@@ -13,6 +13,7 @@ export type Settings = {
 export type Profile = {
 	v: number,
 	coins: number,
+	pickaxe: string,
 	stats: { blocks: number, layers: number, playSeconds: number },
 	settings: Settings,
 	firstJoin: number,

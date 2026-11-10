@@ -11,10 +11,35 @@
     "_note": "[решение] userId владельца и тестеров; создатель места и Studio — всегда"
   },
   "mine": {
+    "blockSize": 5,
     "startWidth": 5, "height": 3, "maxWidth": 15, "maxHeight": 7, "maxDepth": 2147483647,
     "chunk": 50, "window": 20, "maxHoles": 4000, "maxHitsPerBlock": 8,
     "passThrough": [10, 100, 1000], "plate": { "ultPlateHits": 10, "ultMultiplier": 3 },
     "_note": "[владелец 08.11] стена 5×3; [решение ТЗ-01] формат 15×7, глубина до 2^31−1, ≤ 8 ударов, сквозной 10/100/1000×, урон ульты по Плите 10×3; [решение 06] chunk/window/maxHoles"
+  },
+  "plots": {
+    "count": 8, "entranceRadius": 65, "frameWidth": 9, "platformDepth": 6, "spectatorDepth": 3,
+    "_note": "[решение ТЗ-02, поправка 09.11] площадки по кругу, размеры в блоках кроме радиуса в studs"
+  },
+  "pickaxes": {
+    "starter": { "family": null, "shape": "single", "strength": 1, "interval": 0.35, "ultLayers": 10, "ultCharge": 45 },
+    "storm_common": { "family": "storm", "shape": "single", "strength": 1, "interval": 0.35, "ultLayers": 10, "ultCharge": 45,
+                      "storm": { "jumps": [3, 5], "pickRareWithin": 2 } },
+    "_note": "[решение ТЗ-02] заглушки вертикального среза; [решение 09.11] заряд 45"
+  },
+  "cascade": {
+    "maxGen": 3, "maxCells": 400, "maxRuns": 8,
+    "_note": "[решение 06] бюджет каскада на удар"
+  },
+  "sounds": {
+    "stone_hit": { "id": "rbxassetid://97593679894065", "segments": [[0,0.28],[0.43,0.28],[0.861,0.28]], "fallback": "rbxassetid://9119049891" },
+    "stone_break": { "id": "rbxassetid://97593679894065", "segments": [[1.291,0.277],[1.718,0.276],[2.144,0.277]], "fallback": "rbxassetid://9119043400" },
+    "gravel_hit": { "id": "rbxassetid://97593679894065", "segments": [[2.571,0.267],[2.988,0.515],[3.653,0.297],[4.1,0.36]], "fallback": "rbxassetid://9114084245" },
+    "gravel_break": { "id": "rbxassetid://97593679894065", "segments": [[4.61,0.28],[5.041,0.28],[5.471,0.28]], "fallback": "rbxassetid://9114083746" },
+    "note": { "id": "rbxasset://sounds/volume_slider.ogg", "segments": [[0,0.28]] },
+    "wind": { "id": "rbxasset://sounds/action_falling.ogg", "segments": [[0,0.60]] },
+    "thunder": { "id": "rbxasset://sounds/impact_explosion_03.mp3", "segments": [[0,0.85]] },
+    "_note": "[вики] сегменты атласа VoxeLibre из reference/katorga/assets/sounds/ids.json; [решение] временные нота, свист и гром из поставки Roblox"
   },
   "ores": [
     { "id": "dirt", "color": [120, 84, 52] },

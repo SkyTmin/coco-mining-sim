@@ -52,4 +52,5 @@ require(script.CreativeWindow).start(
 	Remotes.event("Creative"),
 	Remotes.event("ServerLog")
 )
+require(script.Mine.Controller).start(playerGui, translate)
 State.clientReady = true

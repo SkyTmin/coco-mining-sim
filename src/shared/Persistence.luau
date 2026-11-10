@@ -51,7 +51,7 @@ function Persistence.owns(lock: any, job: string, token: string): boolean
 end
 
 function Persistence.isStale(lock: any, now: number): boolean
-	return typeof(lock) ~= "table" or now - (tonumber(lock.at) or 0) > 30 * 60
+	return typeof(lock) ~= "table" or now - (tonumber(lock.at) or 0) > 10 * 60
 end
 
 return Persistence
