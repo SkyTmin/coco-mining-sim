@@ -486,3 +486,13 @@ Studio. Draw calls — сумма счётчиков сцены, теней и 2
 Звуковое ограничение `depth_knock` — 0,10, частота до 6 раз в секунду. Для прослушивания ждём загрузку готового
 атласа владельцем и заполнение `atlasId`. [Шрифты Roblox](https://create.roblox.com/docs/reference/engine/datatypes/Font) ·
 [Звуковой атлас](../assets/sounds/build/atlas.ogg)
+
+### 10.11.2026 — этап 3б слит, вид отклонён владельцем (0 из 10)
+
+- Слито ради механики: окно 60 слоёв, ширина ≤ 7, камера, счётчик. 87 тестов зелёные.
+- Ошибка ТЗ-03б (Claude): значки руды вместо текстур, интерфейс и кирки из Telegram-игры. Владелец: эталон вида —
+  «Каторга»-Roblox (`coco-prison-roblox`); интерфейс рисуем сами; из Telegram-игры — только предметы.
+- Найдено: в `coco-prison-roblox` 101 загруженная текстура блоков с ID, кирка в Blender (`wooden_pickaxe/pickaxe2.py`),
+  `SwingAnimations`, `HeldItem`, `BlockBreak`, `Ui`. Кирки Telegram-игры нарисованы кодом, файлов Blender там нет.
+- В облачной сессии Claude работает Blender без окна (`pip install bpy`, 5.3).
+- **Следующий шаг: Codex — этап 3в по `docs/tz/TZ-03c-vid-iz-prisona.md`.**
