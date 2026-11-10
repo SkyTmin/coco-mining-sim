@@ -101,7 +101,7 @@ function Camera.new(player: Player, frame: CFrame): View
 		local time = os.clock() - view.swingAt
 		local elapsed = time / view.swingDuration
 		local pitch = if view.mode == "first" then 0.06 + view.pitch * 0.5 else -0.48
-		local roll = if view.mode == "first" then 0.20 else -0.03
+		local roll = if view.mode == "first" then 0.13 else -0.03
 		local near = 0
 		if elapsed >= 0 and elapsed < 1 then
 			if view.ability then
@@ -114,7 +114,7 @@ function Camera.new(player: Player, frame: CFrame): View
 				roll += view.side * 0.17 * math.sin(elapsed * math.pi)
 			else
 				local angle, reach = strike(time)
-				pitch += angle
+				pitch -= angle
 				near = reach
 			end
 		end

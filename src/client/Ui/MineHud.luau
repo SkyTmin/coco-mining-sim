@@ -26,7 +26,7 @@ function Hud.new(
 ): any
 	local gui = Kit.gui(guiParent, "MineHUD", 4, false)
 	local wallet =
-		Kit.image(gui, "Wallet", UDim2.fromOffset(124, 44), UDim2.fromOffset(12, 54), "frame-iron")
+		Kit.image(gui, "Wallet", UDim2.fromOffset(124, 44), UDim2.fromOffset(12, 9), "frame-iron")
 	local coins = Kit.number(wallet, UDim2.new(1, -40, 1, -6), UDim2.fromScale(1, 0.5), "hud-coin")
 	coins.AnchorPoint, coins.Position = anchorCenter, UDim2.new(0.5, 16, 0.5, 0)
 	local coinScale = Instance.new("UIScale")

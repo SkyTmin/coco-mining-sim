@@ -55,8 +55,8 @@ end
 function DepthSign.new(parent: Instance, frame: CFrame, depth: number, plot: Instance?): Sign
 	local board = flat(
 		"DepthSign",
-		Vector3.new(WIDTH, 0.12, LENGTH),
-		frame * CFrame.new(0, 0.07, 1.84),
+		Vector3.new(LENGTH, 0.12, WIDTH),
+		frame * CFrame.new(0, 0.07, 1.84) * CFrame.Angles(0, -math.pi / 2, 0),
 		Color3.fromRGB(39, 35, 44),
 		Enum.Material.Metal,
 		parent

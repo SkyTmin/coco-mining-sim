@@ -21,7 +21,7 @@ local function attach(character: Model, id: string)
 	end
 	local grip = CFrame.new(0, -hand.Size.Y * 0.17, -0.10)
 		* CFrame.Angles(math.rad(-77), 0, math.rad(-13))
-	local model, handle = PickModel.new(PickModel.icon(id), hand.CFrame * grip, 0.061, false)
+	local model, handle = PickModel.new(PickModel.icon(id), hand.CFrame * grip, 0.056, false)
 	local motor = Instance.new("Motor6D")
 	motor.Name, motor.Part0, motor.Part1, motor.C0 = "PickaxeGrip", hand, handle, grip
 	motor.Parent = handle
