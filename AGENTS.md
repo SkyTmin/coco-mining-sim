@@ -47,6 +47,9 @@ from task specs (ТЗ) in `docs/tz/`; Claude writes the specs and reviews every 
     screenshot is impossible without that — skip it and say so in the report.
 12. **Sound is a key quality bar** [владелец 10.11]: frequent sounds are soft and quiet, nothing harsh or loud, no stock
     explosion/thunder samples; rules in `docs/tz/TZ-02b-oshchushchenie.md` §3 apply to every later stage.
+14. **Leave the latest build in the Studio place** (`87020443315503`) after your checks [владелец 10.11]: never strip the
+    project scripts or «restore the original scene» — the owner presses Play right after you. Remove only your own
+    temporary test scripts.
 13. The owner plays in Russian: every new string must have a real `ru` translation in the same commit.
 10. Children are the audience: no free text input, no dark patterns, paid random items show odds before purchase.
 
