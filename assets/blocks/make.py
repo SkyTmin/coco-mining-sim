@@ -138,11 +138,11 @@ def candy_ore(px, kind, cx, cy, r, fill, light, outline):
         px[sx, sy] = WHITE
 
 
-LAYOUT = {  # one big stone + smaller ones, spread apart with a clear gap (owner 10.11: no clusters, no equal sizes)
-    "common": [(12, 12, 4.4), (21.5, 21, 2.8)],
-    "rare": [(12, 13, 4.2), (22.5, 9.5, 2.2), (21, 22, 2.8)],
-    "gem": [(13, 13, 5.6), (22.5, 22, 2.4)],
-    "treasure": [(15, 15, 7.2)],
+LAYOUT = {  # bigger = rarer; extras stand apart with a clear gap (owner 10.11: no clusters, no equal sizes)
+    "common": [(15.5, 15.5, 6.0)],
+    "rare": [(13, 13, 5.6), (22, 22, 2.4)],
+    "gem": [(14, 14, 6.8), (23, 23, 1.6)],
+    "treasure": [(15.5, 15.5, 8.3)],
 }
 
 
@@ -175,7 +175,7 @@ def compose(fill_fn, rock_hex, ore=None, seed=3):
         for cx, cy, r in LAYOUT[rarity]:
             candy_ore(px, shape, cx, cy, r, f, li, outline)
         if rarity == "treasure":
-            for x, y in ((24, 8), (8, 24), (24, 22)):
+            for x, y in ((25, 6), (6, 25), (25, 25)):
                 px[x, y] = WHITE
                 for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                     px[x + dx, y + dy] = shade(f, 0.5)
