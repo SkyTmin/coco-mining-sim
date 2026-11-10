@@ -10,7 +10,7 @@ local Worlds = require(Shared.Mine.Worlds)
 local BlockPool = require(script.Parent.BlockPool)
 
 local S = Config.mine.blockSize
-local FACE_BUDGET = 176
+local FACE_BUDGET = 160
 local WallRenderer = {}
 local colors: { [string]: Color3 } = {}
 for _, ore in Config.ores do
