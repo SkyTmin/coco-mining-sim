@@ -8,8 +8,6 @@ local Config = require(Shared.Config)
 local Remotes = require(Shared.Remotes)
 local Sfx = require(Shared.Sfx)
 local Upgrade = require(Shared.Play.Upgrade)
-local Format = require(Shared.Format)
-local Strings = require(Shared.Strings)
 local Wire = require(Shared.Mine.MineWire)
 local State = require(Shared.Mine.MineState)
 local Worlds = require(Shared.Mine.Worlds)
@@ -27,6 +25,7 @@ local Aim = require(script.Parent.Aim)
 local Camera = require(script.Parent.Camera)
 local Input = require(script.Parent.Input)
 local Hud = require(Client.Ui.MineHud)
+local Kit = require(Client.Ui.Kit)
 local Settings = require(Client.Ui.MineSettings)
 local Upgrades = require(Client.Ui.Upgrades)
 local Intensity = require(Client.Fx.Intensity)
@@ -41,7 +40,6 @@ local S = mine.blockSize
 local PENTATONIC = { 1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2 }
 local STORM = Color3.fromRGB(139, 225, 255)
 local WARM = Color3.fromRGB(255, 207, 144)
-local RENDER_DEPTH = { 12, 16, 20 }
 
 local function oldWindow(win: any): any
 	local copy = table.clone(win)
@@ -66,7 +64,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local player = Players.LocalPlayer
 	local intent = Remotes.event("MineIntent")
 	local windowRemote = Remotes.event("MineWindow")
-	local resultRemote = Remotes.event("MineResult")
 	local studio = RunService:IsStudio()
 	local world = Instance.new("Folder")
 	world.Name, world.Parent = "LocalMine", workspace
@@ -168,7 +165,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local frame = origin.CFrame
 		renderer = Wall.new(world, frame)
 		tunnel = Tunnel.new(world, frame)
-		depthSign = DepthSign.new(world, frame, window.front)
+		depthSign = DepthSign.new(world, frame, window.front, model)
 		spectatorSigns = DepthSign.spectators(world, plots :: Instance, plot)
 		breaking = Break.new(world)
 		lightning = Lightning.new(world)
@@ -191,9 +188,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local function canHit(): boolean
 		return canControl() and window ~= nil and ride == nil
 	end
-	local function aim(screen: Vector2, nearby: boolean): any?
+	local function aim(screen: Vector2): any?
 		local r = renderer
-		return if r and canHit() then Aim.at(r, window, screen, nearby) else nil
+		return if r and canHit() then Aim.at(r, window, screen) else nil
 	end
 	local function toggle()
 		if not view or not active or menuOpen() then
@@ -223,7 +220,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local expected = { seq = seq, at = now, position = position }
 		if not ability then
 			local depth = window.front + cell.dRel
-			local plate = Wall.ore(window, cell.x, cell.y, cell.dRel) == Wire.PLATE
+			local ore = Wall.ore(window, cell.x, cell.y, cell.dRel)
+			local plate = ore == Wire.PLATE
+			expected.ore = ore
+			expected.impactAt = now + Config.fx.swing.contact
+			expected.color, expected.plate = cell.color or WARM, plate
 			local progress = 0
 			for _, damage in window.damage do
 				if damage.x == cell.x and damage.y == cell.y and damage.dRel == cell.dRel then
@@ -252,22 +253,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					end
 				end
 			end
-			Break.hit(breaking, position, cell.color or WARM, S, expected.hidden ~= nil, quality)
-			if plate then
-				Sfx.play("plate_hit", 0.64)
-			else
-				Sfx.hit(now)
-				if expected.hidden then
-					Sfx.play("break_soft", 0.7)
-				end
-			end
 		end
-		Camera.swing(v, if ability then Config.fx.ult.windup * 2 else settings.interval, ability)
+		Camera.swing(v, now, Config.fx.ult.windup * 2, ability)
 		pending, dirty, nextHit = expected, true, now + settings.interval
 		intent:FireServer(Wire.encodeIntent(kind, seq, cell.x, cell.y, cell.dRel))
 	end
 
-	windowRemote.OnClientEvent:Connect(function(packet)
+	local function onWindow(packet: any)
 		local win = Wire.decodeWindow(packet)
 		if
 			not win
@@ -278,10 +270,26 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		window, pending, ride, dirty = win, nil, nil, true
 		table.clear(events)
 		setup(win.plot)
-	end)
+	end
 
-	resultRemote.OnClientEvent:Connect(function(packet)
-		local res = Wire.decodeResult(packet)
+	local function applyLayers(part: any)
+		if
+			not part
+			or not window
+			or part.plot ~= window.plot
+			or part.front ~= window.front
+			or part.width ~= window.width
+			or part.height ~= window.height
+		then
+			return
+		end
+		for i, layer in part.layers do
+			window.layers[part.offset + i] = layer
+		end
+		dirty = true
+	end
+
+	local function applyResult(res: any)
 		local r = renderer
 		if not r or not res or not window or res.plot ~= window.plot then
 			return
@@ -329,15 +337,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 		end
 		if res.delta > 0 then
-			local fresh = {}
-			local keep = math.max(0, mine.window - res.delta)
-			for i = 1, keep do
-				fresh[i] = window.layers[i + res.delta]
-			end
-			for i, layer in res.layers do
-				fresh[keep + i] = layer
-			end
-			window.layers, window.front = fresh, res.front
+			window.layers, window.front = res.layers, res.front
 		end
 		window.charge, window.damage, window.plateDamage = res.charge, res.damage, res.plateDamage
 		if res.ability or res.delta > 0 then
@@ -360,7 +360,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				frames = 0,
 			}
 			if res.ability and view then
-				Camera.swing(view, timeline.windup * 2, true)
+				Camera.swing(view, now, timeline.windup * 2, true)
 			end
 		end
 		for i, event in res.events do
@@ -389,9 +389,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end)
 		if not res.ability then
 			if res.heavy or res.crit or res.rain then
-				if res.heavy and view then
-					Camera.emphasize(view, now)
-				end
 				Intensity.flash(intensity, if res.heavy or res.mega then 0.2 else 0.10, WARM, now)
 				if res.heavy then
 					Sfx.play("heavy_hit", 0.7)
@@ -409,7 +406,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				haptic("block", now)
 			end
 			if res.coins > 0 then
-				Hud.coin(hud, target, res.coins)
+				Hud.coin(hud, target, res.coins, expected and expected.ore)
 				Sfx.coin(now, #res.finds > 0)
 			end
 		end
@@ -418,6 +415,71 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			player:SetAttribute("Stage02LastLinks", #res.events)
 			if expected then
 				player:SetAttribute("Stage02LastFeedbackMs", (now - expected.at) * 1000)
+			end
+		end
+	end
+
+	local function impact(now: number, r: Wall.Renderer, effects: number)
+		local expected = pending
+		if
+			not expected
+			or not expected.impactAt
+			or expected.impacted
+			or now < expected.impactAt
+		then
+			return
+		end
+		expected.impacted, dirty = true, true
+		Break.hit(
+			breaking,
+			expected.position,
+			expected.color,
+			S,
+			expected.hidden ~= nil,
+			effects,
+			-r.frame.LookVector
+		)
+		if expected.plate then
+			Sfx.play("plate_hit", 0.64)
+		else
+			Sfx.hit(now)
+			if expected.hidden then
+				Sfx.play("break_soft", 0.7)
+			end
+		end
+		if expected.result then
+			applyResult(expected.result)
+			for _, layers in expected.tail do
+				applyLayers(layers)
+			end
+		end
+	end
+
+	windowRemote.OnClientEvent:Connect(function(kind, packet)
+		if kind == "window" then
+			onWindow(packet)
+		elseif kind == "layers" then
+			local part = Wire.decodeLayers(packet)
+			local result = pending and pending.result
+			if part and result and result.delta > 0 and part.front == result.front then
+				table.insert(pending.tail, part)
+			else
+				applyLayers(part)
+			end
+		elseif kind == "result" then
+			local res = Wire.decodeResult(packet)
+			local expected = pending
+			if
+				res
+				and res.accepted
+				and expected
+				and expected.seq == res.seq
+				and expected.impactAt
+				and not expected.impacted
+			then
+				expected.result, expected.tail = res, {}
+			else
+				applyResult(res)
 			end
 		end
 	end)
@@ -523,7 +585,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 							S,
 							true,
 							override,
-							-r.frame.LookVector
+							-r.frame.LookVector,
+							true
 						)
 					end
 				end
@@ -546,12 +609,16 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if cleared >= broken then
 			return nil, 0, waveDepth
 		end
-		return ride.slice or old,
-			math.min(RENDER_DEPTH[override], broken - cleared),
-			cleared * S + 0.03
+		return ride.slice or old, math.min(mine.window, broken - cleared), cleared * S + 0.03
 	end
 
+	local function faceWall()
+		if view and canControl() then
+			Camera.faceWall(view, os.clock())
+		end
+	end
 	hud.eye.Activated:Connect(toggle)
+	hud.focus.Activated:Connect(faceWall)
 	hud.ult.Activated:Connect(function()
 		request("Ability", nil)
 	end)
@@ -579,6 +646,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			request("Hit", target)
 		end,
 		toggle = toggle,
+		focus = faceWall,
 		ult = function()
 			request("Ability", nil)
 		end,
@@ -642,12 +710,12 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			resync()
 		end
 
+		impact(now, r, override)
+
 		local phase, progress = "idle", 0
-		local finishNumber = false
 		if ride then
 			ride.frames += 1
 			phase, progress = Ride.phase(ride.timeline, now - ride.at)
-			finishNumber = phase == "landed" and ride.ability and ride.delta > 0
 		end
 		if phase ~= lastPhase or (ride and ride.entered ~= phase) then
 			lastPhase, dirty = phase, true
@@ -666,7 +734,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					ride.delta * progress
 				)
 				else ride.oldFront
-			DepthSign.step(depthSign, now, display, finishNumber, reduced, active)
+			local rolling = ride ~= nil and (ride.ability or ride.delta >= 5)
+			DepthSign.step(depthSign, now, display, rolling, reduced, active)
 		end
 		for origin, sign in spectatorSigns do
 			local depth = origin:GetAttribute("MineFront")
@@ -674,7 +743,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				DepthSign.step(sign, now, depth, false, reduced, false)
 			end
 		end
-		local shown, visible, offset = window, RENDER_DEPTH[override], 0
+		local shown, visible, offset = window, #window.layers, 0
 		local waveDepth, survivor = nil, false
 		local color = if ride then ride.color else WARM
 		if phase == "windup" then
@@ -717,12 +786,17 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if layout then
 			if shown then
 				local renderWindow = shown
-				if shown == window and pending and pending.damage then
+				if shown == window and pending and pending.impacted and pending.damage then
 					renderWindow = table.clone(window)
 					renderWindow.damage = table.clone(window.damage)
 					table.insert(renderWindow.damage, pending.damage)
 				end
-				Wall.update(r, renderWindow, visible, pending and pending.hidden)
+				Wall.update(
+					r,
+					renderWindow,
+					visible,
+					pending and pending.impacted and pending.hidden or nil
+				)
 				Break.cracks(breaking, r, renderWindow, State.cellKey)
 			else
 				Wall.clear(r)
@@ -754,10 +828,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			if shown then
 				Wall.moves(r, shown, offset, parts, moves)
 			end
-			local farLayers = if survivor
-				then 0
-				elseif phase == "fracture" then visible
-				else mine.window
+			local farLayers = if survivor then 0 else visible
 			Tunnel.moves(
 				tunnel,
 				sceneWindow,
@@ -783,6 +854,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		Lightning.step(lightning, now)
 		Break.step(breaking, now)
 		Camera.step(v, active, Intensity.sample(intensity, r.frame, now, reduced, active))
+		hud.focus.Visible = canControl() and Camera.away(v)
+		if hud.focus.Visible then
+			local keyHint = if UserInputService.TouchEnabled or v.mode ~= "first"
+				then ""
+				else " · R"
+			Kit.caption(hud.focus, translate("mine_face_wall") .. keyHint)
+		end
 		local equipped = pick()
 		local cap = equipped.ultCharge
 		if lastCharge >= 0 and lastCharge < cap and window.charge >= cap then
@@ -797,6 +875,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			cap
 		)
 		local camera = workspace.CurrentCamera
+		if camera then
+			Wall.textures(r, camera, offset)
+		end
+		Wall.glint(r, window.front, now, active and phase == "idle" and not reduced)
 		local aimed: any = nil
 		if camera and canHit() then
 			if UserInputService.TouchEnabled then
@@ -817,7 +899,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 						and player:GetAttribute("MineUpgradesOpen") ~= true
 					then camera.ViewportSize / 2
 					else UserInputService:GetMouseLocation()
-				aimed = Aim.at(r, window, point, false)
+				aimed = Aim.at(r, window, point)
 			end
 		end
 		local depth = if aimed then window.front + aimed.dRel else window.front
@@ -837,16 +919,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				end
 			end
 		end
-		local locale = Strings.localeOf(player)
 		local plate = aimed and Wall.ore(window, aimed.x, aimed.y, aimed.dRel) == Wire.PLATE
-		Hud.power(
-			hud,
-			Format.stat(equipped.strength, locale),
-			Format.stat(hardness, locale),
-			if need >= 2 and not plate then left else 0,
-			aimed and aimed.position
-		)
-		stepUpgrades(now, active, window.front, need, equipped.strength, reduced)
+		Hud.hits(hud, if need >= 2 and not plate then left else 0, aimed and aimed.position)
+		stepUpgrades(now, active, window.front, need, equipped.strength, hardness, reduced)
 		local hint = nil
 		if r.pulse.Enabled then
 			r.pulse.FillTransparency = 0.60 + math.sin(now * 6) * 0.19
@@ -861,7 +936,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			now,
 			active,
 			v.mode == "first" and not UserInputService.TouchEnabled and canHit(),
-			hint
+			hint,
+			reduced
 		)
 		if not jumpButton then
 			local touchGui = guiParent:FindFirstChild("TouchGui")

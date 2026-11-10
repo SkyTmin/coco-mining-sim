@@ -3,6 +3,8 @@
 local Config = require(script.Parent.Parent.Config)
 local Types = require(script.Parent.Parent.Types)
 local Worlds = require(script.Parent.Parent.Mine.Worlds)
+local MineState = require(script.Parent.Parent.Mine.MineState)
+local MineCodec = require(script.Parent.Parent.Mine.MineCodec)
 local Power = require(script.Parent.Power)
 local Upgrade = require(script.Parent.Upgrade)
 
@@ -62,9 +64,14 @@ function Circle.migrate(profile: any): boolean
 	then
 		return false
 	end
+	local retired = Config.plots.retiredWidth
+	local oldWidth = profile.width
+	local retire = oldWidth == retired.width
+	local shrink = retire or (oldWidth == 7 and Config.plots.frameWidth == 5)
+	local width = if shrink then Config.plots.frameWidth else oldWidth
 	local validWidth = false
 	for _, stage in Config.progress.widths do
-		validWidth = validWidth or stage.w == profile.width
+		validWidth = validWidth or stage.w == width
 	end
 	if not validWidth then
 		return false
@@ -90,6 +97,19 @@ function Circle.migrate(profile: any): boolean
 			if type(key) ~= "string" or value ~= true then
 				return false
 			end
+		end
+	end
+	if shrink then
+		if profile.mine ~= nil then
+			local state = MineCodec.decode(profile.mine)
+			if not state or state.width ~= oldWidth or not MineState.narrow(state, width) then
+				return false
+			end
+			profile.mine = MineCodec.encode(state)
+		end
+		profile.width = width
+		if retire then
+			profile.coins += retired.refund
 		end
 	end
 	if not Config.pickaxes[profile.pickaxe] then

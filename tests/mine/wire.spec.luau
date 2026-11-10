@@ -5,6 +5,8 @@ local Loader = require("../lib/loader")
 local Wire = Loader.load("src/shared/Mine/MineWire.luau")
 local Fixture = require("./fixture")
 local expect = Test.expect
+local Config = Loader.load("src/shared/Config")
+local State = Loader.load("src/shared/Mine/MineState.luau")
 
 Test.describe("Mine protocol", function()
 	Test.it("round trips intents, full masks, incremental layers, effects and rejects", function()
@@ -19,7 +21,7 @@ Test.describe("Mine protocol", function()
 		end
 		expect(Wire.decodeIntent(Wire.encodeIntent("Resync"))).toEqual({ op = "Resync" })
 		local layer = { 1, 0, 3, 0, 0, Wire.CHEST, 3, 2, 0, 1, 0, 2, Wire.PLATE, 0, 4 }
-		local layers = table.create(20, layer)
+		local layers = table.create(Config.mine.nearWindow, layer)
 		local damage = { { x = -1, y = 2, dRel = 0, amount = 128 } }
 		local win = {
 			plot = 8,
@@ -32,6 +34,17 @@ Test.describe("Mine protocol", function()
 			damage = damage,
 		}
 		expect(Wire.decodeWindow(Wire.encodeWindow(win))).toEqual(win)
+		local distant = {
+			plot = win.plot,
+			front = win.front,
+			width = 5,
+			height = 3,
+			offset = Config.mine.nearWindow,
+			layers = table.create(Config.mine.layerBatch, layer),
+		}
+		expect(Wire.decodeLayers(Wire.encodeLayers(distant))).toEqual(distant)
+		distant.offset = Config.mine.window - 1
+		expect(Wire.decodeLayers(Wire.encodeLayers(distant))).toBe(nil)
 		local result = {
 			seq = 7,
 			plot = 8,
@@ -45,7 +58,7 @@ Test.describe("Mine protocol", function()
 			rain = true,
 			width = 5,
 			height = 3,
-			layers = table.create(4, layer),
+			layers = layers,
 			damage = damage,
 			charge = 0,
 			plateDamage = 0,
@@ -73,6 +86,43 @@ Test.describe("Mine protocol", function()
 		local truncated = buffer.create(buffer.len(blob) - 1)
 		buffer.copy(truncated, 0, blob, 0, buffer.len(truncated))
 		expect(Wire.decodeResult(truncated)).toBe(nil)
+	end)
+
+	Test.it("keeps the first window under 4 KiB with 4000 holes", function()
+		local st, removed = State.new(303, 7, 3, 1600), {}
+		for i = 0, 3999 do
+			local lane = i % 21
+			local d = st.front + 2 + (i // 21) * 2
+			State.removeRange(st, lane // 3 - 3, lane % 3, d, d + 1, removed)
+		end
+		expect(st.holeCount).toBe(4000)
+		local layers, damage = {}, {}
+		for dRel = 0, Config.mine.nearWindow - 1 do
+			local layer = {}
+			for x = -3, 3 do
+				for y = 0, 2 do
+					local solid = State.isSolid(st, x, y, st.front + dRel)
+					table.insert(layer, if solid then 1 else 0)
+					if solid then
+						table.insert(damage, { x = x, y = y, dRel = dRel, amount = 128 })
+					end
+				end
+			end
+			table.insert(layers, layer)
+		end
+		local packet = Wire.encodeWindow({
+			plot = 1,
+			front = st.front,
+			charge = 0,
+			plateDamage = 0,
+			width = 7,
+			height = 3,
+			layers = layers,
+			damage = damage,
+		})
+		print(string.format("MineWindow with 4000 holes: %d bytes", buffer.len(packet)))
+		assert(buffer.len(packet) <= 4096)
+		expect(Wire.decodeWindow(packet).layers).toEqual(layers)
 	end)
 
 	Test.it("rejects 10,000 randomized malformed inputs without throwing", function()

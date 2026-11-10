@@ -12,11 +12,12 @@
   },
   "mine": {
     "blockSize": 5, "maxWidth": 15, "maxHeight": 7, "maxDepth": 2147483647,
-    "chunk": 50, "window": 20, "maxHoles": 4000,
-    "_note": "[решение ТЗ-01] формат шахты, размер блока, порции данных и лимиты хранения"
+    "chunk": 50, "window": 60, "nearWindow": 25, "layerBatch": 12, "maxHoles": 4000,
+    "_note": "[решение ТЗ-01] формат шахты и размер блока; [владелец] ТЗ-03б §2, окно 60 и трещины до 25 слоёв; [решение] дальние порции по 12 слоёв"
   },
   "plots": {
-    "count": 8, "entranceRadius": 65, "frameWidth": 9, "platformDepth": 6, "spectatorDepth": 3,
+    "count": 8, "entranceRadius": 65, "frameWidth": 7, "platformDepth": 6, "spectatorDepth": 3,
+    "retiredWidth": { "width": 9, "refund": 500000, "_note": "[владелец] ТЗ-03б §1, возврат цены ширины из этапа 3" },
     "_note": "[решение ТЗ-02, поправка 09.11] площадки по кругу, размеры в блоках кроме радиуса в studs"
   },
   "pickaxes": {
@@ -30,20 +31,25 @@
     "_note": "[решение 06] бюджет каскада на удар"
   },
   "fx": {
-    "depth": { "fogStart": 550, "fogEnd": 1500, "simpleFrom": 300, "lampSpacing": 20, "distantSpacing": 40 },
+    "depth": { "fogStart": 1500, "fogEnd": 4000, "simpleFrom": 300, "lampSpacing": 20, "middleSpacing": 40, "distantSpacing": 80 },
     "impactTime": 0.13,
+    "swing": {
+      "windup": 0.08, "contact": 0.14, "hold": 0.17, "finish": 0.26,
+      "windupDegrees": 35, "travelDegrees": 70, "recoilDegrees": 12, "handNear": 0.06,
+      "_note": "[владелец] ТЗ-03б §5, замах, контакт и отдача обычного удара"
+    },
     "ult": {
       "windup": 0.15, "fractureMin": 0.5, "fractureMax": 0.9, "fracturePerLog": 0.108,
       "empty": 0.30, "approachBase": 0.45, "approachPerLog": 0.35,
-      "distanceBase": 155, "distancePerLog": 100, "distanceDeep": 120
+      "distanceBase": 155, "distancePerLog": 100, "distanceDeep": 430
     },
-    "_note": "[владелец] ТЗ-02б §1 и ТЗ-02в §2; [решение] дальние крепи реже, дальность больших проломов растёт по логарифму с квадратичной поправкой"
+    "_note": "[владелец] ТЗ-03б §2, туман 1500–4000 и дальние лампы через 80; [решение] глубокий пролом до дальней зоны при неизменной длительности фаз"
   },
   "sounds": {
     "atlasId": null,
     "rules": {
       "maxVolume": 0.5, "frequentVolume": 0.25, "linkVolume": 0.12,
-      "depthVolume": 0.15, "defaultSfx": 0.6,
+      "depthVolume": 0.10, "defaultSfx": 0.6,
       "frequentLufs": -26, "rareLufs": -20, "lowpassHz": 9000, "fadeSeconds": 0.01,
       "pitchSpread": 0.08, "fatigueDelay": 3, "fatigueGain": 0.6,
       "voices": { "hit_soft": 2, "break_soft": 3, "coin": 1 }

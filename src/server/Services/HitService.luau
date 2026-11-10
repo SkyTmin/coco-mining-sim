@@ -79,9 +79,6 @@ local function publish(
 		events = events,
 		width = st.width,
 		height = st.height,
-		layers = if delta > 0
-			then MineService.layers(st, mine.window - math.min(delta, mine.window))
-			else nil,
 	})
 end
 

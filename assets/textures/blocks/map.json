@@ -1,0 +1,653 @@
+{
+  "_note": "[решение] ТЗ-03б §4. Индексы b0…b30 из SkyTmin/coco-instruments (523bae1). Насыщенность породы 65%.",
+  "worlds": [
+    {
+      "world": "meadow",
+      "slots": [
+        {
+          "ore": "dirt",
+          "source": "b0.png",
+          "atlas": "oreVariants",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "hue": 0,
+          "saturation": 0.65,
+          "brightness": 0.78
+        },
+        {
+          "ore": "stone",
+          "source": "b2.png",
+          "atlas": "ores",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "coal",
+          "source": "b4.png",
+          "atlas": "ores",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "copper",
+          "source": "b6.png",
+          "atlas": "ores",
+          "rect": [
+            384,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "firefly_amber",
+          "source": "b9.png",
+          "atlas": "ores",
+          "rect": [
+            576,
+            0,
+            64,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "world": "copper_caves",
+      "slots": [
+        {
+          "ore": "red_stone",
+          "source": "b6.png",
+          "atlas": "oreVariants",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "hue": 0,
+          "saturation": 0.65,
+          "brightness": 0.82
+        },
+        {
+          "ore": "copper",
+          "source": "b6.png",
+          "atlas": "ores",
+          "rect": [
+            384,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "tin",
+          "source": "b10.png",
+          "atlas": "ores",
+          "rect": [
+            640,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "malachite",
+          "source": "b13.png",
+          "atlas": "ores",
+          "rect": [
+            832,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "turquoise",
+          "source": "b8.png",
+          "atlas": "ores",
+          "rect": [
+            512,
+            0,
+            64,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "world": "quartz_veins",
+      "slots": [
+        {
+          "ore": "white_stone",
+          "source": "b10.png",
+          "atlas": "oreVariants",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "hue": 0,
+          "saturation": 0.65,
+          "brightness": 0.83
+        },
+        {
+          "ore": "quartz",
+          "source": "b2.png",
+          "atlas": "ores",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "iron",
+          "source": "b11.png",
+          "atlas": "ores",
+          "rect": [
+            704,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "rose_quartz",
+          "source": "b3.png",
+          "atlas": "ores",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "amethyst",
+          "source": "b15.png",
+          "atlas": "ores",
+          "rect": [
+            960,
+            0,
+            64,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "world": "gold_river",
+      "slots": [
+        {
+          "ore": "sandstone",
+          "source": "b27.png",
+          "atlas": "oreVariants",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "hue": 0,
+          "saturation": 0.65,
+          "brightness": 0.82
+        },
+        {
+          "ore": "silver",
+          "source": "b10.png",
+          "atlas": "ores",
+          "rect": [
+            640,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "gold",
+          "source": "b14.png",
+          "atlas": "ores",
+          "rect": [
+            896,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "river_pearl",
+          "source": "b2.png",
+          "atlas": "ores",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "nugget",
+          "source": "b9.png",
+          "atlas": "ores",
+          "rect": [
+            576,
+            0,
+            64,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "world": "ice_grottoes",
+      "slots": [
+        {
+          "ore": "frozen_stone",
+          "source": "b11.png",
+          "atlas": "oreVariants",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "hue": 0,
+          "saturation": 0.65,
+          "brightness": 0.82
+        },
+        {
+          "ore": "ice",
+          "source": "b23.png",
+          "atlas": "ores",
+          "rect": [
+            448,
+            64,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "froststone",
+          "source": "b25.png",
+          "atlas": "oreVariants",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "hue": -19,
+          "saturation": 1,
+          "brightness": 1
+        },
+        {
+          "ore": "sapphire",
+          "source": "b7.png",
+          "atlas": "ores",
+          "rect": [
+            448,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "eternal_ice",
+          "source": "b23.png",
+          "atlas": "ores",
+          "rect": [
+            448,
+            64,
+            64,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "world": "mushroom_forest",
+      "slots": [
+        {
+          "ore": "mycelium",
+          "source": "b28.png",
+          "atlas": "oreVariants",
+          "rect": [
+            384,
+            0,
+            64,
+            64
+          ],
+          "hue": 0,
+          "saturation": 0.65,
+          "brightness": 0.77
+        },
+        {
+          "ore": "sporite",
+          "source": "b12.png",
+          "atlas": "ores",
+          "rect": [
+            768,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "glowshroom",
+          "source": "b28.png",
+          "atlas": "ores",
+          "rect": [
+            768,
+            64,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "topaz",
+          "source": "b9.png",
+          "atlas": "ores",
+          "rect": [
+            576,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "moonstone",
+          "source": "b11.png",
+          "atlas": "oreVariants",
+          "rect": [
+            448,
+            0,
+            64,
+            64
+          ],
+          "hue": 11,
+          "saturation": 1,
+          "brightness": 1
+        }
+      ]
+    },
+    {
+      "world": "giant_bones",
+      "slots": [
+        {
+          "ore": "limestone",
+          "source": "b27.png",
+          "atlas": "oreVariants",
+          "rect": [
+            512,
+            0,
+            64,
+            64
+          ],
+          "hue": 0,
+          "saturation": 0.65,
+          "brightness": 0.84
+        },
+        {
+          "ore": "bone_ore",
+          "source": "b1.png",
+          "atlas": "ores",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "amber",
+          "source": "b19.png",
+          "atlas": "ores",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "onyx",
+          "source": "b4.png",
+          "atlas": "oreVariants",
+          "rect": [
+            576,
+            0,
+            64,
+            64
+          ],
+          "hue": 15,
+          "saturation": 1,
+          "brightness": 0.86
+        },
+        {
+          "ore": "dragon_amber",
+          "source": "b24.png",
+          "atlas": "ores",
+          "rect": [
+            512,
+            64,
+            64,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "world": "lost_city",
+      "slots": [
+        {
+          "ore": "terracotta",
+          "source": "b6.png",
+          "atlas": "oreVariants",
+          "rect": [
+            640,
+            0,
+            64,
+            64
+          ],
+          "hue": 0,
+          "saturation": 0.65,
+          "brightness": 0.77
+        },
+        {
+          "ore": "bronze",
+          "source": "b27.png",
+          "atlas": "oreVariants",
+          "rect": [
+            704,
+            0,
+            64,
+            64
+          ],
+          "hue": -18,
+          "saturation": 1,
+          "brightness": 1
+        },
+        {
+          "ore": "jade",
+          "source": "b17.png",
+          "atlas": "ores",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "lapis_lazuli",
+          "source": "b20.png",
+          "atlas": "ores",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "ancient_gold",
+          "source": "b14.png",
+          "atlas": "ores",
+          "rect": [
+            896,
+            0,
+            64,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "world": "magma_springs",
+      "slots": [
+        {
+          "ore": "basalt",
+          "source": "b4.png",
+          "atlas": "oreVariants",
+          "rect": [
+            768,
+            0,
+            64,
+            64
+          ],
+          "hue": 0,
+          "saturation": 0.65,
+          "brightness": 0.77
+        },
+        {
+          "ore": "obsidian",
+          "source": "b4.png",
+          "atlas": "oreVariants",
+          "rect": [
+            832,
+            0,
+            64,
+            64
+          ],
+          "hue": 25,
+          "saturation": 1,
+          "brightness": 0.8
+        },
+        {
+          "ore": "garnet",
+          "source": "b18.png",
+          "atlas": "oreVariants",
+          "rect": [
+            896,
+            0,
+            64,
+            64
+          ],
+          "hue": -15,
+          "saturation": 1,
+          "brightness": 1
+        },
+        {
+          "ore": "ruby",
+          "source": "b22.png",
+          "atlas": "ores",
+          "rect": [
+            384,
+            64,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "fire_ruby",
+          "source": "b24.png",
+          "atlas": "ores",
+          "rect": [
+            512,
+            64,
+            64,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "world": "core",
+      "slots": [
+        {
+          "ore": "lightstone",
+          "source": "b1.png",
+          "atlas": "oreVariants",
+          "rect": [
+            960,
+            0,
+            64,
+            64
+          ],
+          "hue": 0,
+          "saturation": 0.65,
+          "brightness": 0.83
+        },
+        {
+          "ore": "core_crystal",
+          "source": "b10.png",
+          "atlas": "ores",
+          "rect": [
+            640,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "sunstone",
+          "source": "b9.png",
+          "atlas": "ores",
+          "rect": [
+            576,
+            0,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "stardust",
+          "source": "b28.png",
+          "atlas": "ores",
+          "rect": [
+            768,
+            64,
+            64,
+            64
+          ]
+        },
+        {
+          "ore": "core_shard",
+          "source": "b1.png",
+          "atlas": "ores",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ]
+        }
+      ]
+    }
+  ]
+}

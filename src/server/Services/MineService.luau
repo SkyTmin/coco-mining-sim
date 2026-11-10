@@ -31,7 +31,6 @@ local MineService = {}
 local sessions: { [Player]: Session } = {}
 local subscribers: { [number]: { [Player]: boolean } } = {}
 local windowRemote = Remotes.event("MineWindow")
-local resultRemote = Remotes.event("MineResult")
 
 function MineService.get(player: Player): Session?
 	return sessions[player]
@@ -41,10 +40,10 @@ local function fresh(rng: Random, width: number): State.MineState
 	return State.new(rng:NextInteger(1, 2147483647), width, mine.height)
 end
 
-function MineService.layers(st: State.MineState, offset: number): { { number } }
+local function layers(st: State.MineState, offset: number, limit: number): { { number } }
 	local layers = {}
 	local radius = (st.width - 1) // 2
-	for relative = offset, mine.window - 1 do
+	for relative = offset, limit - 1 do
 		local d = st.front + relative
 		local world = Worlds.of(d)
 		local layer = {}
@@ -73,7 +72,7 @@ function MineService.damage(st: State.MineState): { any }
 	if next(st.damage) == nil then
 		return out
 	end
-	for dRel = 0, mine.window - 1 do
+	for dRel = 0, mine.nearWindow - 1 do
 		for x = -radius, radius do
 			for y = 0, st.height - 1 do
 				local amount = st.damage[State.cellKey(x, y, st.front + dRel)]
@@ -89,11 +88,29 @@ function MineService.damage(st: State.MineState): { any }
 	return out
 end
 
-local function send(remote: RemoteEvent, plot: number, packet: buffer)
+local function send(kind: string, plot: number, packet: buffer)
 	for player in subscribers[plot] or {} do
 		if player.Parent == Players then
-			remote:FireClient(player, packet)
+			windowRemote:FireClient(player, kind, packet)
 		end
+	end
+end
+
+local function sendTail(s: Session)
+	local st = s.state
+	for offset = mine.nearWindow, mine.window - 1, mine.layerBatch do
+		send(
+			"layers",
+			s.plot,
+			Wire.encodeLayers({
+				plot = s.plot,
+				front = st.front,
+				width = st.width,
+				height = st.height,
+				offset = offset,
+				layers = layers(st, offset, math.min(offset + mine.layerBatch, mine.window)),
+			})
+		)
 	end
 end
 
@@ -101,7 +118,7 @@ function MineService.window(s: Session)
 	local st = s.state
 	PlotService.depth(s.plot, st.front)
 	send(
-		windowRemote,
+		"window",
 		s.plot,
 		Wire.encodeWindow({
 			plot = s.plot,
@@ -111,19 +128,27 @@ function MineService.window(s: Session)
 			charge = s.charge,
 			plateDamage = st.plateDamage,
 			damage = MineService.damage(st),
-			layers = MineService.layers(st, 0),
+			layers = layers(st, 0, mine.nearWindow),
 		})
 	)
+	sendTail(s)
 end
 
 function MineService.result(s: Session, res: any)
 	PlotService.depth(s.plot, s.state.front)
-	send(resultRemote, s.plot, Wire.encodeResult(res))
+	if res.delta > 0 then
+		res.layers = layers(s.state, 0, mine.nearWindow)
+	end
+	send("result", s.plot, Wire.encodeResult(res))
+	if res.delta > 0 then
+		sendTail(s)
+	end
 end
 
 function MineService.reject(player: Player, s: Session, seq: number)
-	resultRemote:FireClient(
+	windowRemote:FireClient(
 		player,
+		"result",
 		Wire.encodeResult({ seq = seq, accepted = false, front = s.state.front, plot = s.plot })
 	)
 end

@@ -31,32 +31,46 @@ Test.describe("Config", function()
 		expect(decisions.progress).toBe(nil)
 		expect(decisions.mine.ultCharge).toBe(nil)
 	end)
-	Test.it("ships fourteen original 16 by 16 block images with manifest entries", function()
+	Test.it("ships nonempty atlas IDs and maps all fifty ore slots", function()
 		local config = Loader.load("src/shared/Config")
-		local manifest = serde.decode("json", fs.readFile("assets/textures/ids.json"))
-		local seen = {}
-		local count = 0
-		for i = 1, 3 do
-			for _, slot in config.worlds[i].ores do
-				local id = slot[1]
-				if not seen[id] then
-					seen[id] = true
-					count += 1
-					local png = fs.readFile("assets/textures/blocks/" .. id .. ".png")
-					expect(png:sub(17, 24)).toBe(string.char(0, 0, 0, 16, 0, 0, 0, 16))
-				end
+		local textures = serde.decode("json", fs.readFile("assets/textures/ids.json"))
+		local ui = serde.decode("json", fs.readFile("assets/ui/ids.json"))
+		for _, key in { "ores", "oreVariants", "mineFx" } do
+			assert(
+				type(textures[key]) == "string" and textures[key]:match("^rbxassetid://[1-9]%d*$"),
+				"Missing image ID: " .. key
+			)
+			expect(config.art.textures[key]).toBe(textures[key])
+		end
+		assert(
+			type(ui.kit) == "string" and ui.kit:match("^rbxassetid://[1-9]%d*$"),
+			"Missing UI image ID"
+		)
+		expect(config.art.ui).toBe(ui.kit)
+		local map = serde.decode("json", fs.readFile("assets/textures/blocks/map.json"))
+		for i, world in config.worlds do
+			expect(map.worlds[i].world).toBe(world.id)
+			expect(#config.art.ores[world.id]).toBe(5)
+			for j, slot in map.worlds[i].slots do
+				expect(slot.ore).toBe(world.ores[j][1])
+				local png = fs.readFile("assets/textures/blocks/source/" .. slot.source)
+				expect(png:sub(17, 24)).toBe(string.char(0, 0, 0, 64, 0, 0, 0, 64))
 			end
 		end
-		expect(count).toBe(14)
-		local listed = 0
-		for id in manifest do
-			assert(seen[id], "Unexpected block texture " .. id)
-			listed += 1
+		for _, path in
+			{
+				"textures/ores-1024.png",
+				"textures/ores-variants-1024.png",
+				"textures/mine-fx-1024.png",
+				"ui/ui-1024.png",
+			}
+		do
+			local png = fs.readFile("assets/" .. path)
+			expect(png:sub(17, 24)).toBe(string.char(0, 0, 4, 0, 0, 0, 4, 0))
 		end
-		-- Lune decodes JSON null as nil, so also count the manifest's keys in its source.
-		local _, keys = fs.readFile("assets/textures/ids.json"):gsub('"[%w_]+"%s*:', "")
-		expect(keys).toBe(14)
-		assert(listed <= keys)
+		expect(config.plots.frameWidth).toBe(7)
+		expect(#config.progress.widths).toBe(2)
+		expect(config.progress.widths[2].w).toBe(7)
 	end)
 	Test.it("rejects simulation overrides for production config", function()
 		for _, name in { "G", "V", "HARD", "CUPS", "ULT" } do

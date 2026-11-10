@@ -1,7 +1,11 @@
 {
   "count": 8,
   "entranceRadius": 65,
-  "frameWidth": 9,
+  "frameWidth": 7,
   "platformDepth": 6,
-  "spectatorDepth": 3
+  "spectatorDepth": 3,
+  "retiredWidth": {
+    "width": 9,
+    "refund": 500000
+  }
 }

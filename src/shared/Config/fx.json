@@ -1,12 +1,23 @@
 {
   "depth": {
-    "fogStart": 550,
-    "fogEnd": 1500,
+    "fogStart": 1500,
+    "fogEnd": 4000,
     "simpleFrom": 300,
     "lampSpacing": 20,
-    "distantSpacing": 40
+    "middleSpacing": 40,
+    "distantSpacing": 80
   },
   "impactTime": 0.13,
+  "swing": {
+    "windup": 0.08,
+    "contact": 0.14,
+    "hold": 0.17,
+    "finish": 0.26,
+    "windupDegrees": 35,
+    "travelDegrees": 70,
+    "recoilDegrees": 12,
+    "handNear": 0.06
+  },
   "ult": {
     "windup": 0.15,
     "fractureMin": 0.5,
@@ -17,6 +28,6 @@
     "approachPerLog": 0.35,
     "distanceBase": 155,
     "distancePerLog": 100,
-    "distanceDeep": 120
+    "distanceDeep": 430
   }
 }

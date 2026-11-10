@@ -1,199 +1,205 @@
 --!strict
 
+local Players = game:GetService("Players")
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Format = require(Shared.Format)
+local Strings = require(Shared.Strings)
 local Worlds = require(Shared.Mine.Worlds)
+local Kit = require(script.Parent.Kit)
 local Hud = {}
 
-local ink = Color3.fromRGB(36, 57, 83)
-local cream = Color3.fromRGB(255, 243, 220)
-local blue = Color3.fromRGB(116, 208, 255)
-local yellow = Color3.fromRGB(255, 211, 112)
-
-local function round(gui: GuiObject, radius: number)
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, radius)
-	c.Parent = gui
-end
-
-local function label(parent: Instance, size: UDim2, color: Color3, textSize: number): TextLabel
-	local t = Instance.new("TextLabel")
-	t.Size, t.TextColor3, t.TextSize, t.Text, t.Font =
-		size, color, textSize, "", Enum.Font.GothamBold
-	t.BackgroundTransparency, t.Parent = 1, parent
-	return t
-end
-
-local function card(parent: Instance, size: UDim2, position: UDim2, anchor: Vector2): Frame
-	local f = Instance.new("Frame")
-	f.Size, f.Position, f.AnchorPoint, f.BackgroundColor3 = size, position, anchor, cream
-	f.BorderSizePixel, f.Parent = 0, parent
-	round(f, 13)
-	local outline = Instance.new("UIStroke")
-	outline.Color, outline.Thickness, outline.Transparency, outline.Parent =
-		Color3.fromRGB(181, 205, 220), 2, 0.16, f
-	return f
-end
-
-local function button(parent: Instance, size: number, at: UDim2, anchor: Vector2): TextButton
-	local b = Instance.new("TextButton")
-	b.Size, b.Position, b.AnchorPoint = UDim2.fromOffset(size, size), at, anchor
-	b.Text, b.BackgroundColor3, b.BorderSizePixel, b.Parent = "", cream, 0, parent
-	round(b, size)
-	return b
-end
-
-local function coinIcon(parent: Instance, x: number, size: number): Frame
-	local icon = Instance.new("Frame")
-	icon.AnchorPoint, icon.Position, icon.Size =
-		Vector2.new(0, 0.5), UDim2.new(0, x, 0.5, 0), UDim2.fromOffset(size, size)
-	icon.BackgroundColor3, icon.BorderSizePixel, icon.Parent =
-		Color3.fromRGB(255, 197, 67), 0, parent
-	round(icon, size)
-	local ring = Instance.new("UIStroke")
-	ring.Color, ring.Thickness, ring.Parent = Color3.fromRGB(199, 129, 38), 2, icon
-	local mark = Instance.new("Frame")
-	mark.AnchorPoint, mark.Position, mark.Size =
-		Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), UDim2.fromScale(0.24, 0.54)
-	mark.BackgroundColor3, mark.BorderSizePixel, mark.Parent = cream, 0, icon
-	round(mark, 3)
-	return icon
-end
+local anchorCenter = Vector2.new(0.5, 0.5)
+local ringDark = Color3.fromRGB(78, 64, 63)
+local ringCharged = Color3.fromRGB(96, 220, 251)
+local rarity = {
+	Kit.light,
+	Color3.fromRGB(166, 238, 132),
+	Color3.fromRGB(137, 217, 255),
+	Color3.fromRGB(221, 162, 255),
+	Color3.fromRGB(255, 213, 110),
+}
 
 function Hud.new(
 	guiParent: Instance,
 	worldParent: Instance,
 	translate: (string, ...any) -> string
 ): any
-	local gui = Instance.new("ScreenGui")
-	gui.Name, gui.DisplayOrder, gui.ResetOnSpawn, gui.Enabled = "MineHUD", 4, false, false
-	gui.IgnoreGuiInset, gui.ScreenInsets = true, Enum.ScreenInsets.DeviceSafeInsets
-	gui.Parent = guiParent
-	local wallet = card(gui, UDim2.fromOffset(122, 44), UDim2.fromOffset(14, 54), Vector2.zero)
-	coinIcon(wallet, 13, 21)
-	local coins = label(wallet, UDim2.new(1, -37, 1, 0), ink, 23)
-	coins.Position = UDim2.fromOffset(36, 0)
+	local gui = Kit.gui(guiParent, "MineHUD", 4, false)
+	local wallet =
+		Kit.image(gui, "Wallet", UDim2.fromOffset(124, 44), UDim2.fromOffset(12, 9), "frame-iron")
+	local coins = Kit.number(wallet, UDim2.new(1, -40, 1, -6), UDim2.fromScale(1, 0.5), "hud-coin")
+	coins.AnchorPoint, coins.Position = anchorCenter, UDim2.new(0.5, 16, 0.5, 0)
 	local coinScale = Instance.new("UIScale")
-	coinScale.Parent = wallet
-	local worldCard =
-		card(gui, UDim2.fromOffset(196, 76), UDim2.new(0.5, 0, 0, 10), Vector2.new(0.5, 0))
-	local world = label(worldCard, UDim2.new(1, 0, 0, 32), ink, 16)
-	world.Name = "WorldProgress"
-	local rail = Instance.new("Frame")
-	rail.BackgroundColor3, rail.Position, rail.Size =
-		Color3.fromRGB(213, 221, 230), UDim2.fromOffset(11, 31), UDim2.new(1, -22, 0, 5)
-	rail.BorderSizePixel, rail.Parent = 0, worldCard
-	round(rail, 5)
-	local fill = Instance.new("Frame")
-	fill.BackgroundColor3, fill.BorderSizePixel, fill.Parent = blue, 0, rail
-	round(fill, 5)
-	local endMark = Instance.new("Frame")
-	endMark.AnchorPoint, endMark.Position, endMark.Size =
-		Vector2.new(0.5, 0.5), UDim2.fromScale(1, 0.5), UDim2.fromOffset(4, 9)
-	endMark.BackgroundColor3, endMark.BorderSizePixel, endMark.Parent = ink, 0, rail
-	round(endMark, 2)
-	local remaining = label(worldCard, UDim2.new(1, 0, 0, 19), ink, 12)
-	remaining.Name, remaining.Position = "PlateRemaining", UDim2.fromOffset(0, 38)
-	local power = label(worldCard, UDim2.new(1, -10, 0, 15), ink, 11)
-	power.Name, power.Position, power.TextScaled = "PowerAndHardness", UDim2.fromOffset(5, 57), true
-	local powerLimit = Instance.new("UITextSizeConstraint")
-	powerLimit.MinTextSize, powerLimit.MaxTextSize, powerLimit.Parent = 9, 11, power
-	local hits = Instance.new("Frame")
-	hits.Name, hits.Size, hits.AnchorPoint, hits.BackgroundTransparency =
-		"HitsRemaining", UDim2.fromOffset(76, 8), Vector2.new(0.5, 0.5), 1
-	hits.Parent = gui
+	coinScale.Parent = coins
+
+	local worldCard = Kit.image(
+		gui,
+		"World",
+		UDim2.new(0.42, 0, 0, 58),
+		UDim2.new(0.5, 0, 0, 9),
+		"frame-iron",
+		Vector2.new(0.5, 0)
+	)
+	local width = Instance.new("UISizeConstraint")
+	width.MaxSize, width.Parent = Vector2.new(264, 58), worldCard
+	local world = Kit.label(
+		worldCard,
+		"WorldProgress",
+		UDim2.new(1, -16, 0, 23),
+		UDim2.fromOffset(8, 4),
+		17,
+		true
+	)
+	local fill = Kit.bar(
+		worldCard,
+		"Progress",
+		UDim2.new(1, -24, 0, 7),
+		UDim2.fromOffset(12, 29),
+		ringCharged
+	)
+	local remaining = Kit.label(
+		worldCard,
+		"PlateRemaining",
+		UDim2.new(1, -12, 0, 16),
+		UDim2.fromOffset(6, 37),
+		13
+	)
+
+	local rightTop = Vector2.new(1, 0)
+	local eye = Kit.button(
+		gui,
+		"MineCameraButton",
+		UDim2.fromOffset(44, 44),
+		UDim2.new(1, -60, 0, 9),
+		"iron",
+		rightTop,
+		"icon-lens"
+	)
+	local gear = Kit.button(
+		gui,
+		"MineSettingsButton",
+		UDim2.fromOffset(44, 44),
+		UDim2.new(1, -12, 0, 9),
+		"iron",
+		rightTop,
+		"i-gear"
+	)
+	local focus = Kit.button(
+		gui,
+		"FaceWall",
+		UDim2.fromOffset(142, 44),
+		UDim2.new(0.5, 0, 1, -14),
+		"gold",
+		Vector2.new(0.5, 1)
+	)
+	focus.Visible = false
+
+	local ult, ring = Kit.dial(gui, UDim2.new(1, -13, 1, -12))
+	local hits =
+		Kit.block(gui, "HitsRemaining", UDim2.fromOffset(76, 8), UDim2.fromScale(0.5, 0.5), Kit.ink)
+	hits.AnchorPoint, hits.BackgroundTransparency, hits.Visible = anchorCenter, 1, false
 	local dots = {}
 	for i = 1, 8 do
-		local dot = Instance.new("Frame")
-		dot.Size, dot.Position, dot.BackgroundColor3, dot.BorderSizePixel =
-			UDim2.fromOffset(6, 6), UDim2.fromOffset((i - 1) * 10, 1), yellow, 0
-		dot.Parent = hits
-		round(dot, 6)
-		dots[i] = dot
+		dots[i] = Kit.block(
+			hits,
+			"Dot",
+			UDim2.fromOffset(5, 5),
+			UDim2.fromOffset((i - 1) * 9, 1),
+			Kit.gold
+		)
 	end
-	local eye = button(gui, 51, UDim2.new(1, -15, 0, 48), Vector2.new(1, 0))
-	eye.Name = "MineCameraButton"
-	local gear = button(gui, 39, UDim2.new(1, -20, 0, 107), Vector2.new(1, 0))
-	gear.Name, gear.Text, gear.TextSize, gear.TextColor3, gear.Font =
-		"MineSettingsButton", translate("mine_settings_icon"), 25, ink, Enum.Font.GothamBold
-	local iris = Instance.new("Frame")
-	iris.AnchorPoint, iris.Position, iris.Size =
-		Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), UDim2.fromOffset(29, 16)
-	iris.BackgroundColor3, iris.BorderSizePixel, iris.Parent = ink, 0, eye
-	round(iris, 16)
-	local pupil = Instance.new("Frame")
-	pupil.AnchorPoint, pupil.Position, pupil.Size =
-		Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), UDim2.fromOffset(10, 10)
-	pupil.BackgroundColor3, pupil.BorderSizePixel, pupil.Parent = cream, 0, iris
-	round(pupil, 10)
-	local ult = button(gui, 86, UDim2.new(1, -23, 1, -22), Vector2.one)
-	ult.Name = "MineUltButton"
-	ult.Text, ult.TextSize, ult.TextColor3, ult.Font =
-		translate("mine_ult_icon"), 35, ink, Enum.Font.GothamBold
-	local ring = {}
-	for i = 1, 36 do
-		local angle = (i - 1) * math.pi * 2 / 36
-		local p = Instance.new("Frame")
-		p.AnchorPoint, p.Position, p.Size =
-			Vector2.new(0.5, 0.5),
-			UDim2.fromScale(0.5 + math.sin(angle) * 0.43, 0.5 - math.cos(angle) * 0.43),
-			UDim2.fromOffset(5, 6)
-		p.Rotation, p.BackgroundColor3, p.BorderSizePixel, p.Parent =
-			math.deg(angle), Color3.fromRGB(198, 210, 218), 0, ult
-		round(p, 3)
-		ring[i] = p
-	end
-	local cross = Instance.new("Frame")
-	cross.AnchorPoint, cross.Position, cross.Size =
-		Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), UDim2.fromOffset(5, 5)
-	cross.BackgroundColor3, cross.BorderSizePixel, cross.Parent = Color3.new(1, 1, 1), 0, gui
-	round(cross, 4)
-	local arrow = label(gui, UDim2.fromOffset(42, 42), yellow, 32)
-	arrow.Text, arrow.AnchorPoint, arrow.Visible =
-		translate("mine_arrow"), Vector2.new(0.5, 0.5), false
-	local bannerBox =
-		card(gui, UDim2.fromOffset(254, 56), UDim2.fromScale(0.5, 0.76), Vector2.new(0.5, 0.5))
+	local cross =
+		Kit.block(gui, "Crosshair", UDim2.fromOffset(4, 4), UDim2.fromScale(0.5, 0.5), Kit.light)
+	cross.AnchorPoint = anchorCenter
+	local arrow = Kit.image(
+		gui,
+		"AimArrow",
+		UDim2.fromOffset(24, 24),
+		UDim2.fromScale(0.5, 0.5),
+		"i-right",
+		anchorCenter
+	)
+	arrow.Visible = false
+
+	local bannerBox = Kit.image(
+		gui,
+		"RideReward",
+		UDim2.fromOffset(246, 53),
+		UDim2.fromScale(0.5, 0.77),
+		"frame-iron",
+		anchorCenter
+	)
 	bannerBox.Visible = false
-	local banner = label(bannerBox, UDim2.new(1, -12, 0, 27), ink, 20)
-	banner.Name, banner.Position = "Reward", UDim2.fromOffset(6, 24)
-	banner.TextScaled = true
-	local bannerSize = Instance.new("UITextSizeConstraint")
-	bannerSize.MinTextSize, bannerSize.MaxTextSize, bannerSize.Parent = 12, 20, banner
-	local layers = label(bannerBox, UDim2.new(1, 0, 0, 25), ink, 17)
-	layers.Name = "FractureLayers"
-	local worldBanner =
-		card(gui, UDim2.fromOffset(274, 52), UDim2.new(0.5, 0, 0, 92), Vector2.new(0.5, 0))
-	worldBanner.Name, worldBanner.Visible = "WorldEntered", false
-	local newWorld = label(worldBanner, UDim2.new(1, -12, 0, 28), ink, 17)
-	newWorld.Position, newWorld.TextScaled = UDim2.fromOffset(6, 2), true
-	local nameLimit = Instance.new("UITextSizeConstraint")
-	nameLimit.MinTextSize, nameLimit.MaxTextSize, nameLimit.Parent = 10, 17, newWorld
-	local plateReward = label(worldBanner, UDim2.fromScale(1, 0.39), ink, 14)
-	plateReward.Position = UDim2.fromOffset(0, 29)
+	local banner =
+		Kit.label(bannerBox, "Reward", UDim2.new(1, -12, 0, 23), UDim2.fromOffset(6, 24), 16)
+	local layers = Kit.label(
+		bannerBox,
+		"FractureLayers",
+		UDim2.new(1, -12, 0, 21),
+		UDim2.fromOffset(6, 4),
+		16,
+		true,
+		Kit.gold
+	)
+	local worldBanner = Kit.image(
+		gui,
+		"WorldEntered",
+		UDim2.fromOffset(274, 52),
+		UDim2.new(0.5, 0, 0, 72),
+		"frame-iron",
+		Vector2.new(0.5, 0)
+	)
+	worldBanner.Visible = false
+	local newWorld = Kit.label(
+		worldBanner,
+		"WorldName",
+		UDim2.new(1, -12, 0, 24),
+		UDim2.fromOffset(6, 3),
+		17,
+		true
+	)
+	local plateReward = Kit.label(
+		worldBanner,
+		"PlateReward",
+		UDim2.new(1, -12, 0, 20),
+		UDim2.fromOffset(6, 27),
+		14,
+		false,
+		Kit.gold
+	)
+
 	local money = {}
 	for i = 1, 10 do
 		local anchor = Instance.new("Part")
 		anchor.Size, anchor.Transparency = Vector3.one * 0.1, 1
-		anchor.Anchored, anchor.CanQuery, anchor.CanCollide, anchor.CanTouch =
-			true, false, false, false
+		anchor.Anchored, anchor.CanQuery, anchor.CanCollide, anchor.CanTouch, anchor.CastShadow =
+			true, false, false, false, false
 		anchor.Parent = worldParent
 		local badge = Instance.new("BillboardGui")
 		badge.Size, badge.AlwaysOnTop, badge.Enabled, badge.Parent =
-			UDim2.fromOffset(150, 36), true, false, anchor
-		coinIcon(badge, 35, 15)
-		local text = label(badge, UDim2.new(1, -56, 1, 0), yellow, 23)
-		text.Position, text.TextXAlignment = UDim2.fromOffset(56, 0), Enum.TextXAlignment.Left
-		text.TextStrokeColor3, text.TextStrokeTransparency = ink, 0.25
-		money[i] = { anchor = anchor, badge = badge, text = text, at = -math.huge }
+			UDim2.fromOffset(122, 36), true, false, anchor
+		local icon =
+			Kit.image(badge, "Coin", UDim2.fromOffset(16, 16), UDim2.fromOffset(16, 10), "hud-coin")
+		local text =
+			Kit.label(badge, "Gain", UDim2.new(1, -37, 1, 0), UDim2.fromOffset(37, 0), 23, true)
+		text.TextXAlignment = Enum.TextXAlignment.Left
+		money[i] = {
+			anchor = anchor,
+			badge = badge,
+			icon = icon,
+			text = text,
+			stroke = text:FindFirstChildOfClass("UIStroke"),
+			at = -math.huge,
+		}
 	end
 	return {
 		gui = gui,
 		eye = eye,
 		gear = gear,
+		focus = focus,
 		ult = ult,
 		ring = ring,
 		world = world,
-		power = power,
 		hits = hits,
 		dots = dots,
 		fill = fill,
@@ -221,7 +227,7 @@ end
 function Hud.set(h: any, front: number, coins: number, charge: number, cap: number)
 	local world = Worlds.of(front)
 	local ratio = math.clamp((front - world.start) / world.length, 0, 1)
-	h.world.Text = h.translate("mine_world_progress", world.index, math.floor(ratio * 100))
+	h.world.Text = h.translate("mine_world_enter", world.index, h.translate("world_" .. world.id))
 	h.fill.Size = UDim2.fromScale(ratio, 1)
 	h.fill.BackgroundColor3 = Color3.fromRGB(world.color[1], world.color[2], world.color[3])
 	local remaining = math.max(0, world.plateDepth - front)
@@ -232,32 +238,24 @@ function Hud.set(h: any, front: number, coins: number, charge: number, cap: numb
 		h.plateRoll = nil
 	end
 	h.remaining.Text = h.translate("mine_plate_remaining", Format.grouped(remaining))
-	h.remaining.TextColor3 = Color3.fromRGB(155, 88, 22):Lerp(ink, progress)
-	h.coins.Text = h.translate("mine_coins", Format.short(coins))
+	h.remaining.TextColor3 = Kit.gold:Lerp(Kit.light, progress)
+	h.coins.Text = Format.stat(coins, Strings.localeOf(Players.LocalPlayer))
 	if coins ~= h.amount then
 		if coins > h.amount and h.amount >= 0 then
 			h.coinAt = os.clock()
 		end
 		h.amount = coins
 	end
-	if charge ~= h.lastCharge or cap ~= h.lastCap then
-		for i, tick in h.ring do
-			tick.BackgroundColor3 = if i <= math.floor(charge / cap * #h.ring)
-				then Color3.fromRGB(58, 168, 223)
-				else Color3.fromRGB(198, 210, 218)
-		end
-		h.lastCharge, h.lastCap = charge, cap
-	end
+	h.lastCharge, h.lastCap = charge, cap
 end
 
-function Hud.power(h: any, strength: string, hardness: string, count: number, point: Vector3?)
-	h.power.Text = h.translate("mine_power_hardness", strength, hardness)
+function Hud.hits(h: any, count: number, point: Vector3?)
 	local camera = workspace.CurrentCamera
 	h.hits.Visible = false
 	if camera and point and count > 0 then
 		local p, visible = camera:WorldToViewportPoint(point)
 		h.hits.Visible = visible
-		h.hits.Size = UDim2.fromOffset(count * 10 - 4, 8)
+		h.hits.Size = UDim2.fromOffset(math.min(count, #h.dots) * 9 - 4, 8)
 		h.hits.Position = UDim2.fromOffset(p.X, p.Y + 14)
 		for i, dot in h.dots do
 			dot.Visible = i <= count
@@ -272,40 +270,50 @@ end
 
 function Hud.enterWorld(h: any, now: number, world: Worlds.World, reward: number)
 	h.worldEntered = { at = now, world = world, reward = reward }
-	h.worldBanner.BackgroundColor3 =
-		cream:Lerp(Color3.fromRGB(world.color[1], world.color[2], world.color[3]), 0.22)
+	h.newWorld.TextColor3 =
+		Kit.light:Lerp(Color3.fromRGB(world.color[1], world.color[2], world.color[3]), 0.46)
 end
 
-function Hud.coin(h: any, position: Vector3, amount: number)
+function Hud.coin(h: any, position: Vector3, amount: number, ore: number?)
 	if amount <= 0 then
 		return
 	end
 	h.gainIndex = h.gainIndex % #h.money + 1
 	local item = h.money[h.gainIndex]
 	item.anchor.Position, item.at = position, os.clock()
-	item.text.Text = h.translate("mine_coin_gain", Format.short(amount))
+	item.text.Text =
+		h.translate("mine_coin_gain", Format.stat(amount, Strings.localeOf(Players.LocalPlayer)))
+	item.text.TextColor3 = rarity[ore or 1] or Kit.gold
 	item.badge.Enabled = true
 end
 
 function Hud.show(h: any, delta: number, blocks: number, coins: number, ultimate: boolean)
 	if ultimate or delta >= 10 then
-		h.reward = {
-			at = os.clock(),
-			delta = delta,
-			blocks = blocks,
-			coins = coins,
-			ultimate = ultimate,
-		}
+		h.reward =
+			{ at = os.clock(), delta = delta, blocks = blocks, coins = coins, ultimate = ultimate }
 	end
 end
 
-function Hud.step(h: any, now: number, active: boolean, crosshair: boolean, hint: Vector3?)
+function Hud.step(
+	h: any,
+	now: number,
+	active: boolean,
+	crosshair: boolean,
+	hint: Vector3?,
+	reduced: boolean
+)
 	h.gui.Enabled = active
 	h.cross.Visible = crosshair
-	h.coinScale.Scale = 1 + 0.13 * math.max(0, 1 - (now - h.coinAt) / 0.24)
-	h.ult.BackgroundColor3 = if h.lastCharge >= h.lastCap and h.lastCap > 0
-		then cream:Lerp(yellow, 0.52 + 0.24 * math.sin(now * 6))
-		else cream
+	local jump = math.clamp((now - h.coinAt) / 0.10, 0, 1)
+	h.coinScale.Scale = if reduced then 1 else 1 + 0.06 * math.sin(jump * math.pi)
+	local charge = if h.lastCap > 0 then h.lastCharge / h.lastCap else 0
+	local pulse = if reduced then 0.7 else 0.65 + 0.25 * math.sin(now * 6)
+	local color = if charge >= 1
+		then Color3.fromRGB(219, 131, 38):Lerp(Kit.gold, pulse)
+		else ringCharged
+	for i, tick in h.ring do
+		tick.BackgroundColor3 = if i <= math.floor(charge * #h.ring) then color else ringDark
+	end
 	h.arrow.Visible = false
 	local camera = workspace.CurrentCamera
 	if active and camera and hint then
@@ -331,7 +339,10 @@ function Hud.step(h: any, now: number, active: boolean, crosshair: boolean, hint
 			entered.world.index,
 			h.translate("world_" .. entered.world.id)
 		)
-		h.plateReward.Text = h.translate("mine_plate_reward", Format.short(entered.reward))
+		h.plateReward.Text = h.translate(
+			"mine_plate_reward",
+			Format.stat(entered.reward, Strings.localeOf(Players.LocalPlayer))
+		)
 	end
 	local reward = h.reward
 	h.bannerBox.Visible = reward ~= nil and now - reward.at < 1.55
@@ -347,7 +358,10 @@ function Hud.step(h: any, now: number, active: boolean, crosshair: boolean, hint
 			then h.translate(
 				"mine_ult_value",
 				Format.grouped(math.floor(reward.blocks * progress)),
-				Format.short(math.floor(reward.coins * progress))
+				Format.stat(
+					math.floor(reward.coins * progress),
+					Strings.localeOf(Players.LocalPlayer)
+				)
 			)
 			else h.translate("mine_layers_gain", math.floor(reward.delta * progress))
 	end
@@ -355,9 +369,10 @@ function Hud.step(h: any, now: number, active: boolean, crosshair: boolean, hint
 		local t = now - item.at
 		item.badge.Enabled = active and t < 0.7
 		if item.badge.Enabled then
-			item.badge.StudsOffsetWorldSpace = Vector3.new(0, 0.8 + 2.6 * t / 0.7, 0)
-			item.text.TextTransparency, item.text.TextStrokeTransparency =
-				t / 0.7, 0.25 + 0.75 * t / 0.7
+			item.badge.StudsOffsetWorldSpace =
+				Vector3.new(0, 0.8 + (if reduced then 0 else 2.6 * t / 0.7), 0)
+			item.text.TextTransparency, item.stroke.Transparency, item.icon.ImageTransparency =
+				t / 0.7, t / 0.7, t / 0.7
 		end
 	end
 end

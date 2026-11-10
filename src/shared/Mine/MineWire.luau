@@ -122,12 +122,12 @@ end
 
 local function getDamage(get: Get): { any }
 	local count = get("u16")
-	check(count <= mine.maxWidth * mine.maxHeight * mine.window)
+	check(count <= mine.maxWidth * mine.maxHeight * mine.nearWindow)
 	local damage = table.create(count)
 	for i = 1, count do
 		local point = getPoint(get)
 		point.amount = get("u8")
-		check(point.amount > 0 and point.amount < 255)
+		check(point.amount > 0 and point.amount < 255 and point.dRel < mine.nearWindow)
 		damage[i] = point
 	end
 	return damage
@@ -205,7 +205,7 @@ local function decode(data: any, read: (Get) -> any): any?
 end
 
 function Wire.encodeWindow(win: any): buffer
-	local put, finish = writer(12000)
+	local put, finish = writer(4096)
 	put("u8", win.plot)
 	put("u32", win.front)
 	put("u8", win.charge)
@@ -216,6 +216,9 @@ function Wire.encodeWindow(win: any): buffer
 end
 
 function Wire.decodeWindow(data: any): any?
+	if typeof(data) ~= "buffer" or buffer.len(data) > 4096 then
+		return nil
+	end
 	return decode(data, function(get)
 		local win = {
 			plot = get("u8"),
@@ -224,9 +227,31 @@ function Wire.decodeWindow(data: any): any?
 			plateDamage = get("f64"),
 		} :: any
 		win.width, win.height, win.layers = getLayers(get)
-		check(#win.layers == mine.window)
+		check(#win.layers == mine.nearWindow)
 		win.damage = getDamage(get)
 		return win
+	end)
+end
+
+function Wire.encodeLayers(part: any): buffer
+	local put, finish = writer(2048)
+	put("u8", part.plot)
+	put("u32", part.front)
+	put("u8", part.offset)
+	putLayers(put, part.width, part.height, part.layers)
+	return finish()
+end
+
+function Wire.decodeLayers(data: any): any?
+	return decode(data, function(get)
+		local part = { plot = get("u8"), front = get("u32"), offset = get("u8") } :: any
+		part.width, part.height, part.layers = getLayers(get)
+		check(
+			part.offset >= mine.nearWindow
+				and #part.layers <= mine.layerBatch
+				and part.offset + #part.layers <= mine.window
+		)
+		return part
 	end)
 end
 
@@ -336,11 +361,7 @@ function Wire.decodeResult(data: any): any?
 		if bit32.btest(flags, 2) then
 			res.delta = get("u32")
 			res.width, res.height, res.layers = getLayers(get)
-			check(
-				res.delta > 0
-					and res.delta <= front
-					and #res.layers == math.min(mine.window, res.delta)
-			)
+			check(res.delta > 0 and res.delta <= front and #res.layers == mine.nearWindow)
 		end
 		res.charge, res.plateDamage, res.damage = get("u8"), get("f64"), getDamage(get)
 		return res
