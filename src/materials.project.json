@@ -10,6 +10,22 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_amethyst_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://101453173147811",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_amethyst_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://87514398910859",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_aquamarine": {
       "$className": "MaterialVariant",
       "$properties": {
@@ -18,11 +34,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_aquamarine_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://99099137489877",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_aquamarine_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://139773926008427",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_basalt": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://131895016345579",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_basalt_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://88725219799139",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_basalt_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://91691892305613",
         "StudsPerTile": 5
       }
     },
@@ -50,11 +98,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_black_pearl_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://85320396278835",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_black_pearl_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://120865887492516",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_brilliant": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://122722510391506",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_brilliant_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://107794129372401",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_brilliant_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://85576544271124",
         "StudsPerTile": 5
       }
     },
@@ -66,11 +146,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_coal_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://98790790280590",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_coal_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://86424473465476",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_copper": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://133698370711521",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_copper_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://115784206606375",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_copper_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://78112250981633",
         "StudsPerTile": 5
       }
     },
@@ -82,11 +194,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_copper_w2_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://135933975578235",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_copper_w2_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://138043974965494",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_diamond": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://74289850845629",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_diamond_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://120952465235853",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_diamond_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://95973907394232",
         "StudsPerTile": 5
       }
     },
@@ -98,11 +242,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_emerald_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://82641828090532",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_emerald_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://86705948499868",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_eternal_ice": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://125581380508389",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_eternal_ice_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://74450794812287",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_eternal_ice_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://125532368303846",
         "StudsPerTile": 5
       }
     },
@@ -114,11 +290,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_fire_ruby_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://98022987090689",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_fire_ruby_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://90684261390212",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_firefly_amber": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://99803428344085",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_firefly_amber_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://124734848876311",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_firefly_amber_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://107868898487221",
         "StudsPerTile": 5
       }
     },
@@ -130,6 +338,22 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_flint_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://83691252315942",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_flint_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://112071582571160",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_froststone": {
       "$className": "MaterialVariant",
       "$properties": {
@@ -138,11 +362,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_froststone_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://126048183562101",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_froststone_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://122586162802995",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_frozen_stone": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://132942078008917",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_frozen_stone_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://90988367883144",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_frozen_stone_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://118275371818981",
         "StudsPerTile": 5
       }
     },
@@ -162,11 +418,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_garnet_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://131406923709972",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_garnet_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://110284413671506",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_giant_diamond": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://73278793054628",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_giant_diamond_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://126700137408478",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_giant_diamond_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://130870538115657",
         "StudsPerTile": 5
       }
     },
@@ -178,11 +466,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_glowshroom_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://112802786511323",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_glowshroom_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://94513699360630",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_gold": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://101795675668900",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_gold_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://116151458045074",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_gold_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://134613727911875",
         "StudsPerTile": 5
       }
     },
@@ -194,11 +514,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_ice_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://74712204405616",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_ice_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://85631456543708",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_iron": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://88158629958395",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_iron_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://98485739071821",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_iron_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://72841014622224",
         "StudsPerTile": 5
       }
     },
@@ -210,11 +562,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_malachite_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://130524401887205",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_malachite_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://116638106694174",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_mantle": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://132890870709802",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_mantle_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://115775809564656",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_mantle_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://98104992646902",
         "StudsPerTile": 5
       }
     },
@@ -234,11 +618,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_moonstone_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://113239060308198",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_moonstone_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://136419263888914",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_moss_stone": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://108130962393510",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_moss_stone_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://91649070114493",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_moss_stone_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://134495263835144",
         "StudsPerTile": 5
       }
     },
@@ -258,6 +674,22 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_mycelium_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://106458991672993",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_mycelium_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://98754509868113",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_mycelium_lining": {
       "$className": "MaterialVariant",
       "$properties": {
@@ -274,11 +706,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_nugget_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://117628466983942",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_nugget_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://105792253730280",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_obsidian": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://94127908854172",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_obsidian_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://71304292870050",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_obsidian_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://117001092553000",
         "StudsPerTile": 5
       }
     },
@@ -290,11 +754,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_pearl_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://120110435261751",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_pearl_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://96963844522107",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_pebble": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://78430297896486",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_pebble_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://114761731475224",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_pebble_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://138755302279033",
         "StudsPerTile": 5
       }
     },
@@ -322,6 +818,22 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_platinum_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://139774223717188",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_platinum_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://138493251365325",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_quartz": {
       "$className": "MaterialVariant",
       "$properties": {
@@ -330,11 +842,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_quartz_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://113540534672071",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_quartz_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://112363199265810",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_red_stone": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://85974396427188",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_red_stone_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://106900373172692",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_red_stone_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://105793392692639",
         "StudsPerTile": 5
       }
     },
@@ -354,11 +898,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_resin_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://132853831070626",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_resin_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://133950625134998",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_river_pearl": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://79023488372795",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_river_pearl_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://115294306388969",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_river_pearl_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://72882222197248",
         "StudsPerTile": 5
       }
     },
@@ -370,11 +946,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_rose_quartz_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://106487631258307",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_rose_quartz_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://100884414413263",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_ruby": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://108502435984387",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_ruby_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://88035917379763",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_ruby_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://102624594044069",
         "StudsPerTile": 5
       }
     },
@@ -386,11 +994,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_salt_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://71323435686328",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_salt_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://118332216923111",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_sandstone": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://124280048656558",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_sandstone_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://79063361424655",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_sandstone_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://134533126181558",
         "StudsPerTile": 5
       }
     },
@@ -410,6 +1050,22 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_sap_crystal_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://106053076021363",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_sap_crystal_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://140009552758670",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_sapphire": {
       "$className": "MaterialVariant",
       "$properties": {
@@ -418,11 +1074,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_sapphire_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://116948356881414",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_sapphire_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://90278691750211",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_sea_stone": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://94678738035343",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_sea_stone_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://76549749473739",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_sea_stone_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://135063944989563",
         "StudsPerTile": 5
       }
     },
@@ -442,11 +1130,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_silver_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://122334348945070",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_silver_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://132785571083797",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_sporite": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://109843622351698",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_sporite_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://119659447382076",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_sporite_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://85581915277877",
         "StudsPerTile": 5
       }
     },
@@ -458,11 +1178,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_tin_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://84822850014599",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_tin_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://137131462722653",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_topaz": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://112420313462840",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_topaz_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://117292183117043",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_topaz_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://135714187353103",
         "StudsPerTile": 5
       }
     },
@@ -474,11 +1226,43 @@
         "StudsPerTile": 5
       }
     },
+    "COCOMine_turquoise_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://107480803482360",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_turquoise_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://81998867589041",
+        "StudsPerTile": 5
+      }
+    },
     "COCOMine_white_stone": {
       "$className": "MaterialVariant",
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://88017127816589",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_white_stone_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://119935698551435",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_white_stone_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://70955382321463",
         "StudsPerTile": 5
       }
     },
@@ -495,6 +1279,22 @@
       "$properties": {
         "BaseMaterial": "SmoothPlastic",
         "ColorMap": "rbxassetid://129323788237482",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_world_seed_b": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://80604534118936",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_world_seed_c": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://113748278086587",
         "StudsPerTile": 5
       }
     }

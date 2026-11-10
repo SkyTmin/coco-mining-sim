@@ -34,11 +34,11 @@
     "depth": { "fogStart": 1500, "fogEnd": 4000, "simpleFrom": 300, "lampSpacing": 20, "middleSpacing": 40, "distantSpacing": 80 },
     "impactTime": 0.13,
     "ult": {
-      "windup": 0.15, "fractureMin": 0.5, "fractureMax": 0.9, "fracturePerLog": 0.108,
+      "windup": 0.4, "fractureMin": 0.8, "fractureMax": 0.8, "fracturePerLog": 0.108,
       "empty": 0.30, "approachBase": 0.45, "approachPerLog": 0.35,
       "distanceBase": 155, "distancePerLog": 100, "distanceDeep": 430
     },
-    "_note": "[владелец] ТЗ-03б §2, туман 1500–4000 и дальние лампы через 80; [решение] глубокий пролом до дальней зоны при неизменной длительности фаз"
+    "_note": "[владелец] ТЗ-03б §2, туман 1500–4000 и дальние лампы через 80; ТЗ-03е §10, пауза 0,4 с и волна 0,8 с; [решение] глубокий пролом до дальней зоны"
   },
   "sounds": {
     "atlasId": "rbxassetid://82198684260089",

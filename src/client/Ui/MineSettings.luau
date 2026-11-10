@@ -20,7 +20,7 @@ function SettingsPanel.start(
 	local modal = Candy.modal(
 		parent,
 		"MineSettings",
-		scale(0.59, 0.64),
+		scale(0.64, 0.76),
 		Candy.purple,
 		function(show)
 			player:SetAttribute("MineSettingsOpen", show)
@@ -44,12 +44,12 @@ function SettingsPanel.start(
 
 	local function row(name: string, y: number): (Frame, TextLabel)
 		local box =
-			Candy.panel(panel, name, UDim2.new(1, -26, 0.19, 0), UDim2.new(0, 13, y, 0), true)
+			Candy.panel(panel, name, UDim2.new(1, -26, 0.16, 0), UDim2.new(0, 13, y, 0), true)
 		local label = Candy.text(box, "Label", scale(0.61, 0.92), scale(0.035, 0.04), 17)
 		label.TextXAlignment = Enum.TextXAlignment.Left
 		return box, label
 	end
-	local soundRow, volume = row("Sound", 0.35)
+	local soundRow, volume = row("Sound", 0.29)
 	local down = Candy.button(
 		soundRow,
 		"SoundDown",
@@ -66,7 +66,7 @@ function SettingsPanel.start(
 		"neutral",
 		20
 	)
-	local vibrationRow, vibration = row("Vibration", 0.56)
+	local vibrationRow, vibration = row("Vibration", 0.48)
 	local haptics = Candy.button(
 		vibrationRow,
 		"Haptics",
@@ -75,7 +75,7 @@ function SettingsPanel.start(
 		"neutral",
 		16
 	)
-	local motionRow, shake = row("ReducedMotionRow", 0.77)
+	local motionRow, shake = row("ReducedMotionRow", 0.67)
 	local motion = Candy.button(
 		motionRow,
 		"ReducedMotion",
@@ -85,7 +85,10 @@ function SettingsPanel.start(
 		16
 	)
 
+	local credits = Candy.text(panel, "CrackCredits", scale(0.94, 0.12), scale(0.03, 0.85), 12)
+	credits.TextWrapped = true
 	refresh = function()
+		credits.Text = translate("credits_cracks")
 		modal.title.Text = translate("mine_settings")
 		volume.Text =
 			translate("mine_settings_sfx", math.round(ProfileState.preference("sfx") * 100))

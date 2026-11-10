@@ -130,6 +130,9 @@ local function buildChunk(seed: number, x: number, y: number, c: number, key: nu
 		kinds[second] = chooseKind(word, 6, world)
 	end
 	local scores = Hash.noiseLine(seed, x, y, start, CHUNK)
+	for i = 1, CHUNK do
+		scores[i] = 0.45 * scores[i] + 0.55 * Hash.unit(seed, x, y, start + i - 1, 391)
+	end
 	local order = table.create(CHUNK) :: { number }
 	for i = 1, CHUNK do
 		if i ~= first and i ~= second then

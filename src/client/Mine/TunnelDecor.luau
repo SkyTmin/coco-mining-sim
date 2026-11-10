@@ -459,6 +459,15 @@ function Tunnel.moves(
 	end
 end
 
+function Tunnel.dim(t: any, ratio: number)
+	if t.active then
+		Lighting.Brightness = 1.32 * ratio
+		for _, lamp in t.lamps do
+			lamp.part.Color = lamp.part.Color:Lerp(Color3.new(0, 0, 0), 1 - ratio)
+		end
+	end
+end
+
 function Tunnel.wave(t: any, depth: number?, strength: number, color: Color3)
 	for i, piece in t.wave do
 		piece.Transparency = if depth then 0.18 + (1 - strength) * 0.63 else 1

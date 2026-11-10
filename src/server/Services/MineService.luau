@@ -66,6 +66,10 @@ local function layers(st: State.MineState, offset: number, limit: number): { { n
 	return layers
 end
 
+function MineService.face(st: State.MineState, depth: number): { number }
+	return layers(st, depth - st.front, depth - st.front + 1)[1]
+end
+
 function MineService.damage(st: State.MineState): { any }
 	local out = {}
 	local radius = (st.width - 1) // 2

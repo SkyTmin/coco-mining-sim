@@ -3,6 +3,7 @@
 local ContentProvider = game:GetService("ContentProvider")
 local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
 
+local Hash = require(game:GetService("ReplicatedStorage").Shared.Mine.Hash)
 local BlockArt = {}
 local WHITE = Color3.new(1, 1, 1)
 local requested: { [string]: boolean } = {}
@@ -15,7 +16,9 @@ function BlockArt.preload(worldId: string, timber: boolean)
 	local world = Config.art.worlds[worldId]
 	local textures = { Config.art.blocks[world.lining] }
 	for _, slot in world.slots do
-		table.insert(textures, Config.art.blocks[slot.texture])
+		for _, name in slot.alts do
+			table.insert(textures, Config.art.blocks[name])
+		end
 	end
 	if timber then
 		table.insert(textures, Config.art.blocks.beam)
@@ -24,6 +27,10 @@ function BlockArt.preload(worldId: string, timber: boolean)
 	task.spawn(function()
 		pcall(ContentProvider.PreloadAsync, ContentProvider, textures)
 	end)
+end
+
+function BlockArt.select(tile: Config.ArtTile, x: number, y: number, d: number): string
+	return tile.alts[1 + Hash.u32(x, y, d) % #tile.alts]
 end
 
 function BlockArt.apply(part: BasePart, texture: string)

@@ -2,33 +2,21 @@
 
 local InputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local Gesture = require(game:GetService("ReplicatedStorage").Shared.Mine.TouchGesture)
 local Input = {}
-local DRAG, HOLD = 12, 0.15
-
-type Finger = {
-	input: InputObject,
-	origin: Vector2,
-	point: Vector2,
-	at: number,
-	panning: boolean,
-	holding: boolean,
-}
-
-local function position(input: InputObject): Vector2
-	return Vector2.new(input.Position.X, input.Position.Y)
-end
 
 function Input.start(callbacks: any)
-	local touch: Finger? = nil
+	local touch: InputObject?
+	local gesture: Gesture.Gesture?
 	local heldMouse, rotating = false, false
 
-	local function mousePoint(): Vector2
+	local function center(): Vector2
 		local camera = workspace.CurrentCamera
-		return if callbacks.first() and camera
-			then camera.ViewportSize / 2
-			else InputService:GetMouseLocation()
+		return if camera then camera.ViewportSize / 2 else Vector2.zero
 	end
-
+	local function mousePoint(): Vector2
+		return if callbacks.first() then center() else InputService:GetMouseLocation()
+	end
 	local function strike(point: Vector2): boolean
 		local target = callbacks.aim(point)
 		if target then
@@ -36,19 +24,34 @@ function Input.start(callbacks: any)
 		end
 		return target ~= nil
 	end
-
-	local function move(finger: Finger, point: Vector2)
-		local delta = point - finger.point
-		finger.point = point
-		if not finger.panning and (point - finger.origin).Magnitude >= DRAG then
-			finger.panning = true
-			delta = point - finger.origin
+	local function beginTouch(input: InputObject, processed: boolean)
+		if processed or touch or not callbacks.active() or input.Position.X < center().X then
+			return
 		end
-		if finger.panning and callbacks.active() and delta.Magnitude > 0 then
-			callbacks.pan(delta)
+		touch, gesture = input, Gesture.begin(input.Position.X, input.Position.Y, os.clock())
+	end
+	local function moveTouch(input: InputObject)
+		local g = gesture
+		if touch ~= input or not g then
+			return
+		end
+		local dx, dy = Gesture.move(g, input.Position.X, input.Position.Y)
+		if (g.panning or g.holding) and callbacks.active() then
+			callbacks.pan(Vector2.new(dx, dy))
 		end
 	end
-
+	local function endTouch(input: InputObject)
+		if input ~= touch or not gesture then
+			return
+		end
+		moveTouch(input)
+		local tap = Gesture.finish(gesture, os.clock())
+			and input.UserInputState == Enum.UserInputState.End
+		touch, gesture = nil, nil
+		if tap and callbacks.active() then
+			strike(center())
+		end
+	end
 	InputService.InputBegan:Connect(function(input, processed)
 		if processed then
 			return
@@ -63,29 +66,22 @@ function Input.start(callbacks: any)
 			callbacks.focus()
 			return
 		end
+		if input.UserInputType == Enum.UserInputType.Touch then
+			beginTouch(input, processed)
+			return
+		end
 		if not callbacks.active() then
 			return
 		end
-		if input.UserInputType == Enum.UserInputType.Touch and not touch then
-			local point = position(input)
-			touch = {
-				input = input,
-				origin = point,
-				point = point,
-				at = os.clock(),
-				panning = false,
-				holding = false,
-			}
-		elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			heldMouse = strike(mousePoint())
 		elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
 			rotating = true
 		end
 	end)
 	InputService.InputChanged:Connect(function(input)
-		local finger = touch
-		if finger and input == finger.input then
-			move(finger, position(input))
+		if input == touch then
+			moveTouch(input)
 		elseif
 			input.UserInputType == Enum.UserInputType.MouseMovement
 			and (callbacks.first() or rotating)
@@ -95,17 +91,8 @@ function Input.start(callbacks: any)
 		end
 	end)
 	InputService.InputEnded:Connect(function(input)
-		local finger = touch
-		if finger and input == finger.input then
-			touch = nil
-			move(finger, position(input))
-			if
-				not finger.panning
-				and not finger.holding
-				and input.UserInputState == Enum.UserInputState.End
-			then
-				strike(finger.point)
-			end
+		if input == touch then
+			endTouch(input)
 		elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
 			heldMouse = false
 		elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
@@ -113,19 +100,18 @@ function Input.start(callbacks: any)
 		end
 	end)
 	InputService.WindowFocusReleased:Connect(function()
-		heldMouse, rotating, touch = false, false, nil
+		heldMouse, rotating, touch, gesture = false, false, nil, nil
 	end)
 	RunService.RenderStepped:Connect(function()
+		local digging = gesture and Gesture.step(gesture, os.clock())
 		if not callbacks.canHit() then
 			return
 		end
-		local finger = touch
-		if finger and not finger.panning and os.clock() - finger.at >= HOLD then
-			finger.holding = strike(finger.point) or finger.holding
+		if digging then
+			strike(center())
 		elseif heldMouse then
 			strike(mousePoint())
 		end
 	end)
 end
-
 return Input

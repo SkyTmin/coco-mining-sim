@@ -40,6 +40,8 @@ export type Renderer = {
 	pulse: Highlight,
 	limits: Model,
 	sparkles: { [Part]: Sparkle },
+	snapFace: Model,
+	snapOutline: Highlight,
 }
 local function layerValue(win: any, x: number, y: number, relative: number): number
 	local radius = (win.width - 1) // 2
@@ -65,8 +67,16 @@ function WallRenderer.exposed(win: any, x: number, y: number, relative: number):
 end
 
 function WallRenderer.new(parent: Instance, frame: CFrame): Renderer
+	local snapFace = Instance.new("Model")
+	snapFace.Name = "SnapFace"
+	local snapOutline = Instance.new("Highlight")
+	snapOutline.Name, snapOutline.Adornee = "SnapOutline", snapFace
+	snapOutline.FillTransparency, snapOutline.OutlineColor, snapOutline.OutlineTransparency =
+		1, Color3.fromHex("FFD36B"), 0.15
+	snapOutline.Enabled = false
 	local model = Instance.new("Model")
 	model.Name, model.Parent = "MineOre", parent
+	snapFace.Parent, snapOutline.Parent = model, snapFace
 	local limits = Instance.new("Model")
 	limits.Name, limits.Parent = "LastCells", model
 	local pulse = Instance.new("Highlight")
@@ -119,6 +129,8 @@ function WallRenderer.new(parent: Instance, frame: CFrame): Renderer
 	end
 	return {
 		sparkles = {},
+		snapFace = snapFace,
+		snapOutline = snapOutline,
 		model = model,
 		frame = frame,
 		pool = BlockPool.new(model),
@@ -134,12 +146,6 @@ function WallRenderer.new(parent: Instance, frame: CFrame): Renderer
 		pulse = pulse,
 		limits = limits,
 	}
-end
-
-function WallRenderer.particleTexture(depth: number, ore: number): string
-	local art = Config.art.worlds[Worlds.of(depth).id]
-	local tile = art.slots[ore]
-	return Config.art.blocks[if tile then tile.texture else art.lining]
 end
 
 local directions = {
@@ -183,6 +189,21 @@ local function sparkle(r: Renderer, cell: Cell, enabled: boolean)
 	r.sparkles[part] = { emitter = emitter, interval = interval, nextAt = os.clock() + interval }
 end
 
+function WallRenderer.snapGlow(r: Renderer, enabled: boolean)
+	r.snapOutline.Enabled = enabled
+	local front = math.huge
+	for _, cell in r.cells do
+		front = math.min(front, cell.d)
+	end
+	for _, cell in r.cells do
+		if enabled and cell.d == front then
+			cell.part.Parent = r.snapFace
+		elseif cell.part.Parent == r.snapFace then
+			cell.part.Parent = r.model
+		end
+	end
+end
+
 function WallRenderer.sparkles(r: Renderer, now: number)
 	for _, glow in r.sparkles do
 		if now >= glow.nextAt then
@@ -215,7 +236,7 @@ local function addCell(
 	part.Size = Vector3.one * S
 	local art = Config.art.worlds[Worlds.of(d).id]
 	local tile = art.slots[ore]
-	BlockArt.apply(part, if tile then tile.texture else art.lining)
+	BlockArt.apply(part, if tile then BlockArt.select(tile, x, y, d) else art.lining)
 	local rel = d - win.front
 	sparkle(r, cell, tile ~= nil and tile.glow and rel < SPARK_LAYERS)
 	table.clear(cell.faces)

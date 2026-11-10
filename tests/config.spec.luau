@@ -48,7 +48,7 @@ Test.describe("Config", function()
 				local png = fs.readFile("assets/blocks/upload/" .. file)
 				local size = if name == "beam"
 						or name == "planks"
-						or name:match("^crack_")
+						or name == "fx_dust"
 					then 64
 					else 128
 				expect(png:sub(17, 24)).toBe(string.char(0, 0, 0, size, 0, 0, 0, size))
@@ -57,11 +57,17 @@ Test.describe("Config", function()
 				checkTexture(file:sub(1, -5))
 				count += 1
 			end
-			expect(count).toBe(216)
+			expect(count).toBe(353)
 			expect(#config.art.cracks).toBe(4)
-			for i, id in config.art.cracks do
-				expect(id).toBe(config.art.blocks["crack_" .. i])
+			for set, ids in config.art.cracks do
+				expect(#ids).toBe(10)
+				for stage, id in ids do
+					expect(id).toBe(
+						config.art.blocks["crack_" .. string.char(96 + set) .. "_" .. stage]
+					)
+				end
 			end
+			expect(config.art.dustTexture).toBe(config.art.blocks.fx_dust)
 			expect(config.art.variantOdds).toEqual(manifest.variants)
 			for i, world in config.worlds do
 				local source = manifest.worlds[i]
@@ -78,6 +84,11 @@ Test.describe("Config", function()
 					expect(strings.t("ore_" .. block.id, "ru")).toBe(block.name)
 					local entry = art.slots[slot]
 					expect(entry.texture).toBe(block.texture)
+					expect(entry.alts).toEqual(block.alts)
+					expect(entry.dust).toEqual(block.dust)
+					for _, alt in entry.alts do
+						checkTexture(alt)
+					end
 					expect(entry.variants).toEqual(block.variants)
 					expect(entry.glow).toBe(block.glow == true)
 					checkTexture(entry.texture)

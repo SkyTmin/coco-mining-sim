@@ -17,7 +17,8 @@ if (whatIf.length) {
 const readArt = (file) => JSON.parse(readFileSync(new URL("../assets/" + file, import.meta.url), "utf8"));
 const blockManifest = readArt("blocks/manifest.json");
 const blockIds = readArt("blocks/ids.json").assets;
-const crackNames = ["crack_1", "crack_2", "crack_3", "crack_4"];
+const crackNames = blockManifest.cracks.sets.flatMap((set) =>
+  Array.from({length:blockManifest.cracks.stages}, (_,i) => "crack_" + set + "_" + (i+1)));
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const isPositive = (n) => Number.isFinite(n) && n > 0;
 const isPositiveInteger = (n) => Number.isSafeInteger(n) && n > 0;
@@ -84,8 +85,8 @@ function validateArt(art, decisions) {
       !variants.every((name) => isPositiveInteger(blockManifest.variants[name]))) {
     errors.push("block variants must define the three positive rarity denominators");
   }
-  const shared = new Set(["beam", "planks", ...crackNames]);
-  const expected = new Set(shared);
+  const shared = new Set(["beam", "planks", blockManifest.fx.dust]);
+  const expected = new Set([...shared, ...crackNames]);
   for (const [i, world] of blockManifest.worlds.entries()) {
     const canonical = balanceWorlds[i];
     const input = decisions.worlds?.[i];
@@ -101,6 +102,11 @@ function validateArt(art, decisions) {
         errors.push("Invalid block in " + world.id + " slot " + (j + 1));
       }
       expected.add(block.texture);
+      if (!Array.isArray(block.alts) || block.alts.length !== 3 || block.alts[0] !== block.texture ||
+          !block.alts.every(isId) || !Array.isArray(block.dust) || !block.dust.every(color => /^#[0-9a-f]{6}$/i.test(color))) {
+        errors.push("Invalid block alternatives or dust palette for " + block.id);
+      }
+      for (const name of block.alts ?? []) expected.add(name);
       for (const variant of variants) expected.add(block.variants?.[variant]);
     }
   }
@@ -288,13 +294,15 @@ function withBalance(input) {
   const blocks = Object.fromEntries(Object.entries(blockIds).map(([file, { id }]) => [file.slice(0, -4), id]));
   const art = {
     blocks,
-    cracks: crackNames.map((name) => blocks[name]),
+    cracks: blockManifest.cracks.sets.map((set) => Array.from({length:blockManifest.cracks.stages},
+      (_,i) => blocks["crack_" + set + "_" + (i+1)])),
+    dustTexture: blocks[blockManifest.fx.dust],
     variantOdds: blockManifest.variants,
     worlds: Object.fromEntries(blockManifest.worlds.map((world) => [world.id, {
       lining: world.lining,
       light: world.light,
-      slots: [world.rock, ...world.ores].map(({ texture, variants, glow }) => ({
-        texture, variants, glow: glow === true,
+      slots: [world.rock, ...world.ores].map(({ texture, alts, dust, variants, glow }) => ({
+        texture, alts, dust, variants, glow: glow === true,
       })),
     }])),
   };
@@ -371,7 +379,7 @@ const sections = [
   {
     name: "fx",
     validate: ({ ult, depth, impactTime }) =>
-      ult?.windup === 0.15 && ult.fractureMin === 0.5 && ult.fractureMax === 0.9 &&
+      ult?.windup === 0.4 && ult.fractureMin === 0.8 && ult.fractureMax === 0.8 &&
       ult.empty >= 0.25 && ult.empty <= 0.35 &&
       ult.approachBase === 0.45 && ult.approachPerLog === 0.35 &&
       [ult.fracturePerLog, ult.distanceBase, ult.distancePerLog, ult.distanceDeep, impactTime].every(isPositive) &&
@@ -473,7 +481,7 @@ const materialTree = { $className: "MaterialService" };
 const materials = new Set(["beam", "planks"]);
 for (const world of Object.values(decisions.art.worlds)) {
   materials.add(world.lining);
-  for (const slot of world.slots) materials.add(slot.texture);
+  for (const slot of world.slots) for (const name of slot.alts) materials.add(name);
 }
 for (const name of [...materials].sort()) {
   materialTree["COCOMine_" + name] = {
