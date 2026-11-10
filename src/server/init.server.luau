@@ -19,6 +19,7 @@ for _, service in
 		services.UpgradeService,
 		services.CreativeService,
 		services.ServerLog,
+		services.Analytics,
 		services.ProfileService,
 	}
 do

@@ -18,6 +18,7 @@ local MineService = require(script.Parent.MineService)
 local ProfileService = require(script.Parent.ProfileService)
 local PlotService = require(script.Parent.PlotService)
 local Pickaxe = require(script.Parent.PickaxeService)
+local Analytics = require(script.Parent.Analytics)
 
 type Session = MineService.Session
 type HitResult = Resolve.HitResult
@@ -260,6 +261,7 @@ local function onIntent(player: Player, packet: any)
 		Remotes.event("Toast"):FireClient(player, "card_unlocked_" .. id)
 	end
 	record(if ability then s.ult else s.hit, (os.clock() - started) * 1000)
+	Analytics.mined(player, ability, blocks, delta, oldWorld, world, plateBroken)
 end
 
 function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)

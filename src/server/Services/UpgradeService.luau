@@ -9,6 +9,7 @@ local State = require(Shared.Mine.MineState)
 local Remotes = require(Shared.Remotes)
 local MineService = require(script.Parent.MineService)
 local ProfileService = require(script.Parent.ProfileService)
+local Analytics = require(script.Parent.Analytics)
 
 local UpgradeService = {}
 local lastAt: { [Player]: number } = {}
@@ -54,14 +55,22 @@ function UpgradeService.Start()
 					assert(State.widen(session.state, quote.level))
 				end
 			end)
-			if quote and purchase.kind == "width" then
+			if not quote then
+				return
+			end
+			if purchase.kind == "width" then
 				MineService.window(session)
-			elseif quote and purchase.id then
-				for _, level in Upgrade.morphs(purchase.id, before, quote.level) do
+			end
+			local morphs = if purchase.id
+				then Upgrade.morphs(purchase.id, before, quote.level)
+				else {}
+			if purchase.id then
+				for _, level in morphs do
 					Remotes.event("Toast")
 						:FireClient(player, "morph_toast_" .. purchase.id .. "_" .. tostring(level))
 				end
 			end
+			Analytics.purchase(player, purchase, quote, #morphs > 0)
 		end)
 	Players.PlayerRemoving:Connect(function(player)
 		lastAt[player] = nil

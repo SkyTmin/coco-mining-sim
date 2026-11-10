@@ -28,6 +28,7 @@ type Session = {
 	replicatedAt: number,
 	sent: { [string]: any }?,
 	playAt: number,
+	startedAt: number,
 }
 type SaveResult = "saved" | "retry" | "stopped"
 
@@ -52,6 +53,7 @@ local closingWrites = 0
 local shuttingDown = false
 local loadedHooks: { (Player) -> () } = {}
 local saveHooks: { (Player) -> () } = {}
+local releaseHooks: { (Player) -> () } = {}
 local store: DataStore? = nil
 
 function ProfileService.DefaultProfile(): Profile
@@ -242,6 +244,15 @@ function ProfileService.BeforeSave(fn: (Player) -> ())
 	table.insert(saveHooks, fn)
 end
 
+function ProfileService.BeforeRelease(fn: (Player) -> ())
+	table.insert(releaseHooks, fn)
+end
+
+function ProfileService.Elapsed(player: Player): number
+	local session = sessions[player]
+	return if session then math.floor(os.clock() - session.startedAt) else 0
+end
+
 function ProfileService.FailLoad(player: Player)
 	local session = sessions[player]
 	if not session or not session.canSave then
@@ -375,6 +386,7 @@ local function load(player: Player)
 		replicateDue = false,
 		replicatedAt = -math.huge,
 		playAt = os.clock(),
+		startedAt = os.clock(),
 	}
 	ProfileService.Mutate(player, function(p)
 		p.joins += 1
@@ -481,6 +493,12 @@ local function beginRelease(player: Player)
 		return
 	end
 	recordPlayTime(player, session, os.clock())
+	for _, hook in releaseHooks do
+		local ok = pcall(hook, player)
+		if not ok then
+			warn("[ProfileService] release hook failed")
+		end
+	end
 	local prepared = session.canSave and prepareSave(player)
 	sessions[player] = nil
 	if not session.canSave then
