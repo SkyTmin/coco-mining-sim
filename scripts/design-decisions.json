@@ -16,7 +16,8 @@
     "_note": "[решение ТЗ-01] формат шахты, размер блока, порции данных и лимиты хранения"
   },
   "plots": {
-    "count": 8, "entranceRadius": 65, "frameWidth": 9, "platformDepth": 6, "spectatorDepth": 3,
+    "count": 8, "entranceRadius": 65, "frameWidth": 7, "platformDepth": 6, "spectatorDepth": 3,
+    "retiredWidth": { "width": 9, "refund": 500000, "_note": "[владелец] ТЗ-03б §1, возврат цены ширины из этапа 3" },
     "_note": "[решение ТЗ-02, поправка 09.11] площадки по кругу, размеры в блоках кроме радиуса в studs"
   },
   "pickaxes": {

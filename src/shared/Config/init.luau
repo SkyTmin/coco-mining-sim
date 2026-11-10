@@ -65,6 +65,7 @@ export type PlotConfig = {
 	count: number,
 	entranceRadius: number,
 	frameWidth: number,
+	retiredWidth: { width: number, refund: number },
 	platformDepth: number,
 	spectatorDepth: number,
 }
@@ -113,7 +114,14 @@ export type SoundsConfig = {
 	},
 }
 
-export type OreConfig = { id: string, color: { number }, texture: string? }
+export type OreConfig = { id: string, color: { number } }
+export type Sprite = { rect: { number }, slice: { number }? }
+export type ArtConfig = {
+	textures: { [string]: string },
+	ui: string,
+	sprites: { [string]: Sprite },
+	ores: { [string]: { { atlas: string, rect: { number } } } },
+}
 export type WorldLook = {
 	material: string,
 	wall: { number },
@@ -148,6 +156,7 @@ return {
 	fx = require(script:WaitForChild("fx")) :: FxConfig,
 	sounds = require(script:WaitForChild("sounds")) :: SoundsConfig,
 	cascade = require(script:WaitForChild("cascade")) :: CascadeConfig,
+	art = require(script:WaitForChild("art")) :: ArtConfig,
 	ores = require(script:WaitForChild("ores")) :: { OreConfig },
 	worlds = require(script:WaitForChild("worlds")) :: { WorldConfig },
 }

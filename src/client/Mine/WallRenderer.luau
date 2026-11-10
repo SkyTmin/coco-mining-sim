@@ -12,10 +12,8 @@ local BlockPool = require(script.Parent.BlockPool)
 local S = Config.mine.blockSize
 local WallRenderer = {}
 local colors: { [string]: Color3 } = {}
-local textures: { [string]: string } = {}
 for _, ore in Config.ores do
 	colors[ore.id] = Color3.fromRGB(ore.color[1], ore.color[2], ore.color[3])
-	textures[ore.id] = ore.texture
 end
 
 type Cell = { part: Part, x: number, y: number, d: number, ore: number, plate: boolean }
@@ -147,9 +145,9 @@ local function tint(ore: number, x: number, y: number, d: number): Color3
 	)
 end
 
-local function showTexture(part: Part, id: string?)
+local function showTexture(part: Part, tile: { atlas: string, rect: { number } }?)
 	local surface = part:FindFirstChild("OrePixels") :: SurfaceGui?
-	if not id then
+	if not tile then
 		if surface then
 			surface.Enabled = false
 		end
@@ -166,7 +164,10 @@ local function showTexture(part: Part, id: string?)
 		surface.Parent = part
 	end
 	local pixels = surface:FindFirstChild("Pixels") :: ImageLabel
-	pixels.Image = id
+	local rect = tile.rect
+	pixels.Image = Config.art.textures[tile.atlas]
+	pixels.ImageRectOffset, pixels.ImageRectSize =
+		Vector2.new(rect[1], rect[2]), Vector2.new(rect[3], rect[4])
 	surface.Enabled = true
 end
 
@@ -192,12 +193,11 @@ local function addCell(
 	cell.part.Size = Vector3.one * (S - 0.045)
 	cell.part.Color = tint(ore, x, y, d)
 	local world = Worlds.of(d)
-	local entry = world.ores[ore]
 	local depth = d - win.front
 	cell.part.Material = if ore == Wire.CHEST or (world.index <= 3 and ore == #world.ores)
 		then Enum.Material.Neon
 		else Enum.Material.SmoothPlastic
-	showTexture(cell.part, if depth <= 2 and entry then textures[entry[1] :: string] else nil)
+	showTexture(cell.part, Config.art.ores[world.id][ore])
 	cell.part.Transparency = if depth >= 15 then math.min(0.42, (depth - 14) * 0.07) else 0
 	return cell
 end

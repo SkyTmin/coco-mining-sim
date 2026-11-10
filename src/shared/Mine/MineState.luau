@@ -328,6 +328,33 @@ function MineState.widen(st: MineState, newWidth: number): boolean
 	return true
 end
 
+function MineState.narrow(st: MineState, newWidth: number): boolean
+	if newWidth >= st.width or not validDimensions(newWidth, st.height) then
+		return false
+	end
+	local oldRadius, radius = (st.width - 1) // 2, (newWidth - 1) // 2
+	for x = -oldRadius, oldRadius do
+		if math.abs(x) > radius then
+			for y = 0, st.height - 1 do
+				local lane = laneKey(x, y)
+				local holes = st.holes[lane]
+				if holes then
+					st.holeCount -= #holes // 2
+				end
+				st.top[lane], st.holes[lane] = nil, nil
+			end
+		end
+	end
+	for key in st.damage do
+		if st.top[key % CELL_STRIDE] == nil then
+			st.damage[key] = nil
+		end
+	end
+	st.width = newWidth
+	MineState.advance(st)
+	return true
+end
+
 function MineState.compact(st: MineState, out: { Range })
 	while st.holeCount > mine.maxHoles do
 		local lane = math.huge
