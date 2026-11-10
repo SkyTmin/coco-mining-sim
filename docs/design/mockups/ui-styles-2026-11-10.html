@@ -1,0 +1,135 @@
+<title>Стили интерфейса шахты</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Rubik:wght@500;800;900&display=swap">
+<style>
+/* Layout: one column of phone-landscape screens, three styles, each shown as HUD and as the open upgrades window. */
+:root{
+  --bg:#14161f; --fg:#eef0f7; --muted:#9aa0b5; --line:#2a2e3f; --accent:#ffc83d;
+  --ui:"Rubik",system-ui,sans-serif;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+main{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font-size:22px;font-weight:800;margin:0;text-wrap:balance}
+h2{font-size:18px;font-weight:800;margin:0}
+p{margin:0;color:var(--muted);line-height:1.45;max-width:62ch}
+section{display:flex;flex-direction:column;gap:10px}
+.tag{display:inline-block;background:var(--accent);color:#1b1400;font-weight:800;border-radius:6px;padding:1px 8px;margin-right:6px}
+.cap{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+
+/* ---------- phone screen ---------- */
+.scr{container-type:inline-size;position:relative;aspect-ratio:667/340;border-radius:14px;overflow:hidden;border:3px solid #000;
+  background:linear-gradient(#1c2333 0 18%,#2b2118 18% 100%)}
+.wall{position:absolute;left:21%;right:21%;top:14%;height:60%;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(3,1fr)}
+.wall i{box-shadow:inset 0 0 0 .25cqw rgba(0,0,0,.35)}
+.d{background:#7a5637}.s{background:#8a8a8f}.c{background:#3a3a40}.m{background:#c9763c}.gold{background:#ffc94a;box-shadow:inset 0 0 0 .25cqw rgba(0,0,0,.35),0 0 3cqw #ffc94a}
+.floor{position:absolute;left:0;right:0;bottom:0;height:26%;background:linear-gradient(#3a2c20,#20170f)}
+.edge{position:absolute;left:0;right:0;bottom:25%;height:.5cqw;background:#7fe8ff;box-shadow:0 0 2cqw #7fe8ff}
+.hud>*{position:absolute}
+.coins{left:2.2cqw;top:3cqw;display:flex;align-items:center;gap:1cqw;padding:.8cqw 2cqw .8cqw 1cqw;font-size:3.1cqw}
+.coin{width:3.6cqw;height:3.6cqw;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3a8,#ffb81f 60%,#c97d08);box-shadow:0 0 0 .35cqw #7a4a00;flex:none}
+.world{left:50%;top:2.4cqw;transform:translateX(-50%);width:30cqw;white-space:nowrap;padding:.8cqw 1.6cqw 1.1cqw;text-align:center;font-size:2.3cqw}
+.bar{height:1.3cqw;border-radius:1cqw;margin-top:.6cqw;overflow:hidden}
+.bar b{display:block;height:100%;width:38%}
+.world small{display:block;font-size:1.7cqw;margin-top:.4cqw;opacity:.85}
+.gear{right:2.2cqw;top:3cqw;width:6cqw;height:6cqw;display:grid;place-items:center;font-size:3cqw}
+.up{left:2.2cqw;bottom:3cqw;padding:1.4cqw 2.6cqw;font-size:2.7cqw;display:flex;gap:1cqw;align-items:center}
+.dot{position:absolute;right:-1cqw;top:-1cqw;width:2.6cqw;height:2.6cqw;border-radius:50%;background:#ff3b4e;border:.4cqw solid #fff}
+.ult{right:2.6cqw;bottom:3cqw;width:11cqw;height:11cqw;border-radius:50%;display:grid;place-items:center;font-size:5.4cqw}
+.pop{left:44%;top:30%;font-size:3.4cqw}
+.win{position:absolute;left:11%;right:11%;top:21%;bottom:3%;display:flex;flex-direction:column}
+.win h3{margin:0;font-size:2.8cqw;padding:1cqw 2.4cqw;align-self:flex-start}
+.x{position:absolute;right:-1.4cqw;top:-1.4cqw;width:5.4cqw;height:5.4cqw;border-radius:50%;display:grid;place-items:center;font-size:2.8cqw;font-weight:900}
+.rows{display:flex;flex-direction:column;gap:.9cqw;padding:1cqw 1.8cqw;flex:1;justify-content:center}
+.row{display:flex;align-items:center;gap:1.6cqw;padding:.5cqw 1.2cqw}
+.ico{width:5.4cqw;height:5.4cqw;display:grid;place-items:center;font-size:3.4cqw;flex:none}
+.row .txt{flex:1;min-width:0}
+.row b{display:block;font-size:2.2cqw;line-height:1.15}
+.row span{font-size:1.8cqw;white-space:nowrap}
+.row em{font-style:normal;font-weight:900}
+.buy{flex:none;padding:1.1cqw 2cqw;font-size:2.4cqw;display:flex;align-items:center;gap:.8cqw;min-width:16cqw;justify-content:center}
+.buy .coin{width:2.8cqw;height:2.8cqw}
+
+/* ---------- A: candy (research default) ---------- */
+.A{font-family:"Nunito",sans-serif;font-weight:900;color:#1e2140}
+.A .coins,.A .world,.A .gear,.A .win,.A .row{background:#fff8ec;border:.55cqw solid #1e2140;border-radius:2.2cqw;box-shadow:0 .7cqw 0 #1e2140}
+.A .gear{border-radius:50%}
+.A .bar{background:#e4d6bd}.A .bar b{background:#ff9f2e}
+.A .up{background:#a855f7;color:#fff;border:.55cqw solid #1e2140;border-radius:2.4cqw;box-shadow:0 .8cqw 0 #1e2140;text-shadow:0 .3cqw 0 #1e2140}
+.A .ult{background:linear-gradient(135deg,#a855f7,#ec4899);border:.6cqw solid #1e2140;box-shadow:0 .8cqw 0 #1e2140,0 0 0 1cqw rgba(255,255,255,.25)}
+.A .pop{color:#fff;-webkit-text-stroke:.5cqw #1e2140;paint-order:stroke fill}
+.A .win h3{background:#a855f7;color:#fff;border:.55cqw solid #1e2140;border-radius:1.8cqw;margin:-2cqw 0 0 2cqw;transform:rotate(-2deg)}
+.A .x{background:#ff4d5e;color:#fff;border:.55cqw solid #1e2140}
+.A .row{background:#f2e6d2;box-shadow:none}
+.A .ico{background:#fff;border:.45cqw solid #1e2140;border-radius:1.6cqw}
+.A .row em{color:#16a34a}
+.A .buy{background:#ffc83d;border:.5cqw solid #1e2140;border-radius:1.8cqw;box-shadow:0 .6cqw 0 #1e2140}
+.A .buy.no{background:#b8bdc9;color:#b3202e}
+
+/* ---------- B: glossy toy ---------- */
+.B{font-family:"Rubik",sans-serif;font-weight:900;color:#fff;text-shadow:0 .25cqw 0 rgba(0,0,0,.45)}
+.B .coins,.B .world{background:linear-gradient(#1a2a55cc,#0c1634cc);border:.4cqw solid #fff;border-radius:5cqw}
+.B .gear{background:linear-gradient(#5aa9ff,#2563eb);border:.45cqw solid #fff;border-radius:1.8cqw;box-shadow:inset 0 .6cqw 0 rgba(255,255,255,.4),0 .6cqw 0 #0b2a7a}
+.B .bar{background:#0a1230}.B .bar b{background:linear-gradient(#7dffb0,#16c45f)}
+.B .up{background:linear-gradient(#69e36b,#1fa83a);border:.45cqw solid #fff;border-radius:2cqw;box-shadow:inset 0 .7cqw 0 rgba(255,255,255,.45),0 .8cqw 0 #0f6a24}
+.B .ult{background:radial-gradient(circle at 40% 30%,#ffe98a,#ff9d0a 65%,#d96a00);border:.6cqw solid #fff;box-shadow:0 0 3cqw #ffb21f,0 .8cqw 0 #8a4300}
+.B .pop{color:#ffe14d;-webkit-text-stroke:.45cqw #5a2c00;paint-order:stroke fill;text-shadow:none}
+.B .win{background:linear-gradient(#3b8cff,#1f55d6);border:.6cqw solid #fff;border-radius:3cqw;box-shadow:0 0 0 .5cqw #0b2a7a,inset 0 1cqw 0 rgba(255,255,255,.3)}
+.B .win h3{font-size:3.2cqw;align-self:center;-webkit-text-stroke:.5cqw #0b2a7a;paint-order:stroke fill;text-shadow:none;padding-bottom:0}
+.B .x{background:linear-gradient(#ff7a85,#e11d35);border:.5cqw solid #fff;box-shadow:0 .5cqw 0 #7a0d1a}
+.B .row{background:#0d2f8fb3;border-radius:2cqw;border:.35cqw solid #7fb6ff}
+.B .ico{background:linear-gradient(#6fb6ff,#2f6fe6);border:.4cqw solid #fff;border-radius:1.6cqw}
+.B .row em{color:#8dff9f}
+.B .buy{background:linear-gradient(#ffe066,#ffab0a);color:#4a2500;text-shadow:none;border:.45cqw solid #fff;border-radius:1.8cqw;box-shadow:inset 0 .6cqw 0 rgba(255,255,255,.55),0 .6cqw 0 #9a5a00}
+.B .buy.no{background:linear-gradient(#aab3c9,#7d879f);color:#fff;box-shadow:0 .6cqw 0 #4b556b}
+
+/* ---------- C: bright pixel ---------- */
+.C{font-family:"Rubik",sans-serif;font-weight:800;letter-spacing:.02em;color:#fff}
+.C .coins,.C .world,.C .gear,.C .win{background:#2b3a67;border:.5cqw solid #0d1226;box-shadow:inset .5cqw .5cqw 0 #5f78c9,inset -.5cqw -.5cqw 0 #18224a}
+.C .bar{background:#0d1226;border-radius:0}.C .bar b{background:#4ade80}
+.C .up{background:#22c55e;border:.5cqw solid #0d1226;box-shadow:inset .5cqw .5cqw 0 #86efac,inset -.5cqw -.5cqw 0 #15803d}
+.C .ult{border-radius:0;background:#f59e0b;border:.5cqw solid #0d1226;box-shadow:inset .6cqw .6cqw 0 #fde68a,inset -.6cqw -.6cqw 0 #b45309}
+.C .pop{color:#fde047;text-shadow:.4cqw .4cqw 0 #0d1226}
+.C .win h3{background:#f59e0b;color:#0d1226;border:.5cqw solid #0d1226;margin:-1.6cqw 0 0 2cqw}
+.C .x{border-radius:0;background:#ef4444;border:.5cqw solid #0d1226;box-shadow:inset .4cqw .4cqw 0 #fca5a5}
+.C .dot{border-radius:0;border-color:#0d1226}
+.C .row{background:#1b2547;border:.4cqw solid #0d1226}
+.C .ico{background:#3f58a8;border:.4cqw solid #0d1226;box-shadow:inset .4cqw .4cqw 0 #7f97e0}
+.C .row em{color:#4ade80}
+.C .buy{background:#facc15;color:#0d1226;border:.5cqw solid #0d1226;box-shadow:inset .5cqw .5cqw 0 #fef08a,inset -.5cqw -.5cqw 0 #a16207}
+.C .buy.no{background:#6b7280;color:#fff;box-shadow:inset .5cqw .5cqw 0 #9ca3af,inset -.5cqw -.5cqw 0 #374151}
+.C .coin{border-radius:0;background:#facc15;box-shadow:inset .4cqw .4cqw 0 #fef08a,0 0 0 .35cqw #0d1226}
+</style>
+<main>
+  <section>
+    <h1>Какой интерфейс делаем: выбери букву</h1>
+    <p>Три стиля на одном и том же экране телефона: обычная игра и открытое окно «Улучшения». Блоки и тоннель здесь условные, смотри только на кнопки, плашки и окно. Можно смешивать: «окно из Б, кнопки из А».</p>
+  </section>
+  <div id="out"></div>
+</main>
+<script>
+const wall="d d s d d c d d s d m d d s d d d gold d s d".split(" ").map(c=>`<i class="${c}"></i>`).join("");
+const scene=`<div class="wall">${wall}</div><div class="floor"></div><div class="edge"></div>`;
+const hud=(open)=>`<div class="hud">
+ <div class="coins"><span class="coin"></span>73,1K</div>
+ <div class="world">Мир 2 · Медные пещеры<div class="bar"><b></b></div><small>до Плиты 682</small></div>
+ <div class="gear">⚙</div>
+ ${open?"":`<div class="pop">+240</div><div class="up">⛏ Улучшения<span class="dot"></span></div><div class="ult">⚡</div>`}
+</div>`;
+const row=(i,t,d,p,no)=>`<div class="row"><div class="ico">${i}</div><div class="txt"><b>${t}</b><span>${d}</span></div><div class="buy ${no?"no":""}"><span class="coin"></span>${p}</div></div>`;
+const win=`<div class="win"><h3>Улучшения</h3><div class="x">✕</div><div class="rows">
+ ${row("▦","Размер удара","крест → <em>3×3</em>","90K",true)}
+ ${row("⛏","Уровень кирки 7","Сила 2,4 → <em>2,5</em>","358")}
+ ${row("✊","Сила · ур. 9","×5,2 → <em>×6,2</em>","816")}
+</div></div>`;
+const styles=[
+ ["A","Конфета","Кремовые пухлые панели с толстой тёмной обводкой, цветные ленты заголовков. Это вариант из нашего исследования: спокойный фон, яркие только кнопки."],
+ ["B","Глянцевая игрушка","Яркие синие окна, блестящие кнопки, белая обводка, крупные буквы с контуром. Так выглядят самые популярные симуляторы Roblox."],
+ ["C","Яркий пиксель","Квадратные кнопки с «ступенькой», всё угловатое. Ближе всего к блокам и кирке, но цвета сочные, не тёмно-серые как в «Каторге»."]];
+document.getElementById("out").innerHTML=styles.map(([k,n,d])=>`<section style="margin-bottom:28px">
+ <h2><span class="tag">${k}</span>${n}</h2><p>${d}</p>
+ <div class="cap">игра</div><div class="scr ${k}">${scene}${hud(false)}</div>
+ <div class="cap">окно «Улучшения»</div><div class="scr ${k}">${scene}${hud(true)}${win}</div>
+</section>`).join("");
+</script>

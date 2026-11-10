@@ -496,3 +496,4 @@ Studio. Draw calls — сумма счётчиков сцены, теней и 2
   `SwingAnimations`, `HeldItem`, `BlockBreak`, `Ui`. Кирки Telegram-игры нарисованы кодом, файлов Blender там нет.
 - В облачной сессии Claude работает Blender без окна (`pip install bpy`, 5.3).
 - **Следующий шаг: Codex — этап 3в по `docs/tz/TZ-03c-vid-iz-prisona.md`.**
+- 10.11: владелец выбрал стиль интерфейса A «Конфета» (макет `docs/design/mockups/`). ТЗ — `docs/tz/TZ-03d-interfeys.md`, после этапа 3в.
