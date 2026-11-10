@@ -1,68 +1,119 @@
 --!strict
--- Pixel cracks and the block-textured crumb burst from coco-prison-roblox (stage-1).
+
+local ContentProvider = game:GetService("ContentProvider")
 local Debris = game:GetService("Debris")
-local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
+local Shared = game:GetService("ReplicatedStorage").Shared
+local Config = require(Shared.Config)
+local Worlds = require(Shared.Mine.Worlds)
+local Power = require(Shared.Play.Power)
 local BlockBreak = {}
 local STAGES = Config.art.cracks
+local CUTS =
+	{ Power.packDamage(0.25), Power.packDamage(0.5), Power.packDamage(0.75), Power.packDamage(0.9) }
+local WHITE = Color3.new(1, 1, 1)
 
-function BlockBreak.new(parent: Instance): any
-	local cracks = {}
-	for i = 1, 24 do
-		local gui = Instance.new("SurfaceGui")
-		gui.Name, gui.SizingMode, gui.CanvasSize =
-			"OreCracks", Enum.SurfaceGuiSizingMode.FixedSize, Vector2.new(64, 64)
-		gui.ZOffset, gui.LightInfluence = 1, 0.44
-		local image = Instance.new("ImageLabel")
-		image.Size, image.BackgroundTransparency = UDim2.fromScale(1, 1), 1
-		image.ResampleMode, image.Parent = Enum.ResamplerMode.Pixelated, gui
-		cracks[i] = { gui = gui, image = image }
+type Faces = { [Enum.NormalId]: Decal }
+type Active = { [Part]: Faces }
+type Fx = {
+	parent: Instance,
+	free: { Decal },
+	active: Active,
+	budget: number,
+	last: number,
+}
+
+function BlockBreak.new(parent: Instance): Fx
+	task.spawn(function()
+		pcall(ContentProvider.PreloadAsync, ContentProvider, STAGES)
+	end)
+	return { parent = parent, free = {}, active = {}, budget = 48, last = os.clock() }
+end
+
+local function release(fx: Fx, desired: Active)
+	for part, faces in fx.active do
+		local keep = desired[part]
+		for side, decal in faces do
+			if not keep or keep[side] ~= decal then
+				decal.Parent = nil
+				table.insert(fx.free, decal)
+			end
+		end
 	end
-	return { parent = parent, cracks = cracks, budget = 48, last = os.clock() }
+	fx.active = desired
+end
+
+function BlockBreak.clear(fx: Fx)
+	release(fx, {})
+end
+
+local function stageFor(amount: number): number
+	for i = #CUTS, 1, -1 do
+		if amount >= CUTS[i] then
+			return i
+		end
+	end
+	return 0
 end
 
 function BlockBreak.cracks(
-	fx: any,
+	fx: Fx,
 	renderer: any,
 	win: any,
 	keyFor: (number, number, number) -> number,
+	strength: number,
 	windup: number?,
 	tint: Color3?
 )
-	local front = {}
+	local nextActive: Active = {}
+	local function paint(cell: any, stage: number)
+		if not cell or stage == 0 then
+			return
+		end
+		local part: Part = cell.part
+		local previous = fx.active[part]
+		local faces: Faces = {}
+		for _, face in cell.faces do
+			local decal = (previous and previous[face]) or table.remove(fx.free)
+			if not decal then
+				decal = Instance.new("Decal")
+				decal.Name = "OreCrack"
+				decal.ZIndex = 2
+			end
+			decal.Face, decal.Texture, decal.Color3 = face, STAGES[stage], tint or WHITE
+			if decal.Parent ~= part then
+				decal.Parent = part
+			end
+			faces[face] = decal
+		end
+		nextActive[part] = faces
+	end
 	if windup then
+		local front = {}
 		for key, cell in renderer.cells do
 			if cell.d == win.front then
 				table.insert(front, key)
 			end
 		end
 		table.sort(front)
-	end
-	for i, item in fx.cracks do
-		local damage = win.damage[i]
-		local cell = if windup
-			then renderer.cells[front[i]]
-			else damage and damage.dRel < Config.mine.nearWindow and renderer.cells[keyFor(
-				damage.x,
-				damage.y,
-				win.front + damage.dRel
-			)]
-		local progress = if windup
-			then windup * 2 - (i - 1) / math.max(1, #front)
-			elseif damage then damage.amount / 255
-			else 0
-		if cell and progress > 0 then
-			local stage = math.clamp(math.floor(progress * #STAGES) + 1, 1, #STAGES)
-			item.gui.Face = if cell.texture then cell.texture.Face else Enum.NormalId.Back
-			item.image.Image, item.image.ImageColor3 = STAGES[stage], tint or Color3.new(1, 1, 1)
-			item.gui.Parent = cell.part
-		else
-			item.gui.Parent = nil
+		for i, key in front do
+			local progress = windup * 2 - (i - 1) / math.max(1, #front)
+			paint(renderer.cells[key], stageFor(Power.packDamage(progress)))
+		end
+	else
+		for _, damage in win.damage do
+			local depth = win.front + damage.dRel
+			local oneHit =
+				Power.packDamage(strength / Power.blockHP(Worlds.durability(depth), strength))
+			if damage.amount > oneHit then
+				paint(renderer.cells[keyFor(damage.x, damage.y, depth)], stageFor(damage.amount))
+			end
 		end
 	end
+	release(fx, nextActive)
 end
 
 function BlockBreak.hit(
-	fx: any,
+	fx: Fx,
 	position: Vector3,
 	color: Color3,
 	size: number,

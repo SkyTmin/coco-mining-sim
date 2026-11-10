@@ -1,300 +1,743 @@
 {
-  "atlas": "rbxassetid://106764051932610",
-  "materials": {
-    "basalt": "rbxassetid://97032215299261",
-    "brown_mushroom_block": "rbxassetid://99033986360887",
-    "crimson_nylium": "rbxassetid://75920746433343",
-    "cyan_concrete": "rbxassetid://137274817592622",
-    "diamond_block": "rbxassetid://135672709707723",
-    "dirt": "rbxassetid://120467403268934",
-    "end_stone": "rbxassetid://117421395326354",
-    "forest_floor": "rbxassetid://122143706233578",
-    "glowstone": "rbxassetid://78268193620023",
-    "gold_block": "rbxassetid://132873931980825",
-    "gold_ore": "rbxassetid://119623485372429",
-    "iron_ore": "rbxassetid://114736204050300",
-    "lapis_block": "rbxassetid://92036843008983",
-    "magma": "rbxassetid://134245404850700",
-    "nether_bricks": "rbxassetid://135366185017009",
-    "oak_log": "rbxassetid://104108597901323",
-    "obsidian": "rbxassetid://122896262834433",
-    "planks": "rbxassetid://110913940729167",
-    "prismarine": "rbxassetid://96493112563500",
-    "purpur": "rbxassetid://138499124767067",
-    "quartz_block": "rbxassetid://86269658302234",
-    "quartz_ore": "rbxassetid://110894404618364",
-    "sandstone": "rbxassetid://90207738459579",
-    "sea_lantern": "rbxassetid://106770117639658",
-    "shroomlight": "rbxassetid://129175876102100",
-    "smooth_sandstone": "rbxassetid://115406280890511",
-    "smooth_stone": "rbxassetid://85548173839548",
-    "snow": "rbxassetid://85928942171420",
-    "terracotta": "rbxassetid://80612962866962"
+  "blocks": {
+    "amethyst": "rbxassetid://126149524414515",
+    "amethyst_cosmic": "rbxassetid://124767665688186",
+    "amethyst_golden": "rbxassetid://122539779046770",
+    "amethyst_rainbow": "rbxassetid://137394735336798",
+    "aquamarine": "rbxassetid://108444622507495",
+    "aquamarine_cosmic": "rbxassetid://117334491311305",
+    "aquamarine_golden": "rbxassetid://123966439957552",
+    "aquamarine_rainbow": "rbxassetid://78785709911656",
+    "basalt": "rbxassetid://131895016345579",
+    "basalt_cosmic": "rbxassetid://98591272504327",
+    "basalt_golden": "rbxassetid://129458412720262",
+    "basalt_lining": "rbxassetid://108842001345286",
+    "basalt_rainbow": "rbxassetid://140552359797702",
+    "beam": "rbxassetid://83489316353107",
+    "black_pearl": "rbxassetid://84665343290996",
+    "black_pearl_cosmic": "rbxassetid://111779768347824",
+    "black_pearl_golden": "rbxassetid://86369062528923",
+    "black_pearl_rainbow": "rbxassetid://117241898380356",
+    "brilliant": "rbxassetid://122722510391506",
+    "brilliant_cosmic": "rbxassetid://101128831475868",
+    "brilliant_golden": "rbxassetid://126139421042468",
+    "brilliant_rainbow": "rbxassetid://92332844724463",
+    "coal": "rbxassetid://107219993056133",
+    "coal_cosmic": "rbxassetid://125234035321234",
+    "coal_golden": "rbxassetid://104586641410977",
+    "coal_rainbow": "rbxassetid://119050405459396",
+    "copper": "rbxassetid://133698370711521",
+    "copper_cosmic": "rbxassetid://115201933773288",
+    "copper_golden": "rbxassetid://73450452047844",
+    "copper_rainbow": "rbxassetid://81686450760361",
+    "copper_w2": "rbxassetid://82210628328644",
+    "copper_w2_cosmic": "rbxassetid://128249520586286",
+    "copper_w2_golden": "rbxassetid://99403554430240",
+    "copper_w2_rainbow": "rbxassetid://87340944366035",
+    "crack_1": "rbxassetid://139015335463124",
+    "crack_2": "rbxassetid://124060055968527",
+    "crack_3": "rbxassetid://137126846694873",
+    "crack_4": "rbxassetid://118242161157551",
+    "diamond": "rbxassetid://74289850845629",
+    "diamond_cosmic": "rbxassetid://134873089536829",
+    "diamond_golden": "rbxassetid://96934522475814",
+    "diamond_rainbow": "rbxassetid://124763938924478",
+    "emerald": "rbxassetid://76028416844780",
+    "emerald_cosmic": "rbxassetid://85758003716761",
+    "emerald_golden": "rbxassetid://106520720429599",
+    "emerald_rainbow": "rbxassetid://130540945267744",
+    "eternal_ice": "rbxassetid://125581380508389",
+    "eternal_ice_cosmic": "rbxassetid://112350601480193",
+    "eternal_ice_golden": "rbxassetid://125618107478272",
+    "eternal_ice_rainbow": "rbxassetid://93964024703144",
+    "fire_ruby": "rbxassetid://95207778779642",
+    "fire_ruby_cosmic": "rbxassetid://134654180949933",
+    "fire_ruby_golden": "rbxassetid://77419624668723",
+    "fire_ruby_rainbow": "rbxassetid://126810199487175",
+    "firefly_amber": "rbxassetid://99803428344085",
+    "firefly_amber_cosmic": "rbxassetid://105501489191458",
+    "firefly_amber_golden": "rbxassetid://76339972507012",
+    "firefly_amber_rainbow": "rbxassetid://73199292803338",
+    "flint": "rbxassetid://97848271553206",
+    "flint_cosmic": "rbxassetid://120774514088146",
+    "flint_golden": "rbxassetid://119001228738146",
+    "flint_rainbow": "rbxassetid://106251477538596",
+    "froststone": "rbxassetid://71634332208491",
+    "froststone_cosmic": "rbxassetid://81991801075450",
+    "froststone_golden": "rbxassetid://134749644135402",
+    "froststone_rainbow": "rbxassetid://100982518913865",
+    "frozen_stone": "rbxassetid://132942078008917",
+    "frozen_stone_cosmic": "rbxassetid://87261731049203",
+    "frozen_stone_golden": "rbxassetid://76778231108036",
+    "frozen_stone_lining": "rbxassetid://70536298798134",
+    "frozen_stone_rainbow": "rbxassetid://78596334872311",
+    "garnet": "rbxassetid://124031320002655",
+    "garnet_cosmic": "rbxassetid://84313181666935",
+    "garnet_golden": "rbxassetid://138814575354944",
+    "garnet_rainbow": "rbxassetid://75632340468131",
+    "giant_diamond": "rbxassetid://73278793054628",
+    "giant_diamond_cosmic": "rbxassetid://127779663408656",
+    "giant_diamond_golden": "rbxassetid://94340122164306",
+    "giant_diamond_rainbow": "rbxassetid://97708684559625",
+    "glowshroom": "rbxassetid://100831035776341",
+    "glowshroom_cosmic": "rbxassetid://99535081366742",
+    "glowshroom_golden": "rbxassetid://91594946398023",
+    "glowshroom_rainbow": "rbxassetid://98188604445697",
+    "gold": "rbxassetid://101795675668900",
+    "gold_cosmic": "rbxassetid://81854443037325",
+    "gold_golden": "rbxassetid://115338168884635",
+    "gold_rainbow": "rbxassetid://138236836987290",
+    "ice": "rbxassetid://129383318720573",
+    "ice_cosmic": "rbxassetid://139311547435473",
+    "ice_golden": "rbxassetid://131220347481426",
+    "ice_rainbow": "rbxassetid://71985655506305",
+    "iron": "rbxassetid://88158629958395",
+    "iron_cosmic": "rbxassetid://140121255614035",
+    "iron_golden": "rbxassetid://72727612069141",
+    "iron_rainbow": "rbxassetid://114554230894381",
+    "malachite": "rbxassetid://96182015060344",
+    "malachite_cosmic": "rbxassetid://90732961460535",
+    "malachite_golden": "rbxassetid://98150172913381",
+    "malachite_rainbow": "rbxassetid://116196421531408",
+    "mantle": "rbxassetid://132890870709802",
+    "mantle_cosmic": "rbxassetid://125468933966682",
+    "mantle_golden": "rbxassetid://100469229321254",
+    "mantle_lining": "rbxassetid://123422120687620",
+    "mantle_rainbow": "rbxassetid://133878690771497",
+    "moonstone": "rbxassetid://80577424253509",
+    "moonstone_cosmic": "rbxassetid://71031956125533",
+    "moonstone_golden": "rbxassetid://112188244007300",
+    "moonstone_rainbow": "rbxassetid://115230292526601",
+    "moss_stone": "rbxassetid://108130962393510",
+    "moss_stone_cosmic": "rbxassetid://103409726100486",
+    "moss_stone_golden": "rbxassetid://79950373527842",
+    "moss_stone_lining": "rbxassetid://105315539896412",
+    "moss_stone_rainbow": "rbxassetid://105663014539767",
+    "mycelium": "rbxassetid://122330051637334",
+    "mycelium_cosmic": "rbxassetid://114556585587938",
+    "mycelium_golden": "rbxassetid://111722410403754",
+    "mycelium_lining": "rbxassetid://110121736079442",
+    "mycelium_rainbow": "rbxassetid://94182676719915",
+    "nugget": "rbxassetid://80217342245584",
+    "nugget_cosmic": "rbxassetid://107593309921311",
+    "nugget_golden": "rbxassetid://117165902426786",
+    "nugget_rainbow": "rbxassetid://103809845365431",
+    "obsidian": "rbxassetid://94127908854172",
+    "obsidian_cosmic": "rbxassetid://75036780322836",
+    "obsidian_golden": "rbxassetid://91708933747140",
+    "obsidian_rainbow": "rbxassetid://125072214112678",
+    "pearl": "rbxassetid://114537204857591",
+    "pearl_cosmic": "rbxassetid://120474352290782",
+    "pearl_golden": "rbxassetid://80855329340422",
+    "pearl_rainbow": "rbxassetid://133048702529379",
+    "pebble": "rbxassetid://78430297896486",
+    "pebble_cosmic": "rbxassetid://97510910064279",
+    "pebble_golden": "rbxassetid://74404420733831",
+    "pebble_lining": "rbxassetid://88629453042302",
+    "pebble_rainbow": "rbxassetid://133306697133062",
+    "planks": "rbxassetid://140705916478269",
+    "platinum": "rbxassetid://71580671648801",
+    "platinum_cosmic": "rbxassetid://96667236318483",
+    "platinum_golden": "rbxassetid://125113830807182",
+    "platinum_rainbow": "rbxassetid://95047138252335",
+    "quartz": "rbxassetid://115558490823260",
+    "quartz_cosmic": "rbxassetid://135259166540171",
+    "quartz_golden": "rbxassetid://97305764141924",
+    "quartz_rainbow": "rbxassetid://126766693512378",
+    "red_stone": "rbxassetid://85974396427188",
+    "red_stone_cosmic": "rbxassetid://102242920499245",
+    "red_stone_golden": "rbxassetid://115330611853730",
+    "red_stone_lining": "rbxassetid://131417013952819",
+    "red_stone_rainbow": "rbxassetid://73668691283100",
+    "resin": "rbxassetid://128165191668275",
+    "resin_cosmic": "rbxassetid://106900924838745",
+    "resin_golden": "rbxassetid://70753447345456",
+    "resin_rainbow": "rbxassetid://121164764086430",
+    "river_pearl": "rbxassetid://79023488372795",
+    "river_pearl_cosmic": "rbxassetid://125280976842633",
+    "river_pearl_golden": "rbxassetid://94020287601803",
+    "river_pearl_rainbow": "rbxassetid://122899675941075",
+    "rose_quartz": "rbxassetid://102365594897300",
+    "rose_quartz_cosmic": "rbxassetid://79682861335204",
+    "rose_quartz_golden": "rbxassetid://105443383454471",
+    "rose_quartz_rainbow": "rbxassetid://75988341025912",
+    "ruby": "rbxassetid://108502435984387",
+    "ruby_cosmic": "rbxassetid://118844498458220",
+    "ruby_golden": "rbxassetid://97222093969044",
+    "ruby_rainbow": "rbxassetid://72072412292346",
+    "salt": "rbxassetid://129570323703708",
+    "salt_cosmic": "rbxassetid://97918546162282",
+    "salt_golden": "rbxassetid://81603715571780",
+    "salt_rainbow": "rbxassetid://107557803957715",
+    "sandstone": "rbxassetid://124280048656558",
+    "sandstone_cosmic": "rbxassetid://120201033821460",
+    "sandstone_golden": "rbxassetid://78853271101229",
+    "sandstone_lining": "rbxassetid://135731567341042",
+    "sandstone_rainbow": "rbxassetid://140134317821534",
+    "sap_crystal": "rbxassetid://90911838630191",
+    "sap_crystal_cosmic": "rbxassetid://76190945908020",
+    "sap_crystal_golden": "rbxassetid://71261343956465",
+    "sap_crystal_rainbow": "rbxassetid://134201310316985",
+    "sapphire": "rbxassetid://126314990612287",
+    "sapphire_cosmic": "rbxassetid://140024746270598",
+    "sapphire_golden": "rbxassetid://125426606677539",
+    "sapphire_rainbow": "rbxassetid://98035767870829",
+    "sea_stone": "rbxassetid://94678738035343",
+    "sea_stone_cosmic": "rbxassetid://118966399529446",
+    "sea_stone_golden": "rbxassetid://107576540947801",
+    "sea_stone_lining": "rbxassetid://121278589788297",
+    "sea_stone_rainbow": "rbxassetid://108818265753126",
+    "silver": "rbxassetid://136300146316231",
+    "silver_cosmic": "rbxassetid://134727533263653",
+    "silver_golden": "rbxassetid://76702125063387",
+    "silver_rainbow": "rbxassetid://81377618517344",
+    "sporite": "rbxassetid://109843622351698",
+    "sporite_cosmic": "rbxassetid://96782856769186",
+    "sporite_golden": "rbxassetid://75534864500754",
+    "sporite_rainbow": "rbxassetid://135272558910758",
+    "tin": "rbxassetid://133736118013283",
+    "tin_cosmic": "rbxassetid://94584507748327",
+    "tin_golden": "rbxassetid://111174055726855",
+    "tin_rainbow": "rbxassetid://121106016398712",
+    "topaz": "rbxassetid://112420313462840",
+    "topaz_cosmic": "rbxassetid://91506768301487",
+    "topaz_golden": "rbxassetid://74701052385550",
+    "topaz_rainbow": "rbxassetid://75849853807586",
+    "turquoise": "rbxassetid://111514584873948",
+    "turquoise_cosmic": "rbxassetid://72453054859911",
+    "turquoise_golden": "rbxassetid://109356341157609",
+    "turquoise_rainbow": "rbxassetid://85475416197919",
+    "white_stone": "rbxassetid://88017127816589",
+    "white_stone_cosmic": "rbxassetid://100191021333660",
+    "white_stone_golden": "rbxassetid://99312268517169",
+    "white_stone_lining": "rbxassetid://138886558539032",
+    "white_stone_rainbow": "rbxassetid://90279575485203",
+    "world_seed": "rbxassetid://129323788237482",
+    "world_seed_cosmic": "rbxassetid://80532825947447",
+    "world_seed_golden": "rbxassetid://102180366265350",
+    "world_seed_rainbow": "rbxassetid://71771750058908"
   },
   "cracks": [
-    "rbxassetid://91151284717268",
-    "rbxassetid://138160502464601",
-    "rbxassetid://111667609430854",
-    "rbxassetid://88409252541246",
-    "rbxassetid://98194923440266",
-    "rbxassetid://92181547216187",
-    "rbxassetid://115445774339323",
-    "rbxassetid://92209825316290",
-    "rbxassetid://118920073855708",
-    "rbxassetid://121892279353719"
+    "rbxassetid://139015335463124",
+    "rbxassetid://124060055968527",
+    "rbxassetid://137126846694873",
+    "rbxassetid://118242161157551"
   ],
-  "ores": {
-    "meadow": [
-      {
-        "material": "dirt"
-      },
-      {
-        "rect": [
-          0,
-          0,
-          64,
-          64
-        ]
-      },
-      {
-        "rect": [
-          64,
-          0,
-          64,
-          64
-        ]
-      },
-      {
-        "rect": [
-          128,
-          0,
-          64,
-          64
-        ]
-      },
-      {
-        "rect": [
-          192,
-          0,
-          64,
-          64
-        ]
-      }
-    ],
-    "copper_caves": [
-      {
-        "rect": [
-          0,
-          64,
-          64,
-          64
-        ]
-      },
-      {
-        "rect": [
-          64,
-          64,
-          64,
-          64
-        ]
-      },
-      {
-        "rect": [
-          128,
-          64,
-          64,
-          64
-        ]
-      },
-      {
-        "rect": [
-          192,
-          64,
-          64,
-          64
-        ]
-      },
-      {
-        "rect": [
-          0,
-          128,
-          64,
-          64
-        ]
-      }
-    ],
-    "quartz_veins": [
-      {
-        "rect": [
-          64,
-          128,
-          64,
-          64
-        ]
-      },
-      {
-        "rect": [
-          128,
-          128,
-          64,
-          64
-        ]
-      },
-      {
-        "rect": [
-          192,
-          128,
-          64,
-          64
-        ]
-      },
-      {
-        "rect": [
-          0,
-          192,
-          64,
-          64
-        ]
-      },
-      {
-        "rect": [
-          64,
-          192,
-          64,
-          64
-        ]
-      }
-    ],
-    "gold_river": [
-      {
-        "material": "sandstone"
-      },
-      {
-        "material": "iron_ore"
-      },
-      {
-        "material": "gold_ore"
-      },
-      {
-        "material": "quartz_ore"
-      },
-      {
-        "material": "gold_block"
-      }
-    ],
-    "ice_grottoes": [
-      {
-        "material": "snow"
-      },
-      {
-        "material": "cyan_concrete"
-      },
-      {
-        "material": "prismarine"
-      },
-      {
-        "material": "lapis_block"
-      },
-      {
-        "material": "diamond_block"
-      }
-    ],
-    "mushroom_forest": [
-      {
-        "material": "forest_floor"
-      },
-      {
-        "material": "brown_mushroom_block"
-      },
-      {
-        "material": "shroomlight"
-      },
-      {
-        "material": "gold_ore"
-      },
-      {
-        "material": "quartz_block"
-      }
-    ],
-    "giant_bones": [
-      {
-        "material": "smooth_sandstone"
-      },
-      {
-        "material": "end_stone"
-      },
-      {
-        "material": "glowstone"
-      },
-      {
-        "material": "obsidian"
-      },
-      {
-        "material": "shroomlight"
-      }
-    ],
-    "lost_city": [
-      {
-        "material": "terracotta"
-      },
-      {
-        "material": "iron_ore"
-      },
-      {
-        "material": "prismarine"
-      },
-      {
-        "material": "lapis_block"
-      },
-      {
-        "material": "gold_block"
-      }
-    ],
-    "magma_springs": [
-      {
-        "material": "basalt"
-      },
-      {
-        "material": "obsidian"
-      },
-      {
-        "material": "crimson_nylium"
-      },
-      {
-        "material": "nether_bricks"
-      },
-      {
-        "material": "magma"
-      }
-    ],
-    "core": [
-      {
-        "material": "end_stone"
-      },
-      {
-        "material": "quartz_block"
-      },
-      {
-        "material": "shroomlight"
-      },
-      {
-        "material": "purpur"
-      },
-      {
-        "material": "sea_lantern"
-      }
-    ]
+  "variantOdds": {
+    "golden": 250,
+    "rainbow": 10000,
+    "cosmic": 500000
   },
-  "lining": {
-    "meadow": "dirt",
-    "copper_caves": "terracotta",
-    "quartz_veins": "smooth_stone",
-    "gold_river": "sandstone",
-    "ice_grottoes": "snow",
-    "mushroom_forest": "forest_floor",
-    "giant_bones": "smooth_sandstone",
-    "lost_city": "terracotta",
-    "magma_springs": "basalt",
-    "core": "end_stone"
+  "worlds": {
+    "meadow": {
+      "lining": "pebble_lining",
+      "light": "#ffe2a8",
+      "slots": [
+        {
+          "texture": "pebble",
+          "variants": {
+            "golden": "pebble_golden",
+            "rainbow": "pebble_rainbow",
+            "cosmic": "pebble_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "flint",
+          "variants": {
+            "golden": "flint_golden",
+            "rainbow": "flint_rainbow",
+            "cosmic": "flint_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "coal",
+          "variants": {
+            "golden": "coal_golden",
+            "rainbow": "coal_rainbow",
+            "cosmic": "coal_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "copper",
+          "variants": {
+            "golden": "copper_golden",
+            "rainbow": "copper_rainbow",
+            "cosmic": "copper_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "firefly_amber",
+          "variants": {
+            "golden": "firefly_amber_golden",
+            "rainbow": "firefly_amber_rainbow",
+            "cosmic": "firefly_amber_cosmic"
+          },
+          "glow": true
+        }
+      ]
+    },
+    "copper_caves": {
+      "lining": "red_stone_lining",
+      "light": "#ffb36b",
+      "slots": [
+        {
+          "texture": "red_stone",
+          "variants": {
+            "golden": "red_stone_golden",
+            "rainbow": "red_stone_rainbow",
+            "cosmic": "red_stone_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "copper_w2",
+          "variants": {
+            "golden": "copper_w2_golden",
+            "rainbow": "copper_w2_rainbow",
+            "cosmic": "copper_w2_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "tin",
+          "variants": {
+            "golden": "tin_golden",
+            "rainbow": "tin_rainbow",
+            "cosmic": "tin_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "malachite",
+          "variants": {
+            "golden": "malachite_golden",
+            "rainbow": "malachite_rainbow",
+            "cosmic": "malachite_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "turquoise",
+          "variants": {
+            "golden": "turquoise_golden",
+            "rainbow": "turquoise_rainbow",
+            "cosmic": "turquoise_cosmic"
+          },
+          "glow": true
+        }
+      ]
+    },
+    "quartz_veins": {
+      "lining": "white_stone_lining",
+      "light": "#ffd2ef",
+      "slots": [
+        {
+          "texture": "white_stone",
+          "variants": {
+            "golden": "white_stone_golden",
+            "rainbow": "white_stone_rainbow",
+            "cosmic": "white_stone_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "quartz",
+          "variants": {
+            "golden": "quartz_golden",
+            "rainbow": "quartz_rainbow",
+            "cosmic": "quartz_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "iron",
+          "variants": {
+            "golden": "iron_golden",
+            "rainbow": "iron_rainbow",
+            "cosmic": "iron_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "rose_quartz",
+          "variants": {
+            "golden": "rose_quartz_golden",
+            "rainbow": "rose_quartz_rainbow",
+            "cosmic": "rose_quartz_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "amethyst",
+          "variants": {
+            "golden": "amethyst_golden",
+            "rainbow": "amethyst_rainbow",
+            "cosmic": "amethyst_cosmic"
+          },
+          "glow": true
+        }
+      ]
+    },
+    "gold_river": {
+      "lining": "sandstone_lining",
+      "light": "#ffe58a",
+      "slots": [
+        {
+          "texture": "sandstone",
+          "variants": {
+            "golden": "sandstone_golden",
+            "rainbow": "sandstone_rainbow",
+            "cosmic": "sandstone_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "silver",
+          "variants": {
+            "golden": "silver_golden",
+            "rainbow": "silver_rainbow",
+            "cosmic": "silver_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "gold",
+          "variants": {
+            "golden": "gold_golden",
+            "rainbow": "gold_rainbow",
+            "cosmic": "gold_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "river_pearl",
+          "variants": {
+            "golden": "river_pearl_golden",
+            "rainbow": "river_pearl_rainbow",
+            "cosmic": "river_pearl_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "nugget",
+          "variants": {
+            "golden": "nugget_golden",
+            "rainbow": "nugget_rainbow",
+            "cosmic": "nugget_cosmic"
+          },
+          "glow": true
+        }
+      ]
+    },
+    "ice_grottoes": {
+      "lining": "frozen_stone_lining",
+      "light": "#bfeaff",
+      "slots": [
+        {
+          "texture": "frozen_stone",
+          "variants": {
+            "golden": "frozen_stone_golden",
+            "rainbow": "frozen_stone_rainbow",
+            "cosmic": "frozen_stone_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "ice",
+          "variants": {
+            "golden": "ice_golden",
+            "rainbow": "ice_rainbow",
+            "cosmic": "ice_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "froststone",
+          "variants": {
+            "golden": "froststone_golden",
+            "rainbow": "froststone_rainbow",
+            "cosmic": "froststone_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "sapphire",
+          "variants": {
+            "golden": "sapphire_golden",
+            "rainbow": "sapphire_rainbow",
+            "cosmic": "sapphire_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "eternal_ice",
+          "variants": {
+            "golden": "eternal_ice_golden",
+            "rainbow": "eternal_ice_rainbow",
+            "cosmic": "eternal_ice_cosmic"
+          },
+          "glow": true
+        }
+      ]
+    },
+    "mushroom_forest": {
+      "lining": "mycelium_lining",
+      "light": "#7ff5d8",
+      "slots": [
+        {
+          "texture": "mycelium",
+          "variants": {
+            "golden": "mycelium_golden",
+            "rainbow": "mycelium_rainbow",
+            "cosmic": "mycelium_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "sporite",
+          "variants": {
+            "golden": "sporite_golden",
+            "rainbow": "sporite_rainbow",
+            "cosmic": "sporite_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "glowshroom",
+          "variants": {
+            "golden": "glowshroom_golden",
+            "rainbow": "glowshroom_rainbow",
+            "cosmic": "glowshroom_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "topaz",
+          "variants": {
+            "golden": "topaz_golden",
+            "rainbow": "topaz_rainbow",
+            "cosmic": "topaz_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "moonstone",
+          "variants": {
+            "golden": "moonstone_golden",
+            "rainbow": "moonstone_rainbow",
+            "cosmic": "moonstone_cosmic"
+          },
+          "glow": true
+        }
+      ]
+    },
+    "diamond_mantle": {
+      "lining": "mantle_lining",
+      "light": "#d8f4ff",
+      "slots": [
+        {
+          "texture": "mantle",
+          "variants": {
+            "golden": "mantle_golden",
+            "rainbow": "mantle_rainbow",
+            "cosmic": "mantle_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "platinum",
+          "variants": {
+            "golden": "platinum_golden",
+            "rainbow": "platinum_rainbow",
+            "cosmic": "platinum_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "diamond",
+          "variants": {
+            "golden": "diamond_golden",
+            "rainbow": "diamond_rainbow",
+            "cosmic": "diamond_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "brilliant",
+          "variants": {
+            "golden": "brilliant_golden",
+            "rainbow": "brilliant_rainbow",
+            "cosmic": "brilliant_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "giant_diamond",
+          "variants": {
+            "golden": "giant_diamond_golden",
+            "rainbow": "giant_diamond_rainbow",
+            "cosmic": "giant_diamond_cosmic"
+          },
+          "glow": true
+        }
+      ]
+    },
+    "emerald_roots": {
+      "lining": "moss_stone_lining",
+      "light": "#9dffb8",
+      "slots": [
+        {
+          "texture": "moss_stone",
+          "variants": {
+            "golden": "moss_stone_golden",
+            "rainbow": "moss_stone_rainbow",
+            "cosmic": "moss_stone_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "resin",
+          "variants": {
+            "golden": "resin_golden",
+            "rainbow": "resin_rainbow",
+            "cosmic": "resin_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "emerald",
+          "variants": {
+            "golden": "emerald_golden",
+            "rainbow": "emerald_rainbow",
+            "cosmic": "emerald_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "sap_crystal",
+          "variants": {
+            "golden": "sap_crystal_golden",
+            "rainbow": "sap_crystal_rainbow",
+            "cosmic": "sap_crystal_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "world_seed",
+          "variants": {
+            "golden": "world_seed_golden",
+            "rainbow": "world_seed_rainbow",
+            "cosmic": "world_seed_cosmic"
+          },
+          "glow": true
+        }
+      ]
+    },
+    "underground_sea": {
+      "lining": "sea_stone_lining",
+      "light": "#7fe8ff",
+      "slots": [
+        {
+          "texture": "sea_stone",
+          "variants": {
+            "golden": "sea_stone_golden",
+            "rainbow": "sea_stone_rainbow",
+            "cosmic": "sea_stone_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "salt",
+          "variants": {
+            "golden": "salt_golden",
+            "rainbow": "salt_rainbow",
+            "cosmic": "salt_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "aquamarine",
+          "variants": {
+            "golden": "aquamarine_golden",
+            "rainbow": "aquamarine_rainbow",
+            "cosmic": "aquamarine_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "pearl",
+          "variants": {
+            "golden": "pearl_golden",
+            "rainbow": "pearl_rainbow",
+            "cosmic": "pearl_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "black_pearl",
+          "variants": {
+            "golden": "black_pearl_golden",
+            "rainbow": "black_pearl_rainbow",
+            "cosmic": "black_pearl_cosmic"
+          },
+          "glow": true
+        }
+      ]
+    },
+    "magma_springs": {
+      "lining": "basalt_lining",
+      "light": "#ff7a3a",
+      "slots": [
+        {
+          "texture": "basalt",
+          "variants": {
+            "golden": "basalt_golden",
+            "rainbow": "basalt_rainbow",
+            "cosmic": "basalt_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "obsidian",
+          "variants": {
+            "golden": "obsidian_golden",
+            "rainbow": "obsidian_rainbow",
+            "cosmic": "obsidian_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "garnet",
+          "variants": {
+            "golden": "garnet_golden",
+            "rainbow": "garnet_rainbow",
+            "cosmic": "garnet_cosmic"
+          },
+          "glow": false
+        },
+        {
+          "texture": "ruby",
+          "variants": {
+            "golden": "ruby_golden",
+            "rainbow": "ruby_rainbow",
+            "cosmic": "ruby_cosmic"
+          },
+          "glow": true
+        },
+        {
+          "texture": "fire_ruby",
+          "variants": {
+            "golden": "fire_ruby_golden",
+            "rainbow": "fire_ruby_rainbow",
+            "cosmic": "fire_ruby_cosmic"
+          },
+          "glow": true
+        }
+      ]
+    }
   }
 }

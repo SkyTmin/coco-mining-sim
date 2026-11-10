@@ -1,0 +1,869 @@
+{
+  "_note": "[владелец] ТЗ-03д: ID Studio и SHA-256 исходных PNG Claude.",
+  "assets": {
+    "amethyst.png": {
+      "id": "rbxassetid://126149524414515",
+      "sha256": "b71dadb33187cf45006e64b5d0c53f303b7c28416de13984f2e81ca7d8f4a0c4"
+    },
+    "amethyst_cosmic.png": {
+      "id": "rbxassetid://124767665688186",
+      "sha256": "0ab204c1d13e3698c22529ad43c08c01e360e77fba2c59ae9eb83f7f2b97ced0"
+    },
+    "amethyst_golden.png": {
+      "id": "rbxassetid://122539779046770",
+      "sha256": "0c9890fcd664c3a7566367cde89f9f148214daccda1672fbc6ffc6cfa4c6297e"
+    },
+    "amethyst_rainbow.png": {
+      "id": "rbxassetid://137394735336798",
+      "sha256": "0935f0f5b8c475d17d587add8faca7f028fe6dff7397fe715862ab9cc094fc8c"
+    },
+    "aquamarine.png": {
+      "id": "rbxassetid://108444622507495",
+      "sha256": "4388d5f0286fcca20b813a29973ef28e1a73ce1b86a17054c70a6e00dc9c7dae"
+    },
+    "aquamarine_cosmic.png": {
+      "id": "rbxassetid://117334491311305",
+      "sha256": "8e671b1971b507f692f0ee494e8544c7eaf911a8e08e7a21fe601c63c0ed067a"
+    },
+    "aquamarine_golden.png": {
+      "id": "rbxassetid://123966439957552",
+      "sha256": "27330a76244a1269dabe8faed66b7a1f6cae74666d9f2b431dea359e31d77331"
+    },
+    "aquamarine_rainbow.png": {
+      "id": "rbxassetid://78785709911656",
+      "sha256": "5fd6e3a4cf51cbf74dace3e64d381787dbfa15f82b254afc80565a40585d2afc"
+    },
+    "basalt.png": {
+      "id": "rbxassetid://131895016345579",
+      "sha256": "331d147dab09f271fa65a3016349bca5d0be8aaf6d3ba31bfd328ac3c2bb03e2"
+    },
+    "basalt_cosmic.png": {
+      "id": "rbxassetid://98591272504327",
+      "sha256": "e939e61f7bddd71071515e842d5dea8dabaec0fe190a66e5bba69350262d8425"
+    },
+    "basalt_golden.png": {
+      "id": "rbxassetid://129458412720262",
+      "sha256": "af238084362d6cd591539505d5644c7b27a680037527d2141108e3e70642c524"
+    },
+    "basalt_lining.png": {
+      "id": "rbxassetid://108842001345286",
+      "sha256": "e13b1b21aab08bd7742e8b39524b8506516cf97f98421f5bf3bb84ca0f942af3"
+    },
+    "basalt_rainbow.png": {
+      "id": "rbxassetid://140552359797702",
+      "sha256": "dcf0d0497e346c947dbae98c304fae1ae64d620251db8ebf423ba96395ab0022"
+    },
+    "beam.png": {
+      "id": "rbxassetid://83489316353107",
+      "sha256": "13689c34ffaca2770abb07513b633df8634717fa47677d55a6d0f35a83732d53"
+    },
+    "black_pearl.png": {
+      "id": "rbxassetid://84665343290996",
+      "sha256": "1f9b01ab30867623ee6824cf91931465c58913e6d1a8fff2ee5afba0c2e99f9f"
+    },
+    "black_pearl_cosmic.png": {
+      "id": "rbxassetid://111779768347824",
+      "sha256": "4f82bf87eea3ff27b9baf71a60bb331e69b802fd55642aee7d05018b09be6415"
+    },
+    "black_pearl_golden.png": {
+      "id": "rbxassetid://86369062528923",
+      "sha256": "9637b4f62e4b6e1c07929389874888e69437b53e50fdf0fcda1ee50ae42fbc4a"
+    },
+    "black_pearl_rainbow.png": {
+      "id": "rbxassetid://117241898380356",
+      "sha256": "99ac0f5e47af748643d222b689ca0cd388d5340745d3a3d11cc73aa651e35855"
+    },
+    "brilliant.png": {
+      "id": "rbxassetid://122722510391506",
+      "sha256": "5ba14078ac794f9d4218d32cfb90a01af7b598819c91d91e81584409a404f811"
+    },
+    "brilliant_cosmic.png": {
+      "id": "rbxassetid://101128831475868",
+      "sha256": "564fe3e454818d0ad9946cba5e01a60d0cf7bb3ddfe5eb5c6898cfbf5ce8cb53"
+    },
+    "brilliant_golden.png": {
+      "id": "rbxassetid://126139421042468",
+      "sha256": "f050ecbb02e625acd3b89a334bc57038abd683ee57f5ae2107b5f7477babea03"
+    },
+    "brilliant_rainbow.png": {
+      "id": "rbxassetid://92332844724463",
+      "sha256": "56378f0df932523b6f6f026b1de6ea07889d1a858540dcd90cde239f185416bd"
+    },
+    "coal.png": {
+      "id": "rbxassetid://107219993056133",
+      "sha256": "02ed496c142dc75ff224a567d24cb25a19d771cf811f3eac96dbdb2a70ecb593"
+    },
+    "coal_cosmic.png": {
+      "id": "rbxassetid://125234035321234",
+      "sha256": "12af1d4501723773dca32c2ed7cbe75f4ef01e7cd92c858a3ab3ef8ae4edea51"
+    },
+    "coal_golden.png": {
+      "id": "rbxassetid://104586641410977",
+      "sha256": "78c0a53b3a6fb994332ee36bd9fee68420150beead259829b99c19dfbfe74b4d"
+    },
+    "coal_rainbow.png": {
+      "id": "rbxassetid://119050405459396",
+      "sha256": "daa8b1cfdead203cebdc8945055fbe40ebadd9578abdf34e8e29489901006f88"
+    },
+    "copper.png": {
+      "id": "rbxassetid://133698370711521",
+      "sha256": "1aa8d117a4db40ae02761b377c2ff881bbbde3a7ad66285fd9ef20164e1f5f77"
+    },
+    "copper_cosmic.png": {
+      "id": "rbxassetid://115201933773288",
+      "sha256": "63fd75a7ed528c55f118808b61d78f01f8873fcf561d6b03d9381e102d9553d1"
+    },
+    "copper_golden.png": {
+      "id": "rbxassetid://73450452047844",
+      "sha256": "263107cc5a925490e26c965b8934865090c37e0d9def03dd61f8a5741947fcd8"
+    },
+    "copper_rainbow.png": {
+      "id": "rbxassetid://81686450760361",
+      "sha256": "a94eac5068a408de3c2daa6d41df747a52915cff0369504b1261356f1e7b5acb"
+    },
+    "copper_w2.png": {
+      "id": "rbxassetid://82210628328644",
+      "sha256": "72ad3116337afe1167910aa3c4c091c7bd949f6e9fd889be77c90c6585777558"
+    },
+    "copper_w2_cosmic.png": {
+      "id": "rbxassetid://128249520586286",
+      "sha256": "a4e18224f0a34850d81d2bc917694d95c6c32cc03c7f2f4dfb81cf533f0e2242"
+    },
+    "copper_w2_golden.png": {
+      "id": "rbxassetid://99403554430240",
+      "sha256": "98b727dbab4c70699542cc24d2f5ef8ae0d262505074b4437053f8a4fa3fdc45"
+    },
+    "copper_w2_rainbow.png": {
+      "id": "rbxassetid://87340944366035",
+      "sha256": "0ec862ac563e450e7290675c3d967cf604441e0bcaa9f9b0f16028183611a0fe"
+    },
+    "crack_1.png": {
+      "id": "rbxassetid://139015335463124",
+      "sha256": "2c344d3571a540d152903cfa77bead930d027d699d4fe1794dbe10e0b5379dc0"
+    },
+    "crack_2.png": {
+      "id": "rbxassetid://124060055968527",
+      "sha256": "2685e6bedcfa60ac38b1b9fe2a7efc01d1187cee256fe34e28c680aa0bf07d3a"
+    },
+    "crack_3.png": {
+      "id": "rbxassetid://137126846694873",
+      "sha256": "e81dab776f8aa532428bac88b0c7172033a0e7a540ee06e904f650a0acdd5dc2"
+    },
+    "crack_4.png": {
+      "id": "rbxassetid://118242161157551",
+      "sha256": "c5e411c504d4838da44885a90976fd0b9f5a8d72e98e5d2c257e40b4424d21ab"
+    },
+    "diamond.png": {
+      "id": "rbxassetid://74289850845629",
+      "sha256": "110b7f202e5d3e153c66c360d98d0c4c996ed88d5806676129afde47cf1e1018"
+    },
+    "diamond_cosmic.png": {
+      "id": "rbxassetid://134873089536829",
+      "sha256": "1714dd1bfcea114d3a50e4adddd1940a07d1ec75abb553444905f8da02f635af"
+    },
+    "diamond_golden.png": {
+      "id": "rbxassetid://96934522475814",
+      "sha256": "8e1fe5e10487076a5cd92b52a30390be9d5a63699b47fce3b606db4de298df9e"
+    },
+    "diamond_rainbow.png": {
+      "id": "rbxassetid://124763938924478",
+      "sha256": "f6e0685902d4f7997dcc95143a8f9991a3d374ea09a5b573185a72ce165be5b2"
+    },
+    "emerald.png": {
+      "id": "rbxassetid://76028416844780",
+      "sha256": "cfafba60581c3d8eb848b3e53877481a5225c4d978b3a4e96276855932147b12"
+    },
+    "emerald_cosmic.png": {
+      "id": "rbxassetid://85758003716761",
+      "sha256": "a1c768e893801d17b7cdc8ea434386bdec5f3cf57217441b6adef2d0764aee3a"
+    },
+    "emerald_golden.png": {
+      "id": "rbxassetid://106520720429599",
+      "sha256": "ffaca4a41458969c7c65ab1ba070c046e6aef1756c8d62050028156948b7799e"
+    },
+    "emerald_rainbow.png": {
+      "id": "rbxassetid://130540945267744",
+      "sha256": "a5e14c55018c1058277c860bffcab78c461900275b6cdfe2053a442ba53b5e0a"
+    },
+    "eternal_ice.png": {
+      "id": "rbxassetid://125581380508389",
+      "sha256": "628b2b18abc092b0c074301a43edc2019c5587c4354a0cdeec0bca861328047d"
+    },
+    "eternal_ice_cosmic.png": {
+      "id": "rbxassetid://112350601480193",
+      "sha256": "b2991dcfbb4eab8e11a486282491c5d2cde62ba4516d22cc8c73c53c6e613253"
+    },
+    "eternal_ice_golden.png": {
+      "id": "rbxassetid://125618107478272",
+      "sha256": "eb35b3ec1020706484d9c42ce8468eee32b62da3c3cd471b7acbb85db7603f26"
+    },
+    "eternal_ice_rainbow.png": {
+      "id": "rbxassetid://93964024703144",
+      "sha256": "23bef4a9bd6458f6630b90f7b1272d33b419ffec5a453aa13acf41cd11c58242"
+    },
+    "fire_ruby.png": {
+      "id": "rbxassetid://95207778779642",
+      "sha256": "f01218691a9e359f9e11875639205782ed6f1edcbebb3cd65d3a0a642894624e"
+    },
+    "fire_ruby_cosmic.png": {
+      "id": "rbxassetid://134654180949933",
+      "sha256": "34bea20ece047057e81e1fa707b376bc181ae9f28e7db5e1f2aec74068897a59"
+    },
+    "fire_ruby_golden.png": {
+      "id": "rbxassetid://77419624668723",
+      "sha256": "028e760eafda655e3d5eb2a2ddc53fac788f88f6e67aa6791d61f63bff85979b"
+    },
+    "fire_ruby_rainbow.png": {
+      "id": "rbxassetid://126810199487175",
+      "sha256": "bdaeff6a812de6fd619b92edc4256e01a179a0bba74e79cd661c2ff23bb23d87"
+    },
+    "firefly_amber.png": {
+      "id": "rbxassetid://99803428344085",
+      "sha256": "e77e4e58c68ff466f546495662aeb3a32758d759bb775ef3d2b617c2e620e8e8"
+    },
+    "firefly_amber_cosmic.png": {
+      "id": "rbxassetid://105501489191458",
+      "sha256": "3102688f90453c607315e457dc94d088c151d58d7beda6e0e4d0e279ee53dc6f"
+    },
+    "firefly_amber_golden.png": {
+      "id": "rbxassetid://76339972507012",
+      "sha256": "52be22b9f8ca1c126d9b2a7dcf67d0016ece8e3d9ae0c03bd1c68d23707376a6"
+    },
+    "firefly_amber_rainbow.png": {
+      "id": "rbxassetid://73199292803338",
+      "sha256": "ad9a49423e54e4c96bf76c9e3027748e5feddc47d093f0bf3bea118f6d0bf542"
+    },
+    "flint.png": {
+      "id": "rbxassetid://97848271553206",
+      "sha256": "e32a2c35f2e6b9700d5e0b285670fdaf61328a7d19eb0dd30630604ac460a30a"
+    },
+    "flint_cosmic.png": {
+      "id": "rbxassetid://120774514088146",
+      "sha256": "989234d4c934139eb8487d51011098dbfd71586009dedbde03c2d0591dc44389"
+    },
+    "flint_golden.png": {
+      "id": "rbxassetid://119001228738146",
+      "sha256": "85bb9213c9ecd90bcce93dd66f691e70ce90978ae8efac3d437a167cfd674c40"
+    },
+    "flint_rainbow.png": {
+      "id": "rbxassetid://106251477538596",
+      "sha256": "64f0a9055ed4c9bca47e8a1cede84ca5505d1fd30f6260b9e62bd634e54b4d11"
+    },
+    "froststone.png": {
+      "id": "rbxassetid://71634332208491",
+      "sha256": "e230d9ebb603f353f27d50b6e63c40b9f283e1d127523493d32ef4c9d86c5926"
+    },
+    "froststone_cosmic.png": {
+      "id": "rbxassetid://81991801075450",
+      "sha256": "6ed1e96bd6ee1be036a4a51afb68d2d9572c787a089272746bd4c2b5cf69e429"
+    },
+    "froststone_golden.png": {
+      "id": "rbxassetid://134749644135402",
+      "sha256": "9e5fda365a57568bf02b4c025871c1ad1242e0baa5277f841d8bd9ab701082d9"
+    },
+    "froststone_rainbow.png": {
+      "id": "rbxassetid://100982518913865",
+      "sha256": "52d378f1e9d40c7138cfd514e9d7023b0d9bba5d7ac29db3eff7220b4729550f"
+    },
+    "frozen_stone.png": {
+      "id": "rbxassetid://132942078008917",
+      "sha256": "3a333a8577203270626c73ff576d243ac39aec0238d2436117ccb303e1de41e6"
+    },
+    "frozen_stone_cosmic.png": {
+      "id": "rbxassetid://87261731049203",
+      "sha256": "31ed191b7da883e7f89272c5de0ecc45558bc41d1f3cde9d64699747b6c4e702"
+    },
+    "frozen_stone_golden.png": {
+      "id": "rbxassetid://76778231108036",
+      "sha256": "f4d942d26550937e53fc06a542f25cdf05ae915e1f8a38db60843f89b953a920"
+    },
+    "frozen_stone_lining.png": {
+      "id": "rbxassetid://70536298798134",
+      "sha256": "1373cbc5bffeb28041d44e9f69826f4ea29801c06a3d8334027f7a6f2c93ddfe"
+    },
+    "frozen_stone_rainbow.png": {
+      "id": "rbxassetid://78596334872311",
+      "sha256": "5bf0ec09549478a4dde6f29871ed5d6b8491002be8d8d3cabd00b563040a7b47"
+    },
+    "garnet.png": {
+      "id": "rbxassetid://124031320002655",
+      "sha256": "8e85d1c492f610b4e6cd31cbadba75e546b0696872f360fd043fbdcedd1ca0d3"
+    },
+    "garnet_cosmic.png": {
+      "id": "rbxassetid://84313181666935",
+      "sha256": "79cfe26294302e568d8e6235d6529fd3d73e101280597e1a1d2c38debebda75f"
+    },
+    "garnet_golden.png": {
+      "id": "rbxassetid://138814575354944",
+      "sha256": "71f3d976aceb8b0b4974aaa586a4311b3f3c11ecc4dbd20bfae2414da917ca1d"
+    },
+    "garnet_rainbow.png": {
+      "id": "rbxassetid://75632340468131",
+      "sha256": "bafe6bbbe33a616d4b90bcbdd4bc9bb27124fa3085a827075da3ae3b0485af8e"
+    },
+    "giant_diamond.png": {
+      "id": "rbxassetid://73278793054628",
+      "sha256": "2b367ca07300871ac546c4dec8ec059e76758c3e955e97a031e04aee6d0e18d0"
+    },
+    "giant_diamond_cosmic.png": {
+      "id": "rbxassetid://127779663408656",
+      "sha256": "2c30af435039e67e09d4d8c8dccbde8e1e9a3522e7586902483a653a86a7a697"
+    },
+    "giant_diamond_golden.png": {
+      "id": "rbxassetid://94340122164306",
+      "sha256": "ee87415b3f8ef5c38216c79cb3a95e3b7390bcf1697aae266528d9cda0b89632"
+    },
+    "giant_diamond_rainbow.png": {
+      "id": "rbxassetid://97708684559625",
+      "sha256": "d1df7643c19d832566a88c6a301b50b5b9bd7aa903162db8e1ff1189cc3b39c4"
+    },
+    "glowshroom.png": {
+      "id": "rbxassetid://100831035776341",
+      "sha256": "7655daf277667a0b190bacb93e49fec92fccf83a1aff03260a90d5f37713fe44"
+    },
+    "glowshroom_cosmic.png": {
+      "id": "rbxassetid://99535081366742",
+      "sha256": "3cf49d14f8a804db9b9f252381b744d89098ac27a5514a2fe43b183703ea7e07"
+    },
+    "glowshroom_golden.png": {
+      "id": "rbxassetid://91594946398023",
+      "sha256": "c4b7b3c1ad7fc1ed263ecdc5db4873c68336fae98b23727f57996909e5cf8f83"
+    },
+    "glowshroom_rainbow.png": {
+      "id": "rbxassetid://98188604445697",
+      "sha256": "dd24599a5bbd5e3bfbcefc7363336622fa44f42b002b7a9767b91b529301519a"
+    },
+    "gold.png": {
+      "id": "rbxassetid://101795675668900",
+      "sha256": "ef0c3797ef04727c31cbe38108dc5aff9be539470e964870771a68bd8e7b8fa6"
+    },
+    "gold_cosmic.png": {
+      "id": "rbxassetid://81854443037325",
+      "sha256": "befa8da9f9c71993574261ecd0393e6d93b581031c07a7bdde76ebeb062fda08"
+    },
+    "gold_golden.png": {
+      "id": "rbxassetid://115338168884635",
+      "sha256": "997b670a6e64587b144a64aa28d50e5087fc6c0614e517296425bd62d77bccad"
+    },
+    "gold_rainbow.png": {
+      "id": "rbxassetid://138236836987290",
+      "sha256": "2cd555ef9d97c57a79140eae047b98032a99ce2a4b174f396ef01fe63f104e91"
+    },
+    "ice.png": {
+      "id": "rbxassetid://129383318720573",
+      "sha256": "7e6d0554df5e93c5b7977c2045b6bf2b4bd2d5feea270e0cdec383897fc64f7b"
+    },
+    "ice_cosmic.png": {
+      "id": "rbxassetid://139311547435473",
+      "sha256": "76fb27cb3a9a446156e2892886f88245c0ac5119799fc7e60fdc2aeef1ff2461"
+    },
+    "ice_golden.png": {
+      "id": "rbxassetid://131220347481426",
+      "sha256": "44a1482c0be36141a022ac91c69cc8f8860b5ecaf97f71102625c05e0e986405"
+    },
+    "ice_rainbow.png": {
+      "id": "rbxassetid://71985655506305",
+      "sha256": "4fb04f2e9a06640e6433801811dfb6d346eed2053e563ab86a09b48e83b3eb30"
+    },
+    "iron.png": {
+      "id": "rbxassetid://88158629958395",
+      "sha256": "1aaac3e45f8e107f5f8da4d486295ea0cc5bf234efb5c4984327fe88d86fcc13"
+    },
+    "iron_cosmic.png": {
+      "id": "rbxassetid://140121255614035",
+      "sha256": "9894408cb12006af5b176894a4a23ebf33b52c489ba7d6f9eb0ba362372caed5"
+    },
+    "iron_golden.png": {
+      "id": "rbxassetid://72727612069141",
+      "sha256": "896522a0a5e7d80d07b201acce45ceb72d70194c500acf018b87c0fd6a1560e4"
+    },
+    "iron_rainbow.png": {
+      "id": "rbxassetid://114554230894381",
+      "sha256": "7aac4d48864e823c9c2da0b0942469b029c8988b0033127bfac8dc8d5f04d126"
+    },
+    "malachite.png": {
+      "id": "rbxassetid://96182015060344",
+      "sha256": "96d8f2d190e693e424a78a79b47ab06b72b5d092452c74821db7e6078980f617"
+    },
+    "malachite_cosmic.png": {
+      "id": "rbxassetid://90732961460535",
+      "sha256": "5e4f82b52decba3c86c4cf54b93f808f89f393640a45d164922a0a84d59ca547"
+    },
+    "malachite_golden.png": {
+      "id": "rbxassetid://98150172913381",
+      "sha256": "6ee345fa561dbaa7feadc2a8e7fe2e15f33bec03b63e05e4006207858f226f81"
+    },
+    "malachite_rainbow.png": {
+      "id": "rbxassetid://116196421531408",
+      "sha256": "26811dca183481fdbe15830bccd3d0ecc8f0db8340a44a55a091be47e43ab51f"
+    },
+    "mantle.png": {
+      "id": "rbxassetid://132890870709802",
+      "sha256": "03f303380decb85d3986474201d3ac56acd8667f436ca9df289112a7c98bbbd7"
+    },
+    "mantle_cosmic.png": {
+      "id": "rbxassetid://125468933966682",
+      "sha256": "b739f718ecac0675a2fc85b0f2f28abdc602319cd3547e989d094b5918b61f7a"
+    },
+    "mantle_golden.png": {
+      "id": "rbxassetid://100469229321254",
+      "sha256": "9c09fe6e65d6357df163f9abdfd27a9e6e40d1100913d571d352b275acf93872"
+    },
+    "mantle_lining.png": {
+      "id": "rbxassetid://123422120687620",
+      "sha256": "a6fa22e4d4d12d9b7d80a363f3f1743b23482496b0c4cdd251fec5b34ec36f53"
+    },
+    "mantle_rainbow.png": {
+      "id": "rbxassetid://133878690771497",
+      "sha256": "e82b568b3f1d045e1300ea7f35f6df178de5b3ae7bcde4f9ecca186d0aa98bf1"
+    },
+    "moonstone.png": {
+      "id": "rbxassetid://80577424253509",
+      "sha256": "1c09060552bc8378037f05b37c155a5f112e7d1e8ce3bbd1e2d58d4ffa26d8b7"
+    },
+    "moonstone_cosmic.png": {
+      "id": "rbxassetid://71031956125533",
+      "sha256": "1c7eef45508fcaa1bbecbbddd15f3667a1359412d10c6cdd3017bb3c9e89c947"
+    },
+    "moonstone_golden.png": {
+      "id": "rbxassetid://112188244007300",
+      "sha256": "c4d5f3651402ed39895cc79d8a6455ad51a65af28a6d5460c31cc755661007f3"
+    },
+    "moonstone_rainbow.png": {
+      "id": "rbxassetid://115230292526601",
+      "sha256": "c274fb2015a57dbc4874457b9b9359944e8009118387e21db5fb00e4e6bc9584"
+    },
+    "moss_stone.png": {
+      "id": "rbxassetid://108130962393510",
+      "sha256": "06309d01c3a092be6b25bbc8a0384c1035bafce51300ac7d74370a0197457187"
+    },
+    "moss_stone_cosmic.png": {
+      "id": "rbxassetid://103409726100486",
+      "sha256": "75575d014a5ef749e6ac48d0d66d09236b50bbdcef6ce372e8193f0be0da95c4"
+    },
+    "moss_stone_golden.png": {
+      "id": "rbxassetid://79950373527842",
+      "sha256": "5811c5b1219a575da1ee3399b25f532fffce69823c42fac6da19d213e0979499"
+    },
+    "moss_stone_lining.png": {
+      "id": "rbxassetid://105315539896412",
+      "sha256": "6cb8c61ac806a112426d2e5bcca6f2aea739ee98bfa08226cdaf9cb65be6e197"
+    },
+    "moss_stone_rainbow.png": {
+      "id": "rbxassetid://105663014539767",
+      "sha256": "c1493fc4c88913805a80095d4d3e190e84ea9d8af1d0329f2ea3e127089ab1e8"
+    },
+    "mycelium.png": {
+      "id": "rbxassetid://122330051637334",
+      "sha256": "61ab0fc62d2bd65bdb2a2fd6738db04da884015124cd989551ce05d11bd64c3f"
+    },
+    "mycelium_cosmic.png": {
+      "id": "rbxassetid://114556585587938",
+      "sha256": "1be50d478065990c32e02ebd55376fa4b4d23babf32b62c5406857762230680b"
+    },
+    "mycelium_golden.png": {
+      "id": "rbxassetid://111722410403754",
+      "sha256": "e651e5ef1f3bb7febfbabac78f1aef3fa0f1696a7f6d3b454c877dadc865f9f9"
+    },
+    "mycelium_lining.png": {
+      "id": "rbxassetid://110121736079442",
+      "sha256": "db9256018af6bb9ad18ec25d13db8bfa45c074ed38ed04811c7629768e37840a"
+    },
+    "mycelium_rainbow.png": {
+      "id": "rbxassetid://94182676719915",
+      "sha256": "a30d54aebf881cd7d6291ef11cfbd770ca14270e0f40fd362902327c7a39befb"
+    },
+    "nugget.png": {
+      "id": "rbxassetid://80217342245584",
+      "sha256": "83b50f87ffa6c1aa514de2f3fcf47ec7f6ddee61bef465e15396edbff143bf05"
+    },
+    "nugget_cosmic.png": {
+      "id": "rbxassetid://107593309921311",
+      "sha256": "29570e75887445b1ddb55cd7231d83f596e5d0e0bb8eedf5aabc2b1c43a6035f"
+    },
+    "nugget_golden.png": {
+      "id": "rbxassetid://117165902426786",
+      "sha256": "ce1c6287b6d42a05a2d16bbcfd3e9b1af10cf1fb327db10f419cf13c0202f061"
+    },
+    "nugget_rainbow.png": {
+      "id": "rbxassetid://103809845365431",
+      "sha256": "75ae2abcd319f3ce9f4f1ae76aaa35a9066d48e068bd283c25e5f14e1358a26e"
+    },
+    "obsidian.png": {
+      "id": "rbxassetid://94127908854172",
+      "sha256": "da2372e1bbebd30c6d79583e2a09e6b1873b5f535419da87206f2321a5c5a5e4"
+    },
+    "obsidian_cosmic.png": {
+      "id": "rbxassetid://75036780322836",
+      "sha256": "38a2b1a05a36ad0fa3fe53b02e5d3b93dc0f69539db56cf7d593973c3059825c"
+    },
+    "obsidian_golden.png": {
+      "id": "rbxassetid://91708933747140",
+      "sha256": "b1d1222cbbcdf3e540c886c6a9e859f1bf19bf002a7905a6ae6e14de5a4f90b1"
+    },
+    "obsidian_rainbow.png": {
+      "id": "rbxassetid://125072214112678",
+      "sha256": "1c1b01280947424e23c104cdc1a2ce84f02542a06f9a2a6ca2afa1021bb7986e"
+    },
+    "pearl.png": {
+      "id": "rbxassetid://114537204857591",
+      "sha256": "6dcfd3c67030f2155a67761a27eae16f30068e5db0900f59ac126b7b23bf7a54"
+    },
+    "pearl_cosmic.png": {
+      "id": "rbxassetid://120474352290782",
+      "sha256": "96e620b5be888207ca8d3d5ea8a42f9040ccadaf7035307177f0158a6acaf6b7"
+    },
+    "pearl_golden.png": {
+      "id": "rbxassetid://80855329340422",
+      "sha256": "d0bf1b539bd5c7513f146f91f576ab830ac0628e082645a581cd4e75776efe67"
+    },
+    "pearl_rainbow.png": {
+      "id": "rbxassetid://133048702529379",
+      "sha256": "ccbcb4be238be00630b953b9f7ae18b7a5ca394ded767f1aa788a3840e855b4f"
+    },
+    "pebble.png": {
+      "id": "rbxassetid://78430297896486",
+      "sha256": "2bb697ab6ecd197a021aa88b381cc68c9fe76635d2c7407b067c5d738e91f7a9"
+    },
+    "pebble_cosmic.png": {
+      "id": "rbxassetid://97510910064279",
+      "sha256": "904fdbc88e1d0ad4e38bc57a6ba09a3be35a875459186a9c56a74cdfe3c793cc"
+    },
+    "pebble_golden.png": {
+      "id": "rbxassetid://74404420733831",
+      "sha256": "6f2a38c5ba4a15d04eb177910ae4e3cc8e72aa6b67abdaf8f761e3275b25f1b2"
+    },
+    "pebble_lining.png": {
+      "id": "rbxassetid://88629453042302",
+      "sha256": "852d75ce524d5ae86dc0be3f57acbf58731f144928c94d70f7f153e6315c247d"
+    },
+    "pebble_rainbow.png": {
+      "id": "rbxassetid://133306697133062",
+      "sha256": "3754b67ffa926324b38a9b88a3847c2138606417d77e73ba1c17fa45e1122f20"
+    },
+    "planks.png": {
+      "id": "rbxassetid://140705916478269",
+      "sha256": "2a0376cb5164590686f4648249796e8ca657f9447896dcf0b94c7a93d768185a"
+    },
+    "platinum.png": {
+      "id": "rbxassetid://71580671648801",
+      "sha256": "c86d80642a4cedd3d159c5a85bd2ed2831c6a7060d8bf6bb31e153aeb315d212"
+    },
+    "platinum_cosmic.png": {
+      "id": "rbxassetid://96667236318483",
+      "sha256": "48516977d1952a7c5e78d6e389649edda02ddcc53f3f31808c28585328e23f5b"
+    },
+    "platinum_golden.png": {
+      "id": "rbxassetid://125113830807182",
+      "sha256": "db799b5dcbf374f2bcd78641381827ac53ddc79ffd241db86a93fd36250daf68"
+    },
+    "platinum_rainbow.png": {
+      "id": "rbxassetid://95047138252335",
+      "sha256": "79238c9a9ce6709ad3e46fdcf8b0c991a47224885c0051e7df40f09df39847b2"
+    },
+    "quartz.png": {
+      "id": "rbxassetid://115558490823260",
+      "sha256": "384ec2a18cc5f909e45d9250c41788d61e1919793600b73255efa449220d9fc2"
+    },
+    "quartz_cosmic.png": {
+      "id": "rbxassetid://135259166540171",
+      "sha256": "c9723c7b48ae2f79def19ea2c1013a13f593265ae39b308d6ff93250b89c9508"
+    },
+    "quartz_golden.png": {
+      "id": "rbxassetid://97305764141924",
+      "sha256": "f13687a9409c6e7eae5c41b3b28bf7baa15d5c3cb088bb96a002d4fe55e213a3"
+    },
+    "quartz_rainbow.png": {
+      "id": "rbxassetid://126766693512378",
+      "sha256": "a29720e3e725c310d3c5a87851d4266d3d40923c536b57eb725040bd2584c3fd"
+    },
+    "red_stone.png": {
+      "id": "rbxassetid://85974396427188",
+      "sha256": "de69929cac37bc7a32330dcaf1acb56aad710424bd6cc7b6e0ad71ba5db1e2b4"
+    },
+    "red_stone_cosmic.png": {
+      "id": "rbxassetid://102242920499245",
+      "sha256": "9053dbf63e8db31b18e0269f2cc2f6e92d558c3faa4fab0e9b22e3ee05ed3500"
+    },
+    "red_stone_golden.png": {
+      "id": "rbxassetid://115330611853730",
+      "sha256": "0c899a5578709c47c05e6474d31e1bdf7a4bf7cdbf47491bb2fe389bd71f76bd"
+    },
+    "red_stone_lining.png": {
+      "id": "rbxassetid://131417013952819",
+      "sha256": "e90e8dd3298f8020b2c469297bcd8c47a0d6049f5fae7aabf2ebffd51f6449c5"
+    },
+    "red_stone_rainbow.png": {
+      "id": "rbxassetid://73668691283100",
+      "sha256": "c9167764a842af34428758ad311ab7bebca85597d88606461d048b39d62df3a3"
+    },
+    "resin.png": {
+      "id": "rbxassetid://128165191668275",
+      "sha256": "488591bafbca8019bcbb67c466ed277ca9f0a40e793330ed0263b967ed532a93"
+    },
+    "resin_cosmic.png": {
+      "id": "rbxassetid://106900924838745",
+      "sha256": "5427fd68a7f4e50f3340708555ed406b4707373c106213644221169bef91e82b"
+    },
+    "resin_golden.png": {
+      "id": "rbxassetid://70753447345456",
+      "sha256": "633af4ae4c89c7d3785c322d438c374641b5e9c24c991de492e0e5c92f4bc262"
+    },
+    "resin_rainbow.png": {
+      "id": "rbxassetid://121164764086430",
+      "sha256": "8c3800f9cc1c6ceb3358cf9f2b0dadd97da6b11f9102f7fc0bb347843e6b11cb"
+    },
+    "river_pearl.png": {
+      "id": "rbxassetid://79023488372795",
+      "sha256": "7c1f69cdd8929fd536735e9f76f0dadc268031fa54b8961e53289aeb4d047b66"
+    },
+    "river_pearl_cosmic.png": {
+      "id": "rbxassetid://125280976842633",
+      "sha256": "100b1e6bbbd119b097a69a732ead7c7a425341bb7d102c7609cd2bf19ebc9636"
+    },
+    "river_pearl_golden.png": {
+      "id": "rbxassetid://94020287601803",
+      "sha256": "16670d9a2689a1be409b9f70616d7d8014f545a19032c6f9c348a059bd99250d"
+    },
+    "river_pearl_rainbow.png": {
+      "id": "rbxassetid://122899675941075",
+      "sha256": "c20ae4c57571a71d1e7cc09f3a95f527020d079d62e070de6507585e1cb75920"
+    },
+    "rose_quartz.png": {
+      "id": "rbxassetid://102365594897300",
+      "sha256": "e559b18177810270997cb0743944ca4d8a97e52966c3afc40a09d5f95e92fb1f"
+    },
+    "rose_quartz_cosmic.png": {
+      "id": "rbxassetid://79682861335204",
+      "sha256": "5bfd76099f881dfd8bc4903aa36bef7d2ca93d19631815e813a41626a0d54d0b"
+    },
+    "rose_quartz_golden.png": {
+      "id": "rbxassetid://105443383454471",
+      "sha256": "0f8c255a08cf64e72f7b18103e442a7c07d5b5ce98bdbb441b058dce7f149432"
+    },
+    "rose_quartz_rainbow.png": {
+      "id": "rbxassetid://75988341025912",
+      "sha256": "1f6418a44fa68be43fffcbcce85834c3f10a8d98fe3515e5ff356e26f9d364df"
+    },
+    "ruby.png": {
+      "id": "rbxassetid://108502435984387",
+      "sha256": "ae4520c7b622a0b571e3945b4242ee558b29e8c6972bb7970e8731e20ae6f993"
+    },
+    "ruby_cosmic.png": {
+      "id": "rbxassetid://118844498458220",
+      "sha256": "1df4b6fa9414ef684f25e3471f1143b87c8d156b71f2ae400ecff9a8bc075260"
+    },
+    "ruby_golden.png": {
+      "id": "rbxassetid://97222093969044",
+      "sha256": "76ad2794f6e1dceca779373744aeade7fa05f831938351d7e4d46853ea860d63"
+    },
+    "ruby_rainbow.png": {
+      "id": "rbxassetid://72072412292346",
+      "sha256": "49f657f50743c8ee895471e2993a64715853a8e9b4160f890cb276d7e9fbbbe7"
+    },
+    "salt.png": {
+      "id": "rbxassetid://129570323703708",
+      "sha256": "73c05c7e939bd55de2cd8219cbdf0acd4032d14c511ad442388a057dc4a200db"
+    },
+    "salt_cosmic.png": {
+      "id": "rbxassetid://97918546162282",
+      "sha256": "59a5e595b129d75162fb4a69d3a407cad53a3ea82e4a3ce2c1df4d512e312d7d"
+    },
+    "salt_golden.png": {
+      "id": "rbxassetid://81603715571780",
+      "sha256": "b53885ff281fbb2f7c40d098e89de402119af07eb1e06a18cdbc3b0544834bbb"
+    },
+    "salt_rainbow.png": {
+      "id": "rbxassetid://107557803957715",
+      "sha256": "0fd1c68ee57e86c921a0afb9c75d7dcd1555834e82e884f89bd97a1697ce53a0"
+    },
+    "sandstone.png": {
+      "id": "rbxassetid://124280048656558",
+      "sha256": "29ada1d36edbab06670fb4de1e57ee80b218e28067ae9f0dae177fdb146ee859"
+    },
+    "sandstone_cosmic.png": {
+      "id": "rbxassetid://120201033821460",
+      "sha256": "05c8805f7f19d5fe7afdb2c5b61c47059658edb5504eb3213e8aa57f9462e268"
+    },
+    "sandstone_golden.png": {
+      "id": "rbxassetid://78853271101229",
+      "sha256": "15662cb46c0db714e125816ce7e72c3d2bc5a594be4d6d3956d0fe6c0ef55913"
+    },
+    "sandstone_lining.png": {
+      "id": "rbxassetid://135731567341042",
+      "sha256": "cf115adca7d2c1acf8dc3aef64ed408cb75cf5809c0188e265957c8e4d5ecb5e"
+    },
+    "sandstone_rainbow.png": {
+      "id": "rbxassetid://140134317821534",
+      "sha256": "daf6b57668ecde1420e975814843d172061cb6f144a2fb7da3bc7553f410977d"
+    },
+    "sap_crystal.png": {
+      "id": "rbxassetid://90911838630191",
+      "sha256": "660fa280d9235f89bd3bdba80298212e2bae447df0885bd77d912689121ba35c"
+    },
+    "sap_crystal_cosmic.png": {
+      "id": "rbxassetid://76190945908020",
+      "sha256": "c18be53a989ade05d485c0234d5e472af27b0b9077cd52fd20215ddcd6e1b714"
+    },
+    "sap_crystal_golden.png": {
+      "id": "rbxassetid://71261343956465",
+      "sha256": "1c1e12d85823e1abbfa7a67d11a12d9b22c415b3e7a2dda9d097d180c0a7ba43"
+    },
+    "sap_crystal_rainbow.png": {
+      "id": "rbxassetid://134201310316985",
+      "sha256": "657ca49ed4627508ce367cbcdc0743ded7efa7ec1a5ee254e483f919e83b0024"
+    },
+    "sapphire.png": {
+      "id": "rbxassetid://126314990612287",
+      "sha256": "1940df9f2508f910bed8217ee42b71f420ece85b6395f0af5c3617d7bf595f54"
+    },
+    "sapphire_cosmic.png": {
+      "id": "rbxassetid://140024746270598",
+      "sha256": "b988752510e84af59f477118e0c4c97088f605c721e7d14eb684d34abbe2c776"
+    },
+    "sapphire_golden.png": {
+      "id": "rbxassetid://125426606677539",
+      "sha256": "99cf97a33594c4622ee1237d62eb942ca39f0f23c3110ab08379fba7315aa122"
+    },
+    "sapphire_rainbow.png": {
+      "id": "rbxassetid://98035767870829",
+      "sha256": "c778abfcb92e4efe49ee6e6403d7130983b8d45761fac19f0b9f78c2e619a01e"
+    },
+    "sea_stone.png": {
+      "id": "rbxassetid://94678738035343",
+      "sha256": "042e01f3c3aa1d1f59bcd1341d95e4788984be2e470fd50b09aabaf277a19c5d"
+    },
+    "sea_stone_cosmic.png": {
+      "id": "rbxassetid://118966399529446",
+      "sha256": "ba3a0fc261e9701f96f8cf9e07d0be5a751c735015f16995172cd8038e52df44"
+    },
+    "sea_stone_golden.png": {
+      "id": "rbxassetid://107576540947801",
+      "sha256": "aaf1181ad07249404508b7722f2fae9db74d02fd043d9fb7e0782bea2b804620"
+    },
+    "sea_stone_lining.png": {
+      "id": "rbxassetid://121278589788297",
+      "sha256": "ff8f6600d9e54309d101a32a62e3849d7fb64a529965f7ba70012603e870643c"
+    },
+    "sea_stone_rainbow.png": {
+      "id": "rbxassetid://108818265753126",
+      "sha256": "cb1c1eb584face46c5fc5c1e57fddf3743ed0ed65114b1d4af94a613a3999b3b"
+    },
+    "silver.png": {
+      "id": "rbxassetid://136300146316231",
+      "sha256": "3390af82919678a904484058ec1048b6369c846e7d1f604e1808fb00d3b5a482"
+    },
+    "silver_cosmic.png": {
+      "id": "rbxassetid://134727533263653",
+      "sha256": "58bd23bc2375c228ea3a49da24080f746d4aea32b626b9db239a7238d664264a"
+    },
+    "silver_golden.png": {
+      "id": "rbxassetid://76702125063387",
+      "sha256": "f13ab77d2084b9d056413aa270e5be6974db6c22f1d85934dca46bd7a5da3fb3"
+    },
+    "silver_rainbow.png": {
+      "id": "rbxassetid://81377618517344",
+      "sha256": "aa0f45bedec5328d5d63f38efcecd42dee3b8b155a2f7e8d0cfa1f90b9596802"
+    },
+    "sporite.png": {
+      "id": "rbxassetid://109843622351698",
+      "sha256": "251b79eaf35c3987a382de660b39c562643952106a72d7052bfce3dec456ce00"
+    },
+    "sporite_cosmic.png": {
+      "id": "rbxassetid://96782856769186",
+      "sha256": "05eed66e03a91f111ec190644cc98d680e90a88929aa7d9504f9f11b3f5c8d25"
+    },
+    "sporite_golden.png": {
+      "id": "rbxassetid://75534864500754",
+      "sha256": "ed063ae67f14b7c35976dc22171ec53e66e1d7a6b147f20863dfeae5c10faed4"
+    },
+    "sporite_rainbow.png": {
+      "id": "rbxassetid://135272558910758",
+      "sha256": "ae2a994399021e0d16ac6fb19a860db3fbab71690bb1eebb4f23eb027d867359"
+    },
+    "tin.png": {
+      "id": "rbxassetid://133736118013283",
+      "sha256": "d3474db84c458637d4c4f42854ccd330e59a3052f19e7292dd55894f6bd06855"
+    },
+    "tin_cosmic.png": {
+      "id": "rbxassetid://94584507748327",
+      "sha256": "615b99c34ee02338914153547a332deb51d12356bb42bdfe2169b138a1028a35"
+    },
+    "tin_golden.png": {
+      "id": "rbxassetid://111174055726855",
+      "sha256": "154d58daa3dda12e4ae25d9fa73710d2dcb2f31c0f379e3f14069751696968da"
+    },
+    "tin_rainbow.png": {
+      "id": "rbxassetid://121106016398712",
+      "sha256": "abd8405054957d394a533723deaceef3ed55f211beb92832df7638ce6969011b"
+    },
+    "topaz.png": {
+      "id": "rbxassetid://112420313462840",
+      "sha256": "81762163935957723f05211a9190cdd1ac871f4007fb141d234ada699e1a3206"
+    },
+    "topaz_cosmic.png": {
+      "id": "rbxassetid://91506768301487",
+      "sha256": "8c18b15da8370666b0f7f4c18edd7beffe3614e6c85ed31f67c179d5ff49363c"
+    },
+    "topaz_golden.png": {
+      "id": "rbxassetid://74701052385550",
+      "sha256": "e2176c38de372d9d8c528d938ef4be15732298a3809f2ebd09478677841a345c"
+    },
+    "topaz_rainbow.png": {
+      "id": "rbxassetid://75849853807586",
+      "sha256": "0e64f4bb235065532df7b22f13efe75812f46533588ec63fcb105d245b6f6399"
+    },
+    "turquoise.png": {
+      "id": "rbxassetid://111514584873948",
+      "sha256": "5c773c27e8fafdce27c8475f5fccfb6b519aca00bcd17bca12de5b90c3475ada"
+    },
+    "turquoise_cosmic.png": {
+      "id": "rbxassetid://72453054859911",
+      "sha256": "4789e1c79f25939a61941a15422563f070e350bcddb392f5375a16699f942c65"
+    },
+    "turquoise_golden.png": {
+      "id": "rbxassetid://109356341157609",
+      "sha256": "1a14f8f795b24c9bafa9ed1e9104ac2815c5c1bc4ccc11d57a2a41f0daba4fea"
+    },
+    "turquoise_rainbow.png": {
+      "id": "rbxassetid://85475416197919",
+      "sha256": "7841ca833bd66002a98bea4a7ff32e6aef831a3a64ad09e01416ea32150f97c2"
+    },
+    "white_stone.png": {
+      "id": "rbxassetid://88017127816589",
+      "sha256": "d9ea486f7c416c5f02f1a7cb5cd25effaf078dd9a8717c883c4fffead5aabb28"
+    },
+    "white_stone_cosmic.png": {
+      "id": "rbxassetid://100191021333660",
+      "sha256": "1e82b0e8c57f4226c6420dcf6859301d33344a10991ccd922f76c2f70323e340"
+    },
+    "white_stone_golden.png": {
+      "id": "rbxassetid://99312268517169",
+      "sha256": "4a743f1225ef85bfaf6e6df61e766f99febb228e4bacb482bf0c245d6e54e680"
+    },
+    "white_stone_lining.png": {
+      "id": "rbxassetid://138886558539032",
+      "sha256": "cdcf37ed0e11540c90017ac6563a5b5922ff5ce9bf772a693797117d7de10275"
+    },
+    "white_stone_rainbow.png": {
+      "id": "rbxassetid://90279575485203",
+      "sha256": "383fffb6417bc0f66fa789160d3d8b9cecb96a190ebb6d1673001f058e1a74c3"
+    },
+    "world_seed.png": {
+      "id": "rbxassetid://129323788237482",
+      "sha256": "f1c8aa3b352575a5590ef6f7b83a8a924d1726c7895f2c9aa9e572d2f4b3f658"
+    },
+    "world_seed_cosmic.png": {
+      "id": "rbxassetid://80532825947447",
+      "sha256": "a5884a15a2ea2c964d6f0235a93c172c5d0eebd53201040caf0b5606e164eca0"
+    },
+    "world_seed_golden.png": {
+      "id": "rbxassetid://102180366265350",
+      "sha256": "d424cef174882955efcc1f1c5af8f95b179c6b32d620c3d8a34ed3970af503b6"
+    },
+    "world_seed_rainbow.png": {
+      "id": "rbxassetid://71771750058908",
+      "sha256": "37fb0df340d756935e78c998ded1eb88b08c1b9153f4d40cff63bb2cf51a154e"
+    }
+  }
+}

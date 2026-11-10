@@ -802,14 +802,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					visible,
 					pending and pending.impacted and pending.hidden or nil
 				)
-				Break.cracks(breaking, r, renderWindow, State.cellKey)
+				Break.cracks(breaking, r, renderWindow, State.cellKey, pick().strength)
 			else
 				Wall.clear(r)
+				Break.clear(breaking)
 			end
 			lastShown, lastVisible = shown, visible
 		end
 		if phase == "windup" then
-			Break.cracks(breaking, r, shown, State.cellKey, progress, color)
+			Break.cracks(breaking, r, shown, State.cellKey, pick().strength, progress, color)
 		end
 		local sceneWindow = shown or window
 		local plate = Ride.plate(
@@ -885,9 +886,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			cap
 		)
 		local camera = workspace.CurrentCamera
-		if camera then
-			Wall.textures(r, camera, offset, phase == "fracture")
-		end
+		Wall.sparkles(r, now)
 		local aimed: any = nil
 		if camera and canHit() then
 			if UserInputService.TouchEnabled then

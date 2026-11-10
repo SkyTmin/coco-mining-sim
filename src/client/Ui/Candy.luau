@@ -65,15 +65,20 @@ local windowOpen: Window?
 local unit = 1
 local canvas: Frame?
 local canvasScale: UIScale?
-local geometry: { [GuiObject]: Geometry } = setmetatable({}, { __mode = "k" })
-local radii: { [UICorner]: number } = setmetatable({}, { __mode = "k" })
-local strokes: { [UIStroke]: number } = setmetatable({}, { __mode = "k" })
-local sizes: { [UITextSizeConstraint]: number } = setmetatable({}, { __mode = "k" })
+local geometry: { [GuiObject]: Geometry } = {}
+local radii: { [UICorner]: number } = {}
+local strokes: { [UIStroke]: number } = {}
+local sizes: { [UITextSizeConstraint]: number } = {}
 local function scaled(v: UDim2): UDim2
 	return UDim2.new(v.X.Scale, v.X.Offset * unit, v.Y.Scale, v.Y.Offset * unit)
 end
 
 function Candy.fit(gui: GuiObject, size: UDim2, at: UDim2)
+	if not geometry[gui] then
+		gui.Destroying:Once(function()
+			geometry[gui] = nil
+		end)
+	end
 	geometry[gui] = { size = size, at = at }
 	gui.Size, gui.Position = scaled(size), scaled(at)
 end
@@ -145,6 +150,9 @@ function Candy.round(gui: GuiObject, radius: number?)
 	else
 		local r = radius or CORNER
 		radii[corner], corner.CornerRadius = r, UDim.new(0, r * unit)
+		corner.Destroying:Once(function()
+			radii[corner] = nil
+		end)
 	end
 	corner.Parent = gui
 end
@@ -157,6 +165,9 @@ function Candy.stroke(gui: GuiObject, thickness: number?, text: boolean?): UIStr
 		else Enum.ApplyStrokeMode.Border
 	local t = thickness or BORDER
 	strokes[border], border.Thickness, border.Parent = t, t * unit, gui
+	border.Destroying:Once(function()
+		strokes[border] = nil
+	end)
 	return border
 end
 
@@ -218,6 +229,9 @@ function Candy.text(
 	local limit = Instance.new("UITextSizeConstraint")
 	limit.MinTextSize, limit.MaxTextSize = 10, math.max(10, math.round(maxSize * unit))
 	sizes[limit], limit.Parent = maxSize, label
+	limit.Destroying:Once(function()
+		sizes[limit] = nil
+	end)
 	label.Parent = parent
 	return label
 end
@@ -342,11 +356,20 @@ function Candy.button(
 	local input = Instance.new("TextButton")
 	input.Name, input.Text, input.BackgroundTransparency, input.AutoButtonColor =
 		"Input", "", 1, false
-	input.Size, input.Parent = UDim2.fromScale(1, 1), box
+	input.ZIndex, input.Parent = 3, box
+	local minimum = if name == "Close" then 64 else 52
+	local padding = if circle and size.X.Scale == 0
+		then math.max(0, (minimum - size.X.Offset) / 2)
+		else 0
+	Candy.fit(
+		input,
+		UDim2.new(1, padding * 2, 1, padding * 2),
+		UDim2.fromOffset(-padding, -padding)
+	)
 	local shadow =
-		Candy.frame(input, "Shadow", UDim2.fromScale(1, 1), UDim2.fromOffset(0, SHADOW), Candy.ink)
+		Candy.frame(box, "Shadow", UDim2.fromScale(1, 1), UDim2.fromOffset(0, SHADOW), Candy.ink)
 	local face =
-		Candy.frame(input, "Face", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), Candy.panelColor)
+		Candy.frame(box, "Face", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), Candy.panelColor)
 	for _, skin in { shadow, face } do
 		Candy.round(skin, if circle then 0 else 12)
 		Candy.stroke(skin)
