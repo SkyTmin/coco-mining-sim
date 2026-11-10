@@ -16,7 +16,11 @@ function Shapes.cells(kind: string, x: number, y: number, width: number, height:
 			table.insert(cells, { x = x, y = if y + 1 < height then y + 1 else y - 1 })
 		end
 		return cells
-	elseif kind == "cross" then
+	elseif kind == "cross" or kind == "cross5" then
+		if kind == "cross5" and width >= 3 and height >= 3 then
+			x = math.clamp(x, 1 - radius, radius - 1)
+			y = math.clamp(y, 1, height - 2)
+		end
 		local cells = { { x = x, y = y } }
 		if x > -radius then
 			table.insert(cells, { x = x - 1, y = y })
@@ -36,7 +40,10 @@ function Shapes.cells(kind: string, x: number, y: number, width: number, height:
 	local left, right, bottom, top = x, x, y, y
 	if kind == "row" or kind == "wall" then
 		left, right = -radius, radius
-	elseif kind == "square3" then
+	elseif kind == "wide2" then
+		left = math.min(x, math.max(-radius, radius - 1))
+		right = math.min(radius, left + 1)
+	elseif kind == "wide3" or kind == "square3" then
 		local span = math.min(3, width)
 		left = math.clamp(x - 1, -radius, radius - span + 1)
 		right = left + span - 1
