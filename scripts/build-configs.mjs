@@ -361,7 +361,9 @@ const sections = [
   { name: "progress", validate: () => [], emit: withoutNotes },
   {
     name: "fx",
-    validate: ({ ult, depth, impactTime }) =>
+    validate: ({ ult, depth, impactTime, swing }) =>
+      swing?.windup === 0.08 && swing.contact === 0.14 && swing.hold === 0.17 && swing.finish === 0.26 &&
+      swing.windupDegrees === 35 && swing.travelDegrees === 70 && swing.recoilDegrees === 12 && swing.handNear === 0.06 &&
       ult?.windup === 0.15 && ult.fractureMin === 0.5 && ult.fractureMax === 0.9 &&
       ult.empty >= 0.25 && ult.empty <= 0.35 &&
       ult.approachBase === 0.45 && ult.approachPerLog === 0.35 &&

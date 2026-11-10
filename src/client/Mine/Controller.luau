@@ -221,7 +221,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local expected = { seq = seq, at = now, position = position }
 		if not ability then
 			local depth = window.front + cell.dRel
-			local plate = Wall.ore(window, cell.x, cell.y, cell.dRel) == Wire.PLATE
+			local ore = Wall.ore(window, cell.x, cell.y, cell.dRel)
+			local plate = ore == Wire.PLATE
+			expected.ore = ore
+			expected.impactAt = now + Config.fx.swing.contact
+			expected.color, expected.plate = cell.color or WARM, plate
 			local progress = 0
 			for _, damage in window.damage do
 				if damage.x == cell.x and damage.y == cell.y and damage.dRel == cell.dRel then
@@ -250,25 +254,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					end
 				end
 			end
-			Break.hit(
-				breaking,
-				position,
-				cell.color or WARM,
-				S,
-				expected.hidden ~= nil,
-				quality,
-				-v.frame.LookVector
-			)
-			if plate then
-				Sfx.play("plate_hit", 0.64)
-			else
-				Sfx.hit(now)
-				if expected.hidden then
-					Sfx.play("break_soft", 0.7)
-				end
-			end
 		end
-		Camera.swing(v, if ability then Config.fx.ult.windup * 2 else settings.interval, ability)
+		Camera.swing(v, now, Config.fx.ult.windup * 2, ability)
 		pending, dirty, nextHit = expected, true, now + settings.interval
 		intent:FireServer(Wire.encodeIntent(kind, seq, cell.x, cell.y, cell.dRel))
 	end
@@ -286,8 +273,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		setup(win.plot)
 	end
 
-	local function onLayers(packet: any)
-		local part = Wire.decodeLayers(packet)
+	local function applyLayers(part: any)
 		if
 			not part
 			or not window
@@ -304,8 +290,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		dirty = true
 	end
 
-	local function onResult(packet: any)
-		local res = Wire.decodeResult(packet)
+	local function applyResult(res: any)
 		local r = renderer
 		if not r or not res or not window or res.plot ~= window.plot then
 			return
@@ -376,7 +361,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				frames = 0,
 			}
 			if res.ability and view then
-				Camera.swing(view, timeline.windup * 2, true)
+				Camera.swing(view, now, timeline.windup * 2, true)
 			end
 		end
 		for i, event in res.events do
@@ -405,9 +390,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end)
 		if not res.ability then
 			if res.heavy or res.crit or res.rain then
-				if res.heavy and view then
-					Camera.emphasize(view, now)
-				end
 				Intensity.flash(intensity, if res.heavy or res.mega then 0.2 else 0.10, WARM, now)
 				if res.heavy then
 					Sfx.play("heavy_hit", 0.7)
@@ -438,13 +420,68 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 	end
 
+	local function impact(now: number, r: Wall.Renderer, effects: number)
+		local expected = pending
+		if
+			not expected
+			or not expected.impactAt
+			or expected.impacted
+			or now < expected.impactAt
+		then
+			return
+		end
+		expected.impacted, dirty = true, true
+		Break.hit(
+			breaking,
+			expected.position,
+			expected.color,
+			S,
+			expected.hidden ~= nil,
+			effects,
+			-r.frame.LookVector
+		)
+		if expected.plate then
+			Sfx.play("plate_hit", 0.64)
+		else
+			Sfx.hit(now)
+			if expected.hidden then
+				Sfx.play("break_soft", 0.7)
+			end
+		end
+		if expected.result then
+			applyResult(expected.result)
+			for _, layers in expected.tail do
+				applyLayers(layers)
+			end
+		end
+	end
+
 	windowRemote.OnClientEvent:Connect(function(kind, packet)
 		if kind == "window" then
 			onWindow(packet)
 		elseif kind == "layers" then
-			onLayers(packet)
+			local part = Wire.decodeLayers(packet)
+			local result = pending and pending.result
+			if part and result and result.delta > 0 and part.front == result.front then
+				table.insert(pending.tail, part)
+			else
+				applyLayers(part)
+			end
 		elseif kind == "result" then
-			onResult(packet)
+			local res = Wire.decodeResult(packet)
+			local expected = pending
+			if
+				res
+				and res.accepted
+				and expected
+				and expected.seq == res.seq
+				and expected.impactAt
+				and not expected.impacted
+			then
+				expected.result, expected.tail = res, {}
+			else
+				applyResult(res)
+			end
 		end
 	end)
 
@@ -667,6 +704,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			resync()
 		end
 
+		impact(now, r, override)
+
 		local phase, progress = "idle", 0
 		if ride then
 			ride.frames += 1
@@ -741,12 +780,17 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if layout then
 			if shown then
 				local renderWindow = shown
-				if shown == window and pending and pending.damage then
+				if shown == window and pending and pending.impacted and pending.damage then
 					renderWindow = table.clone(window)
 					renderWindow.damage = table.clone(window.damage)
 					table.insert(renderWindow.damage, pending.damage)
 				end
-				Wall.update(r, renderWindow, visible, pending and pending.hidden)
+				Wall.update(
+					r,
+					renderWindow,
+					visible,
+					pending and pending.impacted and pending.hidden or nil
+				)
 				Break.cracks(breaking, r, renderWindow, State.cellKey)
 			else
 				Wall.clear(r)

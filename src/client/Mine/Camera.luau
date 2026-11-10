@@ -2,6 +2,10 @@
 
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
+local swing = Config.fx.swing
+local REST_PITCH = math.rad(5.5)
 local Camera = {}
 export type View = {
 	player: Player,
@@ -14,7 +18,6 @@ export type View = {
 	swingDuration: number,
 	side: number,
 	ability: boolean,
-	heavyAt: number,
 	glowing: { part: BasePart, material: Enum.Material, color: Color3 }?,
 }
 
@@ -28,12 +31,46 @@ local function armJoint(character: Model?, name: string): ArmJoint?
 	return nil
 end
 
-local function aimJoint(joint: ArmJoint, parentFrame: CFrame, orientation: CFrame): CFrame
+local function aimJoint(
+	joint: ArmJoint,
+	parentFrame: CFrame,
+	orientation: CFrame,
+	offset: Vector3?
+): CFrame
 	local pivot = parentFrame * joint.C0
-	local desired = CFrame.new(pivot.Position - orientation:VectorToWorldSpace(joint.C1.Position))
-		* orientation
+	local desired = CFrame.new(
+		pivot.Position
+			+ (offset or Vector3.zero)
+			- orientation:VectorToWorldSpace(joint.C1.Position)
+	) * orientation
 	joint.Transform = pivot:ToObjectSpace(desired * joint.C1)
 	return desired
+end
+
+local function strike(time: number): (number, number)
+	local windup = -math.rad(swing.windupDegrees)
+	local contact = windup + math.rad(swing.travelDegrees)
+	if time < swing.windup then
+		local t = time / swing.windup
+		return windup * t, swing.handNear * t
+	elseif time < swing.contact then
+		local t = ((time - swing.windup) / (swing.contact - swing.windup)) ^ 5
+		return windup + (contact - windup) * t, swing.handNear * (1 - t)
+	elseif time < swing.hold then
+		return contact, 0
+	end
+	local t = (time - swing.hold) / (swing.finish - swing.hold)
+	local recoil = -math.rad(swing.recoilDegrees)
+	local rebound = 0.42
+	if t < rebound then
+		return recoil + (contact - recoil) * (1 - t / rebound) ^ 3, 0
+	end
+	local settle = TweenService:GetValue(
+		(t - rebound) / (1 - rebound),
+		Enum.EasingStyle.Back,
+		Enum.EasingDirection.Out
+	)
+	return recoil * (1 - settle), 0
 end
 
 function Camera.new(player: Player, frame: CFrame): View
@@ -43,12 +80,11 @@ function Camera.new(player: Player, frame: CFrame): View
 		mode = "first",
 		active = false,
 		yaw = 0,
-		pitch = math.rad(8),
+		pitch = REST_PITCH,
 		swingAt = -math.huge,
 		swingDuration = 0.35,
 		side = 1,
 		ability = false,
-		heavyAt = -math.huge,
 	}
 	RunService.PreSimulation:Connect(function()
 		if not view.active then
@@ -61,34 +97,37 @@ function Camera.new(player: Player, frame: CFrame): View
 		if not shoulder or not shoulder.Part0 or not elbow or not wrist then
 			return
 		end
-		local elapsed = (os.clock() - view.swingAt) / view.swingDuration
+		local time = os.clock() - view.swingAt
+		local elapsed = time / view.swingDuration
 		local pitch = if view.mode == "first" then 0.06 + view.pitch * 0.5 else -0.48
 		local roll = if view.mode == "first" then 0.20 else -0.03
+		local near = 0
 		if elapsed >= 0 and elapsed < 1 then
-			local strength = if not view.ability
-				then 1
-				elseif view.mode == "first" then 0.64
-				else 1.5
-			local wind = if view.ability
-				then (if elapsed < 0.48
+			if view.ability then
+				local strength = if view.mode == "first" then 0.64 else 1.5
+				local wind = if elapsed < 0.48
 					then -0.66 * elapsed / 0.48
 					elseif elapsed < 0.58 then -0.66 + 1.12 * (elapsed - 0.48) / 0.10
-					else 0.46 * (1 - elapsed) / 0.42)
-				elseif elapsed < 0.343 then -0.58 * elapsed / 0.343
-				elseif elapsed < 0.457 then -0.58 + 1.18 * (elapsed - 0.343) / 0.114
-				elseif elapsed < 0.629 then 0.6 - 0.8 * (elapsed - 0.457) / 0.172
-				else -0.2 * (1 - elapsed) / 0.371
-			pitch += wind * strength * (if os.clock() - view.heavyAt < view.swingDuration
-				then 1.55
-				else 1)
-			roll += view.side * 0.17 * math.sin(elapsed * math.pi)
+					else 0.46 * (1 - elapsed) / 0.42
+				pitch += wind * strength
+				roll += view.side * 0.17 * math.sin(elapsed * math.pi)
+			else
+				local angle, reach = strike(time)
+				pitch += angle
+				near = reach
+			end
 		end
 		if view.mode == "first" or elapsed < 1 then
 			local facing = (view.frame * CFrame.Angles(0, view.yaw + roll, 0)).LookVector
 			local up = -(facing * math.cos(pitch) + Vector3.yAxis * math.sin(pitch))
 			local right = facing:Cross(Vector3.yAxis)
 			local orientation = CFrame.fromMatrix(Vector3.zero, right, up, right:Cross(up))
-			local upper = aimJoint(shoulder, shoulder.Part0.CFrame, orientation)
+			local armLength = shoulder.C1.Position.Magnitude
+				+ elbow.C0.Position.Magnitude
+				+ elbow.C1.Position.Magnitude
+				+ wrist.C0.Position.Magnitude
+			local upper =
+				aimJoint(shoulder, shoulder.Part0.CFrame, orientation, -facing * (near * armLength))
 			local forearm = aimJoint(elbow, upper, orientation)
 			aimJoint(wrist, forearm, orientation)
 		end
@@ -96,18 +135,14 @@ function Camera.new(player: Player, frame: CFrame): View
 	return view
 end
 
-function Camera.emphasize(view: View, now: number)
-	view.heavyAt = now
-end
-
 function Camera.pan(view: View, delta: Vector2)
 	view.yaw = (view.yaw - delta.X * 0.004 + math.pi) % (2 * math.pi) - math.pi
 	view.pitch = math.clamp(view.pitch - delta.Y * 0.004, -math.rad(60), math.rad(60))
 end
 
-function Camera.swing(view: View, interval: number, ability: boolean?)
+function Camera.swing(view: View, now: number, duration: number, ability: boolean)
 	view.swingAt, view.swingDuration, view.side, view.ability =
-		os.clock(), interval, -view.side, ability == true
+		now, if ability then duration else swing.finish, -view.side, ability
 end
 
 local function transparency(character: Model, first: boolean)
