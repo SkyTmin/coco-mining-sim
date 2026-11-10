@@ -49,7 +49,7 @@ from task specs (ТЗ) in `docs/tz/`; Claude writes the specs and reviews every 
 - Code, identifiers and code comments: English. Docs, commit messages, stage reports: Russian.
 - Commit messages short, Russian, typed: `feat(mine): …`, `fix(net): …`, `test(mine): …`, `docs: …`.
 - One stage = one branch `stage-NN` (from `main`), commits as you go, PR to `main` at the end of the stage.
-  Do not merge — Claude reviews, the owner merges.
+  Do not merge — Claude reviews and merges after acceptance [владелец 10.11].
 - At the end of a stage append to `docs/PROGRESS.md`: what was done, how it was checked (commands + output summary),
   what is not done or deviates from the ТЗ, measured numbers (timings, sizes). Honest: a failing check is reported as
   failing.
