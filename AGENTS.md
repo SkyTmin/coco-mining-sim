@@ -42,6 +42,12 @@ from task specs (ТЗ) in `docs/tz/`; Claude writes the specs and reviews every 
 8. Never publish the place and never touch Roblox experience settings — the owner does Save/Publish.
 9. Original game: genre mechanics are fine; never copy assets, names or levels of a specific existing game.
    «Better Combat» animations are All Rights Reserved — never use them.
+11. **Never take control of the owner's desktop** [владелец 10.11]: no Windows app automation, no mouse/keyboard input, no
+    bringing windows to the foreground. Screenshots only by Studio's own means (in-Studio capture, `CaptureService`). If a
+    screenshot is impossible without that — skip it and say so in the report.
+12. **Sound is a key quality bar** [владелец 10.11]: frequent sounds are soft and quiet, nothing harsh or loud, no stock
+    explosion/thunder samples; rules in `docs/tz/TZ-02b-oshchushchenie.md` §3 apply to every later stage.
+13. The owner plays in Russian: every new string must have a real `ru` translation in the same commit.
 10. Children are the audience: no free text input, no dark patterns, paid random items show odds before purchase.
 
 ## Conventions
