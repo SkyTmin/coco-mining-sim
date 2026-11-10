@@ -208,11 +208,14 @@ def scale2x(im):
     return out
 
 
-def compose(fill_fn, rock_hex, ore=None, seed=3, stone_post=None):
-    """fill_fn draws the 16-px stone; ore = (shape, rarity, fill_hex, light_hex) or None."""
+def compose(fill_fn, rock_hex, ore=None, seed=3, stone_post=None, turn=0):
+    """fill_fn draws the 16-px stone; ore = (shape, rarity, fill_hex, light_hex) or None.
+    turn = quarter turns of the stone pattern (look variants of one block; the frame lighting stays put)."""
     base = hexrgb(rock_hex)
     im = Image.new("RGB", (N, N), base)
     fill_fn(im.load(), base, seed)
+    for _ in range(turn % 4):
+        im = im.transpose(Image.Transpose.ROTATE_90)
     im = scale2x(im)
     px = im.load()
     frame32(px, base)
@@ -260,6 +263,69 @@ def crack_overlays():
                     if x + 1 < N and px[x + 1, y][3] == 0:
                         px[x + 1, y] = (255, 255, 255, 90)
         save(im, f"crack_{i}")
+
+
+CRACK_STAGES = 10
+CRACK_SETS = "abcd"
+
+
+def crack_sets():
+    """Breaking stages in the style of the owner's reference (11.11): thin black 1-px cracks on the 16-px grid that
+    grow from one point as a branching tree (stages 1–6), then a crazed web of cells spreads over the whole face
+    (7–10). Our own drawing. Four patterns (sets a–d) so faces and blocks do not repeat. Files crack_<set>_<stage>,
+    16 px (upload ×8 = 128)."""
+    ink, grey = (14, 12, 20, 235), (14, 12, 20, 130)
+    dirs = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
+    for si, name in enumerate(CRACK_SETS):
+        rnd = random.Random(7 + si * 53)
+        cx, cy = 7 + rnd.randint(-2, 2), 7 + rnd.randint(-2, 2)
+        drawn, soft = {(cx, cy)}, set()
+        tips = [[cx, cy, d] for d in rnd.sample(range(8), 3)]
+        seeds = [(rnd.uniform(0, 16), rnd.uniform(0, 16)) for _ in range(9)]
+        owner = {(x, y): min(range(len(seeds)), key=lambda i: math.hypot(x + 0.5 - seeds[i][0], y + 0.5 - seeds[i][1]))
+                 for y in range(16) for x in range(16)}
+        web = {}  # 1-px borders between cells (only one side of each border is marked)
+        for (x, y), o in owner.items():
+            if (x + 1 < 16 and owner[(x + 1, y)] != o) or (y + 1 < 16 and owner[(x, y + 1)] != o):
+                web[(x, y)] = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+        for stage in range(1, CRACK_STAGES + 1):
+            if stage == 1:
+                pass
+            elif stage <= 6:
+                grow = []
+                for t in tips:
+                    x, y, d = t
+                    for _ in range((1, 1, 2, 2, 2)[stage - 2]):
+                        if rnd.random() < 0.3:
+                            d = (d + rnd.choice((-1, 1))) % 8
+                        nx, ny = x + dirs[d][0], y + dirs[d][1]
+                        if not (0 <= nx < 16 and 0 <= ny < 16):
+                            break
+                        x, y = nx, ny
+                        drawn.add((x, y))
+                        if rnd.random() < 0.12:
+                            soft.add((x + dirs[(d + 2) % 8][0], y + dirs[(d + 2) % 8][1]))
+                    t[0], t[1], t[2] = x, y, d
+                    grow.append(t)
+                    if stage >= 3 and rnd.random() < 0.4 and len(grow) < 8:
+                        grow.append([x, y, (d + rnd.choice((-2, 2))) % 8])
+                tips = grow
+            else:
+                reach = (5.5, 8.0, 10.5, 99)[stage - 7]
+                drawn |= {q for q, dist in web.items() if dist <= reach}
+            im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+            px = im.load()
+            for q in soft - drawn:
+                if 0 <= q[0] < 16 and 0 <= q[1] < 16:
+                    px[q] = grey
+            for q in drawn:
+                x, y = q
+                n4 = sum((x + a, y + b) in drawn for a, b in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+                block = any(all(p in drawn for p in ((x + a, y), (x, y + b), (x + a, y + b)))
+                            for a in (-1, 1) for b in (-1, 1))
+                px[q] = grey if (block and (x + y) % 2) or n4 >= 3 else ink  # no solid clumps
+            im.save(os.path.join(PX, f"crack_{name}_{stage}.png"))
+            im.resize((128, 128), Image.NEAREST).save(os.path.join(UP, f"crack_{name}_{stage}.png"))
 
 
 def misc():

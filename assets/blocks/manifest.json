@@ -5,6 +5,19 @@
   "rainbow": 10000,
   "cosmic": 500000
  },
+ "cracks": {
+  "sets": [
+   "a",
+   "b",
+   "c",
+   "d"
+  ],
+  "stages": 10,
+  "names": "crack_<set>_<stage>"
+ },
+ "fx": {
+  "dust": "fx_dust"
+ },
  "worlds": [
   {
    "world": 1,
@@ -15,11 +28,19 @@
     "id": "pebble",
     "name": "Галька",
     "texture": "pebble",
+    "alts": [
+     "pebble",
+     "pebble_b",
+     "pebble_c"
+    ],
     "variants": {
      "golden": "pebble_golden",
      "rainbow": "pebble_rainbow",
      "cosmic": "pebble_cosmic"
-    }
+    },
+    "dust": [
+     "#a7a2b4"
+    ]
    },
    "lining": "pebble_lining",
    "light": "#ffe2a8",
@@ -34,11 +55,20 @@
      "name": "Кремень",
      "rarity": "common",
      "texture": "flint",
+     "alts": [
+      "flint",
+      "flint_b",
+      "flint_c"
+     ],
      "variants": {
       "golden": "flint_golden",
       "rainbow": "flint_rainbow",
       "cosmic": "flint_cosmic"
      },
+     "dust": [
+      "#a7a2b4",
+      "#56709c"
+     ],
      "glow": false
     },
     {
@@ -46,11 +76,20 @@
      "name": "Уголь",
      "rarity": "rare",
      "texture": "coal",
+     "alts": [
+      "coal",
+      "coal_b",
+      "coal_c"
+     ],
      "variants": {
       "golden": "coal_golden",
       "rainbow": "coal_rainbow",
       "cosmic": "coal_cosmic"
      },
+     "dust": [
+      "#a7a2b4",
+      "#33333f"
+     ],
      "glow": false
     },
     {
@@ -58,11 +97,20 @@
      "name": "Медь",
      "rarity": "gem",
      "texture": "copper",
+     "alts": [
+      "copper",
+      "copper_b",
+      "copper_c"
+     ],
      "variants": {
       "golden": "copper_golden",
       "rainbow": "copper_rainbow",
       "cosmic": "copper_cosmic"
      },
+     "dust": [
+      "#a7a2b4",
+      "#ee7d36"
+     ],
      "glow": false
     },
     {
@@ -70,11 +118,20 @@
      "name": "Светлячковый янтарь",
      "rarity": "treasure",
      "texture": "firefly_amber",
+     "alts": [
+      "firefly_amber",
+      "firefly_amber_b",
+      "firefly_amber_c"
+     ],
      "variants": {
       "golden": "firefly_amber_golden",
       "rainbow": "firefly_amber_rainbow",
       "cosmic": "firefly_amber_cosmic"
      },
+     "dust": [
+      "#a7a2b4",
+      "#ffbf1f"
+     ],
      "glow": true
     }
    ]
@@ -88,11 +145,19 @@
     "id": "red_stone",
     "name": "Рыжий камень",
     "texture": "red_stone",
+    "alts": [
+     "red_stone",
+     "red_stone_b",
+     "red_stone_c"
+    ],
     "variants": {
      "golden": "red_stone_golden",
      "rainbow": "red_stone_rainbow",
      "cosmic": "red_stone_cosmic"
-    }
+    },
+    "dust": [
+     "#cf7a4e"
+    ]
    },
    "lining": "red_stone_lining",
    "light": "#ffb36b",
@@ -107,11 +172,20 @@
      "name": "Медь",
      "rarity": "common",
      "texture": "copper_w2",
+     "alts": [
+      "copper_w2",
+      "copper_w2_b",
+      "copper_w2_c"
+     ],
      "variants": {
       "golden": "copper_w2_golden",
       "rainbow": "copper_w2_rainbow",
       "cosmic": "copper_w2_cosmic"
      },
+     "dust": [
+      "#cf7a4e",
+      "#ff9a5c"
+     ],
      "glow": false
     },
     {
@@ -119,11 +193,20 @@
      "name": "Олово",
      "rarity": "rare",
      "texture": "tin",
+     "alts": [
+      "tin",
+      "tin_b",
+      "tin_c"
+     ],
      "variants": {
       "golden": "tin_golden",
       "rainbow": "tin_rainbow",
       "cosmic": "tin_cosmic"
      },
+     "dust": [
+      "#cf7a4e",
+      "#e3e9f2"
+     ],
      "glow": false
     },
     {
@@ -131,11 +214,20 @@
      "name": "Малахит",
      "rarity": "gem",
      "texture": "malachite",
+     "alts": [
+      "malachite",
+      "malachite_b",
+      "malachite_c"
+     ],
      "variants": {
       "golden": "malachite_golden",
       "rainbow": "malachite_rainbow",
       "cosmic": "malachite_cosmic"
      },
+     "dust": [
+      "#cf7a4e",
+      "#1fb36b"
+     ],
      "glow": false
     },
     {
@@ -143,11 +235,20 @@
      "name": "Бирюза",
      "rarity": "treasure",
      "texture": "turquoise",
+     "alts": [
+      "turquoise",
+      "turquoise_b",
+      "turquoise_c"
+     ],
      "variants": {
       "golden": "turquoise_golden",
       "rainbow": "turquoise_rainbow",
       "cosmic": "turquoise_cosmic"
      },
+     "dust": [
+      "#cf7a4e",
+      "#2fd8cf"
+     ],
      "glow": true
     }
    ]
@@ -161,11 +262,19 @@
     "id": "white_stone",
     "name": "Белый камень",
     "texture": "white_stone",
+    "alts": [
+     "white_stone",
+     "white_stone_b",
+     "white_stone_c"
+    ],
     "variants": {
      "golden": "white_stone_golden",
      "rainbow": "white_stone_rainbow",
      "cosmic": "white_stone_cosmic"
-    }
+    },
+    "dust": [
+     "#ddd6ea"
+    ]
    },
    "lining": "white_stone_lining",
    "light": "#ffd2ef",
@@ -180,11 +289,20 @@
      "name": "Кварц",
      "rarity": "common",
      "texture": "quartz",
+     "alts": [
+      "quartz",
+      "quartz_b",
+      "quartz_c"
+     ],
      "variants": {
       "golden": "quartz_golden",
       "rainbow": "quartz_rainbow",
       "cosmic": "quartz_cosmic"
      },
+     "dust": [
+      "#ddd6ea",
+      "#cfeeff"
+     ],
      "glow": false
     },
     {
@@ -192,11 +310,20 @@
      "name": "Железо",
      "rarity": "rare",
      "texture": "iron",
+     "alts": [
+      "iron",
+      "iron_b",
+      "iron_c"
+     ],
      "variants": {
       "golden": "iron_golden",
       "rainbow": "iron_rainbow",
       "cosmic": "iron_cosmic"
      },
+     "dust": [
+      "#ddd6ea",
+      "#d39a6e"
+     ],
      "glow": false
     },
     {
@@ -204,11 +331,20 @@
      "name": "Розовый кварц",
      "rarity": "gem",
      "texture": "rose_quartz",
+     "alts": [
+      "rose_quartz",
+      "rose_quartz_b",
+      "rose_quartz_c"
+     ],
      "variants": {
       "golden": "rose_quartz_golden",
       "rainbow": "rose_quartz_rainbow",
       "cosmic": "rose_quartz_cosmic"
      },
+     "dust": [
+      "#ddd6ea",
+      "#ff7fb8"
+     ],
      "glow": false
     },
     {
@@ -216,11 +352,20 @@
      "name": "Аметист",
      "rarity": "treasure",
      "texture": "amethyst",
+     "alts": [
+      "amethyst",
+      "amethyst_b",
+      "amethyst_c"
+     ],
      "variants": {
       "golden": "amethyst_golden",
       "rainbow": "amethyst_rainbow",
       "cosmic": "amethyst_cosmic"
      },
+     "dust": [
+      "#ddd6ea",
+      "#9b55f0"
+     ],
      "glow": true
     }
    ]
@@ -234,11 +379,19 @@
     "id": "sandstone",
     "name": "Песчаник",
     "texture": "sandstone",
+    "alts": [
+     "sandstone",
+     "sandstone_b",
+     "sandstone_c"
+    ],
     "variants": {
      "golden": "sandstone_golden",
      "rainbow": "sandstone_rainbow",
      "cosmic": "sandstone_cosmic"
-    }
+    },
+    "dust": [
+     "#e6be78"
+    ]
    },
    "lining": "sandstone_lining",
    "light": "#ffe58a",
@@ -253,11 +406,20 @@
      "name": "Серебро",
      "rarity": "common",
      "texture": "silver",
+     "alts": [
+      "silver",
+      "silver_b",
+      "silver_c"
+     ],
      "variants": {
       "golden": "silver_golden",
       "rainbow": "silver_rainbow",
       "cosmic": "silver_cosmic"
      },
+     "dust": [
+      "#e6be78",
+      "#c9d6ea"
+     ],
      "glow": false
     },
     {
@@ -265,11 +427,20 @@
      "name": "Золото",
      "rarity": "rare",
      "texture": "gold",
+     "alts": [
+      "gold",
+      "gold_b",
+      "gold_c"
+     ],
      "variants": {
       "golden": "gold_golden",
       "rainbow": "gold_rainbow",
       "cosmic": "gold_cosmic"
      },
+     "dust": [
+      "#e6be78",
+      "#ffc21a"
+     ],
      "glow": false
     },
     {
@@ -277,11 +448,20 @@
      "name": "Речной жемчуг",
      "rarity": "gem",
      "texture": "river_pearl",
+     "alts": [
+      "river_pearl",
+      "river_pearl_b",
+      "river_pearl_c"
+     ],
      "variants": {
       "golden": "river_pearl_golden",
       "rainbow": "river_pearl_rainbow",
       "cosmic": "river_pearl_cosmic"
      },
+     "dust": [
+      "#e6be78",
+      "#fff1f6"
+     ],
      "glow": false
     },
     {
@@ -289,11 +469,20 @@
      "name": "Самородок-великан",
      "rarity": "treasure",
      "texture": "nugget",
+     "alts": [
+      "nugget",
+      "nugget_b",
+      "nugget_c"
+     ],
      "variants": {
       "golden": "nugget_golden",
       "rainbow": "nugget_rainbow",
       "cosmic": "nugget_cosmic"
      },
+     "dust": [
+      "#e6be78",
+      "#ffb000"
+     ],
      "glow": true
     }
    ]
@@ -307,11 +496,19 @@
     "id": "frozen_stone",
     "name": "Мёрзлый камень",
     "texture": "frozen_stone",
+    "alts": [
+     "frozen_stone",
+     "frozen_stone_b",
+     "frozen_stone_c"
+    ],
     "variants": {
      "golden": "frozen_stone_golden",
      "rainbow": "frozen_stone_rainbow",
      "cosmic": "frozen_stone_cosmic"
-    }
+    },
+    "dust": [
+     "#9fd6f0"
+    ]
    },
    "lining": "frozen_stone_lining",
    "light": "#bfeaff",
@@ -326,11 +523,20 @@
      "name": "Лёд",
      "rarity": "common",
      "texture": "ice",
+     "alts": [
+      "ice",
+      "ice_b",
+      "ice_c"
+     ],
      "variants": {
       "golden": "ice_golden",
       "rainbow": "ice_rainbow",
       "cosmic": "ice_cosmic"
      },
+     "dust": [
+      "#9fd6f0",
+      "#e8fbff"
+     ],
      "glow": false
     },
     {
@@ -338,11 +544,20 @@
      "name": "Иней-камень",
      "rarity": "rare",
      "texture": "froststone",
+     "alts": [
+      "froststone",
+      "froststone_b",
+      "froststone_c"
+     ],
      "variants": {
       "golden": "froststone_golden",
       "rainbow": "froststone_rainbow",
       "cosmic": "froststone_cosmic"
      },
+     "dust": [
+      "#9fd6f0",
+      "#7fb4e6"
+     ],
      "glow": false
     },
     {
@@ -350,11 +565,20 @@
      "name": "Сапфир",
      "rarity": "gem",
      "texture": "sapphire",
+     "alts": [
+      "sapphire",
+      "sapphire_b",
+      "sapphire_c"
+     ],
      "variants": {
       "golden": "sapphire_golden",
       "rainbow": "sapphire_rainbow",
       "cosmic": "sapphire_cosmic"
      },
+     "dust": [
+      "#9fd6f0",
+      "#2a5ee8"
+     ],
      "glow": false
     },
     {
@@ -362,11 +586,20 @@
      "name": "Вечный лёд",
      "rarity": "treasure",
      "texture": "eternal_ice",
+     "alts": [
+      "eternal_ice",
+      "eternal_ice_b",
+      "eternal_ice_c"
+     ],
      "variants": {
       "golden": "eternal_ice_golden",
       "rainbow": "eternal_ice_rainbow",
       "cosmic": "eternal_ice_cosmic"
      },
+     "dust": [
+      "#9fd6f0",
+      "#5ef0ff"
+     ],
      "glow": true
     }
    ]
@@ -380,11 +613,19 @@
     "id": "mycelium",
     "name": "Грибница",
     "texture": "mycelium",
+    "alts": [
+     "mycelium",
+     "mycelium_b",
+     "mycelium_c"
+    ],
     "variants": {
      "golden": "mycelium_golden",
      "rainbow": "mycelium_rainbow",
      "cosmic": "mycelium_cosmic"
-    }
+    },
+    "dust": [
+     "#8e68c2"
+    ]
    },
    "lining": "mycelium_lining",
    "light": "#7ff5d8",
@@ -399,11 +640,20 @@
      "name": "Спорит",
      "rarity": "common",
      "texture": "sporite",
+     "alts": [
+      "sporite",
+      "sporite_b",
+      "sporite_c"
+     ],
      "variants": {
       "golden": "sporite_golden",
       "rainbow": "sporite_rainbow",
       "cosmic": "sporite_cosmic"
      },
+     "dust": [
+      "#8e68c2",
+      "#b6f24a"
+     ],
      "glow": false
     },
     {
@@ -411,11 +661,20 @@
      "name": "Светогриб",
      "rarity": "rare",
      "texture": "glowshroom",
+     "alts": [
+      "glowshroom",
+      "glowshroom_b",
+      "glowshroom_c"
+     ],
      "variants": {
       "golden": "glowshroom_golden",
       "rainbow": "glowshroom_rainbow",
       "cosmic": "glowshroom_cosmic"
      },
+     "dust": [
+      "#8e68c2",
+      "#3ff2d0"
+     ],
      "glow": false
     },
     {
@@ -423,11 +682,20 @@
      "name": "Топаз",
      "rarity": "gem",
      "texture": "topaz",
+     "alts": [
+      "topaz",
+      "topaz_b",
+      "topaz_c"
+     ],
      "variants": {
       "golden": "topaz_golden",
       "rainbow": "topaz_rainbow",
       "cosmic": "topaz_cosmic"
      },
+     "dust": [
+      "#8e68c2",
+      "#ffa23a"
+     ],
      "glow": false
     },
     {
@@ -435,11 +703,20 @@
      "name": "Лунный камень",
      "rarity": "treasure",
      "texture": "moonstone",
+     "alts": [
+      "moonstone",
+      "moonstone_b",
+      "moonstone_c"
+     ],
      "variants": {
       "golden": "moonstone_golden",
       "rainbow": "moonstone_rainbow",
       "cosmic": "moonstone_cosmic"
      },
+     "dust": [
+      "#8e68c2",
+      "#e9e2ff"
+     ],
      "glow": true
     }
    ]
@@ -453,11 +730,19 @@
     "id": "mantle",
     "name": "Мантия",
     "texture": "mantle",
+    "alts": [
+     "mantle",
+     "mantle_b",
+     "mantle_c"
+    ],
     "variants": {
      "golden": "mantle_golden",
      "rainbow": "mantle_rainbow",
      "cosmic": "mantle_cosmic"
-    }
+    },
+    "dust": [
+     "#53648f"
+    ]
    },
    "lining": "mantle_lining",
    "light": "#d8f4ff",
@@ -472,11 +757,20 @@
      "name": "Платина",
      "rarity": "common",
      "texture": "platinum",
+     "alts": [
+      "platinum",
+      "platinum_b",
+      "platinum_c"
+     ],
      "variants": {
       "golden": "platinum_golden",
       "rainbow": "platinum_rainbow",
       "cosmic": "platinum_cosmic"
      },
+     "dust": [
+      "#53648f",
+      "#e4e8f2"
+     ],
      "glow": false
     },
     {
@@ -484,11 +778,20 @@
      "name": "Алмаз",
      "rarity": "rare",
      "texture": "diamond",
+     "alts": [
+      "diamond",
+      "diamond_b",
+      "diamond_c"
+     ],
      "variants": {
       "golden": "diamond_golden",
       "rainbow": "diamond_rainbow",
       "cosmic": "diamond_cosmic"
      },
+     "dust": [
+      "#53648f",
+      "#9ff0ff"
+     ],
      "glow": false
     },
     {
@@ -496,11 +799,20 @@
      "name": "Бриллиант",
      "rarity": "gem",
      "texture": "brilliant",
+     "alts": [
+      "brilliant",
+      "brilliant_b",
+      "brilliant_c"
+     ],
      "variants": {
       "golden": "brilliant_golden",
       "rainbow": "brilliant_rainbow",
       "cosmic": "brilliant_cosmic"
      },
+     "dust": [
+      "#53648f",
+      "#ffffff"
+     ],
      "glow": false
     },
     {
@@ -508,11 +820,20 @@
      "name": "Алмаз-гигант",
      "rarity": "treasure",
      "texture": "giant_diamond",
+     "alts": [
+      "giant_diamond",
+      "giant_diamond_b",
+      "giant_diamond_c"
+     ],
      "variants": {
       "golden": "giant_diamond_golden",
       "rainbow": "giant_diamond_rainbow",
       "cosmic": "giant_diamond_cosmic"
      },
+     "dust": [
+      "#53648f",
+      "#5fd8ff"
+     ],
      "glow": true
     }
    ]
@@ -526,11 +847,19 @@
     "id": "moss_stone",
     "name": "Мшистый камень",
     "texture": "moss_stone",
+    "alts": [
+     "moss_stone",
+     "moss_stone_b",
+     "moss_stone_c"
+    ],
     "variants": {
      "golden": "moss_stone_golden",
      "rainbow": "moss_stone_rainbow",
      "cosmic": "moss_stone_cosmic"
-    }
+    },
+    "dust": [
+     "#5f9a58"
+    ]
    },
    "lining": "moss_stone_lining",
    "light": "#9dffb8",
@@ -545,11 +874,20 @@
      "name": "Смола",
      "rarity": "common",
      "texture": "resin",
+     "alts": [
+      "resin",
+      "resin_b",
+      "resin_c"
+     ],
      "variants": {
       "golden": "resin_golden",
       "rainbow": "resin_rainbow",
       "cosmic": "resin_cosmic"
      },
+     "dust": [
+      "#5f9a58",
+      "#e8902a"
+     ],
      "glow": false
     },
     {
@@ -557,11 +895,20 @@
      "name": "Изумруд",
      "rarity": "rare",
      "texture": "emerald",
+     "alts": [
+      "emerald",
+      "emerald_b",
+      "emerald_c"
+     ],
      "variants": {
       "golden": "emerald_golden",
       "rainbow": "emerald_rainbow",
       "cosmic": "emerald_cosmic"
      },
+     "dust": [
+      "#5f9a58",
+      "#34f598"
+     ],
      "glow": false
     },
     {
@@ -569,11 +916,20 @@
      "name": "Сок-кристалл",
      "rarity": "gem",
      "texture": "sap_crystal",
+     "alts": [
+      "sap_crystal",
+      "sap_crystal_b",
+      "sap_crystal_c"
+     ],
      "variants": {
       "golden": "sap_crystal_golden",
       "rainbow": "sap_crystal_rainbow",
       "cosmic": "sap_crystal_cosmic"
      },
+     "dust": [
+      "#5f9a58",
+      "#c6ff4a"
+     ],
      "glow": false
     },
     {
@@ -581,11 +937,20 @@
      "name": "Семя мира",
      "rarity": "treasure",
      "texture": "world_seed",
+     "alts": [
+      "world_seed",
+      "world_seed_b",
+      "world_seed_c"
+     ],
      "variants": {
       "golden": "world_seed_golden",
       "rainbow": "world_seed_rainbow",
       "cosmic": "world_seed_cosmic"
      },
+     "dust": [
+      "#5f9a58",
+      "#ffd23a"
+     ],
      "glow": true
     }
    ]
@@ -599,11 +964,19 @@
     "id": "sea_stone",
     "name": "Морской камень",
     "texture": "sea_stone",
+    "alts": [
+     "sea_stone",
+     "sea_stone_b",
+     "sea_stone_c"
+    ],
     "variants": {
      "golden": "sea_stone_golden",
      "rainbow": "sea_stone_rainbow",
      "cosmic": "sea_stone_cosmic"
-    }
+    },
+    "dust": [
+     "#2f6f9a"
+    ]
    },
    "lining": "sea_stone_lining",
    "light": "#7fe8ff",
@@ -618,11 +991,20 @@
      "name": "Соль-камень",
      "rarity": "common",
      "texture": "salt",
+     "alts": [
+      "salt",
+      "salt_b",
+      "salt_c"
+     ],
      "variants": {
       "golden": "salt_golden",
       "rainbow": "salt_rainbow",
       "cosmic": "salt_cosmic"
      },
+     "dust": [
+      "#2f6f9a",
+      "#f2e8ef"
+     ],
      "glow": false
     },
     {
@@ -630,11 +1012,20 @@
      "name": "Аквамарин",
      "rarity": "rare",
      "texture": "aquamarine",
+     "alts": [
+      "aquamarine",
+      "aquamarine_b",
+      "aquamarine_c"
+     ],
      "variants": {
       "golden": "aquamarine_golden",
       "rainbow": "aquamarine_rainbow",
       "cosmic": "aquamarine_cosmic"
      },
+     "dust": [
+      "#2f6f9a",
+      "#46e0e6"
+     ],
      "glow": false
     },
     {
@@ -642,11 +1033,20 @@
      "name": "Жемчуг",
      "rarity": "gem",
      "texture": "pearl",
+     "alts": [
+      "pearl",
+      "pearl_b",
+      "pearl_c"
+     ],
      "variants": {
       "golden": "pearl_golden",
       "rainbow": "pearl_rainbow",
       "cosmic": "pearl_cosmic"
      },
+     "dust": [
+      "#2f6f9a",
+      "#fff4f8"
+     ],
      "glow": false
     },
     {
@@ -654,11 +1054,20 @@
      "name": "Чёрная жемчужина",
      "rarity": "treasure",
      "texture": "black_pearl",
+     "alts": [
+      "black_pearl",
+      "black_pearl_b",
+      "black_pearl_c"
+     ],
      "variants": {
       "golden": "black_pearl_golden",
       "rainbow": "black_pearl_rainbow",
       "cosmic": "black_pearl_cosmic"
      },
+     "dust": [
+      "#2f6f9a",
+      "#2a2440"
+     ],
      "glow": true
     }
    ]
@@ -672,11 +1081,19 @@
     "id": "basalt",
     "name": "Базальт",
     "texture": "basalt",
+    "alts": [
+     "basalt",
+     "basalt_b",
+     "basalt_c"
+    ],
     "variants": {
      "golden": "basalt_golden",
      "rainbow": "basalt_rainbow",
      "cosmic": "basalt_cosmic"
-    }
+    },
+    "dust": [
+     "#463a58"
+    ]
    },
    "lining": "basalt_lining",
    "light": "#ff7a3a",
@@ -691,11 +1108,20 @@
      "name": "Обсидиан",
      "rarity": "common",
      "texture": "obsidian",
+     "alts": [
+      "obsidian",
+      "obsidian_b",
+      "obsidian_c"
+     ],
      "variants": {
       "golden": "obsidian_golden",
       "rainbow": "obsidian_rainbow",
       "cosmic": "obsidian_cosmic"
      },
+     "dust": [
+      "#463a58",
+      "#9a72f0"
+     ],
      "glow": false
     },
     {
@@ -703,11 +1129,20 @@
      "name": "Гранат",
      "rarity": "rare",
      "texture": "garnet",
+     "alts": [
+      "garnet",
+      "garnet_b",
+      "garnet_c"
+     ],
      "variants": {
       "golden": "garnet_golden",
       "rainbow": "garnet_rainbow",
       "cosmic": "garnet_cosmic"
      },
+     "dust": [
+      "#463a58",
+      "#b8203f"
+     ],
      "glow": false
     },
     {
@@ -715,11 +1150,20 @@
      "name": "Рубин",
      "rarity": "gem",
      "texture": "ruby",
+     "alts": [
+      "ruby",
+      "ruby_b",
+      "ruby_c"
+     ],
      "variants": {
       "golden": "ruby_golden",
       "rainbow": "ruby_rainbow",
       "cosmic": "ruby_cosmic"
      },
+     "dust": [
+      "#463a58",
+      "#ff2a4a"
+     ],
      "glow": true
     },
     {
@@ -727,11 +1171,20 @@
      "name": "Огненный рубин",
      "rarity": "treasure",
      "texture": "fire_ruby",
+     "alts": [
+      "fire_ruby",
+      "fire_ruby_b",
+      "fire_ruby_c"
+     ],
      "variants": {
       "golden": "fire_ruby_golden",
       "rainbow": "fire_ruby_rainbow",
       "cosmic": "fire_ruby_cosmic"
      },
+     "dust": [
+      "#463a58",
+      "#ff7a12"
+     ],
      "glow": true
     }
    ]
