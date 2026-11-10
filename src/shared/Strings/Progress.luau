@@ -90,10 +90,10 @@ return {
 	upgrade_buy = { en = "Buy", ru = "Купить", es = "Comprar", fr = "Acheter" },
 	upgrade_max = { en = "Max", ru = "Макс", es = "Máx", fr = "Max" },
 	upgrade_cap = {
-		en = "Max level",
-		ru = "Потолок",
-		es = "Nivel máx.",
-		fr = "Niveau max.",
+		en = "MAX",
+		ru = "МАКС",
+		es = "MÁX",
+		fr = "MAX",
 	},
 	upgrade_price = { en = "{1} coins", ru = "{1} мон.", es = "{1} mon.", fr = "{1} pièces" },
 	upgrade_missing = {

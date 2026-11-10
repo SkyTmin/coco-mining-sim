@@ -170,4 +170,52 @@ function Kit.number(parent: Instance, size: UDim2, at: UDim2, sprite: string): T
 	return Kit.label(parent, "Number", size, at, 20, true, Kit.gold)
 end
 
+function Kit.dial(parent: Instance, at: UDim2): (TextButton, { Frame })
+	local dial =
+		Kit.button(parent, "MineUltButton", UDim2.fromOffset(66, 66), at, "iron", Vector2.one)
+	dial:FindFirstChild("Skin").Visible = false
+	local base = Color3.fromRGB(36, 29, 33)
+	local rim = Color3.fromRGB(103, 85, 77)
+	for y = -7, 7 do
+		local radius = math.floor(math.sqrt(60 - y * y))
+		local width = (radius * 2 + 1) * 4
+		local row = Kit.block(
+			dial,
+			"Rim",
+			UDim2.fromOffset(width, 4),
+			UDim2.fromOffset(33 - width / 2, 31 + y * 4),
+			rim
+		)
+		if width > 8 and math.abs(y) < 7 then
+			Kit.block(row, "Face", UDim2.new(1, -8, 1, 0), UDim2.fromOffset(4, 0), base)
+		end
+	end
+	local ring = {}
+	for i = 1, 28 do
+		local a = (i - 1) * 2 * math.pi / 28
+		local x = 31 + math.round(math.sin(a) * 25)
+		local y = 31 - math.round(math.cos(a) * 25)
+		ring[i] = Kit.block(dial, "Charge", UDim2.fromOffset(5, 5), UDim2.fromOffset(x, y), base)
+	end
+	Kit.image(
+		dial,
+		"Bolt",
+		UDim2.fromOffset(29, 29),
+		UDim2.fromScale(0.5, 0.5),
+		"i-bolt",
+		Vector2.new(0.5, 0.5)
+	)
+	return dial, ring
+end
+
+function Kit.scroll(parent: Instance, name: string, size: UDim2, at: UDim2): ScrollingFrame
+	local scroll = Instance.new("ScrollingFrame")
+	scroll.Name, scroll.Size, scroll.Position = name, size, at
+	scroll.BackgroundTransparency, scroll.BorderSizePixel, scroll.ScrollBarThickness = 1, 0, 4
+	scroll.ScrollBarImageColor3 = Kit.gold
+	scroll.AutomaticCanvasSize, scroll.CanvasSize = Enum.AutomaticSize.Y, UDim2.fromOffset(0, 0)
+	scroll.ScrollingDirection, scroll.Parent = Enum.ScrollingDirection.Y, parent
+	return scroll
+end
+
 return Kit

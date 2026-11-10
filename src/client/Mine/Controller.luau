@@ -8,8 +8,6 @@ local Config = require(Shared.Config)
 local Remotes = require(Shared.Remotes)
 local Sfx = require(Shared.Sfx)
 local Upgrade = require(Shared.Play.Upgrade)
-local Format = require(Shared.Format)
-local Strings = require(Shared.Strings)
 local Wire = require(Shared.Mine.MineWire)
 local State = require(Shared.Mine.MineState)
 local Worlds = require(Shared.Mine.Worlds)
@@ -407,7 +405,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				haptic("block", now)
 			end
 			if res.coins > 0 then
-				Hud.coin(hud, target, res.coins)
+				Hud.coin(hud, target, res.coins, expected and expected.ore)
 				Sfx.coin(now, #res.finds > 0)
 			end
 		end
@@ -903,16 +901,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				end
 			end
 		end
-		local locale = Strings.localeOf(player)
 		local plate = aimed and Wall.ore(window, aimed.x, aimed.y, aimed.dRel) == Wire.PLATE
-		Hud.power(
-			hud,
-			Format.stat(equipped.strength, locale),
-			Format.stat(hardness, locale),
-			if need >= 2 and not plate then left else 0,
-			aimed and aimed.position
-		)
-		stepUpgrades(now, active, window.front, need, equipped.strength, reduced)
+		Hud.hits(hud, if need >= 2 and not plate then left else 0, aimed and aimed.position)
+		stepUpgrades(now, active, window.front, need, equipped.strength, hardness, reduced)
 		local hint = nil
 		if r.pulse.Enabled then
 			r.pulse.FillTransparency = 0.60 + math.sin(now * 6) * 0.19
@@ -927,7 +918,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			now,
 			active,
 			v.mode == "first" and not UserInputService.TouchEnabled and canHit(),
-			hint
+			hint,
+			reduced
 		)
 		if not jumpButton then
 			local touchGui = guiParent:FindFirstChild("TouchGui")
