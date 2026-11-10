@@ -34,7 +34,7 @@
     "depth": { "fogStart": 1500, "fogEnd": 4000, "simpleFrom": 300, "lampSpacing": 20, "middleSpacing": 40, "distantSpacing": 80 },
     "impactTime": 0.13,
     "ult": {
-      "windup": 0.15, "fractureMin": 0.5, "fractureMax": 0.9, "fracturePerLog": 0.108,
+      "windup": 0.4, "fractureMin": 0.8, "fractureMax": 0.8, "fracturePerLog": 0.108,
       "empty": 0.30, "approachBase": 0.45, "approachPerLog": 0.35,
       "distanceBase": 155, "distancePerLog": 100, "distanceDeep": 430
     },

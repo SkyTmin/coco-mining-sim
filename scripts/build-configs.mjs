@@ -379,7 +379,7 @@ const sections = [
   {
     name: "fx",
     validate: ({ ult, depth, impactTime }) =>
-      ult?.windup === 0.15 && ult.fractureMin === 0.5 && ult.fractureMax === 0.9 &&
+      ult?.windup === 0.4 && ult.fractureMin === 0.8 && ult.fractureMax === 0.8 &&
       ult.empty >= 0.25 && ult.empty <= 0.35 &&
       ult.approachBase === 0.45 && ult.approachPerLog === 0.35 &&
       [ult.fracturePerLog, ult.distanceBase, ult.distancePerLog, ult.distanceDeep, impactTime].every(isPositive) &&

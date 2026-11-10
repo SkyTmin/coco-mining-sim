@@ -28,10 +28,12 @@ function Hud.new(
 			return GuiService.TopbarInset.Max.Y
 		end)
 		local top = if ok then inset else GuiService:GetGuiInset().Y
-		wallet.Position = Candy.point(Vector2.new(15, top + 8))
+		wallet.Position = Candy.point(Vector2.new(15, top + 8) - GuiService:GetGuiInset())
 	end
 	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(positionWallet)
-	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(positionWallet)
+	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		task.defer(positionWallet)
+	end)
 	task.defer(positionWallet)
 	local worldCard =
 		Candy.panel(gui, "WorldCard", UDim2.new(0.30, -4, 0, 64), UDim2.new(0.5, 0, 0, 16))
@@ -128,6 +130,14 @@ function Hud.new(
 	Candy.stroke(newWorld, 2, true)
 	local plateReward =
 		Candy.text(worldBanner, "PlateReward", UDim2.new(1, -12, 0, 25), offset(6, 27), 15)
+	local snapFlash = Candy.frame(
+		Candy.layer(guiParent, "SnapFlash", 29),
+		"GoldFlash",
+		scale(1, 1),
+		scale(0, 0),
+		Color3.fromHex("FFD36B")
+	)
+	snapFlash.BackgroundTransparency = 1
 	local ultimateGain =
 		Candy.text(gui, "UltimateGain", offset(260, 58), scale(0.5, 0.5), 44, Candy.white)
 	ultimateGain.AnchorPoint, ultimateGain.Visible = center, false
@@ -160,6 +170,7 @@ function Hud.new(
 	return {
 		gui = gui,
 		fade = fade,
+		snapFlash = snapFlash,
 		ultimateGain = ultimateGain,
 		ultimateStroke = ultimateStroke,
 		eye = eye.input,
@@ -230,6 +241,10 @@ function Hud.rollPlate(h: any, oldFront: number, newFront: number, now: number)
 	h.plateRoll = { at = now, from = world.plateDepth - math.max(world.start, oldFront) }
 end
 
+function Hud.snap(h: any, now: number)
+	h.snapAt = now
+end
+
 function Hud.ultimate(h: any, coins: number, now: number)
 	h.ultimate = { total = coins, amount = -1, progress = 0, nextAt = now }
 end
@@ -258,10 +273,17 @@ function Hud.coin(h: any, position: Vector3, amount: number)
 	item.badge.Enabled = true
 end
 
-function Hud.show(h: any, delta: number, blocks: number, coins: number, ultimate: boolean)
+function Hud.show(
+	h: any,
+	delta: number,
+	blocks: number,
+	coins: number,
+	ultimate: boolean,
+	now: number
+)
 	if ultimate or delta >= 10 then
 		h.reward = {
-			at = os.clock(),
+			at = now,
 			delta = delta,
 			blocks = blocks,
 			coins = coins,
@@ -279,6 +301,9 @@ function Hud.step(
 	reduced: boolean
 )
 	h.gui.Visible = active
+	h.snapFlash.BackgroundTransparency = if h.snapAt
+		then 0.85 + 0.15 * math.clamp((now - h.snapAt) / 0.2, 0, 1)
+		else 1
 	local gain = h.ultimate
 	h.ultimateGain.Visible = active and gain ~= nil
 	if gain then
@@ -290,7 +315,7 @@ function Hud.step(
 		h.ultimateGain.TextSize = 34 + 10 * gain.progress
 		local camera = workspace.CurrentCamera
 		if camera then
-			local start = camera.ViewportSize / 2 + Vector2.new(0, 48)
+			local start = camera.ViewportSize / 2 + Vector2.new(0, 48) - GuiService:GetGuiInset()
 			local fly = if gain.ended then math.clamp((now - gain.ended - 0.6) / 0.35, 0, 1) else 0
 			local target = h.coins.Parent.AbsolutePosition + h.coins.Parent.AbsoluteSize / 2
 			h.ultimateGain.Position = Candy.point(start:Lerp(target, fly * fly))
@@ -337,6 +362,7 @@ function Hud.step(
 		h.plateReward.Text = h.translate("mine_plate_reward", Format.short(entered.reward))
 	end
 	local reward = h.reward
+	Candy.move(h.bannerBox, scale(0.5, if gain then 0.32 else 0.76))
 	h.bannerBox.Visible = reward ~= nil and now - reward.at < 1.55
 	if h.bannerBox.Visible then
 		local progress = if reward.ultimate

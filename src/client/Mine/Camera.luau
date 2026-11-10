@@ -18,6 +18,8 @@ export type View = {
 	yaw: number,
 	pitch: number,
 	recenter: { at: number, yaw: number, pitch: number }?,
+	snapAt: number,
+	snapHand: Model?,
 	swingAt: number,
 	swingDuration: number,
 	firstItem: Model?,
@@ -56,7 +58,18 @@ local function bodyPose(view: View)
 			if state and state.joint == joint and base == state.transform then
 				base = state.base
 			end
-			local pose = base * Swing.body(name, progress)
+			local snap = os.clock() - view.snapAt
+			local offset = Swing.body(name, progress)
+			if snap >= 0 and snap < 0.15 then
+				if name == "RightShoulder" then
+					offset = CFrame.Angles(math.rad(85), 0, math.rad(12))
+				elseif name == "RightElbow" then
+					offset = CFrame.Angles(math.rad(80), 0, 0)
+				elseif name == "RightWrist" then
+					offset = CFrame.Angles(0, 0, math.rad(25))
+				end
+			end
+			local pose = base * offset
 			joint.Transform = pose
 			if not state or state.joint ~= joint then
 				view.body[name] = { joint = joint, base = base, transform = pose }
@@ -75,6 +88,7 @@ function Camera.new(player: Player, frame: CFrame): View
 		active = false,
 		yaw = 0,
 		pitch = REST_PITCH,
+		snapAt = -math.huge,
 		swingAt = -math.huge,
 		swingDuration = 0.35,
 		bob = 0,
@@ -121,6 +135,10 @@ end
 
 function Camera.away(view: View): boolean
 	return math.abs(view.yaw) > math.rad(60)
+end
+
+function Camera.snap(view: View, now: number)
+	view.snapAt = now
 end
 
 function Camera.swing(view: View, now: number, duration: number)
@@ -189,7 +207,43 @@ local function drawHeld(
 	dt: number,
 	reduced: boolean
 )
-	if not first then
+	local snap = os.clock() - view.snapAt
+	local snapping = first and snap >= 0 and snap < 0.15
+	if snapping then
+		local model = view.snapHand
+		if not model then
+			model = Instance.new("Model")
+			model.Name = "SnapHand"
+			local character = view.player.Character
+			for _, name in { "RightLowerArm", "RightHand" } do
+				local source = character and character:FindFirstChild(name)
+				if source and source:IsA("BasePart") then
+					local limb = source:Clone() :: BasePart
+					limb:ClearAllChildren()
+					limb.Anchored, limb.CanCollide, limb.CanQuery, limb.CanTouch =
+						true, false, false, false
+					limb.LocalTransparencyModifier, limb.CastShadow = 0, false
+					limb.Size *= 0.6
+					limb.Parent = model
+				end
+			end
+			view.snapHand = model
+		end
+		model.Parent = camera
+		local lift = math.sin(math.pi * snap / 0.15)
+		local frame = camera.CFrame
+			* CFrame.new(0.70, -0.62 + 0.50 * lift, -1.25)
+			* CFrame.Angles(math.rad(-65), 0, math.rad(-15))
+		for _, limb in model:GetChildren() do
+			if limb:IsA("BasePart") then
+				limb.CFrame = frame
+					* CFrame.new(0, if limb.Name == "RightHand" then -0.45 else 0.1, 0)
+			end
+		end
+	elseif view.snapHand then
+		view.snapHand.Parent = nil
+	end
+	if not first or snapping then
 		if view.firstItem then
 			view.firstItem.Parent = nil
 		end
@@ -252,7 +306,7 @@ function Camera.step(view: View, active: boolean, shake: Vector3, dt: number, re
 		view.active = false
 		return
 	end
-	if not view.active then
+	if not view.active and not view.recenter then
 		Camera.adopt(view, camera.CFrame.LookVector)
 	end
 	view.active = true

@@ -17,7 +17,7 @@ Test.describe("Mine ride", function()
 	Test.it("preserves an empty interval for a short or long ultimate", function()
 		for _, n in { 10, 5000 } do
 			local timeline = Ride.timeline(n, true)
-			expect(timeline.windup).toBe(0.15)
+			expect(timeline.windup).toBe(0.4)
 			assert(timeline.fracture >= 0.5 and timeline.fracture <= 0.9)
 			assert(timeline.empty >= 0.25 and timeline.empty <= 0.35)
 			expect(timeline.approach).toBe(0.45 + 0.35 * math.log10(math.max(n, 1)))

@@ -1,10 +1,12 @@
 --!strict
 
 local ContentProvider = game:GetService("ContentProvider")
-local Debris = game:GetService("Debris")
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local Hash = require(Shared.Mine.Hash)
+local Worlds = require(Shared.Mine.Worlds)
+local BlockArt = require(script.Parent.Parent.Mine.BlockArt)
+local Dissolve = require(script.Parent.Dissolve)
 local BlockBreak = {}
 local STAGES = Config.art.cracks
 local WHITE = Color3.new(1, 1, 1)
@@ -15,8 +17,7 @@ type Fx = {
 	parent: Instance,
 	free: { Decal },
 	active: Active,
-	budget: number,
-	last: number,
+	dissolve: Dissolve.Fx,
 }
 
 function BlockBreak.new(parent: Instance): Fx
@@ -29,7 +30,7 @@ function BlockBreak.new(parent: Instance): Fx
 		end
 		pcall(ContentProvider.PreloadAsync, ContentProvider, textures)
 	end)
-	return { parent = parent, free = {}, active = {}, budget = 48, last = os.clock() }
+	return { parent = parent, free = {}, active = {}, dissolve = Dissolve.new(parent) }
 end
 
 local function release(fx: Fx, desired: Active)
@@ -106,49 +107,33 @@ function BlockBreak.cracks(
 	release(fx, nextActive)
 end
 
-function BlockBreak.hit(
-	fx: Fx,
-	position: Vector3,
-	color: Color3,
-	size: number,
-	breaking: boolean,
-	quality: number,
-	direction: Vector3,
-	texture: string,
-	wave: boolean?
-)
-	local now = os.clock()
-	fx.budget = math.min(48, fx.budget + (now - fx.last) * 48)
-	fx.last = now
-	local wanted = if wave then (if quality == 1 then 2 else 3) elseif breaking then 8 else 2
-	local amount = math.min(wanted, math.floor(fx.budget))
-	if amount <= 0 then
-		return
+function BlockBreak.snapshot(
+	renderer: any,
+	win: any,
+	x: number,
+	y: number,
+	relative: number,
+	offset: number
+): Dissolve.Block?
+	local layer = win.layers[relative + 1]
+	local radius = (win.width - 1) // 2
+	local ore = layer and layer[(x + radius) * win.height + y + 1]
+	local art = Config.art.worlds[Worlds.of(win.front + relative).id]
+	local tile = art.slots[ore or 0]
+	if not tile then
+		return nil
 	end
-	fx.budget -= amount
-
-	local holder = Instance.new("Part")
-	holder.Name, holder.Size, holder.Transparency =
-		"BlockParticles", Vector3.new(size * 0.65, size * 0.65, size * 0.15), 1
-	holder.Anchored, holder.CanCollide, holder.CanQuery, holder.CanTouch, holder.CastShadow =
-		true, false, false, false, false
-	local start = position + direction * (size * 0.48)
-	holder.CFrame = CFrame.lookAt(start, start + direction)
-	holder.Parent = fx.parent
-	local emitter = Instance.new("ParticleEmitter")
-	emitter.Texture = texture
-	emitter.Color = ColorSequence.new(Color3.new(1, 1, 1):Lerp(color, 0.4))
-	emitter.Size = NumberSequence.new(if breaking then 0.45 else 0.30)
-	emitter.Lifetime = NumberRange.new(0.25, 0.55)
-	emitter.Speed = if breaking then NumberRange.new(5, 11) else NumberRange.new(2, 4)
-	emitter.SpreadAngle, emitter.Acceleration = Vector2.new(180, 180), Vector3.new(0, -45, 0)
-	emitter.Rotation, emitter.RotSpeed = NumberRange.new(0, 360), NumberRange.new(-180, 180)
-	emitter.Drag, emitter.Rate, emitter.LightInfluence = 2, 0, 1
-	emitter.Shape, emitter.ShapeStyle =
-		Enum.ParticleEmitterShape.Box, Enum.ParticleEmitterShapeStyle.Volume
-	emitter.Parent = holder
-	emitter:Emit(amount)
-	Debris:AddItem(holder, 0.65)
+	return {
+		frame = renderer.frame * CFrame.new(
+			x * Config.mine.blockSize,
+			(y + 0.5) * Config.mine.blockSize,
+			-(relative * Config.mine.blockSize + Config.mine.blockSize / 2 + offset)
+		),
+		material = "COCOMine_" .. BlockArt.select(tile, x, y, win.front + relative),
+		texture = Config.art.blocks[BlockArt.select(tile, x, y, win.front + relative)],
+		dust = tile.dust,
+		glow = tile.glow,
+	}
 end
 
 return BlockBreak
