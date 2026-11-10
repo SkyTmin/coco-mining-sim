@@ -233,4 +233,16 @@ return {
 		es = "Fuerza {1} · Dureza {2}",
 		fr = "Force {1} · Dureté {2}",
 	},
+	mine_world_enter = {
+		en = "World {1} · {2}",
+		ru = "Мир {1} · {2}",
+		es = "Mundo {1} · {2}",
+		fr = "Monde {1} · {2}",
+	},
+	mine_plate_reward = {
+		en = "Slab reward +{1}",
+		ru = "Награда Плиты +{1}",
+		es = "Premio de la losa +{1}",
+		fr = "Récompense de dalle +{1}",
+	},
 }

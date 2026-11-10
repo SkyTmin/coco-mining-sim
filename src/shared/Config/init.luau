@@ -112,8 +112,17 @@ export type SoundsConfig = {
 	},
 }
 
-export type OreConfig = { id: string, color: { number } }
+export type OreConfig = { id: string, color: { number }, texture: string? }
+export type WorldLook = {
+	material: string,
+	wall: { number },
+	fog: { number },
+	lamp: { number },
+	glow: { number },
+	decor: { number },
+}
 export type WorldConfig = {
+	look: WorldLook?,
 	id: string,
 	length: number,
 	ores: { { string | number } },

@@ -12,8 +12,10 @@ local BlockPool = require(script.Parent.BlockPool)
 local S = Config.mine.blockSize
 local WallRenderer = {}
 local colors: { [string]: Color3 } = {}
+local textures: { [string]: string } = {}
 for _, ore in Config.ores do
 	colors[ore.id] = Color3.fromRGB(ore.color[1], ore.color[2], ore.color[3])
+	textures[ore.id] = ore.texture
 end
 
 type Cell = { part: Part, x: number, y: number, d: number, ore: number, plate: boolean }
@@ -145,6 +147,29 @@ local function tint(ore: number, x: number, y: number, d: number): Color3
 	)
 end
 
+local function showTexture(part: Part, id: string?)
+	local surface = part:FindFirstChild("OrePixels") :: SurfaceGui?
+	if not id then
+		if surface then
+			surface.Enabled = false
+		end
+		return
+	end
+	if not surface then
+		surface = Instance.new("SurfaceGui")
+		surface.Name, surface.Face, surface.SizingMode =
+			"OrePixels", Enum.NormalId.Back, Enum.SurfaceGuiSizingMode.FixedSize
+		surface.CanvasSize, surface.LightInfluence = Vector2.new(128, 128), 0.28
+		local pixels = Instance.new("ImageLabel")
+		pixels.Name, pixels.Size, pixels.BackgroundTransparency = "Pixels", UDim2.fromScale(1, 1), 1
+		pixels.ResampleMode, pixels.Parent = Enum.ResamplerMode.Pixelated, surface
+		surface.Parent = part
+	end
+	local pixels = surface:FindFirstChild("Pixels") :: ImageLabel
+	pixels.Image = id
+	surface.Enabled = true
+end
+
 local function addCell(
 	r: Renderer,
 	key: number,
@@ -166,10 +191,13 @@ local function addCell(
 	cell.ore = ore
 	cell.part.Size = Vector3.one * (S - 0.045)
 	cell.part.Color = tint(ore, x, y, d)
-	cell.part.Material = if ore == Wire.CHEST
+	local world = Worlds.of(d)
+	local entry = world.ores[ore]
+	local depth = d - win.front
+	cell.part.Material = if ore == Wire.CHEST or (world.index <= 3 and ore == #world.ores)
 		then Enum.Material.Neon
 		else Enum.Material.SmoothPlastic
-	local depth = d - win.front
+	showTexture(cell.part, if depth <= 2 and entry then textures[entry[1] :: string] else nil)
 	cell.part.Transparency = if depth >= 15 then math.min(0.42, (depth - 14) * 0.07) else 0
 	return cell
 end

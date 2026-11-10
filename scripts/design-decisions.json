@@ -117,9 +117,9 @@
     { "id": "stardust", "color": [154, 134, 213] }
   ],
   "worlds": [
-    {"id":"meadow","color":[140,100,60],"oreIds":["dirt","stone","coal","copper","firefly_amber"]},
-    {"id":"copper_caves","color":[154,93,64],"oreIds":["red_stone","copper","tin","malachite","turquoise"]},
-    {"id":"quartz_veins","color":[213,164,186],"oreIds":["white_stone","quartz","iron","rose_quartz","amethyst"]},
+    {"id":"meadow","look":{"material":"Ground","wall":[103,80,63],"fog":[73,90,68],"lamp":[255,222,156],"glow":[184,207,115],"decor":[102,152,70]},"color":[140,100,60],"oreIds":["dirt","stone","coal","copper","firefly_amber"]},
+    {"id":"copper_caves","look":{"material":"Sandstone","wall":[120,73,58],"fog":[109,64,61],"lamp":[255,165,108],"glow":[240,119,78],"decor":[169,87,61]},"color":[154,93,64],"oreIds":["red_stone","copper","tin","malachite","turquoise"]},
+    {"id":"quartz_veins","look":{"material":"Limestone","wall":[151,147,152],"fog":[103,113,135],"lamp":[211,228,255],"glow":[193,199,255],"decor":[230,240,254]},"color":[213,164,186],"oreIds":["white_stone","quartz","iron","rose_quartz","amethyst"]},
     {"id":"gold_river","color":[186,154,79],"oreIds":["sandstone","silver","gold","river_pearl","nugget"]},
     {"id":"ice_grottoes","color":[111,178,218],"oreIds":["frozen_stone","ice","froststone","sapphire","eternal_ice"]},
     {"id":"mushroom_forest","color":[105,75,142],"oreIds":["mycelium","sporite","glowshroom","topaz","moonstone"]},

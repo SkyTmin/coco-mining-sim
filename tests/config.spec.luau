@@ -31,6 +31,33 @@ Test.describe("Config", function()
 		expect(decisions.progress).toBe(nil)
 		expect(decisions.mine.ultCharge).toBe(nil)
 	end)
+	Test.it("ships fourteen original 16 by 16 block images with manifest entries", function()
+		local config = Loader.load("src/shared/Config")
+		local manifest = serde.decode("json", fs.readFile("assets/textures/ids.json"))
+		local seen = {}
+		local count = 0
+		for i = 1, 3 do
+			for _, slot in config.worlds[i].ores do
+				local id = slot[1]
+				if not seen[id] then
+					seen[id] = true
+					count += 1
+					local png = fs.readFile("assets/textures/blocks/" .. id .. ".png")
+					expect(png:sub(17, 24)).toBe(string.char(0, 0, 0, 16, 0, 0, 0, 16))
+				end
+			end
+		end
+		expect(count).toBe(14)
+		local listed = 0
+		for id in manifest do
+			assert(seen[id], "Unexpected block texture " .. id)
+			listed += 1
+		end
+		-- Lune decodes JSON null as nil, so also count the manifest's keys in its source.
+		local _, keys = fs.readFile("assets/textures/ids.json"):gsub('"[%w_]+"%s*:', "")
+		expect(keys).toBe(14)
+		assert(listed <= keys)
+	end)
 	Test.it("rejects simulation overrides for production config", function()
 		for _, name in { "G", "V", "HARD", "CUPS", "ULT" } do
 			local result = process.exec(

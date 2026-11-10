@@ -473,6 +473,17 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			if ride.plateBroken then
 				Sfx.play("plate_break", 0.78)
 				haptic("plate", now)
+				local nextWorld = Worlds.of(window.front)
+				local oldWorld = Worlds.of(ride.oldFront)
+				if nextWorld.index > oldWorld.index then
+					local rgb = nextWorld.color
+					Intensity.flash(intensity, 0.2, Color3.fromRGB(rgb[1], rgb[2], rgb[3]), now)
+					Hud.enterWorld(hud, now, nextWorld, oldWorld.plate.reward)
+					Sfx.play("world_enter", 0.66)
+					task.delay(0.17, function()
+						haptic("world", os.clock())
+					end)
+				end
 			elseif not atPlate then
 				haptic(if ride.ability then "ultimate" else "ride", now)
 			end
@@ -687,7 +698,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 		Camera.glow(v, if phase == "windup" and active then color else nil)
 		Tunnel.width(tunnel, window.width)
-		Tunnel.atmosphere(tunnel, active, if shown then shown.front else window.front, override)
+		Tunnel.atmosphere(
+			tunnel,
+			active,
+			if ride and ride.plateBroken
+				then ride.oldFront
+				elseif shown then shown.front
+				else window.front,
+			override
+		)
 		if waveDepth or waveShowing then
 			Tunnel.wave(tunnel, waveDepth, if reduced then 0.50 else 1 - 0.42 * progress, color)
 			waveShowing = waveDepth ~= nil

@@ -13,6 +13,7 @@ if (whatIf.length) {
   process.exit(1);
 }
 
+const textureIds = JSON.parse(readFileSync(new URL("../assets/textures/ids.json", import.meta.url), "utf8"));
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const isPositive = (n) => Number.isFinite(n) && n > 0;
 const isPositiveInteger = (n) => Number.isSafeInteger(n) && n > 0;
@@ -49,7 +50,9 @@ function validateMine(data) {
   return errors;
 }
 
-function validateOres(data) {
+function validateOres(data, decisions) {
+  const expected = new Set((Array.isArray(decisions.worlds) ? decisions.worlds : []).slice(0, 3)
+    .flatMap((world) => Array.isArray(world?.ores) ? world.ores.map((pair) => pair?.[0]) : []));
   const errors = [];
   const ids = new Set();
   for (const [i, ore] of data.entries()) {
@@ -59,6 +62,15 @@ function validateOres(data) {
       ids.add(ore.id);
     }
     if (!isColor(ore?.color)) errors.push(`ores[${i}].color must contain three RGB bytes`);
+  }
+  for (const id of expected) {
+    if (!Object.hasOwn(textureIds, id)) errors.push(`assets/textures/ids.json is missing ${id}`);
+  }
+  for (const [id, texture] of Object.entries(textureIds)) {
+    if (!expected.has(id)) errors.push(`assets/textures/ids.json has unexpected entry ${id}`);
+    if (texture !== null && (typeof texture !== "string" || !/^rbxassetid:\/\/\d+$/.test(texture))) {
+      errors.push(`assets/textures/ids.json must give a Roblox image ID or null for ${id}`);
+    }
   }
   return errors;
 }
@@ -116,6 +128,10 @@ function validateWorlds(data, decisions) {
       errors.push(`${prefix}.specials must have a perChunk probability and weighted chest kinds`);
     }
     if (!isColor(world.color)) errors.push(`${prefix}.color must contain three RGB bytes`);
+    if (i < 3 && (!["Ground", "Sandstone", "Limestone"].includes(world.look?.material) ||
+      ![world.look?.wall, world.look?.fog, world.look?.lamp, world.look?.glow, world.look?.decor].every(isColor))) {
+      errors.push(`${prefix}.look must define the material and five palette colors`);
+    }
   }
   if (totalDepth > decisions.mine?.maxDepth + 1) errors.push("worlds exceed the supported depth");
   return errors;
@@ -201,6 +217,7 @@ function withBalance(input) {
     return {
       id: palette.id,
       color: palette.color,
+      look: palette.look,
       length: world.length,
       rockValue: world.rockValue,
       hardStart: world.hardStart,
@@ -215,7 +232,9 @@ function withBalance(input) {
     ...input.pickaxes,
     ...Object.fromEntries(rarities.slice(1).map(({ id }) => ["plain_" + id, { rarity: id }])),
   };
-  return { ...input, mine, worlds, pickaxes, progress };
+  const ores = !Array.isArray(input.ores) ? input.ores : input.ores.map((ore) =>
+    ore && textureIds[ore.id] ? { ...ore, texture: textureIds[ore.id] } : ore);
+  return { ...input, mine, worlds, pickaxes, progress, ores };
 }
 
 function duplicateBalance(input) {
