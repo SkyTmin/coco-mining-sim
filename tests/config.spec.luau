@@ -31,43 +31,40 @@ Test.describe("Config", function()
 		expect(decisions.progress).toBe(nil)
 		expect(decisions.mine.ultCharge).toBe(nil)
 	end)
-	Test.it("ships nonempty atlas IDs and maps all fifty ore slots", function()
+	Test.it("ships the prison texture IDs, ten cracks and all fifty ore slots", function()
 		local config = Loader.load("src/shared/Config")
 		local textures = serde.decode("json", fs.readFile("assets/textures/ids.json"))
-		local ui = serde.decode("json", fs.readFile("assets/ui/ids.json"))
-		for _, key in { "ores", "oreVariants", "mineFx" } do
-			assert(
-				type(textures[key]) == "string" and textures[key]:match("^rbxassetid://[1-9]%d*$"),
-				"Missing image ID: " .. key
-			)
-			expect(config.art.textures[key]).toBe(textures[key])
+		assert(textures.atlas:match("^rbxassetid://[1-9]%d*$"))
+		expect(config.art.atlas).toBe(textures.atlas)
+		expect(#textures.cracks).toBe(10)
+		expect(config.art.cracks).toEqual(textures.cracks)
+		for name, id in textures.materials do
+			assert(id:match("^rbxassetid://[1-9]%d*$"), name)
+			expect(config.art.materials[name]).toBe(id)
 		end
-		assert(
-			type(ui.kit) == "string" and ui.kit:match("^rbxassetid://[1-9]%d*$"),
-			"Missing UI image ID"
-		)
-		expect(config.art.ui).toBe(ui.kit)
 		local map = serde.decode("json", fs.readFile("assets/textures/blocks/map.json"))
+		local newTiles = 0
 		for i, world in config.worlds do
 			expect(map.worlds[i].world).toBe(world.id)
 			expect(#config.art.ores[world.id]).toBe(5)
+			expect(config.art.lining[world.id]).toBe(map.worlds[i].lining)
 			for j, slot in map.worlds[i].slots do
 				expect(slot.ore).toBe(world.ores[j][1])
-				local png = fs.readFile("assets/textures/blocks/source/" .. slot.source)
-				expect(png:sub(17, 24)).toBe(string.char(0, 0, 0, 64, 0, 0, 0, 64))
+				local actual = config.art.ores[world.id][j]
+				if slot.texture then
+					newTiles += 1
+					local png =
+						fs.readFile("assets/textures/blocks/prison/" .. slot.texture .. ".png")
+					expect(png:sub(17, 24)).toBe(string.char(0, 0, 0, 16, 0, 0, 0, 16))
+					expect(actual.rect).toEqual(slot.rect)
+				else
+					expect(actual.material).toBe(slot.material)
+				end
 			end
 		end
-		for _, path in
-			{
-				"textures/ores-1024.png",
-				"textures/ores-variants-1024.png",
-				"textures/mine-fx-1024.png",
-				"ui/ui-1024.png",
-			}
-		do
-			local png = fs.readFile("assets/" .. path)
-			expect(png:sub(17, 24)).toBe(string.char(0, 0, 4, 0, 0, 0, 4, 0))
-		end
+		expect(newTiles).toBe(14)
+		local atlas = fs.readFile("assets/textures/prison-1024.png")
+		expect(atlas:sub(17, 24)).toBe(string.char(0, 0, 4, 0, 0, 0, 4, 0))
 		expect(config.plots.frameWidth).toBe(7)
 		expect(#config.progress.widths).toBe(2)
 		expect(config.progress.widths[2].w).toBe(7)

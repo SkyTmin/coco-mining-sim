@@ -35,8 +35,8 @@ Test.describe("Mining sounds", function()
 			end
 		end
 	end)
-	Test.it("uses the new atlas segments and has no audio ID until the owner uploads it", function()
-		expect(Config.sounds.atlasId).toBe(nil)
+	Test.it("uses the uploaded atlas and the complete set of clips", function()
+		assert(Config.sounds.atlasId:match("^rbxassetid://[1-9]%d*$"))
 		for name, count in
 			{
 				buy_soft = 3,
@@ -48,6 +48,8 @@ Test.describe("Mining sounds", function()
 				coin_rain = 1,
 				world_enter = 1,
 				locked = 1,
+				step_dirt = 2,
+				step_stone = 2,
 			}
 		do
 			expect(#Config.sounds.clips[name]).toBe(count)

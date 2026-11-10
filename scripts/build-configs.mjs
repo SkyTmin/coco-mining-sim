@@ -15,8 +15,6 @@ if (whatIf.length) {
 
 const readArt = (file) => JSON.parse(readFileSync(new URL("../assets/" + file, import.meta.url), "utf8"));
 const textureIds = readArt("textures/ids.json");
-const uiIds = readArt("ui/ids.json");
-const sprites = readArt("ui/rects.json");
 const oreMap = readArt("textures/blocks/map.json");
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const isPositive = (n) => Number.isFinite(n) && n > 0;
@@ -78,51 +76,54 @@ function validRect(rect) {
     rect[0] + rect[2] <= 1024 && rect[1] + rect[3] <= 1024;
 }
 
+const imageId = (id) => typeof id === "string" && /^rbxassetid:\/\/[1-9]\d*$/.test(id);
+const pngExists = (name) => {
+  try {
+    const png = readFileSync(new URL("../assets/textures/blocks/prison/" + name + ".png", import.meta.url));
+    return png.readUInt32BE(16) === 16 && png.readUInt32BE(20) === 16;
+  } catch {
+    return false;
+  }
+};
+
 function validateArt(_art, decisions) {
   const errors = [];
-  for (const [file, ids, keys] of [
-    ["textures/ids.json", textureIds, ["ores", "oreVariants", "mineFx"]],
-    ["ui/ids.json", uiIds, ["kit"]],
-  ]) {
-    if (!isObject(ids) || Object.keys(ids).length !== keys.length ||
-        !keys.every((key) => typeof ids[key] === "string" && /^rbxassetid:\/\/[1-9]\d*$/.test(ids[key]))) {
-      errors.push(`assets/${file} must list a nonempty Roblox ID for ${keys.join(", ")}`);
-    }
+  if (!imageId(textureIds.atlas)) errors.push("assets/textures/ids.json requires the approved prison atlas");
+  const materials = textureIds.materials ?? {};
+  if (!isObject(textureIds.materials) || !Object.entries(materials).every(([name, id]) => isId(name) && imageId(id))) {
+    errors.push("prison materials require nonempty original Roblox IDs");
   }
-  for (const [name, sprite] of Object.entries(sprites)) {
-    if (!validRect(sprite?.rect)) {
-      errors.push(`Invalid UI sprite rectangle: ${name}`);
-    } else if (sprite.slice !== undefined &&
-        (!Array.isArray(sprite.slice) || sprite.slice.length !== 4 ||
-         !sprite.slice.every(Number.isInteger) || sprite.slice[0] < 0 || sprite.slice[1] < 0 ||
-         sprite.slice[2] <= sprite.slice[0] || sprite.slice[3] <= sprite.slice[1] ||
-         sprite.slice[2] > sprite.rect[2] || sprite.slice[3] > sprite.rect[3])) {
-      errors.push(`Invalid UI slice center: ${name}`);
-    }
+  if (!Array.isArray(textureIds.cracks) || textureIds.cracks.length !== 10 ||
+      !textureIds.cracks.every(imageId) || new Set(textureIds.cracks).size !== 10) {
+    errors.push("prison cracks require ten distinct original Roblox IDs");
   }
-  const sliced = ["frame-iron", "frame-wood", "frame-parch", "frame-well",
-    ...["gold", "green", "iron", "red"].flatMap((color) => ["n","h","p","d"].map((state) => `btn-${color}-${state}`))];
-  for (const name of sliced) {
-    if (!sprites[name]?.slice) errors.push(`Missing sliced sprite: ${name}`);
-  }
-  for (const name of ["hud-coin", "badge", "i-gear", "i-bolt", "i-lock", "icon-lens", "icon-pick",
-    ...Array.from({length:17}, (_, i) => "pick-" + i)]) {
-    if (!sprites[name]) errors.push(`Missing UI sprite: ${name}`);
-  }
+  if (![materials.oak_log, materials.planks].every(imageId)) errors.push("missing timber support textures");
   if (!Array.isArray(oreMap.worlds) || oreMap.worlds.length !== balanceWorlds.length) {
     errors.push("assets/textures/blocks/map.json must map all ten worlds");
-  } else if (Array.isArray(decisions.worlds)) {
-    for (const [i, world] of decisions.worlds.entries()) {
-      const mapped = oreMap.worlds[i];
-      if (mapped?.world !== world?.id || !Array.isArray(world?.ores) ||
-          mapped?.slots?.length !== world.ores.length ||
-          !mapped.slots.every((slot, j) => slot?.ore === world.ores[j]?.[0] &&
-            ["ores", "oreVariants"].includes(slot.atlas) && validRect(slot.rect) &&
-            slot.rect[2] === 64 && slot.rect[3] === 64 && /^b(?:[0-9]|[12][0-9]|30)\.png$/.test(slot.source))) {
-        errors.push(`Invalid ore art for worlds[${i}]`);
+    return errors;
+  }
+  const seen = new Set();
+  for (const [i, world] of (Array.isArray(decisions.worlds) ? decisions.worlds : []).entries()) {
+    const mapped = oreMap.worlds[i];
+    if (mapped?.world !== world?.id || !Array.isArray(world?.ores) || !imageId(materials[mapped?.lining]) || !Array.isArray(mapped?.slots) ||
+        mapped.slots.length !== world.ores.length) {
+      errors.push(`Invalid ore art for worlds[${i}]`);
+      continue;
+    }
+    for (const [j, slot] of mapped.slots.entries()) {
+      const original = !slot.rect && imageId(materials[slot.material]);
+      const key = slot.rect?.slice(0, 2).join(",");
+      const newTile = i < 3 && !slot.material && slot.texture === world.id + "_" + slot.ore &&
+        validRect(slot.rect) && slot.rect[2] === 64 && slot.rect[3] === 64 &&
+        slot.rect[0] % 64 === 0 && slot.rect[1] % 64 === 0 &&
+        slot.rect[0] < 256 && slot.rect[1] < 256 && !seen.has(key) && pngExists(slot.texture);
+      if (newTile) seen.add(key);
+      if (slot.ore !== world.ores[j][0] || (!original && !newTile)) {
+        errors.push(`Invalid texture for worlds[${i}].ores[${j}]`);
       }
     }
   }
+  if (seen.size !== 14) errors.push("worlds 1–3 require fourteen new 16×16 tiles");
   return errors;
 }
 
@@ -284,10 +285,12 @@ function withBalance(input) {
     ...Object.fromEntries(rarities.slice(1).map(({ id }) => ["plain_" + id, { rarity: id }])),
   };
   const art = {
-    textures: textureIds,
-    ui: uiIds.kit,
-    sprites,
-    ores: Object.fromEntries(oreMap.worlds.map(({ world, slots }) => [world, slots.map(({ atlas, rect }) => ({ atlas, rect }))])),
+    atlas: textureIds.atlas,
+    materials: textureIds.materials,
+    cracks: textureIds.cracks,
+    ores: Object.fromEntries(oreMap.worlds.map(({ world, slots }) =>
+      [world, slots.map(({ material, rect }) => material ? { material } : { rect })])),
+    lining: Object.fromEntries(oreMap.worlds.map(({ world, lining }) => [world, lining])),
   };
   return { ...input, mine, worlds, pickaxes, progress, art };
 }
@@ -361,9 +364,7 @@ const sections = [
   { name: "progress", validate: () => [], emit: withoutNotes },
   {
     name: "fx",
-    validate: ({ ult, depth, impactTime, swing }) =>
-      swing?.windup === 0.08 && swing.contact === 0.14 && swing.hold === 0.17 && swing.finish === 0.26 &&
-      swing.windupDegrees === 35 && swing.travelDegrees === 70 && swing.recoilDegrees === 12 && swing.handNear === 0.06 &&
+    validate: ({ ult, depth, impactTime }) =>
       ult?.windup === 0.15 && ult.fractureMin === 0.5 && ult.fractureMax === 0.9 &&
       ult.empty >= 0.25 && ult.empty <= 0.35 &&
       ult.approachBase === 0.45 && ult.approachPerLog === 0.35 &&
@@ -382,11 +383,11 @@ const sections = [
         ult_windup: 1, ult_whump: 1, ult_rumble_away: 1, ult_rumble_near: 1, ult_thud: 1,
         plate_hit: 2, plate_break: 1, ui_tap: 1,
         buy_soft: 3, level_tick: 1, card_morph: 1, heavy_hit: 1, crit_soft: 2,
-        coin_rain: 1, world_enter: 1, depth_knock: 3, locked: 1,
+        coin_rain: 1, world_enter: 1, depth_knock: 3, locked: 1, step_dirt: 2, step_stone: 2,
       };
       const errors = [];
-      if (atlasId !== null && (typeof atlasId !== "string" || !/^rbxassetid:\/\/\d+$/.test(atlasId))) {
-        errors.push("sounds.atlasId must be null or a Roblox audio asset ID");
+      if (!imageId(atlasId)) {
+        errors.push("sounds.atlasId must be the uploaded Roblox audio asset ID");
       }
       if (rules?.maxVolume !== 0.5 || rules.frequentVolume !== 0.25 || rules.linkVolume !== 0.12 ||
           rules.depthVolume !== 0.10 || rules.defaultSfx !== 0.6 || rules.frequentLufs !== -26 || rules.rareLufs !== -20 ||

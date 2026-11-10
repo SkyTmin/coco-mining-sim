@@ -8,10 +8,9 @@ local Sfx = require(Shared.Sfx)
 local Strings = require(Shared.Strings)
 local Queue = require(Shared.Play.DepthQueue)
 local Worlds = require(Shared.Mine.Worlds)
-local Kit = require(script.Parent.Parent.Ui.Kit)
 
 local DepthSign = {}
-local WIDTH, LENGTH = 9, 3.4
+local WIDTH, LENGTH = 6, 2.2
 local GOLD = Color3.fromRGB(255, 208, 101)
 local GOLD_SECONDS, TICK_INTERVAL = 0.3, 1 / 6
 
@@ -64,18 +63,21 @@ function DepthSign.new(parent: Instance, frame: CFrame, depth: number, plot: Ins
 	local surface = Instance.new("SurfaceGui")
 	surface.Name, surface.Face, surface.SizingMode =
 		"Counter", Enum.NormalId.Top, Enum.SurfaceGuiSizingMode.FixedSize
-	surface.CanvasSize, surface.LightInfluence, surface.Parent = Vector2.new(450, 170), 0, board
-	local skin =
-		Kit.image(surface, "Iron", UDim2.fromScale(1, 1), UDim2.fromOffset(0, 0), "frame-iron")
-	skin.SliceScale = 3
+	surface.CanvasSize, surface.LightInfluence, surface.Parent = Vector2.new(300, 110), 0, board
+	local skin = Instance.new("Frame")
+	skin.Name, skin.Size, skin.BackgroundColor3, skin.BorderSizePixel =
+		"Iron", UDim2.fromScale(1, 1), Color3.fromRGB(42, 40, 48), 0
+	skin.Parent = surface
 	local edge = Instance.new("UIStroke")
 	edge.Thickness, edge.ApplyStrokeMode, edge.Parent = 4, Enum.ApplyStrokeMode.Border, skin
-	local list =
-		Kit.block(skin, "Digits", UDim2.new(1, -22, 1, -22), UDim2.fromOffset(11, 11), Kit.ink)
-	list.BackgroundTransparency, list.ClipsDescendants = 1, true
-	local glint =
-		Kit.block(list, "Glint", UDim2.fromScale(0.14, 1), UDim2.fromScale(-0.14, 0), GOLD)
-	glint.ZIndex, glint.Visible = 8, false
+	local list = Instance.new("Frame")
+	list.Name, list.Size, list.Position =
+		"Digits", UDim2.new(1, -12, 1, -12), UDim2.fromOffset(6, 6)
+	list.BackgroundTransparency, list.ClipsDescendants, list.Parent = 1, true, skin
+	local glint = Instance.new("Frame")
+	glint.Name, glint.Size, glint.BackgroundColor3, glint.BorderSizePixel =
+		"Glint", UDim2.fromScale(0.14, 1), GOLD, 0
+	glint.ZIndex, glint.Visible, glint.Parent = 8, false, list
 	local gradient = Instance.new("UIGradient")
 	gradient.Transparency = NumberSequence.new({
 		NumberSequenceKeypoint.new(0, 1),
@@ -118,24 +120,21 @@ end
 local function digit(sign: Sign, i: number): Digit
 	local window = sign.digits[i]
 	if not window then
-		local clip = Kit.block(
-			sign.list,
-			"Digit" .. i,
-			UDim2.fromScale(0.12, 1),
-			UDim2.fromOffset(0, 0),
-			Color3.fromRGB(71, 56, 37)
-		)
-		clip.ClipsDescendants = true
+		local clip = Instance.new("Frame")
+		clip.Name, clip.Size = "Digit" .. i, UDim2.fromScale(0.12, 1)
+		clip.BackgroundColor3, clip.BorderSizePixel, clip.ClipsDescendants =
+			Color3.fromRGB(71, 56, 37), 0, true
+		clip.Parent = sign.list
 		local function glyph(name: string): TextLabel
-			return Kit.label(
-				clip,
-				name,
-				UDim2.fromScale(1, 1),
-				UDim2.fromOffset(0, 0),
-				110,
-				true,
-				Kit.gold
-			)
+			local text = Instance.new("TextLabel")
+			text.Name, text.Size, text.BackgroundTransparency = name, UDim2.fromScale(1, 1), 1
+			text.Font, text.TextScaled, text.TextColor3 =
+				Enum.Font.GothamBlack, true, Color3.fromRGB(255, 233, 176)
+			text.TextStrokeColor3, text.TextStrokeTransparency = Color3.fromRGB(34, 29, 29), 0
+			local size = Instance.new("UITextSizeConstraint")
+			size.MinTextSize, size.MaxTextSize, size.Parent = 9, 72, text
+			text.Parent = clip
+			return text
 		end
 		window = { clip = clip, old = glyph("Previous"), new = glyph("Current") }
 		sign.digits[i] = window
