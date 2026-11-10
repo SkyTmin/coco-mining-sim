@@ -4,3 +4,4 @@ build/
 *.lock
 node_modules/
 sim-out/
+__pycache__/

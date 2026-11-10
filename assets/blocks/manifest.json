@@ -1,375 +1,740 @@
 {
- "_note": "[решение Claude 10.11] стиль A, мир 1 — галька [владелец]; генератор assets/blocks/make.py",
+ "_note": "[решение Claude 10.11] стиль A; миры, руды и раскладки — assets/blocks/worlds.py [владелец 10.11: галька в мире 1, раскладки Б/Г/Д, мир 9 — Подземное море, магма — мир 10]; генератор assets/blocks/build.py",
+ "variants": {
+  "golden": 250,
+  "rainbow": 10000,
+  "cosmic": 500000
+ },
  "worlds": [
   {
    "world": 1,
    "id": "meadow",
-   "rock": "pebble",
+   "name": "Луговой слой",
+   "layout": "Д",
+   "rock": {
+    "id": "pebble",
+    "name": "Галька",
+    "texture": "pebble",
+    "variants": {
+     "golden": "pebble_golden",
+     "rainbow": "pebble_rainbow",
+     "cosmic": "pebble_cosmic"
+    }
+   },
+   "lining": "pebble_lining",
+   "light": "#ffe2a8",
+   "frame": "candy",
+   "env": {
+    "beams": "wood",
+    "props": "grass"
+   },
    "ores": [
     {
      "id": "flint",
-     "texture": "flint",
+     "name": "Кремень",
      "rarity": "common",
+     "texture": "flint",
+     "variants": {
+      "golden": "flint_golden",
+      "rainbow": "flint_rainbow",
+      "cosmic": "flint_cosmic"
+     },
      "glow": false
     },
     {
      "id": "coal",
-     "texture": "coal",
+     "name": "Уголь",
      "rarity": "rare",
+     "texture": "coal",
+     "variants": {
+      "golden": "coal_golden",
+      "rainbow": "coal_rainbow",
+      "cosmic": "coal_cosmic"
+     },
      "glow": false
     },
     {
      "id": "copper",
-     "texture": "copper",
+     "name": "Медь",
      "rarity": "gem",
+     "texture": "copper",
+     "variants": {
+      "golden": "copper_golden",
+      "rainbow": "copper_rainbow",
+      "cosmic": "copper_cosmic"
+     },
      "glow": false
     },
     {
      "id": "firefly_amber",
-     "texture": "firefly_amber",
+     "name": "Светлячковый янтарь",
      "rarity": "treasure",
+     "texture": "firefly_amber",
+     "variants": {
+      "golden": "firefly_amber_golden",
+      "rainbow": "firefly_amber_rainbow",
+      "cosmic": "firefly_amber_cosmic"
+     },
      "glow": true
     }
-   ],
-   "lining": "pebble_lining",
-   "light": "#ffe2a8",
-   "env": {
-    "beams": "wood",
-    "props": "grass"
-   }
+   ]
   },
   {
    "world": 2,
    "id": "copper_caves",
-   "rock": "red_stone",
+   "name": "Медные пещеры",
+   "layout": "Г",
+   "rock": {
+    "id": "red_stone",
+    "name": "Рыжий камень",
+    "texture": "red_stone",
+    "variants": {
+     "golden": "red_stone_golden",
+     "rainbow": "red_stone_rainbow",
+     "cosmic": "red_stone_cosmic"
+    }
+   },
+   "lining": "red_stone_lining",
+   "light": "#ffb36b",
+   "frame": "candy",
+   "env": {
+    "beams": "copper",
+    "props": "pipes"
+   },
    "ores": [
     {
      "id": "copper",
-     "texture": "copper_w2",
+     "name": "Медь",
      "rarity": "common",
+     "texture": "copper_w2",
+     "variants": {
+      "golden": "copper_w2_golden",
+      "rainbow": "copper_w2_rainbow",
+      "cosmic": "copper_w2_cosmic"
+     },
      "glow": false
     },
     {
      "id": "tin",
-     "texture": "tin",
+     "name": "Олово",
      "rarity": "rare",
+     "texture": "tin",
+     "variants": {
+      "golden": "tin_golden",
+      "rainbow": "tin_rainbow",
+      "cosmic": "tin_cosmic"
+     },
      "glow": false
     },
     {
      "id": "malachite",
-     "texture": "malachite",
+     "name": "Малахит",
      "rarity": "gem",
+     "texture": "malachite",
+     "variants": {
+      "golden": "malachite_golden",
+      "rainbow": "malachite_rainbow",
+      "cosmic": "malachite_cosmic"
+     },
      "glow": false
     },
     {
      "id": "turquoise",
-     "texture": "turquoise",
+     "name": "Бирюза",
      "rarity": "treasure",
+     "texture": "turquoise",
+     "variants": {
+      "golden": "turquoise_golden",
+      "rainbow": "turquoise_rainbow",
+      "cosmic": "turquoise_cosmic"
+     },
      "glow": true
     }
-   ],
-   "lining": "red_stone_lining",
-   "light": "#ffb36b",
-   "env": {
-    "beams": "copper",
-    "props": "pipes"
-   }
+   ]
   },
   {
    "world": 3,
    "id": "quartz_veins",
-   "rock": "white_stone",
+   "name": "Кварцевые жилы",
+   "layout": "Б",
+   "rock": {
+    "id": "white_stone",
+    "name": "Белый камень",
+    "texture": "white_stone",
+    "variants": {
+     "golden": "white_stone_golden",
+     "rainbow": "white_stone_rainbow",
+     "cosmic": "white_stone_cosmic"
+    }
+   },
+   "lining": "white_stone_lining",
+   "light": "#ffd2ef",
+   "frame": "candy",
+   "env": {
+    "beams": null,
+    "props": "pink_crystals"
+   },
    "ores": [
     {
      "id": "quartz",
-     "texture": "quartz",
+     "name": "Кварц",
      "rarity": "common",
+     "texture": "quartz",
+     "variants": {
+      "golden": "quartz_golden",
+      "rainbow": "quartz_rainbow",
+      "cosmic": "quartz_cosmic"
+     },
      "glow": false
     },
     {
      "id": "iron",
-     "texture": "iron",
+     "name": "Железо",
      "rarity": "rare",
+     "texture": "iron",
+     "variants": {
+      "golden": "iron_golden",
+      "rainbow": "iron_rainbow",
+      "cosmic": "iron_cosmic"
+     },
      "glow": false
     },
     {
      "id": "rose_quartz",
-     "texture": "rose_quartz",
+     "name": "Розовый кварц",
      "rarity": "gem",
+     "texture": "rose_quartz",
+     "variants": {
+      "golden": "rose_quartz_golden",
+      "rainbow": "rose_quartz_rainbow",
+      "cosmic": "rose_quartz_cosmic"
+     },
      "glow": false
     },
     {
      "id": "amethyst",
-     "texture": "amethyst",
+     "name": "Аметист",
      "rarity": "treasure",
+     "texture": "amethyst",
+     "variants": {
+      "golden": "amethyst_golden",
+      "rainbow": "amethyst_rainbow",
+      "cosmic": "amethyst_cosmic"
+     },
      "glow": true
     }
-   ],
-   "lining": "white_stone_lining",
-   "light": "#ffd2ef",
-   "env": {
-    "beams": null,
-    "props": "pink_crystals"
-   }
+   ]
   },
   {
    "world": 4,
    "id": "gold_river",
-   "rock": "sandstone",
+   "name": "Золотая река",
+   "layout": "Г",
+   "rock": {
+    "id": "sandstone",
+    "name": "Песчаник",
+    "texture": "sandstone",
+    "variants": {
+     "golden": "sandstone_golden",
+     "rainbow": "sandstone_rainbow",
+     "cosmic": "sandstone_cosmic"
+    }
+   },
+   "lining": "sandstone_lining",
+   "light": "#ffe58a",
+   "frame": "candy",
+   "env": {
+    "beams": "wood",
+    "props": "river"
+   },
    "ores": [
     {
      "id": "silver",
-     "texture": "silver",
+     "name": "Серебро",
      "rarity": "common",
+     "texture": "silver",
+     "variants": {
+      "golden": "silver_golden",
+      "rainbow": "silver_rainbow",
+      "cosmic": "silver_cosmic"
+     },
      "glow": false
     },
     {
      "id": "gold",
-     "texture": "gold",
+     "name": "Золото",
      "rarity": "rare",
+     "texture": "gold",
+     "variants": {
+      "golden": "gold_golden",
+      "rainbow": "gold_rainbow",
+      "cosmic": "gold_cosmic"
+     },
      "glow": false
     },
     {
      "id": "river_pearl",
-     "texture": "river_pearl",
+     "name": "Речной жемчуг",
      "rarity": "gem",
+     "texture": "river_pearl",
+     "variants": {
+      "golden": "river_pearl_golden",
+      "rainbow": "river_pearl_rainbow",
+      "cosmic": "river_pearl_cosmic"
+     },
      "glow": false
     },
     {
      "id": "nugget",
-     "texture": "nugget",
+     "name": "Самородок-великан",
      "rarity": "treasure",
+     "texture": "nugget",
+     "variants": {
+      "golden": "nugget_golden",
+      "rainbow": "nugget_rainbow",
+      "cosmic": "nugget_cosmic"
+     },
      "glow": true
     }
-   ],
-   "lining": "sandstone_lining",
-   "light": "#ffe58a",
-   "env": {
-    "beams": "wood",
-    "props": "river"
-   }
+   ]
   },
   {
    "world": 5,
    "id": "ice_grottoes",
-   "rock": "frozen_stone",
+   "name": "Ледяные гроты",
+   "layout": "Д",
+   "rock": {
+    "id": "frozen_stone",
+    "name": "Мёрзлый камень",
+    "texture": "frozen_stone",
+    "variants": {
+     "golden": "frozen_stone_golden",
+     "rainbow": "frozen_stone_rainbow",
+     "cosmic": "frozen_stone_cosmic"
+    }
+   },
+   "lining": "frozen_stone_lining",
+   "light": "#bfeaff",
+   "frame": "candy",
+   "env": {
+    "beams": null,
+    "props": "icicles"
+   },
    "ores": [
     {
      "id": "ice",
-     "texture": "ice",
+     "name": "Лёд",
      "rarity": "common",
+     "texture": "ice",
+     "variants": {
+      "golden": "ice_golden",
+      "rainbow": "ice_rainbow",
+      "cosmic": "ice_cosmic"
+     },
      "glow": false
     },
     {
      "id": "froststone",
-     "texture": "froststone",
+     "name": "Иней-камень",
      "rarity": "rare",
+     "texture": "froststone",
+     "variants": {
+      "golden": "froststone_golden",
+      "rainbow": "froststone_rainbow",
+      "cosmic": "froststone_cosmic"
+     },
      "glow": false
     },
     {
      "id": "sapphire",
-     "texture": "sapphire",
+     "name": "Сапфир",
      "rarity": "gem",
+     "texture": "sapphire",
+     "variants": {
+      "golden": "sapphire_golden",
+      "rainbow": "sapphire_rainbow",
+      "cosmic": "sapphire_cosmic"
+     },
      "glow": false
     },
     {
      "id": "eternal_ice",
-     "texture": "eternal_ice",
+     "name": "Вечный лёд",
      "rarity": "treasure",
+     "texture": "eternal_ice",
+     "variants": {
+      "golden": "eternal_ice_golden",
+      "rainbow": "eternal_ice_rainbow",
+      "cosmic": "eternal_ice_cosmic"
+     },
      "glow": true
     }
-   ],
-   "lining": "frozen_stone_lining",
-   "light": "#bfeaff",
-   "env": {
-    "beams": null,
-    "props": "icicles"
-   }
+   ]
   },
   {
    "world": 6,
    "id": "mushroom_forest",
-   "rock": "mycelium",
+   "name": "Грибной лес",
+   "layout": "Г",
+   "rock": {
+    "id": "mycelium",
+    "name": "Грибница",
+    "texture": "mycelium",
+    "variants": {
+     "golden": "mycelium_golden",
+     "rainbow": "mycelium_rainbow",
+     "cosmic": "mycelium_cosmic"
+    }
+   },
+   "lining": "mycelium_lining",
+   "light": "#7ff5d8",
+   "frame": "candy",
+   "env": {
+    "beams": null,
+    "props": "mushrooms"
+   },
    "ores": [
     {
      "id": "sporite",
-     "texture": "sporite",
+     "name": "Спорит",
      "rarity": "common",
+     "texture": "sporite",
+     "variants": {
+      "golden": "sporite_golden",
+      "rainbow": "sporite_rainbow",
+      "cosmic": "sporite_cosmic"
+     },
      "glow": false
     },
     {
      "id": "glowshroom",
-     "texture": "glowshroom",
+     "name": "Светогриб",
      "rarity": "rare",
+     "texture": "glowshroom",
+     "variants": {
+      "golden": "glowshroom_golden",
+      "rainbow": "glowshroom_rainbow",
+      "cosmic": "glowshroom_cosmic"
+     },
      "glow": false
     },
     {
      "id": "topaz",
-     "texture": "topaz",
+     "name": "Топаз",
      "rarity": "gem",
+     "texture": "topaz",
+     "variants": {
+      "golden": "topaz_golden",
+      "rainbow": "topaz_rainbow",
+      "cosmic": "topaz_cosmic"
+     },
      "glow": false
     },
     {
      "id": "moonstone",
-     "texture": "moonstone",
+     "name": "Лунный камень",
      "rarity": "treasure",
+     "texture": "moonstone",
+     "variants": {
+      "golden": "moonstone_golden",
+      "rainbow": "moonstone_rainbow",
+      "cosmic": "moonstone_cosmic"
+     },
      "glow": true
     }
-   ],
-   "lining": "mycelium_lining",
-   "light": "#7ff5d8",
-   "env": {
-    "beams": null,
-    "props": "mushrooms"
-   }
+   ]
   },
   {
    "world": 7,
    "id": "giant_bones",
-   "rock": "limestone",
+   "name": "Кости великанов",
+   "layout": "Д",
+   "rock": {
+    "id": "limestone",
+    "name": "Известняк",
+    "texture": "limestone",
+    "variants": {
+     "golden": "limestone_golden",
+     "rainbow": "limestone_rainbow",
+     "cosmic": "limestone_cosmic"
+    }
+   },
+   "lining": "limestone_lining",
+   "light": "#ffc58a",
+   "frame": "candy",
+   "env": {
+    "beams": null,
+    "props": "ribs"
+   },
    "ores": [
     {
      "id": "bone_ore",
-     "texture": "bone_ore",
+     "name": "Кость-руда",
      "rarity": "common",
+     "texture": "bone_ore",
+     "variants": {
+      "golden": "bone_ore_golden",
+      "rainbow": "bone_ore_rainbow",
+      "cosmic": "bone_ore_cosmic"
+     },
      "glow": false
     },
     {
      "id": "amber",
-     "texture": "amber",
+     "name": "Янтарь",
      "rarity": "rare",
+     "texture": "amber",
+     "variants": {
+      "golden": "amber_golden",
+      "rainbow": "amber_rainbow",
+      "cosmic": "amber_cosmic"
+     },
      "glow": false
     },
     {
      "id": "onyx",
-     "texture": "onyx",
+     "name": "Оникс",
      "rarity": "gem",
+     "texture": "onyx",
+     "variants": {
+      "golden": "onyx_golden",
+      "rainbow": "onyx_rainbow",
+      "cosmic": "onyx_cosmic"
+     },
      "glow": false
     },
     {
      "id": "dragon_amber",
-     "texture": "dragon_amber",
+     "name": "Драконий янтарь",
      "rarity": "treasure",
+     "texture": "dragon_amber",
+     "variants": {
+      "golden": "dragon_amber_golden",
+      "rainbow": "dragon_amber_rainbow",
+      "cosmic": "dragon_amber_cosmic"
+     },
      "glow": true
     }
-   ],
-   "lining": "limestone_lining",
-   "light": "#ffc58a",
-   "env": {
-    "beams": null,
-    "props": "ribs"
-   }
+   ]
   },
   {
    "world": 8,
    "id": "lost_city",
-   "rock": "terracotta",
+   "name": "Затерянный город",
+   "layout": "Б",
+   "rock": {
+    "id": "terracotta",
+    "name": "Терракота",
+    "texture": "terracotta",
+    "variants": {
+     "golden": "terracotta_golden",
+     "rainbow": "terracotta_rainbow",
+     "cosmic": "terracotta_cosmic"
+    }
+   },
+   "lining": "terracotta_lining",
+   "light": "#a8ffb0",
+   "frame": "candy",
+   "env": {
+    "beams": "stone",
+    "props": "vines"
+   },
    "ores": [
     {
      "id": "bronze",
-     "texture": "bronze",
+     "name": "Бронза",
      "rarity": "common",
+     "texture": "bronze",
+     "variants": {
+      "golden": "bronze_golden",
+      "rainbow": "bronze_rainbow",
+      "cosmic": "bronze_cosmic"
+     },
      "glow": false
     },
     {
      "id": "jade",
-     "texture": "jade",
+     "name": "Нефрит",
      "rarity": "rare",
+     "texture": "jade",
+     "variants": {
+      "golden": "jade_golden",
+      "rainbow": "jade_rainbow",
+      "cosmic": "jade_cosmic"
+     },
      "glow": false
     },
     {
      "id": "lapis_lazuli",
-     "texture": "lapis_lazuli",
+     "name": "Лазурит",
      "rarity": "gem",
+     "texture": "lapis_lazuli",
+     "variants": {
+      "golden": "lapis_lazuli_golden",
+      "rainbow": "lapis_lazuli_rainbow",
+      "cosmic": "lapis_lazuli_cosmic"
+     },
      "glow": false
     },
     {
      "id": "ancient_gold",
-     "texture": "ancient_gold",
+     "name": "Древнее золото",
      "rarity": "treasure",
+     "texture": "ancient_gold",
+     "variants": {
+      "golden": "ancient_gold_golden",
+      "rainbow": "ancient_gold_rainbow",
+      "cosmic": "ancient_gold_cosmic"
+     },
      "glow": true
     }
-   ],
-   "lining": "terracotta_lining",
-   "light": "#a8ffb0",
-   "env": {
-    "beams": "stone",
-    "props": "vines"
-   }
+   ]
   },
   {
    "world": 9,
+   "id": "underground_sea",
+   "name": "Подземное море",
+   "layout": "Д",
+   "rock": {
+    "id": "sea_stone",
+    "name": "Морской камень",
+    "texture": "sea_stone",
+    "variants": {
+     "golden": "sea_stone_golden",
+     "rainbow": "sea_stone_rainbow",
+     "cosmic": "sea_stone_cosmic"
+    }
+   },
+   "lining": "sea_stone_lining",
+   "light": "#7fe8ff",
+   "frame": "candy",
+   "env": {
+    "beams": null,
+    "props": "bubbles_kelp"
+   },
+   "ores": [
+    {
+     "id": "salt",
+     "name": "Соль-камень",
+     "rarity": "common",
+     "texture": "salt",
+     "variants": {
+      "golden": "salt_golden",
+      "rainbow": "salt_rainbow",
+      "cosmic": "salt_cosmic"
+     },
+     "glow": false
+    },
+    {
+     "id": "aquamarine",
+     "name": "Аквамарин",
+     "rarity": "rare",
+     "texture": "aquamarine",
+     "variants": {
+      "golden": "aquamarine_golden",
+      "rainbow": "aquamarine_rainbow",
+      "cosmic": "aquamarine_cosmic"
+     },
+     "glow": false
+    },
+    {
+     "id": "pearl",
+     "name": "Жемчуг",
+     "rarity": "gem",
+     "texture": "pearl",
+     "variants": {
+      "golden": "pearl_golden",
+      "rainbow": "pearl_rainbow",
+      "cosmic": "pearl_cosmic"
+     },
+     "glow": false
+    },
+    {
+     "id": "black_pearl",
+     "name": "Чёрная жемчужина",
+     "rarity": "treasure",
+     "texture": "black_pearl",
+     "variants": {
+      "golden": "black_pearl_golden",
+      "rainbow": "black_pearl_rainbow",
+      "cosmic": "black_pearl_cosmic"
+     },
+     "glow": true
+    }
+   ]
+  },
+  {
+   "world": 10,
    "id": "magma_springs",
-   "rock": "basalt",
+   "name": "Магмовые ключи",
+   "layout": "Б",
+   "rock": {
+    "id": "basalt",
+    "name": "Базальт",
+    "texture": "basalt",
+    "variants": {
+     "golden": "basalt_golden",
+     "rainbow": "basalt_rainbow",
+     "cosmic": "basalt_cosmic"
+    }
+   },
+   "lining": "basalt_lining",
+   "light": "#ff7a3a",
+   "frame": "hot",
+   "env": {
+    "beams": null,
+    "props": "lava"
+   },
    "ores": [
     {
      "id": "obsidian",
-     "texture": "obsidian",
+     "name": "Обсидиан",
      "rarity": "common",
+     "texture": "obsidian",
+     "variants": {
+      "golden": "obsidian_golden",
+      "rainbow": "obsidian_rainbow",
+      "cosmic": "obsidian_cosmic"
+     },
      "glow": false
     },
     {
      "id": "garnet",
-     "texture": "garnet",
+     "name": "Гранат",
      "rarity": "rare",
+     "texture": "garnet",
+     "variants": {
+      "golden": "garnet_golden",
+      "rainbow": "garnet_rainbow",
+      "cosmic": "garnet_cosmic"
+     },
      "glow": false
     },
     {
      "id": "ruby",
-     "texture": "ruby",
+     "name": "Рубин",
      "rarity": "gem",
-     "glow": false
+     "texture": "ruby",
+     "variants": {
+      "golden": "ruby_golden",
+      "rainbow": "ruby_rainbow",
+      "cosmic": "ruby_cosmic"
+     },
+     "glow": true
     },
     {
      "id": "fire_ruby",
+     "name": "Огненный рубин",
+     "rarity": "treasure",
      "texture": "fire_ruby",
-     "rarity": "treasure",
+     "variants": {
+      "golden": "fire_ruby_golden",
+      "rainbow": "fire_ruby_rainbow",
+      "cosmic": "fire_ruby_cosmic"
+     },
      "glow": true
     }
-   ],
-   "lining": "basalt_lining",
-   "light": "#ff7a3a",
-   "env": {
-    "beams": null,
-    "props": "lava"
-   }
-  },
-  {
-   "world": 10,
-   "id": "core",
-   "rock": "lightstone",
-   "ores": [
-    {
-     "id": "core_crystal",
-     "texture": "core_crystal",
-     "rarity": "common",
-     "glow": false
-    },
-    {
-     "id": "sunstone",
-     "texture": "sunstone",
-     "rarity": "rare",
-     "glow": false
-    },
-    {
-     "id": "stardust",
-     "texture": "stardust",
-     "rarity": "gem",
-     "glow": false
-    },
-    {
-     "id": "core_shard",
-     "texture": "core_shard",
-     "rarity": "treasure",
-     "glow": true
-    }
-   ],
-   "lining": "lightstone_lining",
-   "light": "#fff2c0",
-   "env": {
-    "beams": null,
-    "props": "stars"
-   }
+   ]
   }
  ]
 }

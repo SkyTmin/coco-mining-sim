@@ -90,77 +90,104 @@ def glossy(px, base, seed):
                 px[x, y] = _shade(base, 0.55)
 
 
-# ore: (id, rarity, shape, fill, light, layout override or None)
-# shapes: round, shard (rhomb), oval, hex
+def waves(px, base, seed):
+    """Underground sea: soft wavy layers (the liked «layers» family, curved like water)."""
+    L, D = _shade(base, 0.12), _shade(base, -0.12)
+    for y in range(N):
+        for x in range(N):
+            band = int((y + 1.6 * math.sin((x + seed) * 0.75)) // 3) % 3
+            px[x, y] = (L, base, D)[band]
+
+
+HOT, EMBER = (255, 122, 38), (214, 52, 40)
+
+
+def hot_pebbles(px, base, seed):
+    """Magma: basalt pebbles lying on lava, the lower-right rim of every pebble glows [владелец 10.11: финал]."""
+    r = random.Random(seed)
+    stones = [(5, 5, 2.6), (11, 6, 2.2), (6, 11, 2.3), (11, 11, 2.6), (3, 8, 1.3)]
+    r.shuffle(stones)
+    for x in range(N):
+        for y in range(N):
+            px[x, y] = EMBER
+    for cx, cy, rr in stones:
+        cx += r.uniform(-0.4, 0.4)
+        cy += r.uniform(-0.4, 0.4)
+        for y in range(N):
+            for x in range(N):
+                dx, dy = x + 0.5 - cx, y + 0.5 - cy
+                d = math.hypot(dx, dy)
+                if d < rr:
+                    px[x, y] = _shade(base, 0.14) if dx + dy < -0.6 else base
+                elif d < rr + 0.8:
+                    px[x, y] = HOT if dx + dy > 0 else _shade(base, -0.15)
+
+
+# ore: (id, name, rarity, shape, fill, light). Inside a world every ore has its own shape AND colour (candies).
+# shapes: round, shard (rhomb), oval, hex. layout: ore placement system from layouts.SYSTEMS — the owner liked
+# Б, Г and Д (10.11); each world gets one so neighbouring worlds differ by placement too [решение].
+# Owner 10.11: world 9 = «Подземное море», magma moves to world 10 (the finale: red-hot frame + glowing ore),
+# the old «Ядро» world is gone (the Core stays as the goal behind the last Plate).
 WORLDS = [
-    {"id": "meadow", "name": "Луговой слой", "fill": pebbles, "rock": ("pebble", "#a7a2b4"),
-     "lining": 0.62, "light": "#ffe2a8", "sky": "#2b3a55",
-     "env": {"beams": "wood", "props": "grass"},
-     "ores": [("flint", "common", "shard", "#56709c", "#b4c8ee", None),
-              ("coal", "rare", "round", "#33333f", "#9a9ab8", [("round", 13, 13, 5.4), ("shard", 23, 10, 2.6), ("shard", 21.5, 22, 3.2)]),
-              ("copper", "gem", "round", "#ee7d36", "#ffc995", None),
-              ("firefly_amber", "treasure", "round", "#ffbf1f", "#fff4a8", None)]},
-    {"id": "copper_caves", "name": "Медные пещеры", "fill": strata, "rock": ("red_stone", "#cf7a4e"),
-     "lining": 0.58, "light": "#ffb36b", "sky": "#3a1f18",
-     "env": {"beams": "copper", "props": "pipes"},
-     "ores": [("copper", "common", "round", "#ff9a5c", "#ffe0bf", None),
-              ("tin", "rare", "oval", "#e3e9f2", "#ffffff", None),
-              ("malachite", "gem", "hex", "#1fb36b", "#a5f5c8", None),
-              ("turquoise", "treasure", "round", "#2fd8cf", "#d4fffb", None)]},
-    {"id": "quartz_veins", "name": "Кварцевые жилы", "fill": facets, "rock": ("white_stone", "#ddd6ea"),
-     "lining": 0.6, "light": "#ffd2ef", "sky": "#2c2440",
-     "env": {"beams": None, "props": "pink_crystals"},
-     "ores": [("quartz", "common", "shard", "#cfeeff", "#ffffff", None),
-              ("iron", "rare", "oval", "#d39a6e", "#ffe2c6", None),
-              ("rose_quartz", "gem", "hex", "#ff7fb8", "#ffe0ee", None),
-              ("amethyst", "treasure", "shard", "#9b55f0", "#e8cfff", None)]},
-    {"id": "gold_river", "name": "Золотая река", "fill": soft_blobs, "rock": ("sandstone", "#e6be78"),
-     "lining": 0.6, "light": "#ffe58a", "sky": "#1f3b4a",
-     "env": {"beams": "wood", "props": "river"},
-     "ores": [("silver", "common", "oval", "#c9d6ea", "#ffffff", None),
-              ("gold", "rare", "round", "#ffc21a", "#fff2a0", None),
-              ("river_pearl", "gem", "round", "#fff1f6", "#ffffff", None),
-              ("nugget", "treasure", "hex", "#ffb000", "#fff3a6", None)]},
-    {"id": "ice_grottoes", "name": "Ледяные гроты", "fill": glossy, "rock": ("frozen_stone", "#9fd6f0"),
-     "lining": 0.75, "light": "#bfeaff", "sky": "#14284a",
-     "env": {"beams": None, "props": "icicles"},
-     "ores": [("ice", "common", "shard", "#e8fbff", "#ffffff", None),
-              ("froststone", "rare", "round", "#7fb4e6", "#e6f6ff", None),
-              ("sapphire", "gem", "hex", "#2a5ee8", "#a9c6ff", None),
-              ("eternal_ice", "treasure", "shard", "#5ef0ff", "#ffffff", None)]},
-    {"id": "mushroom_forest", "name": "Грибной лес", "fill": gradient, "rock": ("mycelium", "#8e68c2"),
-     "lining": 0.55, "light": "#7ff5d8", "sky": "#1d1236",
-     "env": {"beams": None, "props": "mushrooms"},
-     "ores": [("sporite", "common", "round", "#b6f24a", "#efffc2", None),
-              ("glowshroom", "rare", "oval", "#3ff2d0", "#d6fff6", None),
-              ("topaz", "gem", "hex", "#ffa23a", "#ffe0b0", None),
-              ("moonstone", "treasure", "round", "#e9e2ff", "#ffffff", None)]},
-    {"id": "giant_bones", "name": "Кости великанов", "fill": smooth, "rock": ("limestone", "#ecdcb8"),
-     "lining": 0.6, "light": "#ffc58a", "sky": "#3a2618",
-     "env": {"beams": None, "props": "ribs"},
-     "ores": [("bone_ore", "common", "oval", "#fffaf0", "#ffffff", None),
-              ("amber", "rare", "round", "#f2a12a", "#ffe2a0", None),
-              ("onyx", "gem", "hex", "#2b2734", "#9a92b8", None),
-              ("dragon_amber", "treasure", "round", "#ff5a2a", "#ffd0a0", None)]},
-    {"id": "lost_city", "name": "Затерянный город", "fill": soft_blobs, "rock": ("terracotta", "#c8653f"),
-     "lining": 0.58, "light": "#a8ffb0", "sky": "#16301e",
-     "env": {"beams": "stone", "props": "vines"},
-     "ores": [("bronze", "common", "oval", "#c98a3c", "#ffd9a0", None),
-              ("jade", "rare", "hex", "#2fc77e", "#bff7d8", None),
-              ("lapis_lazuli", "gem", "shard", "#2d4fd6", "#a8baff", None),
-              ("ancient_gold", "treasure", "hex", "#ffcc33", "#fff6c0", None)]},
-    {"id": "magma_springs", "name": "Магмовые ключи", "fill": pebbles, "rock": ("basalt", "#4b4560"),
-     "lining": 0.7, "light": "#ff7a3a", "sky": "#2a0d0d",
-     "env": {"beams": None, "props": "lava"},
-     "ores": [("obsidian", "common", "shard", "#3a2a5c", "#a58cff", None),
-              ("garnet", "rare", "round", "#c2263f", "#ff9aaa", None),
-              ("ruby", "gem", "hex", "#ff2a4a", "#ffb0bc", None),
-              ("fire_ruby", "treasure", "round", "#ff6a1a", "#fff0a0", None)]},
-    {"id": "core", "name": "Ядро", "fill": smooth, "rock": ("lightstone", "#fff0c4"),
-     "lining": 0.7, "light": "#fff2c0", "sky": "#2a2050",
-     "env": {"beams": None, "props": "stars"},
-     "ores": [("core_crystal", "common", "shard", "#8ff3ff", "#ffffff", None),
-              ("sunstone", "rare", "round", "#ff9f1a", "#fff1a0", None),
-              ("stardust", "gem", "oval", "#9b6bff", "#efe2ff", None),
-              ("core_shard", "treasure", "hex", "#ff4fd8", "#ffe6fb", None)]},
+    {"id": "meadow", "name": "Луговой слой", "fill": pebbles, "rock": ("pebble", "Галька", "#a7a2b4"),
+     "layout": "Д", "lining": 0.62, "light": "#ffe2a8", "sky": "#2b3a55", "env": {"beams": "wood", "props": "grass"},
+     "ores": [("flint", "Кремень", "common", "shard", "#56709c", "#b4c8ee"),
+              ("coal", "Уголь", "rare", "round", "#33333f", "#9a9ab8"),
+              ("copper", "Медь", "gem", "hex", "#ee7d36", "#ffc995"),
+              ("firefly_amber", "Светлячковый янтарь", "treasure", "oval", "#ffbf1f", "#fff4a8")]},
+    {"id": "copper_caves", "name": "Медные пещеры", "fill": strata, "rock": ("red_stone", "Рыжий камень", "#cf7a4e"),
+     "layout": "Г", "lining": 0.58, "light": "#ffb36b", "sky": "#3a1f18", "env": {"beams": "copper", "props": "pipes"},
+     "ores": [("copper", "Медь", "common", "round", "#ff9a5c", "#ffe0bf"),
+              ("tin", "Олово", "rare", "oval", "#e3e9f2", "#ffffff"),
+              ("malachite", "Малахит", "gem", "hex", "#1fb36b", "#a5f5c8"),
+              ("turquoise", "Бирюза", "treasure", "shard", "#2fd8cf", "#d4fffb")]},
+    {"id": "quartz_veins", "name": "Кварцевые жилы", "fill": facets, "rock": ("white_stone", "Белый камень", "#ddd6ea"),
+     "layout": "Б", "lining": 0.6, "light": "#ffd2ef", "sky": "#2c2440", "env": {"beams": None, "props": "pink_crystals"},
+     "ores": [("quartz", "Кварц", "common", "shard", "#cfeeff", "#ffffff"),
+              ("iron", "Железо", "rare", "round", "#d39a6e", "#ffe2c6"),
+              ("rose_quartz", "Розовый кварц", "gem", "hex", "#ff7fb8", "#ffe0ee"),
+              ("amethyst", "Аметист", "treasure", "oval", "#9b55f0", "#e8cfff")]},
+    {"id": "gold_river", "name": "Золотая река", "fill": soft_blobs, "rock": ("sandstone", "Песчаник", "#e6be78"),
+     "layout": "Г", "lining": 0.6, "light": "#ffe58a", "sky": "#1f3b4a", "env": {"beams": "wood", "props": "river"},
+     "ores": [("silver", "Серебро", "common", "shard", "#c9d6ea", "#ffffff"),
+              ("gold", "Золото", "rare", "oval", "#ffc21a", "#fff2a0"),
+              ("river_pearl", "Речной жемчуг", "gem", "round", "#fff1f6", "#ffffff"),
+              ("nugget", "Самородок-великан", "treasure", "hex", "#ffb000", "#fff3a6")]},
+    {"id": "ice_grottoes", "name": "Ледяные гроты", "fill": glossy, "rock": ("frozen_stone", "Мёрзлый камень", "#9fd6f0"),
+     "layout": "Д", "lining": 0.75, "light": "#bfeaff", "sky": "#14284a", "env": {"beams": None, "props": "icicles"},
+     "ores": [("ice", "Лёд", "common", "shard", "#e8fbff", "#ffffff"),
+              ("froststone", "Иней-камень", "rare", "round", "#7fb4e6", "#e6f6ff"),
+              ("sapphire", "Сапфир", "gem", "hex", "#2a5ee8", "#a9c6ff"),
+              ("eternal_ice", "Вечный лёд", "treasure", "oval", "#5ef0ff", "#ffffff")]},
+    {"id": "mushroom_forest", "name": "Грибной лес", "fill": gradient, "rock": ("mycelium", "Грибница", "#8e68c2"),
+     "layout": "Г", "lining": 0.55, "light": "#7ff5d8", "sky": "#1d1236", "env": {"beams": None, "props": "mushrooms"},
+     "ores": [("sporite", "Спорит", "common", "shard", "#b6f24a", "#efffc2"),
+              ("glowshroom", "Светогриб", "rare", "oval", "#3ff2d0", "#d6fff6"),
+              ("topaz", "Топаз", "gem", "hex", "#ffa23a", "#ffe0b0"),
+              ("moonstone", "Лунный камень", "treasure", "round", "#e9e2ff", "#ffffff")]},
+    {"id": "giant_bones", "name": "Кости великанов", "fill": smooth, "rock": ("limestone", "Известняк", "#ecdcb8"),
+     "layout": "Д", "lining": 0.6, "light": "#ffc58a", "sky": "#3a2618", "env": {"beams": None, "props": "ribs"},
+     "ores": [("bone_ore", "Кость-руда", "common", "oval", "#fffaf0", "#ffffff"),
+              ("amber", "Янтарь", "rare", "round", "#f2a12a", "#ffe2a0"),
+              ("onyx", "Оникс", "gem", "shard", "#2b2734", "#9a92b8"),
+              ("dragon_amber", "Драконий янтарь", "treasure", "hex", "#ff5a2a", "#ffd0a0")]},
+    {"id": "lost_city", "name": "Затерянный город", "fill": soft_blobs, "rock": ("terracotta", "Терракота", "#c8653f"),
+     "layout": "Б", "lining": 0.58, "light": "#a8ffb0", "sky": "#16301e", "env": {"beams": "stone", "props": "vines"},
+     "ores": [("bronze", "Бронза", "common", "oval", "#c98a3c", "#ffd9a0"),
+              ("jade", "Нефрит", "rare", "hex", "#2fc77e", "#bff7d8"),
+              ("lapis_lazuli", "Лазурит", "gem", "shard", "#2d4fd6", "#a8baff"),
+              ("ancient_gold", "Древнее золото", "treasure", "round", "#ffcc33", "#fff6c0")]},
+    {"id": "underground_sea", "name": "Подземное море", "fill": waves, "rock": ("sea_stone", "Морской камень", "#2f6f9a"),
+     "layout": "Д", "lining": 0.6, "light": "#7fe8ff", "sky": "#0c2238", "env": {"beams": None, "props": "bubbles_kelp"},
+     "ores": [("salt", "Соль-камень", "common", "hex", "#f2e8ef", "#ffffff"),
+              ("aquamarine", "Аквамарин", "rare", "shard", "#46e0e6", "#dcffff"),
+              ("pearl", "Жемчуг", "gem", "oval", "#fff4f8", "#ffffff"),
+              ("black_pearl", "Чёрная жемчужина", "treasure", "round", "#2a2440", "#c9b8ff")]},
+    {"id": "magma_springs", "name": "Магмовые ключи", "fill": hot_pebbles, "rock": ("basalt", "Базальт", "#463a58"),
+     "layout": "Б", "lining": 0.7, "light": "#ff7a3a", "sky": "#2a0d0d", "env": {"beams": None, "props": "lava"},
+     "frame": "hot", "halo": {"gem": 0.22, "treasure": 0.38},
+     "ores": [("obsidian", "Обсидиан", "common", "shard", "#9a72f0", "#efe6ff"),
+              ("garnet", "Гранат", "rare", "oval", "#b8203f", "#ff9aaa"),
+              ("ruby", "Рубин", "gem", "hex", "#ff2a4a", "#ffc0c8"),
+              ("fire_ruby", "Огненный рубин", "treasure", "round", "#ff7a12", "#fff3a0")]},
 ]

@@ -1,5 +1,5 @@
-# Final block textures, worlds 1–3, style A «Конфетный блок» [владелец 10.11: A, мир 1 — галька].
-# Run: python3 assets/blocks/make.py
+# Block texture library, style A «Конфетный блок» [владелец 10.11: A, мир 1 — галька].
+# Run: python3 assets/blocks/build.py (make.py's own main delegates to it)
 # Writes assets/blocks/px/<id>.png (32×32: stone drawn at 16 px ×2, candy ore at 32 px) and assets/blocks/upload/<id>.png (×4 = 128×128, nearest
 # neighbour — Roblox filters textures, so pixels must be pre-scaled), plus crack overlays crack_1..4 (transparent).
 import json
@@ -289,24 +289,31 @@ def misc():
     save(beam, "beam")
 
 
+def hot_frame(im):
+    """World 10 finale: the dark outline stays, the inner bevel glows like metal out of a forge."""
+    px = im.load()
+    for i in range(2, M - 2):
+        px[i, 2], px[2, i] = (255, 196, 84), (255, 196, 84)
+        px[i, 3], px[3, i] = (255, 122, 38), (255, 122, 38)
+        px[i, M - 3], px[M - 3, i] = (214, 52, 40), (214, 52, 40)
+        px[i, M - 4], px[M - 4, i] = (178, 40, 44), (178, 40, 44)
+    return im
+
+
+def glow(im, piece, color, strength):
+    """Soft halo around the main ore piece only (crumbs stay crisp); ore pixels keep their colours."""
+    _, cx, cy, r = piece
+    px = im.load()
+    base = im.copy().load()
+    for y in range(4, M - 4):
+        for x in range(4, M - 4):
+            d = math.hypot(x + 0.5 - cx, y + 0.5 - cy) - r - 1.5
+            if 0 < d < 4:
+                px[x, y] = mix(base[x, y], color, strength * (1 - d / 4))
+    return im
+
+
 if __name__ == "__main__":
-    manifest = {"_note": "[решение Claude 10.11] стиль A, мир 1 — галька [владелец]; генератор assets/blocks/make.py",
-                "worlds": []}
-    for wi, world in enumerate(WORLDS, 1):
-        rock_id, rock_hex = world["rock"]
-        im = compose(world["fill"], rock_hex)
-        save(im, rock_id)
-        entry = {"world": wi, "id": world["id"], "rock": rock_id, "ores": [], "lining": f"{rock_id}_lining",
-                 "light": world["light"], "env": world["env"]}
-        k = world["lining"]
-        save(Image.eval(im, lambda v: int(v * k)), f"{rock_id}_lining")
-        for oi, (ore, rarity, shape, fill, light, layout) in enumerate(world["ores"]):
-            im = compose(world["fill"], rock_hex, (shape, rarity, fill, light, layout), 11 + oi)
-            name = ore if wi == 1 or ore != "copper" else "copper_w2"
-            save(im, name)
-            entry["ores"].append({"id": ore, "texture": name, "rarity": rarity, "glow": rarity == "treasure"})
-        manifest["worlds"].append(entry)
-    crack_overlays()
-    misc()
-    json.dump(manifest, open(os.path.join(HERE, "manifest.json"), "w"), ensure_ascii=False, indent=1)
-    print("ok", len(os.listdir(PX)))
+    import build
+
+    build.main()
