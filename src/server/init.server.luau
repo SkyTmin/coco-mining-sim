@@ -10,7 +10,17 @@ local function breathe()
 	end
 end
 
-for _, service in { services.ProfileService, services.CreativeService, services.ServerLog } do
+for _, service in
+	{
+		services.PlotService,
+		services.MineService,
+		services.PickaxeService,
+		services.HitService,
+		services.CreativeService,
+		services.ServerLog,
+		services.ProfileService,
+	}
+do
 	local ok, problem = pcall(function()
 		require(service).Start()
 	end)

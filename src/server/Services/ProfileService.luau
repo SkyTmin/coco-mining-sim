@@ -51,6 +51,7 @@ local loading: { [Player]: boolean } = {}
 local closingWrites = 0
 local shuttingDown = false
 local loadedHooks: { (Player) -> () } = {}
+local saveHooks: { (Player) -> () } = {}
 local store: DataStore? = nil
 
 function ProfileService.DefaultProfile(): Profile
@@ -58,6 +59,7 @@ function ProfileService.DefaultProfile(): Profile
 	return {
 		v = SCHEMA_VERSION,
 		coins = 0,
+		pickaxe = "starter",
 		stats = { blocks = 0, layers = 0, playSeconds = 0 },
 		settings = {
 			camera = "first",
@@ -110,6 +112,7 @@ local function migrate(data: any): (Profile?, boolean)
 		return nil, false
 	end
 	local profile = Persistence.copy(data)
+	profile.pickaxe = if type(data.pickaxe) == "string" then data.pickaxe else "starter"
 	profile._lock, profile.loadFailed = nil, nil
 	return profile, false
 end
@@ -207,6 +210,12 @@ function ProfileService.Get(player: Player): Profile?
 	return if session then Persistence.copy(session.profile) else nil
 end
 
+-- The callback must neither yield nor mutate its borrowed profile.
+function ProfileService.Read<T>(player: Player, fn: (Profile) -> T): T?
+	local session = sessions[player]
+	return if session then fn(session.profile) else nil
+end
+
 function ProfileService.IsReal(player: Player): boolean
 	local session = sessions[player]
 	return session ~= nil and session.canSave
@@ -219,6 +228,38 @@ end
 
 function ProfileService.OnLoaded(fn: (Player) -> ())
 	table.insert(loadedHooks, fn)
+end
+
+function ProfileService.BeforeSave(fn: (Player) -> ())
+	table.insert(saveHooks, fn)
+end
+
+function ProfileService.FailLoad(player: Player)
+	local session = sessions[player]
+	if not session or not session.canSave then
+		return
+	end
+	session.canSave = false
+	ProfileService.Mutate(player, function(profile)
+		profile.loadFailed = true
+	end)
+	if store then
+		task.spawn(releaseUnusedLock, store, player, session.token)
+	end
+	if session.sent then
+		toast:FireClient(player, "toast_load_failed")
+	end
+end
+
+local function prepareSave(player: Player): boolean
+	for _, hook in saveHooks do
+		local ok, problem = pcall(hook, player)
+		if not ok then
+			warn("[ProfileService] Could not prepare save: " .. tostring(problem))
+			return false
+		end
+	end
+	return true
 end
 
 function ProfileService.Replicate(player: Player)
@@ -242,6 +283,7 @@ end
 local function visibleProfile(profile: Profile): { [string]: any }
 	local view = table.clone(profile) :: any
 	view._lock, view.loadFailed = nil, nil
+	view.mine = nil
 	return view
 end
 
@@ -332,12 +374,12 @@ local function load(player: Player)
 	end)
 	if canSave then
 		print(string.format("[ProfileService] profile loaded v%d for %s", profile.v, player.Name))
-		for _, hook in loadedHooks do
-			task.spawn(hook, player)
-		end
 	elseif dataStore and uncertain then
 		-- The last response may have been lost after acquiring our token.
 		releaseUnusedLock(dataStore, player, token)
+	end
+	for _, hook in loadedHooks do
+		task.spawn(hook, player)
 	end
 end
 
@@ -347,8 +389,11 @@ local function save(player: Player, session: Session, release: boolean): SaveRes
 	if not dataStore or not session.canSave then
 		return "stopped"
 	end
+	if not release and not prepareSave(player) then
+		return "stopped"
+	end
 	local wasDirty = session.dirty
-	local snapshot = if wasDirty then Persistence.copy(visibleProfile(session.profile)) else nil
+	local snapshot = if wasDirty then Persistence.copy(session.profile) else nil
 	if snapshot and not Persistence.finiteTree(snapshot) then
 		warn("[ProfileService] invalid numeric state for " .. player.Name)
 		return "stopped"
@@ -428,6 +473,7 @@ local function beginRelease(player: Player)
 		return
 	end
 	recordPlayTime(player, session, os.clock())
+	local prepared = session.canSave and prepareSave(player)
 	sessions[player] = nil
 	if not session.canSave then
 		return
@@ -438,6 +484,13 @@ local function beginRelease(player: Player)
 	task.spawn(function()
 		while session.saving do
 			task.wait()
+		end
+		if not prepared then
+			if store then
+				releaseUnusedLock(store, player, session.token)
+			end
+			closingWrites -= 1
+			return
 		end
 		for attempt = 1, DATASTORE_ATTEMPTS do
 			if save(player, session, true) ~= "retry" then

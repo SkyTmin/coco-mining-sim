@@ -37,21 +37,22 @@ function CreativeWindow.start(
 	gui.Name = "Creative"
 	gui.ResetOnSpawn = false
 	gui.Enabled = false
+	gui.DisplayOrder = 12
 
-	local open = button(gui, UDim2.fromOffset(118, 32), UDim2.new(1, -12, 0, 8))
+	local open = button(gui, UDim2.fromOffset(118, 32), UDim2.new(1, -75, 0, 8))
 	open.AnchorPoint = Vector2.new(1, 0)
 
 	local panel = Instance.new("Frame")
 	panel.AnchorPoint = Vector2.new(1, 0)
 	panel.Position = UDim2.new(1, -12, 0, 48)
-	panel.Size = UDim2.new(0.9, 0, 0, 260)
+	panel.Size = UDim2.new(0.9, 0, 0, 310)
 	panel.BackgroundColor3 = PANEL_COLOR
 	panel.BorderSizePixel = 0
 	panel.Visible = false
 	panel.Parent = gui
 
 	local constraint = Instance.new("UISizeConstraint")
-	constraint.MaxSize = Vector2.new(420, 260)
+	constraint.MaxSize = Vector2.new(420, 310)
 	constraint.Parent = panel
 	local padding = Instance.new("UIPadding")
 	padding.PaddingTop = UDim.new(0, 8)
@@ -78,9 +79,39 @@ function CreativeWindow.start(
 		end)
 	end
 
+	local operations = {
+		{ "mine_equip_starter", "mine.equip", "starter" },
+		{ "mine_equip_storm", "mine.equip", "storm_common" },
+		{ "mine_drill", "mine.drill", 0, 1, 5000 },
+		{ "mine_layers", "mine.layers", 100 },
+		{ "mine_to_plate", "mine.toPlate" },
+		{ "mine_charge", "mine.charge" },
+		{ "mine_stats", "mine.stats" },
+	}
+	if studio then
+		table.insert(operations, { "mine_reset", "mine.reset" })
+	end
+	local operationButtons: { TextButton } = {}
+	for i, op in operations do
+		local col, row = (i - 1) % 3, (i - 1) // 3
+		local control =
+			button(panel, UDim2.new(1 / 3, -4, 0, 31), UDim2.new(col / 3, 0, 0, 37 + row * 35))
+		control.Activated:Connect(function()
+			creative:FireServer(table.unpack(op, 2))
+		end)
+		operationButtons[i] = control
+	end
+
+	local performance = Instance.new("TextLabel")
+	performance.Position, performance.Size = UDim2.fromOffset(0, 143), UDim2.new(1, 0, 0, 24)
+	performance.BackgroundTransparency, performance.TextColor3, performance.TextSize =
+		1, TEXT_COLOR, 13
+	performance.Text = ""
+	performance.Parent = panel
+
 	local logs = Instance.new("ScrollingFrame")
-	logs.Position = UDim2.fromOffset(0, 40)
-	logs.Size = UDim2.new(1, 0, 1, -40)
+	logs.Position = UDim2.fromOffset(0, 170)
+	logs.Size = UDim2.new(1, 0, 1, -170)
 	logs.BackgroundTransparency = 1
 	logs.BorderSizePixel = 0
 	logs.ScrollBarThickness = 5
@@ -125,6 +156,7 @@ function CreativeWindow.start(
 		gui.Enabled = player:GetAttribute("CreativeAllowed") == true
 		if not gui.Enabled then
 			panel.Visible = false
+			player:SetAttribute("MineMenuOpen", false)
 		end
 		open.Text = translate("creative_title")
 		toggle.Text = translate(
@@ -134,12 +166,22 @@ function CreativeWindow.start(
 		if reset then
 			reset.Text = translate("creative_reset")
 		end
+		for i, control in operationButtons do
+			control.Text = translate(operations[i][1] :: string)
+		end
+		performance.Text = translate(
+			"mine_perf",
+			player:GetAttribute("MineFPS") or 0,
+			player:GetAttribute("MineParts") or 0,
+			player:GetAttribute("MineHitMs") or 0
+		)
 	end
 
 	local function flip()
 		if gui.Enabled then
 			refresh()
 			panel.Visible = not panel.Visible
+			player:SetAttribute("MineMenuOpen", panel.Visible)
 		end
 	end
 
@@ -149,7 +191,9 @@ function CreativeWindow.start(
 			flip()
 		end
 	end)
-	for _, attribute in { "CreativeAllowed", "Creative", "language" } do
+	for _, attribute in
+		{ "CreativeAllowed", "Creative", "language", "MineFPS", "MineParts", "MineHitMs" }
+	do
 		player:GetAttributeChangedSignal(attribute):Connect(refresh)
 	end
 	refresh()

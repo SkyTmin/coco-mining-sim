@@ -13,14 +13,14 @@ Test.describe("Persistence", function()
 		expect(Persistence.owns(lock, "other-server", "join-one")).toBe(false)
 		expect(Persistence.owns(nil, "server", "join-one")).toBe(false)
 	end)
-	Test.it("expires a lock only after thirty minutes without renewal", function()
+	Test.it("expires a lock only after ten minutes without renewal", function()
 		local lock = { job = "server", token = "join-one", at = 10000 }
-		expect(Persistence.isStale(lock, 11799)).toBe(false)
-		expect(Persistence.isStale(lock, 11800)).toBe(false)
-		expect(Persistence.isStale(lock, 11801)).toBe(true)
-		lock.at = 11800
-		expect(Persistence.isStale(lock, 11801)).toBe(false)
-		expect(Persistence.isStale(nil, 11801)).toBe(true)
+		expect(Persistence.isStale(lock, 10599)).toBe(false)
+		expect(Persistence.isStale(lock, 10600)).toBe(false)
+		expect(Persistence.isStale(lock, 10601)).toBe(true)
+		lock.at = 10600
+		expect(Persistence.isStale(lock, 10601)).toBe(false)
+		expect(Persistence.isStale(nil, 10601)).toBe(true)
 	end)
 end)
 
