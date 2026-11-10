@@ -464,12 +464,13 @@ for (const { name, emit } of sections) {
 
 
 const materialTree = { $className: "MaterialService" };
-for (const [name, asset] of Object.entries(decisions.art.materials)) {
+const liningMaterials = new Set([...Object.values(decisions.art.lining), "oak_log", "planks"]);
+for (const name of [...liningMaterials].sort()) {
   materialTree["COCOMine_" + name] = {
     $className: "MaterialVariant",
     $properties: {
       BaseMaterial: "SmoothPlastic",
-      ColorMap: asset,
+      ColorMap: decisions.art.materials[name],
       StudsPerTile: decisions.mine.blockSize,
     },
   };

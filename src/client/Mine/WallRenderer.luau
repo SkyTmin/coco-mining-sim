@@ -8,7 +8,6 @@ local Ride = require(Shared.Mine.Ride)
 local State = require(Shared.Mine.MineState)
 local Worlds = require(Shared.Mine.Worlds)
 local BlockPool = require(script.Parent.BlockPool)
-local BlockArt = require(script.Parent.BlockArt)
 
 local S = Config.mine.blockSize
 local FACE_BUDGET = 176
@@ -167,9 +166,9 @@ local function tint(ore: number, x: number, y: number, d: number): Color3
 	)
 end
 
-local function atlasFace(part: Part, rect: { number }?): SurfaceGui?
+local function textureFace(part: Part, image: string?, rect: { number }?): SurfaceGui?
 	local surface = part:FindFirstChild("OrePixels") :: SurfaceGui?
-	if not rect then
+	if not image then
 		if surface then
 			surface.Enabled = false
 		end
@@ -181,13 +180,14 @@ local function atlasFace(part: Part, rect: { number }?): SurfaceGui?
 		surface.CanvasSize, surface.LightInfluence = Vector2.new(64, 64), 0.58
 		local pixels = Instance.new("ImageLabel")
 		pixels.Name, pixels.Size, pixels.BackgroundTransparency = "Pixels", UDim2.fromScale(1, 1), 1
-		pixels.Image, pixels.ResampleMode = Config.art.atlas, Enum.ResamplerMode.Pixelated
+		pixels.ResampleMode = Enum.ResamplerMode.Pixelated
 		pixels.Parent = surface
 		surface.Parent = part
 	end
 	local pixels = surface:FindFirstChild("Pixels") :: ImageLabel
-	pixels.ImageRectOffset, pixels.ImageRectSize =
-		Vector2.new(rect[1], rect[2]), Vector2.new(rect[3], rect[4])
+	pixels.Image = image
+	pixels.ImageRectOffset = if rect then Vector2.new(rect[1], rect[2]) else Vector2.zero
+	pixels.ImageRectSize = if rect then Vector2.new(rect[3], rect[4]) else Vector2.zero
 	return surface
 end
 
@@ -230,13 +230,13 @@ local function addCell(
 	part.Size = Vector3.one * (S - 0.018)
 	local world = Worlds.of(d)
 	local tile = Config.art.ores[world.id][ore]
-	if tile and tile.material then
-		BlockArt.apply(part, tile.material)
-	else
-		part.Material, part.MaterialVariant = Enum.Material.SmoothPlastic, ""
-		part.Color = tint(ore, x, y, d)
-	end
-	cell.texture = atlasFace(part, tile and tile.rect)
+	part.Material, part.MaterialVariant = Enum.Material.SmoothPlastic, ""
+	part.Color = tint(ore, x, y, d)
+	local image = if not tile
+		then nil
+		elseif tile.material then Config.art.materials[tile.material]
+		else Config.art.atlas
+	cell.texture = textureFace(part, image, tile and tile.rect)
 	if cell.texture then
 		local rel = d - win.front
 		local faces = cell.faces or {}
@@ -250,6 +250,7 @@ local function addCell(
 			end
 		end
 		cell.faces = faces
+		cell.texture.Face = faces[1] or Enum.NormalId.Back
 	end
 	return cell
 end
