@@ -95,7 +95,7 @@ return {
 		es = "Nivel máx.",
 		fr = "Niveau max.",
 	},
-	upgrade_price = { en = "{1} 🪙", ru = "{1} 🪙", es = "{1} 🪙", fr = "{1} 🪙" },
+	upgrade_price = { en = "{1} coins", ru = "{1} мон.", es = "{1} mon.", fr = "{1} pièces" },
 	upgrade_missing = {
 		en = "Need {1} more",
 		ru = "Не хватает {1}",
@@ -207,7 +207,7 @@ return {
 		en = "Coins changed: Coin Rain",
 		ru = "Монеты изменились: Монетный дождь",
 		es = "Monedas cambió: Lluvia de monedas",
-		fr = "Pièces a changé : Pluie de pièces",
+		fr = "Les pièces changent : Pluie de pièces",
 	},
 	morph_toast_crit_10 = {
 		en = "Critical changed: Mega Critical",

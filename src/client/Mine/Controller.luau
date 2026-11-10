@@ -9,6 +9,7 @@ local Remotes = require(Shared.Remotes)
 local Sfx = require(Shared.Sfx)
 local Upgrade = require(Shared.Play.Upgrade)
 local Format = require(Shared.Format)
+local Strings = require(Shared.Strings)
 local Wire = require(Shared.Mine.MineWire)
 local State = require(Shared.Mine.MineState)
 local Worlds = require(Shared.Mine.Worlds)
@@ -836,11 +837,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				end
 			end
 		end
+		local locale = Strings.localeOf(player)
+		local plate = aimed and Wall.ore(window, aimed.x, aimed.y, aimed.dRel) == Wire.PLATE
 		Hud.power(
 			hud,
-			Format.stat(equipped.strength),
-			Format.stat(hardness),
-			if need >= 2 then left else 0,
+			Format.stat(equipped.strength, locale),
+			Format.stat(hardness, locale),
+			if need >= 2 and not plate then left else 0,
 			aimed and aimed.position
 		)
 		stepUpgrades(now, active, window.front, need, equipped.strength, reduced)

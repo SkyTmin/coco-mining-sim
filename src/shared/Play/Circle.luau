@@ -56,7 +56,7 @@ function Circle.migrate(profile: any): boolean
 		or type(unlocked.worlds) ~= "table"
 		or type(profile.funnel) ~= "table"
 		or not integer(profile.deepestWorld, 1, #Config.worlds)
-		or not integer(profile.platesBroken, 0, #Config.worlds)
+		or not integer(profile.platesBroken, 0, 2 ^ 53 - 1)
 		or not integer(profile.hitCounter, 0, 2 ^ 53 - 1)
 		or not integer(profile.critCounter, 0, profile.hitCounter)
 	then
@@ -77,7 +77,11 @@ function Circle.migrate(profile: any): boolean
 	end
 	for id, level in circle.cards do
 		local card = Config.progress.cards[id]
-		if not table.find(Upgrade.cards, id) or not integer(level, 0, card.cap or 4096) then
+		if
+			not table.find(Upgrade.cards, id)
+			or not integer(level, 0, card.cap or 4096)
+			or Upgrade.cardPrice(card, math.max(0, level - 1)) >= math.huge
+		then
 			return false
 		end
 	end
@@ -118,7 +122,7 @@ function Circle.context(profile: Profile, world: number): Upgrade.Context
 		coins = profile.coins,
 		hitSize = profile.circle.hitSize,
 		width = profile.width,
-		world = world,
+		world = math.max(world, profile.deepestWorld),
 		pick = profile.pickaxe,
 		pickLevel = profile.circle.pickLevels[profile.pickaxe] or 1,
 		cards = profile.circle.cards,

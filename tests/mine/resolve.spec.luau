@@ -30,6 +30,15 @@ Test.describe("Mining hits", function()
 		expect(Resolve.hit(shaped, pick(1 / 2.5), 0, 1, 0).blocks).toBe(1)
 	end)
 
+	Test.it("breaks the plate by the 160th weak hit", function()
+		local st = State.new(15, 5, 3, 9999)
+		for _ = 1, 159 do
+			expect(Resolve.hit(st, pick(0.01), 0, 0, 9999).plateBroken).toBe(false)
+		end
+		expect(Resolve.hit(st, pick(0.01), 0, 0, 9999).plateReward).toBe(500)
+		expect(State.advance(st)).toBe(1)
+	end)
+
 	Test.it("pierces 2, 3 and 4 layers at the exact thresholds", function()
 		for _, example in
 			{ { 9.99, 1 }, { 10, 2 }, { 99.99, 2 }, { 100, 3 }, { 999.99, 3 }, { 1000, 4 } }

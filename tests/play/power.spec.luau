@@ -24,6 +24,7 @@ Test.describe("Circle power", function()
 		expect(Power.plate(0.01, 600, false) * 160).toBe(600)
 		expect(Power.coins(1.5, 1)).toBe(1)
 		expect(Power.coins(5, 3, 3)).toBe(24)
+		expect(Power.coins(1, 3, 3)).toBe(3)
 		expect(Power.strength(common, 2, { power = 1 }, true)).toBe(2 * 1.03 * 1.2 * 1.5)
 	end)
 

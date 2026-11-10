@@ -250,7 +250,7 @@ local function onIntent(player: Player, packet: any)
 			profile.critCounter += if strike.crit then 1 else 0
 		end
 		if plateBroken then
-			profile.platesBroken = math.max(profile.platesBroken, oldWorld)
+			profile.platesBroken += 1
 		end
 		if world > oldWorld then
 			newCards = Circle.reach(profile, world)
@@ -303,10 +303,9 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 	elseif op == "mine.reset" or op == "reset" then
 		ProfileService.Mutate(player, function(profile)
 			profile.circle = Circle.new()
-			profile.width = mine.startWidth
 			profile.coins = 0
 		end)
-		MineService.reset(s, 0, mine.startWidth)
+		MineService.reset(s, 0, st.width)
 		return
 	elseif op == "mine.charge" then
 		s.charge = mine.ultCharge

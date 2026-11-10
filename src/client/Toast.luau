@@ -44,6 +44,9 @@ function Toast.create(playerGui: Instance, translate: Translate): (string, { any
 	local function refresh()
 		local message = current
 		if message then
+			local morph = message.key:sub(1, 12) == "morph_toast_"
+			label.AnchorPoint = Vector2.new(0.5, if morph then 0 else 1)
+			label.Position = if morph then UDim2.new(0.5, 0, 0, 88) else UDim2.new(0.5, 0, 1, -24)
 			label.Text = translate(message.key, table.unpack(message.args or {}))
 		end
 	end

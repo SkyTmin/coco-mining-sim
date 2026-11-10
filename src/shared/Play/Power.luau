@@ -63,10 +63,8 @@ function Power.pierce(hardness: number, strength: number, strike: Strike?): numb
 end
 
 function Power.coins(price: number, cardLevel: number, multiplier: number?): number
-	return math.max(
-		1,
-		math.floor(price * (1 + progress.cards.coins.per * cardLevel) * (multiplier or 1))
-	)
+	return math.max(1, math.floor(price * (1 + progress.cards.coins.per * cardLevel)))
+		* (multiplier or 1)
 end
 
 function Power.ult(

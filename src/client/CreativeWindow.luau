@@ -110,14 +110,14 @@ function CreativeWindow.start(
 
 	local selectedWorld = 1
 	local level, minus, plus, maxLevel = slot(12), slot(13), slot(14), slot(15)
-	minus.Text, plus.Text, maxLevel.Text = "−1", "+1", "↑"
+	minus.Text, plus.Text = "−1", "+1"
 	for control, change in { [minus] = -1, [plus] = 1, [maxLevel] = 0 } do
 		control.Activated:Connect(function()
 			creative:FireServer("mine.level", change)
 		end)
 	end
 	local world, nextWorld, depth, beforePlate = slot(16), slot(17), slot(18), slot(19)
-	nextWorld.Text = "↻"
+	nextWorld.Text = "→"
 	nextWorld.Activated:Connect(function()
 		selectedWorld = selectedWorld % #Config.worlds + 1
 		world.Text = translate("creative_depth_world", selectedWorld)
@@ -191,6 +191,7 @@ function CreativeWindow.start(
 		coins10.Text, coins1000.Text =
 			translate("creative_multiply", 10), translate("creative_multiply", 1000)
 		reset.Text = translate("creative_circle")
+		maxLevel.Text = translate("upgrade_max")
 		world.Text = translate("creative_depth_world", selectedWorld)
 		depth.Text, beforePlate.Text =
 			translate("creative_depth_start"), translate("creative_depth_plate")

@@ -6,6 +6,7 @@ local Config = require(Shared.Config)
 local Format = require(Shared.Format)
 local Remotes = require(Shared.Remotes)
 local Sfx = require(Shared.Sfx)
+local Strings = require(Shared.Strings)
 local Shapes = require(Shared.Mine.Shapes)
 local Worlds = require(Shared.Mine.Worlds)
 local Circle = require(Shared.Play.Circle)
@@ -22,7 +23,7 @@ local RED = Color3.fromRGB(206, 54, 57)
 local progress = Config.progress
 
 local function round(gui: GuiObject, radius: number)
-	local corner = Instance.new("UICorner")
+	local corner = gui:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
 	corner.CornerRadius, corner.Parent = UDim.new(0, radius), gui
 end
 
@@ -95,11 +96,11 @@ local function paintShape(squares: { Frame }, stage: number)
 	end
 end
 
-local function cardValue(id: string, level: number): string
+local function cardValue(id: string, level: number, locale: string): string
 	local rule = progress.cards[id]
 	local amount = if id == "power" then (1 + rule.per) ^ level else rule.per * level * 100
 	return if id == "power"
-		then "×" .. Format.stat(amount)
+		then "×" .. Format.stat(amount, locale)
 		else tostring(math.round(amount)) .. "%"
 end
 
@@ -323,7 +324,7 @@ function Upgrades.new(
 		width.name.Text = translate("upgrade_width")
 		width.details.Text = tostring(ctx.width)
 			.. (if nextWidth then " → " .. tostring(nextWidth.w) else "")
-		if nextWidth and world < (nextWidth.world or 1) then
+		if nextWidth and ctx.world < (nextWidth.world or 1) then
 			width.details.Text ..= " · " .. translate("upgrade_width_lock", nextWidth.world)
 		end
 		local pickNow = Circle.pick(ctx.pick, p.circle, front)
@@ -335,11 +336,12 @@ function Upgrades.new(
 		local single = Upgrade.quote(ctx, { kind = "pick", count = 1 })
 		nextCircle.pickLevels[ctx.pick] = if single then single.level else ctx.pickLevel
 		local pickNext = Circle.pick(ctx.pick, nextCircle, front)
+		local locale = Strings.localeOf(player)
 		pick.name.Text = translate("upgrade_pick_level", ctx.pickLevel)
 		pick.details.Text = translate(
 			"upgrade_pick_preview",
-			Format.stat(pickNow.strength),
-			Format.stat(pickNext.strength),
+			Format.stat(pickNow.strength, locale),
+			Format.stat(pickNext.strength, locale),
 			Format.grouped(pickNow.ultLayers),
 			Format.grouped(pickNext.ultLayers)
 		)
@@ -354,7 +356,11 @@ function Upgrades.new(
 			card.name.Text = translate("card_" .. id)
 				.. (if unlocked then " · " .. translate("upgrade_level", level) else "  🔒")
 			card.details.Text = if unlocked
-				then cardValue(id, level) .. " → " .. cardValue(id, math.min(cap, level + 1))
+				then cardValue(id, level, locale) .. " → " .. cardValue(
+					id,
+					math.min(cap, level + 1),
+					locale
+				)
 				else translate("upgrade_card_lock", rule.world)
 			local before, after = 0, nil
 			for _, milestone in rule.steps do
