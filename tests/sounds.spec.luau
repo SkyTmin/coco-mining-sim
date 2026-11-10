@@ -18,7 +18,7 @@ Test.describe("Mining sounds", function()
 		end
 		expect(AudioRules.volume("link_note", 2)).toBe(0.12)
 		expect(AudioRules.volume("ult_thud", 2)).toBe(0.5)
-		expect(AudioRules.volume("depth_knock", 2)).toBe(0.15)
+		expect(AudioRules.volume("depth_knock", 2)).toBe(0.10)
 		expect(AudioRules.volume("buy_soft", 2)).toBe(0.25)
 	end)
 	Test.it("has five distinct, non-repeating hit and break variants", function()

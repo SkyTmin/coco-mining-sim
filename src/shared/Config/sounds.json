@@ -4,7 +4,7 @@
     "maxVolume": 0.5,
     "frequentVolume": 0.25,
     "linkVolume": 0.12,
-    "depthVolume": 0.15,
+    "depthVolume": 0.1,
     "defaultSfx": 0.6,
     "frequentLufs": -26,
     "rareLufs": -20,

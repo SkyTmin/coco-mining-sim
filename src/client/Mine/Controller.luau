@@ -166,7 +166,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local frame = origin.CFrame
 		renderer = Wall.new(world, frame)
 		tunnel = Tunnel.new(world, frame)
-		depthSign = DepthSign.new(world, frame, window.front)
+		depthSign = DepthSign.new(world, frame, window.front, model)
 		spectatorSigns = DepthSign.spectators(world, plots :: Instance, plot)
 		breaking = Break.new(world)
 		lightning = Lightning.new(world)
@@ -659,11 +659,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 
 		local phase, progress = "idle", 0
-		local finishNumber = false
 		if ride then
 			ride.frames += 1
 			phase, progress = Ride.phase(ride.timeline, now - ride.at)
-			finishNumber = phase == "landed" and ride.ability and ride.delta > 0
 		end
 		if phase ~= lastPhase or (ride and ride.entered ~= phase) then
 			lastPhase, dirty = phase, true
@@ -682,7 +680,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					ride.delta * progress
 				)
 				else ride.oldFront
-			DepthSign.step(depthSign, now, display, finishNumber, reduced, active)
+			local rolling = ride ~= nil and (ride.ability or ride.delta >= 5)
+			DepthSign.step(depthSign, now, display, rolling, reduced, active)
 		end
 		for origin, sign in spectatorSigns do
 			local depth = origin:GetAttribute("MineFront")

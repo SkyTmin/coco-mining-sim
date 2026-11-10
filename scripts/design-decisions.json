@@ -44,7 +44,7 @@
     "atlasId": null,
     "rules": {
       "maxVolume": 0.5, "frequentVolume": 0.25, "linkVolume": 0.12,
-      "depthVolume": 0.15, "defaultSfx": 0.6,
+      "depthVolume": 0.10, "defaultSfx": 0.6,
       "frequentLufs": -26, "rareLufs": -20, "lowpassHz": 9000, "fadeSeconds": 0.01,
       "pitchSpread": 0.08, "fatigueDelay": 3, "fatigueGain": 0.6,
       "voices": { "hit_soft": 2, "break_soft": 3, "coin": 1 }

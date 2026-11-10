@@ -387,7 +387,7 @@ const sections = [
         errors.push("sounds.atlasId must be null or a Roblox audio asset ID");
       }
       if (rules?.maxVolume !== 0.5 || rules.frequentVolume !== 0.25 || rules.linkVolume !== 0.12 ||
-          rules.depthVolume !== 0.15 || rules.defaultSfx !== 0.6 || rules.frequentLufs !== -26 || rules.rareLufs !== -20 ||
+          rules.depthVolume !== 0.10 || rules.defaultSfx !== 0.6 || rules.frequentLufs !== -26 || rules.rareLufs !== -20 ||
           rules.lowpassHz !== 9000 || rules.fadeSeconds !== 0.01 || rules.pitchSpread !== 0.08 ||
           rules.fatigueDelay !== 3 || rules.fatigueGain !== 0.6 ||
           rules.voices?.hit_soft !== 2 || rules.voices?.break_soft !== 3 || rules.voices?.coin !== 1) {
