@@ -13,6 +13,7 @@ local Remotes = require(Shared.Remotes)
 local StorageNames = require(Shared.StorageNames)
 local Types = require(Shared.Types)
 local Wire = require(Shared.Wire)
+local Circle = require(Shared.Play.Circle)
 
 type Profile = Types.Profile
 type ProfilePatchOp = Types.ProfilePatchOp
@@ -30,7 +31,6 @@ type Session = {
 }
 type SaveResult = "saved" | "retry" | "stopped"
 
-local SCHEMA_VERSION = 1
 local STORE_NAME =
 	StorageNames.progress(if RunService:IsStudio() then "Profiles_v1_QA" else "Profiles_v1")
 local JOB_ID = if game.JobId ~= "" then game.JobId else "studio"
@@ -56,8 +56,7 @@ local store: DataStore? = nil
 
 function ProfileService.DefaultProfile(): Profile
 	local now = os.time()
-	return {
-		v = SCHEMA_VERSION,
+	local profile: any = {
 		coins = 0,
 		pickaxe = "starter",
 		stats = { blocks = 0, layers = 0, playSeconds = 0 },
@@ -74,6 +73,8 @@ function ProfileService.DefaultProfile(): Profile
 		lastJoin = now,
 		joins = 0,
 	}
+	Circle.initialize(profile)
+	return profile
 end
 
 local function migrate(data: any): (Profile?, boolean)
@@ -91,8 +92,7 @@ local function migrate(data: any): (Profile?, boolean)
 	-- Reject unknown or damaged records before acquiring their lock.
 	local stats, settings = data.stats, data.settings
 	if
-		data.v ~= SCHEMA_VERSION
-		or typeof(data.coins) ~= "number"
+		typeof(data.coins) ~= "number"
 		or typeof(data.firstJoin) ~= "number"
 		or typeof(data.lastJoin) ~= "number"
 		or typeof(data.joins) ~= "number"
@@ -117,6 +117,9 @@ local function migrate(data: any): (Profile?, boolean)
 	profile.pickaxe = if type(data.pickaxe) == "string" then data.pickaxe else "starter"
 	if profile.settings.haptics == nil then
 		profile.settings.haptics = true
+	end
+	if not Circle.migrate(profile) then
+		return nil, false
 	end
 	profile._lock, profile.loadFailed = nil, nil
 	return profile, false
@@ -288,7 +291,7 @@ end
 local function visibleProfile(profile: Profile): { [string]: any }
 	local view = table.clone(profile) :: any
 	view._lock, view.loadFailed = nil, nil
-	view.mine = nil
+	view.mine, view.hitCounter, view.critCounter, view.funnel = nil, nil, nil, nil
 	return view
 end
 

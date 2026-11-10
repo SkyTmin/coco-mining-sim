@@ -45,7 +45,7 @@ function MineCodec.encode(st: State): SavedMine
 		end
 	end
 	return {
-		v = 1,
+		v = MineState.version,
 		seed = st.seed,
 		w = st.width,
 		h = st.height,
@@ -61,7 +61,7 @@ local function integer(value: any, min: number, max: number): boolean
 end
 
 function MineCodec.decode(data: any): (State?, string?)
-	if type(data) ~= "table" or data.v ~= 1 then
+	if type(data) ~= "table" or data.v ~= MineState.version then
 		return nil, "Invalid mine version"
 	end
 	if not integer(data.seed, 0, 0xffffffff) then

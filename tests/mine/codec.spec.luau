@@ -31,7 +31,7 @@ Test.describe("Mine codec", function()
 		State.removeRange(st, -2, 1, 5010, 5190, out)
 		State.removeCell(st, 2, 0, 128, out)
 		State.widen(st, 9)
-		st.damage[State.cellKey(3, 1, 125)] = 1
+		st.damage[State.cellKey(3, 1, 125)] = 0.5
 		local encoded = Codec.encode(st)
 		local decoded = assert(Codec.decode(serde.decode("json", serde.encode("json", encoded))))
 		expect(next(decoded.damage)).toBe(nil)
@@ -43,7 +43,7 @@ Test.describe("Mine codec", function()
 	Test.it("rejects more than fifty malformed saves with explanations", function()
 		local valid = Codec.encode(State.new(11, 1, 1))
 		local cases = {
-			{ "v", { -1, 0, 2, "1", false } },
+			{ "v", { -1, 0, 1, 3, "2", false } },
 			{ "seed", { -1, 4294967296, 1.5, "11", math.huge, 0 / 0 } },
 			{ "w", { 0, -1, 2, 16, 17, "1", false } },
 			{ "h", { 0, -1, 8, 1.5, "1", true } },

@@ -10,6 +10,7 @@ local Codec = require(Shared.Mine.MineCodec)
 local Wire = require(Shared.Mine.MineWire)
 local Worlds = require(Shared.Mine.Worlds)
 local Validate = require(Shared.Mine.Validate)
+local Power = require(Shared.Play.Power)
 local ProfileService = require(script.Parent.ProfileService)
 local PlotService = require(script.Parent.PlotService)
 
@@ -36,8 +37,8 @@ function MineService.get(player: Player): Session?
 	return sessions[player]
 end
 
-local function fresh(rng: Random): State.MineState
-	return State.new(rng:NextInteger(1, 2147483647), mine.startWidth, mine.height)
+local function fresh(rng: Random, width: number): State.MineState
+	return State.new(rng:NextInteger(1, 2147483647), width, mine.height)
 end
 
 function MineService.layers(st: State.MineState, offset: number): { { number } }
@@ -77,7 +78,10 @@ function MineService.damage(st: State.MineState): { any }
 			for y = 0, st.height - 1 do
 				local amount = st.damage[State.cellKey(x, y, st.front + dRel)]
 				if amount then
-					table.insert(out, { x = x, y = y, dRel = dRel, amount = amount })
+					table.insert(
+						out,
+						{ x = x, y = y, dRel = dRel, amount = Power.packDamage(amount) }
+					)
 				end
 			end
 		end
@@ -124,8 +128,8 @@ function MineService.reject(player: Player, s: Session, seq: number)
 	)
 end
 
-function MineService.reset(s: Session)
-	s.state = fresh(s.rng)
+function MineService.reset(s: Session, depth: number, width: number)
+	s.state = State.new(s.state.seed, width, mine.height, depth)
 	s.charge = 0
 	MineService.window(s)
 end
@@ -136,21 +140,24 @@ function MineService.Start()
 		if not plot or player.Parent ~= Players then
 			return
 		end
-		local encoded = ProfileService.Read(player, function(profile)
-			return profile.mine
-		end)
+		local profile = ProfileService.Get(player)
+		if not profile then
+			return
+		end
+		local encoded = profile.mine
 		local state = nil
 		if encoded ~= nil then
 			local problem
 			state, problem = Codec.decode(encoded)
-			if not state then
+			if not state or state.width ~= profile.width or state.height ~= mine.height then
+				state = nil
 				warn("[Mine] Invalid saved mine: " .. tostring(problem))
 				ProfileService.FailLoad(player)
 			end
 		end
 		local rng = Random.new()
 		local s: Session = {
-			state = state or fresh(rng),
+			state = state or fresh(rng, profile.width),
 			plot = plot,
 			rng = rng,
 			bucket = Validate.bucket(os.clock()),

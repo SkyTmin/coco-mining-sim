@@ -26,6 +26,7 @@ local CELL_STRIDE = mine.maxWidth * ROW_STRIDE
 local DEPTH_END = mine.maxDepth + 1
 local U32_MAX = 0xffffffff
 local MineState = {}
+MineState.version = 2
 
 local function integer(value: any, minimum: number, maximum: number): boolean
 	return type(value) == "number" and value >= minimum and value <= maximum and value % 1 == 0
@@ -46,22 +47,24 @@ function MineState.cellKey(x: number, y: number, d: number): number
 	return d * CELL_STRIDE + laneKey(x, y)
 end
 
-function MineState.new(seed: number, width: number, height: number): MineState
+function MineState.new(seed: number, width: number, height: number, depth: number?): MineState
 	assert(integer(seed, 0, U32_MAX), "Seed must be a u32")
 	assert(validDimensions(width, height), "Invalid wall dimensions")
+	local front = depth or 0
+	assert(integer(front, 0, DEPTH_END), "Invalid mine depth")
 	local top: { [number]: number } = {}
 	local radius = (width - 1) // 2
 	for x = -radius, radius do
 		for y = 0, height - 1 do
-			top[laneKey(x, y)] = 0
+			top[laneKey(x, y)] = front
 		end
 	end
 	return {
-		v = 1,
+		v = MineState.version,
 		seed = seed,
 		width = width,
 		height = height,
-		front = 0,
+		front = front,
 		top = top,
 		holes = {},
 		holeCount = 0,
@@ -352,7 +355,7 @@ function MineState.compact(st: MineState, out: { Range })
 end
 
 function MineState.check(st: MineState): (boolean, string?)
-	if st.v ~= 1 or not integer(st.seed, 0, U32_MAX) then
+	if st.v ~= MineState.version or not integer(st.seed, 0, U32_MAX) then
 		return false, "Invalid version or seed"
 	end
 	if not validDimensions(st.width, st.height) then
@@ -423,7 +426,7 @@ function MineState.check(st: MineState): (boolean, string?)
 			d >= limit
 			or st.top[lane] == nil
 			or not solidInLane(st, lane, d)
-			or not integer(damage, 1, mine.maxHitsPerBlock - 1)
+			or not (type(damage) == "number" and damage > 0 and damage < 1)
 		then
 			return false, "Damage outside a solid ordinary cell in the window"
 		end

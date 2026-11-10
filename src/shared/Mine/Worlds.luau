@@ -53,6 +53,10 @@ function Worlds.of(d: number): World
 	return worlds[lo]
 end
 
+function Worlds.at(index: number): World?
+	return worlds[index]
+end
+
 function Worlds.durability(d: number): number
 	local world = Worlds.of(d)
 	local t = math.clamp(d - world.start, 0, world.length - 1) / (world.length - 1)

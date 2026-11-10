@@ -3,6 +3,7 @@
 -- Server -> client: ProfileUpdated(profile) once, then ProfilePatch(ops).
 -- Server -> client: Toast(key, args?), ServerLog(message, isError).
 -- Client -> server: Creative(op, ...), MineIntent(buffer), CameraView(mode or preference patch).
+-- Client -> server: UpgradeIntent(op, idOrCount?, count?).
 -- Server -> plot subscribers: MineResult(buffer), MineWindow(buffer).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

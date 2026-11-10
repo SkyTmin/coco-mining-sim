@@ -8,6 +8,7 @@ local Worlds = require(Shared.Mine.Worlds)
 
 local S = Config.mine.blockSize
 local WIDTH = Config.mine.startWidth * S + 0.6
+local ENTRANCE_WIDTH = Config.plots.frameWidth * S
 local HEIGHT = Config.mine.height * S
 local depthConfig = Config.fx.depth
 local LENGTH = depthConfig.fogEnd
@@ -43,6 +44,7 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 	local model = Instance.new("Folder")
 	model.Name, model.Parent = "MineTunnel", parent
 	local gray, trim = Color3.fromRGB(64, 66, 72), Color3.fromRGB(98, 107, 120)
+	local spans, edges, jambs = {}, {}, {}
 	local function fixed(
 		name: string,
 		size: Vector3,
@@ -61,32 +63,44 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 			if neon then Enum.Material.Neon else nil
 		)
 	end
-	fixed("Floor", Vector3.new(WIDTH, 1, LENGTH), 0, -0.55, LENGTH / 2, gray)
-	fixed("Ceiling", Vector3.new(WIDTH, 1, LENGTH), 0, HEIGHT + 0.5, LENGTH / 2, gray)
-	local entranceWidth = Config.plots.frameWidth * S
-	local sideWidth = (entranceWidth - WIDTH) / 2
+	table.insert(spans, fixed("Floor", Vector3.new(WIDTH, 1, LENGTH), 0, -0.55, LENGTH / 2, gray))
+	table.insert(
+		spans,
+		fixed("Ceiling", Vector3.new(WIDTH, 1, LENGTH), 0, HEIGHT + 0.5, LENGTH / 2, gray)
+	)
+	local sideWidth = math.max(0.05, (ENTRANCE_WIDTH - WIDTH) / 2)
 	for _, side in { -1, 1 } do
-		fixed(
-			"Wall",
-			Vector3.new(1, HEIGHT, LENGTH),
-			side * (WIDTH / 2 + 0.5),
-			HEIGHT / 2,
-			LENGTH / 2,
-			gray
-		)
-		fixed(
-			"Wall",
-			Vector3.new(sideWidth, HEIGHT, 1.1),
-			side * (WIDTH + sideWidth) / 2,
-			HEIGHT / 2,
-			0.55,
-			gray
-		)
+		table.insert(edges, {
+			side = side,
+			extra = 0.5,
+			part = fixed(
+				"Wall",
+				Vector3.new(1, HEIGHT, LENGTH),
+				side * (WIDTH / 2 + 0.5),
+				HEIGHT / 2,
+				LENGTH / 2,
+				gray
+			),
+		})
+		table.insert(jambs, {
+			side = side,
+			part = fixed(
+				"Wall",
+				Vector3.new(sideWidth, HEIGHT, 1.1),
+				side * (WIDTH + sideWidth) / 2,
+				HEIGHT / 2,
+				0.55,
+				gray
+			),
+		})
 	end
-	fixed("Wall", Vector3.new(entranceWidth, HEIGHT, 1.1), 0, HEIGHT * 1.5, 0.55, gray)
+	fixed("Wall", Vector3.new(ENTRANCE_WIDTH, HEIGHT, 1.1), 0, HEIGHT * 1.5, 0.55, gray)
 	local lamps, lights = {}, {}
 	local function addSupport(depth: number, spacing: number)
-		fixed("Arch", Vector3.new(WIDTH, 0.55, 1.1), 0, HEIGHT - 0.25, depth, trim)
+		table.insert(
+			spans,
+			fixed("Arch", Vector3.new(WIDTH, 0.55, 1.1), 0, HEIGHT - 0.25, depth, trim)
+		)
 		local lamp = fixed("Lamp", Vector3.new(3, 0.3, 0.65), 0, HEIGHT - 0.7, depth, LAMP, true)
 		table.insert(lamps, { part = lamp, depth = depth, spacing = spacing })
 		if #lights < 4 then
@@ -97,7 +111,18 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 	end
 	for depth = 7, SIMPLE_FROM - 1, NEAR_SPACING do
 		for _, side in { -1, 1 } do
-			fixed("Arch", Vector3.new(0.55, HEIGHT, 1.1), side * WIDTH / 2, HEIGHT / 2, depth, trim)
+			table.insert(edges, {
+				side = side,
+				extra = 0,
+				part = fixed(
+					"Arch",
+					Vector3.new(0.55, HEIGHT, 1.1),
+					side * WIDTH / 2,
+					HEIGHT / 2,
+					depth,
+					trim
+				),
+			})
 		end
 		addSupport(depth, NEAR_SPACING)
 	end
@@ -143,6 +168,10 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 	local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
 	return {
 		frame = frame,
+		width = WIDTH,
+		spans = spans,
+		edges = edges,
+		jambs = jambs,
 		mass = mass,
 		face = face,
 		tape = tape,
@@ -163,6 +192,31 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 		atmosphere = atmosphere,
 		density = if atmosphere then atmosphere.Density else 0,
 	}
+end
+
+function Tunnel.width(t: any, blocks: number)
+	local width = blocks * S + 0.6
+	if width == t.width then
+		return
+	end
+	t.width = width
+	for _, p in t.spans do
+		p.Size = Vector3.new(width, p.Size.Y, p.Size.Z)
+	end
+	for _, edge in t.edges do
+		local p = edge.part
+		local relative = t.frame:PointToObjectSpace(p.Position)
+		p.CFrame = t.frame
+			* CFrame.new(edge.side * (width / 2 + edge.extra), relative.Y, relative.Z)
+	end
+	local sideWidth = math.max(0.05, (ENTRANCE_WIDTH - width) / 2)
+	for _, jamb in t.jambs do
+		jamb.part.Transparency = if width >= ENTRANCE_WIDTH then 1 else 0
+		jamb.part.Size = Vector3.new(sideWidth, HEIGHT, 1.1)
+		jamb.part.CFrame = t.frame
+			* CFrame.new(jamb.side * (width + sideWidth) / 2, HEIGHT / 2, -0.55)
+	end
+	t.glow.Size = Vector3.new(width * 0.8, HEIGHT * 0.8, 0.2)
 end
 
 function Tunnel.atmosphere(t: any, active: boolean, front: number, quality: number)
@@ -271,7 +325,7 @@ function Tunnel.wave(t: any, depth: number?, strength: number, color: Color3)
 			local nextAngle = i * 2 * math.pi / #t.wave
 			local function point(a: number): Vector3
 				return Vector3.new(
-					math.cos(a) * WIDTH * 0.47,
+					math.cos(a) * t.width * 0.47,
 					HEIGHT * (0.5 + 0.47 * math.sin(a)),
 					-depth
 				)

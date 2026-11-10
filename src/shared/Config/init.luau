@@ -30,11 +30,6 @@ export type MineConfig = {
 export type PickaxeConfig = {
 	family: string?,
 	rarity: string,
-	shape: string,
-	strength: number,
-	interval: number,
-	ultLayers: number,
-	ultCharge: number,
 	storm: { jumps: { number }, pickRareWithin: number }?,
 }
 export type RarityConfig = { stars: number, power: number, cap: number, ult: number, lvlC0: number }
@@ -133,27 +128,12 @@ export type WorldConfig = {
 
 local mine = require(script:WaitForChild("mine")) :: MineConfig
 local progress = require(script:WaitForChild("progress")) :: ProgressConfig
-local pickaxes: { [string]: PickaxeConfig } = {}
-for id, definition in require(script:WaitForChild("pickaxes")) do
-	local rarity = progress.rarities[definition.rarity]
-	pickaxes[id] = {
-		rarity = definition.rarity,
-		family = definition.family,
-		storm = definition.storm,
-		shape = progress.hitSizes[1].shape,
-		strength = rarity.power,
-		interval = progress.hitSizes[1].interval,
-		ultLayers = rarity.ult,
-		ultCharge = mine.ultCharge,
-	}
-end
-
 return {
 	game = require(script:WaitForChild("game")) :: GameConfig,
 	creative = require(script:WaitForChild("creative")) :: CreativeConfig,
 	mine = mine,
 	plots = require(script:WaitForChild("plots")) :: PlotConfig,
-	pickaxes = pickaxes,
+	pickaxes = require(script:WaitForChild("pickaxes")) :: { [string]: PickaxeConfig },
 	progress = progress,
 	fx = require(script:WaitForChild("fx")) :: FxConfig,
 	sounds = require(script:WaitForChild("sounds")) :: SoundsConfig,

@@ -52,7 +52,6 @@ function BlockBreak.cracks(
 	fx: any,
 	renderer: any,
 	win: any,
-	need: (number) -> number,
 	keyFor: (number, number, number) -> number,
 	windup: number?,
 	tint: Color3?
@@ -75,11 +74,7 @@ function BlockBreak.cracks(
 		if cell then
 			local stage = if windup
 				then math.clamp(math.ceil((windup * 2 - (i - 1) / math.max(1, #front)) * 8), 0, 10)
-				else math.clamp(
-					math.ceil(damage.amount / need(win.front + damage.dRel) * 10),
-					1,
-					10
-				)
+				else math.clamp(math.ceil(damage.amount / 255 * 10), 1, 10)
 			for j, line in item.lines do
 				line.Visible = j <= stage
 				line.BackgroundColor3 = tint or Color3.fromRGB(39, 29, 30)

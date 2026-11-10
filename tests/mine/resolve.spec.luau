@@ -26,7 +26,7 @@ Test.describe("Mining hits", function()
 		expect(Resolve.hit(shaped, pick(1 / 2.5), 0, 0, 0).blocks).toBe(0)
 		expect(Resolve.hit(shaped, pick(1 / 2.5, "pair"), 0, 0, 0).blocks).toBe(0)
 		expect(Resolve.hit(shaped, pick(1 / 2.5, "pair"), 0, 0, 0).blocks).toBe(1)
-		expect(shaped.damage[State.cellKey(0, 1, 0)]).toBe(2)
+		expect(shaped.damage[State.cellKey(0, 1, 0)]).toBe(0.8)
 		expect(Resolve.hit(shaped, pick(1 / 2.5), 0, 1, 0).blocks).toBe(1)
 	end)
 

@@ -9,8 +9,11 @@ local Resolve = require(Shared.Mine.Resolve)
 local Codec = require(Shared.Mine.MineCodec)
 local Economy = require(Shared.Mine.Economy)
 local Validate = require(Shared.Mine.Validate)
+local Worlds = require(Shared.Mine.Worlds)
 local Wire = require(Shared.Mine.MineWire)
 local Storm = require(Shared.Play.Storm)
+local Circle = require(Shared.Play.Circle)
+local Power = require(Shared.Play.Power)
 local MineService = require(script.Parent.MineService)
 local ProfileService = require(script.Parent.ProfileService)
 local PlotService = require(script.Parent.PlotService)
@@ -32,7 +35,8 @@ local function publish(
 	res: HitResult,
 	events: { any },
 	coins: number,
-	ability: boolean
+	ability: boolean,
+	strike: Power.Strike?
 )
 	local st = s.state
 	local delta = st.front - oldFront
@@ -59,6 +63,10 @@ local function publish(
 		plot = s.plot,
 		delta = delta,
 		ability = ability,
+		heavy = strike and strike.heavy,
+		crit = strike and strike.crit,
+		mega = strike and strike.mega,
+		rain = strike and strike.rain,
 		charge = s.charge,
 		plateDamage = st.plateDamage,
 		damage = MineService.damage(st),
@@ -95,12 +103,13 @@ end
 
 local function stormHit(
 	s: Session,
-	pick: Config.PickaxeConfig,
+	pick: Circle.Pick,
 	x: number,
 	y: number,
 	d: number,
 	res: HitResult,
-	events: { any }
+	events: { any },
+	strike: Power.Strike
 )
 	local st = s.state
 	if not pick.storm or d >= State.barrier(st) or budget.maxGen < 1 then
@@ -118,7 +127,7 @@ local function stormHit(
 		if #res.cells + 4 > budget.maxCells or #res.runs + 4 > budget.maxRuns then
 			break
 		end
-		local struck = Resolve.hit(st, single, nextCell.x, nextCell.y, nextCell.d)
+		local struck = Resolve.hit(st, single, nextCell.x, nextCell.y, nextCell.d, strike)
 		if struck then
 			merge(res, struck)
 			local nextPoint = point(nextCell.x, nextCell.y, nextCell.d, st.front)
@@ -174,16 +183,28 @@ local function onIntent(player: Player, packet: any)
 		return
 	end
 	local st = s.state
-	local pick = ProfileService.Read(player, function(profile)
-		return Pickaxe.get(profile.pickaxe)
+	local pick, cards, hitCounter, critCounter
+	ProfileService.Read(player, function(profile)
+		pick = Circle.pick(profile.pickaxe, profile.circle, st.front)
+		cards = profile.circle.cards
+		hitCounter, critCounter = profile.hitCounter, profile.critCounter
+		return true
 	end)
 	local own = PlotService.onOwnPlatform(player)
-	if not pick or not own or not Validate.take(s.bucket, started, pick.interval) then
+	if
+		not pick
+		or not cards
+		or not hitCounter
+		or not critCounter
+		or not own
+		or not Validate.take(s.bucket, started, pick.interval)
+	then
 		MineService.reject(player, s, intent.seq)
 		return
 	end
 	local oldFront = st.front
 	local res: HitResult?
+	local strike: Power.Strike?
 	local events: { any } = {}
 	local ability = intent.op == "Ability"
 	if ability then
@@ -201,10 +222,11 @@ local function onIntent(player: Player, packet: any)
 	else
 		local d = Validate.target(st, own, intent.x, intent.y, intent.dRel)
 		if d then
-			res = Resolve.hit(st, pick, intent.x, intent.y, d)
+			strike = Power.strike(st.seed, hitCounter + 1, critCounter, pick.strength, cards)
+			res = Resolve.hit(st, pick, intent.x, intent.y, d, strike)
 			if res then
 				s.charge = math.min(pick.ultCharge, s.charge + 1)
-				stormHit(s, pick, intent.x, intent.y, d, res, events)
+				stormHit(s, pick, intent.x, intent.y, d, res, events, strike)
 			end
 		end
 	end
@@ -212,14 +234,31 @@ local function onIntent(player: Player, packet: any)
 		MineService.reject(player, s, intent.seq)
 		return
 	end
-	local coins, blocks = Economy.coinsFor(res.hist) + (res.plateReward or 0), res.blocks
+	local coins = Economy.coinsFor(res.hist, cards.coins, strike and strike.coinMultiplier)
+		+ (res.plateReward or 0)
+	local blocks, plateBroken = res.blocks, res.plateBroken
 	local delta = State.advance(st)
+	local oldWorld, world = Worlds.of(oldFront).index, Worlds.of(st.front).index
+	local newCards = {}
 	ProfileService.Mutate(player, function(profile)
 		profile.coins += coins
 		profile.stats.blocks += blocks
 		profile.stats.layers += delta
+		if strike then
+			profile.hitCounter += 1
+			profile.critCounter += if strike.crit then 1 else 0
+		end
+		if plateBroken then
+			profile.platesBroken = math.max(profile.platesBroken, oldWorld)
+		end
+		if world > oldWorld then
+			newCards = Circle.reach(profile, world)
+		end
 	end)
-	publish(s, intent.seq, oldFront, res, events, coins, ability)
+	publish(s, intent.seq, oldFront, res, events, coins, ability, strike)
+	for _, id in newCards do
+		Remotes.event("Toast"):FireClient(player, "card_unlocked_" .. id)
+	end
 	record(if ability then s.ult else s.hit, (os.clock() - started) * 1000)
 end
 
@@ -237,19 +276,39 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 			Pickaxe.equip(player, a)
 		end
 		return
-	elseif op == "mine.reset" or op == "reset" then
-		if RunService:IsStudio() then
-			MineService.reset(s)
+	elseif op == "mine.level" then
+		if type(a) == "number" and (a == 1 or a == -1 or a == 0) then
+			ProfileService.Mutate(player, function(profile)
+				local id = profile.pickaxe
+				local rarity = Config.progress.rarities[Config.pickaxes[id].rarity]
+				local level = profile.circle.pickLevels[id] or 1
+				profile.circle.pickLevels[id] = if a == 0
+					then Power.cap(rarity)
+					else math.clamp(level + a, 1, Power.cap(rarity))
+			end)
 		end
 		return
-	elseif op == "mine.charge" then
-		local pick = ProfileService.Read(player, function(profile)
-			return Pickaxe.get(profile.pickaxe)
-		end)
-		if pick then
-			s.charge = pick.ultCharge
-			MineService.window(s)
+	elseif op == "mine.depth" then
+		local world = if type(a) == "number" and a % 1 == 0 then Worlds.at(a) else nil
+		if world then
+			local depth = if b == true then world.plateDepth - 30 else world.start
+			ProfileService.Mutate(player, function(profile)
+				Circle.reach(profile, world.index)
+			end)
+			MineService.reset(s, depth, st.width)
 		end
+		return
+	elseif op == "mine.reset" or op == "reset" then
+		ProfileService.Mutate(player, function(profile)
+			profile.circle = Circle.new()
+			profile.width = mine.startWidth
+			profile.coins = 0
+		end)
+		MineService.reset(s, 0, mine.startWidth)
+		return
+	elseif op == "mine.charge" then
+		s.charge = mine.ultCharge
+		MineService.window(s)
 		return
 	elseif op == "mine.stats" then
 		local bytes = #game:GetService("HttpService"):JSONEncode(Codec.encode(st))
@@ -318,7 +377,7 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 		res.blocks += span.b - span.a
 	end
 	State.advance(st)
-	publish(s, 0, front, res, {}, 0, false)
+	publish(s, 0, front, res, {}, 0, false, nil)
 end
 
 function HitService.Start()

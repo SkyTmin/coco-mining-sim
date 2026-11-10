@@ -10,6 +10,9 @@ local Sfx = require(Shared.Sfx)
 local Wire = require(Shared.Mine.MineWire)
 local State = require(Shared.Mine.MineState)
 local Worlds = require(Shared.Mine.Worlds)
+local Circle = require(Shared.Play.Circle)
+local Power = require(Shared.Play.Power)
+local Shapes = require(Shared.Mine.Shapes)
 local Ride = require(Shared.Mine.Ride)
 
 local Client = script.Parent.Parent
@@ -92,16 +95,14 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local function profile(): any
 		return ProfileState.getProfile()
 	end
-	local function pick(): Config.PickaxeConfig
+	local defaultCircle = Circle.new()
+	local function pick(): Circle.Pick
 		local p = profile()
 		local id = player:GetAttribute("MinePickaxe") or (p and p.pickaxe) or "starter"
-		return Config.pickaxes[id] or Config.pickaxes.starter
-	end
-	local function need(depth: number): number
-		return math.clamp(
-			math.ceil(Worlds.durability(depth) / pick().strength),
-			1,
-			mine.maxHitsPerBlock
+		return Circle.pick(
+			id,
+			(p and p.circle) or defaultCircle,
+			if window then window.front else 0
 		)
 	end
 	local function currentOffset(now: number): number
@@ -196,18 +197,32 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if not ability then
 			local depth = window.front + cell.dRel
 			local plate = Wall.ore(window, cell.x, cell.y, cell.dRel) == Wire.PLATE
-			local hits = 1
+			local progress = 0
 			for _, damage in window.damage do
 				if damage.x == cell.x and damage.y == cell.y and damage.dRel == cell.dRel then
-					hits += damage.amount
+					progress = damage.amount / 255
 					break
 				end
 			end
 			if not plate then
-				if hits >= need(depth) then
-					expected.hidden = State.cellKey(cell.x, cell.y, depth)
-				else
-					expected.damage = { x = cell.x, y = cell.y, dRel = cell.dRel, amount = hits }
+				local shape =
+					Shapes.cells(settings.shape, cell.x, cell.y, window.width, window.height)
+				for _, point in shape do
+					if point.x == cell.x and point.y == cell.y then
+						local hp = Power.blockHP(Worlds.durability(depth), settings.strength)
+						local after = progress + settings.strength / hp
+						if after >= 1 - 0.5 / 255 then
+							expected.hidden = State.cellKey(cell.x, cell.y, depth)
+						else
+							expected.damage = {
+								x = cell.x,
+								y = cell.y,
+								dRel = cell.dRel,
+								amount = Power.packDamage(after),
+							}
+						end
+						break
+					end
 				end
 			end
 			Break.hit(breaking, position, cell.color or WARM, S, expected.hidden ~= nil, quality)
@@ -629,6 +644,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 		end
 		Camera.glow(v, if phase == "windup" and active then color else nil)
+		Tunnel.width(tunnel, window.width)
 		Tunnel.atmosphere(tunnel, active, if shown then shown.front else window.front, override)
 		if waveDepth or waveShowing then
 			Tunnel.wave(tunnel, waveDepth, if reduced then 0.50 else 1 - 0.42 * progress, color)
@@ -645,14 +661,14 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					table.insert(renderWindow.damage, pending.damage)
 				end
 				Wall.update(r, renderWindow, visible, pending and pending.hidden)
-				Break.cracks(breaking, r, renderWindow, need, State.cellKey)
+				Break.cracks(breaking, r, renderWindow, State.cellKey)
 			else
 				Wall.clear(r)
 			end
 			lastShown, lastVisible = shown, visible
 		end
 		if phase == "windup" then
-			Break.cracks(breaking, r, shown, need, State.cellKey, progress, color)
+			Break.cracks(breaking, r, shown, State.cellKey, progress, color)
 		end
 		local sceneWindow = shown or window
 		local plate = Ride.plate(

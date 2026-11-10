@@ -9,10 +9,6 @@ local PickaxeService = {}
 local cameraAt: { [Player]: number } = {}
 local preferencesAt: { [Player]: number } = {}
 
-function PickaxeService.get(id: string?): Config.PickaxeConfig
-	return (id and Config.pickaxes[id]) or Config.pickaxes.starter
-end
-
 local function attach(character: Model, id: string)
 	local hand = character:WaitForChild("RightHand", 5)
 	if not hand or not hand:IsA("BasePart") or not character.Parent then
@@ -47,7 +43,7 @@ local function attach(character: Model, id: string)
 end
 
 function PickaxeService.equip(player: Player, id: string)
-	if not Config.pickaxes[id] then
+	if player:GetAttribute("CreativeAllowed") ~= true or not Config.pickaxes[id] then
 		return
 	end
 	ProfileService.Mutate(player, function(profile)
