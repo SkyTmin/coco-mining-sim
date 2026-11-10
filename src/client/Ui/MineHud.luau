@@ -3,174 +3,118 @@
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Format = require(Shared.Format)
 local Worlds = require(Shared.Mine.Worlds)
+local Candy = require(script.Parent.Candy)
 local Hud = {}
 
-local ink = Color3.fromRGB(36, 57, 83)
-local cream = Color3.fromRGB(255, 243, 220)
-local blue = Color3.fromRGB(116, 208, 255)
-local yellow = Color3.fromRGB(255, 211, 112)
-
-local function round(gui: GuiObject, radius: number)
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, radius)
-	c.Parent = gui
-end
-
-local function label(parent: Instance, size: UDim2, color: Color3, textSize: number): TextLabel
-	local t = Instance.new("TextLabel")
-	t.Size, t.TextColor3, t.TextSize, t.Text, t.Font =
-		size, color, textSize, "", Enum.Font.GothamBold
-	t.BackgroundTransparency, t.Parent = 1, parent
-	return t
-end
-
-local function card(parent: Instance, size: UDim2, position: UDim2, anchor: Vector2): Frame
-	local f = Instance.new("Frame")
-	f.Size, f.Position, f.AnchorPoint, f.BackgroundColor3 = size, position, anchor, cream
-	f.BorderSizePixel, f.Parent = 0, parent
-	round(f, 13)
-	local outline = Instance.new("UIStroke")
-	outline.Color, outline.Thickness, outline.Transparency, outline.Parent =
-		Color3.fromRGB(181, 205, 220), 2, 0.16, f
-	return f
-end
-
-local function button(parent: Instance, size: number, at: UDim2, anchor: Vector2): TextButton
-	local b = Instance.new("TextButton")
-	b.Size, b.Position, b.AnchorPoint = UDim2.fromOffset(size, size), at, anchor
-	b.Text, b.BackgroundColor3, b.BorderSizePixel, b.Parent = "", cream, 0, parent
-	round(b, size)
-	return b
-end
-
-local function coinIcon(parent: Instance, x: number, size: number): Frame
-	local icon = Instance.new("Frame")
-	icon.AnchorPoint, icon.Position, icon.Size =
-		Vector2.new(0, 0.5), UDim2.new(0, x, 0.5, 0), UDim2.fromOffset(size, size)
-	icon.BackgroundColor3, icon.BorderSizePixel, icon.Parent =
-		Color3.fromRGB(255, 197, 67), 0, parent
-	round(icon, size)
-	local ring = Instance.new("UIStroke")
-	ring.Color, ring.Thickness, ring.Parent = Color3.fromRGB(199, 129, 38), 2, icon
-	local mark = Instance.new("Frame")
-	mark.AnchorPoint, mark.Position, mark.Size =
-		Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), UDim2.fromScale(0.24, 0.54)
-	mark.BackgroundColor3, mark.BorderSizePixel, mark.Parent = cream, 0, icon
-	round(mark, 3)
-	return icon
-end
+local yellow = Color3.fromHex("FFC83D")
+local center = Vector2.new(0.5, 0.5)
+local right = Vector2.new(1, 0)
+local bottom = Vector2.new(1, 1)
+local offset, scale = UDim2.fromOffset, UDim2.fromScale
 
 function Hud.new(
 	guiParent: Instance,
 	worldParent: Instance,
 	translate: (string, ...any) -> string
 ): any
-	local gui = Instance.new("ScreenGui")
-	gui.Name, gui.DisplayOrder, gui.ResetOnSpawn, gui.Enabled = "MineHUD", 4, false, false
-	gui.IgnoreGuiInset, gui.ScreenInsets = true, Enum.ScreenInsets.DeviceSafeInsets
-	gui.Parent = guiParent
-	local wallet = card(gui, UDim2.fromOffset(122, 44), UDim2.fromOffset(14, 54), Vector2.zero)
-	coinIcon(wallet, 13, 21)
-	local coins = label(wallet, UDim2.new(1, -37, 1, 0), ink, 23)
-	coins.Position = UDim2.fromOffset(36, 0)
-	local coinScale = Instance.new("UIScale")
-	coinScale.Parent = wallet
+	local gui = Candy.layer(guiParent, "MineHUD", 4)
+	gui.Visible = false
+	local coins = Candy.coin(gui, "Wallet", offset(118, 42), offset(15, 20), 21)
+	local walletSurface = coins.Parent:FindFirstChild("Surface")
 	local worldCard =
-		card(gui, UDim2.new(0.30, 0, 0, 58), UDim2.new(0.5, 0, 0, 10), Vector2.new(0.5, 0))
-	local world = label(worldCard, UDim2.new(1, -12, 0, 27), ink, 16)
-	world.Name, world.Position, world.TextScaled = "WorldProgress", UDim2.fromOffset(6, 2), true
-	local worldLimit = Instance.new("UITextSizeConstraint")
-	worldLimit.MinTextSize, worldLimit.MaxTextSize, worldLimit.Parent = 9, 16, world
-	local rail = Instance.new("Frame")
-	rail.BackgroundColor3, rail.Position, rail.Size =
-		Color3.fromRGB(213, 221, 230), UDim2.fromOffset(11, 31), UDim2.new(1, -22, 0, 5)
-	rail.BorderSizePixel, rail.Parent = 0, worldCard
-	round(rail, 5)
-	local fill = Instance.new("Frame")
-	fill.BackgroundColor3, fill.BorderSizePixel, fill.Parent = blue, 0, rail
-	round(fill, 5)
-	local endMark = Instance.new("Frame")
-	endMark.AnchorPoint, endMark.Position, endMark.Size =
-		Vector2.new(0.5, 0.5), UDim2.fromScale(1, 0.5), UDim2.fromOffset(4, 9)
-	endMark.BackgroundColor3, endMark.BorderSizePixel, endMark.Parent = ink, 0, rail
-	round(endMark, 2)
-	local remaining = label(worldCard, UDim2.new(1, 0, 0, 19), ink, 12)
-	remaining.Name, remaining.Position = "PlateRemaining", UDim2.fromOffset(0, 38)
-	local hits = Instance.new("Frame")
-	hits.Name, hits.Size, hits.AnchorPoint, hits.BackgroundTransparency =
-		"HitsRemaining", UDim2.fromOffset(76, 8), Vector2.new(0.5, 0.5), 1
-	hits.Parent = gui
+		Candy.panel(gui, "WorldCard", UDim2.new(0.30, -4, 0, 64), UDim2.new(0.5, 0, 0, 16))
+	worldCard.AnchorPoint = Vector2.new(0.5, 0)
+	local world = Candy.text(worldCard, "WorldProgress", UDim2.new(1, -10, 0, 22), offset(5, 4), 16)
+	local fill = Candy.bar(worldCard, UDim2.new(1, -22, 0, 9), offset(11, 29), yellow)
+	local remaining =
+		Candy.text(worldCard, "PlateRemaining", UDim2.new(1, -10, 0, 20), offset(5, 39), 12)
+
+	local hits = Candy.frame(gui, "HitsRemaining", offset(76, 8), offset(0, 0))
+	hits.AnchorPoint = center
 	local dots = {}
 	for i = 1, 8 do
-		local dot = Instance.new("Frame")
-		dot.Size, dot.Position, dot.BackgroundColor3, dot.BorderSizePixel =
-			UDim2.fromOffset(6, 6), UDim2.fromOffset((i - 1) * 10, 1), yellow, 0
-		dot.Parent = hits
-		round(dot, 6)
+		local dot = Candy.frame(hits, "Hit", offset(6, 6), offset((i - 1) * 10, 1), yellow)
+		Candy.round(dot, 0)
 		dots[i] = dot
 	end
-	local focus = button(gui, 46, UDim2.new(0.5, 0, 1, -15), Vector2.new(0.5, 1))
-	focus.Name, focus.Size, focus.Visible = "FaceWall", UDim2.fromOffset(134, 46), false
-	focus.Font, focus.TextSize, focus.TextColor3 = Enum.Font.GothamBold, 15, ink
-	local eye = button(gui, 51, UDim2.new(1, -15, 0, 48), Vector2.new(1, 0))
-	eye.Name = "MineCameraButton"
-	local gear = button(gui, 39, UDim2.new(1, -20, 0, 107), Vector2.new(1, 0))
-	gear.Name, gear.Text, gear.TextSize, gear.TextColor3, gear.Font =
-		"MineSettingsButton", translate("mine_settings_icon"), 25, ink, Enum.Font.GothamBold
-	local iris = Instance.new("Frame")
-	iris.AnchorPoint, iris.Position, iris.Size =
-		Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), UDim2.fromOffset(29, 16)
-	iris.BackgroundColor3, iris.BorderSizePixel, iris.Parent = ink, 0, eye
-	round(iris, 16)
-	local pupil = Instance.new("Frame")
-	pupil.AnchorPoint, pupil.Position, pupil.Size =
-		Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), UDim2.fromOffset(10, 10)
-	pupil.BackgroundColor3, pupil.BorderSizePixel, pupil.Parent = cream, 0, iris
-	round(pupil, 10)
-	local ult = button(gui, 86, UDim2.new(1, -23, 1, -22), Vector2.one)
-	ult.Name = "MineUltButton"
-	ult.Text, ult.TextSize, ult.TextColor3, ult.Font =
-		translate("mine_ult_icon"), 35, ink, Enum.Font.GothamBold
+	local focus =
+		Candy.button(gui, "FaceWall", offset(144, 45), UDim2.new(0.5, 0, 1, -20), "neutral", 17)
+	focus.box.AnchorPoint, focus.box.Visible = Vector2.new(0.5, 1), false
+	local eye = Candy.button(
+		gui,
+		"MineCameraButton",
+		offset(43, 43),
+		UDim2.new(1, -69, 0, 20),
+		"neutral",
+		19,
+		true
+	)
+	local gear = Candy.button(
+		gui,
+		"MineSettingsButton",
+		offset(43, 43),
+		UDim2.new(1, -15, 0, 20),
+		"neutral",
+		19,
+		true
+	)
+	eye.box.AnchorPoint, gear.box.AnchorPoint = right, right
+	Candy.buttonIcon(eye, "eye", true)
+	Candy.buttonIcon(gear, "settings", true)
+
+	local ult = Candy.button(
+		gui,
+		"MineUltButton",
+		offset(74, 74),
+		UDim2.new(1, -23, 1, -22),
+		"special",
+		29,
+		true
+	)
+	ult.box.AnchorPoint = bottom
+	Candy.buttonIcon(ult, "ult", true)
+	local halo = Candy.frame(ult.face, "ChargeRing", scale(1.13, 1.13), scale(0.5, 0.5))
+	halo.AnchorPoint = center
+	Candy.round(halo, 0)
+	local haloStroke = Candy.stroke(halo, 5)
+	haloStroke.Color, haloStroke.Transparency = Candy.white, 0.69
 	local ring = {}
-	for i = 1, 36 do
-		local angle = (i - 1) * math.pi * 2 / 36
-		local p = Instance.new("Frame")
-		p.AnchorPoint, p.Position, p.Size =
-			Vector2.new(0.5, 0.5),
-			UDim2.fromScale(0.5 + math.sin(angle) * 0.43, 0.5 - math.cos(angle) * 0.43),
-			UDim2.fromOffset(5, 6)
-		p.Rotation, p.BackgroundColor3, p.BorderSizePixel, p.Parent =
-			math.deg(angle), Color3.fromRGB(198, 210, 218), 0, ult
-		round(p, 3)
-		ring[i] = p
+	for i = 1, 48 do
+		local angle = (i - 1) * math.pi * 2 / 48
+		local tick = Candy.frame(
+			ult.face,
+			"Charge",
+			offset(5, 4),
+			scale(0.5 + math.sin(angle) * 0.565, 0.5 - math.cos(angle) * 0.565),
+			yellow
+		)
+		tick.AnchorPoint, tick.Rotation, tick.Visible = center, math.deg(angle), false
+		Candy.round(tick, 2)
+		ring[i] = tick
 	end
-	local cross = Instance.new("Frame")
-	cross.AnchorPoint, cross.Position, cross.Size =
-		Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), UDim2.fromOffset(5, 5)
-	cross.BackgroundColor3, cross.BorderSizePixel, cross.Parent = Color3.new(1, 1, 1), 0, gui
-	round(cross, 4)
-	local arrow = label(gui, UDim2.fromOffset(42, 42), yellow, 32)
-	arrow.Text, arrow.AnchorPoint, arrow.Visible =
-		translate("mine_arrow"), Vector2.new(0.5, 0.5), false
-	local bannerBox =
-		card(gui, UDim2.fromOffset(254, 56), UDim2.fromScale(0.5, 0.76), Vector2.new(0.5, 0.5))
-	bannerBox.Visible = false
-	local banner = label(bannerBox, UDim2.new(1, -12, 0, 27), ink, 20)
-	banner.Name, banner.Position = "Reward", UDim2.fromOffset(6, 24)
-	banner.TextScaled = true
-	local bannerSize = Instance.new("UITextSizeConstraint")
-	bannerSize.MinTextSize, bannerSize.MaxTextSize, bannerSize.Parent = 12, 20, banner
-	local layers = label(bannerBox, UDim2.new(1, 0, 0, 25), ink, 17)
-	layers.Name = "FractureLayers"
-	local worldBanner =
-		card(gui, UDim2.fromOffset(274, 52), UDim2.new(0.5, 0, 0, 92), Vector2.new(0.5, 0))
-	worldBanner.Name, worldBanner.Visible = "WorldEntered", false
-	local newWorld = label(worldBanner, UDim2.new(1, -12, 0, 28), ink, 17)
-	newWorld.Position, newWorld.TextScaled = UDim2.fromOffset(6, 2), true
-	local nameLimit = Instance.new("UITextSizeConstraint")
-	nameLimit.MinTextSize, nameLimit.MaxTextSize, nameLimit.Parent = 10, 17, newWorld
-	local plateReward = label(worldBanner, UDim2.fromScale(1, 0.39), ink, 14)
-	plateReward.Position = UDim2.fromOffset(0, 29)
+	local cross = Candy.frame(gui, "Crosshair", offset(5, 5), scale(0.5, 0.5), Candy.white)
+	cross.AnchorPoint = center
+	Candy.round(cross, 0)
+	local arrow = Candy.text(gui, "LastCellsArrow", offset(42, 42), offset(0, 0), 32, yellow)
+	arrow.Text, arrow.AnchorPoint, arrow.Visible = translate("mine_arrow"), center, false
+	Candy.stroke(arrow, 2, true)
+
+	local bannerBox = Candy.panel(gui, "MineReward", offset(254, 56), scale(0.5, 0.76))
+	bannerBox.AnchorPoint, bannerBox.Visible = center, false
+	local banner = Candy.text(bannerBox, "Reward", UDim2.new(1, -12, 0, 27), offset(6, 24), 20)
+	local layers = Candy.text(bannerBox, "FractureLayers", UDim2.new(1, 0, 0, 25), offset(0, 0), 17)
+	local worldBanner = Candy.panel(gui, "WorldEntered", offset(284, 59), UDim2.new(0.5, 0, 0, 109))
+	worldBanner.AnchorPoint, worldBanner.Visible = Vector2.new(0.5, 0), false
+	local newWorld, worldRibbon = Candy.ribbon(
+		worldBanner,
+		"WorldRibbon",
+		UDim2.new(1, -22, 0, 32),
+		offset(11, -8),
+		Candy.purple
+	)
+	Candy.stroke(newWorld, 2, true)
+	local plateReward =
+		Candy.text(worldBanner, "PlateReward", UDim2.new(1, -12, 0, 25), offset(6, 27), 15)
 	local money = {}
 	for i = 1, 10 do
 		local anchor = Instance.new("Part")
@@ -180,19 +124,30 @@ function Hud.new(
 		anchor.Parent = worldParent
 		local badge = Instance.new("BillboardGui")
 		badge.Size, badge.AlwaysOnTop, badge.Enabled, badge.Parent =
-			UDim2.fromOffset(150, 36), true, false, anchor
-		coinIcon(badge, 35, 15)
-		local text = label(badge, UDim2.new(1, -56, 1, 0), yellow, 23)
-		text.Position, text.TextXAlignment = UDim2.fromOffset(56, 0), Enum.TextXAlignment.Left
-		text.TextStrokeColor3, text.TextStrokeTransparency = ink, 0.25
-		money[i] = { anchor = anchor, badge = badge, text = text, at = -math.huge }
+			offset(145, 42), true, false, anchor
+		local icon = Candy.icon(badge, "coin", offset(20, 20), UDim2.new(0, 8, 0.5, -10))
+		local text =
+			Candy.text(badge, "Value", UDim2.new(1, -37, 1, 0), offset(34, 0), 31, Candy.white)
+		text.TextXAlignment = Enum.TextXAlignment.Left
+		local stroke = Candy.stroke(text, 2.5, true)
+		money[i] = {
+			anchor = anchor,
+			badge = badge,
+			text = text,
+			icon = icon,
+			stroke = stroke,
+			at = -math.huge,
+		}
 	end
 	return {
 		gui = gui,
-		eye = eye,
-		focus = focus,
-		gear = gear,
-		ult = ult,
+		eye = eye.input,
+		gear = gear.input,
+		focus = focus.box,
+		focusInput = focus.input,
+		focusText = focus.text,
+		ult = ult.input,
+		halo = haloStroke,
 		ring = ring,
 		world = world,
 		worldCard = worldCard,
@@ -201,11 +156,12 @@ function Hud.new(
 		fill = fill,
 		remaining = remaining,
 		coins = coins,
-		coinScale = coinScale,
+		walletSurface = walletSurface,
 		cross = cross,
 		arrow = arrow,
 		bannerBox = bannerBox,
 		worldBanner = worldBanner,
+		worldRibbon = worldRibbon,
 		newWorld = newWorld,
 		plateReward = plateReward,
 		banner = banner,
@@ -234,7 +190,7 @@ function Hud.set(h: any, front: number, coins: number, charge: number, cap: numb
 		h.plateRoll = nil
 	end
 	h.remaining.Text = h.translate("mine_plate_remaining", Format.grouped(remaining))
-	h.remaining.TextColor3 = Color3.fromRGB(155, 88, 22):Lerp(ink, progress)
+	h.remaining.TextColor3 = Color3.fromRGB(155, 88, 22):Lerp(Candy.ink, progress)
 	h.coins.Text = h.translate("mine_coins", Format.short(coins))
 	if coins ~= h.amount then
 		if coins > h.amount and h.amount >= 0 then
@@ -244,9 +200,7 @@ function Hud.set(h: any, front: number, coins: number, charge: number, cap: numb
 	end
 	if charge ~= h.lastCharge or cap ~= h.lastCap then
 		for i, tick in h.ring do
-			tick.BackgroundColor3 = if i <= math.floor(charge / cap * #h.ring)
-				then Color3.fromRGB(58, 168, 223)
-				else Color3.fromRGB(198, 210, 218)
+			tick.Visible = i <= math.floor(charge / math.max(1, cap) * #h.ring)
 		end
 		h.lastCharge, h.lastCap = charge, cap
 	end
@@ -258,8 +212,8 @@ function Hud.hits(h: any, count: number, point: Vector3?)
 	if camera and point and count > 0 then
 		local p, visible = camera:WorldToViewportPoint(point)
 		h.hits.Visible = visible
-		h.hits.Size = UDim2.fromOffset(count * 10 - 4, 8)
-		h.hits.Position = UDim2.fromOffset(p.X, p.Y + 14)
+		Candy.fit(h.hits, offset(count * 10 - 4, 8), offset(0, 0))
+		h.hits.Position = Candy.point(Vector2.new(p.X, p.Y + 14))
 		for i, dot in h.dots do
 			dot.Visible = i <= count
 		end
@@ -273,8 +227,7 @@ end
 
 function Hud.enterWorld(h: any, now: number, world: Worlds.World, reward: number)
 	h.worldEntered = { at = now, world = world, reward = reward }
-	h.worldBanner.BackgroundColor3 =
-		cream:Lerp(Color3.fromRGB(world.color[1], world.color[2], world.color[3]), 0.22)
+	h.worldRibbon.BackgroundColor3 = Color3.fromRGB(world.color[1], world.color[2], world.color[3])
 end
 
 function Hud.coin(h: any, position: Vector3, amount: number)
@@ -285,6 +238,8 @@ function Hud.coin(h: any, position: Vector3, amount: number)
 	local item = h.money[h.gainIndex]
 	item.anchor.Position, item.at = position, os.clock()
 	item.text.Text = h.translate("mine_coin_gain", Format.short(amount))
+	local height = math.clamp(21 + 4 * math.log10(amount), 22, 39)
+	item.badge.Size = offset(145, height)
 	item.badge.Enabled = true
 end
 
@@ -308,17 +263,16 @@ function Hud.step(
 	hint: Vector3?,
 	reduced: boolean
 )
-	h.gui.Enabled = active
+	h.gui.Visible = active
 	h.cross.Visible = crosshair
-	local view = workspace.CurrentCamera
-	if view then
-		local width = math.floor(math.min(view.ViewportSize.X, h.gui.AbsoluteSize.X) * 0.30)
-		h.worldCard.Size = UDim2.fromOffset(width, 58)
-	end
-	h.coinScale.Scale = if reduced then 1 else 1 + 0.13 * math.max(0, 1 - (now - h.coinAt) / 0.24)
-	h.ult.BackgroundColor3 = if h.lastCharge >= h.lastCap and h.lastCap > 0
-		then cream:Lerp(yellow, 0.52 + 0.24 * math.sin(now * 6))
-		else cream
+	h.walletSurface.BackgroundColor3 = Candy.panelColor:Lerp(
+		yellow,
+		if reduced then 0 else 0.32 * math.max(0, 1 - (now - h.coinAt) / 0.24)
+	)
+	local ready = h.lastCharge >= h.lastCap and h.lastCap > 0
+	h.halo.Transparency = if ready
+		then (if reduced then 0.18 else 0.18 + 0.14 * math.sin(now * 6))
+		else 0.69
 	h.arrow.Visible = false
 	local camera = workspace.CurrentCamera
 	if active and camera and hint then
@@ -332,7 +286,7 @@ function Hud.step(
 			if direction.Magnitude > 0 then
 				local p = center + direction.Unit * math.min(center.X, center.Y) * 0.78
 				h.arrow.Position, h.arrow.Rotation, h.arrow.Visible =
-					UDim2.fromOffset(p.X, p.Y), math.deg(math.atan2(direction.Y, direction.X)), true
+					Candy.point(p), math.deg(math.atan2(direction.Y, direction.X)), true
 			end
 		end
 	end
@@ -355,7 +309,7 @@ function Hud.step(
 		h.layers.Visible = reward.ultimate
 		h.layers.Text =
 			h.translate("mine_ult_layers", Format.grouped(math.floor(reward.delta * progress)))
-		h.banner.Position = UDim2.fromOffset(6, if h.layers.Visible then 24 else 14)
+		Candy.move(h.banner, offset(6, if h.layers.Visible then 24 else 14))
 		h.banner.Text = if reward.ultimate
 			then h.translate(
 				"mine_ult_value",
@@ -369,8 +323,8 @@ function Hud.step(
 		item.badge.Enabled = active and t < 0.7
 		if item.badge.Enabled then
 			item.badge.StudsOffsetWorldSpace = Vector3.new(0, 0.8 + 2.6 * t / 0.7, 0)
-			item.text.TextTransparency, item.text.TextStrokeTransparency =
-				t / 0.7, 0.25 + 0.75 * t / 0.7
+			item.text.TextTransparency, item.icon.ImageTransparency, item.stroke.Transparency =
+				t / 0.7, t / 0.7, t / 0.7
 		end
 	end
 end

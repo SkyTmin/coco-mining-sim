@@ -184,7 +184,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			or player:GetAttribute("MineSettingsOpen") == true
 	end
 	local function canControl(): boolean
-		return active and not menuOpen()
+		return active and not menuOpen() and player:GetAttribute("MineUpgradesOpen") ~= true
 	end
 	local function canHit(): boolean
 		return canControl() and window ~= nil and ride == nil
@@ -622,7 +622,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 	end
 	hud.eye.Activated:Connect(toggle)
-	hud.focus.Activated:Connect(faceWall)
+	hud.focusInput.Activated:Connect(faceWall)
 	hud.ult.Activated:Connect(function()
 		request("Ability", nil)
 	end)
@@ -869,7 +869,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			local keyHint = if UserInputService.TouchEnabled or v.mode ~= "first"
 				then ""
 				else " · R"
-			hud.focus.Text = translate("mine_face_wall") .. keyHint
+			hud.focusText.Text = translate("mine_face_wall") .. keyHint
 		end
 		local equipped = pick()
 		local cap = equipped.ultCharge

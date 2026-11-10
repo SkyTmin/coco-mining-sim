@@ -1,6 +1,7 @@
 --!strict
 
 local player = game:GetService("Players").LocalPlayer
+local Candy = require(script.Parent.Ui.Candy)
 
 type Translate = (string, ...any) -> string
 type Message = { key: string, args: { any }? }
@@ -8,35 +9,13 @@ type Message = { key: string, args: { any }? }
 local Toast = {}
 
 function Toast.create(playerGui: Instance, translate: Translate): (string, { any }?) -> ()
-	local gui = Instance.new("ScreenGui")
-	gui.Name = "Toast"
-	gui.ResetOnSpawn = false
-	gui.DisplayOrder = 110
-
-	local label = Instance.new("TextLabel")
-	label.AnchorPoint = Vector2.new(0.5, 1)
-	label.Position = UDim2.new(0.5, 0, 1, -24)
-	label.Size = UDim2.fromScale(0.9, 0)
-	label.AutomaticSize = Enum.AutomaticSize.Y
-	label.BackgroundColor3 = Color3.fromRGB(18, 32, 60)
-	label.BorderSizePixel = 0
-	label.Font = Enum.Font.GothamMedium
-	label.TextColor3 = Color3.fromRGB(240, 245, 255)
-	label.TextSize = 16
+	local gui = Candy.layer(playerGui, "Toast", 20)
+	local box, surface =
+		Candy.panel(gui, "Message", UDim2.fromOffset(340, 44), UDim2.new(0.5, 0, 1, -80))
+	box.AnchorPoint, box.Visible = Vector2.new(0.5, 1), false
+	local label =
+		Candy.text(box, "Label", UDim2.fromScale(0.93, 0.94), UDim2.fromScale(0.035, 0.03), 17)
 	label.TextWrapped = true
-	label.Visible = false
-	label.Parent = gui
-
-	local size = Instance.new("UISizeConstraint")
-	size.MaxSize = Vector2.new(440, math.huge)
-	size.Parent = label
-	local padding = Instance.new("UIPadding")
-	padding.PaddingTop = UDim.new(0, 10)
-	padding.PaddingBottom = UDim.new(0, 10)
-	padding.PaddingLeft = UDim.new(0, 14)
-	padding.PaddingRight = UDim.new(0, 14)
-	padding.Parent = label
-	gui.Parent = playerGui
 
 	local queue: { Message } = {}
 	local showing = false
@@ -45,8 +24,10 @@ function Toast.create(playerGui: Instance, translate: Translate): (string, { any
 		local message = current
 		if message then
 			local morph = message.key:sub(1, 12) == "morph_toast_"
-			label.AnchorPoint = Vector2.new(0.5, if morph then 0 else 1)
-			label.Position = if morph then UDim2.new(0.5, 0, 0, 88) else UDim2.new(0.5, 0, 1, -24)
+			box.AnchorPoint = Vector2.new(0.5, if morph then 0 else 1)
+			Candy.move(box, if morph then UDim2.new(0.5, 0, 0, 88) else UDim2.new(0.5, 0, 1, -80))
+			surface.BackgroundColor3 = if morph then Candy.purple else Candy.panelColor
+			label.TextColor3 = if morph then Candy.white else Candy.ink
 			label.Text = translate(message.key, table.unpack(message.args or {}))
 		end
 	end
@@ -63,10 +44,10 @@ function Toast.create(playerGui: Instance, translate: Translate): (string, { any
 			while #queue > 0 do
 				current = table.remove(queue, 1)
 				refresh()
-				label.Visible = true
+				box.Visible = true
 				task.wait(4)
 			end
-			label.Visible = false
+			box.Visible = false
 			current = nil
 			showing = false
 		end)
