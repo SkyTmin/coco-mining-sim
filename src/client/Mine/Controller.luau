@@ -25,6 +25,7 @@ local Aim = require(script.Parent.Aim)
 local Camera = require(script.Parent.Camera)
 local Input = require(script.Parent.Input)
 local Hud = require(Client.Ui.MineHud)
+local Kit = require(Client.Ui.Kit)
 local Settings = require(Client.Ui.MineSettings)
 local Upgrades = require(Client.Ui.Upgrades)
 local Intensity = require(Client.Fx.Intensity)
@@ -187,9 +188,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local function canHit(): boolean
 		return canControl() and window ~= nil and ride == nil
 	end
-	local function aim(screen: Vector2, nearby: boolean): any?
+	local function aim(screen: Vector2): any?
 		local r = renderer
-		return if r and canHit() then Aim.at(r, window, screen, nearby) else nil
+		return if r and canHit() then Aim.at(r, window, screen) else nil
 	end
 	local function toggle()
 		if not view or not active or menuOpen() then
@@ -611,7 +612,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		return ride.slice or old, math.min(mine.window, broken - cleared), cleared * S + 0.03
 	end
 
+	local function faceWall()
+		if view and canControl() then
+			Camera.faceWall(view, os.clock())
+		end
+	end
 	hud.eye.Activated:Connect(toggle)
+	hud.focus.Activated:Connect(faceWall)
 	hud.ult.Activated:Connect(function()
 		request("Ability", nil)
 	end)
@@ -639,6 +646,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			request("Hit", target)
 		end,
 		toggle = toggle,
+		focus = faceWall,
 		ult = function()
 			request("Ability", nil)
 		end,
@@ -847,6 +855,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		Lightning.step(lightning, now)
 		Break.step(breaking, now)
 		Camera.step(v, active, Intensity.sample(intensity, r.frame, now, reduced, active))
+		hud.focus.Visible = canControl() and Camera.away(v)
+		if hud.focus.Visible then
+			local keyHint = if UserInputService.TouchEnabled or v.mode ~= "first"
+				then ""
+				else " · R"
+			Kit.caption(hud.focus, translate("mine_face_wall") .. keyHint)
+		end
 		local equipped = pick()
 		local cap = equipped.ultCharge
 		if lastCharge >= 0 and lastCharge < cap and window.charge >= cap then
@@ -881,7 +896,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 						and player:GetAttribute("MineUpgradesOpen") ~= true
 					then camera.ViewportSize / 2
 					else UserInputService:GetMouseLocation()
-				aimed = Aim.at(r, window, point, false)
+				aimed = Aim.at(r, window, point)
 			end
 		end
 		local depth = if aimed then window.front + aimed.dRel else window.front

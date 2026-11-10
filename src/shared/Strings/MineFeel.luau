@@ -1,6 +1,12 @@
 --!strict
 
 return {
+	mine_face_wall = {
+		en = "Face the wall",
+		ru = "К стене",
+		es = "Mirar al muro",
+		fr = "Vers le mur",
+	},
 	mine_settings = { en = "Settings", ru = "Настройки", es = "Ajustes", fr = "Réglages" },
 	mine_settings_icon = { en = "⚙", ru = "⚙", es = "⚙", fr = "⚙" },
 	mine_settings_close = { en = "×", ru = "×", es = "×", fr = "×" },

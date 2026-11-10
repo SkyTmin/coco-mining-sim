@@ -1,12 +1,11 @@
 --!strict
 
 local Shared = game:GetService("ReplicatedStorage").Shared
-local Config = require(Shared.Config)
 local Renderer = require(script.Parent.WallRenderer)
-local S = Config.mine.blockSize
+local S = require(Shared.Config).mine.blockSize
 local Aim = {}
 
-function Aim.at(r: Renderer.Renderer, win: any, screen: Vector2, nearby: boolean): any?
+function Aim.at(r: Renderer.Renderer, win: any, screen: Vector2): any?
 	local camera = workspace.CurrentCamera
 	if not camera then
 		return nil
@@ -17,26 +16,6 @@ function Aim.at(r: Renderer.Renderer, win: any, screen: Vector2, nearby: boolean
 	local ray = camera:ViewportPointToRay(screen.X, screen.Y)
 	local hit = workspace:Raycast(ray.Origin, ray.Direction * 240, params)
 	local cell = if hit then r.lookup[hit.Instance] else nil
-	if not cell and nearby then
-		local best = math.huge
-		for _, candidate in r.lookup do
-			local pos, visible = camera:WorldToViewportPoint(candidate.part.Position)
-			if not visible then
-				continue
-			end
-			local distance = (Vector2.new(pos.X, pos.Y) - screen).Magnitude
-			local edge = camera:WorldToViewportPoint(
-				candidate.part.Position + camera.CFrame.RightVector * S / 2
-			)
-			if distance < best and distance <= math.abs(edge.X - pos.X) * 2 then
-				local rayTo = candidate.part.Position - ray.Origin
-				local surface = workspace:Raycast(ray.Origin, rayTo, params)
-				if surface and surface.Instance == candidate.part then
-					best, cell = distance, candidate
-				end
-			end
-		end
-	end
 	if not cell then
 		return nil
 	end

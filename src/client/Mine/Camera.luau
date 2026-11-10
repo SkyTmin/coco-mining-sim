@@ -14,6 +14,7 @@ export type View = {
 	active: boolean,
 	yaw: number,
 	pitch: number,
+	recenter: { at: number, yaw: number, pitch: number }?,
 	swingAt: number,
 	swingDuration: number,
 	side: number,
@@ -136,8 +137,17 @@ function Camera.new(player: Player, frame: CFrame): View
 end
 
 function Camera.pan(view: View, delta: Vector2)
+	view.recenter = nil
 	view.yaw = (view.yaw - delta.X * 0.004 + math.pi) % (2 * math.pi) - math.pi
 	view.pitch = math.clamp(view.pitch - delta.Y * 0.004, -math.rad(60), math.rad(60))
+end
+
+function Camera.faceWall(view: View, now: number)
+	view.recenter = { at = now, yaw = view.yaw, pitch = view.pitch }
+end
+
+function Camera.away(view: View): boolean
+	return math.abs(view.yaw) > math.rad(30) or math.abs(view.pitch - REST_PITCH) > math.rad(26)
 end
 
 function Camera.swing(view: View, now: number, duration: number, ability: boolean)
@@ -208,6 +218,16 @@ function Camera.step(view: View, active: boolean, shake: Vector3)
 		return
 	end
 	view.active = true
+	local recenter = view.recenter
+	if recenter then
+		local t = math.clamp((os.clock() - recenter.at) / 0.15, 0, 1)
+		local ease = 1 - (1 - t) ^ 2
+		view.yaw = recenter.yaw * (1 - ease)
+		view.pitch = recenter.pitch + (REST_PITCH - recenter.pitch) * ease
+		if t == 1 then
+			view.recenter = nil
+		end
+	end
 	camera.CameraType = Enum.CameraType.Scriptable
 	camera.FieldOfView = 70
 	if humanoid then
