@@ -7,6 +7,8 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const project = JSON.parse(readFileSync(join(root, "default.project.json"), "utf8"));
 const only = (process.argv[2] ?? "").split(",").map((name) => name.trim()).filter(Boolean);
 const entries = [];
+const materialsPath = project.tree.MaterialService?.$path;
+const includeMaterials = materialsPath && (only.length === 0 || only.some(name => materialsPath.includes(name)));
 
 function classFor(file) {
   if (file.endsWith(".server.luau")) return "Script";
@@ -53,7 +55,7 @@ function walkDirectory(directory, path) {
 }
 
 function walkTree(node, path) {
-  if (node.$path) walkDirectory(join(root, node.$path), path);
+  if (node.$path && path[0] !== "MaterialService") walkDirectory(join(root, node.$path), path);
   for (const [key, child] of Object.entries(node)) {
     if (!key.startsWith("$")) walkTree(child, [...path, key]);
   }
@@ -62,7 +64,7 @@ walkTree(project.tree, []);
 
 const selected = new Set(entries.filter(({ file }) =>
   only.length === 0 || (file && only.some((name) => relative(root, file).replaceAll("\\", "/").includes(name)))));
-if (selected.size === 0) {
+if (selected.size === 0 && !includeMaterials) {
   console.error("No project scripts match the filter.");
   process.exit(1);
 }
@@ -104,6 +106,25 @@ for (const entry of entries) {
   if (!selected.has(entry) && !ancestors.has(path.join("/"))) continue;
   const luaPath = path.map((name) => JSON.stringify(name)).join(", ");
   lua.push(`sync({ ${luaPath} }, "${className}", ${source === null ? "nil" : longString(source)}, ${selected.has(entry)})`);
+}
+if (includeMaterials) {
+  const materialTree = JSON.parse(readFileSync(join(root, materialsPath), "utf8")).tree;
+  const variants = Object.entries(materialTree)
+    .filter(([, node]) => node?.$className === "MaterialVariant");
+  lua.push("local materials = game:GetService(\"MaterialService\")");
+  for (const [name, { $properties: { BaseMaterial, ColorMap, StudsPerTile } }] of variants) {
+    lua.push([
+      "do",
+      "  local variant = materials:FindFirstChild(" + JSON.stringify(name) + ") :: MaterialVariant?",
+      "  if not variant then variant = Instance.new(\"MaterialVariant\") end",
+      "  variant.Name = " + JSON.stringify(name),
+      "  variant.BaseMaterial = Enum.Material[" + JSON.stringify(BaseMaterial) + "]",
+      "  variant.ColorMap = " + JSON.stringify(ColorMap),
+      "  variant.StudsPerTile = " + StudsPerTile,
+      "  variant.Parent = materials",
+      "end",
+    ].join("\n"));
+  }
 }
 lua.push('return "synced " .. n .. " scripts"');
 process.stdout.write(lua.join("\n") + "\n");

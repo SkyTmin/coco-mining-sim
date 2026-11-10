@@ -461,3 +461,19 @@ for (const { name, emit } of sections) {
   writeFileSync(new URL(`${name}.json`, output), JSON.stringify(emit(decisions[name]), null, 2) + "\n");
   console.log(`wrote src/shared/Config/${name}.json`);
 }
+
+
+const materialTree = { $className: "MaterialService" };
+for (const [name, asset] of Object.entries(decisions.art.materials)) {
+  materialTree["COCOMine_" + name] = {
+    $className: "MaterialVariant",
+    $properties: {
+      BaseMaterial: "SmoothPlastic",
+      ColorMap: asset,
+      StudsPerTile: decisions.mine.blockSize,
+    },
+  };
+}
+writeFileSync(new URL("../src/materials.project.json", import.meta.url),
+  JSON.stringify({ name: "materials", tree: materialTree }, null, 2) + "\n");
+console.log("wrote src/materials.project.json");

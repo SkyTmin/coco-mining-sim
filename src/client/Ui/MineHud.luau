@@ -195,6 +195,7 @@ function Hud.new(
 		ult = ult,
 		ring = ring,
 		world = world,
+		worldCard = worldCard,
 		hits = hits,
 		dots = dots,
 		fill = fill,
@@ -309,6 +310,11 @@ function Hud.step(
 )
 	h.gui.Enabled = active
 	h.cross.Visible = crosshair
+	local view = workspace.CurrentCamera
+	if view then
+		local width = math.floor(math.min(view.ViewportSize.X, h.gui.AbsoluteSize.X) * 0.30)
+		h.worldCard.Size = UDim2.fromOffset(width, 58)
+	end
 	h.coinScale.Scale = if reduced then 1 else 1 + 0.13 * math.max(0, 1 - (now - h.coinAt) / 0.24)
 	h.ult.BackgroundColor3 = if h.lastCharge >= h.lastCap and h.lastCap > 0
 		then cream:Lerp(yellow, 0.52 + 0.24 * math.sin(now * 6))
