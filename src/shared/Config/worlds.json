@@ -40,11 +40,11 @@
     "hardEnd": 1.5,
     "ores": [
       [
-        "dirt",
+        "pebble",
         0.7
       ],
       [
-        "stone",
+        "flint",
         0.2
       ],
       [
@@ -61,8 +61,8 @@
       ]
     ],
     "prices": {
-      "dirt": 1,
-      "stone": 3,
+      "pebble": 1,
+      "flint": 3,
       "coal": 10,
       "copper": 50,
       "firefly_amber": 500
@@ -414,11 +414,11 @@
     }
   },
   {
-    "id": "giant_bones",
+    "id": "diamond_mantle",
     "color": [
-      197,
-      174,
-      128
+      74,
+      126,
+      152
     ],
     "length": 56450,
     "rockValue": 64,
@@ -426,32 +426,32 @@
     "hardEnd": 96000000,
     "ores": [
       [
-        "limestone",
+        "mantle",
         0.7
       ],
       [
-        "bone_ore",
+        "platinum",
         0.2
       ],
       [
-        "amber",
+        "diamond",
         0.08
       ],
       [
-        "onyx",
+        "brilliant",
         0.018
       ],
       [
-        "dragon_amber",
+        "giant_diamond",
         0.002
       ]
     ],
     "prices": {
-      "limestone": 64,
-      "bone_ore": 192,
-      "amber": 640,
-      "onyx": 3200,
-      "dragon_amber": 32000
+      "mantle": 64,
+      "platinum": 192,
+      "diamond": 640,
+      "brilliant": 3200,
+      "giant_diamond": 32000
     },
     "plate": {
       "recommendedStrength": 96000000,
@@ -469,11 +469,11 @@
     }
   },
   {
-    "id": "lost_city",
+    "id": "emerald_roots",
     "color": [
-      160,
-      100,
-      75
+      83,
+      145,
+      89
     ],
     "length": 124200,
     "rockValue": 128,
@@ -481,37 +481,92 @@
     "hardEnd": 1920000000,
     "ores": [
       [
-        "terracotta",
+        "moss_stone",
         0.7
       ],
       [
-        "bronze",
+        "resin",
         0.2
       ],
       [
-        "jade",
+        "emerald",
         0.08
       ],
       [
-        "lapis_lazuli",
+        "sap_crystal",
         0.018
       ],
       [
-        "ancient_gold",
+        "world_seed",
         0.002
       ]
     ],
     "prices": {
-      "terracotta": 128,
-      "bronze": 384,
-      "jade": 1280,
-      "lapis_lazuli": 6400,
-      "ancient_gold": 64000
+      "moss_stone": 128,
+      "resin": 384,
+      "emerald": 1280,
+      "sap_crystal": 6400,
+      "world_seed": 64000
     },
     "plate": {
       "recommendedStrength": 1920000000,
       "hp": 38400000000,
       "reward": 64000
+    },
+    "specials": {
+      "perChunk": 0,
+      "kinds": [
+        [
+          "chest",
+          1
+        ]
+      ]
+    }
+  },
+  {
+    "id": "underground_sea",
+    "color": [
+      58,
+      131,
+      161
+    ],
+    "length": 273250,
+    "rockValue": 256,
+    "hardStart": 25600000000,
+    "hardEnd": 38400000000,
+    "ores": [
+      [
+        "sea_stone",
+        0.7
+      ],
+      [
+        "salt",
+        0.2
+      ],
+      [
+        "aquamarine",
+        0.08
+      ],
+      [
+        "pearl",
+        0.018
+      ],
+      [
+        "black_pearl",
+        0.002
+      ]
+    ],
+    "prices": {
+      "sea_stone": 256,
+      "salt": 768,
+      "aquamarine": 2560,
+      "pearl": 12800,
+      "black_pearl": 128000
+    },
+    "plate": {
+      "recommendedStrength": 38400000000,
+      "hp": 768000000000,
+      "reward": 128000
     },
     "specials": {
       "perChunk": 0,
@@ -530,10 +585,10 @@
       56,
       56
     ],
-    "length": 273250,
-    "rockValue": 256,
-    "hardStart": 25600000000,
-    "hardEnd": 38400000000,
+    "length": 601150,
+    "rockValue": 512,
+    "hardStart": 512000000000,
+    "hardEnd": 768000000000,
     "ores": [
       [
         "basalt",
@@ -557,66 +612,11 @@
       ]
     ],
     "prices": {
-      "basalt": 256,
-      "obsidian": 768,
-      "garnet": 2560,
-      "ruby": 12800,
-      "fire_ruby": 128000
-    },
-    "plate": {
-      "recommendedStrength": 38400000000,
-      "hp": 768000000000,
-      "reward": 128000
-    },
-    "specials": {
-      "perChunk": 0,
-      "kinds": [
-        [
-          "chest",
-          1
-        ]
-      ]
-    }
-  },
-  {
-    "id": "core",
-    "color": [
-      237,
-      216,
-      156
-    ],
-    "length": 601150,
-    "rockValue": 512,
-    "hardStart": 512000000000,
-    "hardEnd": 768000000000,
-    "ores": [
-      [
-        "lightstone",
-        0.7
-      ],
-      [
-        "core_crystal",
-        0.2
-      ],
-      [
-        "sunstone",
-        0.08
-      ],
-      [
-        "stardust",
-        0.018
-      ],
-      [
-        "core_shard",
-        0.002
-      ]
-    ],
-    "prices": {
-      "lightstone": 512,
-      "core_crystal": 1536,
-      "sunstone": 5120,
-      "stardust": 25600,
-      "core_shard": 256000
+      "basalt": 512,
+      "obsidian": 1536,
+      "garnet": 5120,
+      "ruby": 25600,
+      "fire_ruby": 256000
     },
     "plate": {
       "recommendedStrength": 768000000000,

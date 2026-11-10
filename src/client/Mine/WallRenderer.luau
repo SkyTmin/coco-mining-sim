@@ -10,13 +10,9 @@ local Worlds = require(Shared.Mine.Worlds)
 local BlockPool = require(script.Parent.BlockPool)
 
 local S = Config.mine.blockSize
-local FACE_BUDGET = 160
-local FRACTURE_FACE_BUDGET = 112
+local BlockArt = require(script.Parent.BlockArt)
 local WallRenderer = {}
-local colors: { [string]: Color3 } = {}
-for _, ore in Config.ores do
-	colors[ore.id] = Color3.fromRGB(ore.color[1], ore.color[2], ore.color[3])
-end
+local SPARK_LAYERS = Config.mine.nearWindow
 
 type Cell = {
 	part: Part,
@@ -25,10 +21,9 @@ type Cell = {
 	d: number,
 	ore: number,
 	plate: boolean,
-	texture: SurfaceGui?,
-	faces: { Enum.NormalId }?,
+	faces: { Enum.NormalId },
 }
-type Face = { gui: SurfaceGui, part: Part, point: Vector3, score: number }
+type Sparkle = { emitter: ParticleEmitter, interval: number, nextAt: number }
 export type Renderer = {
 	model: Model,
 	frame: CFrame,
@@ -44,11 +39,7 @@ export type Renderer = {
 	plateFill: Frame,
 	pulse: Highlight,
 	limits: Model,
-	faceCamera: CFrame?,
-	faceShift: number,
-	faceBudget: number,
-	faces: { Face },
-	faceRay: RaycastParams,
+	sparkles: { [Part]: Sparkle },
 }
 local function layerValue(win: any, x: number, y: number, relative: number): number
 	local radius = (win.width - 1) // 2
@@ -66,6 +57,7 @@ function WallRenderer.exposed(win: any, x: number, y: number, relative: number):
 	end
 	return relative == 0
 		or layerValue(win, x, y, relative - 1) == 0
+		or layerValue(win, x, y, relative + 1) == 0
 		or layerValue(win, x + 1, y, relative) == 0
 		or layerValue(win, x - 1, y, relative) == 0
 		or layerValue(win, x, y + 1, relative) == 0
@@ -125,14 +117,8 @@ function WallRenderer.new(parent: Instance, frame: CFrame): Renderer
 		part.Size = Vector3.new(0.25, 4 + i % 2, 0.08)
 		runes[i] = part
 	end
-	local faceRay = RaycastParams.new()
-	faceRay.FilterType, faceRay.FilterDescendantsInstances =
-		Enum.RaycastFilterType.Include, { model }
 	return {
-		faceShift = 0,
-		faceBudget = FACE_BUDGET,
-		faceRay = faceRay,
-		faces = {},
+		sparkles = {},
 		model = model,
 		frame = frame,
 		pool = BlockPool.new(model),
@@ -150,65 +136,61 @@ function WallRenderer.new(parent: Instance, frame: CFrame): Renderer
 	}
 end
 
-local function tint(ore: number, x: number, y: number, d: number): Color3
-	local world = Worlds.of(d)
-	if ore == Wire.CHEST then
-		return Color3.fromRGB(255, 184, 86)
-	end
-	if ore == Wire.PLATE then
-		return Color3.fromRGB(world.color[1], world.color[2], world.color[3])
-			:Lerp(Color3.new(0.1, 0.12, 0.18), 0.42)
-	end
-	local entry = world.ores[ore]
-	local color = if entry then colors[entry[1] :: string] else Color3.fromRGB(139, 147, 159)
-	local factor = 0.96 + 0.08 * Hash.unit(x, y, d)
-	return Color3.new(
-		math.min(1, color.R * factor),
-		math.min(1, color.G * factor),
-		math.min(1, color.B * factor)
-	)
-end
-
-local function textureFace(part: Part, image: string?, rect: { number }?): SurfaceGui?
-	local surface = part:FindFirstChild("OrePixels") :: SurfaceGui?
-	if not image then
-		if surface then
-			surface.Enabled = false
-		end
-		return nil
-	end
-	if not surface then
-		surface = Instance.new("SurfaceGui")
-		surface.Name, surface.SizingMode = "OrePixels", Enum.SurfaceGuiSizingMode.FixedSize
-		surface.CanvasSize, surface.LightInfluence = Vector2.new(64, 64), 0.58
-		local pixels = Instance.new("ImageLabel")
-		pixels.Name, pixels.Size, pixels.BackgroundTransparency = "Pixels", UDim2.fromScale(1, 1), 1
-		pixels.ResampleMode = Enum.ResamplerMode.Pixelated
-		pixels.Parent = surface
-		surface.Parent = part
-	end
-	local pixels = surface:FindFirstChild("Pixels") :: ImageLabel
-	pixels.Image = image
-	pixels.ImageRectOffset = if rect then Vector2.new(rect[1], rect[2]) else Vector2.zero
-	pixels.ImageRectSize = if rect then Vector2.new(rect[3], rect[4]) else Vector2.zero
-	return surface
-end
-
 function WallRenderer.particleTexture(depth: number, ore: number): string
-	local world = Worlds.of(depth)
-	local tile = Config.art.ores[world.id][ore]
-	return Config.art.materials[if tile and tile.material
-		then tile.material
-		else Config.art.lining[world.id]]
+	local art = Config.art.worlds[Worlds.of(depth).id]
+	local tile = art.slots[ore]
+	return Config.art.blocks[if tile then tile.texture else art.lining]
 end
 
 local directions = {
 	{ face = Enum.NormalId.Back, x = 0, y = 0, d = -1 },
+	{ face = Enum.NormalId.Front, x = 0, y = 0, d = 1 },
 	{ face = Enum.NormalId.Left, x = -1, y = 0, d = 0 },
 	{ face = Enum.NormalId.Right, x = 1, y = 0, d = 0 },
 	{ face = Enum.NormalId.Top, x = 0, y = 1, d = 0 },
 	{ face = Enum.NormalId.Bottom, x = 0, y = -1, d = 0 },
 }
+
+local function sparkle(r: Renderer, cell: Cell, enabled: boolean)
+	local part = cell.part
+	if not enabled then
+		local old = r.sparkles[part]
+		if old then
+			old.emitter:Clear()
+			r.sparkles[part] = nil
+		end
+		return
+	end
+	if r.sparkles[part] then
+		return
+	end
+	local emitter = part:FindFirstChildOfClass("ParticleEmitter")
+	if not emitter then
+		emitter = Instance.new("ParticleEmitter")
+		emitter.Name = "OreSparkles"
+		emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		emitter.Rate, emitter.LightInfluence, emitter.LightEmission = 0, 0, 0.72
+		emitter.Size, emitter.Lifetime, emitter.Speed =
+			NumberSequence.new(0.14), NumberRange.new(0.38, 0.75), NumberRange.new(0.9, 2.1)
+		emitter.SpreadAngle, emitter.LockedToPart = Vector2.new(180, 180), true
+		emitter.Shape, emitter.ShapeStyle, emitter.ShapeInOut =
+			Enum.ParticleEmitterShape.Box,
+			Enum.ParticleEmitterShapeStyle.Surface,
+			Enum.ParticleEmitterShapeInOut.Outward
+		emitter.Parent = part
+	end
+	local interval = 1 + Hash.unit(cell.x, cell.y, cell.d)
+	r.sparkles[part] = { emitter = emitter, interval = interval, nextAt = os.clock() + interval }
+end
+
+function WallRenderer.sparkles(r: Renderer, now: number)
+	for _, glow in r.sparkles do
+		if now >= glow.nextAt then
+			glow.emitter:Emit(if glow.interval >= 1.5 then 3 else 2)
+			glow.nextAt = now + glow.interval
+		end
+	end
+end
 
 local function addCell(
 	r: Renderer,
@@ -225,41 +207,30 @@ local function addCell(
 		if not part then
 			return nil
 		end
-		cell = { part = part, x = x, y = y, d = d, ore = ore, plate = false }
+		cell = { part = part, x = x, y = y, d = d, ore = ore, plate = false, faces = {} }
 		r.cells[key], r.lookup[part] = cell, cell
 	end
 	cell.ore = ore
 	local part = cell.part
-	part.Size = Vector3.one * (S - 0.018)
-	local world = Worlds.of(d)
-	local tile = Config.art.ores[world.id][ore]
-	part.Material, part.MaterialVariant = Enum.Material.SmoothPlastic, ""
-	part.Color = tint(ore, x, y, d)
-	local image = if not tile
-		then nil
-		elseif tile.material then Config.art.materials[tile.material]
-		else Config.art.atlas
-	cell.texture = textureFace(part, image, tile and tile.rect)
-	if cell.texture then
-		local rel = d - win.front
-		local faces = cell.faces or {}
-		table.clear(faces)
-		for _, side in directions do
-			if
-				(rel == 0 and side.d == -1)
-				or layerValue(win, x + side.x, y + side.y, rel + side.d) == 0
-			then
-				table.insert(faces, side.face)
-			end
+	part.Size = Vector3.one * S
+	local art = Config.art.worlds[Worlds.of(d).id]
+	local tile = art.slots[ore]
+	BlockArt.apply(part, if tile then tile.texture else art.lining)
+	local rel = d - win.front
+	sparkle(r, cell, tile ~= nil and tile.glow and rel < SPARK_LAYERS)
+	table.clear(cell.faces)
+	for _, side in directions do
+		if
+			(rel == 0 and side.d == -1)
+			or layerValue(win, x + side.x, y + side.y, rel + side.d) == 0
+		then
+			table.insert(cell.faces, side.face)
 		end
-		cell.faces = faces
-		cell.texture.Face = faces[1] or Enum.NormalId.Back
 	end
 	return cell
 end
 
 function WallRenderer.update(r: Renderer, win: any, visible: number, hidden: number?)
-	r.faceCamera = nil
 	local radius = (win.width - 1) // 2
 	local used: { [number]: boolean } = {}
 	local frontCells: { Cell } = {}
@@ -281,6 +252,7 @@ function WallRenderer.update(r: Renderer, win: any, visible: number, hidden: num
 	for key, cell in r.cells do
 		if not used[key] then
 			r.lookup[cell.part], r.cells[key] = nil, nil
+			sparkle(r, cell, false)
 			r.pool.release(cell.part)
 		elseif cell.part.Parent ~= r.model then
 			cell.part.Parent = r.model
@@ -294,97 +266,10 @@ function WallRenderer.update(r: Renderer, win: any, visible: number, hidden: num
 	r.pulse.Enabled = #frontCells > 0 and #frontCells <= 3
 end
 
-function WallRenderer.textures(r: Renderer, camera: Camera, shift: number, fracturing: boolean)
-	local count = r.pool.used()
-	if count == 0 then
-		return
-	end
-	local eye = camera.CFrame
-	local previous = r.faceCamera
-	-- Particle bursts share the frame with these textured faces during a fracture.
-	local budget = if fracturing then FRACTURE_FACE_BUDGET else FACE_BUDGET
-	local small = count <= budget
-	if
-		previous
-		and r.faceBudget == budget
-		and (
-			(eye.Position - previous.Position).Magnitude < 0.65
-			and eye.LookVector:Dot(previous.LookVector) > 0.997
-			and math.abs(shift - r.faceShift) < S / 2
-		)
-	then
-		return
-	end
-	r.faceCamera, r.faceShift, r.faceBudget = eye, shift, budget
-	local faces = r.faces
-	table.clear(faces)
-	local viewport = camera.ViewportSize
-	for _, cell in r.cells do
-		local gui, exposed = cell.texture, cell.faces
-		if not gui or not exposed then
-			continue
-		end
-		local part = cell.part
-		local best = 0
-		local point = part.Position
-		for _, face in exposed do
-			local normal = r.frame:VectorToWorldSpace(Vector3.FromNormalId(face))
-			local target = part.Position + normal * (S / 2 - 0.034)
-			local ray = eye.Position - target
-			local score = normal:Dot(ray) / math.max(1, ray.Magnitude ^ 3)
-			if score > best then
-				best, point, gui.Face = score, target, face
-			end
-		end
-		local projected = camera:WorldToViewportPoint(point)
-		local border = viewport.Y * S / math.max(1, projected.Z)
-		local seen = best > 0
-			and projected.Z > 0
-			and projected.X >= -border
-			and projected.X <= viewport.X + border
-			and projected.Y >= -border
-			and projected.Y <= viewport.Y + border
-		gui.Enabled = small and seen
-		if not small and seen then
-			table.insert(faces, { gui = gui, part = part, point = point, score = best })
-		end
-	end
-	if small then
-		return
-	end
-
-	-- Give the texture budget to faces with visible screen area first.
-	table.sort(faces, function(a, b)
-		return a.score > b.score
-	end)
-	local enabled = 0
-	for _, face in faces do
-		local hit = workspace:Raycast(eye.Position, face.point - eye.Position, r.faceRay)
-		if hit and hit.Instance == face.part then
-			face.gui.Enabled = true
-			enabled += 1
-			if enabled == budget then
-				return
-			end
-		end
-	end
-	-- A face with its center covered can still show along the edge of a narrow opening.
-	for _, face in faces do
-		if not face.gui.Enabled then
-			face.gui.Enabled = true
-			enabled += 1
-			if enabled == budget then
-				break
-			end
-		end
-	end
-end
-
 function WallRenderer.clear(r: Renderer)
-	r.faceCamera = nil
-	table.clear(r.faces)
 	for key, cell in r.cells do
 		r.cells[key], r.lookup[cell.part] = nil, nil
+		sparkle(r, cell, false)
 		r.pool.release(cell.part)
 	end
 	r.pulse.Enabled = false
@@ -415,7 +300,10 @@ function WallRenderer.plate(
 	local width, height = win.width * S, win.height * S
 	local face = r.frame * CFrame.new(0, height / 2, -distance)
 	body.CFrame, body.Size = face * CFrame.new(0, 0, -S / 2), Vector3.new(width, height, S)
-	body.Color = tint(Wire.PLATE, 0, 0, display.depth):Lerp(white, flash * 0.55)
+	local color = Worlds.of(display.depth).color
+	body.Color = Color3.fromRGB(color[1], color[2], color[3])
+		:Lerp(Color3.new(0.1, 0.12, 0.18), 0.42)
+		:Lerp(white, flash * 0.55)
 	local relative = display.depth - win.front
 	body.CanQuery = relative >= 0 and relative < Config.mine.window
 	r.lookup[body] = if body.CanQuery

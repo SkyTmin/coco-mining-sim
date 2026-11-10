@@ -112,6 +112,12 @@ if (includeMaterials) {
   const variants = Object.entries(materialTree)
     .filter(([, node]) => node?.$className === "MaterialVariant");
   lua.push("local materials = game:GetService(\"MaterialService\")");
+  lua.push("local currentVariants = {" + variants.map(([name]) => "[" + JSON.stringify(name) + "] = true").join(", ") + "}");
+  lua.push("for _, variant in materials:GetChildren() do",
+    "  if variant:IsA(\"MaterialVariant\") and variant.Name:match(\"^COCOMine_\") and not currentVariants[variant.Name] then",
+    "    variant:Destroy()",
+    "  end",
+    "end");
   for (const [name, { $properties: { BaseMaterial, ColorMap, StudsPerTile } }] of variants) {
     lua.push([
       "do",

@@ -8,9 +8,12 @@ local Worlds = require(Shared.Mine.Worlds)
 local BlockArt = require(script.Parent.BlockArt)
 
 local S = Config.mine.blockSize
-local WIDTH = Config.mine.startWidth * S + 0.6
+local WIDTH = Config.mine.startWidth * S
 local ENTRANCE_WIDTH = Config.plots.frameWidth * S
 local HEIGHT = Config.mine.height * S
+local CUBE = Vector3.one * S
+-- Keep the decorative floor above the existing collision plane.
+local FLOOR_Y = -S / 2 + 0.035
 local depthConfig = Config.fx.depth
 local LENGTH = depthConfig.fogEnd
 local SIMPLE_FROM = depthConfig.simpleFrom
@@ -48,19 +51,56 @@ local function colorOf(world: Worlds.World): Color3
 	return Color3.fromRGB(world.color[1], world.color[2], world.color[3])
 end
 
+local function tileGrid(t: any, width: number)
+	if t.grid then
+		t.grid:Destroy()
+	end
+	local grid = Instance.new("Folder")
+	grid.Name, t.grid = "TunnelBlocks", grid
+	local rock = t.rock or Config.art.worlds[Config.worlds[1].id].lining
+	local function cube(name: string, x: number, y: number, depth: number, texture: string)
+		local tile = part(grid, name, CUBE, t.frame * CFrame.new(x, y, -depth), Color3.new(1, 1, 1))
+		BlockArt.apply(tile, texture)
+	end
+	local radius = (width / S - 1) / 2
+	for depth = S / 2, SIMPLE_FROM - S / 2, S do
+		for x = -radius, radius do
+			cube("FloorBlock", x * S, FLOOR_Y, depth, rock)
+			cube("CeilingBlock", x * S, HEIGHT + S / 2, depth, rock)
+		end
+		for _, side in { -1, 1 } do
+			for y = S / 2, HEIGHT - S / 2, S do
+				cube("WallBlock", side * (width + S) / 2, y, depth, rock)
+			end
+		end
+	end
+	if t.platform then
+		local platformRadius = (ENTRANCE_WIDTH / S - 1) / 2
+		for depth = -S / 2, -t.platform.Size.Z + S / 2, -S do
+			for x = -platformRadius, platformRadius do
+				cube("PlatformBlock", x * S, FLOOR_Y, depth, t.platformArt or "planks")
+			end
+		end
+	end
+	grid.Parent = t.model
+end
+
 function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 	local model = Instance.new("Folder")
 	model.Name, model.Parent = "MineTunnel", parent
 	local gray, trim = Color3.fromRGB(64, 66, 72), Color3.fromRGB(98, 107, 120)
-	local spans, edges, jambs, walls, details = {}, {}, {}, {}, {}
+	local spans, edges, walls, details = {}, {}, {}, {}
 	local platform: BasePart? = nil
 	local frameParts = {}
 	for _, part in plot:GetChildren() do
 		if part:IsA("BasePart") then
 			if part.Name == "Platform" then
 				platform = part
+				part.LocalTransparencyModifier = 1
 			end
-			if part.Name == "FrameSide" or part.Name == "FrameTop" then
+			if part.Name == "FrameTop" then
+				part.LocalTransparencyModifier = 1
+			elseif part.Name == "FrameSide" then
 				table.insert(frameParts, part)
 			end
 		end
@@ -87,19 +127,19 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 		end
 		return p
 	end
-	for start = 0, LENGTH - 1, SEGMENT do
+	for start = SIMPLE_FROM, LENGTH - 1, SEGMENT do
 		local length = math.min(SEGMENT, LENGTH - start)
 		table.insert(
 			spans,
-			fixed("Floor", Vector3.new(WIDTH, 1, length), 0, -0.55, start + length / 2, gray)
+			fixed("Floor", Vector3.new(WIDTH, S, length), 0, FLOOR_Y, start + length / 2, gray)
 		)
 		table.insert(
 			spans,
 			fixed(
 				"Ceiling",
-				Vector3.new(WIDTH, 1, length),
+				Vector3.new(WIDTH, S, length),
 				0,
-				HEIGHT + 0.5,
+				HEIGHT + S / 2,
 				start + length / 2,
 				gray
 			)
@@ -107,11 +147,11 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 		for _, side in { -1, 1 } do
 			table.insert(edges, {
 				side = side,
-				extra = 0.5,
+				extra = S / 2,
 				part = fixed(
 					"Wall",
-					Vector3.new(1, HEIGHT, length),
-					side * (WIDTH / 2 + 0.5),
+					Vector3.new(S, HEIGHT, length),
+					side * (WIDTH / 2 + S / 2),
 					HEIGHT / 2,
 					start + length / 2,
 					gray
@@ -119,21 +159,6 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 			})
 		end
 	end
-	local sideWidth = math.max(0.05, (ENTRANCE_WIDTH - WIDTH) / 2)
-	for _, side in { -1, 1 } do
-		table.insert(jambs, {
-			side = side,
-			part = fixed(
-				"Wall",
-				Vector3.new(sideWidth, HEIGHT, 1.1),
-				side * (WIDTH + sideWidth) / 2,
-				HEIGHT / 2,
-				0.55,
-				gray
-			),
-		})
-	end
-	fixed("Wall", Vector3.new(ENTRANCE_WIDTH, HEIGHT, 1.1), 0, HEIGHT * 1.5, 0.55, gray)
 	local lamps = {}
 	local function addSupport(depth: number, spacing: number)
 		table.insert(
@@ -143,7 +168,7 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 		local lamp = fixed("Lamp", Vector3.new(3, 0.3, 0.65), 0, HEIGHT - 0.7, depth, LAMP, true)
 		table.insert(lamps, { part = lamp, depth = depth, spacing = spacing })
 	end
-	for depth = 7, SIMPLE_FROM - 1, NEAR_SPACING do
+	for depth = -S / 2, SIMPLE_FROM - 1, 4 * S do
 		for _, side in { -1, 1 } do
 			table.insert(edges, {
 				side = side,
@@ -186,21 +211,6 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 	moving.Name, moving.Parent = "MineDepth", parent
 	local mass = part(moving, "FarOreMass", Vector3.one, frame, gray, Enum.Material.Slate)
 	local face = part(moving, "SurvivorFace", Vector3.one, frame, LAMP, Enum.Material.Neon)
-	local tape = part(moving, "DepthTape", Vector3.one, frame, trim, Enum.Material.Metal)
-	local mask = Instance.new("SurfaceGui")
-	mask.Name, mask.Face, mask.SizingMode =
-		"FarOpeningMask", Enum.NormalId.Back, Enum.SurfaceGuiSizingMode.FixedSize
-	mask.CanvasSize, mask.LightInfluence, mask.Parent = Vector2.new(448, 192), 0, mass
-	local maskRows = {}
-	for i = 1, Config.mine.height do
-		local strip = Instance.new("ImageLabel")
-		strip.Name, strip.Image, strip.BackgroundTransparency = "Row" .. i, Config.art.atlas, 1
-		strip.Size, strip.Position =
-			UDim2.fromScale(1, 1 / Config.mine.height),
-			UDim2.fromScale(0, (i - 1) / Config.mine.height)
-		strip.ResampleMode, strip.Parent = Enum.ResamplerMode.Pixelated, mask
-		maskRows[i] = strip
-	end
 	local ticks = {}
 	local tickCount = math.ceil((SIMPLE_FROM + 2) / (10 * S))
 	for i = 1, tickCount do
@@ -215,12 +225,12 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 	end
 
 	local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
-	return {
+	local tunnel = {
+		model = model,
 		frame = frame,
 		width = WIDTH,
 		spans = spans,
 		edges = edges,
-		jambs = jambs,
 		walls = walls,
 		platform = platform,
 		frameParts = frameParts,
@@ -229,12 +239,9 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 		tweens = {},
 		mass = mass,
 		face = face,
-		tape = tape,
 		ticks = ticks,
 		wave = wave,
 		lamps = lamps,
-		mask = mask,
-		maskRows = maskRows,
 		glow = glow,
 		active = false,
 		original = {
@@ -249,10 +256,12 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 		atmosphere = atmosphere,
 		density = if atmosphere then atmosphere.Density else 0,
 	}
+	tileGrid(tunnel, WIDTH)
+	return tunnel
 end
 
 function Tunnel.width(t: any, blocks: number)
-	local width = blocks * S + 0.6
+	local width = blocks * S
 	if width == t.width then
 		return
 	end
@@ -266,13 +275,7 @@ function Tunnel.width(t: any, blocks: number)
 		p.CFrame = t.frame
 			* CFrame.new(edge.side * (width / 2 + edge.extra), relative.Y, relative.Z)
 	end
-	local sideWidth = math.max(0.05, (ENTRANCE_WIDTH - width) / 2)
-	for _, jamb in t.jambs do
-		jamb.part.Transparency = if width >= ENTRANCE_WIDTH then 1 else 0
-		jamb.part.Size = Vector3.new(sideWidth, HEIGHT, 1.1)
-		jamb.part.CFrame = t.frame
-			* CFrame.new(jamb.side * (width + sideWidth) / 2, HEIGHT / 2, -0.55)
-	end
+	tileGrid(t, width)
 	t.glow.Size = Vector3.new(width * 0.8, HEIGHT * 0.8, 0.2)
 	t.decorationWorld = nil
 end
@@ -365,32 +368,37 @@ function Tunnel.atmosphere(t: any, active: boolean, front: number, quality: numb
 				(instance :: any)[key] = value
 			end
 		end
-		t.lampColor = if look then rgb(look.lamp) else LAMP
+		local art = Config.art.worlds[world.id]
+		BlockArt.preload(world.id, world.index == 1)
+		t.lampColor = Color3.fromHex(art.light)
 		paint(
 			Lighting,
 			"FogColor",
 			if look then rgb(look.fog) else colorOf(world):Lerp(Color3.fromRGB(34, 37, 51), 0.65)
 		)
 		paint(t.glow, "Color", if look then rgb(look.glow) else colorOf(Worlds.of(world.finish)))
-		local rock = Config.art.lining[world.id]
+		local rock = art.lining
+		t.rock, t.platformArt = rock, if world.index == 1 then "planks" else rock
 		for _, wall in t.walls do
 			BlockArt.apply(wall, rock)
 		end
-		BlockArt.apply(t.mass, rock)
-		if t.platform then
-			BlockArt.apply(t.platform, rock)
+		for _, tile in t.grid:GetChildren() do
+			BlockArt.apply(tile, if tile.Name == "PlatformBlock" then t.platformArt else rock)
 		end
-		for _, part in t.frameParts do
-			BlockArt.apply(part, if part.Name == "FrameTop" then "planks" else "oak_log")
+		BlockArt.apply(t.mass, rock)
+		for _, side in t.frameParts do
+			BlockArt.apply(side, rock)
 		end
 		for _, beam in t.spans do
 			if beam.Name == "Arch" then
-				BlockArt.apply(beam, "planks")
+				BlockArt.apply(beam, "beam")
+				beam.Transparency = if world.index == 1 then 0 else 1
 			end
 		end
 		for _, entry in t.edges do
 			if entry.part.Name == "Arch" then
-				BlockArt.apply(entry.part, "oak_log")
+				BlockArt.apply(entry.part, "beam")
+				entry.part.Transparency = if world.index == 1 then 0 else 1
 			end
 		end
 		for _, lamp in t.lamps do
@@ -431,21 +439,6 @@ function Tunnel.moves(
 	local massLength = math.min(SEGMENT, LENGTH - start)
 	t.mass.Size = Vector3.new(width, height - 0.06, massLength)
 	move(t.mass, 0, height / 2, start + massLength / 2)
-	local last = win.layers[visible]
-	t.mask.Enabled = visible > 0 and last ~= nil and not survivor
-	if t.mask.Enabled then
-		for i, strip in t.maskRows do
-			local row, bits = win.height - i, 0
-			for column = 0, win.width - 1 do
-				if last[column * win.height + row + 1] == 0 then
-					bits += 2 ^ column
-				end
-			end
-			strip.Visible = bits > 0
-			strip.ImageRectOffset = Vector2.new(bits % 16 * 16, 256 + bits // 16 * 4)
-			strip.ImageRectSize = Vector2.new(win.width * 2, 2)
-		end
-	end
 	local showFace = survivor and plateDistance ~= offset
 	t.face.Transparency = if showFace then 0.16 else 1
 	if showFace then
@@ -455,9 +448,6 @@ function Tunnel.moves(
 	end
 
 	local markerSpacing = 10 * S
-	local tapeStart = (offset - (win.front % 10) * S) % markerSpacing - markerSpacing - 2
-	t.tape.Size = Vector3.new(4.2, 0.06, SIMPLE_FROM + markerSpacing + 2)
-	move(t.tape, 0, -0.01, tapeStart + t.tape.Size.Z / 2)
 	local n = math.max(0, math.ceil((win.front + (-2 - offset) / S) / 10) * 10)
 	local depth = offset + (n - win.front) * S
 	for _, tick in t.ticks do

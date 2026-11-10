@@ -31,44 +31,69 @@ Test.describe("Config", function()
 		expect(decisions.progress).toBe(nil)
 		expect(decisions.mine.ultCharge).toBe(nil)
 	end)
-	Test.it("ships the prison texture IDs, ten cracks and all fifty ore slots", function()
-		local config = Loader.load("src/shared/Config")
-		local textures = serde.decode("json", fs.readFile("assets/textures/ids.json"))
-		assert(textures.atlas:match("^rbxassetid://[1-9]%d*$"))
-		expect(config.art.atlas).toBe(textures.atlas)
-		expect(#textures.cracks).toBe(10)
-		expect(config.art.cracks).toEqual(textures.cracks)
-		for name, id in textures.materials do
-			assert(id:match("^rbxassetid://[1-9]%d*$"), name)
-			expect(config.art.materials[name]).toBe(id)
-		end
-		local map = serde.decode("json", fs.readFile("assets/textures/blocks/map.json"))
-		local newTiles = 0
-		for i, world in config.worlds do
-			expect(map.worlds[i].world).toBe(world.id)
-			expect(#config.art.ores[world.id]).toBe(5)
-			expect(config.art.lining[world.id]).toBe(map.worlds[i].lining)
-			for j, slot in map.worlds[i].slots do
-				expect(slot.ore).toBe(world.ores[j][1])
-				local actual = config.art.ores[world.id][j]
-				if slot.texture then
-					newTiles += 1
-					local png =
-						fs.readFile("assets/textures/blocks/prison/" .. slot.texture .. ".png")
-					expect(png:sub(17, 24)).toBe(string.char(0, 0, 0, 16, 0, 0, 0, 16))
-					expect(actual.rect).toEqual(slot.rect)
-				else
-					expect(actual.material).toBe(slot.material)
+	Test.it(
+		"ships verified Claude PNG IDs, four cracks and all world slots and variants",
+		function()
+			local config = Loader.load("src/shared/Config")
+			local strings = Loader.load("src/shared/Strings")
+			local assets = serde.decode("json", fs.readFile("assets/blocks/ids.json")).assets
+			local manifest = serde.decode("json", fs.readFile("assets/blocks/manifest.json"))
+			local count = 0
+			local function checkTexture(name: string)
+				local file = name .. ".png"
+				local receipt = assets[file]
+				assert(receipt and receipt.id:match("^rbxassetid://[1-9]%d*$"), file)
+				assert(receipt.sha256:match("^[a-f0-9]+$") and #receipt.sha256 == 64, file)
+				expect(config.art.blocks[name]).toBe(receipt.id)
+				local png = fs.readFile("assets/blocks/upload/" .. file)
+				local size = if name == "beam"
+						or name == "planks"
+						or name:match("^crack_")
+					then 64
+					else 128
+				expect(png:sub(17, 24)).toBe(string.char(0, 0, 0, size, 0, 0, 0, size))
+			end
+			for file in assets do
+				checkTexture(file:sub(1, -5))
+				count += 1
+			end
+			expect(count).toBe(216)
+			expect(#config.art.cracks).toBe(4)
+			for i, id in config.art.cracks do
+				expect(id).toBe(config.art.blocks["crack_" .. i])
+			end
+			expect(config.art.variantOdds).toEqual(manifest.variants)
+			for i, world in config.worlds do
+				local source = manifest.worlds[i]
+				expect(world.id).toBe(source.id)
+				expect(strings.t("world_" .. world.id, "ru")).toBe(source.name)
+				local art = config.art.worlds[world.id]
+				expect(art.lining).toBe(source.lining)
+				expect(art.light).toBe(source.light)
+				expect(#art.slots).toBe(5)
+				checkTexture(art.lining)
+				local blocks = { source.rock, table.unpack(source.ores) }
+				for slot, block in blocks do
+					expect(world.ores[slot][1]).toBe(block.id)
+					expect(strings.t("ore_" .. block.id, "ru")).toBe(block.name)
+					local entry = art.slots[slot]
+					expect(entry.texture).toBe(block.texture)
+					expect(entry.variants).toEqual(block.variants)
+					expect(entry.glow).toBe(block.glow == true)
+					checkTexture(entry.texture)
+					for _, variant in entry.variants do
+						checkTexture(variant)
+					end
 				end
 			end
+			expect(config.worlds[10].id).toBe("magma_springs")
+			expect(config.art.worlds.meadow.slots[4].texture).toBe("copper")
+			expect(config.art.worlds.copper_caves.slots[2].texture).toBe("copper_w2")
+			expect(config.plots.frameWidth).toBe(7)
+			expect(#config.progress.widths).toBe(2)
+			expect(config.progress.widths[2].w).toBe(7)
 		end
-		expect(newTiles).toBe(14)
-		local atlas = fs.readFile("assets/textures/prison-1024.png")
-		expect(atlas:sub(17, 24)).toBe(string.char(0, 0, 4, 0, 0, 0, 4, 0))
-		expect(config.plots.frameWidth).toBe(7)
-		expect(#config.progress.widths).toBe(2)
-		expect(config.progress.widths[2].w).toBe(7)
-	end)
+	)
 	Test.it("rejects simulation overrides for production config", function()
 		for _, name in { "G", "V", "HARD", "CUPS", "ULT" } do
 			local result = process.exec(

@@ -184,7 +184,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			or player:GetAttribute("MineSettingsOpen") == true
 	end
 	local function canControl(): boolean
-		return active and not menuOpen()
+		return active and not menuOpen() and player:GetAttribute("MineUpgradesOpen") ~= true
 	end
 	local function canHit(): boolean
 		return canControl() and window ~= nil and ride == nil
@@ -622,7 +622,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 	end
 	hud.eye.Activated:Connect(toggle)
-	hud.focus.Activated:Connect(faceWall)
+	hud.focusInput.Activated:Connect(faceWall)
 	hud.ult.Activated:Connect(function()
 		request("Ability", nil)
 	end)
@@ -802,14 +802,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					visible,
 					pending and pending.impacted and pending.hidden or nil
 				)
-				Break.cracks(breaking, r, renderWindow, State.cellKey)
+				Break.cracks(breaking, r, renderWindow, State.cellKey, pick().strength)
 			else
 				Wall.clear(r)
+				Break.clear(breaking)
 			end
 			lastShown, lastVisible = shown, visible
 		end
 		if phase == "windup" then
-			Break.cracks(breaking, r, shown, State.cellKey, progress, color)
+			Break.cracks(breaking, r, shown, State.cellKey, pick().strength, progress, color)
 		end
 		local sceneWindow = shown or window
 		local plate = Ride.plate(
@@ -869,7 +870,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			local keyHint = if UserInputService.TouchEnabled or v.mode ~= "first"
 				then ""
 				else " · R"
-			hud.focus.Text = translate("mine_face_wall") .. keyHint
+			hud.focusText.Text = translate("mine_face_wall") .. keyHint
 		end
 		local equipped = pick()
 		local cap = equipped.ultCharge
@@ -885,9 +886,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			cap
 		)
 		local camera = workspace.CurrentCamera
-		if camera then
-			Wall.textures(r, camera, offset, phase == "fracture")
-		end
+		Wall.sparkles(r, now)
 		local aimed: any = nil
 		if camera and canHit() then
 			if UserInputService.TouchEnabled then

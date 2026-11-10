@@ -2,6 +2,7 @@
 // Usage: node scripts/build-configs.mjs [--input <path>]
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 import {
   mine as balanceMine, worlds as balanceWorlds, oreSlots, hitSizes, rarities,
   pickLevel, gold, cards, cardGrowth, cardEffects,
@@ -14,8 +15,9 @@ if (whatIf.length) {
 }
 
 const readArt = (file) => JSON.parse(readFileSync(new URL("../assets/" + file, import.meta.url), "utf8"));
-const textureIds = readArt("textures/ids.json");
-const oreMap = readArt("textures/blocks/map.json");
+const blockManifest = readArt("blocks/manifest.json");
+const blockIds = readArt("blocks/ids.json").assets;
+const crackNames = ["crack_1", "crack_2", "crack_3", "crack_4"];
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const isPositive = (n) => Number.isFinite(n) && n > 0;
 const isPositiveInteger = (n) => Number.isSafeInteger(n) && n > 0;
@@ -70,60 +72,59 @@ function validateOres(data) {
   return errors;
 }
 
-function validRect(rect) {
-  return Array.isArray(rect) && rect.length === 4 && rect.every(Number.isInteger) &&
-    rect[0] >= 0 && rect[1] >= 0 && rect[2] > 0 && rect[3] > 0 &&
-    rect[0] + rect[2] <= 1024 && rect[1] + rect[3] <= 1024;
-}
-
 const imageId = (id) => typeof id === "string" && /^rbxassetid:\/\/[1-9]\d*$/.test(id);
-const pngExists = (name) => {
-  try {
-    const png = readFileSync(new URL("../assets/textures/blocks/prison/" + name + ".png", import.meta.url));
-    return png.readUInt32BE(16) === 16 && png.readUInt32BE(20) === 16;
-  } catch {
-    return false;
-  }
-};
 
-function validateArt(_art, decisions) {
+function validateArt(art, decisions) {
   const errors = [];
-  if (!imageId(textureIds.atlas)) errors.push("assets/textures/ids.json requires the approved prison atlas");
-  const materials = textureIds.materials ?? {};
-  if (!isObject(textureIds.materials) || !Object.entries(materials).every(([name, id]) => isId(name) && imageId(id))) {
-    errors.push("prison materials require nonempty original Roblox IDs");
+  if (!Array.isArray(blockManifest.worlds) || blockManifest.worlds.length !== balanceWorlds.length) {
+    return ["assets/blocks/manifest.json must define all ten worlds"];
   }
-  if (!Array.isArray(textureIds.cracks) || textureIds.cracks.length !== 10 ||
-      !textureIds.cracks.every(imageId) || new Set(textureIds.cracks).size !== 10) {
-    errors.push("prison cracks require ten distinct original Roblox IDs");
+  const variants = ["golden", "rainbow", "cosmic"];
+  if (Object.keys(blockManifest.variants).length !== variants.length ||
+      !variants.every((name) => isPositiveInteger(blockManifest.variants[name]))) {
+    errors.push("block variants must define the three positive rarity denominators");
   }
-  if (![materials.oak_log, materials.planks].every(imageId)) errors.push("missing timber support textures");
-  if (!Array.isArray(oreMap.worlds) || oreMap.worlds.length !== balanceWorlds.length) {
-    errors.push("assets/textures/blocks/map.json must map all ten worlds");
-    return errors;
+  const shared = new Set(["beam", "planks", ...crackNames]);
+  const expected = new Set(shared);
+  for (const [i, world] of blockManifest.worlds.entries()) {
+    const canonical = balanceWorlds[i];
+    const input = decisions.worlds?.[i];
+    const blocks = [world.rock, ...world.ores];
+    if (world.world !== i + 1 || world.name !== canonical.name || input?.id !== world.id ||
+        !isId(world.lining) || !/^#[0-9a-f]{6}$/i.test(world.light) || blocks.length !== oreSlots.length) {
+      errors.push("Invalid block world " + (i + 1));
+    }
+    expected.add(world.lining);
+    for (const [j, block] of blocks.entries()) {
+      if (!isId(block.texture) || block.id !== input?.ores?.[j]?.[0] || block.name !== canonical.ores[j] ||
+          !variants.every((variant) => isId(block.variants?.[variant]))) {
+        errors.push("Invalid block in " + world.id + " slot " + (j + 1));
+      }
+      expected.add(block.texture);
+      for (const variant of variants) expected.add(block.variants?.[variant]);
+    }
   }
-  const seen = new Set();
-  for (const [i, world] of (Array.isArray(decisions.worlds) ? decisions.worlds : []).entries()) {
-    const mapped = oreMap.worlds[i];
-    if (mapped?.world !== world?.id || !Array.isArray(world?.ores) || !imageId(materials[mapped?.lining]) || !Array.isArray(mapped?.slots) ||
-        mapped.slots.length !== world.ores.length) {
-      errors.push(`Invalid ore art for worlds[${i}]`);
+  if (Object.keys(art.blocks).length !== expected.size) {
+    errors.push("The block ID registry must contain every PNG from the manifest and no obsolete files");
+  }
+  for (const name of expected) {
+    if (!isId(name)) continue;
+    const file = name + ".png";
+    const receipt = blockIds[file];
+    let bytes;
+    try {
+      bytes = readFileSync(new URL("../assets/blocks/upload/" + file, import.meta.url));
+    } catch {
+      errors.push("Missing Claude texture " + file);
       continue;
     }
-    for (const [j, slot] of mapped.slots.entries()) {
-      const original = !slot.rect && imageId(materials[slot.material]);
-      const key = slot.rect?.slice(0, 2).join(",");
-      const newTile = i < 3 && !slot.material && slot.texture === world.id + "_" + slot.ore &&
-        validRect(slot.rect) && slot.rect[2] === 64 && slot.rect[3] === 64 &&
-        slot.rect[0] % 64 === 0 && slot.rect[1] % 64 === 0 &&
-        slot.rect[0] < 256 && slot.rect[1] < 256 && !seen.has(key) && pngExists(slot.texture);
-      if (newTile) seen.add(key);
-      if (slot.ore !== world.ores[j][0] || (!original && !newTile)) {
-        errors.push(`Invalid texture for worlds[${i}].ores[${j}]`);
-      }
+    const hash = createHash("sha256").update(bytes).digest("hex");
+    const size = shared.has(name) ? 64 : 128;
+    if (bytes.length < 24 || bytes.readUInt32BE(16) !== size || bytes.readUInt32BE(20) !== size ||
+        !imageId(receipt?.id) || receipt?.sha256 !== hash) {
+      errors.push("Missing or stale upload ID for " + file);
     }
   }
-  if (seen.size !== 14) errors.push("worlds 1–3 require fourteen new 16×16 tiles");
   return errors;
 }
 
@@ -284,13 +285,18 @@ function withBalance(input) {
     ...input.pickaxes,
     ...Object.fromEntries(rarities.slice(1).map(({ id }) => ["plain_" + id, { rarity: id }])),
   };
+  const blocks = Object.fromEntries(Object.entries(blockIds).map(([file, { id }]) => [file.slice(0, -4), id]));
   const art = {
-    atlas: textureIds.atlas,
-    materials: textureIds.materials,
-    cracks: textureIds.cracks,
-    ores: Object.fromEntries(oreMap.worlds.map(({ world, slots }) =>
-      [world, slots.map(({ material, rect }) => material ? { material } : { rect })])),
-    lining: Object.fromEntries(oreMap.worlds.map(({ world, lining }) => [world, lining])),
+    blocks,
+    cracks: crackNames.map((name) => blocks[name]),
+    variantOdds: blockManifest.variants,
+    worlds: Object.fromEntries(blockManifest.worlds.map((world) => [world.id, {
+      lining: world.lining,
+      light: world.light,
+      slots: [world.rock, ...world.ores].map(({ texture, variants, glow }) => ({
+        texture, variants, glow: glow === true,
+      })),
+    }])),
   };
   return { ...input, mine, worlds, pickaxes, progress, art };
 }
@@ -464,13 +470,17 @@ for (const { name, emit } of sections) {
 
 
 const materialTree = { $className: "MaterialService" };
-const liningMaterials = new Set([...Object.values(decisions.art.lining), "oak_log", "planks"]);
-for (const name of [...liningMaterials].sort()) {
+const materials = new Set(["beam", "planks"]);
+for (const world of Object.values(decisions.art.worlds)) {
+  materials.add(world.lining);
+  for (const slot of world.slots) materials.add(slot.texture);
+}
+for (const name of [...materials].sort()) {
   materialTree["COCOMine_" + name] = {
     $className: "MaterialVariant",
     $properties: {
       BaseMaterial: "SmoothPlastic",
-      ColorMap: decisions.art.materials[name],
+      ColorMap: decisions.art.blocks[name],
       StudsPerTile: decisions.mine.blockSize,
     },
   };

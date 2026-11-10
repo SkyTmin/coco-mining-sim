@@ -4,32 +4,12 @@ local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local ProfileState = require(script.Parent.ProfileState)
 local UserInputService = game:GetService("UserInputService")
+local Candy = require(script.Parent.Ui.Candy)
 
 type Translate = (string, ...any) -> string
 local CreativeWindow = {}
 
 local MAX_LOG_ROWS = 40
-local PANEL_COLOR = Color3.fromRGB(18, 32, 60)
-local BUTTON_COLOR = Color3.fromRGB(41, 66, 109)
-local TEXT_COLOR = Color3.fromRGB(240, 245, 255)
-
-local function button(parent: Instance, size: UDim2, position: UDim2): TextButton
-	local item = Instance.new("TextButton")
-	item.Size = size
-	item.Position = position
-	item.BackgroundColor3 = BUTTON_COLOR
-	item.BorderSizePixel = 0
-	item.Font = Enum.Font.GothamMedium
-	item.TextColor3 = TEXT_COLOR
-	item.TextSize = 13
-	item.TextScaled = true
-	local limit = Instance.new("UITextSizeConstraint")
-	limit.MinTextSize, limit.MaxTextSize, limit.Parent = 9, 14, item
-	item.Text = ""
-	item.Parent = parent
-	return item
-end
-
 function CreativeWindow.start(
 	player: Player,
 	playerGui: Instance,
@@ -37,56 +17,57 @@ function CreativeWindow.start(
 	creative: RemoteEvent,
 	serverLog: RemoteEvent
 )
-	local gui = Instance.new("ScreenGui")
-	gui.Name = "Creative"
-	gui.ResetOnSpawn = false
-	gui.Enabled = false
-	gui.DisplayOrder = 12
-
-	local open = button(gui, UDim2.fromOffset(118, 32), UDim2.new(1, -75, 0, 8))
-	open.AnchorPoint = Vector2.new(1, 0)
-
-	local panel = Instance.new("Frame")
-	panel.AnchorPoint = Vector2.new(1, 0)
-	panel.Position = UDim2.new(1, -12, 0, 48)
-	panel.Size = UDim2.new(0.9, 0, 1, -64)
-	panel.BackgroundColor3 = PANEL_COLOR
-	panel.BorderSizePixel = 0
-	panel.Visible = false
-	panel.Parent = gui
-
-	local constraint = Instance.new("UISizeConstraint")
-	constraint.MaxSize = Vector2.new(420, 400)
-	constraint.Parent = panel
-	local padding = Instance.new("UIPadding")
-	padding.PaddingTop = UDim.new(0, 8)
-	padding.PaddingBottom = UDim.new(0, 8)
-	padding.PaddingLeft = UDim.new(0, 8)
-	padding.PaddingRight = UDim.new(0, 8)
-	padding.Parent = panel
+	local gui = Candy.layer(playerGui, "CreativeHUD", 6)
+	gui.Visible = false
+	local open = Candy.button(
+		gui,
+		"OpenCreative",
+		UDim2.fromOffset(102, 23),
+		UDim2.new(1, -15, 0, 73),
+		"neutral",
+		12
+	)
+	open.box.AnchorPoint = Vector2.new(1, 0)
+	local modal = Candy.modal(
+		playerGui,
+		"Creative",
+		UDim2.fromScale(0.78, 0.77),
+		Candy.purple,
+		function(show)
+			player:SetAttribute("MineMenuOpen", show)
+		end
+	)
+	local panel = modal.panel
 
 	local controls = Instance.new("ScrollingFrame")
-	controls.Size = UDim2.fromScale(1, 0.76)
+	Candy.fit(controls, UDim2.new(1, -24, 0.67, 0), UDim2.fromOffset(12, 25))
 	controls.BackgroundTransparency, controls.BorderSizePixel = 1, 0
 	controls.ScrollBarThickness = 4
 	controls.CanvasSize = UDim2.fromOffset(0, 0)
 	controls.AutomaticCanvasSize = Enum.AutomaticSize.Y
 	controls.Parent = panel
-	local function slot(index: number): TextButton
+	local function slot(index: number): Candy.Control
 		local column, row = index % 4, index // 4
-		return button(controls, UDim2.new(0.25, -5, 0, 31), UDim2.new(column / 4, 0, 0, row * 35))
+		return Candy.button(
+			controls,
+			"CreativeControl" .. index,
+			UDim2.new(0.25, -9, 0, 32),
+			UDim2.new(column / 4, 2, 0, row * 37),
+			"neutral",
+			14
+		)
 	end
 	local toggle, coins10, coins1000, reset = slot(0), slot(1), slot(2), slot(3)
-	toggle.Activated:Connect(function()
+	toggle.input.Activated:Connect(function()
 		creative:FireServer("toggle")
 	end)
-	coins10.Activated:Connect(function()
+	coins10.input.Activated:Connect(function()
 		creative:FireServer("coins", 10)
 	end)
-	coins1000.Activated:Connect(function()
+	coins1000.input.Activated:Connect(function()
 		creative:FireServer("coins", 1000)
 	end)
-	reset.Activated:Connect(function()
+	reset.input.Activated:Connect(function()
 		creative:FireServer("mine.reset")
 	end)
 	local operations = {
@@ -99,10 +80,10 @@ function CreativeWindow.start(
 		{ "mine_charge", "mine.charge" },
 		{ "mine_stats", "mine.stats" },
 	}
-	local operationButtons: { TextButton } = {}
+	local operationButtons: { Candy.Control } = {}
 	for i, op in operations do
 		local control = slot(i + 3)
-		control.Activated:Connect(function()
+		control.input.Activated:Connect(function()
 			creative:FireServer(table.unpack(op, 2))
 		end)
 		operationButtons[i] = control
@@ -110,34 +91,29 @@ function CreativeWindow.start(
 
 	local selectedWorld = 1
 	local level, minus, plus, maxLevel = slot(12), slot(13), slot(14), slot(15)
-	minus.Text, plus.Text = "−1", "+1"
+	minus.text.Text, plus.text.Text = "−1", "+1"
 	for control, change in { [minus] = -1, [plus] = 1, [maxLevel] = 0 } do
-		control.Activated:Connect(function()
+		control.input.Activated:Connect(function()
 			creative:FireServer("mine.level", change)
 		end)
 	end
 	local world, nextWorld, depth, beforePlate = slot(16), slot(17), slot(18), slot(19)
-	nextWorld.Text = "→"
-	nextWorld.Activated:Connect(function()
+	nextWorld.text.Text = "→"
+	nextWorld.input.Activated:Connect(function()
 		selectedWorld = selectedWorld % #Config.worlds + 1
-		world.Text = translate("creative_depth_world", selectedWorld)
+		world.text.Text = translate("creative_depth_world", selectedWorld)
 	end)
-	depth.Activated:Connect(function()
+	depth.input.Activated:Connect(function()
 		creative:FireServer("mine.depth", selectedWorld)
 	end)
-	beforePlate.Activated:Connect(function()
+	beforePlate.input.Activated:Connect(function()
 		creative:FireServer("mine.depth", selectedWorld, true)
 	end)
-	local performance = Instance.new("TextLabel")
-	performance.Position, performance.Size = UDim2.fromScale(0, 0.76), UDim2.new(1, 0, 0, 24)
-	performance.BackgroundTransparency, performance.TextColor3, performance.TextSize =
-		1, TEXT_COLOR, 13
-	performance.Text = ""
-	performance.Parent = panel
+	local performance =
+		Candy.text(panel, "Performance", UDim2.new(1, -24, 0, 22), UDim2.new(0, 12, 0.75, 0), 14)
 
 	local logs = Instance.new("ScrollingFrame")
-	logs.Position = UDim2.new(0, 0, 0.76, 24)
-	logs.Size = UDim2.new(1, 0, 0.24, -24)
+	Candy.fit(logs, UDim2.new(1, -24, 0.24, -24), UDim2.new(0, 12, 0.75, 24))
 	logs.BackgroundTransparency = 1
 	logs.BorderSizePixel = 0
 	logs.ScrollBarThickness = 5
@@ -163,13 +139,11 @@ function CreativeWindow.start(
 		row.AutomaticSize = Enum.AutomaticSize.Y
 		row.BackgroundTransparency = 1
 		row.LayoutOrder = serial
-		row.Font = Enum.Font.Code
+		row.FontFace = Candy.font
 		row.TextXAlignment = Enum.TextXAlignment.Left
 		row.TextSize = 14
 		row.TextWrapped = true
-		row.TextColor3 = if isError
-			then Color3.fromRGB(255, 151, 151)
-			else Color3.fromRGB(255, 220, 153)
+		row.TextColor3 = if isError then Candy.red else Candy.ink
 		row.Text = message
 		row.Parent = logs
 		table.insert(rows, row)
@@ -179,29 +153,29 @@ function CreativeWindow.start(
 	end)
 
 	local function refresh()
-		gui.Enabled = player:GetAttribute("CreativeAllowed") == true
-		if not gui.Enabled then
-			panel.Visible = false
-			player:SetAttribute("MineMenuOpen", false)
+		gui.Visible = player:GetAttribute("CreativeAllowed") == true
+		if not gui.Visible then
+			Candy.show(modal, false)
 		end
-		open.Text = translate("creative_title")
-		toggle.Text = translate(
+		modal.title.Text = translate("creative_title")
+		open.text.Text = translate("creative_title")
+		toggle.text.Text = translate(
 			if player:GetAttribute("Creative") == true then "creative_on" else "creative_off"
 		)
-		coins10.Text, coins1000.Text =
+		coins10.text.Text, coins1000.text.Text =
 			translate("creative_multiply", 10), translate("creative_multiply", 1000)
-		reset.Text = translate("creative_circle")
-		maxLevel.Text = translate("upgrade_max")
-		world.Text = translate("creative_depth_world", selectedWorld)
-		depth.Text, beforePlate.Text =
+		reset.text.Text = translate("creative_circle")
+		maxLevel.text.Text = translate("upgrade_max")
+		world.text.Text = translate("creative_depth_world", selectedWorld)
+		depth.text.Text, beforePlate.text.Text =
 			translate("creative_depth_start"), translate("creative_depth_plate")
 		local profile = ProfileState.getProfile()
-		level.Text = translate(
+		level.text.Text = translate(
 			"creative_pick_level",
 			if profile then profile.circle.pickLevels[profile.pickaxe] or 1 else 1
 		)
 		for i, control in operationButtons do
-			control.Text = translate(operations[i][1] :: string)
+			control.text.Text = translate(operations[i][1] :: string)
 		end
 		performance.Text = translate(
 			"mine_perf",
@@ -212,14 +186,13 @@ function CreativeWindow.start(
 	end
 
 	local function flip()
-		if gui.Enabled then
+		if gui.Visible then
 			refresh()
-			panel.Visible = not panel.Visible
-			player:SetAttribute("MineMenuOpen", panel.Visible)
+			Candy.show(modal, not modal.open)
 		end
 	end
 
-	open.Activated:Connect(flip)
+	open.input.Activated:Connect(flip)
 	UserInputService.InputBegan:Connect(function(input, processed)
 		if not processed and input.KeyCode == Enum.KeyCode.K then
 			flip()
@@ -240,7 +213,6 @@ function CreativeWindow.start(
 	end
 	ProfileState.changed:Connect(refresh)
 	refresh()
-	gui.Parent = playerGui
 end
 
 return CreativeWindow

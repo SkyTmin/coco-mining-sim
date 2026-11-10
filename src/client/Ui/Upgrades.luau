@@ -7,93 +7,35 @@ local Format = require(Shared.Format)
 local Remotes = require(Shared.Remotes)
 local Sfx = require(Shared.Sfx)
 local Strings = require(Shared.Strings)
-local Shapes = require(Shared.Mine.Shapes)
 local Worlds = require(Shared.Mine.Worlds)
 local Circle = require(Shared.Play.Circle)
 local Upgrade = require(Shared.Play.Upgrade)
 local ProfileState = require(script.Parent.Parent.ProfileState)
+local Candy = require(script.Parent.Candy)
 
 local Upgrades = {}
-local INK = Color3.fromRGB(36, 57, 83)
-local CREAM = Color3.fromRGB(255, 243, 220)
-local ROW = Color3.fromRGB(255, 250, 239)
-local BLUE = Color3.fromRGB(183, 224, 244)
-local MUTED = Color3.fromRGB(226, 223, 216)
-local RED = Color3.fromRGB(206, 54, 57)
 local progress = Config.progress
+local offset, scale = UDim2.fromOffset, UDim2.fromScale
+local counts: { Upgrade.Count } = { 1, 10, "max" }
+local shapeIcons = { "shape1", "shape2", "shape4", "shape3", "shape5", "shape5" }
 
-local function round(gui: GuiObject, radius: number)
-	local corner = gui:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
-	corner.CornerRadius, corner.Parent = UDim.new(0, radius), gui
+type PurchaseControl = {
+	button: Candy.Control,
+	status: Frame,
+	statusIcon: ImageLabel,
+	statusText: TextLabel,
+	purchase: Upgrade.Purchase,
+	available: boolean,
+	level: number,
+}
+type Quantity = { buttons: { Candy.Control }, count: Upgrade.Count }
+local function green(value: string): string
+	return '<font color="#16A34A">' .. value .. "</font>"
 end
 
-local function frame(parent: Instance, name: string, size: UDim2, at: UDim2, color: Color3): Frame
-	local item = Instance.new("Frame")
-	item.Name, item.Size, item.Position = name, size, at
-	item.BackgroundColor3, item.BorderSizePixel, item.Parent = color, 0, parent
-	return item
-end
-
-local function text(
-	parent: Instance,
-	name: string,
-	size: UDim2,
-	at: UDim2,
-	fontSize: number
-): TextLabel
-	local item = Instance.new("TextLabel")
-	item.Name, item.Size, item.Position = name, size, at
-	item.Text, item.Font, item.TextSize, item.TextColor3 = "", Enum.Font.GothamBold, fontSize, INK
-	item.TextXAlignment, item.BackgroundTransparency = Enum.TextXAlignment.Left, 1
-	item.TextScaled = true
-	local limits = Instance.new("UITextSizeConstraint")
-	limits.MinTextSize, limits.MaxTextSize, limits.Parent = 10, fontSize, item
-	item.Parent = parent
-	return item
-end
-
-local function button(parent: Instance, name: string, size: UDim2, at: UDim2): TextButton
-	local item = Instance.new("TextButton")
-	item.Name, item.Size, item.Position = name, size, at
-	item.BackgroundColor3, item.BorderSizePixel = BLUE, 0
-	item.Text, item.Font, item.TextColor3 = "", Enum.Font.GothamBold, INK
-	item.TextScaled, item.TextWrapped = true, true
-	local limits = Instance.new("UITextSizeConstraint")
-	limits.MinTextSize, limits.MaxTextSize, limits.Parent = 9, 15, item
-	item.Parent = parent
-	round(item, 9)
-	return item
-end
-
-local function shapeIcon(parent: Instance, x: number): { Frame }
-	local icon = frame(parent, "Shape", UDim2.fromOffset(29, 29), UDim2.fromOffset(x, 31), ROW)
-	icon.BackgroundTransparency = 1
-	local squares = {}
-	for y = 0, 2 do
-		for col = 0, 2 do
-			local square = frame(
-				icon,
-				"Cell",
-				UDim2.fromOffset(8, 8),
-				UDim2.fromOffset(10 * col, 10 * y),
-				MUTED
-			)
-			round(square, 2)
-			squares[y * 3 + col + 1] = square
-		end
-	end
-	return squares
-end
-
-local function paintShape(squares: { Frame }, stage: number)
-	for _, square in squares do
-		square.BackgroundColor3 = MUTED
-	end
-	for _, point in
-		Shapes.cells(progress.hitSizes[stage].shape, if stage == 2 then -1 else 0, 1, 3, 3)
-	do
-		squares[point.y * 3 + point.x + 2].BackgroundColor3 = INK
-	end
+local function setShape(image: ImageLabel, stage: number)
+	Candy.setIcon(image, shapeIcons[stage])
+	image.Rotation = if stage == 2 then 90 else 0
 end
 
 local function cardValue(id: string, level: number, locale: string): string
@@ -104,268 +46,342 @@ local function cardValue(id: string, level: number, locale: string): string
 		else tostring(math.round(amount)) .. "%"
 end
 
+local function purchase(parent: Instance, kind: string, size: UDim2, at: UDim2): PurchaseControl
+	local button = Candy.button(parent, "Buy", size, at, "coin", 17)
+	Candy.buttonIcon(button, "coin")
+	local status = Candy.frame(parent, "PurchaseStatus", size, at, Candy.green)
+	Candy.round(status, 12)
+	Candy.stroke(status)
+	local icon = Candy.icon(status, "lock", scale(0.25, 0.76), scale(0.05, 0.12))
+	local text =
+		Candy.text(status, "Status", scale(0.91, 0.88), scale(0.045, 0.06), 13, Candy.white)
+	return {
+		button = button,
+		status = status,
+		statusIcon = icon,
+		statusText = text,
+		purchase = { kind = kind, count = 1 },
+		available = false,
+		level = 0,
+	}
+end
+
+local function quantity(parent: Instance, at: UDim2, change: () -> ()): Quantity
+	local strip = Candy.frame(parent, "Quantity", offset(193, 38), at)
+	local selection: Quantity = { buttons = {}, count = 1 }
+	for i, count in counts do
+		local button = Candy.button(
+			strip,
+			"Count" .. tostring(count),
+			offset(56, 33),
+			offset((i - 1) * 64, 0),
+			"neutral",
+			15
+		)
+		button.input.Activated:Connect(function()
+			selection.count = count
+			change()
+		end)
+		selection.buttons[i] = button
+	end
+	return selection
+end
+
 function Upgrades.new(
 	parent: Instance,
 	player: Player,
 	translate: (string, ...any) -> string,
 	feedback: (string, number) -> ()
 )
-	local gui = Instance.new("ScreenGui")
-	gui.Name, gui.DisplayOrder, gui.ResetOnSpawn, gui.Enabled = "MineUpgrades", 6, false, false
-	gui.IgnoreGuiInset, gui.ScreenInsets, gui.Parent =
-		true, Enum.ScreenInsets.DeviceSafeInsets, parent
-	local open = button(gui, "OpenUpgrades", UDim2.fromOffset(53, 53), UDim2.new(0, 16, 1, -21))
-	open.AnchorPoint, open.BackgroundColor3, open.Text = Vector2.new(0, 1), CREAM, "⬆"
-	open.TextScaled, open.TextSize = false, 27
-	round(open, 30)
-	local openScale = Instance.new("UIScale")
-	openScale.Parent = open
-	local dot = frame(open, "Affordable", UDim2.fromOffset(12, 12), UDim2.new(1, -10, 0, 0), RED)
-	round(dot, 7)
-	dot.Visible = false
-	local tip = text(gui, "GetStronger", UDim2.fromOffset(154, 28), UDim2.new(0, 12, 1, -81), 14)
-	tip.AnchorPoint, tip.BackgroundColor3, tip.Visible = Vector2.new(0, 1), CREAM, false
-	tip.TextXAlignment, tip.BackgroundTransparency = Enum.TextXAlignment.Center, 0
-	round(tip, 9)
+	local hud = Candy.layer(parent, "UpgradesHUD", 5)
+	hud.Visible = false
+	local open =
+		Candy.button(hud, "OpenUpgrades", offset(171, 45), UDim2.new(0, 15, 1, -23), "purple", 18)
+	open.box.AnchorPoint = Vector2.new(0, 1)
+	Candy.buttonIcon(open, "upgrades")
+	local dot = Candy.dot(open.face)
+	local tip = Candy.panel(hud, "GetStronger", offset(172, 31), UDim2.new(0, 15, 1, -79))
+	tip.AnchorPoint, tip.Visible = Vector2.new(0, 1), false
+	local tipLabel = Candy.text(tip, "Hint", scale(0.95, 0.88), scale(0.025, 0.06), 15)
 
-	local panel = frame(gui, "Panel", UDim2.new(1, -20, 0.66, 0), UDim2.fromScale(0.5, 1), CREAM)
-	panel.AnchorPoint, panel.Active, panel.Visible = Vector2.new(0.5, 1), true, false
-	round(panel, 15)
-	local limit = Instance.new("UISizeConstraint")
-	limit.MaxSize, limit.Parent = Vector2.new(608, 500), panel
-	local title = text(panel, "Title", UDim2.new(1, -65, 0, 32), UDim2.fromOffset(14, 2), 20)
-	local close = button(panel, "Close", UDim2.fromOffset(32, 29), UDim2.new(1, -40, 0, 5))
-	close.Text = "×"
-	local pickTab =
-		button(panel, "PickaxeTab", UDim2.new(0.5, -15, 0, 30), UDim2.fromOffset(10, 37))
-	local cardTab = button(panel, "CardsTab", UDim2.new(0.5, -15, 0, 30), UDim2.new(0.5, 5, 0, 37))
-	local function page(name: string): ScrollingFrame
-		local scroll = Instance.new("ScrollingFrame")
-		scroll.Name, scroll.Size, scroll.Position =
-			name, UDim2.new(1, -18, 1, -76), UDim2.fromOffset(9, 71)
-		scroll.BackgroundTransparency, scroll.BorderSizePixel, scroll.ScrollBarThickness = 1, 0, 4
-		scroll.AutomaticCanvasSize, scroll.CanvasSize = Enum.AutomaticSize.Y, UDim2.fromOffset(0, 0)
-		scroll.ScrollingDirection, scroll.Parent = Enum.ScrollingDirection.Y, panel
-		local layout = Instance.new("UIListLayout")
-		layout.Padding, layout.SortOrder, layout.Parent =
-			UDim.new(0, 5), Enum.SortOrder.LayoutOrder, scroll
-		return scroll
+	local front, isCards, selectedCard = 0, false, "power"
+	local held: PurchaseControl?
+	local pressed: InputObject?
+	local nextRepeat = math.huge
+	local last: { control: PurchaseControl, at: number, level: number }?
+	local hardSince: number?
+	local previousStrength: number?
+	local refresh: (boolean) -> ()
+	local modal = Candy.modal(
+		parent,
+		"MineUpgrades",
+		scale(0.78, 0.69),
+		Candy.purple,
+		function(show)
+			held, pressed = nil, nil
+			player:SetAttribute("MineUpgradesOpen", show)
+			open.box.Visible = not show
+			if show then
+				refresh(false)
+			end
+		end
+	)
+	local panel = modal.panel
+	local tabs = {}
+	for i, key in { "upgrade_pickaxe", "upgrade_cards" } do
+		local tab = Candy.button(
+			panel,
+			if i == 1 then "PickaxeTab" else "CardsTab",
+			offset(96, 34),
+			UDim2.new(0.5 + (i - 1) * 0.21, 0, 0, -16),
+			"neutral",
+			16
+		)
+		tab.face.Rotation, tab.shadow.Rotation = -2, -2
+		tab.input.Activated:Connect(function()
+			isCards = i == 2
+			held, pressed = nil, nil
+			refresh(false)
+		end)
+		tabs[key] = tab
 	end
 
-	local pickPage, cardPage = page("Pickaxe"), page("Cards")
-	local stats =
-		text(pickPage, "PowerAndHardness", UDim2.new(1, -10, 0, 20), UDim2.fromOffset(0, 0), 13)
-	stats.LayoutOrder = 0
-	stats.TextXAlignment = Enum.TextXAlignment.Center
-	local isCards = false
-	local front = 0
-	local context: Upgrade.Context? = nil
-	local held: any = nil
-	local pressed: InputObject? = nil
-	local last: any = nil
-	local nextRepeat = math.huge
-	local hardSince: number? = nil
-	local previousStrength: number? = nil
+	local pickPage = Candy.frame(panel, "Pickaxe", scale(1, 1), offset(0, 0))
+	local cardPage = Candy.frame(panel, "Cards", scale(1, 1), offset(0, 0))
+	local function row(key: string, icon: string, index: number, kind: string)
+		local box = Candy.panel(
+			pickPage,
+			key,
+			UDim2.new(1, -28, 0.21, 0),
+			UDim2.new(0, 14, 0.104 + (index - 1) * 0.233, 0),
+			true
+		)
+		local sticker = Candy.iconCell(box, icon, offset(37, 37), UDim2.new(0, 7, 0.5, -18.5))
+		local title =
+			Candy.text(box, "Name", UDim2.new(0.65, -54, 0.46, 0), UDim2.new(0, 52, 0.03, 0), 16)
+		local details =
+			Candy.text(box, "Details", UDim2.new(0.65, -54, 0.43, 0), UDim2.new(0, 52, 0.48, 0), 13)
+		title.TextXAlignment, details.TextXAlignment, details.RichText =
+			Enum.TextXAlignment.Left, Enum.TextXAlignment.Left, true
+		local control = purchase(box, kind, UDim2.new(0.30, -10, 0.76, 0), scale(0.70, 0.07))
+		return { box = box, sticker = sticker, name = title, details = details, buy = control }
+	end
+	local hit = row("HitSize", "shape1", 1, "hitSize")
+	local width = row("Width", "width", 2, "width")
+	local pick = row("Level", "pick", 3, "pick")
+	local oldShape = Candy.icon(hit.box, "shape1", offset(25, 25), UDim2.new(0, 53, 0.52, 0))
+	local nextShape = Candy.icon(hit.box, "shape2", offset(25, 25), UDim2.new(0, 109, 0.52, 0))
+	Candy.fit(hit.details, offset(25, 22), UDim2.new(0, 81, 0.52, 0))
+	hit.details.Text, hit.details.TextXAlignment = "→", Enum.TextXAlignment.Center
+
+	local function onQuantity()
+		held, pressed = nil, nil
+		refresh(false)
+	end
+	local pickQuantity = quantity(pickPage, UDim2.new(1, -205, 0.82, 0), onQuantity)
+	local stats = Candy.text(
+		pickPage,
+		"PowerAndHardness",
+		UDim2.new(1, -231, 0.16, 0),
+		UDim2.new(0, 17, 0.80, 0),
+		13
+	)
+	stats.TextXAlignment = Enum.TextXAlignment.Left
+
+	local cards = {}
+	for i, id in Upgrade.cards do
+		local box, surface = Candy.panel(
+			cardPage,
+			id,
+			UDim2.new(1 / 3, -19, 0.59, 0),
+			UDim2.new((i - 1) / 3, 13, 0.12, 0),
+			true
+		)
+		local border = surface:FindFirstChildOfClass("UIStroke")
+		Candy.iconCell(box, id, offset(44, 44), UDim2.new(0.5, -22, 0.06, 0))
+		local title = Candy.text(box, "Name", scale(0.94, 0.19), scale(0.03, 0.37), 16)
+		local level = Candy.text(box, "Level", scale(0.94, 0.14), scale(0.03, 0.54), 13)
+		local fill = Candy.bar(box, scale(0.86, 0.052), scale(0.07, 0.75), Candy.purple)
+		local morph = Candy.text(box, "Morph", scale(0.92, 0.14), scale(0.04, 0.82), 11)
+		local lock = Candy.icon(box, "lock", offset(20, 20), UDim2.new(1, -27, 0, 7))
+		local target = Instance.new("TextButton")
+		target.Name, target.Text, target.Size, target.BackgroundTransparency =
+			"Select", "", scale(1, 1), 1
+		target.Parent = box
+		target.Activated:Connect(function()
+			selectedCard = id
+			held, pressed, last = nil, nil, nil
+			refresh(false)
+		end)
+		cards[id] = {
+			box = box,
+			border = border,
+			title = title,
+			level = level,
+			fill = fill,
+			morph = morph,
+			lock = lock,
+		}
+	end
+	local cardQuantity = quantity(cardPage, UDim2.new(0, 14, 0.80, 0), onQuantity)
+	local cardDetails = Candy.text(
+		cardPage,
+		"CardPreview",
+		UDim2.new(0.44, -30, 0.15, 0),
+		UDim2.new(0.39, 9, 0.79, 0),
+		15
+	)
+	cardDetails.RichText = true
+	local cardBuy =
+		purchase(cardPage, "card", UDim2.new(0.24, -7, 0.15, 0), UDim2.new(0.76, -4, 0.79, 0))
 	local remote = Remotes.event("UpgradeIntent")
 
-	local function send(control: any, now: number)
+	local function send(control: PurchaseControl, now: number)
 		if not control.available then
 			Sfx.play("locked", 0.26)
 			return
 		end
-		last = { control = control, at = now, from = control.level }
-		local purchase = control.purchase
-		if purchase.kind == "card" then
-			remote:FireServer("BuyCard", purchase.id, purchase.count)
-		elseif purchase.kind == "pick" then
-			remote:FireServer("BuyPickLevel", purchase.count)
-		elseif purchase.kind == "width" then
+		last = { control = control, at = now, level = control.level }
+		local command = control.purchase
+		if command.kind == "card" then
+			remote:FireServer("BuyCard", command.id, command.count)
+		elseif command.kind == "pick" then
+			remote:FireServer("BuyPickLevel", command.count)
+		elseif command.kind == "width" then
 			remote:FireServer("BuyWidth")
 		else
 			remote:FireServer("BuyHitSize")
 		end
 	end
 
-	local function row(
-		pageGui: ScrollingFrame,
-		kind: string,
-		id: string?,
-		order: number,
-		height: number,
-		counts: { Upgrade.Count }
-	): any
-		local box =
-			frame(pageGui, id or kind, UDim2.new(1, -5, 0, height), UDim2.fromOffset(0, 0), ROW)
-		box.LayoutOrder = order
-		round(box, 10)
-		local name = text(box, "Name", UDim2.new(1, -16, 0, 23), UDim2.fromOffset(8, 1), 17)
-		local details = text(box, "Details", UDim2.new(1, -16, 0, 19), UDim2.fromOffset(8, 24), 13)
-		local controls = {}
-		for i, count in counts do
-			local wide = #counts == 1
-			local b = button(
-				box,
-				"Buy" .. tostring(count),
-				UDim2.new(if wide then 0.43 else 1 / 3, -7, 0, 38),
-				UDim2.new(if wide then 0.57 else (i - 1) / 3, 5, 1, -43)
-			)
-			local scale = Instance.new("UIScale")
-			scale.Parent = b
-			local control = {
-				button = b,
-				scale = scale,
-				purchase = { kind = kind, id = id, count = count },
-				available = false,
-				level = 0,
-			}
-			control.nameLabel = name
-			table.insert(controls, control)
-			b.InputBegan:Connect(function(input)
-				if
-					input.UserInputType ~= Enum.UserInputType.Touch
-					and input.UserInputType ~= Enum.UserInputType.MouseButton1
-				then
-					return
-				end
+	for _, control in { hit.buy, width.buy, pick.buy, cardBuy } do
+		control.button.input.InputBegan:Connect(function(input)
+			if Candy.pointer(input) then
 				local now = os.clock()
 				send(control, now)
-				if count == 1 and control.available then
+				if control.purchase.count == 1 and control.available then
 					held, pressed, nextRepeat = control, input, now + 0.38
 				end
-			end)
-			b.Activated:Connect(function(input)
-				if
-					input.UserInputType ~= Enum.UserInputType.Touch
-					and input.UserInputType ~= Enum.UserInputType.MouseButton1
-				then
-					send(control, os.clock())
-				end
-			end)
+			end
+		end)
+		control.button.input.Activated:Connect(function(input)
+			if not Candy.pointer(input) then
+				send(control, os.clock())
+			end
+		end)
+	end
+	UserInputService.InputEnded:Connect(function(input)
+		if pressed == input or input.UserInputType == Enum.UserInputType.MouseButton1 then
+			held, pressed = nil, nil
 		end
-		return { box = box, name = name, details = details, controls = controls }
-	end
+	end)
+	UserInputService.WindowFocusReleased:Connect(function()
+		held, pressed = nil, nil
+	end)
 
-	local hit = row(pickPage, "hitSize", nil, 1, 70, { 1 })
-	local width = row(pickPage, "width", nil, 2, 66, { 1 })
-	local pick = row(pickPage, "pick", nil, 3, 89, { 1, 10, "max" })
-	hit.details.Size = UDim2.fromOffset(35, 28)
-	hit.details.Position = UDim2.fromOffset(44, 31)
-	hit.details.TextXAlignment = Enum.TextXAlignment.Center
-	hit.details.Text = "→"
-	local oldShape, nextShape = shapeIcon(hit.box, 9), shapeIcon(hit.box, 81)
-	width.details.Size = UDim2.new(0.53, -8, 0, 30)
-	width.details.Position = UDim2.fromOffset(8, 27)
-
-	local cycleTitle =
-		text(cardPage, "Circle", UDim2.new(1, -10, 0, 24), UDim2.fromOffset(0, 0), 17)
-	cycleTitle.LayoutOrder = 1
-	local cards = {}
-	for i, id in Upgrade.cards do
-		local card = row(cardPage, "card", id, i + 1, 118, { 1, 10, "max" })
-		card.morph = text(card.box, "Morph", UDim2.new(1, -16, 0, 18), UDim2.fromOffset(8, 45), 12)
-		local rail =
-			frame(card.box, "MorphTrack", UDim2.new(1, -16, 0, 4), UDim2.fromOffset(8, 65), MUTED)
-		card.fill = frame(rail, "Fill", UDim2.fromScale(0, 1), UDim2.fromOffset(0, 0), BLUE)
-		cards[id] = card
-	end
-	local family = text(cardPage, "Family", UDim2.new(1, -10, 0, 29), UDim2.fromOffset(0, 0), 16)
-	family.LayoutOrder = 8
-	local soon = text(cardPage, "Soon", UDim2.new(1, -10, 0, 27), UDim2.fromOffset(0, 0), 14)
-	soon.LayoutOrder = 9
-
-	local function price(rowData: any, ctx: Upgrade.Context, level: number)
-		for _, control in rowData.controls do
-			local quote = Upgrade.quote(ctx, control.purchase)
-			local missingQuote = quote
-				or (
-					if control.purchase.count == "max"
-						then Upgrade.quote(ctx, {
-							kind = control.purchase.kind,
-							id = control.purchase.id,
-							count = 1,
-						})
-						else nil
-				)
-			local affordable = Upgrade.pay(ctx.coins, quote) ~= nil
-			local prefix = if #rowData.controls == 1
-				then translate("upgrade_buy")
-				elseif control.purchase.count == "max" then translate("upgrade_max")
-				else "×" .. tostring(control.purchase.count)
-			local value = if affordable and quote
-				then translate("upgrade_price", Format.short(quote.price))
-				elseif missingQuote then translate(
-					"upgrade_missing",
-					Format.short(math.max(0, missingQuote.price - ctx.coins))
-				)
-				elseif control.purchase.kind == "width" and Upgrade.nextWidth(ctx.width) then "🔒"
-				else translate("upgrade_cap")
-			control.button.Text = prefix .. "\n" .. value
-			control.available, control.level = affordable, level
-			control.button.BackgroundColor3 = if affordable then BLUE else MUTED
+	local function price(
+		control: PurchaseControl,
+		ctx: Upgrade.Context,
+		level: number,
+		locked: number?
+	)
+		local command = control.purchase
+		local quote = Upgrade.quote(ctx, command)
+		local single = quote
+			or Upgrade.quote(ctx, { kind = command.kind, id = command.id, count = 1 })
+		control.available, control.level = Upgrade.pay(ctx.coins, quote) ~= nil, level
+		local forSale = locked == nil and single ~= nil
+		control.button.box.Visible, control.status.Visible = forSale, not forSale
+		control.status.BackgroundColor3 = if locked then Candy.rowColor else Candy.green
+		control.statusIcon.Visible = locked ~= nil
+		Candy.fit(
+			control.statusText,
+			scale(if locked then 0.69 else 0.9, 0.88),
+			scale(if locked then 0.28 else 0.05, 0.06)
+		)
+		control.statusText.TextColor3 = if locked then Candy.ink else Candy.white
+		control.statusText.Text = if locked
+			then translate("upgrade_width_lock", locked)
+			else translate("upgrade_cap")
+		if single then
+			control.button.text.Text = Format.short(single.price)
 		end
+		Candy.paint(control.button, if control.available then "coin" else "disabled")
 	end
 
-	local function refresh(animate: boolean)
-		local p = ProfileState.getProfile()
+	refresh = function(animate: boolean)
+		open.text.Text = translate("upgrade_title")
+		local profile = ProfileState.getProfile()
 		local world = Worlds.of(front).index
-		context = if p then Circle.context(p, world) else nil
-		local ctx = context
+		local ctx = if profile then Circle.context(profile, world) else nil
 		dot.Visible = ctx ~= nil and Upgrade.available(ctx)
-		if not p or not ctx or not panel.Visible then
+		if not profile or not ctx or not modal.open then
 			return
 		end
-		title.Text, pickTab.Text, cardTab.Text =
-			translate("upgrade_title"), translate("upgrade_pickaxe"), translate("upgrade_cards")
-		cycleTitle.Text, family.Text, soon.Text =
-			translate("upgrade_circle"), translate("upgrade_family"), translate("upgrade_soon")
+		modal.title.Text = translate("upgrade_title")
+		for key, tab in tabs do
+			local selected = isCards == (key == "upgrade_cards")
+			tab.text.Text = translate(key)
+			Candy.paint(tab, if selected then "purple" else "neutral")
+		end
+		for _, strip in { pickQuantity, cardQuantity } do
+			for i, control in strip.buttons do
+				local count = counts[i]
+				control.text.Text = if count == "max"
+					then translate("upgrade_max")
+					else "×" .. tostring(count)
+				Candy.paint(control, if count == strip.count then "purple" else "neutral")
+			end
+		end
 		pickPage.Visible, cardPage.Visible = not isCards, isCards
-		pickTab.BackgroundColor3, cardTab.BackgroundColor3 =
-			if isCards then MUTED else BLUE, if isCards then BLUE else MUTED
+		local locale = Strings.localeOf(player)
 		hit.name.Text = translate("upgrade_hit_size", ctx.hitSize)
-		paintShape(oldShape, ctx.hitSize)
-		paintShape(nextShape, math.min(#progress.hitSizes, ctx.hitSize + 1))
+		local afterShape = math.min(#shapeIcons, ctx.hitSize + 1)
+		setShape(hit.sticker, ctx.hitSize)
+		setShape(oldShape, ctx.hitSize)
+		setShape(nextShape, afterShape)
 		local nextWidth = Upgrade.nextWidth(ctx.width)
+		local widthLock = nextWidth
+				and nextWidth.world
+				and ctx.world < nextWidth.world
+				and nextWidth.world
+			or nil
 		width.name.Text = translate("upgrade_width")
 		width.details.Text = tostring(ctx.width)
-			.. (if nextWidth then " → " .. tostring(nextWidth.w) else "")
-		if nextWidth and ctx.world < (nextWidth.world or 1) then
-			width.details.Text ..= " · " .. translate("upgrade_width_lock", nextWidth.world)
-		end
-		local pickNow = Circle.pick(ctx.pick, p.circle, front)
-		local nextCircle = {
-			hitSize = p.circle.hitSize,
-			cards = p.circle.cards,
-			pickLevels = table.clone(p.circle.pickLevels),
-		}
-		local single = Upgrade.quote(ctx, { kind = "pick", count = 1 })
-		nextCircle.pickLevels[ctx.pick] = if single then single.level else ctx.pickLevel
-		local pickNext = Circle.pick(ctx.pick, nextCircle, front)
-		local locale = Strings.localeOf(player)
+			.. (if nextWidth then " → " .. green(tostring(nextWidth.w)) else "")
 		pick.name.Text = translate("upgrade_pick_level", ctx.pickLevel)
+		pick.buy.purchase.count = pickQuantity.count
+		local quote = Upgrade.quote(ctx, pick.buy.purchase)
+		local nextCircle = {
+			hitSize = profile.circle.hitSize,
+			cards = profile.circle.cards,
+			pickLevels = table.clone(profile.circle.pickLevels),
+		}
+		nextCircle.pickLevels[ctx.pick] = if quote then quote.level else ctx.pickLevel
+		local currentPick = Circle.pick(ctx.pick, profile.circle, front)
+		local nextPick = Circle.pick(ctx.pick, nextCircle, front)
 		pick.details.Text = translate(
 			"upgrade_pick_preview",
-			Format.stat(pickNow.strength, locale),
-			Format.stat(pickNext.strength, locale),
-			Format.grouped(pickNow.ultLayers),
-			Format.grouped(pickNext.ultLayers)
+			Format.stat(currentPick.strength, locale),
+			green(Format.stat(nextPick.strength, locale)),
+			Format.short(currentPick.ultLayers),
+			green(Format.short(nextPick.ultLayers))
 		)
-		price(hit, ctx, ctx.hitSize)
-		price(width, ctx, ctx.width)
-		price(pick, ctx, ctx.pickLevel)
+		price(hit.buy, ctx, ctx.hitSize)
+		price(width.buy, ctx, ctx.width, widthLock)
+		price(pick.buy, ctx, ctx.pickLevel)
 		for id, card in cards do
 			local level = ctx.cards[id] or 0
 			local rule = progress.cards[id]
-			local unlocked = ctx.unlockedCards[id]
-			local cap = rule.cap or math.huge
-			card.name.Text = translate("card_" .. id)
-				.. (if unlocked then " · " .. translate("upgrade_level", level) else "  🔒")
-			card.details.Text = if unlocked
-				then cardValue(id, level, locale) .. " → " .. cardValue(
-					id,
-					math.min(cap, level + 1),
-					locale
-				)
-				else translate("upgrade_card_lock", rule.world)
+			local unlocked = ctx.unlockedCards[id] == true
+			card.title.Text = translate("card_" .. id)
+			card.level.Text = if unlocked
+				then translate("upgrade_level", level)
+				else translate("upgrade_width_lock", rule.world)
+			card.lock.Visible = not unlocked
+			if card.border then
+				card.border.Color = if id == selectedCard then Candy.purple else Candy.ink
+			end
 			local before, after = 0, nil
 			for _, milestone in rule.steps do
 				if milestone > level then
@@ -374,8 +390,7 @@ function Upgrades.new(
 				end
 				before = milestone
 			end
-			card.morph.Visible = unlocked == true
-			card.fill.Parent.Visible = unlocked == true
+			card.morph.Visible, card.fill.Parent.Visible = unlocked, unlocked
 			card.morph.Text = if after
 				then translate(
 					"upgrade_morph_at",
@@ -387,52 +402,30 @@ function Upgrades.new(
 					)
 				)
 				else translate("upgrade_morph_done")
-			card.fill.Size =
-				UDim2.fromScale(if after then (level - before) / (after - before) else 1, 1)
-			price(card, ctx, level)
-			for _, control in card.controls do
-				control.button.Visible = unlocked == true
-			end
+			card.fill.Size = scale(if after then (level - before) / (after - before) else 1, 1)
 		end
-		if animate and last and os.clock() - last.at <= 1 and last.control.level > last.from then
-			last.control.jumpAt = os.clock()
-			last.control.from = last.from
-			hardSince = nil
-			feedback("buy", last.control.jumpAt)
+		local level = ctx.cards[selectedCard] or 0
+		cardBuy.purchase.id, cardBuy.purchase.count = selectedCard, cardQuantity.count
+		local cardQuote = Upgrade.quote(ctx, cardBuy.purchase)
+		cardDetails.Text = cardValue(selectedCard, level, locale)
+			.. " → "
+			.. green(cardValue(selectedCard, if cardQuote then cardQuote.level else level, locale))
+		local unlocked = ctx.unlockedCards[selectedCard] == true
+		cardDetails.Visible = unlocked
+		for _, control in cardQuantity.buttons do
+			control.box.Visible = unlocked
+		end
+		price(cardBuy, ctx, level, if unlocked then nil else progress.cards[selectedCard].world)
+		if animate and last and os.clock() - last.at <= 1 and last.control.level > last.level then
+			feedback("buy", os.clock())
 			Sfx.play("buy_soft", 0.54)
-			last = nil
+			Sfx.play("level_tick", 0.4)
+			hardSince, last = nil, nil
 		end
 	end
 
-	local function setOpen(value: boolean)
-		panel.Visible, open.Visible = value, not value
-		held, pressed = nil, nil
-		player:SetAttribute("MineUpgradesOpen", value)
-		if value then
-			refresh(false)
-		end
-	end
-	open.Activated:Connect(function()
-		setOpen(true)
-	end)
-	close.Activated:Connect(function()
-		setOpen(false)
-	end)
-	pickTab.Activated:Connect(function()
-		isCards = false
-		refresh(false)
-	end)
-	cardTab.Activated:Connect(function()
-		isCards = true
-		refresh(false)
-	end)
-	UserInputService.InputEnded:Connect(function(input)
-		if pressed == input or input.UserInputType == Enum.UserInputType.MouseButton1 then
-			held, pressed = nil, nil
-		end
-	end)
-	UserInputService.WindowFocusReleased:Connect(function()
-		held, pressed = nil, nil
+	open.input.Activated:Connect(function()
+		Candy.show(modal, true)
 	end)
 	ProfileState.changed:Connect(function()
 		refresh(true)
@@ -442,6 +435,7 @@ function Upgrades.new(
 			refresh(false)
 		end)
 	end
+	refresh(false)
 
 	return function(
 		now: number,
@@ -452,15 +446,15 @@ function Upgrades.new(
 		hardness: number,
 		reduced: boolean
 	)
-		gui.Enabled = active
-		if not active and panel.Visible then
-			setOpen(false)
+		hud.Visible = active
+		if not active and modal.open then
+			Candy.show(modal, false)
 		end
 		if depth ~= front then
 			front = depth
 			refresh(false)
 		end
-		if panel.Visible then
+		if modal.open and not isCards then
 			local locale = Strings.localeOf(player)
 			stats.Text = translate(
 				"mine_power_hardness",
@@ -475,49 +469,24 @@ function Upgrades.new(
 		end
 		previousStrength = strength
 		local pulse = active
-			and not panel.Visible
+			and not modal.open
 			and hardSince ~= nil
 			and now - hardSince >= 10
 			and dot.Visible
 		tip.Visible = pulse
 		if pulse then
-			tip.Text = "↓  " .. translate("upgrade_stronger")
+			tipLabel.Text = "↓  " .. translate("upgrade_stronger")
 		end
-		openScale.Scale = if pulse and not reduced then 1.03 + 0.08 * math.sin(now * 6) else 1
+		open.face.BackgroundColor3 = Candy.purple:Lerp(
+			Candy.white,
+			if pulse and not reduced then 0.10 + 0.08 * math.sin(now * 6) else 0
+		)
 		if held and now >= nextRepeat then
-			if held.available and held.button.Visible and panel.Visible then
+			if held.available and held.button.box.Visible and modal.open then
 				nextRepeat = now + 0.125
 				send(held, now)
 			else
 				held, pressed = nil, nil
-			end
-		end
-		if panel.Visible then
-			for _, rowData in { hit, width, pick, cards.power, cards.coins, cards.crit } do
-				for _, control in rowData.controls do
-					if control.jumpAt then
-						local t = math.clamp((now - control.jumpAt) / 0.26, 0, 1)
-						control.scale.Scale = if reduced
-							then 1
-							else 1 + 0.11 * math.sin(math.pi * t)
-						local level = math.floor(control.from + (control.level - control.from) * t)
-						local purchase = control.purchase
-						if purchase.kind == "pick" then
-							control.nameLabel.Text = translate("upgrade_pick_level", level)
-						elseif purchase.kind == "card" then
-							control.nameLabel.Text = translate("card_" .. purchase.id)
-								.. " · "
-								.. translate("upgrade_level", level)
-						end
-						if level ~= control.tick then
-							control.tick = level
-							Sfx.play("level_tick", 0.4)
-						end
-						if t == 1 then
-							control.jumpAt = nil
-						end
-					end
-				end
 			end
 		end
 	end
