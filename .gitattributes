@@ -1,0 +1,3 @@
+src/**/*.luau text eol=lf
+tests/**/*.luau text eol=lf
+scripts/*.luau text eol=lf

@@ -1,0 +1,10 @@
+{
+  "defaultLanguage": "en",
+  "languages": [
+    "en",
+    "ru",
+    "es",
+    "fr"
+  ],
+  "autosaveSeconds": 120
+}

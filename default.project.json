@@ -1,0 +1,37 @@
+{
+  "name": "coco-mining-sim",
+  "globIgnorePaths": [
+    "**/*.md",
+    "**/*.spec.luau"
+  ],
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedFirst": {
+      "Loading": {
+        "$path": "src/first"
+      }
+    },
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      }
+    },
+    "ServerScriptService": {
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "src/client"
+        }
+      }
+    },
+    "TextChatService": {
+      "$properties": {
+        "ChatVersion": "TextChatService"
+      }
+    }
+  }
+}
