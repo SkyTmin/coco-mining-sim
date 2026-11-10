@@ -9,6 +9,9 @@ from task specs (ТЗ) in `docs/tz/`; Claude writes the specs and reviews every 
 2. The ТЗ of the current stage: `docs/tz/TZ-NN-*.md`. **Do only what that ТЗ asks.** Anything outside it → write it
    in the stage report as a proposal, do not build it.
 3. Design canon (Russian): `docs/design/wiki/00-README.md` (glossary + index). Open only the wiki files the ТЗ names.
+   **Precedence:** the ТЗ → `wiki/18-balans-chisla.md` (all numbers, pickaxes, families, shop) and
+   `wiki/19-lager-shakhta-i-lyudi.md` (camp, 8 players, social) → wiki files 01–17. Stage order: `docs/tz/README.md`.
+   Balance data lives in `scripts/balance/data.mjs`; from stage 3 it feeds `scripts/design-decisions.json`.
    `docs/design/studio/*` are raw research behind the wiki — read only when the ТЗ points there.
 
 ## Where things come from
