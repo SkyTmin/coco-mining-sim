@@ -56,23 +56,13 @@ function CreativeService.Start()
 			local enabled = player:GetAttribute("Creative") ~= true
 			player:SetAttribute("Creative", enabled)
 			toast:FireClient(player, if enabled then "creative_on" else "creative_off")
-		elseif op == "coins" and typeof(delta) == "number" and math.abs(delta) < math.huge then
+		elseif op == "coins" and (delta == 10 or delta == 1000) then
 			ProfileService.Mutate(player, function(profile)
-				local balance = profile.coins + delta
-				if math.abs(balance) < math.huge then
+				local balance = math.max(1, profile.coins) * delta
+				if balance < math.huge then
 					profile.coins = balance
 				end
 			end)
-		elseif op == "reset" and studio then
-			ProfileService.Mutate(player, function(profile)
-				local loadFailed = profile.loadFailed
-				table.clear(profile)
-				for key, value in ProfileService.DefaultProfile() :: any do
-					(profile :: any)[key] = value
-				end
-				profile.loadFailed = loadFailed
-			end)
-			HitService.Creative(player, "reset", nil, nil, nil)
 		elseif type(op) == "string" and op:sub(1, 5) == "mine." then
 			HitService.Creative(player, op, delta, b, c)
 		end

@@ -20,7 +20,7 @@ Test.describe("Mine protocol", function()
 		expect(Wire.decodeIntent(Wire.encodeIntent("Resync"))).toEqual({ op = "Resync" })
 		local layer = { 1, 0, 3, 0, 0, Wire.CHEST, 3, 2, 0, 1, 0, 2, Wire.PLATE, 0, 4 }
 		local layers = table.create(20, layer)
-		local damage = { { x = -1, y = 2, dRel = 0, amount = 2 } }
+		local damage = { { x = -1, y = 2, dRel = 0, amount = 128 } }
 		local win = {
 			plot = 8,
 			front = 36000,
@@ -39,6 +39,10 @@ Test.describe("Mine protocol", function()
 			accepted = true,
 			delta = 4,
 			ability = true,
+			heavy = true,
+			crit = true,
+			mega = false,
+			rain = true,
 			width = 5,
 			height = 3,
 			layers = table.create(4, layer),

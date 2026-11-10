@@ -127,7 +127,7 @@ local function getDamage(get: Get): { any }
 	for i = 1, count do
 		local point = getPoint(get)
 		point.amount = get("u8")
-		check(point.amount > 0 and point.amount < mine.maxHitsPerBlock)
+		check(point.amount > 0 and point.amount < 255)
 		damage[i] = point
 	end
 	return damage
@@ -236,6 +236,10 @@ function Wire.encodeResult(res: any): buffer
 	local flags = (if res.accepted then 1 else 0)
 		+ (if res.delta and res.delta > 0 then 2 else 0)
 		+ (if res.ability then 4 else 0)
+		+ (if res.heavy then 8 else 0)
+		+ (if res.crit then 16 else 0)
+		+ (if res.mega then 32 else 0)
+		+ (if res.rain then 64 else 0)
 	put("u8", flags)
 	put("u32", res.front)
 	put("u8", res.plot)
@@ -284,7 +288,7 @@ end
 function Wire.decodeResult(data: any): any?
 	return decode(data, function(get)
 		local seq, flags, front, plot = get("u16"), get("u8"), get("u32"), get("u8")
-		check(flags <= 7)
+		check(flags <= 127)
 		local res =
 			{ seq = seq, accepted = bit32.btest(flags, 1), front = front, plot = plot } :: any
 		if not res.accepted then
@@ -292,6 +296,8 @@ function Wire.decodeResult(data: any): any?
 			return res
 		end
 		res.ability, res.delta = bit32.btest(flags, 4), 0
+		res.heavy, res.crit = bit32.btest(flags, 8), bit32.btest(flags, 16)
+		res.mega, res.rain = bit32.btest(flags, 32), bit32.btest(flags, 64)
 		local cells = get("u16")
 		check(cells <= cascade.maxCells)
 		res.cells = table.create(cells)

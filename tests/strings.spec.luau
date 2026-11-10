@@ -63,6 +63,18 @@ Test.describe("Strings", function()
 		expect(Strings.t("loading_title", "zz")).toBe(Strings.t("loading_title", "en"))
 		expect(Strings.t("unknown_key")).toBe("unknown_key")
 	end)
+	Test.it("uses the specified Russian names in progress UI", function()
+		local locale = "ru"
+		expect(Strings.t("mine_world_enter", locale, 2, Strings.t("world_copper_caves", locale))).toBe(
+			"Мир 2 · Медные пещеры"
+		)
+		expect(Strings.t("upgrade_title", locale)).toBe("Улучшения")
+		expect(Strings.t("upgrade_stronger", locale)).toBe("Стань сильнее")
+		expect(Strings.t("morph_toast_power_10", locale)).toBe(
+			"Сила стала другой: Тяжёлый удар"
+		)
+		expect(Strings.t("upgrade_price", locale, 100)).toBe("100 мон.")
+	end)
 	Test.it("substitutes arguments and keeps buttons within twelve characters", function()
 		expect(Strings.t("creative_coins", "es", 100)).toBe("+100 monedas")
 		expect(Strings.t("mine_ult_value", "ru", 87, 232)).toBe(

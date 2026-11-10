@@ -5,6 +5,7 @@ local serde = require("@lune/serde")
 local Loader = require("../lib/loader")
 
 local config = serde.decode("json", fs.readFile("tests/fixtures/mine-config.json"))
+config.progress = Loader.load("src/shared/Config").progress
 local loader = Loader.withOverrides({ ["src/shared/Config"] = config })
 local Fixture = { config = config }
 

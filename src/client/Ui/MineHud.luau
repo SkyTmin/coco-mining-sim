@@ -76,7 +76,7 @@ function Hud.new(
 	local coinScale = Instance.new("UIScale")
 	coinScale.Parent = wallet
 	local worldCard =
-		card(gui, UDim2.fromOffset(188, 59), UDim2.new(0.5, 0, 0, 10), Vector2.new(0.5, 0))
+		card(gui, UDim2.fromOffset(196, 76), UDim2.new(0.5, 0, 0, 10), Vector2.new(0.5, 0))
 	local world = label(worldCard, UDim2.new(1, 0, 0, 32), ink, 16)
 	world.Name = "WorldProgress"
 	local rail = Instance.new("Frame")
@@ -94,6 +94,23 @@ function Hud.new(
 	round(endMark, 2)
 	local remaining = label(worldCard, UDim2.new(1, 0, 0, 19), ink, 12)
 	remaining.Name, remaining.Position = "PlateRemaining", UDim2.fromOffset(0, 38)
+	local power = label(worldCard, UDim2.new(1, -10, 0, 15), ink, 11)
+	power.Name, power.Position, power.TextScaled = "PowerAndHardness", UDim2.fromOffset(5, 57), true
+	local powerLimit = Instance.new("UITextSizeConstraint")
+	powerLimit.MinTextSize, powerLimit.MaxTextSize, powerLimit.Parent = 9, 11, power
+	local hits = Instance.new("Frame")
+	hits.Name, hits.Size, hits.AnchorPoint, hits.BackgroundTransparency =
+		"HitsRemaining", UDim2.fromOffset(76, 8), Vector2.new(0.5, 0.5), 1
+	hits.Parent = gui
+	local dots = {}
+	for i = 1, 8 do
+		local dot = Instance.new("Frame")
+		dot.Size, dot.Position, dot.BackgroundColor3, dot.BorderSizePixel =
+			UDim2.fromOffset(6, 6), UDim2.fromOffset((i - 1) * 10, 1), yellow, 0
+		dot.Parent = hits
+		round(dot, 6)
+		dots[i] = dot
+	end
 	local eye = button(gui, 51, UDim2.new(1, -15, 0, 48), Vector2.new(1, 0))
 	eye.Name = "MineCameraButton"
 	local gear = button(gui, 39, UDim2.new(1, -20, 0, 107), Vector2.new(1, 0))
@@ -144,6 +161,15 @@ function Hud.new(
 	bannerSize.MinTextSize, bannerSize.MaxTextSize, bannerSize.Parent = 12, 20, banner
 	local layers = label(bannerBox, UDim2.new(1, 0, 0, 25), ink, 17)
 	layers.Name = "FractureLayers"
+	local worldBanner =
+		card(gui, UDim2.fromOffset(274, 52), UDim2.new(0.5, 0, 0, 92), Vector2.new(0.5, 0))
+	worldBanner.Name, worldBanner.Visible = "WorldEntered", false
+	local newWorld = label(worldBanner, UDim2.new(1, -12, 0, 28), ink, 17)
+	newWorld.Position, newWorld.TextScaled = UDim2.fromOffset(6, 2), true
+	local nameLimit = Instance.new("UITextSizeConstraint")
+	nameLimit.MinTextSize, nameLimit.MaxTextSize, nameLimit.Parent = 10, 17, newWorld
+	local plateReward = label(worldBanner, UDim2.fromScale(1, 0.39), ink, 14)
+	plateReward.Position = UDim2.fromOffset(0, 29)
 	local money = {}
 	for i = 1, 10 do
 		local anchor = Instance.new("Part")
@@ -167,6 +193,9 @@ function Hud.new(
 		ult = ult,
 		ring = ring,
 		world = world,
+		power = power,
+		hits = hits,
+		dots = dots,
 		fill = fill,
 		remaining = remaining,
 		coins = coins,
@@ -174,6 +203,9 @@ function Hud.new(
 		cross = cross,
 		arrow = arrow,
 		bannerBox = bannerBox,
+		worldBanner = worldBanner,
+		newWorld = newWorld,
+		plateReward = plateReward,
 		banner = banner,
 		layers = layers,
 		money = money,
@@ -218,9 +250,30 @@ function Hud.set(h: any, front: number, coins: number, charge: number, cap: numb
 	end
 end
 
+function Hud.power(h: any, strength: string, hardness: string, count: number, point: Vector3?)
+	h.power.Text = h.translate("mine_power_hardness", strength, hardness)
+	local camera = workspace.CurrentCamera
+	h.hits.Visible = false
+	if camera and point and count > 0 then
+		local p, visible = camera:WorldToViewportPoint(point)
+		h.hits.Visible = visible
+		h.hits.Size = UDim2.fromOffset(count * 10 - 4, 8)
+		h.hits.Position = UDim2.fromOffset(p.X, p.Y + 14)
+		for i, dot in h.dots do
+			dot.Visible = i <= count
+		end
+	end
+end
+
 function Hud.rollPlate(h: any, oldFront: number, newFront: number, now: number)
 	local world = Worlds.of(newFront)
 	h.plateRoll = { at = now, from = world.plateDepth - math.max(world.start, oldFront) }
+end
+
+function Hud.enterWorld(h: any, now: number, world: Worlds.World, reward: number)
+	h.worldEntered = { at = now, world = world, reward = reward }
+	h.worldBanner.BackgroundColor3 =
+		cream:Lerp(Color3.fromRGB(world.color[1], world.color[2], world.color[3]), 0.22)
 end
 
 function Hud.coin(h: any, position: Vector3, amount: number)
@@ -269,6 +322,16 @@ function Hud.step(h: any, now: number, active: boolean, crosshair: boolean, hint
 					UDim2.fromOffset(p.X, p.Y), math.deg(math.atan2(direction.Y, direction.X)), true
 			end
 		end
+	end
+	local entered = h.worldEntered
+	h.worldBanner.Visible = entered ~= nil and now - entered.at < 3
+	if h.worldBanner.Visible then
+		h.newWorld.Text = h.translate(
+			"mine_world_enter",
+			entered.world.index,
+			h.translate("world_" .. entered.world.id)
+		)
+		h.plateReward.Text = h.translate("mine_plate_reward", Format.short(entered.reward))
 	end
 	local reward = h.reward
 	h.bannerBox.Visible = reward ~= nil and now - reward.at < 1.55

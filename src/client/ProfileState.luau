@@ -8,6 +8,8 @@ local Types = require(Shared.Types)
 local Wire = require(Shared.Wire)
 
 local ProfileState = {}
+local changed = Instance.new("BindableEvent")
+ProfileState.changed = changed.Event
 local profile: Types.Profile? = nil
 local earlyPatches: { { Types.ProfilePatchOp } } = {}
 local overrides: { [string]: any } = {}
@@ -69,11 +71,13 @@ function ProfileState.setSnapshot(snapshot: any)
 	end
 	table.clear(earlyPatches)
 	profile = decoded
+	changed:Fire()
 end
 
 function ProfileState.applyPatch(ops: { Types.ProfilePatchOp })
 	if profile then
 		apply(profile, ops)
+		changed:Fire()
 	else
 		table.insert(earlyPatches, ops)
 	end

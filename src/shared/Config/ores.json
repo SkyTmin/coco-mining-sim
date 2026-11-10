@@ -302,5 +302,93 @@
       238,
       179
     ]
+  },
+  {
+    "id": "firefly_amber",
+    "color": [
+      255,
+      198,
+      80
+    ]
+  },
+  {
+    "id": "red_stone",
+    "color": [
+      148,
+      83,
+      55
+    ]
+  },
+  {
+    "id": "white_stone",
+    "color": [
+      200,
+      191,
+      198
+    ]
+  },
+  {
+    "id": "sandstone",
+    "color": [
+      167,
+      129,
+      86
+    ]
+  },
+  {
+    "id": "frozen_stone",
+    "color": [
+      106,
+      144,
+      162
+    ]
+  },
+  {
+    "id": "mycelium",
+    "color": [
+      109,
+      84,
+      126
+    ]
+  },
+  {
+    "id": "onyx",
+    "color": [
+      57,
+      50,
+      62
+    ]
+  },
+  {
+    "id": "terracotta",
+    "color": [
+      155,
+      83,
+      66
+    ]
+  },
+  {
+    "id": "garnet",
+    "color": [
+      118,
+      30,
+      62
+    ]
+  },
+  {
+    "id": "lightstone",
+    "color": [
+      183,
+      175,
+      154
+    ]
+  },
+  {
+    "id": "stardust",
+    "color": [
+      154,
+      134,
+      213
+    ]
   }
 ]

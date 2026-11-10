@@ -18,6 +18,8 @@ Test.describe("Mining sounds", function()
 		end
 		expect(AudioRules.volume("link_note", 2)).toBe(0.12)
 		expect(AudioRules.volume("ult_thud", 2)).toBe(0.5)
+		expect(AudioRules.volume("depth_knock", 2)).toBe(0.15)
+		expect(AudioRules.volume("buy_soft", 2)).toBe(0.25)
 	end)
 	Test.it("has five distinct, non-repeating hit and break variants", function()
 		for _, name in { "hit_soft", "break_soft" } do
@@ -31,6 +33,24 @@ Test.describe("Mining sounds", function()
 					assert(AudioRules.variant(#clips, previous, roll) ~= previous)
 				end
 			end
+		end
+	end)
+	Test.it("uses the new atlas segments and has no audio ID until the owner uploads it", function()
+		expect(Config.sounds.atlasId).toBe(nil)
+		for name, count in
+			{
+				buy_soft = 3,
+				crit_soft = 2,
+				depth_knock = 3,
+				level_tick = 1,
+				card_morph = 1,
+				heavy_hit = 1,
+				coin_rain = 1,
+				world_enter = 1,
+				locked = 1,
+			}
+		do
+			expect(#Config.sounds.clips[name]).toBe(count)
 		end
 	end)
 	Test.it("quietens sustained digging and recovers during a pause", function()

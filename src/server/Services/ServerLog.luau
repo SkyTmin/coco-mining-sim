@@ -8,11 +8,24 @@ local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local ServerLog = {}
 local LIMIT = 20
 
+function ServerLog.analytics(message: string, failed: boolean)
+	local text = "[Analytics] " .. message
+	if failed then
+		warn(text)
+	else
+		print(text)
+	end
+end
+
 function ServerLog.Start()
 	local remote = Remotes.event("ServerLog")
 	local recent: { { at: number, message: string, kind: Enum.MessageType } } = {}
 	LogService.MessageOut:Connect(function(message, kind)
-		if kind ~= Enum.MessageType.MessageWarning and kind ~= Enum.MessageType.MessageError then
+		if
+			kind ~= Enum.MessageType.MessageWarning
+			and kind ~= Enum.MessageType.MessageError
+			and message:sub(1, 12) ~= "[Analytics] "
+		then
 			return
 		end
 		local now = os.clock()

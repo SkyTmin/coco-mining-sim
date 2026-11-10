@@ -64,15 +64,10 @@ end
 
 local function fillQuota(key: number, world: World, reserved: number, counts: { number })
 	local weights = world.weights
-	local rareFrom = world.rareFrom
 	local roll = step(key)
-	local rich = 1 + world.richness * (2 * roll * SCALE - 1)
 	local remaining = CHUNK
 	for ore = #weights, 2, -1 do
 		local expected = CHUNK * weights[ore]
-		if ore >= rareFrom then
-			expected *= rich
-		end
 		local amount = floor(expected)
 		roll = step(roll)
 		if roll * SCALE < expected - amount then

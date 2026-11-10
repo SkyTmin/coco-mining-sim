@@ -7,6 +7,7 @@ local MineState = require(script.Parent.MineState)
 local MineGen = require(script.Parent.MineGen)
 local Shapes = require(script.Parent.Shapes)
 local Worlds = require(script.Parent.Worlds)
+local Power = require(script.Parent.Parent.Play.Power)
 type State = MineState.MineState
 type Range = MineState.Range
 
@@ -64,7 +65,7 @@ local function hitPlate(st: State, depth: number, amount: number, res: HitResult
 	local world = Worlds.of(depth)
 	res.plateHit = amount
 	st.plateDamage += amount
-	if st.plateDamage >= world.plate.hp then
+	if st.plateDamage >= world.plate.hp * (1 - 1e-12) then
 		assert(MineState.breakPlate(st), "A plate must be exposed across the wall before it breaks")
 		res.plateBroken, res.plateReward = true, world.plate.reward
 		res.blocks += 1
@@ -77,15 +78,36 @@ local function hitPlate(st: State, depth: number, amount: number, res: HitResult
 	end
 end
 
+local function damageCell(
+	st: State,
+	x: number,
+	y: number,
+	d: number,
+	hp: number,
+	amount: number,
+	out: { Range }
+): number?
+	local key = MineState.cellKey(x, y, d)
+	local left = (1 - (st.damage[key] or 0)) * hp
+	if amount >= left * (1 - 1e-12) then
+		MineState.removeCell(st, x, y, d, out)
+		return math.max(0, amount - left)
+	end
+	st.damage[key] = 1 - (left - amount) / hp
+	return nil
+end
+
+local neighbors = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }
+
 function Resolve.hit(
 	st: State,
 	pick: Pick,
 	x: number,
 	y: number,
 	d: number,
-	_rng: (() -> number)?
+	strike: Power.Strike?
 ): HitResult?
-	local strength = pick.strength
+	local strength = if strike then strike.strength else pick.strength
 	if
 		not (strength > 0 and strength < math.huge)
 		or d >= st.front + mine.window
@@ -95,12 +117,12 @@ function Resolve.hit(
 	end
 
 	local barrier = MineState.barrier(st)
+	local res = result()
 	if d >= barrier then
 		if d ~= st.front or d ~= barrier then
 			return nil
 		end
-		local res = result()
-		hitPlate(st, barrier, strength, res)
+		hitPlate(st, barrier, Power.plate(strength, Worlds.of(barrier).plate.hp, false), res)
 		return res
 	end
 
@@ -108,26 +130,31 @@ function Resolve.hit(
 	if #shape == 0 then
 		return nil
 	end
-	local res = result()
-	local out: { Range } = {}
-	local durability = Worlds.durability(d)
-	local need = math.clamp(math.ceil(durability / strength), 1, mine.maxHitsPerBlock)
-	local ratio = strength / durability
-	local extra = 0
-	for _, threshold in mine.passThrough do
-		if ratio >= threshold then
-			extra += 1
+	-- A translated cross cannot reach an isolated corner of a three-row wall.
+	if pick.shape == "cross5" then
+		local hasSolid = false
+		for _, cell in shape do
+			hasSolid = hasSolid or MineState.isSolid(st, cell.x, cell.y, d)
+		end
+		if not hasSolid then
+			shape = { { x = x, y = y } }
 		end
 	end
+	local out: { Range } = {}
+	local hardness = Worlds.durability(d)
+	local hp = Power.blockHP(hardness, pick.strength)
+	local extra = Power.pierce(hardness, strength, strike) - 1
+	local overflow: { { x: number, y: number, amount: number } }? = if strike and strike.cracks
+		then {}
+		else nil
 	for _, cell in shape do
 		local column, row = cell.x, cell.y
 		if MineState.isSolid(st, column, row, d) then
-			local key = MineState.cellKey(column, row, d)
-			local hits = (st.damage[key] or 0) + 1
-			if hits < need then
-				st.damage[key] = hits
-			else
-				MineState.removeCell(st, column, row, d, out)
+			local excess = damageCell(st, column, row, d, hp, strength, out)
+			if excess then
+				if overflow and excess > 0 then
+					table.insert(overflow, { x = column, y = row, amount = excess })
+				end
 				local nextDepth = d + 1
 				for _ = 1, extra do
 					nextDepth = MineState.nextSolid(st, column, row, nextDepth)
@@ -136,6 +163,17 @@ function Resolve.hit(
 					end
 					MineState.removeRange(st, column, row, nextDepth, nextDepth + 1, out)
 					nextDepth += 1
+				end
+			end
+		end
+	end
+	if overflow then
+		for _, spill in overflow do
+			for _, offset in neighbors do
+				local column, row = spill.x + offset[1], spill.y + offset[2]
+				if MineState.isExposed(st, column, row, d) then
+					damageCell(st, column, row, d, hp, spill.amount, out)
+					break
 				end
 			end
 		end
@@ -156,7 +194,7 @@ function Resolve.ult(st: State, pick: Pick): HitResult
 	MineState.removeLayers(st, st.front, finish, out)
 	tally(st, res, out)
 	if barrier < DEPTH_END and (finish > barrier or st.front == barrier) then
-		hitPlate(st, barrier, mine.plate.ultPlateHits * mine.plate.ultMultiplier, res)
+		hitPlate(st, barrier, Power.plate(pick.strength, Worlds.of(barrier).plate.hp, true), res)
 	end
 	return res
 end

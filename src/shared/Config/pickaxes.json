@@ -1,19 +1,11 @@
 {
   "starter": {
     "family": null,
-    "shape": "single",
-    "strength": 1,
-    "interval": 0.35,
-    "ultLayers": 10,
-    "ultCharge": 45
+    "rarity": "wood"
   },
   "storm_common": {
     "family": "storm",
-    "shape": "single",
-    "strength": 1,
-    "interval": 0.35,
-    "ultLayers": 10,
-    "ultCharge": 45,
+    "rarity": "common",
     "storm": {
       "jumps": [
         3,
@@ -21,5 +13,17 @@
       ],
       "pickRareWithin": 2
     }
+  },
+  "plain_common": {
+    "rarity": "common"
+  },
+  "plain_rare": {
+    "rarity": "rare"
+  },
+  "plain_epic": {
+    "rarity": "epic"
+  },
+  "plain_legendary": {
+    "rarity": "legendary"
   }
 }

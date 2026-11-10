@@ -11,7 +11,21 @@ export type Settings = {
 	effects: string,
 }
 
+export type Circle = {
+	hitSize: number,
+	pickLevels: { [string]: number },
+	cards: { [string]: number },
+}
+
 export type Profile = {
+	circle: Circle,
+	width: number,
+	unlocked: { cards: { [string]: boolean }, worlds: { [string]: boolean } },
+	deepestWorld: number,
+	platesBroken: number,
+	hitCounter: number,
+	critCounter: number,
+	funnel: { [string]: boolean },
 	v: number,
 	coins: number,
 	pickaxe: string,

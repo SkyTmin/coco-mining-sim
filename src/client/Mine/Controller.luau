@@ -7,20 +7,28 @@ local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local Remotes = require(Shared.Remotes)
 local Sfx = require(Shared.Sfx)
+local Upgrade = require(Shared.Play.Upgrade)
+local Format = require(Shared.Format)
+local Strings = require(Shared.Strings)
 local Wire = require(Shared.Mine.MineWire)
 local State = require(Shared.Mine.MineState)
 local Worlds = require(Shared.Mine.Worlds)
+local Circle = require(Shared.Play.Circle)
+local Power = require(Shared.Play.Power)
+local Shapes = require(Shared.Mine.Shapes)
 local Ride = require(Shared.Mine.Ride)
 
 local Client = script.Parent.Parent
 local ProfileState = require(Client.ProfileState)
 local Wall = require(script.Parent.WallRenderer)
 local Tunnel = require(script.Parent.TunnelDecor)
+local DepthSign = require(script.Parent.DepthSign)
 local Aim = require(script.Parent.Aim)
 local Camera = require(script.Parent.Camera)
 local Input = require(script.Parent.Input)
 local Hud = require(Client.Ui.MineHud)
 local Settings = require(Client.Ui.MineSettings)
+local Upgrades = require(Client.Ui.Upgrades)
 local Intensity = require(Client.Fx.Intensity)
 local Break = require(Client.Fx.BlockBreak)
 local Lightning = require(Client.Fx.Lightning)
@@ -68,6 +76,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local intensity = Intensity.new()
 	local view: Camera.View? = nil
 	local renderer: Wall.Renderer? = nil
+	local depthSign: DepthSign.Sign? = nil
+	local spectatorSigns: { [BasePart]: DepthSign.Sign } = {}
 	local tunnel: any, breaking: any, lightning: any, debris: any
 	local window: any, ride: any, pending: any
 	local events: { any } = {}
@@ -89,16 +99,14 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local function profile(): any
 		return ProfileState.getProfile()
 	end
-	local function pick(): Config.PickaxeConfig
+	local defaultCircle = Circle.new()
+	local function pick(): Circle.Pick
 		local p = profile()
 		local id = player:GetAttribute("MinePickaxe") or (p and p.pickaxe) or "starter"
-		return Config.pickaxes[id] or Config.pickaxes.starter
-	end
-	local function need(depth: number): number
-		return math.clamp(
-			math.ceil(Worlds.durability(depth) / pick().strength),
-			1,
-			mine.maxHitsPerBlock
+		return Circle.pick(
+			id,
+			(p and p.circle) or defaultCircle,
+			if window then window.front else 0
 		)
 	end
 	local function currentOffset(now: number): number
@@ -118,6 +126,26 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			)
 		end
 	end
+	local stepUpgrades = Upgrades.new(guiParent, player, translate, haptic)
+	local previousCards: { [string]: number }? = nil
+	ProfileState.changed:Connect(function()
+		local p = ProfileState.getProfile()
+		if p then
+			local cards = p.circle.cards
+			if previousCards and cards ~= previousCards then
+				for _, id in Upgrade.cards do
+					if #Upgrade.morphs(id, previousCards[id] or 0, cards[id] or 0) > 0 then
+						local now = os.clock()
+						Intensity.flash(intensity, 0.2, WARM, now)
+						haptic("morph", now)
+						Sfx.play("card_morph", 0.68)
+					end
+				end
+			end
+			previousCards = cards
+		end
+	end)
+	local lastTarget: any = nil
 	local function resync()
 		pending, dirty = nil, true
 		local now = os.clock()
@@ -140,6 +168,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local frame = origin.CFrame
 		renderer = Wall.new(world, frame)
 		tunnel = Tunnel.new(world, frame)
+		depthSign = DepthSign.new(world, frame, window.front)
+		spectatorSigns = DepthSign.spectators(world, plots :: Instance, plot)
 		breaking = Break.new(world)
 		lightning = Lightning.new(world)
 		debris = TravelDebris.new(world, frame)
@@ -185,24 +215,41 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			return
 		end
 		local cell = target or { x = 0, y = 0, dRel = 0 }
+		if target then
+			lastTarget = { x = target.x, y = target.y, depth = window.front + target.dRel }
+		end
 		seq = seq % 65535 + 1
 		local position = cell.position or targetPosition(cell, currentOffset(now))
 		local expected = { seq = seq, at = now, position = position }
 		if not ability then
 			local depth = window.front + cell.dRel
 			local plate = Wall.ore(window, cell.x, cell.y, cell.dRel) == Wire.PLATE
-			local hits = 1
+			local progress = 0
 			for _, damage in window.damage do
 				if damage.x == cell.x and damage.y == cell.y and damage.dRel == cell.dRel then
-					hits += damage.amount
+					progress = damage.amount / 255
 					break
 				end
 			end
 			if not plate then
-				if hits >= need(depth) then
-					expected.hidden = State.cellKey(cell.x, cell.y, depth)
-				else
-					expected.damage = { x = cell.x, y = cell.y, dRel = cell.dRel, amount = hits }
+				local shape =
+					Shapes.cells(settings.shape, cell.x, cell.y, window.width, window.height)
+				for _, point in shape do
+					if point.x == cell.x and point.y == cell.y then
+						local hp = Power.blockHP(Worlds.durability(depth), settings.strength)
+						local after = progress + settings.strength / hp
+						if after >= 1 - 0.5 / 255 then
+							expected.hidden = State.cellKey(cell.x, cell.y, depth)
+						else
+							expected.damage = {
+								x = cell.x,
+								y = cell.y,
+								dRel = cell.dRel,
+								amount = Power.packDamage(after),
+							}
+						end
+						break
+					end
 				end
 			end
 			Break.hit(breaking, position, cell.color or WARM, S, expected.hidden ~= nil, quality)
@@ -341,6 +388,20 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			return a.at < b.at
 		end)
 		if not res.ability then
+			if res.heavy or res.crit or res.rain then
+				if res.heavy and view then
+					Camera.emphasize(view, now)
+				end
+				Intensity.flash(intensity, if res.heavy or res.mega then 0.2 else 0.10, WARM, now)
+				if res.heavy then
+					Sfx.play("heavy_hit", 0.7)
+				elseif res.crit then
+					Sfx.play("crit_soft", 0.64)
+				end
+				if res.rain then
+					Sfx.play("coin_rain", 0.63)
+				end
+			end
 			if res.blocks > 0 and not plateBroken then
 				if not expected or not expected.hidden or res.blocks > 1 then
 					Sfx.play("break_soft", 0.7)
@@ -413,6 +474,17 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			if ride.plateBroken then
 				Sfx.play("plate_break", 0.78)
 				haptic("plate", now)
+				local nextWorld = Worlds.of(window.front)
+				local oldWorld = Worlds.of(ride.oldFront)
+				if nextWorld.index > oldWorld.index then
+					local rgb = nextWorld.color
+					Intensity.flash(intensity, 0.2, Color3.fromRGB(rgb[1], rgb[2], rgb[3]), now)
+					Hud.enterWorld(hud, now, nextWorld, oldWorld.plate.reward)
+					Sfx.play("world_enter", 0.66)
+					task.delay(0.17, function()
+						haptic("world", os.clock())
+					end)
+				end
 			elseif not atPlate then
 				haptic(if ride.ability then "ultimate" else "ride", now)
 			end
@@ -486,13 +558,21 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	for _, attribute in { "language", "MineLanguage" } do
 		player:GetAttributeChangedSignal(attribute):Connect(function()
 			dirty = true
+			if depthSign then
+				DepthSign.refresh(depthSign)
+			end
+			for _, sign in spectatorSigns do
+				DepthSign.refresh(sign)
+			end
 		end)
 	end
 	Input.start({
 		active = canControl,
 		canHit = canHit,
 		first = function()
-			return view ~= nil and view.mode == "first"
+			return view ~= nil
+				and view.mode == "first"
+				and player:GetAttribute("MineUpgradesOpen") ~= true
 		end,
 		aim = aim,
 		hit = function(target)
@@ -563,9 +643,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 
 		local phase, progress = "idle", 0
+		local finishNumber = false
 		if ride then
 			ride.frames += 1
 			phase, progress = Ride.phase(ride.timeline, now - ride.at)
+			finishNumber = phase == "landed" and ride.ability and ride.delta > 0
 		end
 		if phase ~= lastPhase or (ride and ride.entered ~= phase) then
 			lastPhase, dirty = phase, true
@@ -575,6 +657,21 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			enterPhase(phase, now)
 			if studio then
 				player:SetAttribute("Stage02bPhase", phase)
+			end
+		end
+		if depthSign then
+			local display = if not ride
+				then window.front
+				elseif phase == "approach" then ride.oldFront + math.floor(
+					ride.delta * progress
+				)
+				else ride.oldFront
+			DepthSign.step(depthSign, now, display, finishNumber, reduced, active)
+		end
+		for origin, sign in spectatorSigns do
+			local depth = origin:GetAttribute("MineFront")
+			if typeof(depth) == "number" then
+				DepthSign.step(sign, now, depth, false, reduced, false)
 			end
 		end
 		local shown, visible, offset = window, RENDER_DEPTH[override], 0
@@ -601,7 +698,16 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 		end
 		Camera.glow(v, if phase == "windup" and active then color else nil)
-		Tunnel.atmosphere(tunnel, active, if shown then shown.front else window.front, override)
+		Tunnel.width(tunnel, window.width)
+		Tunnel.atmosphere(
+			tunnel,
+			active,
+			if ride and ride.plateBroken
+				then ride.oldFront
+				elseif shown then shown.front
+				else window.front,
+			override
+		)
 		if waveDepth or waveShowing then
 			Tunnel.wave(tunnel, waveDepth, if reduced then 0.50 else 1 - 0.42 * progress, color)
 			waveShowing = waveDepth ~= nil
@@ -617,14 +723,14 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					table.insert(renderWindow.damage, pending.damage)
 				end
 				Wall.update(r, renderWindow, visible, pending and pending.hidden)
-				Break.cracks(breaking, r, renderWindow, need, State.cellKey)
+				Break.cracks(breaking, r, renderWindow, State.cellKey)
 			else
 				Wall.clear(r)
 			end
 			lastShown, lastVisible = shown, visible
 		end
 		if phase == "windup" then
-			Break.cracks(breaking, r, shown, need, State.cellKey, progress, color)
+			Break.cracks(breaking, r, shown, State.cellKey, progress, color)
 		end
 		local sceneWindow = shown or window
 		local plate = Ride.plate(
@@ -677,7 +783,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		Lightning.step(lightning, now)
 		Break.step(breaking, now)
 		Camera.step(v, active, Intensity.sample(intensity, r.frame, now, reduced, active))
-		local cap = pick().ultCharge
+		local equipped = pick()
+		local cap = equipped.ultCharge
 		if lastCharge >= 0 and lastCharge < cap and window.charge >= cap then
 			Sfx.play("link_note", 0.85, 1.65)
 		end
@@ -689,6 +796,57 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			window.charge,
 			cap
 		)
+		local camera = workspace.CurrentCamera
+		local aimed: any = nil
+		if camera and canHit() then
+			if UserInputService.TouchEnabled then
+				local tap = lastTarget
+				if tap and Wall.exposed(window, tap.x, tap.y, tap.depth - window.front) then
+					aimed = {
+						x = tap.x,
+						y = tap.y,
+						dRel = tap.depth - window.front,
+						position = targetPosition(
+							{ x = tap.x, y = tap.y, dRel = tap.depth - window.front },
+							0
+						),
+					}
+				end
+			else
+				local point = if v.mode == "first"
+						and player:GetAttribute("MineUpgradesOpen") ~= true
+					then camera.ViewportSize / 2
+					else UserInputService:GetMouseLocation()
+				aimed = Aim.at(r, window, point, false)
+			end
+		end
+		local depth = if aimed then window.front + aimed.dRel else window.front
+		local hardness = Worlds.durability(depth)
+		local need = Power.hits(hardness, equipped.strength)
+		local left = need
+		if aimed and need >= 2 then
+			for _, damage in window.damage do
+				if damage.x == aimed.x and damage.y == aimed.y and damage.dRel == aimed.dRel then
+					local hp = Power.blockHP(hardness, equipped.strength)
+					left = math.clamp(
+						math.ceil((1 - damage.amount / 255 - 0.5 / 255) * hp / equipped.strength),
+						1,
+						need
+					)
+					break
+				end
+			end
+		end
+		local locale = Strings.localeOf(player)
+		local plate = aimed and Wall.ore(window, aimed.x, aimed.y, aimed.dRel) == Wire.PLATE
+		Hud.power(
+			hud,
+			Format.stat(equipped.strength, locale),
+			Format.stat(hardness, locale),
+			if need >= 2 and not plate then left else 0,
+			aimed and aimed.position
+		)
+		stepUpgrades(now, active, window.front, need, equipped.strength, reduced)
 		local hint = nil
 		if r.pulse.Enabled then
 			r.pulse.FillTransparency = 0.60 + math.sin(now * 6) * 0.19

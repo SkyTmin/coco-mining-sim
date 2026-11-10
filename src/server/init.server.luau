@@ -16,8 +16,10 @@ for _, service in
 		services.MineService,
 		services.PickaxeService,
 		services.HitService,
+		services.UpgradeService,
 		services.CreativeService,
 		services.ServerLog,
+		services.Analytics,
 		services.ProfileService,
 	}
 do

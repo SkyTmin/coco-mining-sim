@@ -2,11 +2,22 @@
 
 local rules = require(script.Parent.Config).sounds.rules
 local AudioRules = {}
-local frequent: { [string]: boolean } = { hit_soft = true, break_soft = true, coin = true }
+local frequent: { [string]: boolean } = {
+	hit_soft = true,
+	break_soft = true,
+	coin = true,
+	buy_soft = true,
+	level_tick = true,
+	heavy_hit = true,
+	crit_soft = true,
+	coin_rain = true,
+	locked = true,
+}
 
 function AudioRules.volume(name: string, gain: number): number
 	local cap = if name == "link_note"
 		then rules.linkVolume
+		elseif name == "depth_knock" then rules.depthVolume
 		elseif frequent[name] then rules.frequentVolume
 		else rules.maxVolume
 	return cap * math.clamp(gain, 0, 1)
