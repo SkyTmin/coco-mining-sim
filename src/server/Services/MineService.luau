@@ -95,6 +95,7 @@ end
 
 function MineService.window(s: Session)
 	local st = s.state
+	PlotService.depth(s.plot, st.front)
 	send(
 		windowRemote,
 		s.plot,
@@ -112,6 +113,7 @@ function MineService.window(s: Session)
 end
 
 function MineService.result(s: Session, res: any)
+	PlotService.depth(s.plot, s.state.front)
 	send(resultRemote, s.plot, Wire.encodeResult(res))
 end
 

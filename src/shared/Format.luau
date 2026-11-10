@@ -49,4 +49,12 @@ function Format.grouped(n: number): string
 	return (if n < 0 then "-" else "") .. table.concat(groups, "\u{202F}")
 end
 
+function Format.depth(n: number, locale: string?): string
+	if math.abs(n) < 10000 then
+		return Format.grouped(n)
+	end
+	local short = Format.short(n)
+	return if locale and locale ~= "en" then (short:gsub("%.", ",")) else short
+end
+
 return Format

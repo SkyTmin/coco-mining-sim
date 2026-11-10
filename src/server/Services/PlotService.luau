@@ -10,7 +10,7 @@ local HEIGHT = mine.height * S
 local SPECTATORS = plots.spectatorDepth * S
 
 local PlotService = {}
-local slots: { [number]: { frame: CFrame, owner: Player? } } = {}
+local slots: { [number]: { frame: CFrame, origin: Part, owner: Player? } } = {}
 local assignments: { [Player]: number } = {}
 
 local function part(
@@ -30,6 +30,13 @@ end
 
 function PlotService.get(player: Player): number?
 	return assignments[player]
+end
+
+function PlotService.depth(plot: number, front: number)
+	local slot = slots[plot]
+	if slot and slot.owner and slot.origin:GetAttribute("MineFront") ~= front then
+		slot.origin:SetAttribute("MineFront", front)
+	end
 end
 
 function PlotService.onOwnPlatform(player: Player): boolean
@@ -65,12 +72,12 @@ function PlotService.Start()
 		local outward = Vector3.new(math.sin(angle), 0, -math.cos(angle))
 		local position = outward * (radius + DEPTH + SPECTATORS)
 		local frame = CFrame.lookAt(position, position + outward)
-		slots[i] = { frame = frame }
 		local model = Instance.new("Model")
 		model.Name = "Plot_" .. tostring(i)
 		model.Parent = root
 		local origin = part(model, "Origin", Vector3.one, frame, gray)
 		origin.Transparency, origin.CanCollide, origin.CanQuery = 1, false, false
+		slots[i] = { frame = frame, origin = origin }
 		part(
 			model,
 			"Platform",
@@ -148,6 +155,7 @@ function PlotService.Start()
 		local i = assignments[player]
 		if i then
 			slots[i].owner, assignments[player] = nil, nil
+			slots[i].origin:SetAttribute("MineFront", nil)
 		end
 	end)
 	for _, player in Players:GetPlayers() do

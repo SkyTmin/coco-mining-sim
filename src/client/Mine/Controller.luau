@@ -16,6 +16,7 @@ local Client = script.Parent.Parent
 local ProfileState = require(Client.ProfileState)
 local Wall = require(script.Parent.WallRenderer)
 local Tunnel = require(script.Parent.TunnelDecor)
+local DepthSign = require(script.Parent.DepthSign)
 local Aim = require(script.Parent.Aim)
 local Camera = require(script.Parent.Camera)
 local Input = require(script.Parent.Input)
@@ -68,6 +69,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local intensity = Intensity.new()
 	local view: Camera.View? = nil
 	local renderer: Wall.Renderer? = nil
+	local depthSign: DepthSign.Sign? = nil
+	local spectatorSigns: { [BasePart]: DepthSign.Sign } = {}
 	local tunnel: any, breaking: any, lightning: any, debris: any
 	local window: any, ride: any, pending: any
 	local events: { any } = {}
@@ -140,6 +143,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local frame = origin.CFrame
 		renderer = Wall.new(world, frame)
 		tunnel = Tunnel.new(world, frame)
+		depthSign = DepthSign.new(world, frame, window.front)
+		spectatorSigns = DepthSign.spectators(world, plots :: Instance, plot)
 		breaking = Break.new(world)
 		lightning = Lightning.new(world)
 		debris = TravelDebris.new(world, frame)
@@ -486,6 +491,12 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	for _, attribute in { "language", "MineLanguage" } do
 		player:GetAttributeChangedSignal(attribute):Connect(function()
 			dirty = true
+			if depthSign then
+				DepthSign.refresh(depthSign)
+			end
+			for _, sign in spectatorSigns do
+				DepthSign.refresh(sign)
+			end
 		end)
 	end
 	Input.start({
@@ -563,9 +574,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 
 		local phase, progress = "idle", 0
+		local finishNumber = false
 		if ride then
 			ride.frames += 1
 			phase, progress = Ride.phase(ride.timeline, now - ride.at)
+			finishNumber = phase == "landed" and ride.ability and ride.delta > 0
 		end
 		if phase ~= lastPhase or (ride and ride.entered ~= phase) then
 			lastPhase, dirty = phase, true
@@ -575,6 +588,21 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			enterPhase(phase, now)
 			if studio then
 				player:SetAttribute("Stage02bPhase", phase)
+			end
+		end
+		if depthSign then
+			local display = if not ride
+				then window.front
+				elseif phase == "approach" then ride.oldFront + math.floor(
+					ride.delta * progress
+				)
+				else ride.oldFront
+			DepthSign.step(depthSign, now, display, finishNumber, reduced, active)
+		end
+		for origin, sign in spectatorSigns do
+			local depth = origin:GetAttribute("MineFront")
+			if typeof(depth) == "number" then
+				DepthSign.step(sign, now, depth, false, reduced, false)
 			end
 		end
 		local shown, visible, offset = window, RENDER_DEPTH[override], 0

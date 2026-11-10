@@ -3,6 +3,7 @@
 local Lighting = game:GetService("Lighting")
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
+local Format = require(Shared.Format)
 local Worlds = require(Shared.Mine.Worlds)
 
 local S = Config.mine.blockSize
@@ -125,12 +126,11 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 		local marker = part(moving, "DepthMark", Vector3.new(4, 0.09, 5), frame, gray)
 		local surface = Instance.new("SurfaceGui")
 		surface.Face, surface.CanvasSize, surface.LightInfluence, surface.Parent =
-			Enum.NormalId.Top, Vector2.new(160, 160), 0, marker
+			Enum.NormalId.Back, Vector2.new(200, 80), 0, marker
 		local text = Instance.new("TextLabel")
-		text.Name, text.Rotation, text.Size, text.BackgroundTransparency =
-			"DepthNumber", 180, UDim2.fromScale(1, 1), 1
+		text.Name, text.Size, text.BackgroundTransparency = "DepthNumber", UDim2.fromScale(1, 1), 1
 		text.Font, text.TextScaled, text.TextColor3, text.Parent =
-			Enum.Font.GothamBold, true, Color3.fromRGB(255, 245, 220), surface
+			Enum.Font.GothamBold, true, Color3.fromRGB(44, 34, 29), surface
 		table.insert(ticks, { part = marker, text = text })
 	end
 
@@ -239,16 +239,17 @@ function Tunnel.moves(
 		local depth = offset + (n - win.front) * S
 		while depth < limit do
 			local tick = t.ticks[nextTick]
-			tick.part.Transparency, tick.text.Parent.Enabled = 0, true
-			tick.part.Size = Vector3.new(4, 0.09, if step == 100 then 12 else 5)
-			local hundred = n % 100 == 0
-			tick.part.Color = if hundred then LAMP else Color3.fromRGB(48, 57, 65)
-			tick.part.Material = if hundred then Enum.Material.Neon else Enum.Material.Metal
-			tick.text.TextColor3 = if hundred
-				then Color3.fromRGB(44, 34, 29)
-				else Color3.fromRGB(255, 245, 220)
-			tick.text.Text = tostring(n)
-			move(tick.part, 0, 0.045, depth)
+			local distant = step == 100
+			tick.part.Transparency, tick.text.Parent.Enabled = 0, distant
+			tick.part.Size = if distant
+				then Vector3.new(4, 1.55, 0.14)
+				else Vector3.new(4, 0.06, 0.35)
+			tick.part.Color = if distant then LAMP else Color3.fromRGB(127, 145, 161)
+			tick.part.Material = if distant then Enum.Material.Neon else Enum.Material.Metal
+			if distant then
+				tick.text.Text = Format.depth(n)
+			end
+			move(tick.part, 0, if distant then 0.8 else 0.045, depth)
 			nextTick += 1
 			n += step
 			depth += step * S
