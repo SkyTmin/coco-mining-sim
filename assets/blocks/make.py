@@ -123,6 +123,7 @@ def candy_ore(px, kind, cx, cy, r, fill, light, outline, rock=None, seed=0):
     body = mask(kind, cx, cy, r)
     inside = lambda q: LO32 <= q[0] <= HI32 and LO32 <= q[1] <= HI32  # noqa: E731
     socket = dilate(body, 1) - body
+    small = r < 2.2  # crumbs: a full dark rim + socket turns them into holes, keep them in the ore's own colour
     lip = dilate(body, 2) - body - socket
     stain = dilate(body, 4) - body - socket - lip
     if rock is not None:
@@ -135,8 +136,9 @@ def candy_ore(px, kind, cx, cy, r, fill, light, outline, rock=None, seed=0):
         for x, y in socket:
             if inside((x, y)):
                 upper = (x + 0.5 - cx) + (y + 0.5 - cy) < 0
-                px[x, y] = shade(px[x, y], -0.55 if upper else -0.32)
-    edge = shade(fill, -0.55)
+                k = (-0.55 if upper else -0.32) * (0.55 if small else 1.0)
+                px[x, y] = shade(px[x, y], k)
+    edge = shade(fill, -0.3 if small else -0.55)
     dark = shade(fill, -0.3)
     rim = {(x, y) for x, y in body if any((x + dx, y + dy) not in body for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
     for x, y in body:
