@@ -156,7 +156,8 @@ function WallRenderer.update(
 	visible: number,
 	hidden: number?,
 	translate: (string, ...any) -> string,
-	strength: number
+	strength: number,
+	plateHud: boolean
 )
 	local radius = (win.width - 1) // 2
 	local used: { [number]: boolean } = {}
@@ -198,7 +199,7 @@ function WallRenderer.update(
 	end
 	r.pulse.Enabled = #frontCells > 0 and #frontCells <= 3 and not plate
 	local gui = r.plateLabel.Parent :: BillboardGui
-	gui.Enabled, gui.Adornee = plate ~= nil, if plate then plate.part else nil
+	gui.Enabled, gui.Adornee = plateHud and plate ~= nil, if plate then plate.part else nil
 	for _, rune in r.runes do
 		rune.Parent = if plate then r.model else nil
 	end
@@ -213,6 +214,19 @@ function WallRenderer.update(
 			else Color3.fromRGB(255, 163, 161)
 		r.plateLabel.Text =
 			translate("mine_plate", math.ceil(hp), world.plate.recommendedStrength, strength)
+	end
+end
+
+function WallRenderer.clear(r: Renderer)
+	for key, cell in r.cells do
+		r.cells[key], r.lookup[cell.part] = nil, nil
+		r.pool.release(cell.part)
+	end
+	r.pulse.Enabled = false
+	local gui = r.plateLabel.Parent :: BillboardGui
+	gui.Enabled, gui.Adornee = false, nil
+	for _, rune in r.runes do
+		rune.Parent = nil
 	end
 end
 

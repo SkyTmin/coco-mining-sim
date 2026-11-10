@@ -192,7 +192,15 @@ function CreativeWindow.start(
 		end
 	end)
 	for _, attribute in
-		{ "CreativeAllowed", "Creative", "language", "MineFPS", "MineParts", "MineHitMs" }
+		{
+			"CreativeAllowed",
+			"Creative",
+			"language",
+			"MineLanguage",
+			"MineFPS",
+			"MineParts",
+			"MineHitMs",
+		}
 	do
 		player:GetAttributeChangedSignal(attribute):Connect(refresh)
 	end

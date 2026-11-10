@@ -7,6 +7,7 @@ export type Settings = {
 	sfx: number,
 	ui: number,
 	reducedMotion: boolean,
+	haptics: boolean,
 	effects: string,
 }
 

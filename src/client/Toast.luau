@@ -1,5 +1,7 @@
 --!strict
 
+local player = game:GetService("Players").LocalPlayer
+
 type Translate = (string, ...any) -> string
 type Message = { key: string, args: { any }? }
 
@@ -38,6 +40,16 @@ function Toast.create(playerGui: Instance, translate: Translate): (string, { any
 
 	local queue: { Message } = {}
 	local showing = false
+	local current: Message? = nil
+	local function refresh()
+		local message = current
+		if message then
+			label.Text = translate(message.key, table.unpack(message.args or {}))
+		end
+	end
+	for _, attribute in { "language", "MineLanguage" } do
+		player:GetAttributeChangedSignal(attribute):Connect(refresh)
+	end
 	return function(key, args)
 		table.insert(queue, { key = key, args = args })
 		if showing then
@@ -46,12 +58,13 @@ function Toast.create(playerGui: Instance, translate: Translate): (string, { any
 		showing = true
 		task.spawn(function()
 			while #queue > 0 do
-				local message = table.remove(queue, 1)
-				label.Text = translate(message.key, table.unpack(message.args or {}))
+				current = table.remove(queue, 1)
+				refresh()
 				label.Visible = true
 				task.wait(4)
 			end
 			label.Visible = false
+			current = nil
 			showing = false
 		end)
 	end

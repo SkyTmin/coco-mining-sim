@@ -53,17 +53,36 @@ function BlockBreak.cracks(
 	renderer: any,
 	win: any,
 	need: (number) -> number,
-	keyFor: (number, number, number) -> number
+	keyFor: (number, number, number) -> number,
+	windup: number?,
+	tint: Color3?
 )
+	local front = {}
+	if windup then
+		for key, cell in renderer.cells do
+			if cell.d == win.front then
+				table.insert(front, key)
+			end
+		end
+		table.sort(front)
+	end
 	for i, item in fx.cracks do
 		local damage = win.damage[i]
-		local cell = damage and renderer.cells[keyFor(damage.x, damage.y, win.front + damage.dRel)]
+		local cell = if windup
+			then renderer.cells[front[i]]
+			else damage and renderer.cells[keyFor(damage.x, damage.y, win.front + damage.dRel)]
 		item.gui.Parent = if cell then cell.part else nil
 		if cell then
-			local stage =
-				math.clamp(math.ceil(damage.amount / need(win.front + damage.dRel) * 10), 1, 10)
+			local stage = if windup
+				then math.clamp(math.ceil((windup * 2 - (i - 1) / math.max(1, #front)) * 8), 0, 10)
+				else math.clamp(
+					math.ceil(damage.amount / need(win.front + damage.dRel) * 10),
+					1,
+					10
+				)
 			for j, line in item.lines do
 				line.Visible = j <= stage
+				line.BackgroundColor3 = tint or Color3.fromRGB(39, 29, 30)
 			end
 		end
 	end
@@ -75,11 +94,12 @@ function BlockBreak.hit(
 	color: Color3,
 	size: number,
 	breaking: boolean,
-	quality: number
+	quality: number,
+	toward: Vector3?
 )
 	local now = os.clock()
 	for _, shell in fx.shells do
-		if shell.untilAt <= now then
+		if not toward and shell.untilAt <= now then
 			local p = shell.part
 			p.Size, p.Position, p.Color, p.Transparency, p.Parent =
 				Vector3.one * (size * 1.01), position, Color3.new(1, 1, 1), 0.38, fx.parent
@@ -90,9 +110,9 @@ function BlockBreak.hit(
 	if now - fx.chipStart >= 1 then
 		fx.chipStart, fx.chipCount = now, 0
 	end
-	local requested = if breaking then rng:NextInteger(6, 8) else 2
-	local budget = if quality == 1 then 30 else 48
-	local maxActive = if quality == 1 then 30 else #fx.chips
+	local requested = if toward then 3 elseif breaking then rng:NextInteger(6, 8) else 2
+	local budget = if quality == 1 then 54 else 72
+	local maxActive = if quality == 1 then 24 else 40
 	local made = 0
 	for i = 1, maxActive do
 		local chip = fx.chips[i]
@@ -101,8 +121,11 @@ function BlockBreak.hit(
 			p.Color, p.Size, p.Position, p.Transparency, p.Parent =
 				color, Vector3.one * rng:NextNumber(0.22, 0.57), position, 0, fx.parent
 			chip.origin, chip.at, chip.untilAt = position, now, now + rng:NextNumber(0.4, 0.6)
-			chip.velocity =
-				Vector3.new(rng:NextNumber(-8, 8), rng:NextNumber(4, 12), rng:NextNumber(-6, 6))
+			chip.velocity = Vector3.new(
+				rng:NextNumber(-8, 8),
+				rng:NextNumber(4, 12),
+				rng:NextNumber(-6, 6)
+			) + (if toward then toward * rng:NextNumber(16, 30) else Vector3.zero)
 			fx.chipCount += 1
 			made += 1
 			if made >= requested then

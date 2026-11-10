@@ -14,6 +14,7 @@ export type View = {
 	swingDuration: number,
 	side: number,
 	ability: boolean,
+	glowing: { part: BasePart, material: Enum.Material, color: Color3 }?,
 }
 
 type ArmJoint = Motor6D | AnimationConstraint
@@ -62,14 +63,15 @@ function Camera.new(player: Player, frame: CFrame): View
 		local pitch = if view.mode == "first" then 0.06 + view.pitch * 0.5 else -0.48
 		local roll = if view.mode == "first" then 0.20 else -0.03
 		if elapsed >= 0 and elapsed < 1 then
-			local strength = if view.ability then 1.5 else 1
+			local strength = if not view.ability
+				then 1
+				elseif view.mode == "first" then 0.64
+				else 1.5
 			local wind = if view.ability
-				then (if elapsed < 0.09 / view.swingDuration
-					then 0
-					elseif elapsed < 0.60 / view.swingDuration then -0.60
-						* (elapsed * view.swingDuration - 0.09)
-						/ 0.51
-					else 0.46 * (1 - elapsed) / (1 - 0.60 / view.swingDuration))
+				then (if elapsed < 0.48
+					then -0.66 * elapsed / 0.48
+					elseif elapsed < 0.58 then -0.66 + 1.12 * (elapsed - 0.48) / 0.10
+					else 0.46 * (1 - elapsed) / 0.42)
 				elseif elapsed < 0.343 then -0.58 * elapsed / 0.343
 				elseif elapsed < 0.457 then -0.58 + 1.18 * (elapsed - 0.343) / 0.114
 				elseif elapsed < 0.629 then 0.6 - 0.8 * (elapsed - 0.457) / 0.172
@@ -114,7 +116,25 @@ local function transparency(character: Model, first: boolean)
 	end
 end
 
-function Camera.step(view: View, active: boolean, fov: number, shake: Vector3, pull: number)
+function Camera.glow(view: View, color: Color3?)
+	local old = view.glowing
+	if not old and not color then
+		return
+	end
+	local character = view.player.Character
+	local pick = character and character:FindFirstChild("MinePickaxe")
+	local head = pick and pick:FindFirstChild("Head")
+	if old and (not color or old.part ~= head) then
+		old.part.Material, old.part.Color = old.material, old.color
+		view.glowing = nil
+	end
+	if color and not view.glowing and head and head:IsA("BasePart") then
+		view.glowing = { part = head, material = head.Material, color = head.Color }
+		head.Material, head.Color = Enum.Material.Neon, color
+	end
+end
+
+function Camera.step(view: View, active: boolean, shake: Vector3)
 	local camera = workspace.CurrentCamera
 	local character = view.player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -146,7 +166,7 @@ function Camera.step(view: View, active: boolean, fov: number, shake: Vector3, p
 	end
 	view.active = true
 	camera.CameraType = Enum.CameraType.Scriptable
-	camera.FieldOfView = fov
+	camera.FieldOfView = 70
 	if humanoid then
 		humanoid.AutoRotate = false
 	end
@@ -158,6 +178,7 @@ function Camera.step(view: View, active: boolean, fov: number, shake: Vector3, p
 	end
 	local first = view.mode == "first"
 	local opened = view.player:GetAttribute("MineMenuOpen") == true
+		or view.player:GetAttribute("MineSettingsOpen") == true
 	local mouseLock = first
 		and UserInputService.MouseEnabled
 		and not UserInputService.TouchEnabled
@@ -167,13 +188,14 @@ function Camera.step(view: View, active: boolean, fov: number, shake: Vector3, p
 		else Enum.MouseBehavior.Default
 	UserInputService.MouseIconEnabled = not mouseLock
 	transparency(character, first)
+	local headCenter = Vector3.new(pos.X, head.Position.Y, pos.Z)
 	local eye = if first
-		then head.Position + facing * 0.12 + facing:Cross(Vector3.yAxis) * 0.10 + Vector3.new(
+		then headCenter + facing * 0.12 + facing:Cross(Vector3.yAxis) * 0.10 + Vector3.new(
 			0,
 			0.14,
 			0
 		)
-		else head.Position - facing * (11 + pull) + Vector3.new(0, 2.5, 0)
+		else headCenter - facing * 11 + Vector3.new(0, 2.5, 0)
 	camera.CFrame = CFrame.lookAt(eye + shake, eye + shake + direction)
 	camera.Focus = CFrame.new(eye + direction * 24)
 end

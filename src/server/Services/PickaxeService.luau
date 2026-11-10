@@ -7,6 +7,7 @@ local Remotes = require(Shared.Remotes)
 local ProfileService = require(script.Parent.ProfileService)
 local PickaxeService = {}
 local cameraAt: { [Player]: number } = {}
+local preferencesAt: { [Player]: number } = {}
 
 function PickaxeService.get(id: string?): Config.PickaxeConfig
 	return (id and Config.pickaxes[id]) or Config.pickaxes.starter
@@ -76,10 +77,45 @@ function PickaxeService.Start()
 		end
 	end)
 	Remotes.event("CameraView").OnServerEvent:Connect(function(player: Player, mode: any)
+		local now = os.clock()
+		if typeof(mode) == "table" then
+			if now - (preferencesAt[player] or -math.huge) < 0.1 then
+				return
+			end
+			local language, sfx, haptics, reduced =
+				mode.language, mode.sfx, mode.haptics, mode.reducedMotion
+			if
+				language ~= nil
+					and (typeof(language) ~= "string" or not table.find(
+						Config.game.languages,
+						language
+					))
+				or sfx ~= nil and (typeof(sfx) ~= "number" or not (sfx >= 0 and sfx <= 1))
+				or haptics ~= nil and typeof(haptics) ~= "boolean"
+				or reduced ~= nil and typeof(reduced) ~= "boolean"
+			then
+				return
+			end
+			if language == nil and sfx == nil and haptics == nil and reduced == nil then
+				return
+			end
+			preferencesAt[player] = now
+			ProfileService.Mutate(player, function(p)
+				local settings = p.settings
+				settings.language = language or settings.language
+				settings.sfx = sfx or settings.sfx
+				if haptics ~= nil then
+					settings.haptics = haptics
+				end
+				if reduced ~= nil then
+					settings.reducedMotion = reduced
+				end
+			end)
+			return
+		end
 		if mode ~= "first" and mode ~= "third" then
 			return
 		end
-		local now = os.clock()
 		if now - (cameraAt[player] or -math.huge) < 0.2 then
 			return
 		end
@@ -90,6 +126,7 @@ function PickaxeService.Start()
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		cameraAt[player] = nil
+		preferencesAt[player] = nil
 	end)
 end
 

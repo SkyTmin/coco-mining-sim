@@ -2,7 +2,7 @@
 -- RemoteEvents / RemoteFunctions under ReplicatedStorage.Remotes, created lazily on the server.
 -- Server -> client: ProfileUpdated(profile) once, then ProfilePatch(ops).
 -- Server -> client: Toast(key, args?), ServerLog(message, isError).
--- Client -> server: Creative(op, ...), MineIntent(buffer), CameraView(mode).
+-- Client -> server: Creative(op, ...), MineIntent(buffer), CameraView(mode or preference patch).
 -- Server -> plot subscribers: MineResult(buffer), MineWindow(buffer).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
