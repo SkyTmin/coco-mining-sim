@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from PIL import Image, ImageDraw  # noqa: E402
 
 import make  # noqa: E402
-from make import LAYOUT, N, SHAPES, draw_ore, frame, hexrgb, pebbles, shade  # noqa: E402
+from make import N, hexrgb, pebbles, shade  # noqa: E402
 
 
 def boulders(px, base, seed):
@@ -100,10 +100,10 @@ def points(px, base, seed):
 
 
 OPTIONS = {
-    2: ("#cf7a4e", "malachite", "gem", "shard", "#25b36f", "#9bf0bf",
+    2: ("#cf7a4e", "malachite", "gem", "oval", "#25b36f", "#9bf0bf",
         [("а", "крупные валуны", boulders), ("б", "грубая кладка", bricks), ("в", "медные прожилки", veins),
          ("г", "рыжая галька", pebbles), ("д", "песчаник полосами", sandstone), ("е", "пористый камень", pores)]),
-    3: ("#ddd6ea", "rose_quartz", "gem", "crystal", "#ff8fc0", "#ffe0ee",
+    3: ("#ddd6ea", "rose_quartz", "gem", "hex", "#ff8fc0", "#ffe0ee",
         [("а", "лёд с бликом", shine), ("б", "кварцевые кирпичи", bricks), ("в", "мрамор с прожилками", marble),
          ("г", "светлая галька", pebbles), ("д", "искры", sparkle), ("е", "острые грани", points)]),
 }

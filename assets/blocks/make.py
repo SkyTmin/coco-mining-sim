@@ -87,7 +87,7 @@ def frame(px, base):
 
 # ---------------------------------------------------------------- candy ore at 32 px (stone stays 16 px, ×2)
 M = 32  # final texture size
-LO32, HI32 = 7, 24  # ore incl. its 2-px outline stays inside; the frame is 0..3 / 28..31
+LO32, HI32 = 5, 26  # ore incl. its 2-px outline stays inside; the frame is 0..3 / 28..31
 
 
 def mask(kind, cx, cy, r):
@@ -99,11 +99,10 @@ def mask(kind, cx, cy, r):
                 ok = dx * dx + dy * dy <= r * r
             elif kind == "shard":
                 ok = abs(dx) / 0.72 + abs(dy) <= r
-            elif kind == "crystal":
-                ok = abs(dx) <= r * 0.55 and dy <= r and dy >= -r + abs(dx) * 1.2
-            else:  # nugget: rounded slab
-                ex, ey = max(0.0, abs(dx) - r * 0.55), max(0.0, abs(dy) - r * 0.2)
-                ok = ex * ex + ey * ey <= (r * 0.6) ** 2
+            elif kind == "hex":
+                ok = abs(dy) <= r * 0.87 and abs(dx) * 0.87 + abs(dy) * 0.5 <= r * 0.87
+            else:  # oval
+                ok = (dx / (r * 1.15)) ** 2 + (dy / (r * 0.82)) ** 2 <= 1
             if ok:
                 out.add((x, y))
     return out
@@ -139,11 +138,11 @@ def candy_ore(px, kind, cx, cy, r, fill, light, outline):
         px[sx, sy] = WHITE
 
 
-LAYOUT = {  # rarity → circles (cx, cy, r) in 32-px space: more and bigger = rarer
-    "common": [(13.5, 13.5, 4.2), (19.5, 19.5, 3.4)],
-    "rare": [(13, 13, 3.6), (20.5, 13.5, 3.2), (16, 20.5, 3.4)],
-    "gem": [(14.5, 14.5, 5.5), (21, 21, 2.6), (21.5, 10.5, 2.0)],
-    "treasure": [(16, 16, 6.8), (22.5, 22.5, 1.6)],
+LAYOUT = {  # one big stone + smaller ones, spread apart with a clear gap (owner 10.11: no clusters, no equal sizes)
+    "common": [(12, 12, 4.4), (21.5, 21, 2.8)],
+    "rare": [(12, 13, 4.2), (22.5, 9.5, 2.2), (21, 22, 2.8)],
+    "gem": [(13, 13, 5.6), (22.5, 22, 2.4)],
+    "treasure": [(15, 15, 7.2)],
 }
 
 
@@ -176,7 +175,7 @@ def compose(fill_fn, rock_hex, ore=None, seed=3):
         for cx, cy, r in LAYOUT[rarity]:
             candy_ore(px, shape, cx, cy, r, f, li, outline)
         if rarity == "treasure":
-            for x, y in ((22, 9), (9, 22), (24, 15)):
+            for x, y in ((24, 8), (8, 24), (24, 22)):
                 px[x, y] = WHITE
                 for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                     px[x + dx, y + dy] = shade(f, 0.5)
@@ -191,14 +190,14 @@ WORLDS = [
               ("firefly_amber", "treasure", "round", "#ffb21f", "#fff1a0")]},
     {"fill": strata, "rock": ("red_stone", "#cf7a4e"),
      "ores": [("copper", "common", "round", "#e2803e", "#ffc08a"),
-              ("tin", "rare", "nugget", "#dfe4ee", "#ffffff"),
-              ("malachite", "gem", "shard", "#25b36f", "#9bf0bf"),
-              ("turquoise", "treasure", "crystal", "#3fd6c8", "#c8fff6")]},
+              ("tin", "rare", "oval", "#dfe4ee", "#ffffff"),
+              ("malachite", "gem", "oval", "#25b36f", "#9bf0bf"),
+              ("turquoise", "treasure", "hex", "#3fd6c8", "#c8fff6")]},
     {"fill": facets, "rock": ("white_stone", "#ddd6ea"),
-     "ores": [("quartz", "common", "crystal", "#ffffff", "#ffffff"),
-              ("iron", "rare", "nugget", "#d9a27a", "#ffe2c6"),
-              ("rose_quartz", "gem", "crystal", "#ff8fc0", "#ffe0ee"),
-              ("amethyst", "treasure", "crystal", "#a35cf0", "#e8cfff")]},
+     "ores": [("quartz", "common", "shard", "#f4f1ff", "#ffffff"),
+              ("iron", "rare", "oval", "#d9a27a", "#ffe2c6"),
+              ("rose_quartz", "gem", "hex", "#ff8fc0", "#ffe0ee"),
+              ("amethyst", "treasure", "hex", "#a35cf0", "#e8cfff")]},
 ]
 
 
