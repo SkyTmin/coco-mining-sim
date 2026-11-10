@@ -64,7 +64,6 @@ export type Window = {
 local windowOpen: Window?
 local unit = 1
 local canvas: Frame?
-local canvasScale: UIScale?
 local geometry: { [GuiObject]: Geometry } = {}
 local radii: { [UICorner]: number } = {}
 local strokes: { [UIStroke]: number } = {}
@@ -92,9 +91,15 @@ function Candy.move(gui: GuiObject, at: UDim2)
 end
 
 function Candy.point(p: Vector2): UDim2
-	local root, scale = canvas, canvasScale
-	local localPoint = if root and scale then (p - root.AbsolutePosition) / scale.Scale else p
-	return UDim2.fromOffset(localPoint.X, localPoint.Y)
+	local root = canvas
+	if root and root.AbsoluteSize.X > 0 and root.AbsoluteSize.Y > 0 then
+		local localPoint = p - root.AbsolutePosition
+		return UDim2.fromScale(
+			localPoint.X / root.AbsoluteSize.X,
+			localPoint.Y / root.AbsoluteSize.Y
+		)
+	end
+	return UDim2.fromOffset(p.X, p.Y)
 end
 
 function Candy.layer(parent: Instance, name: string, z: number): Frame
@@ -108,7 +113,7 @@ function Candy.layer(parent: Instance, name: string, z: number): Frame
 		app.Name, app.BackgroundTransparency, app.Parent = "Canvas", 1, gui
 		local scale = Instance.new("UIScale")
 		scale.Parent = app
-		canvas, canvasScale, root = app, scale, app
+		canvas, root = app, app
 		local function resize()
 			local safe = gui.AbsoluteSize
 			local camera = workspace.CurrentCamera

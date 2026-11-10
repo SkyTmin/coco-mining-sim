@@ -315,7 +315,7 @@ function Hud.step(
 		h.ultimateGain.TextSize = 34 + 10 * gain.progress
 		local camera = workspace.CurrentCamera
 		if camera then
-			local start = camera.ViewportSize / 2 + Vector2.new(0, 48) - GuiService:GetGuiInset()
+			local start = h.cross.AbsolutePosition + h.cross.AbsoluteSize / 2 + Vector2.new(0, 48)
 			local fly = if gain.ended then math.clamp((now - gain.ended - 0.6) / 0.35, 0, 1) else 0
 			local target = h.coins.Parent.AbsolutePosition + h.coins.Parent.AbsoluteSize / 2
 			h.ultimateGain.Position = Candy.point(start:Lerp(target, fly * fly))
