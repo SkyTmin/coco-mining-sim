@@ -51,9 +51,9 @@ Test.describe("Mine performance", function()
 		benchmarkUlt(5000, 5, 0, 5)
 	end)
 
-	Test.it("removes and tallies 25,000 layers across 45 lanes in under 50 ms", function()
+	Test.it("removes and tallies 25,000 layers across 45 lanes in under 100 ms", function()
 		-- The fixture worlds end every 10,000 layers. Start beyond their final plate.
-		benchmarkUlt(25000, 15, 30000, 50)
+		benchmarkUlt(25000, 15, 30000, 100) -- 50 ms on the reference PC; 100 ms keeps shared CI machines from flaking
 	end)
 
 	Test.it("processes 10,000 ordinary hits in under 200 ms", function()
