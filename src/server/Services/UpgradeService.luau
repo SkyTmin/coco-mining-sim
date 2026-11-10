@@ -46,7 +46,9 @@ function UpgradeService.Start()
 			end
 			local world = Worlds.of(session.state.front).index
 			local quote: Upgrade.Quote? = nil
+			local before = 0
 			ProfileService.Mutate(player, function(profile)
+				before = if purchase.id then profile.circle.cards[purchase.id] or 0 else 0
 				quote = Circle.buy(profile, world, purchase)
 				if quote and purchase.kind == "width" then
 					assert(State.widen(session.state, quote.level))
@@ -54,6 +56,11 @@ function UpgradeService.Start()
 			end)
 			if quote and purchase.kind == "width" then
 				MineService.window(session)
+			elseif quote and purchase.id then
+				for _, level in Upgrade.morphs(purchase.id, before, quote.level) do
+					Remotes.event("Toast")
+						:FireClient(player, "morph_toast_" .. purchase.id .. "_" .. tostring(level))
+				end
 			end
 		end)
 	Players.PlayerRemoving:Connect(function(player)

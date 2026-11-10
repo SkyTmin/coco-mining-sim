@@ -123,6 +123,17 @@ function Upgrade.available(context: Context): boolean
 	return false
 end
 
+function Upgrade.morphs(id: string, before: number, after: number): { number }
+	local milestones = {}
+	local rule = progress.cards[id]
+	for i, level in rule.steps do
+		if before < level and level <= after and (id ~= "coins" or i == 1) then
+			table.insert(milestones, level)
+		end
+	end
+	return milestones
+end
+
 function Upgrade.nextRequest(last: number, now: number): number?
 	return if now - last >= 0.1 - 1e-9 then now else nil
 end

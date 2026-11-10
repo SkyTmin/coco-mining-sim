@@ -45,6 +45,12 @@ Test.describe("Circle purchases", function()
 		expect(Upgrade.quote(ctx, { kind = "pick", count = "max" })).toBe(nil)
 	end)
 
+	Test.it("reports every playable transformation crossed by a bulk purchase", function()
+		expect(Upgrade.morphs("power", 9, 50)).toEqual({ 10, 25, 50 })
+		expect(Upgrade.morphs("coins", 0, 55)).toEqual({ 10 })
+		expect(Upgrade.morphs("crit", 10, 25)).toEqual({ 25 })
+	end)
+
 	Test.it("accepts at most ten attempts per second and spends large prices in number", function()
 		local last, accepted = -math.huge, 0
 		for i = 0, 999 do

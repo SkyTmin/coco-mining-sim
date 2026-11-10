@@ -14,6 +14,7 @@ export type View = {
 	swingDuration: number,
 	side: number,
 	ability: boolean,
+	heavyAt: number,
 	glowing: { part: BasePart, material: Enum.Material, color: Color3 }?,
 }
 
@@ -47,6 +48,7 @@ function Camera.new(player: Player, frame: CFrame): View
 		swingDuration = 0.35,
 		side = 1,
 		ability = false,
+		heavyAt = -math.huge,
 	}
 	RunService.PreSimulation:Connect(function()
 		if not view.active then
@@ -76,7 +78,9 @@ function Camera.new(player: Player, frame: CFrame): View
 				elseif elapsed < 0.457 then -0.58 + 1.18 * (elapsed - 0.343) / 0.114
 				elseif elapsed < 0.629 then 0.6 - 0.8 * (elapsed - 0.457) / 0.172
 				else -0.2 * (1 - elapsed) / 0.371
-			pitch += wind * strength
+			pitch += wind * strength * (if os.clock() - view.heavyAt < view.swingDuration
+				then 1.55
+				else 1)
 			roll += view.side * 0.17 * math.sin(elapsed * math.pi)
 		end
 		if view.mode == "first" or elapsed < 1 then
@@ -90,6 +94,10 @@ function Camera.new(player: Player, frame: CFrame): View
 		end
 	end)
 	return view
+end
+
+function Camera.emphasize(view: View, now: number)
+	view.heavyAt = now
 end
 
 function Camera.pan(view: View, delta: Vector2)
@@ -179,6 +187,7 @@ function Camera.step(view: View, active: boolean, shake: Vector3)
 	local first = view.mode == "first"
 	local opened = view.player:GetAttribute("MineMenuOpen") == true
 		or view.player:GetAttribute("MineSettingsOpen") == true
+		or view.player:GetAttribute("MineUpgradesOpen") == true
 	local mouseLock = first
 		and UserInputService.MouseEnabled
 		and not UserInputService.TouchEnabled

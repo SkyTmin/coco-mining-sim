@@ -49,6 +49,10 @@ function Format.grouped(n: number): string
 	return (if n < 0 then "-" else "") .. table.concat(groups, "\u{202F}")
 end
 
+function Format.stat(n: number): string
+	return if n < 100 then tostring(math.round(n * 10) / 10) else Format.short(n)
+end
+
 function Format.depth(n: number, locale: string?): string
 	if math.abs(n) < 10000 then
 		return Format.grouped(n)

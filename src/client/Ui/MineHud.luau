@@ -76,7 +76,7 @@ function Hud.new(
 	local coinScale = Instance.new("UIScale")
 	coinScale.Parent = wallet
 	local worldCard =
-		card(gui, UDim2.fromOffset(188, 59), UDim2.new(0.5, 0, 0, 10), Vector2.new(0.5, 0))
+		card(gui, UDim2.fromOffset(196, 76), UDim2.new(0.5, 0, 0, 10), Vector2.new(0.5, 0))
 	local world = label(worldCard, UDim2.new(1, 0, 0, 32), ink, 16)
 	world.Name = "WorldProgress"
 	local rail = Instance.new("Frame")
@@ -94,6 +94,23 @@ function Hud.new(
 	round(endMark, 2)
 	local remaining = label(worldCard, UDim2.new(1, 0, 0, 19), ink, 12)
 	remaining.Name, remaining.Position = "PlateRemaining", UDim2.fromOffset(0, 38)
+	local power = label(worldCard, UDim2.new(1, -10, 0, 15), ink, 11)
+	power.Name, power.Position, power.TextScaled = "PowerAndHardness", UDim2.fromOffset(5, 57), true
+	local powerLimit = Instance.new("UITextSizeConstraint")
+	powerLimit.MinTextSize, powerLimit.MaxTextSize, powerLimit.Parent = 9, 11, power
+	local hits = Instance.new("Frame")
+	hits.Name, hits.Size, hits.AnchorPoint, hits.BackgroundTransparency =
+		"HitsRemaining", UDim2.fromOffset(76, 8), Vector2.new(0.5, 0.5), 1
+	hits.Parent = gui
+	local dots = {}
+	for i = 1, 8 do
+		local dot = Instance.new("Frame")
+		dot.Size, dot.Position, dot.BackgroundColor3, dot.BorderSizePixel =
+			UDim2.fromOffset(6, 6), UDim2.fromOffset((i - 1) * 10, 1), yellow, 0
+		dot.Parent = hits
+		round(dot, 6)
+		dots[i] = dot
+	end
 	local eye = button(gui, 51, UDim2.new(1, -15, 0, 48), Vector2.new(1, 0))
 	eye.Name = "MineCameraButton"
 	local gear = button(gui, 39, UDim2.new(1, -20, 0, 107), Vector2.new(1, 0))
@@ -167,6 +184,9 @@ function Hud.new(
 		ult = ult,
 		ring = ring,
 		world = world,
+		power = power,
+		hits = hits,
+		dots = dots,
 		fill = fill,
 		remaining = remaining,
 		coins = coins,
@@ -215,6 +235,21 @@ function Hud.set(h: any, front: number, coins: number, charge: number, cap: numb
 				else Color3.fromRGB(198, 210, 218)
 		end
 		h.lastCharge, h.lastCap = charge, cap
+	end
+end
+
+function Hud.power(h: any, strength: string, hardness: string, count: number, point: Vector3?)
+	h.power.Text = h.translate("mine_power_hardness", strength, hardness)
+	local camera = workspace.CurrentCamera
+	h.hits.Visible = false
+	if camera and point and count > 0 then
+		local p, visible = camera:WorldToViewportPoint(point)
+		h.hits.Visible = visible
+		h.hits.Size = UDim2.fromOffset(count * 10 - 4, 8)
+		h.hits.Position = UDim2.fromOffset(p.X, p.Y + 14)
+		for i, dot in h.dots do
+			dot.Visible = i <= count
+		end
 	end
 end
 
