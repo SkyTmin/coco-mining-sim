@@ -8,8 +8,11 @@ local Worlds = require(Shared.Mine.Worlds)
 local S = Config.mine.blockSize
 local WIDTH = Config.mine.startWidth * S + 0.6
 local HEIGHT = Config.mine.height * S
-local LENGTH = Config.fx.fogEnd
-local SPACING = Config.fx.lampSpacing
+local depthConfig = Config.fx.depth
+local LENGTH = depthConfig.fogEnd
+local SIMPLE_FROM = depthConfig.simpleFrom
+local NEAR_SPACING = depthConfig.lampSpacing
+local FAR_SPACING = depthConfig.distantSpacing
 local LAMP = Color3.fromRGB(255, 215, 166)
 local Tunnel = {}
 
@@ -81,18 +84,24 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 	end
 	fixed("Wall", Vector3.new(entranceWidth, HEIGHT, 1.1), 0, HEIGHT * 1.5, 0.55, gray)
 	local lamps, lights = {}, {}
-	for depth = 7, LENGTH - 6, SPACING do
-		for _, side in { -1, 1 } do
-			fixed("Arch", Vector3.new(0.55, HEIGHT, 1.1), side * WIDTH / 2, HEIGHT / 2, depth, trim)
-		end
+	local function addSupport(depth: number, spacing: number)
 		fixed("Arch", Vector3.new(WIDTH, 0.55, 1.1), 0, HEIGHT - 0.25, depth, trim)
 		local lamp = fixed("Lamp", Vector3.new(3, 0.3, 0.65), 0, HEIGHT - 0.7, depth, LAMP, true)
-		table.insert(lamps, { part = lamp, depth = depth })
+		table.insert(lamps, { part = lamp, depth = depth, spacing = spacing })
 		if #lights < 4 then
 			local light = Instance.new("PointLight")
 			light.Color, light.Range, light.Brightness, light.Parent = LAMP, 24, 1.35, lamp
 			table.insert(lights, light)
 		end
+	end
+	for depth = 7, SIMPLE_FROM - 1, NEAR_SPACING do
+		for _, side in { -1, 1 } do
+			fixed("Arch", Vector3.new(0.55, HEIGHT, 1.1), side * WIDTH / 2, HEIGHT / 2, depth, trim)
+		end
+		addSupport(depth, NEAR_SPACING)
+	end
+	for depth = SIMPLE_FROM + FAR_SPACING / 2, LENGTH - 6, FAR_SPACING do
+		addSupport(depth, FAR_SPACING)
 	end
 	local glow = fixed(
 		"DepthGlow",
@@ -110,7 +119,9 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 	local face = part(moving, "SurvivorFace", Vector3.one, frame, LAMP, Enum.Material.Neon)
 	local tape = part(moving, "DepthTape", Vector3.one, frame, trim, Enum.Material.Metal)
 	local ticks = {}
-	for _ = 1, math.ceil(LENGTH / (10 * S)) + 1 do
+	local tickCount = math.ceil((SIMPLE_FROM + 2) / (10 * S))
+		+ math.ceil((LENGTH - SIMPLE_FROM) / (100 * S))
+	for _ = 1, tickCount do
 		local marker = part(moving, "DepthMark", Vector3.new(4, 0.09, 5), frame, gray)
 		local surface = Instance.new("SurfaceGui")
 		surface.Face, surface.CanvasSize, surface.LightInfluence, surface.Parent =
@@ -123,15 +134,6 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 		table.insert(ticks, { part = marker, text = text })
 	end
 
-	local gate = Instance.new("Model")
-	gate.Name, gate.Parent = "DistantPlate", moving
-	local gateParts = {}
-	for i = 1, 4 do
-		gateParts[i] = part(gate, "GateEdge", Vector3.one, frame, LAMP, Enum.Material.Neon)
-	end
-	local outline = Instance.new("Highlight")
-	outline.Adornee, outline.DepthMode, outline.FillTransparency, outline.OutlineTransparency, outline.Parent =
-		gate, Enum.HighlightDepthMode.AlwaysOnTop, 1, 0.33, gate
 	local wave = {}
 	for i = 1, 10 do
 		wave[i] = part(moving, "FractureRing", Vector3.one, frame, LAMP, Enum.Material.Neon)
@@ -145,9 +147,6 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 		face = face,
 		tape = tape,
 		ticks = ticks,
-		gate = gate,
-		gateParts = gateParts,
-		outline = outline,
 		wave = wave,
 		lamps = lamps,
 		lights = lights,
@@ -189,7 +188,7 @@ function Tunnel.atmosphere(t: any, active: boolean, front: number, quality: numb
 	Lighting.OutdoorAmbient = Color3.fromRGB(126, 116, 111)
 	Lighting.Brightness = 1.8
 	Lighting.FogStart, Lighting.FogEnd, Lighting.FogColor =
-		Config.fx.fogStart, LENGTH, colorOf(world):Lerp(Color3.fromRGB(34, 37, 51), 0.65)
+		depthConfig.fogStart, LENGTH, colorOf(world):Lerp(Color3.fromRGB(34, 37, 51), 0.65)
 	if t.atmosphere then
 		t.atmosphere.Density = 0
 	end
@@ -204,6 +203,7 @@ function Tunnel.moves(
 	offset: number,
 	visible: number,
 	survivor: boolean,
+	plateDistance: number?,
 	parts: { BasePart },
 	frames: { CFrame }
 )
@@ -214,11 +214,16 @@ function Tunnel.moves(
 	local world = Worlds.of(win.front)
 	local rock = colorOf(world):Lerp(Color3.fromRGB(70, 65, 62), 0.46)
 	local width, height = win.width * S, win.height * S
-	local start = math.min(LENGTH - 1, offset + visible * S)
+	local start = offset + visible * S
+	if plateDistance and math.abs(plateDistance - start) < S then
+		start = plateDistance + S
+	end
+	start = math.min(LENGTH - 1, start)
 	t.mass.Color, t.mass.Size = rock, Vector3.new(width, height - 0.06, LENGTH - start)
 	move(t.mass, 0, height / 2, (start + LENGTH) / 2)
-	t.face.Transparency = if survivor then 0.16 else 1
-	if survivor then
+	local showFace = survivor and plateDistance ~= offset
+	t.face.Transparency = if showFace then 0.16 else 1
+	if showFace then
 		t.face.Size, t.face.Color =
 			Vector3.new(width - 0.4, height - 0.4, 0.14), rock:Lerp(LAMP, 0.55)
 		move(t.face, 0, height / 2, offset - 0.1)
@@ -228,14 +233,14 @@ function Tunnel.moves(
 	local tapeStart = (offset - (win.front % 10) * S) % markerSpacing - markerSpacing - 2
 	t.tape.Size = Vector3.new(4.2, 0.06, LENGTH + markerSpacing + 2)
 	move(t.tape, 0, -0.01, tapeStart + t.tape.Size.Z / 2)
-	local base = math.max(0, math.floor((win.front - offset / S) / 10) * 10)
-	for i, tick in t.ticks do
-		local n = base + (i - 1) * 10
+	local nextTick = 1
+	local function marks(firstDepth: number, limit: number, step: number)
+		local n = math.max(0, math.ceil((win.front + (firstDepth - offset) / S) / step) * step)
 		local depth = offset + (n - win.front) * S
-		local shown = depth >= -2 and depth < LENGTH - 4
-		tick.part.Transparency = if shown then 0 else 1
-		tick.text.Parent.Enabled = shown
-		if shown then
+		while depth < limit do
+			local tick = t.ticks[nextTick]
+			tick.part.Transparency, tick.text.Parent.Enabled = 0, true
+			tick.part.Size = Vector3.new(4, 0.09, if step == 100 then 12 else 5)
 			local hundred = n % 100 == 0
 			tick.part.Color = if hundred then LAMP else Color3.fromRGB(48, 57, 65)
 			tick.part.Material = if hundred then Enum.Material.Neon else Enum.Material.Metal
@@ -244,25 +249,16 @@ function Tunnel.moves(
 				else Color3.fromRGB(255, 245, 220)
 			tick.text.Text = tostring(n)
 			move(tick.part, 0, 0.045, depth)
+			nextTick += 1
+			n += step
+			depth += step * S
 		end
 	end
-
-	local left = world.plateDepth - win.front
-	local depth = offset + left * S
-	local gateVisible = left >= 0 and left <= 100 and depth < LENGTH - 3
-	local gateColor = colorOf(Worlds.of(world.finish)):Lerp(Color3.new(1, 1, 1), 0.26)
-	t.outline.Enabled, t.outline.OutlineColor = gateVisible and not survivor and left > 0, gateColor
-	for i, edge in t.gateParts do
-		edge.Transparency, edge.Color = if gateVisible then 0.1 else 1, gateColor
-		if gateVisible then
-			local vertical = i <= 2
-			edge.Size = if vertical
-				then Vector3.new(0.63, height, 0.3)
-				else Vector3.new(width, 0.65, 0.3)
-			local x = if vertical then (if i == 1 then -1 else 1) * (width / 2 - 0.4) else 0
-			local y = if vertical then height / 2 else (if i == 3 then 0.4 else height - 0.4)
-			move(edge, x, y, depth - 0.19)
-		end
+	marks(-2, SIMPLE_FROM, 10)
+	marks(SIMPLE_FROM, LENGTH - 4, 100)
+	for i = nextTick, #t.ticks do
+		local tick = t.ticks[i]
+		tick.part.Transparency, tick.text.Parent.Enabled = 1, false
 	end
 end
 
@@ -287,7 +283,7 @@ function Tunnel.wave(t: any, depth: number?, strength: number, color: Color3)
 	end
 	for _, lamp in t.lamps do
 		local flash = if depth
-			then math.clamp(1 - math.abs(depth - lamp.depth) / (SPACING * 1.25), 0, 1) * strength
+			then math.clamp(1 - math.abs(depth - lamp.depth) / (lamp.spacing * 1.25), 0, 1) * strength
 			else 0
 		lamp.part.Color = LAMP:Lerp(color:Lerp(Color3.new(1, 1, 1), 0.52), flash)
 	end

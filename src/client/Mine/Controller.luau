@@ -73,7 +73,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local events: { any } = {}
 	local parts: { BasePart } = {}
 	local moves: { CFrame } = {}
-	local lastShown: any, lastVisible: number?, lastPlateHud: boolean?
+	local lastShown: any, lastVisible: number?
 	local seq, quality, maxParts = 0, 2, 0
 	local dirty, active = true, false
 	local nextHit, lastRequest = -math.huge, -math.huge
@@ -155,8 +155,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		return player:GetAttribute("MineMenuOpen") == true
 			or player:GetAttribute("MineSettingsOpen") == true
 	end
+	local function canControl(): boolean
+		return active and not menuOpen()
+	end
 	local function canHit(): boolean
-		return active and window ~= nil and not menuOpen() and (not ride or not ride.ability)
+		return canControl() and window ~= nil and ride == nil
 	end
 	local function aim(screen: Vector2, nearby: boolean): any?
 		local r = renderer
@@ -259,8 +262,18 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local target = if expected
 			then expected.position
 			else targetPosition({ x = 0, y = 1, dRel = 0 }, oldOffset)
-		local oldPlate = Worlds.of(oldFront).plateDepth
+		local oldWorld = Worlds.of(oldFront)
+		local oldPlate = oldWorld.plateDepth
 		local plateBroken = res.front > oldPlate and oldFront <= oldPlate
+		local barrier = if res.ability
+			then Ride.barrier(
+				oldFront,
+				res.front,
+				oldPlate,
+				window.plateDamage,
+				if plateBroken then oldWorld.plate.hp else res.plateDamage
+			)
+			else nil
 		for _, cell in res.cells do
 			local layer = window.layers[cell.dRel + 1]
 			local radius = (window.width - 1) // 2
@@ -281,7 +294,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 		window.charge, window.damage, window.plateDamage = res.charge, res.damage, res.plateDamage
 		if res.ability or res.delta > 0 then
-			local timeline = Ride.timeline(res.delta, res.ability, oldOffset)
+			local timeline = Ride.timeline(res.delta, res.ability, oldOffset, barrier)
 			ride = {
 				at = now,
 				timeline = timeline,
@@ -290,6 +303,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				cleared = 0,
 				offset = timeline.distance,
 				delta = res.delta,
+				fractureLayers = if barrier then barrier.layers else res.delta,
+				barrier = barrier,
 				ability = res.ability,
 				blocks = res.blocks,
 				coins = res.coins,
@@ -309,13 +324,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				local finish = targetPosition(b, oldOffset)
 				if res.ability then
 					local t = 0.06 + 0.87 * (i - 1) / math.max(1, #res.events - 1)
-					local depth = Ride.wave(ride.timeline, t, res.delta)
+					local depth = Ride.wave(ride.timeline, t, ride.fractureLayers)
+					local endDepth = if barrier
+						then math.min(depth + 3.4, barrier.distance - 0.15)
+						else depth + 3.4
 					at = now + ride.timeline.windup + t * ride.timeline.fracture
 					local localA = r.frame:PointToObjectSpace(start)
 					local localB = r.frame:PointToObjectSpace(finish)
 					start = r.frame:PointToWorldSpace(Vector3.new(localA.X, localA.Y, -depth + 1.2))
-					finish =
-						r.frame:PointToWorldSpace(Vector3.new(localB.X, localB.Y, -depth - 3.4))
+					finish = r.frame:PointToWorldSpace(Vector3.new(localB.X, localB.Y, -endDepth))
 				end
 				table.insert(events, { at = at, a = start, b = finish, i = i })
 			end
@@ -344,19 +361,36 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 	end)
 
+	local function strikePlate(now: number)
+		if not ride.barrier or ride.hitAt then
+			return
+		end
+		ride.hitAt, dirty = now, true
+		TravelDebris.plateImpact(debris, ride.barrier.distance, window.width * S, window.height * S)
+		Intensity.flash(intensity, 0.16, ride.color, now)
+		Sfx.play("plate_hit", 0.67)
+	end
+
 	local function enterPhase(phase: string, now: number)
 		if not ride then
 			return
 		end
+		local atPlate = ride.barrier and ride.barrier.layers == 0
 		if phase == "windup" then
 			Sfx.play("ult_windup", 0.58)
 		elseif phase == "fracture" then
 			Hud.show(hud, ride.delta, ride.blocks, ride.coins, true)
 			Sfx.play("ult_whump", 0.68)
-			Sfx.play("ult_rumble_away", 0.42)
+			if not atPlate then
+				Sfx.play("ult_rumble_away", 0.42)
+			end
 		elseif phase == "empty" then
-			TravelDebris.settle(debris, math.min(ride.timeline.distance, 24))
+			strikePlate(now)
+			if not ride.barrier then
+				TravelDebris.settle(debris, math.min(ride.timeline.distance, 24))
+			end
 		elseif phase == "approach" then
+			strikePlate(now)
 			if ride.ability then
 				Sfx.play(
 					"ult_rumble_near",
@@ -367,19 +401,21 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				Hud.show(hud, ride.delta, ride.blocks, ride.coins, false)
 			end
 		elseif phase == "landed" then
-			TravelDebris.land(debris, now, window.width * S, ride.ability)
-			Sfx.play(
-				if ride.ability then "ult_thud" else "ride_stop",
-				if ride.ability then 0.76 else 0.53
-			)
+			strikePlate(now)
+			if not atPlate then
+				TravelDebris.land(debris, now, window.width * S, ride.ability)
+				Sfx.play(
+					if ride.ability then "ult_thud" else "ride_stop",
+					if ride.ability then 0.76 else 0.53
+				)
+				Intensity.land(intensity, now, ride.ability)
+			end
 			if ride.plateBroken then
 				Sfx.play("plate_break", 0.78)
+				haptic("plate", now)
+			elseif not atPlate then
+				haptic(if ride.ability then "ultimate" else "ride", now)
 			end
-			haptic(
-				if ride.plateBroken then "plate" elseif ride.ability then "ultimate" else "ride",
-				now
-			)
-			Intensity.land(intensity, now, ride.ability)
 			if ride.ability then
 				Hud.rollPlate(hud, ride.oldFront, window.front, now)
 				if ride.coins > 0 then
@@ -396,10 +432,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local function fracture(
 		r: Wall.Renderer,
 		progress: number,
-		override: number
+		override: number,
+		now: number
 	): (any, number, number?)
-		local depth, cleared = Ride.wave(ride.timeline, progress, ride.delta)
-		local broken = math.min(ride.delta, mine.window)
+		local depth, cleared = Ride.wave(ride.timeline, progress, ride.fractureLayers)
+		local broken = math.min(ride.fractureLayers, mine.window)
 		local old = ride.old
 		if cleared > ride.cleared then
 			for layer = ride.cleared, cleared - 1 do
@@ -421,11 +458,21 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 			ride.cleared, ride.slice = cleared, slice(old, cleared)
 		end
-		if ride.delta == 0 then
+		local barrier = ride.barrier
+		if
+			barrier
+			and cleared >= broken
+			and depth >= barrier.distance - 0.2
+			and (barrier.layers > 0 or progress >= 0.5)
+		then
+			strikePlate(now)
+		end
+		local waveDepth = if ride.hitAt then nil elseif barrier then depth - 0.14 else depth
+		if ride.delta == 0 and not barrier then
 			return if progress < 0.35 then old else nil, 1, depth
 		end
 		if cleared >= broken then
-			return nil, 0, depth
+			return nil, 0, waveDepth
 		end
 		return ride.slice or old,
 			math.min(RENDER_DEPTH[override], broken - cleared),
@@ -442,7 +489,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end)
 	end
 	Input.start({
-		active = canHit,
+		active = canControl,
+		canHit = canHit,
 		first = function()
 			return view ~= nil and view.mode == "first"
 		end,
@@ -455,7 +503,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			request("Ability", nil)
 		end,
 		pan = function(delta)
-			if view and active and not menuOpen() then
+			if view then
 				Camera.pan(view, delta)
 			end
 		end,
@@ -535,8 +583,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if phase == "windup" then
 			shown = ride.old
 		elseif phase == "fracture" then
-			shown, visible, waveDepth = fracture(r, progress, override)
-			offset = if shown then ride.cleared * S else ride.timeline.distance
+			shown, visible, waveDepth = fracture(r, progress, override, now)
+			offset = if shown
+				then ride.cleared * S
+				elseif ride.barrier then ride.barrier.distance
+				else ride.timeline.distance
 			survivor = shown == nil
 		elseif phase == "empty" then
 			shown, offset, survivor = nil, ride.timeline.distance, true
@@ -556,11 +607,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			waveShowing = waveDepth ~= nil
 		end
 
-		local plateHud = offset < 6 and phase ~= "windup" and phase ~= "fracture"
-		local layout = dirty
-			or shown ~= lastShown
-			or visible ~= lastVisible
-			or plateHud ~= lastPlateHud
+		local layout = dirty or shown ~= lastShown or visible ~= lastVisible
 		if layout then
 			if shown then
 				local renderWindow = shown
@@ -569,23 +616,31 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					renderWindow.damage = table.clone(window.damage)
 					table.insert(renderWindow.damage, pending.damage)
 				end
-				Wall.update(
-					r,
-					renderWindow,
-					visible,
-					pending and pending.hidden,
-					translate,
-					pick().strength,
-					plateHud
-				)
+				Wall.update(r, renderWindow, visible, pending and pending.hidden)
 				Break.cracks(breaking, r, renderWindow, need, State.cellKey)
 			else
 				Wall.clear(r)
 			end
-			lastShown, lastVisible, lastPlateHud = shown, visible, plateHud
+			lastShown, lastVisible = shown, visible
 		end
 		if phase == "windup" then
 			Break.cracks(breaking, r, shown, need, State.cellKey, progress, color)
+		end
+		local sceneWindow = shown or window
+		local plate = Ride.plate(
+			sceneWindow.front,
+			Worlds.of(sceneWindow.front).plateDepth,
+			sceneWindow.plateDamage,
+			offset,
+			ride and ride.barrier,
+			phase,
+			ride ~= nil and ride.hitAt ~= nil
+		)
+		if layout or phase == "approach" or (ride and ride.barrier) then
+			local flash = if ride and ride.hitAt
+				then math.max(0, 1 - (now - ride.hitAt) / 0.2) * (if reduced then 0.55 else 1)
+				else 0
+			Wall.plate(r, sceneWindow, plate, translate, pick().strength, flash)
 		end
 		if layout or phase == "approach" then
 			table.clear(parts)
@@ -597,7 +652,16 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				then 0
 				elseif phase == "fracture" then visible
 				else mine.window
-			Tunnel.moves(tunnel, shown or window, offset, farLayers, survivor, parts, moves)
+			Tunnel.moves(
+				tunnel,
+				sceneWindow,
+				offset,
+				farLayers,
+				survivor,
+				plate and plate.distance,
+				parts,
+				moves
+			)
 			workspace:BulkMoveTo(parts, moves, Enum.BulkMoveMode.FireCFrameChanged)
 			dirty = false
 		end

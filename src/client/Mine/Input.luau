@@ -31,6 +31,12 @@ function Input.start(callbacks: any)
 		return true
 	end
 
+	local function pan(delta: Vector2)
+		if callbacks.active() then
+			callbacks.pan(delta)
+		end
+	end
+
 	InputService.InputBegan:Connect(function(input, processed)
 		if processed then
 			return
@@ -63,6 +69,9 @@ function Input.start(callbacks: any)
 	InputService.InputChanged:Connect(function(input)
 		if input == heldTouch then
 			touchPoint = Vector2.new(input.Position.X, input.Position.Y)
+			if not callbacks.canHit() then
+				pan(Vector2.new(input.Delta.X, input.Delta.Y))
+			end
 		elseif
 			input == panTouch
 			or (
@@ -70,9 +79,7 @@ function Input.start(callbacks: any)
 				and (callbacks.first() or rotating)
 			)
 		then
-			if callbacks.active() then
-				callbacks.pan(Vector2.new(input.Delta.X, input.Delta.Y))
-			end
+			pan(Vector2.new(input.Delta.X, input.Delta.Y))
 		end
 	end)
 	InputService.InputEnded:Connect(function(input)
@@ -93,7 +100,7 @@ function Input.start(callbacks: any)
 		heldMouse, rotating, heldTouch, panTouch = false, false, nil, nil
 	end)
 	RunService.RenderStepped:Connect(function()
-		if (heldMouse or heldTouch) and callbacks.active() then
+		if (heldMouse or heldTouch) and callbacks.canHit() then
 			strike(heldTouch ~= nil)
 		end
 	end)

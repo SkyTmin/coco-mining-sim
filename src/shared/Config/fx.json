@@ -1,7 +1,11 @@
 {
-  "fogStart": 200,
-  "fogEnd": 620,
-  "lampSpacing": 20,
+  "depth": {
+    "fogStart": 550,
+    "fogEnd": 1500,
+    "simpleFrom": 300,
+    "lampSpacing": 20,
+    "distantSpacing": 40
+  },
   "impactTime": 0.13,
   "ult": {
     "windup": 0.15,
@@ -12,6 +16,7 @@
     "approachBase": 0.45,
     "approachPerLog": 0.35,
     "distanceBase": 155,
-    "distancePerLog": 100
+    "distancePerLog": 100,
+    "distanceDeep": 120
   }
 }

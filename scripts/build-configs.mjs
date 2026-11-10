@@ -203,12 +203,15 @@ const sections = [
   { name: "pickaxes", validate: validatePickaxes, emit: withoutNotes },
   {
     name: "fx",
-    validate: ({ ult, fogStart, fogEnd, lampSpacing, impactTime }) =>
+    validate: ({ ult, depth, impactTime }) =>
       ult?.windup === 0.15 && ult.fractureMin === 0.5 && ult.fractureMax === 0.9 &&
       ult.empty >= 0.25 && ult.empty <= 0.35 &&
       ult.approachBase === 0.45 && ult.approachPerLog === 0.35 &&
-      [ult.fracturePerLog, ult.distanceBase, ult.distancePerLog, fogStart, fogEnd, lampSpacing, impactTime].every(isPositive) &&
-      fogStart < fogEnd && impactTime <= 0.15 ? [] : ["fx must specify the stage 2b timing and tunnel distances"],
+      [ult.fracturePerLog, ult.distanceBase, ult.distancePerLog, ult.distanceDeep, impactTime].every(isPositive) &&
+      depth?.fogStart === 550 && depth.fogEnd === 1500 && depth.simpleFrom === 300 &&
+      [depth.lampSpacing, depth.distantSpacing].every(isPositiveInteger) &&
+      depth.distantSpacing >= depth.lampSpacing && impactTime <= 0.15
+      ? [] : ["fx must specify the ultimate timing and stage 2c tunnel distances"],
     emit: withoutNotes,
   },
   {

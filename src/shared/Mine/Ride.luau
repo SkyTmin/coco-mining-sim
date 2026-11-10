@@ -2,7 +2,20 @@
 
 local Config = require(script.Parent.Parent.Config)
 local fx = Config.fx
+local S = Config.mine.blockSize
+local REACH = fx.depth.fogEnd - S
 local Ride = {}
+
+export type Barrier = {
+	depth: number,
+	distance: number,
+	layers: number,
+	beforeDamage: number,
+	afterDamage: number,
+	holds: boolean,
+}
+
+export type PlateDisplay = { depth: number, distance: number, damage: number }
 
 export type Timeline = {
 	windup: number,
@@ -10,28 +23,60 @@ export type Timeline = {
 	empty: number,
 	approach: number,
 	distance: number,
+	waveDistance: number,
 	total: number,
 }
 
-function Ride.timeline(layers: number, ultimate: boolean, previousOffset: number?): Timeline
+function Ride.barrier(
+	before: number,
+	after: number,
+	plate: number,
+	beforeDamage: number,
+	afterDamage: number
+): Barrier?
+	if before > plate or after < plate then
+		return nil
+	end
+	local layers = plate - before
+	return {
+		depth = plate,
+		distance = math.min(REACH, layers * S),
+		layers = layers,
+		beforeDamage = beforeDamage,
+		afterDamage = afterDamage,
+		holds = after == plate,
+	}
+end
+
+function Ride.timeline(
+	layers: number,
+	ultimate: boolean,
+	previousOffset: number?,
+	barrier: Barrier?
+): Timeline
 	local scale = math.log10(math.max(1, layers))
 	local ult = fx.ult
 	local windup = if ultimate then ult.windup else 0
 	local fracture = if ultimate
 		then math.min(ult.fractureMax, ult.fractureMin + ult.fracturePerLog * scale)
 		else 0
-	local empty = if ultimate then ult.empty else 0
-	local approach = ult.approachBase + ult.approachPerLog * scale
-	local reach = fx.fogEnd - Config.mine.blockSize
+	local atPlate = barrier ~= nil and barrier.layers == 0
+	local empty = if ultimate and not atPlate then ult.empty else 0
+	local approach = if atPlate then 0 else ult.approachBase + ult.approachPerLog * scale
+	local deep = ult.distanceDeep * math.max(0, scale - 1) ^ 2
 	local distance = if ultimate
-		then math.min(reach, ult.distanceBase + ult.distancePerLog * scale)
-		else math.min(reach, layers * Config.mine.blockSize + (previousOffset or 0))
+		then math.min(REACH, ult.distanceBase + ult.distancePerLog * scale + deep)
+		else math.min(REACH, layers * S + (previousOffset or 0))
+	if barrier and (barrier.holds or atPlate) then
+		distance = barrier.distance
+	end
 	return {
 		windup = windup,
 		fracture = fracture,
 		empty = empty,
 		approach = approach,
 		distance = distance,
+		waveDistance = if barrier then barrier.distance else distance,
 		total = windup + fracture + empty + approach,
 	}
 end
@@ -68,10 +113,36 @@ function Ride.wave(timeline: Timeline, progress: number, layers: number): (numbe
 	local visible = math.min(layers, Config.mine.window)
 	local clear = progress / 0.68
 	if clear <= 1 then
-		return clear * visible * Config.mine.blockSize, math.floor(clear * visible)
+		return clear * visible * S, math.floor(clear * visible)
 	end
-	local depth = visible * Config.mine.blockSize
-	return depth + (timeline.distance - depth) * ((progress - 0.68) / 0.32), visible
+	local depth = visible * S
+	return depth + (timeline.waveDistance - depth) * ((progress - 0.68) / 0.32), visible
+end
+
+function Ride.plate(
+	front: number,
+	plate: number,
+	damage: number,
+	offset: number,
+	barrier: Barrier?,
+	phase: string,
+	struck: boolean
+): PlateDisplay?
+	if barrier and (barrier.holds or phase == "windup" or phase == "fracture") then
+		return {
+			depth = barrier.depth,
+			distance = if phase == "approach" or phase == "landed"
+				then offset
+				else barrier.distance,
+			damage = if struck then barrier.afterDamage else barrier.beforeDamage,
+		}
+	end
+	local layers = plate - front
+	local distance = layers * S + offset
+	if layers >= 0 and layers <= 100 and distance <= REACH then
+		return { depth = plate, distance = distance, damage = damage }
+	end
+	return nil
 end
 
 return Ride

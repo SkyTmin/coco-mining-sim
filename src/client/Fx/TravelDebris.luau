@@ -112,4 +112,13 @@ function TravelDebris.settle(d: any, depth: number)
 	end
 end
 
+function TravelDebris.plateImpact(d: any, depth: number, width: number, height: number)
+	d.root.CFrame = d.frame * CFrame.new(0, height * 0.52, -depth + 0.4)
+	for i, edge in d.anchors do
+		edge.at.Position = Vector3.new((i - 2) * width * 0.36, 0, 0)
+		edge.sparks:Emit(7)
+		edge.dust:Emit(3)
+	end
+end
+
 return TravelDebris
