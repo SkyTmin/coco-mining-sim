@@ -30,7 +30,9 @@ function Hud.new(
 		local top = if ok then inset else GuiService:GetGuiInset().Y
 		wallet.Position = Candy.point(Vector2.new(15, top + 8) - GuiService:GetGuiInset())
 	end
-	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(positionWallet)
+	pcall(function()
+		GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(positionWallet)
+	end)
 	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 		task.defer(positionWallet)
 	end)
