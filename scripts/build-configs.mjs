@@ -323,13 +323,15 @@ const sections = [
         hit_soft: 5, break_soft: 5, coin: 1, link_note: 1, bolt_soft: 2, ride_stop: 2,
         ult_windup: 1, ult_whump: 1, ult_rumble_away: 1, ult_rumble_near: 1, ult_thud: 1,
         plate_hit: 2, plate_break: 1, ui_tap: 1,
+        buy_soft: 3, level_tick: 1, card_morph: 1, heavy_hit: 1, crit_soft: 2,
+        coin_rain: 1, world_enter: 1, depth_knock: 3, locked: 1,
       };
       const errors = [];
       if (atlasId !== null && (typeof atlasId !== "string" || !/^rbxassetid:\/\/\d+$/.test(atlasId))) {
         errors.push("sounds.atlasId must be null or a Roblox audio asset ID");
       }
       if (rules?.maxVolume !== 0.5 || rules.frequentVolume !== 0.25 || rules.linkVolume !== 0.12 ||
-          rules.defaultSfx !== 0.6 || rules.frequentLufs !== -26 || rules.rareLufs !== -20 ||
+          rules.depthVolume !== 0.15 || rules.defaultSfx !== 0.6 || rules.frequentLufs !== -26 || rules.rareLufs !== -20 ||
           rules.lowpassHz !== 9000 || rules.fadeSeconds !== 0.01 || rules.pitchSpread !== 0.08 ||
           rules.fatigueDelay !== 3 || rules.fatigueGain !== 0.6 ||
           rules.voices?.hit_soft !== 2 || rules.voices?.break_soft !== 3 || rules.voices?.coin !== 1) {

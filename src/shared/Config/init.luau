@@ -100,6 +100,7 @@ export type SoundsConfig = {
 		maxVolume: number,
 		frequentVolume: number,
 		linkVolume: number,
+		depthVolume: number,
 		defaultSfx: number,
 		frequentLufs: number,
 		rareLufs: number,

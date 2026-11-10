@@ -9,7 +9,7 @@ const decisions = readFileSync(decisionsPath, "utf8");
 const rules = JSON.parse(decisions).sounds.rules;
 const scratch = resolve(root, "build/sound-atlas");
 const output = resolve(root, "assets/sounds/build");
-const report = resolve(root, "docs/reports/stage-02b");
+const report = resolve(root, "docs/reports/stage-03");
 for (const dir of [scratch, output, report]) mkdirSync(dir, { recursive: true });
 
 const RATE = 48000;
@@ -20,6 +20,11 @@ const gravel = ["default_gravel_dug.1", "default_gravel_dug.2", "default_gravel_
 const sample = (file, duration, lowpass, sourceEnd = duration) => ({ file, duration, lowpass, sourceEnd });
 const tone = (expression, duration, lowpass) => ({ expression, duration, lowpass });
 const sine = (hz) => "sin(2*PI*" + hz + "*t)";
+const softNote = (hz, decay, duration = 0.44) =>
+  tone("(0.78*" + sine(hz) + "+0.1*" + sine(hz * 2) + ")*exp(-" + decay + "*t)", duration, 2400);
+const notes = (frequencies, startGap, decay, duration) => tone(frequencies.map((hz, i) =>
+  "0.55*" + sine(hz) + "*gte(t," + i * startGap + ")*exp(-" + decay + "*max(0,t-" +
+  i * startGap + "))*min(1,max(0,t-" + i * startGap + ")/0.015)").join("+"), duration, 3000);
 const clips = {
   hit_soft: mining.map((name) => sample(name, 0.52, 3900)),
   break_soft: gravel.map((name) => sample(name, 0.48, 5600)),
@@ -38,8 +43,18 @@ const clips = {
   plate_hit: [sample("impactPlate_light_000", 0.58, 2900, 0.540), sample("impactPlate_light_003", 0.58, 2900, 0.526)],
   plate_break: [tone("(" + sine(121) + "+0.26*" + sine(307) + "+0.18*" + sine(515) + ")*(exp(-8*t)+0.4*exp(-8*abs(t-0.17)))", 0.68, 2100)],
   ui_tap: [tone("(" + sine(349.23) + "+0.12*" + sine(698.46) + ")*exp(-24*t)", 0.44, 2500)],
+  buy_soft: [392, 415.3, 440].map((hz) => softNote(hz, 21)),
+  level_tick: [softNote(587.33, 30)],
+  card_morph: [notes([261.63, 329.63, 392, 523.25], 0.10, 10, 0.74)],
+  heavy_hit: [tone("(sin(2*PI*(161*t-66*t*t))+0.18*" + sine(227) + ")*exp(-18*t)", 0.49, 900)],
+  crit_soft: [softNote(523.25, 16), softNote(554.37, 16)],
+  coin_rain: [notes([392, 523.25, 659.25], 0.075, 16, 0.57)],
+  world_enter: [notes([196, 293.66, 392, 493.88], 0.12, 7, 1.02)],
+  depth_knock: [205, 229, 253].map((hz) => softNote(hz, 37)),
+  locked: [notes([293.66, 233.08], 0.08, 26, 0.49)],
 };
-const frequent = new Set(["hit_soft", "break_soft", "coin", "link_note"]);
+const frequent = new Set(["hit_soft", "break_soft", "coin", "link_note", "buy_soft", "level_tick",
+  "heavy_hit", "crit_soft", "coin_rain", "depth_knock", "locked"]);
 const master = (target) => "loudnorm=I=" + target + ":TP=-2:LRA=5";
 const format = ["-ar", String(RATE), "-ac", "1"];
 const seconds = (value) => value.toFixed(3);
@@ -117,7 +132,7 @@ if (!marker.test(decisions)) throw new Error("Missing sounds.clips in design-dec
 const json = Object.entries(metadata).map(([name, values]) => "      " + JSON.stringify(name) + ": " + JSON.stringify(values)).join(",\n");
 writeFileSync(decisionsPath, decisions.replace(marker, '    "clips": {\n' + json + "\n    },"));
 writeFileSync(resolve(report, "sounds.md"), [
-  "# Громкость атласа этапа 2б",
+  "# Громкость атласа этапа 3",
   "",
   "Сегменты измерены по декодированному atlas.ogg через ffmpeg loudnorm. Интервалы тишины между сегментами исключены.",
   "У всех исходников затухание по 10 мс с обоих концов, у ударов и разломов срез ниже 9 кГц [решение ТЗ-02б].",

@@ -42,7 +42,8 @@
   "sounds": {
     "atlasId": null,
     "rules": {
-      "maxVolume": 0.5, "frequentVolume": 0.25, "linkVolume": 0.12, "defaultSfx": 0.6,
+      "maxVolume": 0.5, "frequentVolume": 0.25, "linkVolume": 0.12,
+      "depthVolume": 0.15, "defaultSfx": 0.6,
       "frequentLufs": -26, "rareLufs": -20, "lowpassHz": 9000, "fadeSeconds": 0.01,
       "pitchSpread": 0.08, "fatigueDelay": 3, "fatigueGain": 0.6,
       "voices": { "hit_soft": 2, "break_soft": 3, "coin": 1 }
@@ -61,7 +62,16 @@
       "ult_thud": [[13.89,0.54]],
       "plate_hit": [[14.55,0.58],[15.25,0.58]],
       "plate_break": [[15.95,0.68]],
-      "ui_tap": [[16.75,0.44]]
+      "ui_tap": [[16.75,0.44]],
+      "buy_soft": [[17.31,0.44],[17.87,0.44],[18.43,0.44]],
+      "level_tick": [[18.99,0.44]],
+      "card_morph": [[19.55,0.74]],
+      "heavy_hit": [[20.41,0.49]],
+      "crit_soft": [[21.02,0.44],[21.58,0.44]],
+      "coin_rain": [[22.14,0.57]],
+      "world_enter": [[22.83,1.02]],
+      "depth_knock": [[23.97,0.44],[24.53,0.44],[25.09,0.44]],
+      "locked": [[25.65,0.49]]
     },
     "_note": "[владелец] ТЗ-02б §3; [решение] atlasId после загрузки владельцем, сегменты выводит build-sounds.mjs"
   },

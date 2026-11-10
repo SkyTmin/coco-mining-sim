@@ -18,6 +18,8 @@
 | `default_gravel_dig.2.ogg` | lolamadeus | CC0 1.0 | [Запись](https://freesound.org/people/lolamadeus/sounds/179341/) · [вариант Luanti](https://github.com/luanti-org/minetest_game/blob/9e895af6e9feb98332fa1a778001442f5669bc20/mods/default/sounds/default_gravel_dig.2.ogg) |
 
 Монеты, ноты, разряды, рокот, удары ульты, разрушение Плиты и нажатия синтезируются из осцилляторов в [build-sounds.mjs](../../scripts/build-sounds.mjs).
-Имена и уровни всех производных сегментов перечислены в [отчёте](../../docs/reports/stage-02b/sounds.md).
+Новые сигналы этапа 3 (`buy_soft`, `level_tick`, `card_morph`, `heavy_hit`, `crit_soft`, `coin_rain`, `world_enter`,
+`depth_knock`, `locked`) синтезированы для COCO из осцилляторов в том же скрипте, без сторонних сэмплов. Лицензия CC0 1.0.
+Имена и уровни всех сегментов перечислены в [отчёте](../../docs/reports/stage-03/sounds.md).
 
 Лицензии исходников подтверждены на странице [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) и в [списке звуков Luanti](https://github.com/luanti-org/minetest_game/blob/9e895af6e9feb98332fa1a778001442f5669bc20/mods/default/README.md).
