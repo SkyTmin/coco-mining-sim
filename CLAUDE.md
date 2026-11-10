@@ -11,3 +11,6 @@ acceptance list before the next ТЗ, makes small fixes itself. Codex writes the
 - Studio access from cloud sessions goes through the Studio Relay of the previous game
   (github.com/SkyTmin/coco-prison-roblox `tools/studio-relay`); teaching the plugin to tell the two places apart
   (by PlaceId) is Claude's task, not Codex's. Never install anything on the owner's PC; never publish.
+
+- New game place: **PlaceId `87020443315503`** [владелец 10.11]. «Каторга» is `92594200898716`. Before every relay command check
+  `agent.mjs status` → `placeId`; never sync this repo's code into the «Каторга» place or the other way round.
