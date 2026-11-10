@@ -416,6 +416,25 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					end
 				end
 			end
+			if res.lastFace then
+				local face = res.lastFace
+				local last = {
+					front = face.depth,
+					width = window.width,
+					height = window.height,
+					layers = { face.tiles },
+				}
+				ride.last = {}
+				local radius = (window.width - 1) // 2
+				for x = -radius, radius do
+					for y = 0, window.height - 1 do
+						local block = Break.snapshot(r, last, x, y, 0, -S)
+						if block then
+							table.insert(ride.last, { block = block, x = x, y = y })
+						end
+					end
+				end
+			end
 			if res.ability and view then
 				Camera.swing(view, now, timeline.windup * 2)
 			end
@@ -624,15 +643,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 			if ride.ability then
 				ultLanded = now
-				for _, item in ride.front or {} do
-					local old = item.block
-					local block = {
-						frame = renderer.frame * CFrame.new(item.x * S, (item.y + 0.5) * S, -S / 2),
-						material = old.material,
-						texture = old.texture,
-						dust = old.dust,
-						glow = old.glow,
-					}
+				for _, item in ride.last or ride.front or {} do
+					local block = item.block
 					local wind = (
 						renderer.frame.RightVector * item.x
 						+ Vector3.yAxis * (0.45 + math.abs(item.y - 1) * 0.2)

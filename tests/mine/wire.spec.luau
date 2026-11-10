@@ -82,6 +82,11 @@ Test.describe("Mine protocol", function()
 		expect(Wire.decodeResult(Wire.encodeResult(result))).toEqual(result)
 		local rejected = { seq = 7, plot = 8, front = 36004, accepted = false }
 		expect(Wire.decodeResult(Wire.encodeResult(rejected))).toEqual(rejected)
+		result.lastFace = { depth = result.front - 1, tiles = layer }
+		expect(Wire.decodeResult(Wire.encodeResult(result))).toEqual(result)
+		result.lastFace.depth = result.front
+		expect(Wire.decodeResult(Wire.encodeResult(result))).toBe(nil)
+		result.lastFace.depth = result.front - 1
 		local blob = Wire.encodeResult(result)
 		local truncated = buffer.create(buffer.len(blob) - 1)
 		buffer.copy(truncated, 0, blob, 0, buffer.len(truncated))

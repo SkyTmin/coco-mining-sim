@@ -265,6 +265,7 @@ function Wire.encodeResult(res: any): buffer
 		+ (if res.crit then 16 else 0)
 		+ (if res.mega then 32 else 0)
 		+ (if res.rain then 64 else 0)
+		+ (if res.lastFace then 128 else 0)
 	put("u8", flags)
 	put("u32", res.front)
 	put("u8", res.plot)
@@ -307,13 +308,16 @@ function Wire.encodeResult(res: any): buffer
 	put("u8", res.charge)
 	put("f64", res.plateDamage)
 	putDamage(put, res.damage)
+	if res.lastFace then
+		put("u32", res.lastFace.depth)
+		putLayers(put, res.width, res.height, { res.lastFace.tiles })
+	end
 	return finish()
 end
 
 function Wire.decodeResult(data: any): any?
 	return decode(data, function(get)
 		local seq, flags, front, plot = get("u16"), get("u8"), get("u32"), get("u8")
-		check(flags <= 127)
 		local res =
 			{ seq = seq, accepted = bit32.btest(flags, 1), front = front, plot = plot } :: any
 		if not res.accepted then
@@ -364,6 +368,13 @@ function Wire.decodeResult(data: any): any?
 			check(res.delta > 0 and res.delta <= front and #res.layers == mine.nearWindow)
 		end
 		res.charge, res.plateDamage, res.damage = get("u8"), get("f64"), getDamage(get)
+		if bit32.btest(flags, 128) then
+			local depth = get("u32")
+			local width, height, face = getLayers(get)
+			check(res.ability and res.delta > 0 and depth >= front - res.delta and depth < front)
+			check(width == res.width and height == res.height and #face == 1)
+			res.lastFace = { depth = depth, tiles = face[1] }
+		end
 		return res
 	end)
 end
