@@ -1,58 +1,102 @@
 --!strict
 
-local grids = require(script.Parent.picks)
+local data = require(script.Parent.wooden_pickaxe)
 local PickModel = {}
-local icons: { [string]: number } = {
-	starter = 0,
-	storm_common = 1,
-	plain_common = 1,
-	plain_rare = 5,
-	plain_epic = 9,
-	plain_legendary = 13,
-}
+local xSize, ySize, zSize = table.unpack(data.size)
+local middle = Vector3.new(ySize / 2, zSize / 2, xSize / 2)
+local turn = CFrame.Angles(math.rad(data.tilt), 0, 0)
+local low, high = Vector3.one * math.huge, -Vector3.one * math.huge
 
-function PickModel.icon(id: string): number
-	return icons[id] or 0
+for _, box in data.b do
+	local x, z, w, h = box[1], box[3], box[4], box[6]
+	for _, dx in { 0, w } do
+		for _, dz in { 0, h } do
+			local corner = turn:VectorToWorldSpace(Vector3.new(0, z + dz, x + dx) - middle)
+			low, high = low:Min(corner), high:Max(corner)
+		end
+	end
 end
 
-function PickModel.new(icon: number, frame: CFrame, pixel: number, anchored: boolean): (Model, Part)
-	local grid = grids[icon + 1]
+local span = math.max(high.Y - low.Y, high.Z - low.Z)
+local centre = Vector3.new(0, (low.Y + high.Y) / 2, (low.Z + high.Z) / 2)
+local colors = {}
+for index, hex in data.p do
+	local packed = assert(tonumber(hex, 16))
+	colors[index] = Color3.fromRGB(
+		bit32.rshift(packed, 16),
+		bit32.band(bit32.rshift(packed, 8), 255),
+		bit32.band(packed, 255)
+	)
+end
+
+local HELD_SIZE = 1.45
+-- PickaxeService still owns the root and motor. Adapt its existing grip to the owner's item frame.
+local legacyGrip = CFrame.new(0, -0.17 * 0.3, -0.10)
+	* CFrame.Angles(math.rad(-77), 0, math.rad(-13))
+local handGrip = CFrame.new(0.3, -0.3, -0.2)
+	* CFrame.Angles(math.rad(-105), math.pi, 0)
+	* CFrame.new(0, HELD_SIZE * 0.45, HELD_SIZE * 0.45)
+local heldTemplate: Model? = nil
+
+local function build(size: number, anchored: boolean, mount: CFrame): (Model, Part)
+	local pixel = size / span
 	local model = Instance.new("Model")
 	model.Name = "MinePickaxe"
-	local function part(name: string, size: Vector3, at: CFrame): Part
-		local piece = Instance.new("Part")
-		piece.Name, piece.Size, piece.CFrame = name, size, at
-		piece.Anchored, piece.Massless, piece.CastShadow = anchored, true, false
-		piece.CanCollide, piece.CanQuery, piece.CanTouch = false, false, false
-		piece.Material, piece.Parent = Enum.Material.SmoothPlastic, model
-		return piece
+	local function part(name: string, dimensions: Vector3, frame: CFrame): Part
+		local voxel = Instance.new("Part")
+		voxel.Name, voxel.Size, voxel.CFrame = name, dimensions, frame
+		voxel.Massless, voxel.CastShadow = true, false
+		voxel.CanCollide, voxel.CanTouch, voxel.CanQuery = false, false, false
+		voxel.Material, voxel.Parent = Enum.Material.SmoothPlastic, model
+		return voxel
 	end
-	local grip = part("Grip", Vector3.one * 0.2, frame)
-	grip.Transparency, model.PrimaryPart = 1, grip
+	local root = part("Grip", Vector3.new(ySize * pixel, size, size), CFrame.identity)
+	root.Anchored, root.Transparency, model.PrimaryPart = anchored, 1, root
 	local head: Part? = nil
-	local headArea = 0
-	for _, rect in grid.rects do
-		local x, y, w, h, rgb = table.unpack(rect)
-		local offset =
-			CFrame.new((x + w / 2 - grid.grip[1]) * pixel, (grid.grip[2] - y - h / 2) * pixel, 0)
-		local voxel = part("Voxel", Vector3.new(w * pixel, h * pixel, pixel), frame * offset)
-		voxel.Color = Color3.fromRGB(
-			bit32.rshift(rgb, 16),
-			bit32.band(bit32.rshift(rgb, 8), 255),
-			bit32.band(rgb, 255)
-		)
-		if y < 9 and w * h > headArea then
-			head, headArea = voxel, w * h
-		end
-		if not anchored then
-			local weld = Instance.new("WeldConstraint")
-			weld.Part0, weld.Part1, weld.Parent = grip, voxel, voxel
+	local headSize = 0
+	for _, box in data.b do
+		local x, y, z, w, d, h, color = table.unpack(box)
+		local at = Vector3.new(y + d / 2, z + h / 2, x + w / 2) - middle
+		local relative = mount * CFrame.new(-centre * pixel) * turn * CFrame.new(at * pixel)
+		local voxel = part("Voxel", Vector3.new(d, h, w) * pixel, relative)
+		voxel.Color = colors[color + 1]
+		local weld = Instance.new("Weld")
+		weld.Part0, weld.Part1, weld.C0, weld.Parent = root, voxel, relative, voxel
+		if z > zSize * 0.7 and w * d * h > headSize then
+			head, headSize = voxel, w * d * h
 		end
 	end
 	if head then
 		head.Name = "Head"
 	end
-	return model, grip
+	return model, root
+end
+
+function PickModel.icon(_id: string): number
+	return 0
+end
+
+function PickModel.new(
+	_icon: number,
+	frame: CFrame,
+	_pixel: number,
+	anchored: boolean
+): (Model, Part)
+	if anchored then
+		local model, root = build(HELD_SIZE, true, CFrame.identity)
+		model:PivotTo(frame)
+		return model, root
+	end
+	if not heldTemplate then
+		heldTemplate = build(HELD_SIZE, false, legacyGrip:Inverse() * handGrip)
+	end
+	local model = heldTemplate:Clone()
+	model:PivotTo(frame)
+	return model, model.PrimaryPart :: Part
+end
+
+function PickModel.view(): (Model, Part)
+	return build(HELD_SIZE * 0.6, true, CFrame.identity)
 end
 
 return PickModel

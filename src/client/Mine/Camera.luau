@@ -2,11 +2,14 @@
 
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
-local swing = Config.fx.swing
+local Shared = game:GetService("ReplicatedStorage").Shared
+local PickModel = require(Shared.Models.PickModel)
+local Swing = require(script.Parent.SwingAnimations)
+
 local REST_PITCH = math.rad(5.5)
 local Camera = {}
+type ArmJoint = Motor6D | AnimationConstraint
+type Applied = { joint: ArmJoint, base: CFrame, transform: CFrame }
 export type View = {
 	player: Player,
 	frame: CFrame,
@@ -17,61 +20,51 @@ export type View = {
 	recenter: { at: number, yaw: number, pitch: number }?,
 	swingAt: number,
 	swingDuration: number,
-	side: number,
-	ability: boolean,
+	firstItem: Model?,
+	firstRoot: Part?,
+	bob: number,
+	hidden: Model?,
+	hideNew: RBXScriptConnection?,
+	body: { [string]: Applied },
 	glowing: { part: BasePart, material: Enum.Material, color: Color3 }?,
 }
 
-type ArmJoint = Motor6D | AnimationConstraint
-
-local function armJoint(character: Model?, name: string): ArmJoint?
-	local joint = character and character:FindFirstChild(name, true)
-	if joint and (joint:IsA("Motor6D") or joint:IsA("AnimationConstraint")) then
-		return joint
-	end
-	return nil
+local function swingProgress(view: View, now: number): number?
+	local progress = (now - view.swingAt) / view.swingDuration
+	return if progress >= 0 and progress < 1 then progress else nil
 end
 
-local function aimJoint(
-	joint: ArmJoint,
-	parentFrame: CFrame,
-	orientation: CFrame,
-	offset: Vector3?
-): CFrame
-	local pivot = parentFrame * joint.C0
-	local desired = CFrame.new(
-		pivot.Position
-			+ (offset or Vector3.zero)
-			- orientation:VectorToWorldSpace(joint.C1.Position)
-	) * orientation
-	joint.Transform = pivot:ToObjectSpace(desired * joint.C1)
-	return desired
-end
-
-local function strike(time: number): (number, number)
-	local windup = -math.rad(swing.windupDegrees)
-	local contact = windup + math.rad(swing.travelDegrees)
-	if time < swing.windup then
-		local t = time / swing.windup
-		return windup * t, swing.handNear * t
-	elseif time < swing.contact then
-		local t = ((time - swing.windup) / (swing.contact - swing.windup)) ^ 5
-		return windup + (contact - windup) * t, swing.handNear * (1 - t)
-	elseif time < swing.hold then
-		return contact, 0
+local function bodyPose(view: View)
+	local character = view.player.Character
+	if not character or not view.active or view.mode == "first" then
+		for _, state in view.body do
+			if state.joint.Parent and state.joint.Transform == state.transform then
+				state.joint.Transform = state.base
+			end
+		end
+		table.clear(view.body)
+		return
 	end
-	local t = (time - swing.hold) / (swing.finish - swing.hold)
-	local recoil = -math.rad(swing.recoilDegrees)
-	local rebound = 0.42
-	if t < rebound then
-		return recoil + (contact - recoil) * (1 - t / rebound) ^ 3, 0
+	local progress = swingProgress(view, os.clock())
+	for _, name in Swing.joints do
+		local state = view.body[name]
+		local joint = if state and state.joint:IsDescendantOf(character)
+			then state.joint
+			else character:FindFirstChild(name, true)
+		if joint and (joint:IsA("Motor6D") or joint:IsA("AnimationConstraint")) then
+			local base = joint.Transform
+			if state and state.joint == joint and base == state.transform then
+				base = state.base
+			end
+			local pose = base * Swing.body(name, progress)
+			joint.Transform = pose
+			if not state or state.joint ~= joint then
+				view.body[name] = { joint = joint, base = base, transform = pose }
+			else
+				state.base, state.transform = base, pose
+			end
+		end
 	end
-	local settle = TweenService:GetValue(
-		(t - rebound) / (1 - rebound),
-		Enum.EasingStyle.Back,
-		Enum.EasingDirection.Out
-	)
-	return recoil * (1 - settle), 0
 end
 
 function Camera.new(player: Player, frame: CFrame): View
@@ -84,54 +77,11 @@ function Camera.new(player: Player, frame: CFrame): View
 		pitch = REST_PITCH,
 		swingAt = -math.huge,
 		swingDuration = 0.35,
-		side = 1,
-		ability = false,
+		bob = 0,
+		body = {},
 	}
 	RunService.PreSimulation:Connect(function()
-		if not view.active then
-			return
-		end
-		local character = player.Character
-		local shoulder = armJoint(character, "RightShoulder")
-		local elbow = armJoint(character, "RightElbow")
-		local wrist = armJoint(character, "RightWrist")
-		if not shoulder or not shoulder.Part0 or not elbow or not wrist then
-			return
-		end
-		local time = os.clock() - view.swingAt
-		local elapsed = time / view.swingDuration
-		local pitch = if view.mode == "first" then 0.06 + view.pitch * 0.5 else -0.48
-		local roll = if view.mode == "first" then 0.13 else -0.03
-		local near = 0
-		if elapsed >= 0 and elapsed < 1 then
-			if view.ability then
-				local strength = if view.mode == "first" then 0.64 else 1.5
-				local wind = if elapsed < 0.48
-					then -0.66 * elapsed / 0.48
-					elseif elapsed < 0.58 then -0.66 + 1.12 * (elapsed - 0.48) / 0.10
-					else 0.46 * (1 - elapsed) / 0.42
-				pitch += wind * strength
-				roll += view.side * 0.17 * math.sin(elapsed * math.pi)
-			else
-				local angle, reach = strike(time)
-				pitch -= angle
-				near = reach
-			end
-		end
-		if view.mode == "first" or elapsed < 1 then
-			local facing = (view.frame * CFrame.Angles(0, view.yaw + roll, 0)).LookVector
-			local up = -(facing * math.cos(pitch) + Vector3.yAxis * math.sin(pitch))
-			local right = facing:Cross(Vector3.yAxis)
-			local orientation = CFrame.fromMatrix(Vector3.zero, right, up, right:Cross(up))
-			local armLength = shoulder.C1.Position.Magnitude
-				+ elbow.C0.Position.Magnitude
-				+ elbow.C1.Position.Magnitude
-				+ wrist.C0.Position.Magnitude
-			local upper =
-				aimJoint(shoulder, shoulder.Part0.CFrame, orientation, -facing * (near * armLength))
-			local forearm = aimJoint(elbow, upper, orientation)
-			aimJoint(wrist, forearm, orientation)
-		end
+		bodyPose(view)
 	end)
 	return view
 end
@@ -147,25 +97,44 @@ function Camera.faceWall(view: View, now: number)
 end
 
 function Camera.away(view: View): boolean
-	return math.abs(view.yaw) > math.rad(30) or math.abs(view.pitch - REST_PITCH) > math.rad(26)
+	return math.abs(view.yaw) > math.rad(60)
 end
 
-function Camera.swing(view: View, now: number, duration: number, ability: boolean)
-	view.swingAt, view.swingDuration, view.side, view.ability =
-		now, if ability then duration else swing.finish, -view.side, ability
+function Camera.swing(view: View, now: number, duration: number)
+	view.swingAt, view.swingDuration = now, duration
 end
 
-local function transparency(character: Model, first: boolean)
-	for _, item in character:GetDescendants() do
-		if not item:IsA("BasePart") then
-			continue
+function Camera.contact(view: View, interval: number): number
+	-- The camera chop peaks at 0.20; the R15 slam meets the wall on its 0.55 key.
+	return interval * (if view.mode == "first" then 0.20 else 0.55)
+end
+
+local function hideBody(view: View, character: Model?)
+	if view.hidden == character then
+		return
+	end
+	if view.hideNew then
+		view.hideNew:Disconnect()
+		view.hideNew = nil
+	end
+	if view.hidden then
+		for _, part in view.hidden:GetDescendants() do
+			if part:IsA("BasePart") then
+				part.LocalTransparencyModifier = 0
+			end
 		end
-		local name = item.Name
-		local right = name == "RightUpperArm"
-			or name == "RightLowerArm"
-			or name == "RightHand"
-			or (item.Parent ~= nil and item.Parent.Name == "MinePickaxe")
-		item.LocalTransparencyModifier = if first and not right then 1 else 0
+	end
+	view.hidden = character
+	if character then
+		local function hide(item: Instance)
+			if item:IsA("BasePart") then
+				item.LocalTransparencyModifier = 1
+			end
+		end
+		for _, item in character:GetDescendants() do
+			hide(item)
+		end
+		view.hideNew = character.DescendantAdded:Connect(hide)
 	end
 end
 
@@ -175,7 +144,9 @@ function Camera.glow(view: View, color: Color3?)
 		return
 	end
 	local character = view.player.Character
-	local pick = character and character:FindFirstChild("MinePickaxe")
+	local pick = if view.mode == "first"
+		then view.firstItem
+		else character and character:FindFirstChild("MinePickaxe")
 	local head = pick and pick:FindFirstChild("Head")
 	if old and (not color or old.part ~= head) then
 		old.part.Material, old.part.Color = old.material, old.color
@@ -187,7 +158,44 @@ function Camera.glow(view: View, color: Color3?)
 	end
 end
 
-function Camera.step(view: View, active: boolean, shake: Vector3)
+local function drawHeld(
+	view: View,
+	camera: Camera,
+	humanoid: Humanoid?,
+	first: boolean,
+	dt: number,
+	reduced: boolean
+)
+	if not first then
+		if view.firstItem then
+			view.firstItem.Parent = nil
+		end
+		return
+	end
+	if not view.firstItem then
+		view.firstItem, view.firstRoot = PickModel.view()
+		view.firstItem.Name = "FirstPersonPickaxe"
+	end
+	local item, root = view.firstItem, view.firstRoot
+	if not item or not root then
+		return
+	end
+	if item.Parent ~= camera then
+		item.Parent = camera
+	end
+	local speed = if humanoid and not reduced then humanoid.MoveDirection.Magnitude else 0
+	if speed > 0.1 then
+		view.bob += dt * 9
+	end
+	local bob = CFrame.new(
+		math.sin(view.bob) * 0.03 * speed,
+		-math.abs(math.cos(view.bob)) * 0.03 * speed,
+		0
+	)
+	root.CFrame = camera.CFrame * bob * Swing.held(root.Size.Y, swingProgress(view, os.clock()))
+end
+
+function Camera.step(view: View, active: boolean, shake: Vector3, dt: number, reduced: boolean)
 	local camera = workspace.CurrentCamera
 	local character = view.player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -212,7 +220,8 @@ function Camera.step(view: View, active: boolean, shake: Vector3)
 			if humanoid then
 				humanoid.AutoRotate = true
 			end
-			transparency(character, false)
+			hideBody(view, nil)
+			drawHeld(view, camera, humanoid, false, dt, reduced)
 		end
 		view.active = false
 		return
@@ -251,7 +260,7 @@ function Camera.step(view: View, active: boolean, shake: Vector3)
 		then Enum.MouseBehavior.LockCenter
 		else Enum.MouseBehavior.Default
 	UserInputService.MouseIconEnabled = not mouseLock
-	transparency(character, first)
+	hideBody(view, if first then character else nil)
 	local headCenter = Vector3.new(pos.X, head.Position.Y, pos.Z)
 	local eye = if first
 		then headCenter + facing * 0.12 + facing:Cross(Vector3.yAxis) * 0.10 + Vector3.new(
@@ -262,6 +271,7 @@ function Camera.step(view: View, active: boolean, shake: Vector3)
 		else headCenter - facing * 11 + Vector3.new(0, 2.5, 0)
 	camera.CFrame = CFrame.lookAt(eye + shake, eye + shake + direction)
 	camera.Focus = CFrame.new(eye + direction * 24)
+	drawHeld(view, camera, humanoid, first, dt, reduced)
 end
 
 return Camera

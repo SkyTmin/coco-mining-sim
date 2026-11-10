@@ -5,6 +5,7 @@ local TweenService = game:GetService("TweenService")
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local Worlds = require(Shared.Mine.Worlds)
+local BlockArt = require(script.Parent.BlockArt)
 
 local S = Config.mine.blockSize
 local WIDTH = Config.mine.startWidth * S + 0.6
@@ -19,11 +20,6 @@ local FAR_SPACING = depthConfig.distantSpacing
 local SEGMENT = 2000
 local LAMP = Color3.fromRGB(255, 215, 166)
 local Tunnel = {}
-local materials = {
-	Ground = Enum.Material.Ground,
-	Sandstone = Enum.Material.Sandstone,
-	Limestone = Enum.Material.Limestone,
-}
 local fade = TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 
 local function rgb(bytes: { number }): Color3
@@ -52,11 +48,23 @@ local function colorOf(world: Worlds.World): Color3
 	return Color3.fromRGB(world.color[1], world.color[2], world.color[3])
 end
 
-function Tunnel.new(parent: Instance, frame: CFrame): any
+function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 	local model = Instance.new("Folder")
 	model.Name, model.Parent = "MineTunnel", parent
 	local gray, trim = Color3.fromRGB(64, 66, 72), Color3.fromRGB(98, 107, 120)
 	local spans, edges, jambs, walls, details = {}, {}, {}, {}, {}
+	local platform: BasePart? = nil
+	local frameParts = {}
+	for _, part in plot:GetChildren() do
+		if part:IsA("BasePart") then
+			if part.Name == "Platform" then
+				platform = part
+			end
+			if part.Name == "FrameSide" or part.Name == "FrameTop" then
+				table.insert(frameParts, part)
+			end
+		end
+	end
 	local function fixed(
 		name: string,
 		size: Vector3,
@@ -186,8 +194,7 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 	local maskRows = {}
 	for i = 1, Config.mine.height do
 		local strip = Instance.new("ImageLabel")
-		strip.Name, strip.Image, strip.BackgroundTransparency =
-			"Row" .. i, Config.art.textures.mineFx, 1
+		strip.Name, strip.Image, strip.BackgroundTransparency = "Row" .. i, Config.art.atlas, 1
 		strip.Size, strip.Position =
 			UDim2.fromScale(1, 1 / Config.mine.height),
 			UDim2.fromScale(0, (i - 1) / Config.mine.height)
@@ -215,6 +222,8 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 		edges = edges,
 		jambs = jambs,
 		walls = walls,
+		platform = platform,
+		frameParts = frameParts,
 		details = details,
 		lampColor = LAMP,
 		tweens = {},
@@ -235,6 +244,7 @@ function Tunnel.new(parent: Instance, frame: CFrame): any
 			Lighting.FogStart,
 			Lighting.FogEnd,
 			Lighting.FogColor,
+			Lighting.ShadowSoftness,
 		},
 		atmosphere = atmosphere,
 		density = if atmosphere then atmosphere.Density else 0,
@@ -324,6 +334,7 @@ function Tunnel.atmosphere(t: any, active: boolean, front: number, quality: numb
 			local old = t.original
 			Lighting.Ambient, Lighting.OutdoorAmbient, Lighting.Brightness = old[1], old[2], old[3]
 			Lighting.FogStart, Lighting.FogEnd, Lighting.FogColor = old[4], old[5], old[6]
+			Lighting.ShadowSoftness = old[7]
 			if t.atmosphere then
 				t.atmosphere.Density = t.density
 			end
@@ -361,17 +372,34 @@ function Tunnel.atmosphere(t: any, active: boolean, front: number, quality: numb
 			if look then rgb(look.fog) else colorOf(world):Lerp(Color3.fromRGB(34, 37, 51), 0.65)
 		)
 		paint(t.glow, "Color", if look then rgb(look.glow) else colorOf(Worlds.of(world.finish)))
+		local rock = Config.art.lining[world.id]
 		for _, wall in t.walls do
-			wall.Material = if look then materials[look.material] else Enum.Material.SmoothPlastic
-			paint(wall, "Color", if look then rgb(look.wall) else Color3.fromRGB(64, 66, 72))
+			BlockArt.apply(wall, rock)
+		end
+		BlockArt.apply(t.mass, rock)
+		if t.platform then
+			BlockArt.apply(t.platform, rock)
+		end
+		for _, part in t.frameParts do
+			BlockArt.apply(part, if part.Name == "FrameTop" then "planks" else "oak_log")
+		end
+		for _, beam in t.spans do
+			if beam.Name == "Arch" then
+				BlockArt.apply(beam, "planks")
+			end
+		end
+		for _, entry in t.edges do
+			if entry.part.Name == "Arch" then
+				BlockArt.apply(entry.part, "oak_log")
+			end
 		end
 		for _, lamp in t.lamps do
 			paint(lamp.part, "Color", t.lampColor)
 		end
 	end
-	Lighting.Ambient = Color3.fromRGB(107, 102, 101)
-	Lighting.OutdoorAmbient = Color3.fromRGB(126, 116, 111)
-	Lighting.Brightness = 1.8
+	Lighting.Ambient = Color3.fromRGB(118, 112, 109)
+	Lighting.OutdoorAmbient = Color3.fromRGB(126, 119, 115)
+	Lighting.Brightness, Lighting.ShadowSoftness = 1.32, 0.55
 	Lighting.FogStart, Lighting.FogEnd = depthConfig.fogStart, LENGTH
 	if t.atmosphere then
 		t.atmosphere.Density = 0
@@ -401,7 +429,7 @@ function Tunnel.moves(
 	end
 	start = math.min(LENGTH - 1, start)
 	local massLength = math.min(SEGMENT, LENGTH - start)
-	t.mass.Color, t.mass.Size = rock, Vector3.new(width, height - 0.06, massLength)
+	t.mass.Size = Vector3.new(width, height - 0.06, massLength)
 	move(t.mass, 0, height / 2, start + massLength / 2)
 	local last = win.layers[visible]
 	t.mask.Enabled = visible > 0 and last ~= nil and not survivor
@@ -414,7 +442,7 @@ function Tunnel.moves(
 				end
 			end
 			strip.Visible = bits > 0
-			strip.ImageRectOffset = Vector2.new(bits % 16 * 16, bits // 16 * 4)
+			strip.ImageRectOffset = Vector2.new(bits % 16 * 16, 256 + bits // 16 * 4)
 			strip.ImageRectSize = Vector2.new(win.width * 2, 2)
 		end
 	end

@@ -1,606 +1,54 @@
 {
-  "textures": {
-    "ores": "rbxassetid://84750272163219",
-    "oreVariants": "rbxassetid://85467315761874",
-    "mineFx": "rbxassetid://134697820225087"
+  "atlas": "rbxassetid://106764051932610",
+  "materials": {
+    "basalt": "rbxassetid://97032215299261",
+    "brown_mushroom_block": "rbxassetid://99033986360887",
+    "crimson_nylium": "rbxassetid://75920746433343",
+    "cyan_concrete": "rbxassetid://137274817592622",
+    "diamond_block": "rbxassetid://135672709707723",
+    "dirt": "rbxassetid://120467403268934",
+    "end_stone": "rbxassetid://117421395326354",
+    "forest_floor": "rbxassetid://122143706233578",
+    "glowstone": "rbxassetid://78268193620023",
+    "gold_block": "rbxassetid://132873931980825",
+    "gold_ore": "rbxassetid://119623485372429",
+    "iron_ore": "rbxassetid://114736204050300",
+    "lapis_block": "rbxassetid://92036843008983",
+    "magma": "rbxassetid://134245404850700",
+    "nether_bricks": "rbxassetid://135366185017009",
+    "oak_log": "rbxassetid://104108597901323",
+    "obsidian": "rbxassetid://122896262834433",
+    "planks": "rbxassetid://110913940729167",
+    "prismarine": "rbxassetid://96493112563500",
+    "purpur": "rbxassetid://138499124767067",
+    "quartz_block": "rbxassetid://86269658302234",
+    "quartz_ore": "rbxassetid://110894404618364",
+    "sandstone": "rbxassetid://90207738459579",
+    "sea_lantern": "rbxassetid://106770117639658",
+    "shroomlight": "rbxassetid://129175876102100",
+    "smooth_sandstone": "rbxassetid://115406280890511",
+    "smooth_stone": "rbxassetid://85548173839548",
+    "snow": "rbxassetid://85928942171420",
+    "terracotta": "rbxassetid://80612962866962"
   },
-  "ui": "rbxassetid://125008332215129",
-  "sprites": {
-    "frame-iron": {
-      "rect": [
-        2,
-        2,
-        14,
-        14
-      ],
-      "slice": [
-        6,
-        6,
-        8,
-        8
-      ]
-    },
-    "frame-wood": {
-      "rect": [
-        20,
-        2,
-        28,
-        28
-      ],
-      "slice": [
-        8,
-        8,
-        20,
-        20
-      ]
-    },
-    "frame-parch": {
-      "rect": [
-        52,
-        2,
-        8,
-        8
-      ],
-      "slice": [
-        3,
-        3,
-        5,
-        5
-      ]
-    },
-    "frame-well": {
-      "rect": [
-        64,
-        2,
-        6,
-        6
-      ],
-      "slice": [
-        2,
-        2,
-        4,
-        4
-      ]
-    },
-    "btn-gold-n": {
-      "rect": [
-        74,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "btn-gold-h": {
-      "rect": [
-        90,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "btn-gold-p": {
-      "rect": [
-        106,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        2,
-        4,
-        10,
-        12
-      ]
-    },
-    "btn-gold-d": {
-      "rect": [
-        122,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "btn-green-n": {
-      "rect": [
-        138,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "btn-green-h": {
-      "rect": [
-        154,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "btn-green-p": {
-      "rect": [
-        170,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        2,
-        4,
-        10,
-        12
-      ]
-    },
-    "btn-green-d": {
-      "rect": [
-        186,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "btn-iron-n": {
-      "rect": [
-        202,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "btn-iron-h": {
-      "rect": [
-        218,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "btn-iron-p": {
-      "rect": [
-        234,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        2,
-        4,
-        10,
-        12
-      ]
-    },
-    "btn-iron-d": {
-      "rect": [
-        250,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "btn-red-n": {
-      "rect": [
-        266,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "btn-red-h": {
-      "rect": [
-        282,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "btn-red-p": {
-      "rect": [
-        298,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        2,
-        4,
-        10,
-        12
-      ]
-    },
-    "btn-red-d": {
-      "rect": [
-        314,
-        2,
-        12,
-        14
-      ],
-      "slice": [
-        3,
-        3,
-        9,
-        9
-      ]
-    },
-    "hud-coin": {
-      "rect": [
-        330,
-        2,
-        12,
-        12
-      ]
-    },
-    "badge": {
-      "rect": [
-        346,
-        2,
-        8,
-        8
-      ],
-      "slice": [
-        2,
-        2,
-        6,
-        6
-      ]
-    },
-    "i-bolt": {
-      "rect": [
-        358,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-gear": {
-      "rect": [
-        371,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-lock": {
-      "rect": [
-        384,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-up": {
-      "rect": [
-        397,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-x": {
-      "rect": [
-        410,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-left": {
-      "rect": [
-        423,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-right": {
-      "rect": [
-        436,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-minus": {
-      "rect": [
-        449,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-plus": {
-      "rect": [
-        462,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-sound": {
-      "rect": [
-        475,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-mute": {
-      "rect": [
-        488,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-buzz": {
-      "rect": [
-        501,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-grid": {
-      "rect": [
-        514,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-star": {
-      "rect": [
-        527,
-        2,
-        9,
-        9
-      ]
-    },
-    "i-undo": {
-      "rect": [
-        540,
-        2,
-        9,
-        9
-      ]
-    },
-    "st-power": {
-      "rect": [
-        553,
-        2,
-        12,
-        12
-      ]
-    },
-    "st-dmg": {
-      "rect": [
-        569,
-        2,
-        12,
-        12
-      ]
-    },
-    "icon-lens": {
-      "rect": [
-        585,
-        2,
-        32,
-        32
-      ]
-    },
-    "icon-pick": {
-      "rect": [
-        621,
-        2,
-        32,
-        32
-      ]
-    },
-    "pick-0": {
-      "rect": [
-        657,
-        2,
-        102,
-        100
-      ]
-    },
-    "pick-1": {
-      "rect": [
-        763,
-        2,
-        100,
-        104
-      ]
-    },
-    "pick-2": {
-      "rect": [
-        867,
-        2,
-        101,
-        104
-      ]
-    },
-    "pick-3": {
-      "rect": [
-        2,
-        110,
-        102,
-        105
-      ]
-    },
-    "pick-4": {
-      "rect": [
-        108,
-        110,
-        102,
-        105
-      ]
-    },
-    "pick-5": {
-      "rect": [
-        214,
-        110,
-        102,
-        105
-      ]
-    },
-    "pick-6": {
-      "rect": [
-        320,
-        110,
-        102,
-        105
-      ]
-    },
-    "pick-7": {
-      "rect": [
-        426,
-        110,
-        102,
-        105
-      ]
-    },
-    "pick-8": {
-      "rect": [
-        532,
-        110,
-        102,
-        105
-      ]
-    },
-    "pick-9": {
-      "rect": [
-        638,
-        110,
-        102,
-        105
-      ]
-    },
-    "pick-10": {
-      "rect": [
-        744,
-        110,
-        102,
-        105
-      ]
-    },
-    "pick-11": {
-      "rect": [
-        850,
-        110,
-        102,
-        105
-      ]
-    },
-    "pick-12": {
-      "rect": [
-        2,
-        219,
-        104,
-        107
-      ]
-    },
-    "pick-13": {
-      "rect": [
-        110,
-        219,
-        104,
-        107
-      ]
-    },
-    "pick-14": {
-      "rect": [
-        218,
-        219,
-        104,
-        107
-      ]
-    },
-    "pick-15": {
-      "rect": [
-        326,
-        219,
-        104,
-        107
-      ]
-    },
-    "pick-16": {
-      "rect": [
-        434,
-        219,
-        104,
-        107
-      ]
-    }
-  },
+  "cracks": [
+    "rbxassetid://91151284717268",
+    "rbxassetid://138160502464601",
+    "rbxassetid://111667609430854",
+    "rbxassetid://88409252541246",
+    "rbxassetid://98194923440266",
+    "rbxassetid://92181547216187",
+    "rbxassetid://115445774339323",
+    "rbxassetid://92209825316290",
+    "rbxassetid://118920073855708",
+    "rbxassetid://121892279353719"
+  ],
   "ores": {
     "meadow": [
       {
-        "atlas": "oreVariants",
+        "material": "dirt"
+      },
+      {
         "rect": [
           0,
           0,
@@ -609,7 +57,14 @@
         ]
       },
       {
-        "atlas": "ores",
+        "rect": [
+          64,
+          0,
+          64,
+          64
+        ]
+      },
+      {
         "rect": [
           128,
           0,
@@ -618,27 +73,8 @@
         ]
       },
       {
-        "atlas": "ores",
         "rect": [
-          256,
-          0,
-          64,
-          64
-        ]
-      },
-      {
-        "atlas": "ores",
-        "rect": [
-          384,
-          0,
-          64,
-          64
-        ]
-      },
-      {
-        "atlas": "ores",
-        "rect": [
-          576,
+          192,
           0,
           64,
           64
@@ -647,46 +83,41 @@
     ],
     "copper_caves": [
       {
-        "atlas": "oreVariants",
         "rect": [
-          64,
           0,
           64,
-          64
-        ]
-      },
-      {
-        "atlas": "ores",
-        "rect": [
-          384,
-          0,
           64,
           64
         ]
       },
       {
-        "atlas": "ores",
         "rect": [
-          640,
-          0,
+          64,
+          64,
           64,
           64
         ]
       },
       {
-        "atlas": "ores",
         "rect": [
-          832,
-          0,
+          128,
+          64,
           64,
           64
         ]
       },
       {
-        "atlas": "ores",
         "rect": [
-          512,
+          192,
+          64,
+          64,
+          64
+        ]
+      },
+      {
+        "rect": [
           0,
+          128,
           64,
           64
         ]
@@ -694,46 +125,41 @@
     ],
     "quartz_veins": [
       {
-        "atlas": "oreVariants",
+        "rect": [
+          64,
+          128,
+          64,
+          64
+        ]
+      },
+      {
         "rect": [
           128,
-          0,
-          64,
-          64
-        ]
-      },
-      {
-        "atlas": "ores",
-        "rect": [
           128,
-          0,
           64,
           64
         ]
       },
       {
-        "atlas": "ores",
-        "rect": [
-          704,
-          0,
-          64,
-          64
-        ]
-      },
-      {
-        "atlas": "ores",
         "rect": [
           192,
-          0,
+          128,
           64,
           64
         ]
       },
       {
-        "atlas": "ores",
         "rect": [
-          960,
           0,
+          192,
+          64,
+          64
+        ]
+      },
+      {
+        "rect": [
+          64,
+          192,
           64,
           64
         ]
@@ -741,332 +167,134 @@
     ],
     "gold_river": [
       {
-        "atlas": "oreVariants",
-        "rect": [
-          192,
-          0,
-          64,
-          64
-        ]
+        "material": "sandstone"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          640,
-          0,
-          64,
-          64
-        ]
+        "material": "iron_ore"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          896,
-          0,
-          64,
-          64
-        ]
+        "material": "gold_ore"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          128,
-          0,
-          64,
-          64
-        ]
+        "material": "quartz_ore"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          576,
-          0,
-          64,
-          64
-        ]
+        "material": "gold_block"
       }
     ],
     "ice_grottoes": [
       {
-        "atlas": "oreVariants",
-        "rect": [
-          256,
-          0,
-          64,
-          64
-        ]
+        "material": "snow"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          448,
-          64,
-          64,
-          64
-        ]
+        "material": "cyan_concrete"
       },
       {
-        "atlas": "oreVariants",
-        "rect": [
-          320,
-          0,
-          64,
-          64
-        ]
+        "material": "prismarine"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          448,
-          0,
-          64,
-          64
-        ]
+        "material": "lapis_block"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          448,
-          64,
-          64,
-          64
-        ]
+        "material": "diamond_block"
       }
     ],
     "mushroom_forest": [
       {
-        "atlas": "oreVariants",
-        "rect": [
-          384,
-          0,
-          64,
-          64
-        ]
+        "material": "forest_floor"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          768,
-          0,
-          64,
-          64
-        ]
+        "material": "brown_mushroom_block"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          768,
-          64,
-          64,
-          64
-        ]
+        "material": "shroomlight"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          576,
-          0,
-          64,
-          64
-        ]
+        "material": "gold_ore"
       },
       {
-        "atlas": "oreVariants",
-        "rect": [
-          448,
-          0,
-          64,
-          64
-        ]
+        "material": "quartz_block"
       }
     ],
     "giant_bones": [
       {
-        "atlas": "oreVariants",
-        "rect": [
-          512,
-          0,
-          64,
-          64
-        ]
+        "material": "smooth_sandstone"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          64,
-          0,
-          64,
-          64
-        ]
+        "material": "end_stone"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          192,
-          64,
-          64,
-          64
-        ]
+        "material": "glowstone"
       },
       {
-        "atlas": "oreVariants",
-        "rect": [
-          576,
-          0,
-          64,
-          64
-        ]
+        "material": "obsidian"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          512,
-          64,
-          64,
-          64
-        ]
+        "material": "shroomlight"
       }
     ],
     "lost_city": [
       {
-        "atlas": "oreVariants",
-        "rect": [
-          640,
-          0,
-          64,
-          64
-        ]
+        "material": "terracotta"
       },
       {
-        "atlas": "oreVariants",
-        "rect": [
-          704,
-          0,
-          64,
-          64
-        ]
+        "material": "iron_ore"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          64,
-          64,
-          64,
-          64
-        ]
+        "material": "prismarine"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          256,
-          64,
-          64,
-          64
-        ]
+        "material": "lapis_block"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          896,
-          0,
-          64,
-          64
-        ]
+        "material": "gold_block"
       }
     ],
     "magma_springs": [
       {
-        "atlas": "oreVariants",
-        "rect": [
-          768,
-          0,
-          64,
-          64
-        ]
+        "material": "basalt"
       },
       {
-        "atlas": "oreVariants",
-        "rect": [
-          832,
-          0,
-          64,
-          64
-        ]
+        "material": "obsidian"
       },
       {
-        "atlas": "oreVariants",
-        "rect": [
-          896,
-          0,
-          64,
-          64
-        ]
+        "material": "crimson_nylium"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          384,
-          64,
-          64,
-          64
-        ]
+        "material": "nether_bricks"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          512,
-          64,
-          64,
-          64
-        ]
+        "material": "magma"
       }
     ],
     "core": [
       {
-        "atlas": "oreVariants",
-        "rect": [
-          960,
-          0,
-          64,
-          64
-        ]
+        "material": "end_stone"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          640,
-          0,
-          64,
-          64
-        ]
+        "material": "quartz_block"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          576,
-          0,
-          64,
-          64
-        ]
+        "material": "shroomlight"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          768,
-          64,
-          64,
-          64
-        ]
+        "material": "purpur"
       },
       {
-        "atlas": "ores",
-        "rect": [
-          64,
-          0,
-          64,
-          64
-        ]
+        "material": "sea_lantern"
       }
     ]
+  },
+  "lining": {
+    "meadow": "dirt",
+    "copper_caves": "terracotta",
+    "quartz_veins": "smooth_stone",
+    "gold_river": "sandstone",
+    "ice_grottoes": "snow",
+    "mushroom_forest": "forest_floor",
+    "giant_bones": "smooth_sandstone",
+    "lost_city": "terracotta",
+    "magma_springs": "basalt",
+    "core": "end_stone"
   }
 }

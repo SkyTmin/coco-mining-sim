@@ -1,0 +1,94 @@
+{
+  "name": "materials",
+  "tree": {
+    "$className": "MaterialService",
+    "COCOMine_basalt": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://97032215299261",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_dirt": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://120467403268934",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_end_stone": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://117421395326354",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_forest_floor": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://122143706233578",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_oak_log": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://104108597901323",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_planks": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://110913940729167",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_sandstone": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://90207738459579",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_smooth_sandstone": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://115406280890511",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_smooth_stone": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://85548173839548",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_snow": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://85928942171420",
+        "StudsPerTile": 5
+      }
+    },
+    "COCOMine_terracotta": {
+      "$className": "MaterialVariant",
+      "$properties": {
+        "BaseMaterial": "SmoothPlastic",
+        "ColorMap": "rbxassetid://80612962866962",
+        "StudsPerTile": 5
+      }
+    }
+  }
+}

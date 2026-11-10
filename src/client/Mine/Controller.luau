@@ -25,7 +25,6 @@ local Aim = require(script.Parent.Aim)
 local Camera = require(script.Parent.Camera)
 local Input = require(script.Parent.Input)
 local Hud = require(Client.Ui.MineHud)
-local Kit = require(Client.Ui.Kit)
 local Settings = require(Client.Ui.MineSettings)
 local Upgrades = require(Client.Ui.Upgrades)
 local Intensity = require(Client.Fx.Intensity)
@@ -33,6 +32,7 @@ local Break = require(Client.Fx.BlockBreak)
 local Lightning = require(Client.Fx.Lightning)
 local TravelDebris = require(Client.Fx.TravelDebris)
 local Haptics = require(Client.Fx.Haptics)
+local Footsteps = require(Client.Fx.Footsteps)
 
 local Controller = {}
 local mine = Config.mine
@@ -70,6 +70,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local hud = Hud.new(guiParent, world, translate)
 	local closeSettings = Settings.start(player, guiParent, hud.gear, translate)
 	local vibrate = Haptics.new(world)
+	local footsteps = Footsteps.new()
 	local intensity = Intensity.new()
 	local view: Camera.View? = nil
 	local renderer: Wall.Renderer? = nil
@@ -164,7 +165,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 		local frame = origin.CFrame
 		renderer = Wall.new(world, frame)
-		tunnel = Tunnel.new(world, frame)
+		tunnel = Tunnel.new(world, frame, model :: Instance)
 		depthSign = DepthSign.new(world, frame, window.front, model)
 		spectatorSigns = DepthSign.spectators(world, plots :: Instance, plot)
 		breaking = Break.new(world)
@@ -222,8 +223,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			local depth = window.front + cell.dRel
 			local ore = Wall.ore(window, cell.x, cell.y, cell.dRel)
 			local plate = ore == Wire.PLATE
-			expected.ore = ore
-			expected.impactAt = now + Config.fx.swing.contact
+			expected.texture = Wall.particleTexture(depth, ore)
+			expected.impactAt = now + Camera.contact(v, settings.interval)
 			expected.color, expected.plate = cell.color or WARM, plate
 			local progress = 0
 			for _, damage in window.damage do
@@ -254,7 +255,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				end
 			end
 		end
-		Camera.swing(v, now, Config.fx.ult.windup * 2, ability)
+		Camera.swing(v, now, if ability then Config.fx.ult.windup * 2 else settings.interval)
 		pending, dirty, nextHit = expected, true, now + settings.interval
 		intent:FireServer(Wire.encodeIntent(kind, seq, cell.x, cell.y, cell.dRel))
 	end
@@ -360,7 +361,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				frames = 0,
 			}
 			if res.ability and view then
-				Camera.swing(view, now, timeline.windup * 2, true)
+				Camera.swing(view, now, timeline.windup * 2)
 			end
 		end
 		for i, event in res.events do
@@ -406,7 +407,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				haptic("block", now)
 			end
 			if res.coins > 0 then
-				Hud.coin(hud, target, res.coins, expected and expected.ore)
+				Hud.coin(hud, target, res.coins)
 				Sfx.coin(now, #res.finds > 0)
 			end
 		end
@@ -437,7 +438,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			S,
 			expected.hidden ~= nil,
 			effects,
-			-r.frame.LookVector
+			-r.frame.LookVector,
+			expected.texture
 		)
 		if expected.plate then
 			Sfx.play("plate_hit", 0.64)
@@ -576,7 +578,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			for layer = ride.cleared, cleared - 1 do
 				local radius = (old.width - 1) // 2
 				for x = -radius, radius, math.max(1, radius) do
-					if Wall.ore(old, x, 0, layer) > 0 then
+					local ore = Wall.ore(old, x, 0, layer)
+					if ore > 0 then
 						local position = Wall.position(r, x, (layer + x) % old.height, layer, 0)
 						Break.hit(
 							breaking,
@@ -586,6 +589,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 							true,
 							override,
 							-r.frame.LookVector,
+							Wall.particleTexture(old.front + layer, ore),
 							true
 						)
 					end
@@ -687,6 +691,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local settings = current and current.settings
 		local reduced = ProfileState.preference("reducedMotion")
 		Sfx.level(ProfileState.preference("sfx"))
+		Footsteps.step(footsteps, player.Character, Worlds.of(window.front).index == 1)
 		local hapticsEnabled = ProfileState.preference("haptics")
 		if hapticsOn and not hapticsEnabled then
 			vibrate("off", now, false, reduced)
@@ -852,14 +857,19 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			Sfx.play("link_note", 0.77, PENTATONIC[(event.i - 1) % #PENTATONIC + 1])
 		end
 		Lightning.step(lightning, now)
-		Break.step(breaking, now)
-		Camera.step(v, active, Intensity.sample(intensity, r.frame, now, reduced, active))
+		Camera.step(
+			v,
+			active,
+			Intensity.sample(intensity, r.frame, now, reduced, active),
+			dt,
+			reduced
+		)
 		hud.focus.Visible = canControl() and Camera.away(v)
 		if hud.focus.Visible then
 			local keyHint = if UserInputService.TouchEnabled or v.mode ~= "first"
 				then ""
 				else " · R"
-			Kit.caption(hud.focus, translate("mine_face_wall") .. keyHint)
+			hud.focus.Text = translate("mine_face_wall") .. keyHint
 		end
 		local equipped = pick()
 		local cap = equipped.ultCharge
@@ -876,9 +886,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		)
 		local camera = workspace.CurrentCamera
 		if camera then
-			Wall.textures(r, camera, offset)
+			Wall.textures(r, camera, offset, phase == "fracture")
 		end
-		Wall.glint(r, window.front, now, active and phase == "idle" and not reduced)
 		local aimed: any = nil
 		if camera and canHit() then
 			if UserInputService.TouchEnabled then

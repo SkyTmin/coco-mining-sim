@@ -28,6 +28,9 @@
         }
       }
     },
+    "MaterialService": {
+      "$path": "src/materials.project.json"
+    },
     "TextChatService": {
       "$properties": {
         "ChatVersion": "TextChatService"

@@ -12,6 +12,8 @@ local frequent: { [string]: boolean } = {
 	crit_soft = true,
 	coin_rain = true,
 	locked = true,
+	step_dirt = true,
+	step_stone = true,
 }
 
 function AudioRules.volume(name: string, gain: number): number
