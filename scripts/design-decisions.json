@@ -32,13 +32,14 @@
     "_note": "[решение 06] бюджет каскада на удар"
   },
   "fx": {
-    "fogStart": 200, "fogEnd": 620, "lampSpacing": 20, "impactTime": 0.13,
+    "depth": { "fogStart": 550, "fogEnd": 1500, "simpleFrom": 300, "lampSpacing": 20, "distantSpacing": 40 },
+    "impactTime": 0.13,
     "ult": {
       "windup": 0.15, "fractureMin": 0.5, "fractureMax": 0.9, "fracturePerLog": 0.108,
       "empty": 0.30, "approachBase": 0.45, "approachPerLog": 0.35,
-      "distanceBase": 155, "distancePerLog": 100
+      "distanceBase": 155, "distancePerLog": 100, "distanceDeep": 120
     },
-    "_note": "[владелец] ТЗ-02б §1–2; [решение] расстояние визуального пролома сжато логарифмически в пределы тоннеля"
+    "_note": "[владелец] ТЗ-02б §1 и ТЗ-02в §2; [решение] дальние крепи реже, дальность больших проломов растёт по логарифму с квадратичной поправкой"
   },
   "sounds": {
     "atlasId": null,

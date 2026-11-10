@@ -45,9 +45,13 @@ export type PlotConfig = {
 export type CascadeConfig = { maxGen: number, maxCells: number, maxRuns: number }
 
 export type FxConfig = {
-	fogStart: number,
-	fogEnd: number,
-	lampSpacing: number,
+	depth: {
+		fogStart: number,
+		fogEnd: number,
+		simpleFrom: number,
+		lampSpacing: number,
+		distantSpacing: number,
+	},
 	impactTime: number,
 	ult: {
 		windup: number,
@@ -59,6 +63,7 @@ export type FxConfig = {
 		approachPerLog: number,
 		distanceBase: number,
 		distancePerLog: number,
+		distanceDeep: number,
 	},
 }
 

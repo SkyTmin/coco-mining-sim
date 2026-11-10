@@ -19,7 +19,7 @@ function Aim.at(r: Renderer.Renderer, win: any, screen: Vector2, nearby: boolean
 	local cell = if hit then r.lookup[hit.Instance] else nil
 	if not cell and nearby then
 		local best = math.huge
-		for _, candidate in r.cells do
+		for _, candidate in r.lookup do
 			local pos, visible = camera:WorldToViewportPoint(candidate.part.Position)
 			if not visible then
 				continue
