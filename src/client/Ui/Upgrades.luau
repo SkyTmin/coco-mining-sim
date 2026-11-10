@@ -124,7 +124,7 @@ function Upgrades.new(
 		"i-x"
 	)
 	local function page(name: string): ScrollingFrame
-		local scroll = Kit.scroll(panel, name, UDim2.new(1, -18, 1, -60), UDim2.fromOffset(9, 54))
+		local scroll = Kit.scroll(panel, name, UDim2.new(1, -18, 1, -57), UDim2.fromOffset(9, 54))
 		local layout = Instance.new("UIListLayout")
 		layout.Padding, layout.SortOrder, layout.Parent =
 			UDim.new(0, 3), Enum.SortOrder.LayoutOrder, scroll
@@ -296,13 +296,13 @@ function Upgrades.new(
 		local box = Kit.image(
 			pickPage,
 			kind,
-			UDim2.new(1, -5, 0, 62),
+			UDim2.new(1, -5, 0, 57),
 			UDim2.fromOffset(0, 0),
 			"frame-parch"
 		)
 		box.LayoutOrder = order
 		local picture =
-			Kit.image(box, "Icon", UDim2.fromOffset(48, 48), UDim2.fromOffset(6, 7), icon)
+			Kit.image(box, "Icon", UDim2.fromOffset(48, 48), UDim2.fromOffset(6, 4), icon)
 		local fraction = if #counts > 1 then 0.53 else 0.32
 		local name = Kit.label(
 			box,

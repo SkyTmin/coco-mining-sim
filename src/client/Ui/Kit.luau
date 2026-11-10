@@ -9,6 +9,12 @@ Kit.green = Color3.fromRGB(145, 233, 112)
 Kit.body = Font.new("rbxassetid://12187365977")
 Kit.title = Font.fromEnum(Enum.Font.GothamBlack)
 
+local frameTint = {
+	["frame-iron"] = Color3.fromRGB(82, 89, 111),
+	["frame-parch"] = Color3.fromRGB(179, 154, 126),
+	["frame-well"] = Color3.fromRGB(129, 125, 139),
+}
+
 type ButtonStyle = { color: string, enabled: boolean, hover: boolean, down: boolean }
 local buttonStyles: { [TextButton]: ButtonStyle } = setmetatable({}, { __mode = "k" }) :: any
 
@@ -16,6 +22,7 @@ function Kit.paint(image: ImageLabel, name: string)
 	local sprite = assert(Config.art.sprites[name], "Missing sprite " .. name)
 	local r, s = sprite.rect, sprite.slice
 	image.Image = Config.art.ui
+	image.ImageColor3 = frameTint[name] or Color3.new(1, 1, 1)
 	image.ImageRectOffset, image.ImageRectSize = Vector2.new(r[1], r[2]), Vector2.new(r[3], r[4])
 	image.ResampleMode = Enum.ResamplerMode.Pixelated
 	image.ScaleType = if s then Enum.ScaleType.Slice else Enum.ScaleType.Stretch
