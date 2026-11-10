@@ -446,72 +446,72 @@
   },
   {
    "world": 7,
-   "id": "giant_bones",
-   "name": "Кости великанов",
+   "id": "diamond_mantle",
+   "name": "Алмазная мантия",
    "layout": "Д",
    "rock": {
-    "id": "limestone",
-    "name": "Известняк",
-    "texture": "limestone",
+    "id": "mantle",
+    "name": "Мантия",
+    "texture": "mantle",
     "variants": {
-     "golden": "limestone_golden",
-     "rainbow": "limestone_rainbow",
-     "cosmic": "limestone_cosmic"
+     "golden": "mantle_golden",
+     "rainbow": "mantle_rainbow",
+     "cosmic": "mantle_cosmic"
     }
    },
-   "lining": "limestone_lining",
-   "light": "#ffc58a",
+   "lining": "mantle_lining",
+   "light": "#d8f4ff",
    "frame": "candy",
    "env": {
     "beams": null,
-    "props": "ribs"
+    "props": "sparkles"
    },
    "ores": [
     {
-     "id": "bone_ore",
-     "name": "Кость-руда",
+     "id": "platinum",
+     "name": "Платина",
      "rarity": "common",
-     "texture": "bone_ore",
+     "texture": "platinum",
      "variants": {
-      "golden": "bone_ore_golden",
-      "rainbow": "bone_ore_rainbow",
-      "cosmic": "bone_ore_cosmic"
+      "golden": "platinum_golden",
+      "rainbow": "platinum_rainbow",
+      "cosmic": "platinum_cosmic"
      },
      "glow": false
     },
     {
-     "id": "amber",
-     "name": "Янтарь",
+     "id": "diamond",
+     "name": "Алмаз",
      "rarity": "rare",
-     "texture": "amber",
+     "texture": "diamond",
      "variants": {
-      "golden": "amber_golden",
-      "rainbow": "amber_rainbow",
-      "cosmic": "amber_cosmic"
+      "golden": "diamond_golden",
+      "rainbow": "diamond_rainbow",
+      "cosmic": "diamond_cosmic"
      },
      "glow": false
     },
     {
-     "id": "onyx",
-     "name": "Оникс",
+     "id": "brilliant",
+     "name": "Бриллиант",
      "rarity": "gem",
-     "texture": "onyx",
+     "texture": "brilliant",
      "variants": {
-      "golden": "onyx_golden",
-      "rainbow": "onyx_rainbow",
-      "cosmic": "onyx_cosmic"
+      "golden": "brilliant_golden",
+      "rainbow": "brilliant_rainbow",
+      "cosmic": "brilliant_cosmic"
      },
      "glow": false
     },
     {
-     "id": "dragon_amber",
-     "name": "Драконий янтарь",
+     "id": "giant_diamond",
+     "name": "Алмаз-гигант",
      "rarity": "treasure",
-     "texture": "dragon_amber",
+     "texture": "giant_diamond",
      "variants": {
-      "golden": "dragon_amber_golden",
-      "rainbow": "dragon_amber_rainbow",
-      "cosmic": "dragon_amber_cosmic"
+      "golden": "giant_diamond_golden",
+      "rainbow": "giant_diamond_rainbow",
+      "cosmic": "giant_diamond_cosmic"
      },
      "glow": true
     }
@@ -519,72 +519,72 @@
   },
   {
    "world": 8,
-   "id": "lost_city",
-   "name": "Затерянный город",
+   "id": "emerald_roots",
+   "name": "Изумрудные корни",
    "layout": "Б",
    "rock": {
-    "id": "terracotta",
-    "name": "Терракота",
-    "texture": "terracotta",
+    "id": "moss_stone",
+    "name": "Мшистый камень",
+    "texture": "moss_stone",
     "variants": {
-     "golden": "terracotta_golden",
-     "rainbow": "terracotta_rainbow",
-     "cosmic": "terracotta_cosmic"
+     "golden": "moss_stone_golden",
+     "rainbow": "moss_stone_rainbow",
+     "cosmic": "moss_stone_cosmic"
     }
    },
-   "lining": "terracotta_lining",
-   "light": "#a8ffb0",
+   "lining": "moss_stone_lining",
+   "light": "#9dffb8",
    "frame": "candy",
    "env": {
-    "beams": "stone",
-    "props": "vines"
+    "beams": "roots",
+    "props": "roots"
    },
    "ores": [
     {
-     "id": "bronze",
-     "name": "Бронза",
+     "id": "resin",
+     "name": "Смола",
      "rarity": "common",
-     "texture": "bronze",
+     "texture": "resin",
      "variants": {
-      "golden": "bronze_golden",
-      "rainbow": "bronze_rainbow",
-      "cosmic": "bronze_cosmic"
+      "golden": "resin_golden",
+      "rainbow": "resin_rainbow",
+      "cosmic": "resin_cosmic"
      },
      "glow": false
     },
     {
-     "id": "jade",
-     "name": "Нефрит",
+     "id": "emerald",
+     "name": "Изумруд",
      "rarity": "rare",
-     "texture": "jade",
+     "texture": "emerald",
      "variants": {
-      "golden": "jade_golden",
-      "rainbow": "jade_rainbow",
-      "cosmic": "jade_cosmic"
+      "golden": "emerald_golden",
+      "rainbow": "emerald_rainbow",
+      "cosmic": "emerald_cosmic"
      },
      "glow": false
     },
     {
-     "id": "lapis_lazuli",
-     "name": "Лазурит",
+     "id": "sap_crystal",
+     "name": "Сок-кристалл",
      "rarity": "gem",
-     "texture": "lapis_lazuli",
+     "texture": "sap_crystal",
      "variants": {
-      "golden": "lapis_lazuli_golden",
-      "rainbow": "lapis_lazuli_rainbow",
-      "cosmic": "lapis_lazuli_cosmic"
+      "golden": "sap_crystal_golden",
+      "rainbow": "sap_crystal_rainbow",
+      "cosmic": "sap_crystal_cosmic"
      },
      "glow": false
     },
     {
-     "id": "ancient_gold",
-     "name": "Древнее золото",
+     "id": "world_seed",
+     "name": "Семя мира",
      "rarity": "treasure",
-     "texture": "ancient_gold",
+     "texture": "world_seed",
      "variants": {
-      "golden": "ancient_gold_golden",
-      "rainbow": "ancient_gold_rainbow",
-      "cosmic": "ancient_gold_cosmic"
+      "golden": "world_seed_golden",
+      "rainbow": "world_seed_rainbow",
+      "cosmic": "world_seed_cosmic"
      },
      "glow": true
     }

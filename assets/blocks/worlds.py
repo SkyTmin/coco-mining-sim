@@ -99,6 +99,26 @@ def waves(px, base, seed):
             px[x, y] = (L, base, D)[band]
 
 
+def cut_facets(px, base, seed):
+    """Diamond mantle: big cold steel facets, a bright glint and a few sparkles, no dark seams."""
+    r = random.Random(seed)
+    pts = [(r.uniform(0, N), r.uniform(0, N)) for _ in range(6)]
+    tones = [_shade(base, k) for k in (0.20, 0.08, -0.06, -0.16, 0.13, -0.02)]
+    for y in range(N):
+        for x in range(N):
+            i = min(range(6), key=lambda i: math.hypot(x + 0.5 - pts[i][0], y + 0.5 - pts[i][1]))
+            px[x, y] = tones[i]
+    for x, y in ((4, 3), (3, 4), (4, 4), (5, 4), (4, 5)):
+        px[x, y] = _shade(base, 0.62)
+    for x, y in ((12, 3), (10, 12), (3, 13)):
+        px[x, y] = _shade(base, 0.5)
+
+
+def moss(px, base, seed):
+    """Emerald roots: mossy small pebbles (the liked «галька» family, green)."""
+    small_pebbles(px, base, seed)
+
+
 HOT, EMBER = (255, 122, 38), (214, 52, 40)
 
 
@@ -127,6 +147,7 @@ def hot_pebbles(px, base, seed):
 # shapes: round, shard (rhomb), oval, hex. layout: ore placement system from layouts.SYSTEMS — the owner liked
 # Б, Г and Д (10.11); each world gets one so neighbouring worlds differ by placement too [решение].
 # Owner 10.11: world 9 = «Подземное море», magma moves to world 10 (the finale: red-hot frame + glowing ore),
+# worlds 7–8 = Алмазная мантия / Изумрудные корни instead of Кости великанов / Затерянный город (owner 10.11);
 # the old «Ядро» world is gone (the Core stays as the goal behind the last Plate).
 WORLDS = [
     {"id": "meadow", "name": "Луговой слой", "fill": pebbles, "rock": ("pebble", "Галька", "#a7a2b4"),
@@ -165,18 +186,18 @@ WORLDS = [
               ("glowshroom", "Светогриб", "rare", "oval", "#3ff2d0", "#d6fff6"),
               ("topaz", "Топаз", "gem", "hex", "#ffa23a", "#ffe0b0"),
               ("moonstone", "Лунный камень", "treasure", "round", "#e9e2ff", "#ffffff")]},
-    {"id": "giant_bones", "name": "Кости великанов", "fill": smooth, "rock": ("limestone", "Известняк", "#ecdcb8"),
-     "layout": "Д", "lining": 0.6, "light": "#ffc58a", "sky": "#3a2618", "env": {"beams": None, "props": "ribs"},
-     "ores": [("bone_ore", "Кость-руда", "common", "oval", "#fffaf0", "#ffffff"),
-              ("amber", "Янтарь", "rare", "round", "#f2a12a", "#ffe2a0"),
-              ("onyx", "Оникс", "gem", "shard", "#2b2734", "#9a92b8"),
-              ("dragon_amber", "Драконий янтарь", "treasure", "hex", "#ff5a2a", "#ffd0a0")]},
-    {"id": "lost_city", "name": "Затерянный город", "fill": soft_blobs, "rock": ("terracotta", "Терракота", "#c8653f"),
-     "layout": "Б", "lining": 0.58, "light": "#a8ffb0", "sky": "#16301e", "env": {"beams": "stone", "props": "vines"},
-     "ores": [("bronze", "Бронза", "common", "oval", "#c98a3c", "#ffd9a0"),
-              ("jade", "Нефрит", "rare", "hex", "#2fc77e", "#bff7d8"),
-              ("lapis_lazuli", "Лазурит", "gem", "shard", "#2d4fd6", "#a8baff"),
-              ("ancient_gold", "Древнее золото", "treasure", "round", "#ffcc33", "#fff6c0")]},
+    {"id": "diamond_mantle", "name": "Алмазная мантия", "fill": cut_facets, "rock": ("mantle", "Мантия", "#53648f"),
+     "layout": "Д", "lining": 0.6, "light": "#d8f4ff", "sky": "#141c34", "env": {"beams": None, "props": "sparkles"},
+     "ores": [("platinum", "Платина", "common", "oval", "#e4e8f2", "#ffffff"),
+              ("diamond", "Алмаз", "rare", "shard", "#9ff0ff", "#ffffff"),
+              ("brilliant", "Бриллиант", "gem", "hex", "#ffffff", "#bff6ff"),
+              ("giant_diamond", "Алмаз-гигант", "treasure", "round", "#5fd8ff", "#ffffff")]},
+    {"id": "emerald_roots", "name": "Изумрудные корни", "fill": moss, "rock": ("moss_stone", "Мшистый камень", "#5f9a58"),
+     "layout": "Б", "lining": 0.58, "light": "#9dffb8", "sky": "#0f2a1a", "env": {"beams": "roots", "props": "roots"},
+     "ores": [("resin", "Смола", "common", "oval", "#e8902a", "#ffd9a0"),
+              ("emerald", "Изумруд", "rare", "shard", "#34f598", "#e0fff0"),
+              ("sap_crystal", "Сок-кристалл", "gem", "hex", "#c6ff4a", "#f4ffc8"),
+              ("world_seed", "Семя мира", "treasure", "round", "#ffd23a", "#fff7c0")]},
     {"id": "underground_sea", "name": "Подземное море", "fill": waves, "rock": ("sea_stone", "Морской камень", "#2f6f9a"),
      "layout": "Д", "lining": 0.6, "light": "#7fe8ff", "sky": "#0c2238", "env": {"beams": None, "props": "bubbles_kelp"},
      "ores": [("salt", "Соль-камень", "common", "hex", "#f2e8ef", "#ffffff"),
