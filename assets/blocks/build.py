@@ -110,6 +110,9 @@ def main():
     make.misc()
     with open(os.path.join(make.HERE, "manifest.json"), "w") as fh:
         json.dump(manifest, fh, ensure_ascii=False, indent=1)
+    import grains
+
+    grains.main()
     print("ok", len(os.listdir(make.PX)), "textures")
 
 
