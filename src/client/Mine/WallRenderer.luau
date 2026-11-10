@@ -32,6 +32,8 @@ export type Renderer = {
 	plateFill: Frame,
 	pulse: Highlight,
 	limits: Model,
+	glint: ImageLabel,
+	glintAt: number,
 }
 local function layerValue(win: any, x: number, y: number, relative: number): number
 	local radius = (win.width - 1) // 2
@@ -108,7 +110,18 @@ function WallRenderer.new(parent: Instance, frame: CFrame): Renderer
 		part.Size = Vector3.new(0.25, 4 + i % 2, 0.08)
 		runes[i] = part
 	end
+	local star = Config.art.sprites["i-star"].rect
+	local glint = Instance.new("ImageLabel")
+	glint.Name, glint.Size, glint.AnchorPoint =
+		"TreasureGlint", UDim2.fromOffset(15, 15), Vector2.new(0.5, 0.5)
+	glint.Position, glint.BackgroundTransparency = UDim2.fromScale(0.73, 0.27), 1
+	glint.Image, glint.ResampleMode = Config.art.ui, Enum.ResamplerMode.Pixelated
+	glint.ImageRectOffset, glint.ImageRectSize =
+		Vector2.new(star[1], star[2]), Vector2.new(star[3], star[4])
+	glint.ZIndex = 2
 	return {
+		glint = glint,
+		glintAt = os.clock() + 2,
 		model = model,
 		frame = frame,
 		pool = BlockPool.new(model),
@@ -269,6 +282,31 @@ function WallRenderer.update(r: Renderer, win: any, visible: number, hidden: num
 		end
 	end
 	r.pulse.Enabled = #frontCells > 0 and #frontCells <= 3
+end
+
+function WallRenderer.glint(r: Renderer, front: number, now: number, enabled: boolean)
+	local image = r.glint
+	if image.Parent then
+		local t = (now - r.glintAt + 0.38) / 0.38
+		if not enabled or t >= 1 or not image:IsDescendantOf(r.model) then
+			image.Parent = nil
+			r.glintAt = now + 3.5
+		else
+			image.ImageTransparency = 1 - math.sin(math.pi * math.max(0, t))
+		end
+	elseif enabled and now >= r.glintAt then
+		r.glintAt = now + 3.5
+		for _, cell in r.cells do
+			if cell.d < front + 4 and cell.ore == #Worlds.of(cell.d).ores then
+				local face = cell.part:FindFirstChild("OrePixels")
+				if face and face:IsA("SurfaceGui") and face.Enabled then
+					image.ImageTransparency, image.Parent = 1, face
+					r.glintAt = now + 0.38
+					break
+				end
+			end
+		end
+	end
 end
 
 function WallRenderer.clear(r: Renderer)

@@ -250,7 +250,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					end
 				end
 			end
-			Break.hit(breaking, position, cell.color or WARM, S, expected.hidden ~= nil, quality)
+			Break.hit(
+				breaking,
+				position,
+				cell.color or WARM,
+				S,
+				expected.hidden ~= nil,
+				quality,
+				-v.frame.LookVector
+			)
 			if plate then
 				Sfx.play("plate_hit", 0.64)
 			else
@@ -541,7 +549,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 							S,
 							true,
 							override,
-							-r.frame.LookVector
+							-r.frame.LookVector,
+							true
 						)
 					end
 				end
@@ -744,6 +753,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 			lastShown, lastVisible = shown, visible
 		end
+		Wall.glint(r, window.front, now, active and phase == "idle" and not reduced)
 		if phase == "windup" then
 			Break.cracks(breaking, r, shown, State.cellKey, progress, color)
 		end
