@@ -1,5 +1,5 @@
 {
-  "_why": "Решения новой игры. Каждое число с пометкой источника в _note/_why.",
+  "_why": "Решения новой игры. [вики 01 §2.1] набор руд; [решение] временные RGB руд по палитрам миров.",
   "game": {
     "defaultLanguage": "en",
     "languages": ["en", "ru", "es", "fr"],
@@ -9,5 +9,143 @@
   "creative": {
     "admins": [],
     "_note": "[решение] userId владельца и тестеров; создатель места и Studio — всегда"
-  }
+  },
+  "mine": {
+    "startWidth": 5, "height": 3, "maxWidth": 15, "maxHeight": 7, "maxDepth": 2147483647,
+    "chunk": 50, "window": 20, "maxHoles": 4000, "maxHitsPerBlock": 8,
+    "passThrough": [10, 100, 1000], "plate": { "ultPlateHits": 10, "ultMultiplier": 3 },
+    "_note": "[владелец 08.11] стена 5×3; [решение ТЗ-01] формат 15×7, глубина до 2^31−1, ≤ 8 ударов, сквозной 10/100/1000×, урон ульты по Плите 10×3; [решение 06] chunk/window/maxHoles"
+  },
+  "ores": [
+    { "id": "dirt", "color": [120, 84, 52] },
+    { "id": "stone", "color": [128, 126, 122] },
+    { "id": "coal", "color": [48, 47, 50] },
+    { "id": "copper", "color": [193, 109, 64] },
+    { "id": "tin", "color": [181, 184, 190] },
+    { "id": "malachite", "color": [50, 141, 104] },
+    { "id": "turquoise", "color": [62, 196, 184] },
+    { "id": "quartz", "color": [232, 224, 225] },
+    { "id": "iron", "color": [140, 146, 151] },
+    { "id": "rose_quartz", "color": [226, 151, 181] },
+    { "id": "amethyst", "color": [142, 79, 192] },
+    { "id": "silver", "color": [199, 209, 219] },
+    { "id": "gold", "color": [227, 174, 53] },
+    { "id": "river_pearl", "color": [235, 229, 205] },
+    { "id": "nugget", "color": [250, 199, 72] },
+    { "id": "ice", "color": [156, 219, 241] },
+    { "id": "froststone", "color": [124, 172, 199] },
+    { "id": "sapphire", "color": [56, 98, 209] },
+    { "id": "eternal_ice", "color": [176, 244, 251] },
+    { "id": "sporite", "color": [140, 91, 159] },
+    { "id": "glowshroom", "color": [174, 117, 215] },
+    { "id": "topaz", "color": [228, 165, 79] },
+    { "id": "moonstone", "color": [185, 202, 239] },
+    { "id": "limestone", "color": [192, 180, 158] },
+    { "id": "amber", "color": [212, 145, 57] },
+    { "id": "bone_ore", "color": [221, 207, 173] },
+    { "id": "dragon_amber", "color": [249, 122, 48] },
+    { "id": "bronze", "color": [162, 109, 67] },
+    { "id": "jade", "color": [62, 155, 112] },
+    { "id": "lapis_lazuli", "color": [62, 88, 180] },
+    { "id": "ancient_gold", "color": [218, 166, 68] },
+    { "id": "basalt", "color": [65, 63, 70] },
+    { "id": "obsidian", "color": [47, 39, 62] },
+    { "id": "ruby", "color": [190, 44, 69] },
+    { "id": "fire_ruby", "color": [248, 75, 50] },
+    { "id": "core_crystal", "color": [218, 225, 243] },
+    { "id": "sunstone", "color": [242, 182, 79] },
+    { "id": "core_shard", "color": [251, 238, 179] }
+  ],
+  "worlds": [
+    {
+      "id": "meadow", "length": 500,
+      "ores": [["dirt",0.55],["stone",0.3],["coal",0.12],["copper",0.03]], "rareFrom": 3, "richness": 0.6,
+      "prices": {"dirt":1,"stone":2,"coal":5,"copper":25},
+      "durability": {"base":1,"growthInWorld":2.5},
+      "plate": {"recommendedStrength":5,"hp":200,"reward":500},
+      "specials": {"perChunk":0.05,"kinds":[["chest",1]]}, "color": [140,100,60],
+      "_note": "[владелец 09.11] длина мира по ТЗ-01; [вики 01 §2.1] руды и палитра; [решение ТЗ-01] цены ×3, прочность ×2,5, рекомендуемая сила ×2, HP ×40; [решение] доли, богатство, сундуки, RGB и награда Плиты (500 ×3 за мир) временные"
+    },
+    {
+      "id": "copper_caves", "length": 1100,
+      "ores": [["copper",0.55],["tin",0.3],["malachite",0.12],["turquoise",0.03]], "rareFrom": 3, "richness": 0.6,
+      "prices": {"copper":3,"tin":6,"malachite":15,"turquoise":75},
+      "durability": {"base":2.5,"growthInWorld":2.5},
+      "plate": {"recommendedStrength":12.5,"hp":500,"reward":1500},
+      "specials": {"perChunk":0.05,"kinds":[["chest",1]]}, "color": [154,93,64],
+      "_note": "[владелец 09.11] длина мира по ТЗ-01; [вики 01 §2.1] руды и палитра; [решение ТЗ-01] цены ×3, прочность ×2,5, рекомендуемая сила ×2, HP ×40; [решение] доли, богатство, сундуки, RGB и награда Плиты (500 ×3 за мир) временные"
+    },
+    {
+      "id": "quartz_veins", "length": 2400,
+      "ores": [["quartz",0.55],["iron",0.3],["rose_quartz",0.12],["amethyst",0.03]], "rareFrom": 3, "richness": 0.6,
+      "prices": {"quartz":9,"iron":18,"rose_quartz":45,"amethyst":225},
+      "durability": {"base":6.25,"growthInWorld":2.5},
+      "plate": {"recommendedStrength":31.25,"hp":1250,"reward":4500},
+      "specials": {"perChunk":0.05,"kinds":[["chest",1]]}, "color": [213,164,186],
+      "_note": "[владелец 09.11] длина мира по ТЗ-01; [вики 01 §2.1] руды и палитра; [решение ТЗ-01] цены ×3, прочность ×2,5, рекомендуемая сила ×2, HP ×40; [решение] доли, богатство, сундуки, RGB и награда Плиты (500 ×3 за мир) временные"
+    },
+    {
+      "id": "gold_river", "length": 5300,
+      "ores": [["silver",0.55],["gold",0.3],["river_pearl",0.12],["nugget",0.03]], "rareFrom": 3, "richness": 0.6,
+      "prices": {"silver":27,"gold":54,"river_pearl":135,"nugget":675},
+      "durability": {"base":15.625,"growthInWorld":2.5},
+      "plate": {"recommendedStrength":78.125,"hp":3125,"reward":13500},
+      "specials": {"perChunk":0.05,"kinds":[["chest",1]]}, "color": [186,154,79],
+      "_note": "[владелец 09.11] длина мира по ТЗ-01; [вики 01 §2.1] руды и палитра; [решение ТЗ-01] цены ×3, прочность ×2,5, рекомендуемая сила ×2, HP ×40; [решение] доли, богатство, сундуки, RGB и награда Плиты (500 ×3 за мир) временные"
+    },
+    {
+      "id": "ice_grottoes", "length": 11650,
+      "ores": [["ice",0.55],["froststone",0.3],["sapphire",0.12],["eternal_ice",0.03]], "rareFrom": 3, "richness": 0.6,
+      "prices": {"ice":81,"froststone":162,"sapphire":405,"eternal_ice":2025},
+      "durability": {"base":39.0625,"growthInWorld":2.5},
+      "plate": {"recommendedStrength":195.3125,"hp":7812.5,"reward":40500},
+      "specials": {"perChunk":0.05,"kinds":[["chest",1]]}, "color": [111,178,218],
+      "_note": "[владелец 09.11] длина мира по ТЗ-01; [вики 01 §2.1] руды и палитра; [решение ТЗ-01] цены ×3, прочность ×2,5, рекомендуемая сила ×2, HP ×40; [решение] доли, богатство, сундуки, RGB и награда Плиты (500 ×3 за мир) временные"
+    },
+    {
+      "id": "mushroom_forest", "length": 25650,
+      "ores": [["sporite",0.55],["glowshroom",0.3],["topaz",0.12],["moonstone",0.03]], "rareFrom": 3, "richness": 0.6,
+      "prices": {"sporite":243,"glowshroom":486,"topaz":1215,"moonstone":6075},
+      "durability": {"base":97.65625,"growthInWorld":2.5},
+      "plate": {"recommendedStrength":488.28125,"hp":19531.25,"reward":121500},
+      "specials": {"perChunk":0.05,"kinds":[["chest",1]]}, "color": [105,75,142],
+      "_note": "[владелец 09.11] длина мира по ТЗ-01; [вики 01 §2.1] руды и палитра; [решение ТЗ-01] цены ×3, прочность ×2,5, рекомендуемая сила ×2, HP ×40; [решение] доли, богатство, сундуки, RGB и награда Плиты (500 ×3 за мир) временные"
+    },
+    {
+      "id": "giant_bones", "length": 56450,
+      "ores": [["limestone",0.55],["amber",0.3],["bone_ore",0.12],["dragon_amber",0.03]], "rareFrom": 3, "richness": 0.6,
+      "prices": {"limestone":729,"amber":1458,"bone_ore":3645,"dragon_amber":18225},
+      "durability": {"base":244.140625,"growthInWorld":2.5},
+      "plate": {"recommendedStrength":1220.703125,"hp":48828.125,"reward":364500},
+      "specials": {"perChunk":0.05,"kinds":[["chest",1]]}, "color": [197,174,128],
+      "_note": "[владелец 09.11] длина мира по ТЗ-01; [вики 01 §2.1] руды и палитра; [решение ТЗ-01] цены ×3, прочность ×2,5, рекомендуемая сила ×2, HP ×40; [решение] доли, богатство, сундуки, RGB и награда Плиты (500 ×3 за мир) временные"
+    },
+    {
+      "id": "lost_city", "length": 124200,
+      "ores": [["bronze",0.55],["jade",0.3],["lapis_lazuli",0.12],["ancient_gold",0.03]], "rareFrom": 3, "richness": 0.6,
+      "prices": {"bronze":2187,"jade":4374,"lapis_lazuli":10935,"ancient_gold":54675},
+      "durability": {"base":610.3515625,"growthInWorld":2.5},
+      "plate": {"recommendedStrength":3051.7578125,"hp":122070.3125,"reward":1093500},
+      "specials": {"perChunk":0.05,"kinds":[["chest",1]]}, "color": [160,100,75],
+      "_note": "[владелец 09.11] длина мира по ТЗ-01; [вики 01 §2.1] руды и палитра; [решение ТЗ-01] цены ×3, прочность ×2,5, рекомендуемая сила ×2, HP ×40; [решение] доли, богатство, сундуки, RGB и награда Плиты (500 ×3 за мир) временные"
+    },
+    {
+      "id": "magma_springs", "length": 273250,
+      "ores": [["basalt",0.55],["obsidian",0.3],["ruby",0.12],["fire_ruby",0.03]], "rareFrom": 3, "richness": 0.6,
+      "prices": {"basalt":6561,"obsidian":13122,"ruby":32805,"fire_ruby":164025},
+      "durability": {"base":1525.87890625,"growthInWorld":2.5},
+      "plate": {"recommendedStrength":7629.39453125,"hp":305175.78125,"reward":3280500},
+      "specials": {"perChunk":0.05,"kinds":[["chest",1]]}, "color": [72,56,56],
+      "_note": "[владелец 09.11] длина мира по ТЗ-01; [вики 01 §2.1] руды и палитра; [решение ТЗ-01] цены ×3, прочность ×2,5, рекомендуемая сила ×2, HP ×40; [решение] доли, богатство, сундуки, RGB и награда Плиты (500 ×3 за мир) временные"
+    },
+    {
+      "id": "core", "length": 601150,
+      "ores": [["core_crystal",0.65],["sunstone",0.3],["core_shard",0.05]], "rareFrom": 3, "richness": 0.6,
+      "prices": {"core_crystal":19683,"sunstone":39366,"core_shard":98415},
+      "durability": {"base":3814.697265625,"growthInWorld":2.5},
+      "plate": {"recommendedStrength":19073.486328125,"hp":762939.453125,"reward":9841500},
+      "specials": {"perChunk":0.05,"kinds":[["chest",1]]}, "color": [237,216,156],
+      "_note": "[владелец 09.11] длина мира по ТЗ-01; [вики 01 §2.1] руды и палитра; [решение ТЗ-01] цены ×3, прочность ×2,5, рекомендуемая сила ×2, HP ×40; [решение] доли, богатство, сундуки, RGB и награда Плиты (500 ×3 за мир) временные"
+    }
+  ]
 }

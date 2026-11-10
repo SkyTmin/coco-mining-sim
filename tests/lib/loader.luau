@@ -65,46 +65,51 @@ local function instance(path: string): Node
 	}) :: any
 end
 
-local results: { [string]: { [number]: any, n: number } } = {}
-local loading: { [string]: boolean } = {}
+local function createLoader(overrides: { [string]: any })
+	local results: { [string]: { [number]: any, n: number } } = {}
+	local loading: { [string]: boolean } = {}
 
-local function requireNode(module: Node): any
-	local path = module.path
-	local cached = results[path]
-	if cached then
-		return cached[1]
-	end
-	assert(not loading[path], "Cyclic require: " .. path)
-	loading[path] = true
-	local ok, result = pcall(function()
-		local sourcePath = if directories[path] then path .. "/init.luau" else path
-		local source = fs.readFile(sourcePath)
-		if sourcePath:match("%.json$") then
-			return table.pack(serde.decode("json", source))
+	local function requireNode(module: Node): any
+		local path = module.path
+		if overrides[path] ~= nil then
+			return overrides[path]
 		end
-		local chunk = luau.load(source, {
-			debugName = sourcePath,
-			environment = { script = module, require = requireNode },
-		})
-		return table.pack(chunk())
-	end)
-	loading[path] = nil
-	if not ok then
-		error(result, 0)
+		local cached = results[path]
+		if cached then
+			return cached[1]
+		end
+		assert(not loading[path], "Cyclic require: " .. path)
+		loading[path] = true
+		local ok, result = pcall(function()
+			local sourcePath = if directories[path] then path .. "/init.luau" else path
+			local source = fs.readFile(sourcePath)
+			if sourcePath:match("%.json$") then
+				return table.pack(serde.decode("json", source))
+			end
+			local chunk = luau.load(source, {
+				debugName = sourcePath,
+				environment = { script = module, require = requireNode },
+			})
+			return table.pack(chunk())
+		end)
+		loading[path] = nil
+		if not ok then
+			error(result, 0)
+		end
+		assert(result.n == 1, "Expected one return value from " .. path)
+		results[path] = result
+		return result[1]
 	end
-	assert(result.n == 1, "Expected one return value from " .. path)
-	results[path] = result
-	return result[1]
+
+	return {
+		load = function(path: string): any
+			if not directories["."] then
+				index(".")
+			end
+			local normalized = path:gsub("\\", "/"):gsub("^%./", ""):gsub("/init%.luau$", "")
+			return requireNode(instance(normalized))
+		end,
+	}
 end
 
-local Loader = {}
-
-function Loader.load(path: string): any
-	if not directories["."] then
-		index(".")
-	end
-	local normalized = path:gsub("\\", "/"):gsub("^%./", ""):gsub("/init%.luau$", "")
-	return requireNode(instance(normalized))
-end
-
-return Loader
+return { load = createLoader({}).load, withOverrides = createLoader }

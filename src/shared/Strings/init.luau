@@ -5,7 +5,7 @@ local defaultLanguage = Config.game.defaultLanguage
 
 type Entry = { [string]: string }
 local catalog: { [string]: Entry } = {}
-for _, part in { script.Core } do
+for _, part in { script.Core, script.Mine } do
 	for key, entry in require(part) :: { [string]: Entry } do
 		catalog[key] = entry
 	end
