@@ -11,6 +11,7 @@ local BlockPool = require(script.Parent.BlockPool)
 
 local S = Config.mine.blockSize
 local FACE_BUDGET = 160
+local FRACTURE_FACE_BUDGET = 112
 local WallRenderer = {}
 local colors: { [string]: Color3 } = {}
 for _, ore in Config.ores do
@@ -45,6 +46,7 @@ export type Renderer = {
 	limits: Model,
 	faceCamera: CFrame?,
 	faceShift: number,
+	faceBudget: number,
 	faces: { Face },
 	faceRay: RaycastParams,
 }
@@ -128,6 +130,7 @@ function WallRenderer.new(parent: Instance, frame: CFrame): Renderer
 		Enum.RaycastFilterType.Include, { model }
 	return {
 		faceShift = 0,
+		faceBudget = FACE_BUDGET,
 		faceRay = faceRay,
 		faces = {},
 		model = model,
@@ -291,16 +294,19 @@ function WallRenderer.update(r: Renderer, win: any, visible: number, hidden: num
 	r.pulse.Enabled = #frontCells > 0 and #frontCells <= 3
 end
 
-function WallRenderer.textures(r: Renderer, camera: Camera, shift: number)
+function WallRenderer.textures(r: Renderer, camera: Camera, shift: number, fracturing: boolean)
 	local count = r.pool.used()
 	if count == 0 then
 		return
 	end
 	local eye = camera.CFrame
 	local previous = r.faceCamera
-	local small = count <= FACE_BUDGET
+	-- Particle bursts share the frame with these textured faces during a fracture.
+	local budget = if fracturing then FRACTURE_FACE_BUDGET else FACE_BUDGET
+	local small = count <= budget
 	if
 		previous
+		and r.faceBudget == budget
 		and (
 			(eye.Position - previous.Position).Magnitude < 0.65
 			and eye.LookVector:Dot(previous.LookVector) > 0.997
@@ -309,7 +315,7 @@ function WallRenderer.textures(r: Renderer, camera: Camera, shift: number)
 	then
 		return
 	end
-	r.faceCamera, r.faceShift = eye, shift
+	r.faceCamera, r.faceShift, r.faceBudget = eye, shift, budget
 	local faces = r.faces
 	table.clear(faces)
 	local viewport = camera.ViewportSize
@@ -357,7 +363,7 @@ function WallRenderer.textures(r: Renderer, camera: Camera, shift: number)
 		if hit and hit.Instance == face.part then
 			face.gui.Enabled = true
 			enabled += 1
-			if enabled == FACE_BUDGET then
+			if enabled == budget then
 				return
 			end
 		end
@@ -367,7 +373,7 @@ function WallRenderer.textures(r: Renderer, camera: Camera, shift: number)
 		if not face.gui.Enabled then
 			face.gui.Enabled = true
 			enabled += 1
-			if enabled == FACE_BUDGET then
+			if enabled == budget then
 				break
 			end
 		end

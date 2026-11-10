@@ -886,7 +886,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		)
 		local camera = workspace.CurrentCamera
 		if camera then
-			Wall.textures(r, camera, offset)
+			Wall.textures(r, camera, offset, phase == "fracture")
 		end
 		local aimed: any = nil
 		if camera and canHit() then
