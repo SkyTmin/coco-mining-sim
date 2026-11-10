@@ -32,9 +32,7 @@ function Lightning.new(parent: Instance): any
 		flare.Anchored, flare.CanCollide, flare.CanQuery, flare.CanTouch, flare.CastShadow =
 			true, false, false, false, false
 		flare.Transparency, flare.Parent = 1, parent
-		local light = Instance.new("PointLight")
-		light.Color, light.Range, light.Brightness, light.Parent = color, 15, 0, flare
-		lights[i] = { part = flare, light = light, untilAt = 0 }
+		lights[i] = { part = flare, untilAt = 0 }
 	end
 	return { attachments = attachments, segments = segments, lights = lights }
 end
@@ -108,7 +106,6 @@ function Lightning.bolt(
 	for _, lamp in state.lights do
 		if lamp.untilAt <= now then
 			lamp.part.Position, lamp.part.Transparency = b, 0.05
-			lamp.light.Brightness = if quality > 1 then 6 else 0
 			lamp.at, lamp.untilAt = now, now + 0.12
 			break
 		end
@@ -136,9 +133,6 @@ function Lightning.step(state: any, now: number)
 		if lamp.part.Transparency < 1 then
 			local t = math.clamp((now - lamp.at) / 0.12, 0, 1)
 			lamp.part.Transparency = t
-			if lamp.light.Brightness > 0 then
-				lamp.light.Brightness = math.sin(t * math.pi) * 6
-			end
 		end
 	end
 end

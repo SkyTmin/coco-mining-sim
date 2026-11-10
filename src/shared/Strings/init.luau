@@ -5,7 +5,7 @@ local defaultLanguage = Config.game.defaultLanguage
 
 type Entry = { [string]: string }
 local catalog: { [string]: Entry } = {}
-for _, part in { script.Core, script.Mine, script.MineSlice } do
+for _, part in { script.Core, script.Mine, script.MineSlice, script.MineFeel } do
 	for key, entry in require(part) :: { [string]: Entry } do
 		catalog[key] = entry
 	end
@@ -26,9 +26,19 @@ function Strings.localeOf(player: Player?): string
 	local localPlayer = game:GetService("Players").LocalPlayer
 	local selected = player or localPlayer
 	if selected then
+		if selected == localPlayer then
+			local immediate = supportedLanguage(selected:GetAttribute("MineLanguage"))
+			if immediate then
+				return immediate
+			end
+		end
 		local override = supportedLanguage(selected:GetAttribute("language"))
 		if override then
 			return override
+		end
+		local account = supportedLanguage(selected.LocaleId)
+		if account then
+			return account
 		end
 	end
 	if localPlayer and selected == localPlayer then
@@ -37,7 +47,7 @@ function Strings.localeOf(player: Player?): string
 			return device
 		end
 	end
-	return (if selected then supportedLanguage(selected.LocaleId) else nil) or defaultLanguage
+	return defaultLanguage
 end
 
 function Strings.has(key: string, locale: string?): boolean

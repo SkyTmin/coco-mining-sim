@@ -202,14 +202,48 @@ const sections = [
   },
   { name: "pickaxes", validate: validatePickaxes, emit: withoutNotes },
   {
+    name: "fx",
+    validate: ({ ult, fogStart, fogEnd, lampSpacing, impactTime }) =>
+      ult?.windup === 0.15 && ult.fractureMin === 0.5 && ult.fractureMax === 0.9 &&
+      ult.empty >= 0.25 && ult.empty <= 0.35 &&
+      ult.approachBase === 0.45 && ult.approachPerLog === 0.35 &&
+      [ult.fracturePerLog, ult.distanceBase, ult.distancePerLog, fogStart, fogEnd, lampSpacing, impactTime].every(isPositive) &&
+      fogStart < fogEnd && impactTime <= 0.15 ? [] : ["fx must specify the stage 2b timing and tunnel distances"],
+    emit: withoutNotes,
+  },
+  {
     name: "sounds",
-    validate: (data) => ["stone_hit", "stone_break", "gravel_hit", "gravel_break", "note", "wind", "thunder"].flatMap((name) => {
-      const sound = data[name];
-      return typeof sound?.id === "string" && Array.isArray(sound.segments) && sound.segments.length &&
-        sound.segments.every((pair) => Array.isArray(pair) && pair.length === 2 &&
-          Number.isFinite(pair[0]) && pair[0] >= 0 && isPositive(pair[1]))
-        ? [] : [`sounds.${name} requires an asset and valid atlas segments`];
-    }),
+    validate({ atlasId, clips, rules }) {
+      const counts = {
+        hit_soft: 5, break_soft: 5, coin: 1, link_note: 1, bolt_soft: 2, ride_stop: 2,
+        ult_windup: 1, ult_whump: 1, ult_rumble_away: 1, ult_rumble_near: 1, ult_thud: 1,
+        plate_hit: 2, plate_break: 1, ui_tap: 1,
+      };
+      const errors = [];
+      if (atlasId !== null && (typeof atlasId !== "string" || !/^rbxassetid:\/\/\d+$/.test(atlasId))) {
+        errors.push("sounds.atlasId must be null or a Roblox audio asset ID");
+      }
+      if (rules?.maxVolume !== 0.5 || rules.frequentVolume !== 0.25 || rules.linkVolume !== 0.12 ||
+          rules.defaultSfx !== 0.6 || rules.frequentLufs !== -26 || rules.rareLufs !== -20 ||
+          rules.lowpassHz !== 9000 || rules.fadeSeconds !== 0.01 || rules.pitchSpread !== 0.08 ||
+          rules.fatigueDelay !== 3 || rules.fatigueGain !== 0.6 ||
+          rules.voices?.hit_soft !== 2 || rules.voices?.break_soft !== 3 || rules.voices?.coin !== 1) {
+        errors.push("sounds.rules must match stage 2b volume, mastering and polyphony limits");
+      }
+      for (const [name, count] of Object.entries(counts)) {
+        const segments = clips?.[name];
+        if (!Array.isArray(segments) || segments.length < count ||
+            !segments.every((pair) => Array.isArray(pair) && pair.length === 2 &&
+              Number.isFinite(pair[0]) && pair[0] >= 0 && isPositive(pair[1])) ||
+            new Set(segments.map(([start]) => start)).size !== segments.length) {
+          errors.push(`sounds.clips.${name} requires ${count} distinct atlas segments`);
+        }
+      }
+      if (Object.keys(clips ?? {}).some((name) => !Object.hasOwn(counts, name))) {
+        errors.push("sounds.clips contains an unknown clip");
+      }
+      return errors;
+    },
     emit: withoutNotes,
   },
   {

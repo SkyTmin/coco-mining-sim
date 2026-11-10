@@ -1,0 +1,17 @@
+{
+  "fogStart": 200,
+  "fogEnd": 620,
+  "lampSpacing": 20,
+  "impactTime": 0.13,
+  "ult": {
+    "windup": 0.15,
+    "fractureMin": 0.5,
+    "fractureMax": 0.9,
+    "fracturePerLog": 0.108,
+    "empty": 0.3,
+    "approachBase": 0.45,
+    "approachPerLog": 0.35,
+    "distanceBase": 155,
+    "distancePerLog": 100
+  }
+}

@@ -64,9 +64,10 @@ function ProfileService.DefaultProfile(): Profile
 		settings = {
 			camera = "first",
 			music = 0.7,
-			sfx = 1,
+			sfx = Config.sounds.rules.defaultSfx,
 			ui = 1,
 			reducedMotion = false,
+			haptics = true,
 			effects = "auto",
 		},
 		firstJoin = now,
@@ -105,6 +106,7 @@ local function migrate(data: any): (Profile?, boolean)
 		or typeof(settings.sfx) ~= "number"
 		or typeof(settings.ui) ~= "number"
 		or typeof(settings.reducedMotion) ~= "boolean"
+		or (settings.haptics ~= nil and typeof(settings.haptics) ~= "boolean")
 		or typeof(settings.effects) ~= "string"
 		or (settings.language ~= nil and typeof(settings.language) ~= "string")
 		or not Persistence.finiteTree(data)
@@ -113,6 +115,9 @@ local function migrate(data: any): (Profile?, boolean)
 	end
 	local profile = Persistence.copy(data)
 	profile.pickaxe = if type(data.pickaxe) == "string" then data.pickaxe else "starter"
+	if profile.settings.haptics == nil then
+		profile.settings.haptics = true
+	end
 	profile._lock, profile.loadFailed = nil, nil
 	return profile, false
 end

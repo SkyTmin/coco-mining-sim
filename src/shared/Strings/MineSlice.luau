@@ -23,7 +23,7 @@ return {
 	},
 	mine_ult_value = {
 		en = "−{1} blocks · +{2} coins",
-		ru = "−{1} блоков · +{2} монет",
+		ru = "Блоки −{1} · Монеты +{2}",
 		es = "−{1} bloques · +{2} monedas",
 		fr = "−{1} blocs · +{2} pièces",
 	},
@@ -60,7 +60,7 @@ return {
 	},
 	mine_perf = {
 		en = "{1} FPS · {2} blocks · hit {3} ms",
-		ru = "{1} FPS · {2} блоков · удар {3} мс",
+		ru = "{1} FPS · Блоки {2} · Удар {3} мс",
 		es = "{1} FPS · {2} bloques · golpe {3} ms",
 		fr = "{1} IPS · {2} blocs · coup {3} ms",
 	},

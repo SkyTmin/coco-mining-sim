@@ -76,18 +76,29 @@ function Hud.new(
 	local coinScale = Instance.new("UIScale")
 	coinScale.Parent = wallet
 	local worldCard =
-		card(gui, UDim2.fromOffset(167, 45), UDim2.new(0.5, 0, 0, 12), Vector2.new(0.5, 0))
+		card(gui, UDim2.fromOffset(188, 59), UDim2.new(0.5, 0, 0, 10), Vector2.new(0.5, 0))
 	local world = label(worldCard, UDim2.new(1, 0, 0, 32), ink, 16)
+	world.Name = "WorldProgress"
 	local rail = Instance.new("Frame")
 	rail.BackgroundColor3, rail.Position, rail.Size =
-		Color3.fromRGB(213, 221, 230), UDim2.new(0, 11, 1, -10), UDim2.new(1, -22, 0, 5)
+		Color3.fromRGB(213, 221, 230), UDim2.fromOffset(11, 31), UDim2.new(1, -22, 0, 5)
 	rail.BorderSizePixel, rail.Parent = 0, worldCard
 	round(rail, 5)
 	local fill = Instance.new("Frame")
 	fill.BackgroundColor3, fill.BorderSizePixel, fill.Parent = blue, 0, rail
 	round(fill, 5)
+	local endMark = Instance.new("Frame")
+	endMark.AnchorPoint, endMark.Position, endMark.Size =
+		Vector2.new(0.5, 0.5), UDim2.fromScale(1, 0.5), UDim2.fromOffset(4, 9)
+	endMark.BackgroundColor3, endMark.BorderSizePixel, endMark.Parent = ink, 0, rail
+	round(endMark, 2)
+	local remaining = label(worldCard, UDim2.new(1, 0, 0, 19), ink, 12)
+	remaining.Name, remaining.Position = "PlateRemaining", UDim2.fromOffset(0, 38)
 	local eye = button(gui, 51, UDim2.new(1, -15, 0, 48), Vector2.new(1, 0))
 	eye.Name = "MineCameraButton"
+	local gear = button(gui, 39, UDim2.new(1, -20, 0, 107), Vector2.new(1, 0))
+	gear.Name, gear.Text, gear.TextSize, gear.TextColor3, gear.Font =
+		"MineSettingsButton", translate("mine_settings_icon"), 25, ink, Enum.Font.GothamBold
 	local iris = Instance.new("Frame")
 	iris.AnchorPoint, iris.Position, iris.Size =
 		Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), UDim2.fromOffset(29, 16)
@@ -124,20 +135,15 @@ function Hud.new(
 	arrow.Text, arrow.AnchorPoint, arrow.Visible =
 		translate("mine_arrow"), Vector2.new(0.5, 0.5), false
 	local bannerBox =
-		card(gui, UDim2.fromOffset(252, 43), UDim2.fromScale(0.5, 0.74), Vector2.new(0.5, 0.5))
+		card(gui, UDim2.fromOffset(254, 56), UDim2.fromScale(0.5, 0.76), Vector2.new(0.5, 0.5))
 	bannerBox.Visible = false
-	local banner = label(bannerBox, UDim2.fromScale(1, 1), ink, 20)
+	local banner = label(bannerBox, UDim2.new(1, -12, 0, 27), ink, 20)
+	banner.Name, banner.Position = "Reward", UDim2.fromOffset(6, 24)
 	banner.TextScaled = true
 	local bannerSize = Instance.new("UITextSizeConstraint")
 	bannerSize.MinTextSize, bannerSize.MaxTextSize, bannerSize.Parent = 12, 20, banner
-	local lines = {}
-	for i = 1, 24 do
-		local line = Instance.new("Frame")
-		line.AnchorPoint, line.Size, line.BackgroundColor3 =
-			Vector2.new(0.5, 0.5), UDim2.new(0.13, 0, 0, 2), blue
-		line.BorderSizePixel, line.Visible, line.Parent = 0, false, gui
-		lines[i] = line
-	end
+	local layers = label(bannerBox, UDim2.new(1, 0, 0, 25), ink, 17)
+	layers.Name = "FractureLayers"
 	local money = {}
 	for i = 1, 10 do
 		local anchor = Instance.new("Part")
@@ -157,17 +163,19 @@ function Hud.new(
 	return {
 		gui = gui,
 		eye = eye,
+		gear = gear,
 		ult = ult,
 		ring = ring,
 		world = world,
 		fill = fill,
+		remaining = remaining,
 		coins = coins,
 		coinScale = coinScale,
 		cross = cross,
 		arrow = arrow,
 		bannerBox = bannerBox,
 		banner = banner,
-		lines = lines,
+		layers = layers,
 		money = money,
 		translate = translate,
 		amount = -1,
@@ -184,8 +192,17 @@ function Hud.set(h: any, front: number, coins: number, charge: number, cap: numb
 	h.world.Text = h.translate("mine_world_progress", world.index, math.floor(ratio * 100))
 	h.fill.Size = UDim2.fromScale(ratio, 1)
 	h.fill.BackgroundColor3 = Color3.fromRGB(world.color[1], world.color[2], world.color[3])
+	local remaining = math.max(0, world.plateDepth - front)
+	local progress = if h.plateRoll then math.clamp(os.clock() - h.plateRoll.at, 0, 1) else 1
+	if progress < 1 then
+		remaining = math.round(remaining + (h.plateRoll.from - remaining) * (1 - progress) ^ 3)
+	else
+		h.plateRoll = nil
+	end
+	h.remaining.Text = h.translate("mine_plate_remaining", Format.grouped(remaining))
+	h.remaining.TextColor3 = Color3.fromRGB(155, 88, 22):Lerp(ink, progress)
+	h.coins.Text = h.translate("mine_coins", Format.short(coins))
 	if coins ~= h.amount then
-		h.coins.Text = h.translate("mine_coins", Format.short(coins))
 		if coins > h.amount and h.amount >= 0 then
 			h.coinAt = os.clock()
 		end
@@ -201,6 +218,11 @@ function Hud.set(h: any, front: number, coins: number, charge: number, cap: numb
 	end
 end
 
+function Hud.rollPlate(h: any, oldFront: number, newFront: number, now: number)
+	local world = Worlds.of(newFront)
+	h.plateRoll = { at = now, from = world.plateDepth - math.max(world.start, oldFront) }
+end
+
 function Hud.coin(h: any, position: Vector3, amount: number)
 	if amount <= 0 then
 		return
@@ -212,37 +234,25 @@ function Hud.coin(h: any, position: Vector3, amount: number)
 	item.badge.Enabled = true
 end
 
-function Hud.show(h: any, delta: number, blocks: number, coins: number, ability: boolean)
-	if ability or delta >= 10 then
-		h.reward =
-			{ at = os.clock(), delta = delta, blocks = blocks, coins = coins, ability = ability }
+function Hud.show(h: any, delta: number, blocks: number, coins: number, ultimate: boolean)
+	if ultimate or delta >= 10 then
+		h.reward = {
+			at = os.clock(),
+			delta = delta,
+			blocks = blocks,
+			coins = coins,
+			ultimate = ultimate,
+		}
 	end
 end
 
-function Hud.step(
-	h: any,
-	now: number,
-	active: boolean,
-	crosshair: boolean,
-	speed: number,
-	hint: Vector3?
-)
+function Hud.step(h: any, now: number, active: boolean, crosshair: boolean, hint: Vector3?)
 	h.gui.Enabled = active
 	h.cross.Visible = crosshair
 	h.coinScale.Scale = 1 + 0.13 * math.max(0, 1 - (now - h.coinAt) / 0.24)
 	h.ult.BackgroundColor3 = if h.lastCharge >= h.lastCap and h.lastCap > 0
 		then cream:Lerp(yellow, 0.52 + 0.24 * math.sin(now * 6))
 		else cream
-	for i, line in h.lines do
-		line.Visible = active and i <= speed
-		if line.Visible then
-			local angle = i * 2.399963
-			local k = 0.28 + ((now * 2 + i * 0.13) % 1) * 0.34
-			line.Position = UDim2.fromScale(0.5 + math.cos(angle) * k, 0.5 + math.sin(angle) * k)
-			line.Rotation = math.deg(angle)
-			line.BackgroundTransparency = 0.26 + (i % 4) * 0.12
-		end
-	end
 	h.arrow.Visible = false
 	local camera = workspace.CurrentCamera
 	if active and camera and hint then
@@ -263,12 +273,18 @@ function Hud.step(
 	local reward = h.reward
 	h.bannerBox.Visible = reward ~= nil and now - reward.at < 1.55
 	if h.bannerBox.Visible then
-		local progress = math.clamp((now - reward.at) / 0.63, 0, 1)
-		h.banner.Text = if reward.ability
+		local progress = if reward.ultimate
+			then h.fractureProgress
+			else math.clamp((now - reward.at) / 0.63, 0, 1)
+		h.layers.Visible = reward.ultimate
+		h.layers.Text =
+			h.translate("mine_ult_layers", Format.grouped(math.floor(reward.delta * progress)))
+		h.banner.Position = UDim2.fromOffset(6, if h.layers.Visible then 24 else 14)
+		h.banner.Text = if reward.ultimate
 			then h.translate(
 				"mine_ult_value",
 				Format.grouped(math.floor(reward.blocks * progress)),
-				Format.short(reward.coins * progress)
+				Format.short(math.floor(reward.coins * progress))
 			)
 			else h.translate("mine_layers_gain", math.floor(reward.delta * progress))
 	end

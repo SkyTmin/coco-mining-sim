@@ -52,6 +52,9 @@ Test.describe("Strings", function()
 				"creative_on",
 				"creative_off",
 				"creative_title",
+				"mine_settings",
+				"mine_plate_remaining",
+				"mine_ult_layers",
 			}
 		do
 			expect(Strings.has(key)).toBe(true)
@@ -62,6 +65,9 @@ Test.describe("Strings", function()
 	end)
 	Test.it("substitutes arguments and keeps buttons within twelve characters", function()
 		expect(Strings.t("creative_coins", "es", 100)).toBe("+100 monedas")
+		expect(Strings.t("mine_ult_value", "ru", 87, 232)).toBe(
+			"Блоки −87 · Монеты +232"
+		)
 		for _, key in
 			{ "creative_title", "creative_on", "creative_off", "creative_coins", "creative_reset" }
 		do

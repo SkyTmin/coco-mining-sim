@@ -10,6 +10,7 @@ local Sfx = require(Shared.Sfx)
 local Wire = require(Shared.Mine.MineWire)
 local State = require(Shared.Mine.MineState)
 local Worlds = require(Shared.Mine.Worlds)
+local Ride = require(Shared.Mine.Ride)
 
 local Client = script.Parent.Parent
 local ProfileState = require(Client.ProfileState)
@@ -19,9 +20,12 @@ local Aim = require(script.Parent.Aim)
 local Camera = require(script.Parent.Camera)
 local Input = require(script.Parent.Input)
 local Hud = require(Client.Ui.MineHud)
+local Settings = require(Client.Ui.MineSettings)
 local Intensity = require(Client.Fx.Intensity)
 local Break = require(Client.Fx.BlockBreak)
 local Lightning = require(Client.Fx.Lightning)
+local TravelDebris = require(Client.Fx.TravelDebris)
+local Haptics = require(Client.Fx.Haptics)
 
 local Controller = {}
 local mine = Config.mine
@@ -30,7 +34,25 @@ local PENTATONIC = { 1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2 }
 local STORM = Color3.fromRGB(139, 225, 255)
 local WARM = Color3.fromRGB(255, 207, 144)
 local RENDER_DEPTH = { 12, 16, 20 }
-local rng = Random.new()
+
+local function oldWindow(win: any): any
+	local copy = table.clone(win)
+	copy.layers = table.clone(win.layers)
+	for i, layer in copy.layers do
+		copy.layers[i] = table.clone(layer)
+	end
+	return copy
+end
+
+local function slice(win: any, cleared: number): any
+	local copy = table.clone(win)
+	copy.front += cleared
+	copy.layers, copy.damage = {}, {}
+	for i = cleared + 1, #win.layers do
+		copy.layers[i - cleared] = win.layers[i]
+	end
+	return copy
+end
 
 function Controller.start(guiParent: Instance, translate: (string, ...any) -> string)
 	local player = Players.LocalPlayer
@@ -41,27 +63,28 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local world = Instance.new("Folder")
 	world.Name, world.Parent = "LocalMine", workspace
 	local hud = Hud.new(guiParent, world, translate)
-	local intensity = Intensity.new(hud.gui)
+	local closeSettings = Settings.start(player, guiParent, hud.gear, translate)
+	local vibrate = Haptics.new(world)
+	local intensity = Intensity.new()
 	local view: Camera.View? = nil
 	local renderer: Wall.Renderer? = nil
-	local tunnel: any = nil
-	local breaking: any = nil
-	local lightning: any = nil
-	local window: any = nil
-	local ride: any = nil
-	local pending: any = nil
+	local tunnel: any, breaking: any, lightning: any, debris: any
+	local window: any, ride: any, pending: any
 	local events: { any } = {}
+	local parts: { BasePart } = {}
+	local moves: { CFrame } = {}
+	local lastShown: any, lastVisible: number?, lastPlateHud: boolean?
 	local seq, quality, maxParts = 0, 2, 0
-	local dirty = true
-	local active = false
-	local nextHit, lastRequest, lastGain = -math.huge, -math.huge, -math.huge
+	local dirty, active = true, false
+	local nextHit, lastRequest = -math.huge, -math.huge
 	local lastCharge = -1
 	local fpsAt, frames = os.clock(), 0
 	local autoFrames, autoTime = 0, 0
-	local measured = false
-	local savedView = false
-	local ultMeasure: any = nil
+	local measured, savedView = false, false
 	local jumpButton: GuiObject? = nil
+	local lastPhase = "idle"
+	local waveShowing = false
+	local hapticsOn = true
 
 	local function profile(): any
 		return ProfileState.getProfile()
@@ -71,10 +94,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local id = player:GetAttribute("MinePickaxe") or (p and p.pickaxe) or "starter"
 		return Config.pickaxes[id] or Config.pickaxes.starter
 	end
-	local function volume(): number
-		local p = profile()
-		return if p then p.settings.sfx else 1
-	end
 	local function need(depth: number): number
 		return math.clamp(
 			math.ceil(Worlds.durability(depth) / pick().strength),
@@ -82,16 +101,25 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			mine.maxHitsPerBlock
 		)
 	end
-	local function shift(now: number): number
+	local function currentOffset(now: number): number
 		if not ride then
 			return 0
 		end
-		local t = math.clamp((now - ride.at) / ride.duration, 0, 1)
-		return ride.offset * (1 - t) ^ 3
+		local phase, progress = Ride.phase(ride.timeline, now - ride.at)
+		return if phase == "approach" then Ride.offset(ride.timeline, progress, ride.ability) else 0
+	end
+	local function haptic(kind: string, now: number)
+		if active then
+			vibrate(
+				kind,
+				now,
+				ProfileState.preference("haptics"),
+				ProfileState.preference("reducedMotion")
+			)
+		end
 	end
 	local function resync()
-		pending = nil
-		dirty = true
+		pending, dirty = nil, true
 		local now = os.clock()
 		if now - lastRequest >= 0.52 then
 			lastRequest = now
@@ -114,39 +142,28 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		tunnel = Tunnel.new(world, frame)
 		breaking = Break.new(world)
 		lightning = Lightning.new(world)
+		debris = TravelDebris.new(world, frame)
 		view = Camera.new(player, frame)
 		dirty = true
 	end
 
-	local function targetPosition(point: any, now: number): Vector3
+	local function targetPosition(point: any, offset: number): Vector3
 		local r = renderer
-		if not r then
-			return Vector3.zero
-		end
-		return Wall.position(r, point.x, point.y, point.dRel, shift(now))
+		return if r then Wall.position(r, point.x, point.y, point.dRel, offset) else Vector3.zero
 	end
-	local function updateProfile()
-		local p = profile()
-		if p and view and not savedView then
-			view.mode = p.settings.camera
-			savedView = true
-		end
+	local function menuOpen(): boolean
+		return player:GetAttribute("MineMenuOpen") == true
+			or player:GetAttribute("MineSettingsOpen") == true
 	end
 	local function canHit(): boolean
-		return active
-			and window ~= nil
-			and player:GetAttribute("MineMenuOpen") ~= true
-			and (not ride or os.clock() >= ride.at)
+		return active and window ~= nil and not menuOpen() and (not ride or not ride.ability)
 	end
 	local function aim(screen: Vector2, nearby: boolean): any?
 		local r = renderer
-		if not r or not window or not canHit() then
-			return nil
-		end
-		return Aim.at(r, window, screen, nearby)
+		return if r and canHit() then Aim.at(r, window, screen, nearby) else nil
 	end
 	local function toggle()
-		if not view or not active then
+		if not view or not active or menuOpen() then
 			return
 		end
 		view.mode = if view.mode == "first" then "third" else "first"
@@ -166,9 +183,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 		local cell = target or { x = 0, y = 0, dRel = 0 }
 		seq = seq % 65535 + 1
-		local position = cell.position or targetPosition(cell, now)
-		local expected =
-			{ seq = seq, at = now, position = position, front = window.front, ability = ability }
+		local position = cell.position or targetPosition(cell, currentOffset(now))
+		local expected = { seq = seq, at = now, position = position }
 		if not ability then
 			local depth = window.front + cell.dRel
 			local plate = Wall.ore(window, cell.x, cell.y, cell.dRel) == Wire.PLATE
@@ -187,17 +203,16 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				end
 			end
 			Break.hit(breaking, position, cell.color or WARM, S, expected.hidden ~= nil, quality)
-			local ore = Wall.ore(window, cell.x, cell.y, cell.dRel)
-			local entry = Worlds.of(depth).ores[ore]
-			local material = if entry and entry[1] == "dirt" then "gravel" else "stone"
-			Sfx.play(material .. "_hit", 0.45 * volume())
-			if expected.hidden then
-				Sfx.play(material .. "_break", 0.64 * volume(), rng:NextNumber(0.95, 1.05))
+			if plate then
+				Sfx.play("plate_hit", 0.64)
+			else
+				Sfx.hit(now)
+				if expected.hidden then
+					Sfx.play("break_soft", 0.7)
+				end
 			end
-		else
-			Sfx.play("wind", 0.45 * volume(), 0.78)
 		end
-		Camera.swing(v, if ability then 0.70 else settings.interval, ability)
+		Camera.swing(v, if ability then Config.fx.ult.windup * 2 else settings.interval, ability)
 		pending, dirty, nextHit = expected, true, now + settings.interval
 		intent:FireServer(Wire.encodeIntent(kind, seq, cell.x, cell.y, cell.dRel))
 	end
@@ -226,9 +241,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			resync()
 			return
 		end
-		pending = nil
+		pending, dirty = nil, true
 		if not res.accepted then
-			dirty = true
 			if res.front ~= window.front then
 				resync()
 			end
@@ -239,24 +253,14 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			return
 		end
 		local now = os.clock()
-		local oldShift = shift(now)
+		local oldOffset = currentOffset(now)
+		local oldFront = window.front
+		local old = if res.ability then oldWindow(window) else nil
 		local target = if expected
 			then expected.position
-			else targetPosition({ x = 0, y = 1, dRel = 0 }, now)
-		local finalEvent = 0
-		for i, event in res.events do
-			local a, b = event.points[1], event.points[2]
-			if a and b then
-				table.insert(events, {
-					at = now + event.delayMs / 1000,
-					a = targetPosition(a, now) - r.frame.LookVector * S / 2,
-					b = targetPosition(b, now) - r.frame.LookVector * S / 2,
-					i = i,
-					last = i == #res.events,
-				})
-				finalEvent = math.max(finalEvent, event.delayMs / 1000)
-			end
-		end
+			else targetPosition({ x = 0, y = 1, dRel = 0 }, oldOffset)
+		local oldPlate = Worlds.of(oldFront).plateDepth
+		local plateBroken = res.front > oldPlate and oldFront <= oldPlate
 		for _, cell in res.cells do
 			local layer = window.layers[cell.dRel + 1]
 			local radius = (window.width - 1) // 2
@@ -274,51 +278,61 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				fresh[keep + i] = layer
 			end
 			window.layers, window.front = fresh, res.front
-			local lead = if res.ability
-				then math.max(0.6, finalEvent + 0.12)
-				else math.max(0.04, finalEvent + 0.04)
-			local duration = 0.45 + 0.35 * math.log10(res.delta)
+		end
+		window.charge, window.damage, window.plateDamage = res.charge, res.damage, res.plateDamage
+		if res.ability or res.delta > 0 then
+			local timeline = Ride.timeline(res.delta, res.ability, oldOffset)
 			ride = {
-				at = now + lead,
-				offset = math.min(res.delta, mine.window) * S + oldShift,
-				duration = duration,
+				at = now,
+				timeline = timeline,
+				old = old,
+				oldFront = oldFront,
+				cleared = 0,
+				offset = timeline.distance,
 				delta = res.delta,
 				ability = res.ability,
 				blocks = res.blocks,
 				coins = res.coins,
-				started = false,
+				plateBroken = plateBroken or (ride and ride.plateBroken),
+				color = if pick().family == "storm" then STORM else WARM,
+				frames = 0,
 			}
-			local tier = if res.ability or res.delta >= 100
-				then 3
-				elseif res.delta >= 10 then 2
-				else 1
-			Intensity.push(
-				intensity,
-				tier,
-				duration + lead,
-				if res.ability then 0.6 else lead,
-				if pick().family == "storm" then STORM else WARM
-			)
-			dirty = false
-			if res.ability then
-				ultMeasure = { at = now, untilAt = now + lead + duration, frames = 0 }
-			end
-		else
-			dirty = true
-			if res.ability then
-				Intensity.push(intensity, 3, 1.4, 0.6, WARM)
-				task.delay(0.6, function()
-					Hud.show(hud, 0, res.blocks, res.coins, true)
-				end)
-				ultMeasure = { at = now, untilAt = now + 1.4, frames = 0 }
+			if res.ability and view then
+				Camera.swing(view, timeline.windup * 2, true)
 			end
 		end
-		window.charge, window.damage, window.plateDamage = res.charge, res.damage, res.plateDamage
-		if res.coins > 0 then
-			Hud.coin(hud, target, res.coins)
-			if now - lastGain >= 0.3 then
-				Sfx.play("note", 0.48 * volume())
-				lastGain = now
+		for i, event in res.events do
+			local a, b = event.points[1], event.points[2]
+			if a and b then
+				local at = now + event.delayMs / 1000
+				local start = targetPosition(a, oldOffset)
+				local finish = targetPosition(b, oldOffset)
+				if res.ability then
+					local t = 0.06 + 0.87 * (i - 1) / math.max(1, #res.events - 1)
+					local depth = Ride.wave(ride.timeline, t, res.delta)
+					at = now + ride.timeline.windup + t * ride.timeline.fracture
+					local localA = r.frame:PointToObjectSpace(start)
+					local localB = r.frame:PointToObjectSpace(finish)
+					start = r.frame:PointToWorldSpace(Vector3.new(localA.X, localA.Y, -depth + 1.2))
+					finish =
+						r.frame:PointToWorldSpace(Vector3.new(localB.X, localB.Y, -depth - 3.4))
+				end
+				table.insert(events, { at = at, a = start, b = finish, i = i })
+			end
+		end
+		table.sort(events, function(a, b)
+			return a.at < b.at
+		end)
+		if not res.ability then
+			if res.blocks > 0 and not plateBroken then
+				if not expected or not expected.hidden or res.blocks > 1 then
+					Sfx.play("break_soft", 0.7)
+				end
+				haptic("block", now)
+			end
+			if res.coins > 0 then
+				Hud.coin(hud, target, res.coins)
+				Sfx.coin(now, #res.finds > 0)
 			end
 		end
 		if studio then
@@ -330,10 +344,103 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 	end)
 
+	local function enterPhase(phase: string, now: number)
+		if not ride then
+			return
+		end
+		if phase == "windup" then
+			Sfx.play("ult_windup", 0.58)
+		elseif phase == "fracture" then
+			Hud.show(hud, ride.delta, ride.blocks, ride.coins, true)
+			Sfx.play("ult_whump", 0.68)
+			Sfx.play("ult_rumble_away", 0.42)
+		elseif phase == "empty" then
+			TravelDebris.settle(debris, math.min(ride.timeline.distance, 24))
+		elseif phase == "approach" then
+			if ride.ability then
+				Sfx.play(
+					"ult_rumble_near",
+					0.64,
+					Config.sounds.clips.ult_rumble_near[1][2] / ride.timeline.approach
+				)
+			else
+				Hud.show(hud, ride.delta, ride.blocks, ride.coins, false)
+			end
+		elseif phase == "landed" then
+			TravelDebris.land(debris, now, window.width * S, ride.ability)
+			Sfx.play(
+				if ride.ability then "ult_thud" else "ride_stop",
+				if ride.ability then 0.76 else 0.53
+			)
+			if ride.plateBroken then
+				Sfx.play("plate_break", 0.78)
+			end
+			haptic(
+				if ride.plateBroken then "plate" elseif ride.ability then "ultimate" else "ride",
+				now
+			)
+			Intensity.land(intensity, now, ride.ability)
+			if ride.ability then
+				Hud.rollPlate(hud, ride.oldFront, window.front, now)
+				if ride.coins > 0 then
+					Sfx.coin(now)
+				end
+				if studio then
+					player:SetAttribute("Stage02UltFPS", ride.frames / (now - ride.at))
+				end
+			end
+			ride = nil
+		end
+	end
+
+	local function fracture(
+		r: Wall.Renderer,
+		progress: number,
+		override: number
+	): (any, number, number?)
+		local depth, cleared = Ride.wave(ride.timeline, progress, ride.delta)
+		local broken = math.min(ride.delta, mine.window)
+		local old = ride.old
+		if cleared > ride.cleared then
+			for layer = ride.cleared, cleared - 1 do
+				local radius = (old.width - 1) // 2
+				for x = -radius, radius, math.max(1, radius) do
+					if Wall.ore(old, x, 0, layer) > 0 then
+						local position = Wall.position(r, x, (layer + x) % old.height, layer, 0)
+						Break.hit(
+							breaking,
+							position,
+							ride.color,
+							S,
+							true,
+							override,
+							-r.frame.LookVector
+						)
+					end
+				end
+			end
+			ride.cleared, ride.slice = cleared, slice(old, cleared)
+		end
+		if ride.delta == 0 then
+			return if progress < 0.35 then old else nil, 1, depth
+		end
+		if cleared >= broken then
+			return nil, 0, depth
+		end
+		return ride.slice or old,
+			math.min(RENDER_DEPTH[override], broken - cleared),
+			cleared * S + 0.03
+	end
+
 	hud.eye.Activated:Connect(toggle)
 	hud.ult.Activated:Connect(function()
 		request("Ability", nil)
 	end)
+	for _, attribute in { "language", "MineLanguage" } do
+		player:GetAttributeChangedSignal(attribute):Connect(function()
+			dirty = true
+		end)
+	end
 	Input.start({
 		active = canHit,
 		first = function()
@@ -348,7 +455,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			request("Ability", nil)
 		end,
 		pan = function(delta)
-			if view and active and player:GetAttribute("MineMenuOpen") ~= true then
+			if view and active and not menuOpen() then
 				Camera.pan(view, delta)
 			end
 		end,
@@ -365,7 +472,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 			return
 		end
-		updateProfile()
+		local current = profile()
+		if current and not savedView then
+			v.mode, savedView = current.settings.camera, true
+		end
 		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 		local p = if root and root:IsA("BasePart")
 			then r.frame:PointToObjectSpace(root.Position)
@@ -375,16 +485,24 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			and p.Z <= Config.plots.platformDepth * S
 			and p.Y >= -1
 			and p.Y <= mine.height * S + 6
-		local settings = profile() and profile().settings
-		local reduced = settings and settings.reducedMotion == true
+		if not active then
+			closeSettings()
+		end
+		local settings = current and current.settings
+		local reduced = ProfileState.preference("reducedMotion")
+		Sfx.level(ProfileState.preference("sfx"))
+		local hapticsEnabled = ProfileState.preference("haptics")
+		if hapticsOn and not hapticsEnabled then
+			vibrate("off", now, false, reduced)
+		end
+		hapticsOn = hapticsEnabled
 		if active and not measured then
 			autoFrames += 1
 			autoTime += dt
 			if autoTime >= 15 then
 				measured = true
 				if autoFrames / autoTime < 40 then
-					quality = 1
-					dirty = true
+					quality, dirty = 1, true
 				end
 			end
 		end
@@ -392,84 +510,121 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			then 1
 			elseif settings and settings.effects == "high" then 3
 			else quality
-		Tunnel.atmosphere(tunnel, active, window.front, override)
-		local offset = shift(now)
 		if pending and now - pending.at > 0.85 then
 			resync()
 		end
-		local moving = ride and now >= ride.at
-		if moving and not ride.started then
-			ride.started, dirty = true, true
-			Hud.show(hud, ride.delta, ride.blocks, ride.coins, ride.ability)
-			Sfx.play(if ride.delta >= 10 then "wind" else "stone_hit", 0.55 * volume(), 0.73)
+
+		local phase, progress = "idle", 0
+		if ride then
+			ride.frames += 1
+			phase, progress = Ride.phase(ride.timeline, now - ride.at)
 		end
-		local hyper = moving and offset > 0 and ride.delta > 20 and not reduced
-		local speed = if moving
-				and offset > 0
-				and ride.delta >= 10
-			then (if ride.delta >= 100 then 24 else 10)
-			else 0
-		if dirty then
-			local shown = window
-			if pending and pending.damage then
-				shown = table.clone(window)
-				shown.damage = table.clone(window.damage)
-				table.insert(shown.damage, pending.damage)
+		if phase ~= lastPhase or (ride and ride.entered ~= phase) then
+			lastPhase, dirty = phase, true
+			if ride then
+				ride.entered = phase
 			end
-			Wall.update(
-				r,
-				shown,
-				RENDER_DEPTH[override],
-				pending and pending.hidden,
-				translate,
-				pick().strength
-			)
-			Break.cracks(breaking, r, shown, need, State.cellKey)
+			enterPhase(phase, now)
+			if studio then
+				player:SetAttribute("Stage02bPhase", phase)
+			end
 		end
-		if dirty or moving then
-			local parts: { BasePart } = {}
-			local framesTo: { CFrame } = {}
-			Wall.moves(r, window, offset, parts, framesTo)
-			Tunnel.moves(tunnel, window.front * S - offset, hyper, parts, framesTo)
-			workspace:BulkMoveTo(parts, framesTo, Enum.BulkMoveMode.FireCFrameChanged)
-			dirty = false
+		local shown, visible, offset = window, RENDER_DEPTH[override], 0
+		local waveDepth, survivor = nil, false
+		local color = if ride then ride.color else WARM
+		if phase == "windup" then
+			shown = ride.old
+		elseif phase == "fracture" then
+			shown, visible, waveDepth = fracture(r, progress, override)
+			offset = if shown then ride.cleared * S else ride.timeline.distance
+			survivor = shown == nil
+		elseif phase == "empty" then
+			shown, offset, survivor = nil, ride.timeline.distance, true
+		elseif phase == "approach" then
+			offset = Ride.offset(ride.timeline, progress, ride.ability)
+			local speed = math.max(0, (ride.offset - offset) / math.max(dt, 0.001))
+			TravelDebris.step(debris, now, offset, window.width * S, speed, override)
+			ride.offset = offset
+			if ride.ability and offset > (mine.window - 1) * S then
+				shown, survivor = nil, true
+			end
 		end
-		if moving and offset <= 0 then
-			if ride.delta >= 10 then
-				Sfx.play("thunder", 0.36 * volume())
-				Break.hit(
-					breaking,
-					r.frame:PointToWorldSpace(Vector3.new(0, 0.4, 0)),
-					WARM,
-					0.6,
-					true,
-					override
+		Camera.glow(v, if phase == "windup" and active then color else nil)
+		Tunnel.atmosphere(tunnel, active, if shown then shown.front else window.front, override)
+		if waveDepth or waveShowing then
+			Tunnel.wave(tunnel, waveDepth, if reduced then 0.50 else 1 - 0.42 * progress, color)
+			waveShowing = waveDepth ~= nil
+		end
+
+		local plateHud = offset < 6 and phase ~= "windup" and phase ~= "fracture"
+		local layout = dirty
+			or shown ~= lastShown
+			or visible ~= lastVisible
+			or plateHud ~= lastPlateHud
+		if layout then
+			if shown then
+				local renderWindow = shown
+				if shown == window and pending and pending.damage then
+					renderWindow = table.clone(window)
+					renderWindow.damage = table.clone(window.damage)
+					table.insert(renderWindow.damage, pending.damage)
+				end
+				Wall.update(
+					r,
+					renderWindow,
+					visible,
+					pending and pending.hidden,
+					translate,
+					pick().strength,
+					plateHud
 				)
+				Break.cracks(breaking, r, renderWindow, need, State.cellKey)
+			else
+				Wall.clear(r)
 			end
-			ride = nil
+			lastShown, lastVisible, lastPlateHud = shown, visible, plateHud
+		end
+		if phase == "windup" then
+			Break.cracks(breaking, r, shown, need, State.cellKey, progress, color)
+		end
+		if layout or phase == "approach" then
+			table.clear(parts)
+			table.clear(moves)
+			if shown then
+				Wall.moves(r, shown, offset, parts, moves)
+			end
+			local farLayers = if survivor
+				then 0
+				elseif phase == "fracture" then visible
+				else mine.window
+			Tunnel.moves(tunnel, shown or window, offset, farLayers, survivor, parts, moves)
+			workspace:BulkMoveTo(parts, moves, Enum.BulkMoveMode.FireCFrameChanged)
+			dirty = false
 		end
 		while events[1] and now >= events[1].at do
 			local event = table.remove(events, 1)
 			Lightning.bolt(lightning, event.a, event.b, now, override, event.i == 1)
 			Intensity.flash(intensity, 0.08, STORM, now)
-			Sfx.play("note", 0.56 * volume(), PENTATONIC[(event.i - 1) % #PENTATONIC + 1])
-			if event.last then
-				task.delay(0.12, function()
-					Sfx.play("thunder", 0.48 * volume())
-				end)
+			if event.i == 1 then
+				Sfx.play("bolt_soft", 0.38)
 			end
+			Sfx.play("link_note", 0.77, PENTATONIC[(event.i - 1) % #PENTATONIC + 1])
 		end
 		Lightning.step(lightning, now)
 		Break.step(breaking, now)
-		local fov, shake, pull = Intensity.sample(intensity, now, reduced, active)
-		Camera.step(v, active, fov, shake, pull)
-		local current = profile()
+		Camera.step(v, active, Intensity.sample(intensity, r.frame, now, reduced, active))
 		local cap = pick().ultCharge
 		if lastCharge >= 0 and lastCharge < cap and window.charge >= cap then
-			Sfx.play("note", 0.65 * volume(), 1.65)
+			Sfx.play("link_note", 0.85, 1.65)
 		end
 		lastCharge = window.charge
-		Hud.set(hud, window.front, if current then current.coins else 0, window.charge, cap)
+		Hud.set(
+			hud,
+			if ride and ride.ability then ride.oldFront else window.front,
+			if current then current.coins else 0,
+			window.charge,
+			cap
+		)
 		local hint = nil
 		if r.pulse.Enabled then
 			r.pulse.FillTransparency = 0.60 + math.sin(now * 6) * 0.19
@@ -478,12 +633,12 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				hint = child.Position
 			end
 		end
+		hud.fractureProgress = if phase == "fracture" then progress else 1
 		Hud.step(
 			hud,
 			now,
 			active,
-			v.mode == "first" and not UserInputService.TouchEnabled,
-			speed,
+			v.mode == "first" and not UserInputService.TouchEnabled and canHit(),
 			hint
 		)
 		if not jumpButton then
@@ -507,15 +662,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				player:SetAttribute("Stage02PlateDamage", window.plateDamage)
 			end
 			fpsAt, frames = now, 0
-		end
-		if ultMeasure then
-			ultMeasure.frames += 1
-			if now >= ultMeasure.untilAt then
-				if studio then
-					player:SetAttribute("Stage02UltFPS", ultMeasure.frames / (now - ultMeasure.at))
-				end
-				ultMeasure = nil
-			end
 		end
 	end)
 end

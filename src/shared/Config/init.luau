@@ -44,6 +44,43 @@ export type PlotConfig = {
 }
 export type CascadeConfig = { maxGen: number, maxCells: number, maxRuns: number }
 
+export type FxConfig = {
+	fogStart: number,
+	fogEnd: number,
+	lampSpacing: number,
+	impactTime: number,
+	ult: {
+		windup: number,
+		fractureMin: number,
+		fractureMax: number,
+		fracturePerLog: number,
+		empty: number,
+		approachBase: number,
+		approachPerLog: number,
+		distanceBase: number,
+		distancePerLog: number,
+	},
+}
+
+export type SoundsConfig = {
+	atlasId: string?,
+	clips: { [string]: { { number } } },
+	rules: {
+		maxVolume: number,
+		frequentVolume: number,
+		linkVolume: number,
+		defaultSfx: number,
+		frequentLufs: number,
+		rareLufs: number,
+		lowpassHz: number,
+		fadeSeconds: number,
+		pitchSpread: number,
+		fatigueDelay: number,
+		fatigueGain: number,
+		voices: { [string]: number },
+	},
+}
+
 export type OreConfig = { id: string, color: { number } }
 export type WorldConfig = {
 	id: string,
@@ -64,7 +101,8 @@ return {
 	mine = require(script:WaitForChild("mine")) :: MineConfig,
 	plots = require(script:WaitForChild("plots")) :: PlotConfig,
 	pickaxes = require(script:WaitForChild("pickaxes")) :: { [string]: PickaxeConfig },
-	sounds = require(script:WaitForChild("sounds")) :: { [string]: { id: string, segments: { { number } }, fallback: string? } },
+	fx = require(script:WaitForChild("fx")) :: FxConfig,
+	sounds = require(script:WaitForChild("sounds")) :: SoundsConfig,
 	cascade = require(script:WaitForChild("cascade")) :: CascadeConfig,
 	ores = require(script:WaitForChild("ores")) :: { OreConfig },
 	worlds = require(script:WaitForChild("worlds")) :: { WorldConfig },
