@@ -2,6 +2,19 @@
 local Test = require("../lib/expect")
 local R = require("./fixture").load("DissolveRules")
 Test.describe("Dissolve timing and budgets", function()
+	Test.it(
+		"staggers pierced blocks across pre-existing holes independently in each lane",
+		function()
+			local delays = R.stagger({
+				{ x = 0, y = 1, dRel = 20 },
+				{ x = 1, y = 1, dRel = 20 },
+				{ x = 0, y = 1, dRel = 29 },
+				{ x = 0, y = 1, dRel = 40 },
+				{ x = 0, y = 1, dRel = 55 },
+			}, 3)
+			Test.expect(delays).toEqual({ 0, 0, 0.04, 0.08, 0.12 })
+		end
+	)
 	Test.it("finishes each ghost within 0.45 seconds and limits the two visual modes", function()
 		assert(R.delay + R.shrink <= 0.45)
 		assert(

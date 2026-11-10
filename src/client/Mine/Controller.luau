@@ -356,14 +356,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			else nil
 		if not res.ability then
 			local camera = workspace.CurrentCamera
-			for _, cell in res.cells do
+			local delays = DissolveRules.stagger(res.cells, window.height)
+			for index, cell in res.cells do
 				local block = Break.snapshot(r, window, cell.x, cell.y, cell.dRel, oldOffset)
 				if block and camera then
 					local wind = Dissolve.wind(camera.CFrame.Position, block.frame.Position)
 					Dissolve.block(
 						breaking.dissolve,
 						block,
-						now + 0.04 * math.min(3, cell.dRel),
+						now + delays[index],
 						wind,
 						ProfileState.preference("reducedMotion"),
 						false
