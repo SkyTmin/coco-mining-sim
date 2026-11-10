@@ -137,6 +137,7 @@ SHELL = {
     "timber": ("bg_stone", 0.85, 0.7, "bg_planks", 1.0),
     "cave": ("bg_cave", 0.9, 0.7, "bg_cave", 0.8),
     "garland": ("bg_light", 0.85, 0.75, "bg_planks", 1.0),
+    "lined": (f"bg_{style}_lining", 1.0, 0.85, f"bg_{style}_lining", 0.9),
 }[BG]
 wall_t, wall_dim, ceil_dim, floor_t, floor_dim = SHELL
 for d in range(-6, 7):
@@ -147,7 +148,7 @@ for d in range(-6, 7):
         block(-4, d, z, wall_t, wall_dim, bevel=False)
         block(4, d, z, wall_t, wall_dim, bevel=False)
 
-if BG == "timber":
+if BG == "timber" or os.environ.get("BEAMS") == "1":
     for d in (-5, -3, -1):
         for x in (-3.3, 3.3):
             block(x, d, 1.0, "bg_beam", 1.0, scale=(0.35, 0.35, 3.0), bevel=False)

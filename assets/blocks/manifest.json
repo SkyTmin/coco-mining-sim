@@ -1,0 +1,98 @@
+{
+ "_note": "[решение Claude 10.11] стиль A, мир 1 — галька [владелец]; генератор assets/blocks/make.py",
+ "worlds": [
+  {
+   "world": 1,
+   "rock": "pebble",
+   "ores": [
+    {
+     "id": "flint",
+     "texture": "flint",
+     "rarity": "common",
+     "glow": false
+    },
+    {
+     "id": "coal",
+     "texture": "coal",
+     "rarity": "rare",
+     "glow": false
+    },
+    {
+     "id": "copper",
+     "texture": "copper",
+     "rarity": "gem",
+     "glow": false
+    },
+    {
+     "id": "firefly_amber",
+     "texture": "firefly_amber",
+     "rarity": "treasure",
+     "glow": true
+    }
+   ],
+   "lining": "pebble_lining"
+  },
+  {
+   "world": 2,
+   "rock": "red_stone",
+   "ores": [
+    {
+     "id": "copper",
+     "texture": "copper_w2",
+     "rarity": "common",
+     "glow": false
+    },
+    {
+     "id": "tin",
+     "texture": "tin",
+     "rarity": "rare",
+     "glow": false
+    },
+    {
+     "id": "malachite",
+     "texture": "malachite",
+     "rarity": "gem",
+     "glow": false
+    },
+    {
+     "id": "turquoise",
+     "texture": "turquoise",
+     "rarity": "treasure",
+     "glow": true
+    }
+   ],
+   "lining": "red_stone_lining"
+  },
+  {
+   "world": 3,
+   "rock": "white_stone",
+   "ores": [
+    {
+     "id": "quartz",
+     "texture": "quartz",
+     "rarity": "common",
+     "glow": false
+    },
+    {
+     "id": "iron",
+     "texture": "iron",
+     "rarity": "rare",
+     "glow": false
+    },
+    {
+     "id": "rose_quartz",
+     "texture": "rose_quartz",
+     "rarity": "gem",
+     "glow": false
+    },
+    {
+     "id": "amethyst",
+     "texture": "amethyst",
+     "rarity": "treasure",
+     "glow": true
+    }
+   ],
+   "lining": "white_stone_lining"
+  }
+ ]
+}
