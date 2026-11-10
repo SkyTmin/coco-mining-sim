@@ -118,10 +118,17 @@ export type SoundsConfig = {
 }
 
 export type OreConfig = { id: string, color: { number } }
-export type ArtTile = { texture: string, variants: { [string]: string }, glow: boolean }
+export type ArtTile = {
+	texture: string,
+	alts: { string },
+	dust: { string },
+	variants: { [string]: string },
+	glow: boolean,
+}
 export type ArtConfig = {
 	blocks: { [string]: string },
-	cracks: { string },
+	cracks: { { string } },
+	dustTexture: string,
 	worlds: { [string]: { lining: string, light: string, slots: { ArtTile } } },
 	variantOdds: { [string]: number },
 }

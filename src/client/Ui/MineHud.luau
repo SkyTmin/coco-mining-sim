@@ -1,5 +1,6 @@
 --!strict
 
+local GuiService = game:GetService("GuiService")
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Format = require(Shared.Format)
 local Worlds = require(Shared.Mine.Worlds)
@@ -21,6 +22,17 @@ function Hud.new(
 	gui.Visible = false
 	local coins = Candy.coin(gui, "Wallet", offset(118, 42), offset(15, 20), 21)
 	local walletSurface = coins.Parent:FindFirstChild("Surface")
+	local wallet = coins.Parent :: Frame
+	local function positionWallet()
+		local ok, inset = pcall(function()
+			return GuiService.TopbarInset.Max.Y
+		end)
+		local top = if ok then inset else GuiService:GetGuiInset().Y
+		wallet.Position = Candy.point(Vector2.new(15, top + 8))
+	end
+	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(positionWallet)
+	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(positionWallet)
+	task.defer(positionWallet)
 	local worldCard =
 		Candy.panel(gui, "WorldCard", UDim2.new(0.30, -4, 0, 64), UDim2.new(0.5, 0, 0, 16))
 	worldCard.AnchorPoint = Vector2.new(0.5, 0)
@@ -29,17 +41,18 @@ function Hud.new(
 	local remaining =
 		Candy.text(worldCard, "PlateRemaining", UDim2.new(1, -10, 0, 20), offset(5, 39), 12)
 
-	local hits = Candy.frame(gui, "HitsRemaining", offset(76, 8), offset(0, 0))
-	hits.AnchorPoint = center
-	local dots = {}
-	for i = 1, 8 do
-		local dot = Candy.frame(hits, "Hit", offset(6, 6), offset((i - 1) * 10, 1), yellow)
-		Candy.round(dot, 0)
-		dots[i] = dot
-	end
 	local focus =
 		Candy.button(gui, "FaceWall", offset(144, 45), UDim2.new(0.5, 0, 1, -20), "neutral", 17)
 	focus.box.AnchorPoint, focus.box.Visible = Vector2.new(0.5, 1), false
+	focus.box.Parent = Candy.layer(guiParent, "MineReturn", 6)
+	local fade = Candy.frame(
+		Candy.layer(guiParent, "ReturnFade", 30),
+		"Fade",
+		scale(1, 1),
+		scale(0, 0),
+		Color3.new()
+	)
+	fade.BackgroundTransparency = 1
 	local eye = Candy.button(
 		gui,
 		"MineCameraButton",
@@ -115,6 +128,11 @@ function Hud.new(
 	Candy.stroke(newWorld, 2, true)
 	local plateReward =
 		Candy.text(worldBanner, "PlateReward", UDim2.new(1, -12, 0, 25), offset(6, 27), 15)
+	local ultimateGain =
+		Candy.text(gui, "UltimateGain", offset(260, 58), scale(0.5, 0.5), 44, Candy.white)
+	ultimateGain.AnchorPoint, ultimateGain.Visible = center, false
+	ultimateGain.TextScaled, ultimateGain.TextSize = false, 34
+	local ultimateStroke = Candy.stroke(ultimateGain, 3, true)
 	local money = {}
 	for i = 1, 10 do
 		local anchor = Instance.new("Part")
@@ -141,6 +159,9 @@ function Hud.new(
 	end
 	return {
 		gui = gui,
+		fade = fade,
+		ultimateGain = ultimateGain,
+		ultimateStroke = ultimateStroke,
 		eye = eye.input,
 		gear = gear.input,
 		focus = focus.box,
@@ -151,8 +172,6 @@ function Hud.new(
 		ring = ring,
 		world = world,
 		worldCard = worldCard,
-		hits = hits,
-		dots = dots,
 		fill = fill,
 		remaining = remaining,
 		coins = coins,
@@ -206,23 +225,19 @@ function Hud.set(h: any, front: number, coins: number, charge: number, cap: numb
 	end
 end
 
-function Hud.hits(h: any, count: number, point: Vector3?)
-	local camera = workspace.CurrentCamera
-	h.hits.Visible = false
-	if camera and point and count > 0 then
-		local p, visible = camera:WorldToViewportPoint(point)
-		h.hits.Visible = visible
-		Candy.fit(h.hits, offset(count * 10 - 4, 8), offset(0, 0))
-		h.hits.Position = Candy.point(Vector2.new(p.X, p.Y + 14))
-		for i, dot in h.dots do
-			dot.Visible = i <= count
-		end
-	end
-end
-
 function Hud.rollPlate(h: any, oldFront: number, newFront: number, now: number)
 	local world = Worlds.of(newFront)
 	h.plateRoll = { at = now, from = world.plateDepth - math.max(world.start, oldFront) }
+end
+
+function Hud.ultimate(h: any, coins: number, now: number)
+	h.ultimate = { total = coins, amount = -1, progress = 0, nextAt = now }
+end
+
+function Hud.finishUltimate(h: any, now: number)
+	if h.ultimate then
+		h.ultimate.progress, h.ultimate.ended = 1, now
+	end
 end
 
 function Hud.enterWorld(h: any, now: number, world: Worlds.World, reward: number)
@@ -264,6 +279,27 @@ function Hud.step(
 	reduced: boolean
 )
 	h.gui.Visible = active
+	local gain = h.ultimate
+	h.ultimateGain.Visible = active and gain ~= nil
+	if gain then
+		if now >= gain.nextAt then
+			gain.amount = math.floor(gain.total * gain.progress)
+			h.ultimateGain.Text = h.translate("mine_coin_gain", Format.short(gain.amount))
+			gain.nextAt = now + 0.1
+		end
+		h.ultimateGain.TextSize = 34 + 10 * gain.progress
+		local camera = workspace.CurrentCamera
+		if camera then
+			local start = camera.ViewportSize / 2 + Vector2.new(0, 48)
+			local fly = if gain.ended then math.clamp((now - gain.ended - 0.6) / 0.35, 0, 1) else 0
+			local target = h.coins.Parent.AbsolutePosition + h.coins.Parent.AbsoluteSize / 2
+			h.ultimateGain.Position = Candy.point(start:Lerp(target, fly * fly))
+			h.ultimateGain.TextTransparency, h.ultimateStroke.Transparency = fly, fly
+			if fly == 1 then
+				h.ultimate, h.coinAt, h.ultimateGain.Visible = nil, now, false
+			end
+		end
+	end
 	h.cross.Visible = crosshair
 	h.walletSurface.BackgroundColor3 = Candy.panelColor:Lerp(
 		yellow,

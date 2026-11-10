@@ -1,6 +1,12 @@
 --!strict
 
 return {
+	credits_cracks = {
+		en = "Cracks: Pixel Perfection by XSSheep, via VoxeLibre, CC BY-SA 4.0",
+		ru = "Трещины: Pixel Perfection by XSSheep, via VoxeLibre, CC BY-SA 4.0",
+		es = "Grietas: Pixel Perfection by XSSheep, vía VoxeLibre, CC BY-SA 4.0",
+		fr = "Fissures : Pixel Perfection by XSSheep, via VoxeLibre, CC BY-SA 4.0",
+	},
 	mine_face_wall = {
 		en = "Face the wall",
 		ru = "К стене",

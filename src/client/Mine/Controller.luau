@@ -1,5 +1,6 @@
 --!strict
 
+local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -85,6 +86,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local seq, quality, maxParts = 0, 2, 0
 	local dirty, active = true, false
 	local nextHit, lastRequest = -math.huge, -math.huge
+	local abilityQueued, returning = false, false
 	local lastCharge = -1
 	local fpsAt, frames = os.clock(), 0
 	local autoFrames, autoTime = 0, 0
@@ -204,13 +206,22 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local function request(kind: string, target: any?)
 		local v = view
 		local now = os.clock()
-		if not v or not canHit() or pending or now < nextHit then
+		if not v or not canHit() or returning then
 			return
 		end
 		local settings = pick()
 		local ability = kind == "Ability"
 		if ability and window.charge < settings.ultCharge then
 			return
+		end
+		if pending or now < nextHit then
+			if ability then
+				abilityQueued = true
+			end
+			return
+		end
+		if ability then
+			abilityQueued = false
 		end
 		local cell = target or { x = 0, y = 0, dRel = 0 }
 		if target then
@@ -341,6 +352,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			window.layers, window.front = res.layers, res.front
 		end
 		window.charge, window.damage, window.plateDamage = res.charge, res.damage, res.plateDamage
+		if res.ability then
+			Hud.ultimate(hud, res.coins, now)
+		end
 		if res.ability or res.delta > 0 then
 			local timeline = Ride.timeline(res.delta, res.ability, oldOffset, barrier)
 			ride = {
@@ -553,6 +567,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				haptic(if ride.ability then "ultimate" else "ride", now)
 			end
 			if ride.ability then
+				Hud.finishUltimate(hud, now)
 				Hud.rollPlate(hud, ride.oldFront, window.front, now)
 				if ride.coins > 0 then
 					Sfx.coin(now)
@@ -616,10 +631,33 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		return ride.slice or old, math.min(mine.window, broken - cleared), cleared * S + 0.03
 	end
 
+	local returnRemote = Remotes.func("MineReturn")
 	local function faceWall()
-		if view and canControl() then
-			Camera.faceWall(view, os.clock())
+		if not view or ride or returning then
+			return
 		end
+		returning = true
+		task.spawn(function()
+			TweenService:Create(hud.fade, TweenInfo.new(0.12), { BackgroundTransparency = 0.35 })
+				:Play()
+			task.wait(0.12)
+			local target = view.frame:PointToWorldSpace(
+				Vector3.new(0, 3.5, Config.plots.platformDepth * S * 0.72)
+			)
+			local ok, accepted = pcall(function()
+				if workspace.StreamingEnabled then
+					player:RequestStreamAroundAsync(target)
+				end
+				return returnRemote:InvokeServer()
+			end)
+			if ok and accepted then
+				Camera.faceWall(view, os.clock())
+			end
+			TweenService:Create(hud.fade, TweenInfo.new(0.12), { BackgroundTransparency = 1 })
+				:Play()
+			task.wait(0.12)
+			returning = false
+		end)
 	end
 	hud.eye.Activated:Connect(toggle)
 	hud.focusInput.Activated:Connect(faceWall)
@@ -672,6 +710,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 			return
 		end
+		if abilityQueued and not pending and now >= nextHit and canHit() then
+			request("Ability", nil)
+		end
 		local current = profile()
 		if current and not savedView then
 			v.mode, savedView = current.settings.camera, true
@@ -680,11 +721,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local p = if root and root:IsA("BasePart")
 			then r.frame:PointToObjectSpace(root.Position)
 			else Vector3.new(0, 0, math.huge)
-		active = math.abs(p.X) <= Config.plots.frameWidth * S / 2
-			and p.Z >= 0
-			and p.Z <= Config.plots.platformDepth * S
-			and p.Y >= -1
-			and p.Y <= mine.height * S + 6
+		active = Camera.inZone(
+			v,
+			p,
+			Config.plots.frameWidth * S / 2,
+			Config.plots.platformDepth * S,
+			mine.height * S
+		)
 		if not active then
 			closeSettings()
 		end
@@ -802,7 +845,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					visible,
 					pending and pending.impacted and pending.hidden or nil
 				)
-				Break.cracks(breaking, r, renderWindow, State.cellKey, pick().strength)
+				Break.cracks(breaking, r, renderWindow, State.cellKey)
 			else
 				Wall.clear(r)
 				Break.clear(breaking)
@@ -810,7 +853,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			lastShown, lastVisible = shown, visible
 		end
 		if phase == "windup" then
-			Break.cracks(breaking, r, shown, State.cellKey, pick().strength, progress, color)
+			Break.cracks(breaking, r, shown, State.cellKey, progress)
 		end
 		local sceneWindow = shown or window
 		local plate = Ride.plate(
@@ -865,7 +908,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			dt,
 			reduced
 		)
-		hud.focus.Visible = canControl() and Camera.away(v)
+		local dig = Vector3.new(0, 3.5, Config.plots.platformDepth * S * 0.72)
+		hud.focus.Visible = (p - dig).Magnitude > 6 or Camera.away(v)
+		hud.focusInput.Interactable = ride == nil and not returning
 		if hud.focus.Visible then
 			local keyHint = if UserInputService.TouchEnabled or v.mode ~= "first"
 				then ""
@@ -913,22 +958,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local depth = if aimed then window.front + aimed.dRel else window.front
 		local hardness = Worlds.durability(depth)
 		local need = Power.hits(hardness, equipped.strength)
-		local left = need
-		if aimed and need >= 2 then
-			for _, damage in window.damage do
-				if damage.x == aimed.x and damage.y == aimed.y and damage.dRel == aimed.dRel then
-					local hp = Power.blockHP(hardness, equipped.strength)
-					left = math.clamp(
-						math.ceil((1 - damage.amount / 255 - 0.5 / 255) * hp / equipped.strength),
-						1,
-						need
-					)
-					break
-				end
-			end
-		end
-		local plate = aimed and Wall.ore(window, aimed.x, aimed.y, aimed.dRel) == Wire.PLATE
-		Hud.hits(hud, if need >= 2 and not plate then left else 0, aimed and aimed.position)
 		stepUpgrades(now, active, window.front, need, equipped.strength, hardness, reduced)
 		local hint = nil
 		if r.pulse.Enabled then
@@ -939,14 +968,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 		end
 		hud.fractureProgress = if phase == "fracture" then progress else 1
-		Hud.step(
-			hud,
-			now,
-			active,
-			v.mode == "first" and not UserInputService.TouchEnabled and canHit(),
-			hint,
-			reduced
-		)
+		if hud.ultimate and ride and ride.ability then
+			hud.ultimate.progress = if phase == "windup"
+				then 0
+				elseif phase == "fracture" then progress
+				else 1
+		end
+		Hud.step(hud, now, active, v.mode == "first" and canHit(), hint, reduced)
 		if not jumpButton then
 			local touchGui = guiParent:FindFirstChild("TouchGui")
 			local candidate = touchGui and touchGui:FindFirstChild("JumpButton", true)

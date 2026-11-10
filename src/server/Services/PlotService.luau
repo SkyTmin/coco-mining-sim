@@ -1,6 +1,7 @@
 --!strict
 
 local Players = game:GetService("Players")
+local Remotes = require(game:GetService("ReplicatedStorage").Shared.Remotes)
 local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
 local plots, mine = Config.plots, Config.mine
 local S = mine.blockSize
@@ -51,6 +52,11 @@ function PlotService.onOwnPlatform(player: Player): boolean
 		and p.Z <= DEPTH
 		and p.Y >= -1
 		and p.Y <= HEIGHT + 6
+end
+
+function PlotService.digFrame(player: Player): CFrame?
+	local i = assignments[player]
+	return if i then slots[i].frame * CFrame.new(0, 3.5, DEPTH * 0.72) else nil
 end
 
 function PlotService.Start()
@@ -126,6 +132,33 @@ function PlotService.Start()
 		)
 	end
 
+	local returned: { [Player]: number } = {}
+	Remotes.func("MineReturn").OnServerInvoke = function(player: Player)
+		local now = workspace:GetServerTimeNow()
+		if now < (returned[player] or 0) or now < (player:GetAttribute("MineReturnAfter") or 0) then
+			return false
+		end
+		local character = player.Character
+		local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local target = PlotService.digFrame(player)
+		if
+			not character
+			or not rootPart
+			or not rootPart:IsA("BasePart")
+			or not humanoid
+			or humanoid.Health <= 0
+			or not target
+		then
+			return false
+		end
+		returned[player] = now + 0.6
+		rootPart.AssemblyLinearVelocity, rootPart.AssemblyAngularVelocity =
+			Vector3.zero, Vector3.zero
+		character:PivotTo(target)
+		return true
+	end
+
 	local function add(player: Player)
 		if assignments[player] then
 			return
@@ -141,7 +174,7 @@ function PlotService.Start()
 				if not pivot or player.Character ~= character or assignments[player] ~= i then
 					return
 				end
-				character:PivotTo(slot.frame * CFrame.new(0, 3.5, DEPTH * 0.72))
+				character:PivotTo(PlotService.digFrame(player) :: CFrame)
 			end
 			player.CharacterAdded:Connect(spawnAt)
 			if player.Character then
@@ -152,6 +185,7 @@ function PlotService.Start()
 	end
 	Players.PlayerAdded:Connect(add)
 	Players.PlayerRemoving:Connect(function(player)
+		returned[player] = nil
 		local i = assignments[player]
 		if i then
 			slots[i].owner, assignments[player] = nil, nil

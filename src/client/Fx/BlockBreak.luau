@@ -4,12 +4,9 @@ local ContentProvider = game:GetService("ContentProvider")
 local Debris = game:GetService("Debris")
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
-local Worlds = require(Shared.Mine.Worlds)
-local Power = require(Shared.Play.Power)
+local Hash = require(Shared.Mine.Hash)
 local BlockBreak = {}
 local STAGES = Config.art.cracks
-local CUTS =
-	{ Power.packDamage(0.25), Power.packDamage(0.5), Power.packDamage(0.75), Power.packDamage(0.9) }
 local WHITE = Color3.new(1, 1, 1)
 
 type Faces = { [Enum.NormalId]: Decal }
@@ -24,7 +21,13 @@ type Fx = {
 
 function BlockBreak.new(parent: Instance): Fx
 	task.spawn(function()
-		pcall(ContentProvider.PreloadAsync, ContentProvider, STAGES)
+		local textures = {}
+		for _, set in STAGES do
+			for _, id in set do
+				table.insert(textures, id)
+			end
+		end
+		pcall(ContentProvider.PreloadAsync, ContentProvider, textures)
 	end)
 	return { parent = parent, free = {}, active = {}, budget = 48, last = os.clock() }
 end
@@ -47,12 +50,7 @@ function BlockBreak.clear(fx: Fx)
 end
 
 local function stageFor(amount: number): number
-	for i = #CUTS, 1, -1 do
-		if amount >= CUTS[i] then
-			return i
-		end
-	end
-	return 0
+	return math.clamp(math.ceil(amount * 10 / 255), 0, 10)
 end
 
 function BlockBreak.cracks(
@@ -60,9 +58,7 @@ function BlockBreak.cracks(
 	renderer: any,
 	win: any,
 	keyFor: (number, number, number) -> number,
-	strength: number,
-	windup: number?,
-	tint: Color3?
+	windup: number?
 )
 	local nextActive: Active = {}
 	local function paint(cell: any, stage: number)
@@ -79,7 +75,9 @@ function BlockBreak.cracks(
 				decal.Name = "OreCrack"
 				decal.ZIndex = 2
 			end
-			decal.Face, decal.Texture, decal.Color3 = face, STAGES[stage], tint or WHITE
+			local set = 1 + (Hash.u32(cell.x, cell.y, cell.d) + face.Value) % #STAGES
+			decal.Face, decal.Texture, decal.Color3 = face, STAGES[set][stage], WHITE
+			decal.Transparency = 0
 			if decal.Parent ~= part then
 				decal.Parent = part
 			end
@@ -97,16 +95,12 @@ function BlockBreak.cracks(
 		table.sort(front)
 		for i, key in front do
 			local progress = windup * 2 - (i - 1) / math.max(1, #front)
-			paint(renderer.cells[key], stageFor(Power.packDamage(progress)))
+			paint(renderer.cells[key], stageFor(math.clamp(progress * 255, 0, 255)))
 		end
 	else
 		for _, damage in win.damage do
 			local depth = win.front + damage.dRel
-			local oneHit =
-				Power.packDamage(strength / Power.blockHP(Worlds.durability(depth), strength))
-			if damage.amount > oneHit then
-				paint(renderer.cells[keyFor(damage.x, damage.y, depth)], stageFor(damage.amount))
-			end
+			paint(renderer.cells[keyFor(damage.x, damage.y, depth)], stageFor(damage.amount))
 		end
 	end
 	release(fx, nextActive)

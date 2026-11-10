@@ -11,6 +11,7 @@ local Economy = require(Shared.Mine.Economy)
 local Validate = require(Shared.Mine.Validate)
 local Worlds = require(Shared.Mine.Worlds)
 local Wire = require(Shared.Mine.MineWire)
+local Ride = require(Shared.Mine.Ride)
 local Storm = require(Shared.Play.Storm)
 local Circle = require(Shared.Play.Circle)
 local Power = require(Shared.Play.Power)
@@ -236,6 +237,12 @@ local function onIntent(player: Player, packet: any)
 		+ (res.plateReward or 0)
 	local blocks, plateBroken = res.blocks, res.plateBroken
 	local delta = State.advance(st)
+	if ability or delta > 0 then
+		player:SetAttribute(
+			"MineReturnAfter",
+			workspace:GetServerTimeNow() + Ride.timeline(delta, ability).total
+		)
+	end
 	local oldWorld, world = Worlds.of(oldFront).index, Worlds.of(st.front).index
 	local newCards = {}
 	ProfileService.Mutate(player, function(profile)

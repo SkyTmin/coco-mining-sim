@@ -215,7 +215,7 @@ local function addCell(
 	part.Size = Vector3.one * S
 	local art = Config.art.worlds[Worlds.of(d).id]
 	local tile = art.slots[ore]
-	BlockArt.apply(part, if tile then tile.texture else art.lining)
+	BlockArt.apply(part, if tile then BlockArt.select(tile, x, y, d) else art.lining)
 	local rel = d - win.front
 	sparkle(r, cell, tile ~= nil and tile.glow and rel < SPARK_LAYERS)
 	table.clear(cell.faces)

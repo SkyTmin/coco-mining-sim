@@ -86,6 +86,29 @@ function Camera.new(player: Player, frame: CFrame): View
 	return view
 end
 
+function Camera.adopt(view: View, direction: Vector3)
+	local localDirection = view.frame:VectorToObjectSpace(direction)
+	view.yaw = math.atan2(-localDirection.X, -localDirection.Z)
+	view.pitch =
+		math.clamp(math.asin(math.clamp(localDirection.Y, -1, 1)), -math.rad(60), math.rad(60))
+	view.recenter = nil
+end
+
+function Camera.inZone(
+	view: View,
+	p: Vector3,
+	halfWidth: number,
+	depth: number,
+	height: number
+): boolean
+	local margin = if view.active then 1 else -1
+	return math.abs(p.X) <= halfWidth + margin
+		and p.Z >= -margin
+		and p.Z <= depth + margin
+		and p.Y >= -1 - margin
+		and p.Y <= height + 6 + margin
+end
+
 function Camera.pan(view: View, delta: Vector2)
 	view.recenter = nil
 	view.yaw = (view.yaw - delta.X * 0.004 + math.pi) % (2 * math.pi) - math.pi
@@ -213,7 +236,10 @@ function Camera.step(view: View, active: boolean, shake: Vector3, dt: number, re
 	end
 	if not active then
 		if view.active then
+			local previous, focus = camera.CFrame, camera.Focus
 			camera.CameraType = Enum.CameraType.Custom
+			camera.CameraSubject = humanoid
+			camera.CFrame, camera.Focus = previous, focus
 			camera.FieldOfView = 70
 			UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 			UserInputService.MouseIconEnabled = true
@@ -225,6 +251,9 @@ function Camera.step(view: View, active: boolean, shake: Vector3, dt: number, re
 		end
 		view.active = false
 		return
+	end
+	if not view.active then
+		Camera.adopt(view, camera.CFrame.LookVector)
 	end
 	view.active = true
 	local recenter = view.recenter
