@@ -1,0 +1,306 @@
+[
+  {
+    "id": "dirt",
+    "color": [
+      120,
+      84,
+      52
+    ]
+  },
+  {
+    "id": "stone",
+    "color": [
+      128,
+      126,
+      122
+    ]
+  },
+  {
+    "id": "coal",
+    "color": [
+      48,
+      47,
+      50
+    ]
+  },
+  {
+    "id": "copper",
+    "color": [
+      193,
+      109,
+      64
+    ]
+  },
+  {
+    "id": "tin",
+    "color": [
+      181,
+      184,
+      190
+    ]
+  },
+  {
+    "id": "malachite",
+    "color": [
+      50,
+      141,
+      104
+    ]
+  },
+  {
+    "id": "turquoise",
+    "color": [
+      62,
+      196,
+      184
+    ]
+  },
+  {
+    "id": "quartz",
+    "color": [
+      232,
+      224,
+      225
+    ]
+  },
+  {
+    "id": "iron",
+    "color": [
+      140,
+      146,
+      151
+    ]
+  },
+  {
+    "id": "rose_quartz",
+    "color": [
+      226,
+      151,
+      181
+    ]
+  },
+  {
+    "id": "amethyst",
+    "color": [
+      142,
+      79,
+      192
+    ]
+  },
+  {
+    "id": "silver",
+    "color": [
+      199,
+      209,
+      219
+    ]
+  },
+  {
+    "id": "gold",
+    "color": [
+      227,
+      174,
+      53
+    ]
+  },
+  {
+    "id": "river_pearl",
+    "color": [
+      235,
+      229,
+      205
+    ]
+  },
+  {
+    "id": "nugget",
+    "color": [
+      250,
+      199,
+      72
+    ]
+  },
+  {
+    "id": "ice",
+    "color": [
+      156,
+      219,
+      241
+    ]
+  },
+  {
+    "id": "froststone",
+    "color": [
+      124,
+      172,
+      199
+    ]
+  },
+  {
+    "id": "sapphire",
+    "color": [
+      56,
+      98,
+      209
+    ]
+  },
+  {
+    "id": "eternal_ice",
+    "color": [
+      176,
+      244,
+      251
+    ]
+  },
+  {
+    "id": "sporite",
+    "color": [
+      140,
+      91,
+      159
+    ]
+  },
+  {
+    "id": "glowshroom",
+    "color": [
+      174,
+      117,
+      215
+    ]
+  },
+  {
+    "id": "topaz",
+    "color": [
+      228,
+      165,
+      79
+    ]
+  },
+  {
+    "id": "moonstone",
+    "color": [
+      185,
+      202,
+      239
+    ]
+  },
+  {
+    "id": "limestone",
+    "color": [
+      192,
+      180,
+      158
+    ]
+  },
+  {
+    "id": "amber",
+    "color": [
+      212,
+      145,
+      57
+    ]
+  },
+  {
+    "id": "bone_ore",
+    "color": [
+      221,
+      207,
+      173
+    ]
+  },
+  {
+    "id": "dragon_amber",
+    "color": [
+      249,
+      122,
+      48
+    ]
+  },
+  {
+    "id": "bronze",
+    "color": [
+      162,
+      109,
+      67
+    ]
+  },
+  {
+    "id": "jade",
+    "color": [
+      62,
+      155,
+      112
+    ]
+  },
+  {
+    "id": "lapis_lazuli",
+    "color": [
+      62,
+      88,
+      180
+    ]
+  },
+  {
+    "id": "ancient_gold",
+    "color": [
+      218,
+      166,
+      68
+    ]
+  },
+  {
+    "id": "basalt",
+    "color": [
+      65,
+      63,
+      70
+    ]
+  },
+  {
+    "id": "obsidian",
+    "color": [
+      47,
+      39,
+      62
+    ]
+  },
+  {
+    "id": "ruby",
+    "color": [
+      190,
+      44,
+      69
+    ]
+  },
+  {
+    "id": "fire_ruby",
+    "color": [
+      248,
+      75,
+      50
+    ]
+  },
+  {
+    "id": "core_crystal",
+    "color": [
+      218,
+      225,
+      243
+    ]
+  },
+  {
+    "id": "sunstone",
+    "color": [
+      242,
+      182,
+      79
+    ]
+  },
+  {
+    "id": "core_shard",
+    "color": [
+      251,
+      238,
+      179
+    ]
+  }
+]

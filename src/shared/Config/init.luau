@@ -11,7 +11,38 @@ export type CreativeConfig = {
 	admins: { number },
 }
 
+export type MineConfig = {
+	startWidth: number,
+	height: number,
+	maxWidth: number,
+	maxHeight: number,
+	maxDepth: number,
+	chunk: number,
+	window: number,
+	maxHoles: number,
+	maxHitsPerBlock: number,
+	passThrough: { number },
+	plate: { ultPlateHits: number, ultMultiplier: number },
+}
+
+export type OreConfig = { id: string, color: { number } }
+export type WorldConfig = {
+	id: string,
+	length: number,
+	ores: { { string | number } },
+	rareFrom: number,
+	richness: number,
+	prices: { [string]: number },
+	durability: { base: number, growthInWorld: number },
+	plate: { recommendedStrength: number, hp: number, reward: number },
+	specials: { perChunk: number, kinds: { { string | number } } },
+	color: { number },
+}
+
 return {
 	game = require(script:WaitForChild("game")) :: GameConfig,
 	creative = require(script:WaitForChild("creative")) :: CreativeConfig,
+	mine = require(script:WaitForChild("mine")) :: MineConfig,
+	ores = require(script:WaitForChild("ores")) :: { OreConfig },
+	worlds = require(script:WaitForChild("worlds")) :: { WorldConfig },
 }
