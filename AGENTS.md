@@ -75,3 +75,8 @@ scripts/     build-configs.mjs design-decisions.json make-studio-sync.mjs ...
 tests/       *.spec.luau + run.luau (lune run tests)
 reference/   read-only sources (not built)      docs/   PROGRESS.md, tz/, design/
 ```
+
+15. **Снимки для Claude** [владелец 10.11]: в каждом этапе с видимыми изменениями — снимки средствами Studio в
+    `docs/reports/stage-NN/shots/` (jpg ≤ 300 КБ, в коммите), список — в ТЗ этапа. Без управления рабочим столом.
+16. **Арт — из игры владельца `SkyTmin/coco-instruments`** (пиксельный стиль, кирки, руды, рамки, кнопки). Свой арт
+    «с нуля» — только если там нет подходящего, и с пометкой в отчёте.

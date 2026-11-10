@@ -101,8 +101,8 @@ function Camera.emphasize(view: View, now: number)
 end
 
 function Camera.pan(view: View, delta: Vector2)
-	view.yaw = math.clamp(view.yaw - delta.X * 0.004, -math.rad(35), math.rad(35))
-	view.pitch = math.clamp(view.pitch - delta.Y * 0.004, -math.rad(25), math.rad(25))
+	view.yaw = (view.yaw - delta.X * 0.004 + math.pi) % (2 * math.pi) - math.pi
+	view.pitch = math.clamp(view.pitch - delta.Y * 0.004, -math.rad(60), math.rad(60))
 end
 
 function Camera.swing(view: View, interval: number, ability: boolean?)

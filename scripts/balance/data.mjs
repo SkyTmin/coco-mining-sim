@@ -7,7 +7,7 @@ export const mine = {
 	interval: 0.35, // seconds between hits (all pickaxes); hit size 6 = 0.30
 	maxHitsPerBlock: 8,
 	pierce: [ { ratio: 10, layers: 2 }, { ratio: 100, layers: 3 }, { ratio: 1000, layers: 4 } ],
-	widths: [ { w: 5, price: 0 }, { w: 7, price: 5_000, world: 2 }, { w: 9, price: 500_000, world: 4 } ],
+	widths: [ { w: 5, price: 0 }, { w: 7, price: 5_000, world: 2 } ],
 	height: 3,
 	plateHits: 20, // hits to break the Guard Slab at recommended strength
 	plateCap: 160,
