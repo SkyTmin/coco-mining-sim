@@ -218,12 +218,6 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 			part(moving, "DepthMark", Vector3.new(4, 0.06, 0.35), frame, trim, Enum.Material.Metal)
 	end
 
-	local wave = {}
-	for i = 1, 10 do
-		wave[i] = part(moving, "FractureRing", Vector3.one, frame, LAMP, Enum.Material.Neon)
-		wave[i].Transparency = 1
-	end
-
 	local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
 	local tunnel = {
 		model = model,
@@ -240,7 +234,6 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 		mass = mass,
 		face = face,
 		ticks = ticks,
-		wave = wave,
 		lamps = lamps,
 		glow = glow,
 		active = false,
@@ -456,42 +449,6 @@ function Tunnel.moves(
 			move(tick, 0, 0.045, depth)
 		end
 		depth += markerSpacing
-	end
-end
-
-function Tunnel.dim(t: any, ratio: number)
-	if t.active then
-		Lighting.Brightness = 1.32 * ratio
-		for _, lamp in t.lamps do
-			lamp.part.Color = lamp.part.Color:Lerp(Color3.new(0, 0, 0), 1 - ratio)
-		end
-	end
-end
-
-function Tunnel.wave(t: any, depth: number?, strength: number, color: Color3)
-	for i, piece in t.wave do
-		piece.Transparency = if depth then 0.18 + (1 - strength) * 0.63 else 1
-		if depth then
-			local angle = (i - 1) * 2 * math.pi / #t.wave
-			local nextAngle = i * 2 * math.pi / #t.wave
-			local function point(a: number): Vector3
-				return Vector3.new(
-					math.cos(a) * t.width * 0.47,
-					HEIGHT * (0.5 + 0.47 * math.sin(a)),
-					-depth
-				)
-			end
-			local a, b = point(angle), point(nextAngle)
-			local span = (b - a).Magnitude
-			piece.Color, piece.Size = color, Vector3.new(0.34, 0.34, span + 0.12)
-			piece.CFrame = t.frame * CFrame.lookAt((a + b) / 2, b)
-		end
-	end
-	for _, lamp in t.lamps do
-		local flash = if depth
-			then math.clamp(1 - math.abs(depth - lamp.depth) / (lamp.spacing * 1.25), 0, 1) * strength
-			else 0
-		lamp.part.Color = t.lampColor:Lerp(color:Lerp(Color3.new(1, 1, 1), 0.52), flash)
 	end
 end
 

@@ -16,6 +16,7 @@ if (whatIf.length) {
 
 const readArt = (file) => JSON.parse(readFileSync(new URL("../assets/" + file, import.meta.url), "utf8"));
 const blockManifest = readArt("blocks/manifest.json");
+const grains = readArt("blocks/grains.json");
 const blockIds = readArt("blocks/ids.json").assets;
 const crackNames = blockManifest.cracks.sets.flatMap((set) =>
   Array.from({length:blockManifest.cracks.stages}, (_,i) => "crack_" + set + "_" + (i+1)));
@@ -81,6 +82,12 @@ function validateArt(art, decisions) {
     return ["assets/blocks/manifest.json must define all ten worlds"];
   }
   const variants = ["golden", "rainbow", "cosmic"];
+  if (grains.grid !== 8 || grains.grainPx !== 4 ||
+      Object.keys(grains.palettes ?? {}).length !== 13 ||
+      !Object.values(grains.palettes ?? {}).every(colors => Array.isArray(colors) && colors.length === 16 &&
+        colors.every(color => /^#[0-9a-f]{6}$/i.test(color)))) {
+    errors.push("grains must define the 8x8 grid and thirteen fixed sixteen-color palettes");
+  }
   if (Object.keys(blockManifest.variants).length !== variants.length ||
       !variants.every((name) => isPositiveInteger(blockManifest.variants[name]))) {
     errors.push("block variants must define the three positive rarity denominators");
@@ -105,6 +112,12 @@ function validateArt(art, decisions) {
       if (!Array.isArray(block.alts) || block.alts.length !== 3 || block.alts[0] !== block.texture ||
           !block.alts.every(isId) || !Array.isArray(block.dust) || !block.dust.every(color => /^#[0-9a-f]{6}$/i.test(color))) {
         errors.push("Invalid block alternatives or dust palette for " + block.id);
+      }
+      for (const name of [...(block.alts ?? []), ...Object.values(block.variants ?? {})]) {
+        const grain = grains.textures?.[name];
+        if (!grain || !Object.hasOwn(grains.palettes ?? {}, grain.palette) || !/^[0-9a-f]{64}$/i.test(grain.cells)) {
+          errors.push("Missing or invalid grain cells for " + name);
+        }
       }
       for (const name of block.alts ?? []) expected.add(name);
       for (const variant of variants) expected.add(block.variants?.[variant]);
@@ -294,6 +307,7 @@ function withBalance(input) {
   const blocks = Object.fromEntries(Object.entries(blockIds).map(([file, { id }]) => [file.slice(0, -4), id]));
   const art = {
     blocks,
+    grains,
     cracks: blockManifest.cracks.sets.map((set) => Array.from({length:blockManifest.cracks.stages},
       (_,i) => blocks["crack_" + set + "_" + (i+1)])),
     dustTexture: blocks[blockManifest.fx.dust],

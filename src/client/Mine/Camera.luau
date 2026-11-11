@@ -25,6 +25,7 @@ export type View = {
 	firstItem: Model?,
 	firstRoot: Part?,
 	bob: number,
+	waveBlend: number,
 	hidden: Model?,
 	hideNew: RBXScriptConnection?,
 	body: { [string]: Applied },
@@ -92,6 +93,7 @@ function Camera.new(player: Player, frame: CFrame): View
 		swingAt = -math.huge,
 		swingDuration = 0.35,
 		bob = 0,
+		waveBlend = 0,
 		body = {},
 	}
 	RunService.PreSimulation:Connect(function()
@@ -272,7 +274,14 @@ local function drawHeld(
 	root.CFrame = camera.CFrame * bob * Swing.held(root.Size.Y, swingProgress(view, os.clock()))
 end
 
-function Camera.step(view: View, active: boolean, shake: Vector3, dt: number, reduced: boolean)
+function Camera.step(
+	view: View,
+	active: boolean,
+	shake: Vector3,
+	dt: number,
+	reduced: boolean,
+	wave: boolean?
+)
 	local camera = workspace.CurrentCamera
 	local character = view.player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -352,6 +361,12 @@ function Camera.step(view: View, active: boolean, shake: Vector3, dt: number, re
 			0
 		)
 		else headCenter - facing * 11 + Vector3.new(0, 2.5, 0)
+	view.waveBlend = if wave then 1 else math.max(0, view.waveBlend - dt / 0.14)
+	if view.waveBlend > 0 then
+		local localEye = view.frame:PointToObjectSpace(eye)
+		local tracking = view.frame:PointToWorldSpace(Vector3.new(localEye.X, localEye.Y, 10))
+		eye = eye:Lerp(tracking, view.waveBlend)
+	end
 	camera.CFrame = CFrame.lookAt(eye + shake, eye + shake + direction)
 	camera.Focus = CFrame.new(eye + direction * 24)
 	drawHeld(view, camera, humanoid, first, dt, reduced)

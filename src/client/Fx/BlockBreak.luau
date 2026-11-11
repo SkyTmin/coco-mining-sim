@@ -6,6 +6,7 @@ local Config = require(Shared.Config)
 local Hash = require(Shared.Mine.Hash)
 local Worlds = require(Shared.Mine.Worlds)
 local BlockArt = require(script.Parent.Parent.Mine.BlockArt)
+local State = require(Shared.Mine.MineState)
 local Dissolve = require(script.Parent.Dissolve)
 local BlockBreak = {}
 local STAGES = Config.art.cracks
@@ -129,10 +130,13 @@ function BlockBreak.snapshot(
 			(y + 0.5) * Config.mine.blockSize,
 			-(relative * Config.mine.blockSize + Config.mine.blockSize / 2 + offset)
 		),
-		material = "COCOMine_" .. BlockArt.select(tile, x, y, win.front + relative),
-		texture = Config.art.blocks[BlockArt.select(tile, x, y, win.front + relative)],
-		dust = tile.dust,
-		glow = tile.glow,
+		texture = BlockArt.select(tile, x, y, win.front + relative),
+		x = x,
+		y = y,
+		depth = win.front + relative,
+		faces = if renderer.cells[State.cellKey(x, y, win.front + relative)]
+			then table.clone(renderer.cells[State.cellKey(x, y, win.front + relative)].faces)
+			else { Enum.NormalId.Back },
 	}
 end
 
