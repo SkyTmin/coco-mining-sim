@@ -299,6 +299,7 @@ function Hud.new(
 		fill = fill,
 		remaining = remaining,
 		coins = coins,
+		wallet = wallet,
 		walletSurface = walletSurface,
 		cross = cross,
 		arrow = arrow,

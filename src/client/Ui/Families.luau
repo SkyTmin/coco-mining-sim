@@ -10,7 +10,7 @@ local Candy = require(script.Parent.Candy)
 local Families = {}
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
 local PICK_CELL_HEIGHT, PICK_CELL_GAP = 255, 8
-local FIRST_ACTION_Y, ACTION_HEIGHT = 123, 32
+local FIRST_ACTION_Y, ACTION_HEIGHT, NEXT_CIRCLE_HEIGHT = 108, 32, 16
 
 local function scroll(parent: Instance, name: string, top: number): ScrollingFrame
 	local frame = Instance.new("ScrollingFrame")
@@ -89,8 +89,13 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 		local name = Candy.text(box, "Name", UDim2.new(1, -8, 0, 22), offset(4, 33), 14)
 		local count = Candy.text(box, "Count", UDim2.new(1, -8, 0, 23), offset(4, 55), 12)
 		local stats = Candy.text(box, "Stats", UDim2.new(1, -8, 0, 27), offset(4, 78), 12)
-		local nextCircle =
-			Candy.text(box, "NextCircle", UDim2.new(1, -8, 0, 16), offset(4, 106), 11)
+		local nextCircle = Candy.text(
+			box,
+			"NextCircle",
+			UDim2.new(1, -8, 0, NEXT_CIRCLE_HEIGHT),
+			offset(4, 106),
+			11
+		)
 		local normal, golden, merge =
 			action(box, "Equip"), action(box, "Gold"), action(box, "Merge")
 		local buy = action(box, "Buy")
@@ -238,13 +243,14 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 				Format.stat(strength, locale),
 				Format.stat(goldStrength, locale)
 			)
-			view.nextCircle.Text = if profile.nextFamily[id] then translate("family_next") else ""
+			local deferred = profile.nextFamily[id] == true
+			view.nextCircle.Text = if deferred then translate("family_next") else ""
 			local shop = family and pick.rarity == "common" and not profile.boughtPickaxes[id]
 			view.normal.box.Visible = entry.count > 0
 			view.golden.box.Visible = entry.golden > 0
 			view.merge.box.Visible = entry.count >= Config.familyRules.mergeNeed and id ~= "starter"
 			view.buy.box.Visible = shop == true
-			local actionY = FIRST_ACTION_Y
+			local actionY = if deferred then FIRST_ACTION_Y + NEXT_CIRCLE_HEIGHT else FIRST_ACTION_Y
 			for _, control in { view.normal, view.golden, view.merge, view.buy } do
 				if control.box.Visible then
 					Candy.move(control.box, offset(5, actionY))

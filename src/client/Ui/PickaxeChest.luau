@@ -10,10 +10,14 @@ local ArtModel = require(Shared.Models.ArtModel)
 local PickaxeChest = {}
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
 
-function PickaxeChest.new(parent: Instance, player: Player, translate: (string, ...any) -> string)
-	local hud = Candy.layer(parent, "KeysHUD", 5)
-	hud.Visible = false
-	local open = Candy.button(hud, "Keys", offset(118, 36), offset(15, 70), "coin", 15)
+function PickaxeChest.new(
+	parent: Instance,
+	player: Player,
+	translate: (string, ...any) -> string,
+	wallet: Frame
+)
+	local open =
+		Candy.button(wallet, "Keys", UDim2.new(1, 0, 0, 36), UDim2.new(0, 0, 1, 8), "coin", 15)
 	Candy.buttonIcon(open, "keys")
 	local refresh: () -> ()
 	local modal = Candy.modal(
@@ -58,13 +62,19 @@ function PickaxeChest.new(parent: Instance, player: Player, translate: (string, 
 	local resultCard = Candy.panel(
 		panel,
 		"ResultCard",
-		UDim2.new(1, -30, 0.16, 0),
+		UDim2.new(1, -30, 0.14, 0),
 		UDim2.new(0, 15, 0.61, 0),
 		true
 	)
 	local resultText = Candy.text(resultCard, "Result", scale(0.96, 0.92), scale(0.02, 0.04), 16)
-	local buy =
-		Candy.button(panel, "Open", offset(180, 44), UDim2.new(0.5, -90, 1, -54), "coin", 17)
+	local buy = Candy.button(
+		panel,
+		"Open",
+		UDim2.new(0, 180, 0.17, 0),
+		UDim2.new(0.5, -90, 0.80, 0),
+		"coin",
+		17
+	)
 	local lastAt, lastResult = -math.huge, nil
 	refresh = function()
 		local profile = ProfileState.getProfile()
@@ -118,9 +128,6 @@ function PickaxeChest.new(parent: Instance, player: Player, translate: (string, 
 	end
 	refresh()
 	return {
-		active = function(show: boolean)
-			hud.Visible = show
-		end,
 		result = function(result: any)
 			lastResult = result
 			refresh()

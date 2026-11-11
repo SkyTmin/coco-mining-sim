@@ -83,7 +83,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local jumpButton: GuiObject? = nil
 	local lastPhase = "idle"
 	local hapticsOn = true
-	local chest = PickaxeChest.new(guiParent, player, translate)
+	local chest = PickaxeChest.new(guiParent, player, translate, hud.wallet)
 	local familyToast = require(Client.Toast).create(guiParent, translate)
 	FamilyFx.configure(
 		function(cell, front)
@@ -781,7 +781,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if not active then
 			closeSettings()
 		end
-		chest.active(active)
 		local settings = current and current.settings
 		local reduced = ProfileState.preference("reducedMotion")
 		Sfx.level(ProfileState.preference("sfx"))
