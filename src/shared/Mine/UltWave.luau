@@ -1,41 +1,52 @@
 --!strict
--- [владелец] TZ-03g §4, amended 11.11: the wedge lag is measured in layers.
+-- [владелец 11.11] TZ-03g §4: the stationary camera sees a dome run down the tunnel.
 local Wave = {}
 Wave.pause = 0.25
-Wave.lag = 2
-Wave.gap = 3
-export type Sweep =
-	{ depth: number, width: number, height: number, duration: number, radius: number }
-function Wave.radius(x: number, y: number, height: number): number
-	return math.sqrt(x * x + (y - (height - 1) / 2) ^ 2)
+Wave.lag = 7
+Wave.jitter = 0.04
+Wave.hold = 0.35
+Wave.fogStart = 60
+Wave.fogEnd = 190
+export type Sweep = {
+	depth: number,
+	width: number,
+	height: number,
+	radius2: number,
+	duration: number,
+	step: number,
+}
+function Wave.duration(depth: number): number
+	return math.clamp(1.2 + 0.5 * math.log10(math.max(1, depth)), 1.5, 3.5)
 end
-function Wave.new(depth: number, width: number, height: number, duration: number): Sweep
+function Wave.new(depth: number, width: number, height: number): Sweep
+	local duration = Wave.duration(depth)
 	return {
 		depth = depth,
 		width = width,
 		height = height,
+		radius2 = ((width - 1) / 2) ^ 2 + ((height - 1) / 2) ^ 2,
 		duration = duration,
-		radius = Wave.radius((width - 1) / 2, 0, height),
+		step = duration / (depth + Wave.lag),
 	}
 end
+function Wave.offset(s: Sweep, x: number, y: number): number
+	local r2 = x * x + (y - (s.height - 1) / 2) ^ 2
+	return if s.radius2 > 0 then Wave.lag * r2 / s.radius2 else 0
+end
+function Wave.noise(s: Sweep, x: number, y: number, d: number): number
+	local v = math.sin((x + (s.width - 1) / 2) * 127.1 + (y + d * 7) * 311.7) * 43758.5453
+	return v - math.floor(v)
+end
+function Wave.at(s: Sweep, x: number, y: number, d: number): number
+	return Wave.pause + (d + Wave.offset(s, x, y)) * s.step + Wave.jitter * Wave.noise(s, x, y, d)
+end
 function Wave.front(s: Sweep, time: number): number
-	local t = math.clamp((time - Wave.pause) / (s.duration - Wave.pause), 0, 1)
-	return (s.depth + Wave.lag * s.radius) * t * t * (3 - 2 * t)
+	return math.clamp((time - Wave.pause) / s.step, 0, s.depth)
 end
-function Wave.at(s: Sweep, x: number, y: number, depth: number): number
-	local target = (depth + Wave.lag * Wave.radius(x, y, s.height))
-		/ (s.depth + Wave.lag * s.radius)
-	local t = 0.5 - math.sin(math.asin(1 - 2 * math.clamp(target, 0, 1)) / 3)
-	return Wave.pause + t * (s.duration - Wave.pause)
+function Wave.endAt(s: Sweep): number
+	return Wave.pause + s.duration
 end
-function Wave.cleared(s: Sweep, x: number, y: number, time: number): number
-	if time < Wave.pause or s.depth == 0 then
-		return 0
-	end
-	local boundary = Wave.front(s, time) - Wave.lag * Wave.radius(x, y, s.height)
-	return if boundary < 0 then 0 else math.clamp(math.floor(boundary) + 1, 0, s.depth)
-end
-function Wave.camera(s: Sweep, time: number): number
-	return math.max(0, Wave.front(s, time) - Wave.lag * s.radius - Wave.gap)
+function Wave.total(depth: number, approach: number): number
+	return Wave.pause + Wave.duration(depth) + Wave.hold + approach
 end
 return Wave

@@ -135,7 +135,7 @@ export type ArtConfig = {
 		palettes: { [string]: { string } },
 		textures: { [string]: { palette: string, cells: string } },
 	},
-	worlds: { [string]: { lining: string, light: string, slots: { ArtTile } } },
+	worlds: { [string]: { lining: string, liningFog: string, light: string, slots: { ArtTile } } },
 	variantOdds: { [string]: number },
 }
 export type WorldLook = {

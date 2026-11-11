@@ -12,6 +12,7 @@ local Validate = require(Shared.Mine.Validate)
 local Worlds = require(Shared.Mine.Worlds)
 local Wire = require(Shared.Mine.MineWire)
 local Ride = require(Shared.Mine.Ride)
+local Wave = require(Shared.Mine.UltWave)
 local Storm = require(Shared.Play.Storm)
 local Circle = require(Shared.Play.Circle)
 local Power = require(Shared.Play.Power)
@@ -244,7 +245,15 @@ local function onIntent(player: Player, packet: any)
 	if ability or delta > 0 then
 		player:SetAttribute(
 			"MineReturnAfter",
-			workspace:GetServerTimeNow() + Ride.timeline(delta, ability).total
+			workspace:GetServerTimeNow()
+				+ (
+					if ability
+						then Wave.total(
+							delta,
+							if delta > 0 then Ride.timeline(delta, false).approach else 0
+						)
+						else Ride.timeline(delta, false).total
+				)
 		)
 	end
 	local oldWorld, world = Worlds.of(oldFront).index, Worlds.of(st.front).index

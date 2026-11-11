@@ -25,9 +25,6 @@ export type Fx = {
 	reserved: number,
 	admitted: number,
 	emitted: number,
-	shift: number,
-	velocity: Vector3,
-	acceleration: Vector3,
 	peak: number,
 	peakEmit: number,
 	dropped: number,
@@ -75,7 +72,7 @@ function Dissolve.new(parent: Instance): Fx
 		e.LightInfluence, e.LightEmission, e.Brightness = 0, 0, 1
 		e.Squash = NumberSequence.new(0)
 		e.Drag, e.Acceleration = Rules.drag, Vector3.new(0, Rules.rise * Rules.relax, 0)
-		e.WindAffectsDrag, e.LockedToPart, e.VelocityInheritance = false, false, 1
+		e.WindAffectsDrag, e.LockedToPart, e.VelocityInheritance = false, false, 0
 		e.Parent = a
 		emitters[i] = e
 		slots[i] = { emitter = e, attachment = a }
@@ -92,9 +89,6 @@ function Dissolve.new(parent: Instance): Fx
 		reserved = 0,
 		admitted = 0,
 		emitted = 0,
-		shift = 0,
-		velocity = Vector3.zero,
-		acceleration = Vector3.zero,
 		peak = 0,
 		peakEmit = 0,
 		dropped = 0,
@@ -108,9 +102,9 @@ function Dissolve.clear(fx: Fx)
 	table.clear(fx.bursts)
 	table.clear(fx.living)
 	fx.head, fx.tail, fx.reserved = 1, 0, 0
-	fx.admitted, fx.emitted, fx.velocity = 0, 0, Vector3.zero
+	fx.admitted, fx.emitted = 0, 0
 end
-function Dissolve.begin(fx: Fx, now: number, shift: number, axis: Vector3, dt: number)
+function Dissolve.begin(fx: Fx, now: number)
 	while fx.living[fx.head] and now >= fx.living[fx.head] do
 		fx.living[fx.head] = nil
 		fx.head += 1
@@ -119,20 +113,7 @@ function Dissolve.begin(fx: Fx, now: number, shift: number, axis: Vector3, dt: n
 		table.clear(fx.living)
 		fx.head, fx.tail = 1, 0
 	end
-	dt = math.max(dt, 0.001)
-	local velocity = axis * ((shift - fx.shift) / dt)
-	-- Transform physical particle motion into the mine's moving coordinate frame.
-	local acceleration = Vector3.new(0, Rules.rise * Rules.relax, 0)
-		+ (velocity - fx.velocity) / dt
-		+ velocity * Rules.relax
-	fx.root.AssemblyLinearVelocity = velocity
-	if acceleration ~= fx.acceleration then
-		for _, e in fx.emitters do
-			e.Acceleration = acceleration
-		end
-		fx.acceleration = acceleration
-	end
-	fx.shift, fx.velocity, fx.admitted, fx.emitted = shift, velocity, 0, 0
+	fx.admitted, fx.emitted = 0, 0
 	GrainPool.begin(fx.allocator, now)
 end
 
@@ -205,10 +186,10 @@ function Dissolve.block(
 	end)
 	fx.reserved += #events
 	fx.admitted += #events
-	table.insert(fx.bursts, { events = events, reduced = reduced, shift = fx.shift })
+	table.insert(fx.bursts, { events = events, reduced = reduced })
 	return #events
 end
-function Dissolve.step(fx: Fx, now: number, axis: Vector3)
+function Dissolve.step(fx: Fx, now: number)
 	local alive = fx.tail - fx.head + 1
 	for i = #fx.bursts, 1, -1 do
 		local burst = fx.bursts[i]
@@ -224,7 +205,7 @@ function Dissolve.step(fx: Fx, now: number, axis: Vector3)
 					if changed then
 						slot.emitter.Color = ColorSequence.new(Color3.fromHex(event.color))
 					end
-					slot.attachment.WorldPosition = event.point + axis * (fx.shift - burst.shift)
+					slot.attachment.WorldPosition = event.point
 					slot.emitter.Speed = if burst.reduced
 						then NumberRange.new(0)
 						else NumberRange.new(Rules.speedMin, Rules.speedMax)

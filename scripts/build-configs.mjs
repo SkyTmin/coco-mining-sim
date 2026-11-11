@@ -102,6 +102,9 @@ function validateArt(art, decisions) {
         !isId(world.lining) || !/^#[0-9a-f]{6}$/i.test(world.light) || blocks.length !== oreSlots.length) {
       errors.push("Invalid block world " + (i + 1));
     }
+    if (!/^#[0-9a-f]{6}$/i.test(art.worlds[world.id]?.liningFog)) {
+      errors.push("Missing mean lining color for " + world.id);
+    }
     expected.add(world.lining);
     for (const [j, block] of blocks.entries()) {
       if (!isId(block.texture) || block.id !== input?.ores?.[j]?.[0] || block.name !== canonical.ores[j] ||
@@ -314,6 +317,7 @@ function withBalance(input) {
     variantOdds: blockManifest.variants,
     worlds: Object.fromEntries(blockManifest.worlds.map((world) => [world.id, {
       lining: world.lining,
+      liningFog: input.liningFog?.[world.lining],
       light: world.light,
       slots: [world.rock, ...world.ores].map(({ texture, alts, dust, variants, glow }) => ({
         texture, alts, dust, variants, glow: glow === true,

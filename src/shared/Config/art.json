@@ -1855,6 +1855,7 @@
   "worlds": {
     "meadow": {
       "lining": "pebble_lining",
+      "liningFog": "#5a5664",
       "light": "#ffe2a8",
       "slots": [
         {
@@ -1950,6 +1951,7 @@
     },
     "copper_caves": {
       "lining": "red_stone_lining",
+      "liningFog": "#663f31",
       "light": "#ffb36b",
       "slots": [
         {
@@ -2045,6 +2047,7 @@
     },
     "quartz_veins": {
       "lining": "white_stone_lining",
+      "liningFog": "#6f6a78",
       "light": "#ffd2ef",
       "slots": [
         {
@@ -2140,6 +2143,7 @@
     },
     "gold_river": {
       "lining": "sandstone_lining",
+      "liningFog": "#776346",
       "light": "#ffe58a",
       "slots": [
         {
@@ -2235,6 +2239,7 @@
     },
     "ice_grottoes": {
       "lining": "frozen_stone_lining",
+      "liningFog": "#6b879b",
       "light": "#bfeaff",
       "slots": [
         {
@@ -2330,6 +2335,7 @@
     },
     "mushroom_forest": {
       "lining": "mycelium_lining",
+      "liningFog": "#46345f",
       "light": "#7ff5d8",
       "slots": [
         {
@@ -2425,6 +2431,7 @@
     },
     "diamond_mantle": {
       "lining": "mantle_lining",
+      "liningFog": "#363c52",
       "light": "#d8f4ff",
       "slots": [
         {
@@ -2520,6 +2527,7 @@
     },
     "emerald_roots": {
       "lining": "moss_stone_lining",
+      "liningFog": "#344d34",
       "light": "#9dffb8",
       "slots": [
         {
@@ -2615,6 +2623,7 @@
     },
     "underground_sea": {
       "lining": "sea_stone_lining",
+      "liningFog": "#223e55",
       "light": "#7fe8ff",
       "slots": [
         {
@@ -2710,6 +2719,7 @@
     },
     "magma_springs": {
       "lining": "basalt_lining",
+      "liningFog": "#5b3232",
       "light": "#ff7a3a",
       "slots": [
         {

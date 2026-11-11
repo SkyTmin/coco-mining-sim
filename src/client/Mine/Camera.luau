@@ -25,7 +25,7 @@ export type View = {
 	firstItem: Model?,
 	firstRoot: Part?,
 	bob: number,
-	waveBlend: number,
+	held: { frame: CFrame, focus: CFrame, humanoid: Humanoid?, speed: number? }?,
 	hidden: Model?,
 	hideNew: RBXScriptConnection?,
 	body: { [string]: Applied },
@@ -93,7 +93,6 @@ function Camera.new(player: Player, frame: CFrame): View
 		swingAt = -math.huge,
 		swingDuration = 0.35,
 		bob = 0,
-		waveBlend = 0,
 		body = {},
 	}
 	RunService.PreSimulation:Connect(function()
@@ -280,7 +279,7 @@ function Camera.step(
 	shake: Vector3,
 	dt: number,
 	reduced: boolean,
-	wave: boolean?
+	travel: number?
 )
 	local camera = workspace.CurrentCamera
 	local character = view.player.Character
@@ -361,15 +360,36 @@ function Camera.step(
 			0
 		)
 		else headCenter - facing * 11 + Vector3.new(0, 2.5, 0)
-	view.waveBlend = if wave then 1 else math.max(0, view.waveBlend - dt / 0.14)
-	if view.waveBlend > 0 then
-		local localEye = view.frame:PointToObjectSpace(eye)
-		local tracking = view.frame:PointToWorldSpace(Vector3.new(localEye.X, localEye.Y, 0))
-		eye = eye:Lerp(tracking, view.waveBlend)
+	if view.held then
+		local offset = view.frame.LookVector * (travel or 0)
+		camera.CFrame, camera.Focus = view.held.frame + offset, view.held.focus + offset
+	else
+		camera.CFrame = CFrame.lookAt(eye + shake, eye + shake + direction)
+		camera.Focus = CFrame.new(eye + direction * 24)
 	end
-	camera.CFrame = CFrame.lookAt(eye + shake, eye + shake + direction)
-	camera.Focus = CFrame.new(eye + direction * 24)
 	drawHeld(view, camera, humanoid, first, dt, reduced)
 end
 
+function Camera.hold(view: View, enabled: boolean)
+	local held = view.held
+	local camera = workspace.CurrentCamera
+	if enabled and not held and camera then
+		local character = view.player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		view.held = {
+			frame = camera.CFrame,
+			focus = camera.Focus,
+			humanoid = humanoid,
+			speed = humanoid and humanoid.WalkSpeed,
+		}
+		if humanoid then
+			humanoid.WalkSpeed = 0
+		end
+	elseif not enabled and held then
+		if held.humanoid and held.speed and held.humanoid.WalkSpeed == 0 then
+			held.humanoid.WalkSpeed = held.speed
+		end
+		view.held = nil
+	end
+end
 return Camera

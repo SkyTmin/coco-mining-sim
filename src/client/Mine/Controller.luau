@@ -72,8 +72,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local dirty, active = true, false
 	local nextHit, lastRequest = -math.huge, -math.huge
 	local abilityQueued, returning = false, false
-	local travelled = 0
-	local landingAt, landingGap = -math.huge, 0
 	local lastCharge = -1
 	local fpsAt, frames = os.clock(), 0
 	local autoFrames, autoTime = 0, 0
@@ -97,7 +95,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	end
 	local function currentOffset(now: number): number
 		if not ride then
-			return landingGap * math.clamp(1 - (now - landingAt) / 0.14, 0, 1)
+			return 0
 		end
 		local phase, progress = Ride.phase(ride.timeline, now - ride.at)
 		return if phase == "approach" then Ride.offset(ride.timeline, progress, ride.ability) else 0
@@ -182,7 +180,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		return if r and canHit() then Aim.at(r, window, screen) else nil
 	end
 	local function toggle()
-		if not view or not active or menuOpen() then
+		if not view or not active or menuOpen() or ride then
 			return
 		end
 		view.mode = if view.mode == "first" then "third" else "first"
@@ -259,7 +257,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			Hud.snap(hud, now)
 			Sfx.play("ui_tap", 0.2)
 		end
-		Camera.swing(v, now, if ability then Config.fx.ult.windup * 2 else settings.interval)
+		Camera.swing(v, now, if ability then Wave.pause * 2 else settings.interval)
 		pending, dirty, nextHit = expected, true, now + settings.interval
 		intent:FireServer(Wire.encodeIntent(kind, seq, cell.x, cell.y, cell.dRel))
 	end
@@ -272,11 +270,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		then
 			return
 		end
-		if renderer and ride and ride.sweep then
-			WaveRenderer.clear(ride.sweep, renderer)
+		if view then
+			Camera.hold(view, false)
 		end
 		window, pending, ride, dirty = win, nil, nil, true
-		landingAt = -math.huge
 		abilityQueued = false
 		if breaking then
 			Dissolve.clear(breaking.dissolve)
@@ -388,16 +385,16 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			Hud.ultimate(hud, res.coins, now)
 		end
 		if res.ability or res.delta > 0 then
-			local timeline = Ride.timeline(res.delta, res.ability, oldOffset, barrier)
+			local timeline = Ride.timeline(res.delta, false, oldOffset, barrier)
+			if res.ability then
+				timeline.total = Wave.total(res.delta, timeline.approach)
+			end
 			ride = {
 				at = now,
 				timeline = timeline,
-				old = old,
 				oldFront = oldFront,
-				cleared = 0,
 				offset = timeline.distance,
 				delta = res.delta,
-				fractureLayers = if barrier then barrier.layers else res.delta,
 				barrier = barrier,
 				ability = res.ability,
 				blocks = res.blocks,
@@ -407,10 +404,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				frames = 0,
 			}
 			if res.ability and old then
-				ride.sweep = WaveRenderer.new(old, window, timeline.total, now)
+				ride.sweep = WaveRenderer.new(old, window)
 			end
 			if res.ability and view then
-				Camera.swing(view, now, timeline.windup * 2)
+				Camera.hold(view, true)
+				Camera.swing(view, now, Wave.pause * 2)
 			end
 		end
 		for i, event in res.events do
@@ -421,8 +419,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				local finish = targetPosition(b, oldOffset)
 				if res.ability then
 					local t = 0.06 + 0.87 * (i - 1) / math.max(1, #res.events - 1)
-					local waveAge = Wave.pause + t * (ride.timeline.total - Wave.pause)
-					local depth = (Wave.camera(ride.sweep.rule, waveAge)) * S
+					local waveAge = Wave.pause + t * ride.sweep.rule.duration
+					local depth = Wave.front(ride.sweep.rule, waveAge) * S
 					local endDepth = if barrier
 						then math.min(depth + 3.4, barrier.distance - 0.15)
 						else depth + 3.4
@@ -531,7 +529,14 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			return
 		end
 		ride.hitAt, dirty = now, true
-		TravelDebris.plateImpact(debris, ride.barrier.distance, window.width * S, window.height * S)
+		if not ride.ability then
+			TravelDebris.plateImpact(
+				debris,
+				ride.barrier.distance,
+				window.width * S,
+				window.height * S
+			)
+		end
 		Intensity.flash(intensity, 0.16, ride.color, now)
 		Sfx.play("plate_hit", 0.67)
 	end
@@ -544,14 +549,12 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if phase == "wave" then
 			Hud.show(hud, ride.delta, ride.blocks, ride.coins, true, now)
 			Sfx.play("ult_whump", 0.68)
-		elseif phase == "empty" then
+		elseif phase == "settle" then
 			strikePlate(now)
-			if not ride.barrier then
-				TravelDebris.settle(debris, math.min(ride.timeline.distance, 24))
-			end
 		elseif phase == "approach" then
 			strikePlate(now)
 			if ride.ability then
+				Dissolve.clear(breaking.dissolve)
 				Sfx.play(
 					"ult_rumble_near",
 					0.64,
@@ -590,10 +593,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				haptic(if ride.ability then "ultimate" else "ride", now)
 			end
 			if ride.ability then
-				travelled += ride.delta * S
-				landingAt = now
-				landingGap = (ride.delta - Wave.camera(ride.sweep.rule, ride.timeline.total)) * S
-				WaveRenderer.clear(ride.sweep, renderer)
+				if view then
+					Camera.hold(view, false)
+				end
+				Dissolve.clear(breaking.dissolve)
 				Hud.finishUltimate(hud, now)
 				Hud.rollPlate(hud, ride.oldFront, window.front, now)
 				if ride.coins > 0 then
@@ -669,7 +672,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			request("Ability", nil)
 		end,
 		pan = function(delta)
-			if view then
+			if view and not (ride and ride.ability) then
 				Camera.pan(view, delta)
 			end
 		end,
@@ -741,11 +744,17 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			ride.frames += 1
 			local age = now - ride.at
 			if ride.ability then
+				local waveEnd = Wave.endAt(ride.sweep.rule)
+				local goAt = waveEnd + Wave.hold
 				phase = if age >= ride.timeline.total
 					then "landed"
 					elseif age < Wave.pause then "windup"
-					else "wave"
-				progress = math.clamp(age / ride.timeline.total, 0, 1)
+					elseif age < waveEnd then "wave"
+					elseif age < goAt then "settle"
+					else "approach"
+				progress = if phase == "approach"
+					then math.clamp((age - goAt) / ride.timeline.approach, 0, 1)
+					else math.clamp((age - Wave.pause) / ride.sweep.rule.duration, 0, 1)
 			else
 				phase, progress = Ride.phase(ride.timeline, age)
 			end
@@ -762,7 +771,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 		if depthSign then
 			local display = if ride and ride.ability
-				then ride.oldFront + math.floor(Wave.camera(ride.sweep.rule, now - ride.at))
+				then ride.oldFront + math.floor(Wave.front(ride.sweep.rule, now - ride.at))
 				elseif not ride then window.front
 				elseif phase == "approach" then ride.oldFront + math.floor(
 					ride.delta * progress
@@ -778,23 +787,28 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 		end
 		local shown, visible, offset = window, #window.layers, currentOffset(now)
-		local landingMoving = now - landingAt <= 0.14 + dt
 		local survivor = false
-		local sweeping = ride and ride.ability
-		local shift = travelled - (if not ride then offset else 0)
+		local ulting = ride and ride.ability
+		local sweeping = ulting and phase ~= "approach"
+		local cameraTravel: number? = nil
+		Dissolve.begin(breaking.dissolve, now)
 		if sweeping then
-			shift += Wave.camera(ride.sweep.rule, now - ride.at) * S
-		end
-		Dissolve.begin(breaking.dissolve, now, shift, -r.frame.LookVector, dt)
-		if sweeping then
-			shown, offset =
+			local changed
+			shown, changed =
 				WaveRenderer.step(ride.sweep, r, breaking.dissolve, now - ride.at, now, reduced)
-			visible = #shown.layers
+			visible, offset = #shown.layers, 0
+			dirty = dirty or changed
 		elseif phase == "approach" then
-			offset = Ride.offset(ride.timeline, progress, false)
-			local speed = math.max(0, (ride.offset - offset) / math.max(dt, 0.001))
-			TravelDebris.step(debris, now, offset, window.width * S, speed, override)
-			ride.offset = offset
+			local remaining = Ride.offset(ride.timeline, progress, false)
+			if ulting then
+				offset = ride.timeline.distance
+				cameraTravel = offset - remaining
+			else
+				offset = remaining
+				local speed = math.max(0, (ride.offset - offset) / math.max(dt, 0.001))
+				TravelDebris.step(debris, now, offset, window.width * S, speed, override)
+				ride.offset = offset
+			end
 		end
 		Tunnel.width(tunnel, window.width)
 		Tunnel.atmosphere(
@@ -804,10 +818,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				then ride.oldFront
 				elseif shown then shown.front
 				else window.front,
-			override
+			override,
+			ulting == true
 		)
 
-		local layout = sweeping or dirty or shown ~= lastShown or visible ~= lastVisible
+		local layout = dirty or shown ~= lastShown or visible ~= lastVisible
 		if layout then
 			if shown then
 				local renderWindow = shown
@@ -834,16 +849,19 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			phase,
 			ride ~= nil and ride.hitAt ~= nil
 		)
+		if ulting and ride.plateBroken and phase == "settle" then
+			plate = nil
+		end
 		if layout or phase == "approach" or (ride and ride.barrier) then
 			local flash = if ride and ride.hitAt
 				then math.max(0, 1 - (now - ride.hitAt) / 0.2) * (if reduced then 0.55 else 1)
 				else 0
 			Wall.plate(r, sceneWindow, plate, translate, pick().strength, flash)
 		end
-		if layout or phase == "approach" or landingMoving then
+		if layout or phase == "approach" then
 			table.clear(parts)
 			table.clear(moves)
-			if shown then
+			if shown and (layout or not ulting) then
 				Wall.moves(r, shown, offset, parts, moves)
 			end
 			local farLayers = if survivor then 0 else visible
@@ -855,7 +873,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				survivor,
 				plate and plate.distance,
 				parts,
-				moves
+				moves,
+				cameraTravel or 0
 			)
 			workspace:BulkMoveTo(parts, moves, Enum.BulkMoveMode.FireCFrameChanged)
 			dirty = false
@@ -876,7 +895,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			Intensity.sample(intensity, r.frame, now, reduced, active),
 			dt,
 			reduced,
-			sweeping == true
+			cameraTravel
 		)
 		local dig = Vector3.new(0, 3.5, Config.plots.platformDepth * S * 0.72)
 		hud.focus.Visible = (p - dig).Magnitude > 6 or Camera.away(v)
@@ -901,7 +920,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			cap
 		)
 		local camera = workspace.CurrentCamera
-		Dissolve.step(breaking.dissolve, now, -r.frame.LookVector)
+		Dissolve.step(breaking.dissolve, now)
 		if studio then
 			player:SetAttribute(
 				"Stage03gGrains",
@@ -948,7 +967,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 		hud.fractureProgress = if sweeping then progress else 1
 		if hud.ultimate and ride and ride.ability then
-			hud.ultimate.progress = progress
+			hud.ultimate.progress = if sweeping then progress else 1
 		end
 		Hud.step(hud, now, active, v.mode == "first" and canHit(), hint, reduced)
 		if not jumpButton then
