@@ -138,7 +138,17 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		menu.chestResult,
 		function(key)
 			familyToast(key, nil)
-		end
+		end,
+		{
+			bolt = function(a: Vector3, b: Vector3, branch: boolean)
+				if lightning then
+					Lightning.bolt(lightning, a, b, os.clock(), 1, branch)
+				end
+			end,
+			flash = function(color: Color3, strength: number)
+				Intensity.flash(intensity, strength, color, os.clock())
+			end,
+		}
 	)
 	Remotes.event("PickaxeResult").OnClientEvent:Connect(FamilyFx.chestOpen)
 	local previousCards: { [string]: number }? = nil
@@ -494,6 +504,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			event.front = oldFront
 			event.result = fxResult
 			if event.kind >= 3 then
+				-- perks break their blocks before the effect plays: hand the effect world positions, not parts
+				if event.kind ~= 5 then
+					event.positions, event.origin = {}, target
+					for _, point in event.points do
+						table.insert(event.positions, targetPosition(point, oldOffset))
+					end
+				end
 				if event.kind == 3 then
 					FamilyFx.perk(event)
 				elseif event.kind == 4 then
