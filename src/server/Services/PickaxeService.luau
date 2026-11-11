@@ -5,6 +5,8 @@ local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local Remotes = require(Shared.Remotes)
 local PickModel = require(Shared.Models.PickModel)
+local Family = require(Shared.Play.Family)
+local Collection = require(Shared.Play.Collection)
 local ProfileService = require(script.Parent.ProfileService)
 local PickaxeService = {}
 local cameraAt: { [Player]: number } = {}
@@ -15,30 +17,77 @@ local function attach(character: Model, id: string)
 	if not hand or not hand:IsA("BasePart") or not character.Parent then
 		return
 	end
+	local owner = Players:GetPlayerFromCharacter(character)
+	if not owner or owner:GetAttribute("MinePickaxe") ~= id then
+		return
+	end
 	local old = character:FindFirstChild("MinePickaxe")
 	if old then
 		old:Destroy()
 	end
 	local grip = CFrame.new(0, -hand.Size.Y * 0.17, -0.10)
 		* CFrame.Angles(math.rad(-77), 0, math.rad(-13))
-	local model, handle = PickModel.new(PickModel.icon(id), hand.CFrame * grip, 0.056, false)
+	local model, handle = PickModel.forPick(id, hand.CFrame * grip, false)
+	local player = Players:GetPlayerFromCharacter(character)
+	PickModel.appearance(
+		model,
+		id,
+		player ~= nil and player:GetAttribute("MinePickaxeGolden") == true
+	)
 	local motor = Instance.new("Motor6D")
 	motor.Name, motor.Part0, motor.Part1, motor.C0 = "PickaxeGrip", hand, handle, grip
 	motor.Parent = handle
 	model.Parent = character
 end
 
-function PickaxeService.equip(player: Player, id: string)
-	if player:GetAttribute("CreativeAllowed") ~= true or not Config.pickaxes[id] then
+function PickaxeService.refresh(player: Player)
+	local current = ProfileService.Read(player, function(p)
+		return { id = p.pickaxe, golden = p.pickaxeGolden }
+	end)
+	if not current then
 		return
 	end
-	ProfileService.Mutate(player, function(profile)
-		profile.pickaxe = id
-	end)
-	player:SetAttribute("MinePickaxe", id)
-	if player.Character then
-		task.defer(attach, player.Character, id)
+	if
+		player:GetAttribute("MinePickaxe") == current.id
+		and player:GetAttribute("MinePickaxeGolden") == current.golden
+	then
+		return
 	end
+	player:SetAttribute("MinePickaxe", current.id)
+	player:SetAttribute("MinePickaxeGolden", current.golden)
+	if player.Character then
+		task.defer(attach, player.Character, current.id)
+	end
+end
+
+function PickaxeService.equip(
+	player: Player,
+	id: string,
+	golden: boolean?,
+	creative: boolean?
+): boolean
+	if not Config.pickaxes[id] then
+		return false
+	end
+	local allowed = creative == true and player:GetAttribute("CreativeAllowed") == true
+	local equipped = false
+	ProfileService.Mutate(player, function(profile)
+		if allowed then
+			if not Family.owns(profile, id, golden) then
+				Collection.grant(profile, id, golden)
+			end
+			if not Family.canEquip(profile, id, golden) then
+				warn("[Creative] Family equip override: " .. id)
+			end
+			profile.pickaxe, profile.pickaxeGolden, equipped = id, golden == true, true
+		else
+			equipped = Collection.equip(profile, id, golden)
+		end
+	end)
+	if equipped then
+		PickaxeService.refresh(player)
+	end
+	return equipped
 end
 
 function PickaxeService.Start()
@@ -51,6 +100,9 @@ function PickaxeService.Start()
 				id = "starter"
 			end
 			player:SetAttribute("MinePickaxe", id)
+			player:SetAttribute("MinePickaxeGolden", ProfileService.Read(player, function(p)
+				return p.pickaxeGolden
+			end) == true)
 			attach(character, id)
 		end
 		player.CharacterAdded:Connect(loadedCharacter)

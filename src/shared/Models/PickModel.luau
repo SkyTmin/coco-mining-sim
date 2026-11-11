@@ -1,6 +1,8 @@
 --!strict
 
 local data = require(script.Parent.wooden_pickaxe)
+local Config = require(script.Parent.Parent.Config)
+local ArtModel = require(script.Parent.ArtModel)
 local PickModel = {}
 local xSize, ySize, zSize = table.unpack(data.size)
 local middle = Vector3.new(ySize / 2, zSize / 2, xSize / 2)
@@ -97,6 +99,73 @@ end
 
 function PickModel.view(): (Model, Part)
 	return build(HELD_SIZE * 0.6, true, CFrame.identity)
+end
+
+function PickModel.forPick(
+	id: string,
+	frame: CFrame,
+	anchored: boolean,
+	first: boolean?
+): (Model, BasePart)
+	local art = Config.art.pickaxes[id] or Config.art.pickaxes.starter
+	local model = ArtModel.clone(art.model)
+	if model then
+		local root = model.PrimaryPart or model:FindFirstChild("Grip", true)
+		if root and root:IsA("BasePart") then
+			model.PrimaryPart = root
+			local size = model:GetExtentsSize()
+			model:ScaleTo(
+				model:GetScale()
+					* HELD_SIZE
+					* (if first then 0.6 else 1)
+					/ math.max(size.X, size.Y, size.Z)
+			)
+			for _, part in model:GetDescendants() do
+				if part:IsA("BasePart") then
+					part.Anchored, part.CanCollide, part.CanTouch, part.CanQuery, part.Massless =
+						false, false, false, false, true
+					if part ~= root then
+						local weld = Instance.new("WeldConstraint")
+						weld.Part0, weld.Part1, weld.Parent = root, part, part
+					end
+				end
+			end
+			root.Anchored = anchored
+			model:PivotTo(frame)
+			return model, root
+		end
+		model:Destroy()
+	end
+	if first then
+		return PickModel.view()
+	end
+	return PickModel.new(PickModel.icon(id), frame, 0.056, anchored)
+end
+
+function PickModel.appearance(model: Model, id: string, golden: boolean)
+	local art = Config.art.pickaxes[id] or Config.art.pickaxes.starter
+	if art.placeholder and id ~= "starter" then
+		local color = Color3.fromHex(art.color or "FFD23F")
+		for _, part in model:GetDescendants() do
+			if part:IsA("BasePart") and part.Name ~= "Grip" then
+				local original = part:GetAttribute("PickBaseColor")
+				if typeof(original) ~= "Color3" then
+					original = part.Color
+					part:SetAttribute("PickBaseColor", original)
+				end
+				part.Color = original:Lerp(color, 0.55)
+			end
+		end
+	end
+	local outline = model:FindFirstChild("GoldenOutline")
+	if golden and not outline then
+		local highlight = Instance.new("Highlight")
+		highlight.Name, highlight.Adornee, highlight.FillTransparency = "GoldenOutline", model, 1
+		highlight.OutlineColor, highlight.OutlineTransparency = Color3.fromHex("FFD23F"), 0
+		highlight.DepthMode, highlight.Parent = Enum.HighlightDepthMode.Occluded, model
+	elseif not golden and outline then
+		outline:Destroy()
+	end
 end
 
 return PickModel
