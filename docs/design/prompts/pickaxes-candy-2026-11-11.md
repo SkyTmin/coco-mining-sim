@@ -1,96 +1,87 @@
-# Prompts: candy pickaxes, v5 (workflow from the OpenAI image prompting guide, 11.11)
+# Prompts: pickaxes in the chosen style (owner 11.11: panel 6 of docs/design/mockups/pickaxe-style-board-2026-11-11.png)
 
-Step 1 per family: generate the legendary hero (concept brief, design left to the model: complexity high).
-Step 2: edit that image into the rarity row. Step 3: fix single items with narrow edits. If the tool allows: gpt-image-2.6-sunburst, quality high, size 1536x1024 for the row.
+Attach the board to every hero prompt; attach the approved hero to every row prompt.
 
 ## Storm
 
-### 1. Legendary hero
+### Row (attach the board)
 
 ```
-Create a premium game item illustration: the legendary Storm Pickaxe for a candy-themed Roblox mining game.
-Concept: the strongest lightning pickaxe a player can get. It should feel like an ultimate weapon that kids instantly want. Made of candy: glossy blue raspberry hard candy, gold foil, a puffy cotton-candy thundercloud, electric yellow lightning.
-It must read instantly as a pickaxe: a straight handle going into the centre of a head with two sharp pointed arms. The theme lives in the shape itself: the two arms of the head are forked lightning bolts bursting out of a small thundercloud at the joint.
-Style: glossy candy toy, chunky readable shapes, thick dark navy outline (#1E2140), bright saturated colours, soft highlights. Must stay readable as a 64 px inventory icon.
-Composition: one item, centred, 3/4 view, handle from bottom-left to top-right, generous padding, plain cream background (#FFF8EC).
-Constraints: original design, no text, no logos, no characters, no watermark.
-```
-
-### 2. Rarity row (attach the approved hero)
-
-```
-Using the attached image as the reference, create a row of 4 versions of this same pickaxe, from weakest to strongest, evenly spaced on a plain cream background (#FFF8EC), same angle.
-4th: exactly the attached legendary pickaxe, unchanged.
-1st to 3rd: weaker versions of the same family. Each weaker one is smaller and simpler, but keeps the family shape idea, the candy look, the dark navy outline and the rendering. Silhouettes must be clearly different from each other.
-common: blue gummy zigzag-lightning arms on a wooden popsicle stick, no cloud, no glow; rare: silver sugar-coated zigzag arms, candy-cane handle, a blue gem candy in the joint; epic: translucent glowing blue crystal, forked tips, a small cotton-candy cloud at the joint.
-Keep the pickaxe shape on all four: straight handle into the centre of a head with two sharp pointed arms. No text, no logos, no characters.
+Using the attached image as the reference, create a row of 4 icons of the same pickaxe family at 4 rarities, weakest to strongest, the Storm Pickaxe from panel 6 being the 4th. Equal spacing, same 3/4 angle, same size, dark grey background (#2B2B30).
+Keep exactly the same art style: thick black outline, flat bright colours with one shadow tone, flat comic effects. Every pickaxe keeps the family lightning-bolt arms and blue colour, gets simpler and plainer with lower rarity, and the silhouettes clearly differ.
+1. Common: plain grey iron head with only slightly zigzag arms, brown wooden handle, no crystal, no effects.
+2. Rare: polished steel head with zigzag lightning arms and blue edges, a small blue gem in a simple steel joint, dark blue handle, no effects.
+3. Epic: glowing light-blue crystal lightning arms, a steel-and-gold joint with a bigger blue crystal, 2 small comic lightning bolts.
+4. Legendary: exactly the pickaxe from panel 6, unchanged.
+All four must read instantly as mining pickaxes: a straight handle into the centre of a head with two sharp pointed arms. No text, no logos, no characters.
 ```
 
 ## Dynamite
 
-### 1. Legendary hero
+### 1. Legendary (attach the board)
 
 ```
-Create a premium game item illustration: the legendary Dynamite Pickaxe for a candy-themed Roblox mining game.
-Concept: the strongest explosions pickaxe a player can get. It should feel like an ultimate weapon that kids instantly want. Made of candy: shiny red and orange hard candy, gold foil, a round cherry bomb candy with a sparkling fuse.
-It must read instantly as a pickaxe: a straight handle going into the centre of a head with two sharp pointed arms. The theme lives in the shape itself: the joint is a round bomb candy and the two arms are flame-shaped blades erupting out of it.
-Style: glossy candy toy, chunky readable shapes, thick dark navy outline (#1E2140), bright saturated colours, soft highlights. Must stay readable as a 64 px inventory icon.
-Composition: one item, centred, 3/4 view, handle from bottom-left to top-right, generous padding, plain cream background (#FFF8EC).
+Using panel 6 of the attached board as the style reference only, create one game item icon: the legendary Dynamite Pickaxe. Both arms of the head are shaped like jagged flame tongues in red, orange and yellow. The gold hexagonal joint holds a round red crystal shaped like a bomb with a short fuse and a spark on top. Dark red handle. Around it: flat comic explosion bursts and sparks.
+It must read instantly as a mining pickaxe: a straight handle going into the centre of a head with two sharp pointed arms. Same 3/4 angle as panel 6, handle from bottom-left to top-right, centred, generous padding.
+Style: bold cel-shaded cartoon game item, exactly like panel 6 of the attached board: thick black outline, flat bright colours with one darker shadow tone, a gold hexagonal joint framing a faceted crystal, gold rings on the handle, a crystal tip on the end of the handle, flat comic-style effects floating around. Dark grey background (#2B2B30).
 Constraints: original design, no text, no logos, no characters, no watermark.
 ```
 
-### 2. Rarity row (attach the approved hero)
+### 2. Row (attach the approved legendary)
 
 ```
-Using the attached image as the reference, create a row of 4 versions of this same pickaxe, from weakest to strongest, evenly spaced on a plain cream background (#FFF8EC), same angle.
-4th: exactly the attached legendary pickaxe, unchanged.
-1st to 3rd: weaker versions of the same family. Each weaker one is smaller and simpler, but keeps the family shape idea, the candy look, the dark navy outline and the rendering. Silhouettes must be clearly different from each other.
-common: one red candy dynamite stick as the head, ends sharpened to points, pretzel handle, short fuse; rare: a bundle of three striped candy sticks with sharpened ends, silver band, a small bomb candy on the joint; epic: translucent red candy-glass flame-shaped arms, glowing bomb at the joint.
-Keep the pickaxe shape on all four: straight handle into the centre of a head with two sharp pointed arms. No text, no logos, no characters.
+Using the attached image as the reference, create a row of 4 icons of the same pickaxe family at 4 rarities, weakest to strongest, the attached legendary Dynamite Pickaxe being the 4th. Equal spacing, same 3/4 angle, same size, dark grey background (#2B2B30).
+Keep exactly the same art style: thick black outline, flat bright colours with one shadow tone, flat comic effects. Every pickaxe keeps the family flame-shaped arms and red-orange colour, gets simpler and plainer with lower rarity, and the silhouettes clearly differ.
+1. Common: plain grey iron head with slightly flame-cut arms, brown wooden handle, a short fuse on the joint, no effects.
+2. Rare: polished steel head with orange flame-shaped edges, a small red gem in a simple steel joint, dark red handle.
+3. Epic: glowing orange crystal flame arms, a steel-and-gold joint with a red bomb crystal, 2 small comic sparks.
+4. Legendary: exactly the attached pickaxe, unchanged.
+All four must read instantly as mining pickaxes: a straight handle into the centre of a head with two sharp pointed arms. No text, no logos, no characters.
 ```
 
 ## Rift
 
-### 1. Legendary hero
+### 1. Legendary (attach the board)
 
 ```
-Create a premium game item illustration: the legendary Rift Pickaxe for a candy-themed Roblox mining game.
-Concept: the strongest cracks that split the ground pickaxe a player can get. It should feel like an ultimate weapon that kids instantly want. Made of candy: caramel toffee, translucent amber candy crystal, gold rims, molten glowing caramel.
-It must read instantly as a pickaxe: a straight handle going into the centre of a head with two sharp pointed arms. The theme lives in the shape itself: the head is split in the middle into two halves held apart by a glowing molten-caramel crack at the joint, sharp shard-like arms.
-Style: glossy candy toy, chunky readable shapes, thick dark navy outline (#1E2140), bright saturated colours, soft highlights. Must stay readable as a 64 px inventory icon.
-Composition: one item, centred, 3/4 view, handle from bottom-left to top-right, generous padding, plain cream background (#FFF8EC).
+Using panel 6 of the attached board as the style reference only, create one game item icon: the legendary Rift Pickaxe. Both arms of the head are jagged broken stone shards in amber and dark brown, a glowing amber crack runs through the whole head. The gold hexagonal joint holds an amber crystal split in two by the crack. Dark brown handle. Around it: flat comic crack lines and a few small floating rock chips.
+It must read instantly as a mining pickaxe: a straight handle going into the centre of a head with two sharp pointed arms. Same 3/4 angle as panel 6, handle from bottom-left to top-right, centred, generous padding.
+Style: bold cel-shaded cartoon game item, exactly like panel 6 of the attached board: thick black outline, flat bright colours with one darker shadow tone, a gold hexagonal joint framing a faceted crystal, gold rings on the handle, a crystal tip on the end of the handle, flat comic-style effects floating around. Dark grey background (#2B2B30).
 Constraints: original design, no text, no logos, no characters, no watermark.
 ```
 
-### 2. Rarity row (attach the approved hero)
+### 2. Row (attach the approved legendary)
 
 ```
-Using the attached image as the reference, create a row of 4 versions of this same pickaxe, from weakest to strongest, evenly spaced on a plain cream background (#FFF8EC), same angle.
-4th: exactly the attached legendary pickaxe, unchanged.
-1st to 3rd: weaker versions of the same family. Each weaker one is smaller and simpler, but keeps the family shape idea, the candy look, the dark navy outline and the rendering. Silhouettes must be clearly different from each other.
-common: one chunk of caramel toffee with a thin glowing crack, chocolate-bar handle; rare: two toffee halves in a silver clamp with a glowing orange gap; epic: translucent amber crystal shards floating slightly apart with glowing seams.
-Keep the pickaxe shape on all four: straight handle into the centre of a head with two sharp pointed arms. No text, no logos, no characters.
+Using the attached image as the reference, create a row of 4 icons of the same pickaxe family at 4 rarities, weakest to strongest, the attached legendary Rift Pickaxe being the 4th. Equal spacing, same 3/4 angle, same size, dark grey background (#2B2B30).
+Keep exactly the same art style: thick black outline, flat bright colours with one shadow tone, flat comic effects. Every pickaxe keeps the family jagged shard arms with a crack and amber colour, gets simpler and plainer with lower rarity, and the silhouettes clearly differ.
+1. Common: plain grey stone-and-iron head with rough broken edges and one thin crack, brown wooden handle, no effects.
+2. Rare: polished steel head with amber shard edges and a thin glowing crack, a small amber gem in a simple steel joint.
+3. Epic: glowing amber crystal shard arms with a bright crack, a steel-and-gold joint with a split amber crystal, 2 small comic crack lines.
+4. Legendary: exactly the attached pickaxe, unchanged.
+All four must read instantly as mining pickaxes: a straight handle into the centre of a head with two sharp pointed arms. No text, no logos, no characters.
 ```
 
 ## Frost
 
-### 1. Legendary hero
+### 1. Legendary (attach the board)
 
 ```
-Create a premium game item illustration: the legendary Frost Pickaxe for a candy-themed Roblox mining game.
-Concept: the strongest ice that freezes and shatters pickaxe a player can get. It should feel like an ultimate weapon that kids instantly want. Made of candy: translucent ice candy, white frosting, mint, gold rims, sparkling frost.
-It must read instantly as a pickaxe: a straight handle going into the centre of a head with two sharp pointed arms. The theme lives in the shape itself: the joint is a big snowflake and the two arms are long jagged icicle crystals.
-Style: glossy candy toy, chunky readable shapes, thick dark navy outline (#1E2140), bright saturated colours, soft highlights. Must stay readable as a 64 px inventory icon.
-Composition: one item, centred, 3/4 view, handle from bottom-left to top-right, generous padding, plain cream background (#FFF8EC).
+Using panel 6 of the attached board as the style reference only, create one game item icon: the legendary Frost Pickaxe. Both arms of the head are long sharp icicle crystals in white and pale cyan. The gold hexagonal joint is shaped like a snowflake and holds a pale ice crystal. White-and-pale-blue handle. Around it: flat comic snowflakes and frost sparkles.
+It must read instantly as a mining pickaxe: a straight handle going into the centre of a head with two sharp pointed arms. Same 3/4 angle as panel 6, handle from bottom-left to top-right, centred, generous padding.
+Style: bold cel-shaded cartoon game item, exactly like panel 6 of the attached board: thick black outline, flat bright colours with one darker shadow tone, a gold hexagonal joint framing a faceted crystal, gold rings on the handle, a crystal tip on the end of the handle, flat comic-style effects floating around. Dark grey background (#2B2B30).
 Constraints: original design, no text, no logos, no characters, no watermark.
 ```
 
-### 2. Rarity row (attach the approved hero)
+### 2. Row (attach the approved legendary)
 
 ```
-Using the attached image as the reference, create a row of 4 versions of this same pickaxe, from weakest to strongest, evenly spaced on a plain cream background (#FFF8EC), same angle.
-4th: exactly the attached legendary pickaxe, unchanged.
-1st to 3rd: weaker versions of the same family. Each weaker one is smaller and simpler, but keeps the family shape idea, the candy look, the dark navy outline and the rendering. Silhouettes must be clearly different from each other.
-common: two pale-blue popsicle-ice icicle arms on a wooden stick, no glow; rare: thicker icicles, silver frost band, a mint candy in the joint; epic: translucent ice-crystal branches with side spikes, a small snowflake at the joint, soft cold glow.
-Keep the pickaxe shape on all four: straight handle into the centre of a head with two sharp pointed arms. No text, no logos, no characters.
+Using the attached image as the reference, create a row of 4 icons of the same pickaxe family at 4 rarities, weakest to strongest, the attached legendary Frost Pickaxe being the 4th. Equal spacing, same 3/4 angle, same size, dark grey background (#2B2B30).
+Keep exactly the same art style: thick black outline, flat bright colours with one shadow tone, flat comic effects. Every pickaxe keeps the family icicle arms and pale cyan colour, gets simpler and plainer with lower rarity, and the silhouettes clearly differ.
+1. Common: plain grey iron head with short icicle-shaped tips, brown wooden handle, no effects.
+2. Rare: polished steel head with pale-cyan icicle arms, a small ice gem in a simple steel joint, pale blue handle.
+3. Epic: glowing translucent ice-crystal arms, a steel-and-gold joint with a bigger ice crystal, 2 small comic snowflakes.
+4. Legendary: exactly the attached pickaxe, unchanged.
+All four must read instantly as mining pickaxes: a straight handle into the centre of a head with two sharp pointed arms. No text, no logos, no characters.
 ```
+
