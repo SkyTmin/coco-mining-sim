@@ -1,96 +1,72 @@
-# Prompts: candy pickaxes, v2 (owner 11.11: v1 did not read as pickaxes)
+# Prompts: candy pickaxes, v3 (owner 11.11: v2 too far from pickaxes, too many extras)
 
-One image per prompt; save as `docs/design/mockups/pickaxes-candy-ref-<family>.png`.
+Structure per the OpenAI image prompting guide pattern: use case → scene → subject → details → constraints; one accent per item.
 
 ## Storm
 
 ```
-Game item concept sheet for an original Roblox mining game, "candy toy" style.
-FOUR PICKAXES in one row on a flat plain cream background (#FFF8EC), equal spacing, all at the same angle: handle diagonal from bottom-left to top-right, head at the top right, whole item visible.
-EVERY ITEM MUST CLEARLY READ AS A MINING PICKAXE, never a hammer, axe, flag, wand, sceptre or trident. Pickaxe anatomy, mandatory for all four:
-- one long straight handle;
-- at the top end, a curved crescent HEAD that crosses the handle at a right angle, like a letter T with drooping arms;
-- the head has TWO long pointed tips, one on each side, both curving down toward the handle; the head is about 70% as wide as the handle is long;
-- a thick joint block where head and handle meet.
-The family theme is the MATERIAL and the DECORATION of this pickaxe (what the head, tips, joint and handle are made of and what is attached to them); it never replaces the pickaxe shape.
-Chunky, plump, glossy toy-like shapes like hard candy, gummy, caramel and glaze, soft highlights. Thick dark navy outline (#1E2140) around every item. Bold saturated colours, readable at small icon size. Buildable from simple blocky parts (boxes, cylinders, spheres, wedges): no thin wires, no tiny details, no realistic textures.
-The four pickaxes are the same family at four rarities and must look clearly different from each other: rarity changes the tips, the joint, the handle and adds parts, while keeping the pickaxe silhouette.
-Rarity ladder: 1 Common: cheap snack materials, simple, no glow. 2 Rare: sugar-coated silver bands and one round blue gem candy, two-tone stripes. 3 Epic: translucent glowing crystal candy, extra pieces sticking out, soft glow. 4 Legendary: gold foil and gold rims, the most dramatic, sparkles and floating particles around it.
-No text, no letters, no numbers, no logos, no characters, nothing copied from existing games.
+Use case: inventory icons for a kids' mining game on Roblox.
+Scene: plain flat cream background (#FFF8EC), no shadows on the floor, nothing else in the picture.
+Subject: exactly 4 pickaxes in one row, evenly spaced, same size, same angle (handle from bottom-left to top-right).
+Shape (identical for all 4): a classic symmetrical pickaxe. A straight handle goes into the CENTRE of a curved head. The head has two arms of equal length, each ending in a SHARP pointed tip that curves slightly down. Head width about 2/3 of the handle length. A small square joint where they meet.
+Style: glossy candy toy, chunky and simple, thick dark navy outline (#1E2140), soft highlights, bright colours. Clean silhouette that reads at 64 px.
+Rules: each pickaxe has only a handle, a head and a joint plus the ONE accent listed for it. Nothing on the handle unless listed. No floating objects, except up to 5 small sparkles around the 4th one. Tips are always sharp, never blunt, wrapped or tied. No text, no logos, no characters.
 
-Family: STORM, colour ice blue #8BE1FF, lightning. Theme: blue raspberry gummy, zigzag lightning, marshmallow and cotton-candy clouds.
-1 Common: wooden popsicle-stick handle; crescent head of blue raspberry gummy whose two tips are cut in a zigzag lightning shape; a small white marshmallow cloud on the joint.
-2 Rare: blue-and-white striped candy-cane handle; the crescent head has silver sugar-coated edges and a zigzag notch along its top; a round blue gem candy in the joint.
-3 Epic: crescent head of translucent blue-violet rock-candy crystal; small glowing lightning bolts stick out of its top edge; a fluffy cotton-candy cloud wraps the joint.
-4 Legendary: gold-foil crescent head with gold rims; each tip ends in a glowing forked lightning spike; a gold cloud on the joint with a glowing ball-lightning gumball orbiting it; golden sprinkles in the air.
+Family colour: ice blue. Left to right, rarity grows:
+1. Plain wooden handle. Head of blue raspberry gummy. Accent: a small zigzag notch on top of the head.
+2. Blue-and-white striped candy-cane handle. Head coated in silver sugar crystals. Accent: a round blue gem candy on the joint.
+3. Handle and head of translucent blue rock-candy crystal with a soft glow. Accent: one small yellow lightning bolt on top of the joint.
+4. Gold head and gold joint, blue crystal handle. Accent: a glowing blue lightning line along both arms of the head, a blue orb on the joint.
 ```
 
 ## Dynamite
 
 ```
-Game item concept sheet for an original Roblox mining game, "candy toy" style.
-FOUR PICKAXES in one row on a flat plain cream background (#FFF8EC), equal spacing, all at the same angle: handle diagonal from bottom-left to top-right, head at the top right, whole item visible.
-EVERY ITEM MUST CLEARLY READ AS A MINING PICKAXE, never a hammer, axe, flag, wand, sceptre or trident. Pickaxe anatomy, mandatory for all four:
-- one long straight handle;
-- at the top end, a curved crescent HEAD that crosses the handle at a right angle, like a letter T with drooping arms;
-- the head has TWO long pointed tips, one on each side, both curving down toward the handle; the head is about 70% as wide as the handle is long;
-- a thick joint block where head and handle meet.
-The family theme is the MATERIAL and the DECORATION of this pickaxe (what the head, tips, joint and handle are made of and what is attached to them); it never replaces the pickaxe shape.
-Chunky, plump, glossy toy-like shapes like hard candy, gummy, caramel and glaze, soft highlights. Thick dark navy outline (#1E2140) around every item. Bold saturated colours, readable at small icon size. Buildable from simple blocky parts (boxes, cylinders, spheres, wedges): no thin wires, no tiny details, no realistic textures.
-The four pickaxes are the same family at four rarities and must look clearly different from each other: rarity changes the tips, the joint, the handle and adds parts, while keeping the pickaxe silhouette.
-Rarity ladder: 1 Common: cheap snack materials, simple, no glow. 2 Rare: sugar-coated silver bands and one round blue gem candy, two-tone stripes. 3 Epic: translucent glowing crystal candy, extra pieces sticking out, soft glow. 4 Legendary: gold foil and gold rims, the most dramatic, sparkles and floating particles around it.
-No text, no letters, no numbers, no logos, no characters, nothing copied from existing games.
+Use case: inventory icons for a kids' mining game on Roblox.
+Scene: plain flat cream background (#FFF8EC), no shadows on the floor, nothing else in the picture.
+Subject: exactly 4 pickaxes in one row, evenly spaced, same size, same angle (handle from bottom-left to top-right).
+Shape (identical for all 4): a classic symmetrical pickaxe. A straight handle goes into the CENTRE of a curved head. The head has two arms of equal length, each ending in a SHARP pointed tip that curves slightly down. Head width about 2/3 of the handle length. A small square joint where they meet.
+Style: glossy candy toy, chunky and simple, thick dark navy outline (#1E2140), soft highlights, bright colours. Clean silhouette that reads at 64 px.
+Rules: each pickaxe has only a handle, a head and a joint plus the ONE accent listed for it. Nothing on the handle unless listed. No floating objects, except up to 5 small sparkles around the 4th one. Tips are always sharp, never blunt, wrapped or tied. No text, no logos, no characters.
 
-Family: DYNAMITE, colour red-orange #FF5A2A, explosions. Theme: red candy sticks in twisted wrappers, round bomb gumballs, fuses with sparks.
-1 Common: pretzel-stick handle; the crescent head is a red candy stick in a wrapper, the two twisted wrapper ends bent down form the tips; a short fuse sticks up from the joint.
-2 Rare: the crescent head is a bundle of three red-and-white striped candy sticks bent into the curve, held by a silver band at the joint; a round black-cherry bomb gumball sits on top of the joint with a fuse.
-3 Epic: crescent head of translucent glowing red candy glass, a sharp crystal spike for each tip; a round cherry bomb gumball on the joint with a sparkling fuse; glowing red core.
-4 Legendary: crescent head wrapped in gold foil, gold-foil twists at both tips; a sparkler fuse on the joint with a small firework burst; gold ribbons trailing from the handle.
+Family colour: red-orange. Left to right, rarity grows:
+1. Pretzel-stick handle. Head of shiny red hard candy. Accent: a short fuse with a tiny spark on top of the joint.
+2. Red-and-white striped handle. Head with red-and-white stripes, silver joint. Accent: a round dark-cherry bomb candy on the joint with a short fuse.
+3. Head of translucent red candy glass with a glowing orange core, red handle. Accent: the bomb candy on the joint, its fuse sparking.
+4. Gold head and gold handle bands, red handle. Accent: a red bomb candy with a gold star on the joint, a bright sparkler on its fuse.
 ```
 
 ## Rift
 
 ```
-Game item concept sheet for an original Roblox mining game, "candy toy" style.
-FOUR PICKAXES in one row on a flat plain cream background (#FFF8EC), equal spacing, all at the same angle: handle diagonal from bottom-left to top-right, head at the top right, whole item visible.
-EVERY ITEM MUST CLEARLY READ AS A MINING PICKAXE, never a hammer, axe, flag, wand, sceptre or trident. Pickaxe anatomy, mandatory for all four:
-- one long straight handle;
-- at the top end, a curved crescent HEAD that crosses the handle at a right angle, like a letter T with drooping arms;
-- the head has TWO long pointed tips, one on each side, both curving down toward the handle; the head is about 70% as wide as the handle is long;
-- a thick joint block where head and handle meet.
-The family theme is the MATERIAL and the DECORATION of this pickaxe (what the head, tips, joint and handle are made of and what is attached to them); it never replaces the pickaxe shape.
-Chunky, plump, glossy toy-like shapes like hard candy, gummy, caramel and glaze, soft highlights. Thick dark navy outline (#1E2140) around every item. Bold saturated colours, readable at small icon size. Buildable from simple blocky parts (boxes, cylinders, spheres, wedges): no thin wires, no tiny details, no realistic textures.
-The four pickaxes are the same family at four rarities and must look clearly different from each other: rarity changes the tips, the joint, the handle and adds parts, while keeping the pickaxe silhouette.
-Rarity ladder: 1 Common: cheap snack materials, simple, no glow. 2 Rare: sugar-coated silver bands and one round blue gem candy, two-tone stripes. 3 Epic: translucent glowing crystal candy, extra pieces sticking out, soft glow. 4 Legendary: gold foil and gold rims, the most dramatic, sparkles and floating particles around it.
-No text, no letters, no numbers, no logos, no characters, nothing copied from existing games.
+Use case: inventory icons for a kids' mining game on Roblox.
+Scene: plain flat cream background (#FFF8EC), no shadows on the floor, nothing else in the picture.
+Subject: exactly 4 pickaxes in one row, evenly spaced, same size, same angle (handle from bottom-left to top-right).
+Shape (identical for all 4): a classic symmetrical pickaxe. A straight handle goes into the CENTRE of a curved head. The head has two arms of equal length, each ending in a SHARP pointed tip that curves slightly down. Head width about 2/3 of the handle length. A small square joint where they meet.
+Style: glossy candy toy, chunky and simple, thick dark navy outline (#1E2140), soft highlights, bright colours. Clean silhouette that reads at 64 px.
+Rules: each pickaxe has only a handle, a head and a joint plus the ONE accent listed for it. Nothing on the handle unless listed. No floating objects, except up to 5 small sparkles around the 4th one. Tips are always sharp, never blunt, wrapped or tied. No text, no logos, no characters.
 
-Family: RIFT, colour amber #FFC97A, cracks going deep. Theme: caramel toffee, broken slabs, glowing cracks, split pieces.
-1 Common: chocolate-bar handle; crescent head of chunky caramel toffee with slightly broken, uneven edges and one thin glowing amber crack line across it.
-2 Rare: the crescent head is two toffee halves held together by a silver clamp at the joint, an orange glowing gap between them; caramel drizzle drops hang from the tips.
-3 Epic: crescent head of translucent amber crystal made of shards that float slightly apart, glowing crack energy between them; jagged shard tips.
-4 Legendary: gold-rimmed crescent head split down the middle into two halves floating apart, a swirling molten gold-caramel glow between them at the joint; small drifting fragments around.
+Family colour: amber caramel. Left to right, rarity grows:
+1. Chocolate-bar handle. Head of chunky caramel toffee. Accent: one thin glowing amber crack across the head.
+2. Chocolate handle with a silver band. Toffee head. Accent: a silver clamp on the joint and a glowing orange seam along the middle of the head.
+3. Head of translucent amber crystal with glowing cracks inside it, dark chocolate handle. Accent: none besides the glow.
+4. Gold head with a glowing molten amber split running along both arms, gold joint, chocolate handle. Accent: 3 tiny amber chips floating just above the split.
 ```
 
 ## Frost
 
 ```
-Game item concept sheet for an original Roblox mining game, "candy toy" style.
-FOUR PICKAXES in one row on a flat plain cream background (#FFF8EC), equal spacing, all at the same angle: handle diagonal from bottom-left to top-right, head at the top right, whole item visible.
-EVERY ITEM MUST CLEARLY READ AS A MINING PICKAXE, never a hammer, axe, flag, wand, sceptre or trident. Pickaxe anatomy, mandatory for all four:
-- one long straight handle;
-- at the top end, a curved crescent HEAD that crosses the handle at a right angle, like a letter T with drooping arms;
-- the head has TWO long pointed tips, one on each side, both curving down toward the handle; the head is about 70% as wide as the handle is long;
-- a thick joint block where head and handle meet.
-The family theme is the MATERIAL and the DECORATION of this pickaxe (what the head, tips, joint and handle are made of and what is attached to them); it never replaces the pickaxe shape.
-Chunky, plump, glossy toy-like shapes like hard candy, gummy, caramel and glaze, soft highlights. Thick dark navy outline (#1E2140) around every item. Bold saturated colours, readable at small icon size. Buildable from simple blocky parts (boxes, cylinders, spheres, wedges): no thin wires, no tiny details, no realistic textures.
-The four pickaxes are the same family at four rarities and must look clearly different from each other: rarity changes the tips, the joint, the handle and adds parts, while keeping the pickaxe silhouette.
-Rarity ladder: 1 Common: cheap snack materials, simple, no glow. 2 Rare: sugar-coated silver bands and one round blue gem candy, two-tone stripes. 3 Epic: translucent glowing crystal candy, extra pieces sticking out, soft glow. 4 Legendary: gold foil and gold rims, the most dramatic, sparkles and floating particles around it.
-No text, no letters, no numbers, no logos, no characters, nothing copied from existing games.
+Use case: inventory icons for a kids' mining game on Roblox.
+Scene: plain flat cream background (#FFF8EC), no shadows on the floor, nothing else in the picture.
+Subject: exactly 4 pickaxes in one row, evenly spaced, same size, same angle (handle from bottom-left to top-right).
+Shape (identical for all 4): a classic symmetrical pickaxe. A straight handle goes into the CENTRE of a curved head. The head has two arms of equal length, each ending in a SHARP pointed tip that curves slightly down. Head width about 2/3 of the handle length. A small square joint where they meet.
+Style: glossy candy toy, chunky and simple, thick dark navy outline (#1E2140), soft highlights, bright colours. Clean silhouette that reads at 64 px.
+Rules: each pickaxe has only a handle, a head and a joint plus the ONE accent listed for it. Nothing on the handle unless listed. No floating objects, except up to 5 small sparkles around the 4th one. Tips are always sharp, never blunt, wrapped or tied. No text, no logos, no characters.
 
-Family: FROST, colour white-blue #C9F3FF, freezing then shattering. Theme: popsicles, icicles, snowflakes, frosting drips.
-1 Common: wooden popsicle-stick handle; crescent head made of two rounded pale-blue ice lollies forming the two arms; no glow.
-2 Rare: crescent head of pale ice with a row of short icicles hanging under it, a silver frost band at the joint; a round mint candy in the joint.
-3 Epic: crescent head of translucent ice crystal with white frosting drips along its top; a snowflake lollipop on the joint; soft cold glow.
-4 Legendary: crescent head of ice crystal with gold rims and tall snowflake crystals rising from its top like a crown; swirling sparkling snow around it.
+Family colour: white and pale blue. Left to right, rarity grows:
+1. Plain wooden handle. Head of pale-blue popsicle ice with a frosty matte look. Accent: none.
+2. Light blue handle with a silver band. Head of clear ice. Accent: a round mint candy on the joint and three short icicles hanging under the head.
+3. Head of translucent ice crystal with a soft cold glow, white handle. Accent: white frosting along the top edge of the head, a small snowflake on the joint.
+4. Ice head with gold rims, gold joint, white handle. Accent: a gold snowflake on the joint.
 ```
 
