@@ -19,14 +19,13 @@ button.ult{background:var(--ult);color:#fff} button.on{background:var(--accent)}
 label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:800;color:var(--muted)}
 </style></head><body><main>
 <h1>Ульта по слоям, 3D</h1>
-<p>Эффект из демо: грань рассыпается от центра к краям. Здесь он повторяется на каждом слое шахты, каждый следующий слой стартует с задержкой, и волна убегает от тебя далеко вглубь. Камера стоит на месте, пока волна не дойдёт до конца, потом обычная езда подвозит тебя к новой стене. Выбери задержку и шаг слоёв, нажми «Ульта».</p>
+<p>Эффект из демо: грань рассыпается от центра к краям. Здесь он повторяется на каждом слое шахты, каждый следующий слой стартует с задержкой, и волна убегает от тебя далеко вглубь. Камера стоит на месте, пока волна не дойдёт до конца, потом обычная езда подвозит тебя к новой стене. Чем сильнее ульта, тем чуть дольше волна (но не больше 3,5 с). Если слоёв больше 170, волна уходит за туман.</p>
 <div class="stage"><canvas id="c"></canvas></div>
 <div class="bar">
 <button id="go" class="ult">Ульта</button><button id="slow">Замедлить ×4</button>
-<label>Задержка между слоями<select id="delay"><option value="0.03">0,03 с</option><option value="0.06" selected>0,06 с</option><option value="0.1">0,10 с</option><option value="0.15">0,15 с</option><option value="0.25">0,25 с</option></select></label>
-<label>Слои ломаются<select id="group"><option value="1" selected>каждый слой</option><option value="2">по 2 слоя</option><option value="3">по 3 слоя</option></select></label>
-<label>Грань от центра к краям<select id="spread"><option value="0.25">0,25 с</option><option value="0.45" selected>0,45 с (как в демо)</option><option value="0.7">0,7 с</option></select></label>
-<label>Слоёв за ульту<select id="depth"><option value="40">40</option><option value="80" selected>80</option><option value="150">150</option></select></label>
+<label>Сила ульты (слоёв)<select id="depth"><option value="40">40</option><option value="150" selected>150</option><option value="500">500</option><option value="5000">5 000</option><option value="50000">50 000</option></select></label>
+<label>Круглость волны<select id="dome"><option value="4">4 слоя</option><option value="7" selected>7 слоёв</option><option value="12">12 слоёв</option></select></label>
+<span id="dur" style="font-weight:900;padding-bottom:10px"></span>
 <label>Мир<select id="world"></select></label>
 </div>
 <p style="font-size:13px">Пылинки как утверждено: 0,625 stud, 16 на блок в ульте, лёгкий разлёт и подъём, гаснут за 0,5–0,87 с.</p>
@@ -115,18 +114,22 @@ function spawn(q) {
 let clock = 0, last = performance.now(), camZ = 0, ult = null;
 document.getElementById('go').onclick = () => {
   build();
-  const delay = +document.getElementById('delay').value, grp = +document.getElementById('group').value,
-    spread = +document.getElementById('spread').value, D = +document.getElementById('depth').value;
-  const rmax = Math.hypot(3, 1);
+  const D = +document.getElementById('depth').value, L = +document.getElementById('dome').value;
+  const T = waveTime(D), step = T / (D + L), rmax = Math.hypot(3, 1);
   for (const c of cells) {
     if (c.d >= D) continue;
+    // round wave: the front is a dome — the centre leads, the edges lag by (r/rmax)² · L layers
     const r = Math.hypot(c.x - 3, c.y - 1) / rmax;
-    c.at = clock + 0.25 + Math.floor(c.d / grp) * delay * grp + spread * (r * 0.7 + 0.3 * hash(c.x, c.y + c.d * 7));
+    c.at = clock + 0.25 + (c.d + L * r * r) * step + 0.04 * hash(c.x, c.y + c.d * 7);
   }
-  ult = { start: clock, D };
+  ult = { start: clock, D: Math.min(D, LAYERS), T };
 };
 document.getElementById('slow').onclick = e => { slow = slow === 1 ? 4 : 1; e.target.classList.toggle('on', slow === 4); };
 worldSel.onchange = build;
+// the wave lasts a little longer for a stronger ult, but never long: 1,2 + 0,5·log10(layers), 1,5…3,5 s
+function waveTime(D) { return Math.min(3.5, Math.max(1.5, 1.2 + 0.5 * Math.log10(D))); }
+function showDur() { const D = +document.getElementById('depth').value; document.getElementById('dur').textContent = 'волна ' + waveTime(D).toFixed(2).replace('.', ',') + ' с'; }
+document.getElementById('depth').onchange = showDur; showDur();
 function resize() { const w = cv.clientWidth, h = cv.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); pm.uniforms.scale.value = h * renderer.getPixelRatio() / (2 * Math.tan(35 * Math.PI / 180)); }
 addEventListener('resize', resize);
 function frame(t) {
@@ -137,7 +140,7 @@ function frame(t) {
   }
   if (ult) { // the camera stays put while the wave runs away into the shaft; when it has finished, the usual ride
     // brings the player to the new front (here: the camera glides there in 0.8 s)
-    if (!ult.end && cells.every(c => c.d >= ult.D || c.done)) ult.end = clock + 0.35;
+    if (!ult.end && clock >= ult.start + 0.25 + ult.T) ult.end = clock + 0.35;
     if (ult.end && clock >= ult.end) {
       const k = Math.min(1, (clock - ult.end) / 0.8), e = k * k * (3 - 2 * k);
       camZ = e * Math.max(0, Z0 + ult.D - 2.5);
