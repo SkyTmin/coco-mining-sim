@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Семья и навыки</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.k{font-family:'Nunito',sans-serif;font-weight:900;color:#1E2140}
+.tab{font-family:'Nunito',sans-serif;font-weight:900;color:#1E2140;display:flex;align-items:center;gap:10px;height:96px;padding:0 12px;border:4px solid #1E2140;border-radius:22px;box-shadow:0 5px 0 #1E2140;cursor:pointer;text-align:left;position:relative;transition:transform 100ms}
+.tab:active{transform:translateY(5px);box-shadow:none}
+.btn{font-family:'Nunito',sans-serif;font-weight:900;border:4px solid #1E2140;border-radius:16px;box-shadow:0 5px 0 #1E2140;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.btn:active{transform:translateY(5px);box-shadow:none}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+.bump{animation:pop 260ms ease-out}
+a{color:#1E2140}a:hover{color:#1E2140}
+</style>
+</helmet>
+<div class="k" style="width:1280px;height:720px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#3A3352,#0E0C16)">
+  <div style="position:absolute;left:44px;top:64px;width:1192px;height:620px;box-sizing:border-box;background:#FFF8EC;border:5px solid #1E2140;border-radius:32px;box-shadow:0 10px 0 #1E2140;padding:44px 24px 24px;display:flex;gap:20px">
+    <div style="position:absolute;left:34px;top:-34px;transform:rotate(-2deg);background:#A855F7;color:#fff;border:5px solid #1E2140;border-radius:20px;box-shadow:0 6px 0 #1E2140;padding:8px 28px;font-size:34px;text-shadow:0 3px 0 #1E2140">Семья — навсегда</div>
+    <a href="Menu.dc.html" aria-label="Закрыть" style="position:absolute;right:-26px;top:-26px;width:72px;height:72px;border-radius:50%;background:#FF4D5E;border:5px solid #1E2140;box-shadow:0 6px 0 #1E2140;display:flex;align-items:center;justify-content:center;text-decoration:none">
+      <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="#fff" stroke-width="4.5" stroke-linecap="round"></path></svg>
+    </a>
+
+    <div style="width:250px;flex:none;display:flex;flex-direction:column;gap:12px">
+      <sc-for list="{{fams}}" as="f" hint-placeholder-count="4">
+        <button class="tab" onClick="{{f.pick}}" style="background:{{f.bg}};{{f.ring}}">
+          <span style="width:62px;height:62px;flex:none;border-radius:16px;border:4px solid #1E2140;background:{{f.c}};display:flex;align-items:center;justify-content:center">
+            <svg width="40" height="40" viewBox="0 0 48 48" aria-hidden="true"><path d="{{f.icon}}" fill="{{f.mark}}" stroke="#1E2140" stroke-width="3.5" stroke-linejoin="round"></path></svg>
+          </span>
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-size:24px">{{f.name}}</span>
+            <span style="display:block;font-size:15px;font-weight:800;opacity:.75">{{f.hint}}</span>
+          </span>
+          <sc-if value="{{f.current}}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute;right:-8px;top:-12px;background:#22C55E;color:#fff;border:3px solid #1E2140;border-radius:999px;padding:1px 10px;font-size:14px">в этом круге</span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:center;gap:16px;background:#F2E6D2;border:4px solid #1E2140;border-radius:22px;padding:12px 16px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:26px">{{fam.name}}: {{fam.hint}}</div>
+          <div style="position:relative;height:30px;margin-top:8px;background:#E4D6BD;border:3px solid #1E2140;border-radius:999px;overflow:visible">
+            <div style="width:{{fam.pct}};height:100%;border-radius:999px;background:{{fam.c}}"></div>
+            <sc-for list="{{marks}}" as="m" hint-placeholder-count="4">
+              <span style="position:absolute;top:-8px;left:{{m.left}};width:40px;margin-left:-20px;height:40px;border-radius:50%;border:3px solid #1E2140;background:{{m.bg}};display:flex;align-items:center;justify-content:center;font-size:15px">{{m.n}}</span>
+            </sc-for>
+          </div>
+          <div style="font-size:15px;font-weight:800;margin-top:8px;opacity:.75">Уровень семьи {{fam.level}} из 40 · на 3, 8 и 15 открываются навыки · на 40 «Мастер»</div>
+        </div>
+        <sc-if value="{{fam.canSwitch}}" hint-placeholder-val="{{ false }}">
+          <button class="btn" onClick="{{switchFam}}" style="height:64px;padding:0 18px;background:#3D8BFF;color:#fff;font-size:20px;text-shadow:0 2px 0 #1E2140">Выбрать на круг</button>
+        </sc-if>
+      </div>
+
+      <div style="flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px">
+        <sc-for list="{{skills}}" as="s" hint-placeholder-count="4">
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;background:#FFF8EC;border:4px solid #1E2140;border-radius:24px;box-shadow:0 6px 0 #1E2140;padding:14px 12px;opacity:{{s.op}}">
+            <span class="{{s.bump}}" style="width:96px;height:96px;border-radius:50%;border:4px solid #1E2140;background:{{fam.c}};display:flex;align-items:center;justify-content:center">
+              <svg width="60" height="60" viewBox="0 0 48 48" aria-hidden="true"><path d="{{s.icon}}" fill="{{fam.mark}}" stroke="#1E2140" stroke-width="3.5" stroke-linejoin="round"></path></svg>
+            </span>
+            <div style="font-size:21px;text-align:center;line-height:1.05;min-height:44px;display:flex;align-items:center">{{s.name}}</div>
+            <div style="display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;width:100%">
+              <sc-for list="{{s.pips}}" as="p" hint-placeholder-count="10">
+                <span style="height:12px;border-radius:4px;border:2px solid #1E2140;background:{{p.bg}}"></span>
+              </sc-for>
+            </div>
+            <div style="font-size:15px;font-weight:800;opacity:.75">ур. {{s.level}} из 10</div>
+            <div style="width:100%;box-sizing:border-box;background:#F2E6D2;border:3px solid #1E2140;border-radius:14px;padding:6px 4px;text-align:center;font-size:17px">{{s.now}} <span style="color:#16A34A">{{s.next}}</span></div>
+            <sc-if value="{{s.open}}" hint-placeholder-val="{{ true }}">
+              <button class="btn" onClick="{{s.buy}}" style="width:100%;height:56px;margin-top:auto;background:{{s.btnBg}};color:#1E2140;font-size:20px">
+                <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19" fill="#FFC83D" stroke="#1E2140" stroke-width="5"></circle></svg>{{s.price}}
+              </button>
+            </sc-if>
+            <sc-if value="{{s.closed}}" hint-placeholder-val="{{ false }}">
+              <div style="width:100%;height:56px;margin-top:auto;border:4px dashed #1E2140;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:16px;text-align:center;box-sizing:border-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="3" fill="#B8BDC9" stroke="#1E2140" stroke-width="2.5"></rect><path d="M8 10V7a4 4 0 018 0v3" fill="none" stroke="#1E2140" stroke-width="2.5"></path></svg>{{s.lock}}
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { fam: 'storm', current: 'storm', lv: { storm: [3, 1, 0, 0], dynamite: [0, 0, 0, 0], rift: [0, 0, 0, 0], frost: [0, 0, 0, 0] }, bumped: -1 };
+  }
+  renderVals() {
+    const BOLT = 'M21 6h12l-6 13h8L17 42l4-16h-7z', BOMB = 'M24 14a14 14 0 1 0 .01 0zM28 13l6-7', CRACK = 'M20 4h8l-4 12 8 6-8 8 6 14-12-14 6-6-8-6z', SNOW = 'M22 4h4v14l10-8 3 3-10 9h14v4H29l10 9-3 3-10-8v14h-4V30l-10 8-3-3 10-9H5v-4h14L9 13l3-3 10 8z';
+    const F = {
+      storm: { name: 'Гроза', hint: 'больше монет', c: '#45CFFF', mark: '#FFE14D', icon: BOLT, sk: [['Цепь молний', '+7 % блоков'], ['Золотая искра', '+15 % монет'], ['Нюх на руду', '+10 % удачи'], ['Грозовой фронт', '+1 с шторма']] },
+      dynamite: { name: 'Динамит', hint: 'ключи и сундуки', c: '#FF6A2A', mark: '#2A1A22', icon: BOMB, sk: [['Заряд', '+7 % блоков'], ['Счастливый осколок', '+8 % ключей'], ['Кладоискатель', '+20 % монет сундуков'], ['Тайник', '+10 % сундук от ульты']] },
+      rift: { name: 'Разлом', hint: 'быстрее вглубь', c: '#FFA51C', mark: '#FFF1C2', icon: CRACK, sk: [['Трещина', '+7 % длины'], ['Глубокий удар', '+3 % глубины ульты'], ['Эхо', '+1,5 % двойной ульты'], ['Сквозняк', '+5 % пробить слой']] },
+      frost: { name: 'Мороз', hint: 'ломает твёрдое', c: '#BDEFFF', mark: '#FFFFFF', icon: SNOW, sk: [['Иней', '+7 % блоков'], ['Ледяная хватка', '+10 % силы'], ['Ледолом', '+30 % по Плите'], ['Хрупкий лёд', '+5 % сломать сразу']] },
+    };
+    const ICONS = {
+      storm: [BOLT, 'M24 6a18 18 0 1 0 .01 0z', 'M24 6l14 12-14 24-14-24z', 'M10 26a8 8 0 0 1 6-12 10 10 0 0 1 18 2 7 7 0 0 1 4 12z'],
+      dynamite: [BOMB, 'M8 24a8 8 0 1 1 16 0 8 8 0 0 1-16 0zM24 21h18v6h-4v6h-5v-6h-9z', 'M6 20h36v20H6zM6 20c0-10 36-10 36 0z', 'M24 4l5 12 13 1-10 8 3 13-11-7-11 7 3-13-10-8 13-1z'],
+      rift: [CRACK, 'M18 4h12v22h8L24 44 10 26h8z', 'M8 8l16 12L40 8v8L24 28 8 16zM8 22l16 12 16-12v8L24 42 8 30z', 'M4 14h40v6H4zM4 28h40v6H4zM21 4h6v40h-6z'],
+      frost: [SNOW, 'M10 30l14-24 14 24-14 12z', 'M6 18h36v24H6zM24 18l-4 8 6 6-4 10', 'M10 10h20v20H10zM34 8l6 4-4 6zM32 34l8 2-4 6z'],
+    };
+    const fam = this.state.fam, f = F[fam], lv = this.state.lv[fam];
+    const level = lv.reduce((a, b) => a + b, 0);
+    const opens = [0, 3, 8, 15];
+    const fams = Object.keys(F).map((id) => ({
+      ...F[id], id, current: id === this.state.current,
+      bg: id === fam ? '#FFC83D' : '#FFF8EC', ring: id === fam ? 'transform:translateX(6px)' : '',
+      pick: () => this.setState({ fam: id }),
+    }));
+    const skills = f.sk.map(([name, per], i) => {
+      const l = lv[i], open = level >= opens[i], maxed = l >= 10;
+      const num = parseFloat(per.replace(',', '.').replace(/[^0-9.]/g, ''));
+      const fmt = (v) => (Math.round(v * 10) / 10).toString().replace('.', ',');
+      const unit = per.replace(/^\+[0-9,]+\s*/, '');
+      return {
+        name, level: l, icon: ICONS[fam][i], open, closed: !open, op: open ? 1 : 0.55,
+        lock: 'Откроется на уровне семьи ' + opens[i],
+        now: (l ? '+' + fmt(num * l) : '0') + (unit.startsWith('%') ? ' %' : ''), next: maxed ? '' : '→ +' + fmt(num * (l + 1)) + (unit.startsWith('%') ? ' %' : ''),
+        pips: Array.from({ length: 10 }, (_, k) => ({ bg: k < l ? f.c : '#E4D6BD' })),
+        price: maxed ? 'Максимум' : ['1 000', '1 300', '1 700', '2 200', '2 900', '3 700', '4 800', '6 300', '8 200', '10 600'][l],
+        btnBg: maxed ? '#B8BDC9' : '#FFC83D', bump: this.state.bumped === i ? 'bump' : '',
+        buy: () => { if (maxed) return; const next = { ...this.state.lv, [fam]: lv.map((v, k) => (k === i ? v + 1 : v)) }; this.setState({ lv: next, bumped: i }); setTimeout(() => this.setState({ bumped: -1 }), 280); },
+      };
+    });
+    const marks = [3, 8, 15, 40].map((n) => ({ n, left: (n / 40) * 100 + '%', bg: level >= n ? '#FFC83D' : '#FFF8EC' }));
+    return {
+      fams, skills, marks,
+      fam: { ...f, level, pct: Math.max(2, (level / 40) * 100) + '%', canSwitch: fam !== this.state.current },
+      switchFam: () => this.setState({ current: fam }),
+    };
+  }
+}
+</script>
+</body>
+</html>
