@@ -10,6 +10,7 @@ local Config = require(Shared.Config)
 local Remotes = require(Shared.Remotes)
 local ProfileService = require(script.Parent.ProfileService)
 local HitService = require(script.Parent.HitService)
+local CollectionService = require(script.Parent.CollectionService)
 
 local studio = RunService:IsStudio()
 local creatorId: number? = if game.CreatorType == Enum.CreatorType.User then game.CreatorId else nil
@@ -64,7 +65,9 @@ function CreativeService.Start()
 				end
 			end)
 		elseif type(op) == "string" and op:sub(1, 5) == "mine." then
-			HitService.Creative(player, op, delta, b, c)
+			if not CollectionService.Creative(player, op, delta, b, c) then
+				HitService.Creative(player, op, delta, b, c)
+			end
 		end
 	end)
 

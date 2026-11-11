@@ -72,10 +72,6 @@ function CreativeWindow.start(
 	end)
 	local operations = {
 		{ "pick_starter", "mine.equip", "starter" },
-		{ "pick_plain_common", "mine.equip", "plain_common" },
-		{ "pick_plain_rare", "mine.equip", "plain_rare" },
-		{ "pick_plain_epic", "mine.equip", "plain_epic" },
-		{ "pick_plain_legendary", "mine.equip", "plain_legendary" },
 		{ "pick_storm_common", "mine.equip", "storm_common" },
 		{ "mine_charge", "mine.charge" },
 		{ "mine_stats", "mine.stats" },
@@ -117,6 +113,70 @@ function CreativeWindow.start(
 	ultLayers.input.Activated:Connect(function()
 		creative:FireServer("mine.ultLayers")
 	end)
+	local equipMode = false
+	local grantMode = slot(34)
+	grantMode.input.Activated:Connect(function()
+		equipMode = not equipMode
+		grantMode.text.Text = translate(if equipMode then "pick_take" else "pick_grant")
+	end)
+	local familyControls = {}
+	local extras = {
+		{ "creative_keys", "mine.keys" },
+		{ "creative_collection_reset", "mine.collectionReset" },
+		{ "creative_chests_100", "mine.chests100" },
+		{ "creative_first_storm", "mine.staged", "firstStorm" },
+		{ "creative_first_key", "mine.staged", "firstKey" },
+	}
+	for i, op in extras do
+		local control = slot(34 + i)
+		control.input.Activated:Connect(function()
+			creative:FireServer(table.unpack(op, 2))
+		end)
+		table.insert(familyControls, { control = control, key = op[1] })
+	end
+	local grants, skills = {}, {}
+	for familyIndex, family in Config.familyRules.order do
+		local change = slot(40 + familyIndex - 1)
+		change.input.Activated:Connect(function()
+			creative:FireServer("mine.family", family)
+		end)
+		table.insert(familyControls, { control = change, key = "family_" .. family })
+		for rarityIndex, rarity in Config.familyRules.rarities do
+			for goldIndex = 0, 1 do
+				local golden = goldIndex == 1
+				local id = family .. "_" .. rarity
+				local control = slot(44 + (familyIndex - 1) * 8 + (rarityIndex - 1) * 2 + goldIndex)
+				Candy.buttonIcon(control, "family_" .. family)
+				control.input.Activated:Connect(function()
+					creative:FireServer(
+						if equipMode then "mine.equip" else "mine.grant",
+						id,
+						golden
+					)
+				end)
+				table.insert(
+					grants,
+					{ control = control, family = family, stars = rarityIndex, golden = golden }
+				)
+			end
+		end
+		for index = 1, 4 do
+			local control = slot(76 + (familyIndex - 1) * 4 + index - 1)
+			Candy.buttonIcon(control, "skill_" .. family .. "_" .. index)
+			control.input.Activated:Connect(function()
+				local profile = ProfileState.getProfile()
+				if profile then
+					creative:FireServer(
+						"mine.skill",
+						family,
+						index,
+						(profile.skills[family][index] + 1) % 11
+					)
+				end
+			end)
+			table.insert(skills, { control = control, family = family, index = index })
+		end
+	end
 	local performance =
 		Candy.text(panel, "Performance", UDim2.new(1, -24, 0, 22), UDim2.new(0, 12, 0.75, 0), 14)
 
@@ -194,6 +254,25 @@ function CreativeWindow.start(
 		)
 		for i, control in operationButtons do
 			control.text.Text = translate(operations[i][1] :: string)
+		end
+		grantMode.text.Text = translate(if equipMode then "pick_take" else "pick_grant")
+		for _, row in familyControls do
+			row.control.text.Text = translate(row.key)
+		end
+		for _, row in grants do
+			row.control.text.Text = string.rep("★", row.stars)
+				.. (if row.golden then " ✦" else "")
+		end
+		for _, row in skills do
+			row.control.text.Text = translate(
+				"creative_skill",
+				translate("family_" .. row.family):sub(
+					1,
+					(utf8.offset(translate("family_" .. row.family), 2) or 2) - 1
+				),
+				row.index,
+				if profile then profile.skills[row.family][row.index] else 0
+			)
 		end
 		performance.Text = translate(
 			"mine_perf",

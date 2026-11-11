@@ -1,0 +1,23 @@
+11.11.2026, Steam Deck / SteamOS x86_64; stage-04, base main 40a00db.
+Node v26.13.0; Rokit 1.2.0.
+rokit.toml: Rojo 7.7.1, StyLua 2.6.0, Selene 0.32.0, Lune 0.10.4.
+PATH: ~/.local/node/bin, ~/.rokit/bin, ~/.local/bin (interactive ~/.bashrc verified).
+gh authentication: SkyTmin, existing active keyring session.
+
+node scripts/build-configs.mjs: exit 0, 15 sections + material tree.
+stylua --check src tests: exit 0.
+selene src: exit 0; 0 errors, 0 warnings, 0 parse errors.
+rojo build -o build/game.rbxl: exit 0; 253467 bytes.
+lune run tests: exit 0; 136 passed, 0 failed (35 spec files).
+Final full run: real 140.50 s, user 137.10 s, sys 0.80 s.
+node scripts/simulate-economy.mjs 60: exit 0; 8 runs, seed 3032026; see ECONOMY.txt.
+node --check scripts/family-config.mjs: exit 0.
+node --check scripts/simulate-economy.mjs: exit 0.
+git diff --check: exit 0.
+
+Mine benchmarks from final run (limits unchanged):
+5000 layers x 15 lanes: 3.993 ms < 5 ms.
+25000 layers x 45 lanes: 55.170 ms < 100 ms.
+10000 ordinary hits: 182.269 ms < 200 ms.
+
+Studio acceptance, screenshots and FPS: delegated to Claude by TZ-04 acceptance item 5.
