@@ -19,14 +19,14 @@ button.ult{background:var(--ult);color:#fff} button.on{background:var(--accent)}
 label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:800;color:var(--muted)}
 </style></head><body><main>
 <h1>Ульта по слоям, 3D</h1>
-<p>Эффект из демо: грань рассыпается от центра к краям. Здесь он повторяется на каждом слое шахты, а каждый следующий слой стартует с задержкой. Камера едет по тоннелю, стена и пыль стоят на месте; пыль ближе 2 блоков к камере тает, чтобы не казалось, что она летит в лицо. Выбери задержку и шаг слоёв, нажми «Ульта».</p>
+<p>Эффект из демо: грань рассыпается от центра к краям. Здесь он повторяется на каждом слое шахты, каждый следующий слой стартует с задержкой, и волна убегает от тебя далеко вглубь. Камера стоит на месте, пока волна не дойдёт до конца, потом обычная езда подвозит тебя к новой стене. Выбери задержку и шаг слоёв, нажми «Ульта».</p>
 <div class="stage"><canvas id="c"></canvas></div>
 <div class="bar">
 <button id="go" class="ult">Ульта</button><button id="slow">Замедлить ×4</button>
 <label>Задержка между слоями<select id="delay"><option value="0.03">0,03 с</option><option value="0.06" selected>0,06 с</option><option value="0.1">0,10 с</option><option value="0.15">0,15 с</option><option value="0.25">0,25 с</option></select></label>
 <label>Слои ломаются<select id="group"><option value="1" selected>каждый слой</option><option value="2">по 2 слоя</option><option value="3">по 3 слоя</option></select></label>
 <label>Грань от центра к краям<select id="spread"><option value="0.25">0,25 с</option><option value="0.45" selected>0,45 с (как в демо)</option><option value="0.7">0,7 с</option></select></label>
-<label>Слоёв за ульту<select id="depth"><option value="24">24</option><option value="40" selected>40</option><option value="80">80</option></select></label>
+<label>Слоёв за ульту<select id="depth"><option value="40">40</option><option value="80" selected>80</option><option value="150">150</option></select></label>
 <label>Мир<select id="world"></select></label>
 </div>
 <p style="font-size:13px">Пылинки как утверждено: 0,625 stud, 16 на блок в ульте, лёгкий разлёт и подъём, гаснут за 0,5–0,87 с.</p>
@@ -38,8 +38,8 @@ const cv = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: false });
 renderer.setPixelRatio(Math.min(2, devicePixelRatio));
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(70, 16 / 9, 0.05, 200);
-const COLS = 7, ROWS = 3, LAYERS = 120, Z0 = 4;
+const camera = new THREE.PerspectiveCamera(70, 16 / 9, 0.05, 260);
+const COLS = 7, ROWS = 3, LAYERS = 170, Z0 = 4;
 let slow = 1;
 const worldSel = document.getElementById('world');
 Object.keys(DATA.worlds).forEach(n => { const o = document.createElement('option'); o.textContent = n; worldSel.append(o); });
@@ -65,7 +65,7 @@ function pick(w) {
 function build() {
   scene.remove(group); group = new THREE.Group(); scene.add(group); cells = [];
   const w = worldSel.value, lining = DATA.worlds[w].lining;
-  scene.fog = new THREE.Fog(0x0d0b14, 18, 60); scene.background = new THREE.Color(0x0d0b14);
+  scene.fog = new THREE.Fog(0x0d0b14, 60, 190); scene.background = new THREE.Color(0x0d0b14);
   // dug tunnel behind the wall + the rock around the wall (side, floor, ceiling) as textured planes, 1 block = 1 unit
   const len = Z0 + LAYERS + 10;
   const plane = (wd, ht, rx, ry, pos, rot, src) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(wd, ht), new THREE.MeshBasicMaterial({ map: tex(src, rx, ry), side: THREE.DoubleSide })); m.position.set(...pos); m.rotation.set(...rot); group.add(m); };
@@ -135,10 +135,14 @@ function frame(t) {
   for (const c of cells) {
     if (!c.done && clock >= c.at) { c.done = true; c.mesh.visible = false; emitBlock(c, clock); }
   }
-  if (ult) { // camera rides 2.5 layers behind the deepest layer that is fully gone
-    let d = 0; for (; d < ult.D; d++) { let full = true; for (let i = 0; i < COLS * ROWS; i++) if (!cells[d * COLS * ROWS + i].done) { full = false; break; } if (!full) break; }
-    const target = Math.max(0, Z0 + d - 2.5); camZ += (target - camZ) * Math.min(1, dt * 6);
-    camera.position.z = camZ; camera.lookAt(0, 1.4, camZ + 10);
+  if (ult) { // the camera stays put while the wave runs away into the shaft; when it has finished, the usual ride
+    // brings the player to the new front (here: the camera glides there in 0.8 s)
+    if (!ult.end && cells.every(c => c.d >= ult.D || c.done)) ult.end = clock + 0.35;
+    if (ult.end && clock >= ult.end) {
+      const k = Math.min(1, (clock - ult.end) / 0.8), e = k * k * (3 - 2 * k);
+      camZ = e * Math.max(0, Z0 + ult.D - 2.5);
+      camera.position.z = camZ; camera.lookAt(0, 1.4, camZ + 10);
+    }
   }
   for (let i = queue.length - 1; i >= 0; i--) if (queue[i].at <= clock) { spawn(queue[i]); queue.splice(i, 1); }
   let w = 0, k = Math.min(1, dt * 2.5);
