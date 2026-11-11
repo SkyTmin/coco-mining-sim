@@ -59,6 +59,33 @@ function PlotService.digFrame(player: Player): CFrame?
 	return if i then slots[i].frame * CFrame.new(0, 3.5, DEPTH * 0.72) else nil
 end
 
+function PlotService.assign(player: Player): number?
+	local current = assignments[player]
+	if current then
+		return current
+	end
+	for i, slot in slots do
+		if slot.owner then
+			continue
+		end
+		slot.owner, assignments[player] = player, i
+		player:SetAttribute("Plot", i)
+		local function spawnAt(character: Model)
+			local pivot = character:WaitForChild("HumanoidRootPart", 8)
+			if not pivot or player.Character ~= character or assignments[player] ~= i then
+				return
+			end
+			character:PivotTo(PlotService.digFrame(player) :: CFrame)
+		end
+		player.CharacterAdded:Connect(spawnAt)
+		if player.Character then
+			task.defer(spawnAt, player.Character)
+		end
+		return i
+	end
+	return nil
+end
+
 function PlotService.Start()
 	local root = Instance.new("Folder")
 	root.Name = "Plots"
@@ -159,31 +186,7 @@ function PlotService.Start()
 		return true
 	end
 
-	local function add(player: Player)
-		if assignments[player] then
-			return
-		end
-		for i, slot in slots do
-			if slot.owner then
-				continue
-			end
-			slot.owner, assignments[player] = player, i
-			player:SetAttribute("Plot", i)
-			local function spawnAt(character: Model)
-				local pivot = character:WaitForChild("HumanoidRootPart", 8)
-				if not pivot or player.Character ~= character or assignments[player] ~= i then
-					return
-				end
-				character:PivotTo(PlotService.digFrame(player) :: CFrame)
-			end
-			player.CharacterAdded:Connect(spawnAt)
-			if player.Character then
-				task.defer(spawnAt, player.Character)
-			end
-			break
-		end
-	end
-	Players.PlayerAdded:Connect(add)
+	Players.PlayerAdded:Connect(PlotService.assign)
 	Players.PlayerRemoving:Connect(function(player)
 		returned[player] = nil
 		local i = assignments[player]
@@ -193,7 +196,7 @@ function PlotService.Start()
 		end
 	end)
 	for _, player in Players:GetPlayers() do
-		add(player)
+		PlotService.assign(player)
 	end
 end
 

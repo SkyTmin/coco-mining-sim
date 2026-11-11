@@ -178,8 +178,12 @@ end
 
 function MineService.Start()
 	ProfileService.OnLoaded(function(player)
-		local plot = PlotService.get(player)
-		if not plot or player.Parent ~= Players then
+		if player.Parent ~= Players then
+			return
+		end
+		-- The profile can be ready before the plot's PlayerAdded handler runs.
+		local plot = PlotService.get(player) or PlotService.assign(player)
+		if not plot then
 			return
 		end
 		local profile = ProfileService.Get(player)
