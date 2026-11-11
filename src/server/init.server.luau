@@ -17,6 +17,7 @@ for _, service in
 		services.PickaxeService,
 		services.HitService,
 		services.UpgradeService,
+		services.CollectionService,
 		services.CreativeService,
 		services.ServerLog,
 		services.Analytics,
