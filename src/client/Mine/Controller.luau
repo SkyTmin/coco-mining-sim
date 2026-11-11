@@ -1038,8 +1038,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			reduced,
 			cameraTravel
 		)
-		local dig = Vector3.new(0, 3.5, Config.plots.platformDepth * S * 0.72)
-		hud.focus.Visible = (p - dig).Magnitude > 6 or Camera.away(v)
+		-- [владелец 11.11] «К шахте» only once the player has left the mine platform
+		hud.focus.Visible = not active
 		hud.focusInput.Interactable = ride == nil and not returning
 		if hud.focus.Visible then
 			local keyHint = if UserInputService.TouchEnabled or v.mode ~= "first"

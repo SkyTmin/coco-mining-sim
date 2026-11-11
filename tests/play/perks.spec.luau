@@ -51,8 +51,16 @@ Test.describe("Family perks", function()
 					if family == "rift" then 24 else 30,
 					Perks.new()
 				)
-				for _, cell in route do
-					assert(cell.d >= 10)
+				-- [владелец 11.11] up to 30 % of a deep perk clears the nearest leftovers in front of the target
+				local count = if family == "rift" then 24 else 30
+				local near = 0
+				for index, cell in route do
+					if cell.d < 10 then
+						near += 1
+						assert(index == near and State.isExposed(st, cell.x, cell.y, cell.d))
+						assert(cell.d == st.front)
+						continue
+					end
 					if family == "dynamite" then
 						assert(cell.d < 12 and math.abs(cell.x) <= 2)
 					end
@@ -60,6 +68,7 @@ Test.describe("Family perks", function()
 						assert(cell.d < 18 and cell.x == 0)
 					end
 				end
+				assert(near == math.ceil(count * 0.3))
 			end
 		end
 	)

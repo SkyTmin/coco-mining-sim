@@ -7,7 +7,7 @@ local Aim = {}
 
 -- [владелец 11.11] lone blocks left over are hard to hit: every exposed block has an invisible margin. When the ray
 -- misses or slips through a hole to a deeper block, the nearest exposed block whose margin the ray crosses wins.
-local MARGIN = S * 0.4 -- [решение] beyond the block's half size
+local MARGIN = S * 0.65 -- [решение, владелец 11.11: «чуть больше»] beyond the block's half size
 local REACH = 240
 
 local function result(

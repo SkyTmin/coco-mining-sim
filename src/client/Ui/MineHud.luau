@@ -111,9 +111,9 @@ function Hud.new(
 	remaining.ZIndex = 3
 
 	local focus =
-		Candy.button(gui, "FaceWall", offset(124, 50), UDim2.new(0, 280, 1, -18), "neutral", 15)
-	focus.box.AnchorPoint, focus.box.Visible = Vector2.new(0, 1), false
-	-- [владелец 11.11] same height as the dock, a gap sets it apart, a pickaxe tells what it does
+		Candy.button(gui, "FaceWall", offset(140, 50), UDim2.new(0.5, 0, 1, -18), "neutral", 15)
+	focus.box.AnchorPoint, focus.box.Visible = Vector2.new(0.5, 1), false
+	-- [владелец 11.11] bottom centre, shown only off the mine platform; a pickaxe tells what it does
 	Candy.buttonIcon(focus, "pick")
 	focus.box.Parent = Candy.layer(guiParent, "MineReturn", 6)
 	local fade = Candy.frame(
