@@ -765,6 +765,16 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				phase, progress = Ride.phase(ride.timeline, age)
 			end
 		end
+		-- [владелец 11.11] one clock for the whole ult: the coins at the crosshair, the depth sign, the knock-out
+		-- title's layers, blocks and coins all count from the first wave to the moment the new wall lands, and finish together
+		local ultProgress = 1
+		if ride and ride.ability then
+			ultProgress = math.clamp(
+				(now - ride.at - Wave.pause) / math.max(0.001, ride.timeline.total - Wave.pause),
+				0,
+				1
+			)
+		end
 		if phase ~= lastPhase or (ride and ride.entered ~= phase) then
 			lastPhase, dirty = phase, true
 			if ride then
@@ -777,7 +787,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 		if depthSign then
 			local display = if ride and ride.ability
-				then ride.oldFront + math.floor(Wave.front(ride.sweep.rule, now - ride.at))
+				then ride.oldFront + math.floor(ride.delta * ultProgress)
 				elseif not ride then window.front
 				elseif phase == "approach" then ride.oldFront + math.floor(
 					ride.delta * progress
@@ -970,9 +980,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				hint = child.Position
 			end
 		end
-		hud.fractureProgress = if sweeping then progress else 1
+		hud.fractureProgress = ultProgress
 		if hud.ultimate and ride and ride.ability then
-			hud.ultimate.progress = if sweeping then progress else 1
+			hud.ultimate.progress = ultProgress
 		end
 		Hud.step(hud, now, active, v.mode == "first" and canHit(), hint, reduced)
 		if not jumpButton then

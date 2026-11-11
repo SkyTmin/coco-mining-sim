@@ -17,6 +17,8 @@ local offset, scale = UDim2.fromOffset, UDim2.fromScale
 local KO_FONT = Font.new(Candy.font.Family, Enum.FontWeight.Heavy, Enum.FontStyle.Italic)
 local KO_TILT = -4
 local KO_SLAM, KO_LIFE, KO_FADE = 0.16, 1.55, 0.3
+-- after the ult lands: the title pops, holds, then fades while the coins fly to the wallet (the same 0.6 s + 0.35 s)
+local KO_HOLD, KO_POP = 0.6, 0.18
 
 function Hud.new(
 	guiParent: Instance,
@@ -307,11 +309,15 @@ end
 
 function Hud.ultimate(h: any, coins: number, now: number)
 	h.ultimate = { total = coins, amount = -1, progress = 0, nextAt = now }
+	h.reward = nil -- a new ult replaces the previous title at once (it would count from zero again)
 end
 
 function Hud.finishUltimate(h: any, now: number)
 	if h.ultimate then
 		h.ultimate.progress, h.ultimate.ended = 1, now
+	end
+	if h.reward and h.reward.ultimate then
+		h.reward.ended = now
 	end
 end
 
@@ -376,7 +382,9 @@ function Hud.step(
 		local camera = workspace.CurrentCamera
 		if camera then
 			local start = h.cross.AbsolutePosition + h.cross.AbsoluteSize / 2 + Vector2.new(0, 48)
-			local fly = if gain.ended then math.clamp((now - gain.ended - 0.6) / 0.35, 0, 1) else 0
+			local fly = if gain.ended
+				then math.clamp((now - gain.ended - KO_HOLD) / KO_FADE, 0, 1)
+				else 0
 			local target = h.coins.Parent.AbsolutePosition + h.coins.Parent.AbsoluteSize / 2
 			h.ultimateGain.Position = Candy.point(start:Lerp(target, fly * fly))
 			h.ultimateGain.TextTransparency, h.ultimateStroke.Transparency = fly, fly
@@ -422,8 +430,16 @@ function Hud.step(
 		h.plateReward.Text = h.translate("mine_plate_reward", Format.short(entered.reward))
 	end
 	local reward = h.reward
-	h.bannerBox.Visible = reward ~= nil and now - reward.at < KO_LIFE
-	if h.bannerBox.Visible then
+	h.bannerBox.Visible = reward ~= nil
+		and (
+			if reward.ultimate
+				then reward.ended == nil or now - reward.ended < KO_HOLD + KO_FADE
+				else now - reward.at < KO_LIFE
+		)
+	if reward and not h.bannerBox.Visible then
+		h.reward = nil
+	end
+	if reward and h.bannerBox.Visible then
 		local age = now - reward.at
 		local progress = if reward.ultimate
 			then h.fractureProgress or 1
@@ -443,7 +459,8 @@ function Hud.step(
 		-- slam: from 2.3x down to 1 with a small overshoot (ease-out-back), then one short shake
 		local slam = math.clamp(age / KO_SLAM, 0, 1)
 		local back = 1 + 2.70158 * (slam - 1) ^ 3 + 1.70158 * (slam - 1) ^ 2
-		h.koScale.Scale = if reduced then 1 else 2.3 + (1 - 2.3) * back
+		local pop = if reward.ended then math.clamp((now - reward.ended) / KO_POP, 0, 1) else 1
+		h.koScale.Scale = if reduced then 1 else (2.3 + (1 - 2.3) * back) * (1 + 0.18 * (1 - pop))
 		local shake = if reduced
 				or age < KO_SLAM
 				or age > KO_SLAM + 0.18
@@ -453,8 +470,13 @@ function Hud.step(
 				* (1 - (age - KO_SLAM) / 0.18)
 		h.bannerBox.Position = UDim2.new(0.5, shake.X, if gain then 0.32 else 0.76, shake.Y)
 		h.band.Position = UDim2.new(-0.05 - 1.2 * (1 - math.clamp(age / 0.12, 0, 1)) ^ 2, 0, 0, 6)
-		h.koGradient.Enabled = reduced or age > 0.07 -- a white flash on impact
-		local fade = math.clamp((age - (KO_LIFE - KO_FADE)) / KO_FADE, 0, 1)
+		-- a white flash on impact and again on the final pop
+		h.koGradient.Enabled = reduced or (age > 0.07 and pop > 0.4)
+		local fade = if reward.ultimate
+			then (if reward.ended
+				then math.clamp((now - reward.ended - KO_HOLD) / KO_FADE, 0, 1)
+				else 0)
+			else math.clamp((age - (KO_LIFE - KO_FADE)) / KO_FADE, 0, 1)
 		h.layers.TextTransparency, h.layersStroke.Transparency = fade, fade
 		h.banner.TextTransparency, h.bannerStroke.Transparency = fade, fade
 		h.band.BackgroundTransparency = 0.2 + 0.8 * fade
