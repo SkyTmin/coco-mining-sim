@@ -29,12 +29,15 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 	local familyPage = Candy.frame(parent, "Family", scale(1, 1), offset(0, 0))
 	local remote = Remotes.event("PickaxeIntent")
 	local grid = scroll(collectionPage, "PickaxeGrid", 30)
-	local familyScroll = scroll(familyPage, "Skills", 115)
+	local familyScroll = scroll(familyPage, "Skills", 86)
 	local collectionTitle =
 		Candy.text(collectionPage, "Title", UDim2.new(1, -28, 0, 25), offset(14, 0), 16)
-	local familyTitle = Candy.text(familyPage, "Title", UDim2.new(1, -28, 0, 24), offset(14, 0), 16)
-	local familyHint = Candy.text(familyPage, "Hint", UDim2.new(1, -28, 0, 22), offset(14, 25), 13)
-	local bonus = Candy.text(familyPage, "Bonus", UDim2.new(1, -28, 0, 20), offset(14, 93), 12)
+	local familyIcon = Candy.icon(familyPage, nil, offset(44, 44), offset(14, 2))
+	local familyTitle = Candy.text(familyPage, "Title", UDim2.new(1, -74, 0, 24), offset(64, 0), 16)
+	local familyHint = Candy.text(familyPage, "Hint", UDim2.new(1, -74, 0, 22), offset(64, 25), 13)
+	local bonus = Candy.text(familyPage, "Bonus", UDim2.new(1, -203, 0, 26), offset(193, 52), 12)
+	familyTitle.TextXAlignment, familyHint.TextXAlignment =
+		Enum.TextXAlignment.Left, Enum.TextXAlignment.Left
 	local cells, familyButtons, skillRows = {}, {}, {}
 	local choiceRows = {}
 	local refresh: (any) -> ()
@@ -50,7 +53,7 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 	)
 	local choiceScroll = scroll(choose.panel, "OwnedFamilies", 32)
 	local changeFamily =
-		Candy.button(familyPage, "ChangeFamily", offset(180, 32), offset(14, 59), "neutral", 14)
+		Candy.button(familyPage, "ChangeFamily", offset(170, 32), offset(14, 49), "neutral", 14)
 	changeFamily.input.Activated:Connect(function()
 		refresh(currentProfile)
 		Candy.show(choose, true)
@@ -143,11 +146,11 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 			offset(2, (index - 1) * 112),
 			true
 		)
-		local icon = Candy.icon(box, nil, offset(34, 34), offset(5, 7))
-		local title = Candy.text(box, "Title", UDim2.new(0.72, -50, 0, 25), offset(44, 3), 15)
-		local benefit = Candy.text(box, "Benefit", UDim2.new(0.72, -10, 0, 29), offset(6, 30), 13)
-		local level = Candy.text(box, "Level", UDim2.new(0.72, -10, 0, 20), offset(6, 61), 12)
-		local later = Candy.text(box, "Later", UDim2.new(0.72, -10, 0, 20), offset(6, 82), 11)
+		local icon = Candy.icon(box, nil, offset(48, 48), offset(6, 8))
+		local title = Candy.text(box, "Title", UDim2.new(0.72, -63, 0, 25), offset(59, 3), 15)
+		local benefit = Candy.text(box, "Benefit", UDim2.new(0.72, -63, 0, 24), offset(59, 29), 13)
+		local level = Candy.text(box, "Level", UDim2.new(0.72, -16, 0, 20), offset(8, 55), 12)
+		local later = Candy.text(box, "Later", UDim2.new(0.72, -16, 0, 20), offset(8, 76), 11)
 		local buy = Candy.button(
 			box,
 			"Buy",
@@ -247,6 +250,7 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 			end
 		end
 		local family = profile.family
+		Candy.setIcon(familyIcon, if family then "family_" .. family else nil)
 		choose.title.Text = translate("family_tab")
 		changeFamily.text.Text = translate("family_change")
 		familyTitle.Text = if family

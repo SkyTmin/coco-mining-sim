@@ -4,7 +4,6 @@ local ContextActionService = game:GetService("ContextActionService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Shared = game:GetService("ReplicatedStorage").Shared
-local Config = require(Shared.Config)
 local Strings = require(Shared.Strings)
 
 local Candy = {}
@@ -21,7 +20,8 @@ Candy.font = Font.fromEnum(Enum.Font.GothamBlack)
 -- Variant A sizes in design pixels at 667 px. Insets and the UIScale are applied once.
 local WIDTH = 667
 local BORDER, CORNER, SHADOW = WIDTH * 0.0055, WIDTH * 0.022, WIDTH * 0.007
-local ATLAS = "rbxassetid://131511417355722"
+local ATLAS = "rbxassetid://113228730616786"
+local ICON_SIZE, ICON_COLUMNS = 96, 6
 local ICONS = {
 	coin = 0,
 	upgrades = 1,
@@ -40,18 +40,27 @@ local ICONS = {
 	shape6 = 14,
 	width = 15,
 	pick = 16,
+	family_storm = 18,
+	skill_storm_1 = 19,
+	skill_storm_2 = 20,
+	skill_storm_3 = 21,
+	skill_storm_4 = 22,
+	family_dynamite = 24,
+	skill_dynamite_1 = 25,
+	skill_dynamite_2 = 26,
+	skill_dynamite_3 = 27,
+	skill_dynamite_4 = 28,
+	family_rift = 30,
+	skill_rift_1 = 31,
+	skill_rift_2 = 32,
+	skill_rift_3 = 33,
+	skill_rift_4 = 34,
+	family_frost = 36,
+	skill_frost_1 = 37,
+	skill_frost_2 = 38,
+	skill_frost_3 = 39,
+	skill_frost_4 = 40,
 }
-
--- Claude can replace these placeholder entries with { image = "rbxassetid://…" }.
-Candy.icons = {} :: { [string]: any }
-for _, family in Config.familyRules.order do
-	Candy.icons["family_" .. family] = { family = family, color = Config.families[family].color }
-	for index = 1, 4 do
-		Candy.icons["skill_" .. family .. "_" .. index] =
-			{ family = family, index = index, color = Config.families[family].color }
-	end
-end
-Candy.icons.keys = { key = "card_keys", color = "FFD23F" }
 
 type Geometry = { size: UDim2, at: UDim2 }
 export type Control = {
@@ -261,37 +270,26 @@ function Candy.setIcon(image: ImageLabel, key: string?)
 		placeholder:Destroy()
 	end
 	image.ImageTransparency, image.ImageColor3 = 0, Candy.white
-	image.Image, image.ImageRectSize = ATLAS, Vector2.new(96, 96)
-	local custom = key and Candy.icons[key]
-	if custom then
-		image.Visible = true
-		if custom.image then
-			image.Image, image.ImageRectSize, image.ImageRectOffset =
-				custom.image, Vector2.zero, Vector2.zero
-		else
-			image.ImageTransparency = 1
-			local label =
-				Candy.text(image, "Placeholder", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), 18)
-			label.BackgroundTransparency, label.BackgroundColor3 = 0, Color3.fromHex(custom.color)
-			local text = Strings.t(custom.key or "family_" .. custom.family, Strings.localeOf(nil))
-			label.Text = if custom.index
-				then tostring(custom.index)
-				else text:sub(1, (utf8.offset(text, 2) or #text + 1) - 1)
-			Candy.round(label, 6)
-		end
-		return
-	end
 	local i = if key then ICONS[key] else nil
-	image.Visible = i ~= nil
+	image.Visible = i ~= nil or key == "keys"
 	if i then
-		image.ImageRectOffset = Vector2.new(i % 6 * 96, i // 6 * 96)
+		image.Image, image.ImageRectSize = ATLAS, Vector2.new(ICON_SIZE, ICON_SIZE)
+		image.ImageRectOffset =
+			Vector2.new(i % ICON_COLUMNS * ICON_SIZE, i // ICON_COLUMNS * ICON_SIZE)
+	elseif key == "keys" then
+		image.ImageTransparency = 1
+		local label =
+			Candy.text(image, "Placeholder", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), 18)
+		label.BackgroundTransparency, label.BackgroundColor3 = 0, Color3.fromHex("FFD23F")
+		local text = Strings.t("card_keys", Strings.localeOf(nil))
+		label.Text = text:sub(1, (utf8.offset(text, 2) or #text + 1) - 1)
+		Candy.round(label, 6)
 	end
 end
 
 function Candy.icon(parent: Instance, key: string?, size: UDim2, at: UDim2): ImageLabel
 	local label = Instance.new("ImageLabel")
 	label.Name, label.BackgroundTransparency, label.ScaleType = "Sticker", 1, Enum.ScaleType.Fit
-	label.Image, label.ImageRectSize = ATLAS, Vector2.new(96, 96)
 	Candy.fit(label, size, at)
 	Candy.setIcon(label, key)
 	label.Parent = parent
