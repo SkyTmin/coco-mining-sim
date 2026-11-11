@@ -11,6 +11,40 @@ local function fresh(): any
 	return p
 end
 
+local function expectedWithPity()
+	local rules = Config.chests.pick
+	local odds = rules.odds
+	-- A Legendary ends the cycle and resets both counters. Track the surviving
+	-- probability by the number of low-rarity draws since the last Epic.
+	local alive = table.create(rules.pityEpic, 0)
+	alive[1] = 1
+	local epicsPerCycle = 0
+	for _ = 1, rules.pityLegendary - 1 do
+		local nextAlive = table.create(rules.pityEpic, 0)
+		for gap, mass in alive do
+			local nonLegendary = mass * (1 - odds.legendary)
+			local epic = if gap == rules.pityEpic then nonLegendary else mass * odds.epic
+			epicsPerCycle += epic
+			nextAlive[1] += epic
+			if gap < rules.pityEpic then
+				nextAlive[gap + 1] += nonLegendary - epic
+			end
+		end
+		alive = nextAlive
+	end
+
+	-- One Legendary per cycle, whose length is a capped geometric variable.
+	local legendary = odds.legendary / (1 - (1 - odds.legendary) ^ rules.pityLegendary)
+	local epic = epicsPerCycle * legendary
+	local lowShare = (1 - legendary - epic) / (odds.common + odds.rare)
+	return {
+		common = odds.common * lowShare,
+		rare = odds.rare * lowShare,
+		epic = epic,
+		legendary = legendary,
+	}
+end
+
 Test.describe("Pickaxe chest", function()
 	Test.it(
 		"spends exactly one key, rejects empty wallets and guarantees the first Rare family",
@@ -31,9 +65,10 @@ Test.describe("Pickaxe chest", function()
 		end
 	)
 	Test.it(
-		"samples one million base rolls within 0.3 percentage points and never violates either pity",
+		"matches the base and post-pity odds in one million draws within 0.3 percentage points",
 		function()
 			local total, seed = 1000000, 4042026
+			local rules = Config.chests.pick
 			local rarities = { common = 0, rare = 0, epic = 0, legendary = 0 }
 			local families = { storm = 0, dynamite = 0, rift = 0, frost = 0 }
 			local actual = table.clone(rarities)
@@ -50,16 +85,27 @@ Test.describe("Pickaxe chest", function()
 				actualFamilies[value.family] += 1
 				sinceEpic += 1
 				sinceLegendary += 1
-				assert(sinceEpic <= 10 and sinceLegendary <= 60)
-				if value.rarity == "epic" or value.rarity == "legendary" then
+				local isLegendary = value.rarity == "legendary"
+				local isEpicOrBetter = value.rarity == "epic" or isLegendary
+				assert(sinceEpic < rules.pityEpic or isEpicOrBetter, "missed Epic guarantee")
+				assert(
+					sinceLegendary < rules.pityLegendary or isLegendary,
+					"missed Legendary guarantee"
+				)
+				if isEpicOrBetter then
 					sinceEpic = 0
 				end
-				if value.rarity == "legendary" then
+				if isLegendary then
 					sinceLegendary = 0
 				end
 			end
+			local expected = expectedWithPity()
 			for rarity, count in rarities do
-				assert(math.abs(count / total - Config.chests.pick.odds[rarity]) <= 0.003, rarity)
+				assert(math.abs(count / total - rules.odds[rarity]) <= 0.003, rarity)
+				assert(
+					math.abs(actual[rarity] / total - expected[rarity]) <= 0.003,
+					rarity .. " with pity"
+				)
 			end
 			for family, count in families do
 				assert(math.abs(count / total - 0.25) <= 0.003, family)
@@ -72,7 +118,7 @@ Test.describe("Pickaxe chest", function()
 			expect(p.pickChestsOpened).toBe(total)
 			print(
 				string.format(
-					"Chest 1M: base %.4f/%.4f/%.4f/%.4f%%; with pity %.4f/%.4f/%.4f/%.4f%%",
+					"Chest 1M: base %.4f/%.4f/%.4f/%.4f%%; with pity %.4f/%.4f/%.4f/%.4f%% (expected %.4f/%.4f/%.4f/%.4f%%)",
 					rarities.common / 10000,
 					rarities.rare / 10000,
 					rarities.epic / 10000,
@@ -80,7 +126,11 @@ Test.describe("Pickaxe chest", function()
 					actual.common / 10000,
 					actual.rare / 10000,
 					actual.epic / 10000,
-					actual.legendary / 10000
+					actual.legendary / 10000,
+					expected.common * 100,
+					expected.rare * 100,
+					expected.epic * 100,
+					expected.legendary * 100
 				)
 			)
 		end
