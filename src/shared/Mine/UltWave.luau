@@ -1,12 +1,13 @@
 --!strict
 -- [владелец 11.11] TZ-03g §4: the stationary camera sees a dome run down the tunnel.
 local Wave = {}
-Wave.pause = 0.25
+Wave.pause = 0.15 -- [владелец 11.11: задержка в начале] was 0.25; it now overlaps the server round trip
 Wave.lag = 7
 Wave.jitter = 0.04
 Wave.hold = 0.35
-Wave.fogStart = 60
-Wave.fogEnd = 190
+-- [владелец 11.11] the dust and the blocks must reach far down the shaft: fog from 110 to 300 layers (was 60 → 190)
+Wave.fogStart = 110
+Wave.fogEnd = 300
 export type Sweep = {
 	depth: number,
 	width: number,

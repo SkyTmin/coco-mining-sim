@@ -54,8 +54,9 @@ end
 local function stageFor(amount: number): number
 	return math.clamp(math.ceil(amount * 10 / 255), 0, 10)
 end
--- [владелец 11.11] a block with only a sliver of HP left keeps no crack: the last, thickest stages left behind on
--- neighbours spoil the wall. Below this share of HP left the crack is not drawn [решение: 20 %].
+-- [владелец 11.11] a neighbour with only a sliver of HP left keeps no crack: the last, thickest stages left behind
+-- spoil the wall. Below this share of HP left the crack is not drawn [решение: 20 %] — except on the block being dug,
+-- which always shows its crack, or it is unclear that it is being dug.
 local NO_CRACK_LEFT = 0.2
 
 function BlockBreak.cracks(
@@ -63,7 +64,8 @@ function BlockBreak.cracks(
 	renderer: any,
 	win: any,
 	keyFor: (number, number, number) -> number,
-	windup: number?
+	windup: number?,
+	focus: number?
 )
 	local nextActive: Active = {}
 	local function paint(cell: any, stage: number)
@@ -105,8 +107,9 @@ function BlockBreak.cracks(
 	else
 		for _, damage in win.damage do
 			local depth = win.front + damage.dRel
-			if damage.amount < 255 * (1 - NO_CRACK_LEFT) then
-				paint(renderer.cells[keyFor(damage.x, damage.y, depth)], stageFor(damage.amount))
+			local key = keyFor(damage.x, damage.y, depth)
+			if key == focus or damage.amount < 255 * (1 - NO_CRACK_LEFT) then
+				paint(renderer.cells[key], stageFor(damage.amount))
 			end
 		end
 	end

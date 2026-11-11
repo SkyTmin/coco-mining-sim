@@ -339,6 +339,21 @@ function Hud.coin(h: any, position: Vector3, amount: number)
 	item.badge.Enabled = true
 end
 
+local TextService = game:GetService("TextService")
+local function fitOnce(label: TextLabel, text: string)
+	local limit = label:FindFirstChildOfClass("UITextSizeConstraint")
+	local width = label.AbsoluteSize.X
+	if not limit or width <= 0 then
+		return
+	end
+	local size = math.round(label.AbsoluteSize.Y)
+	local ok, bounds = pcall(function()
+		return TextService:GetTextSize(text, size, Enum.Font.GothamBlack, Vector2.new(1e5, 1e5))
+	end)
+	local fitted = if ok and bounds.X > 0 then size * math.min(1, width * 0.94 / bounds.X) else size
+	limit.MaxTextSize = math.max(10, math.floor(fitted))
+end
+
 function Hud.show(
 	h: any,
 	delta: number,
@@ -348,6 +363,17 @@ function Hud.show(
 	now: number
 )
 	if ultimate or delta >= 10 then
+		-- the letters keep one size while the numbers count: fit the final text once
+		local final = if ultimate
+			then h.translate("mine_ult_layers", Format.grouped(delta))
+			else h.translate("mine_layers_gain", delta)
+		fitOnce(h.layers, final)
+		if ultimate then
+			fitOnce(
+				h.banner,
+				h.translate("mine_ult_value", Format.grouped(blocks), Format.short(coins))
+			)
+		end
 		h.reward = {
 			at = now,
 			delta = delta,
@@ -370,27 +396,22 @@ function Hud.step(
 	h.snapFlash.BackgroundTransparency = if h.snapAt
 		then 0.85 + 0.15 * math.clamp((now - h.snapAt) / 0.2, 0, 1)
 		else 1
+	-- [владелец 11.11: «два раза дублируются монеты»] the ult's coins are counted only on the knock-out title; when
+	-- the ult is over, that sum leaves the title and flies into the wallet
 	local gain = h.ultimate
-	h.ultimateGain.Visible = active and gain ~= nil
-	if gain then
-		if now >= gain.nextAt then
-			gain.amount = math.floor(gain.total * gain.progress)
-			h.ultimateGain.Text = h.translate("mine_coin_gain", Format.short(gain.amount))
-			gain.nextAt = now + 0.1
-		end
-		h.ultimateGain.TextSize = 34 + 10 * gain.progress
-		local camera = workspace.CurrentCamera
-		if camera then
-			local start = h.cross.AbsolutePosition + h.cross.AbsoluteSize / 2 + Vector2.new(0, 48)
-			local fly = if gain.ended
-				then math.clamp((now - gain.ended - KO_HOLD) / KO_FADE, 0, 1)
-				else 0
-			local target = h.coins.Parent.AbsolutePosition + h.coins.Parent.AbsoluteSize / 2
-			h.ultimateGain.Position = Candy.point(start:Lerp(target, fly * fly))
-			h.ultimateGain.TextTransparency, h.ultimateStroke.Transparency = fly, fly
-			if fly == 1 then
-				h.ultimate, h.coinAt, h.ultimateGain.Visible = nil, now, false
-			end
+	local flying = gain ~= nil and gain.ended ~= nil and now - gain.ended >= KO_HOLD
+	h.ultimateGain.Visible = active and flying
+	if gain and flying then
+		h.ultimateGain.Text = h.translate("mine_coin_gain", Format.short(gain.total))
+		local fly = math.clamp((now - gain.ended - KO_HOLD) / KO_FADE, 0, 1)
+		h.ultimateGain.TextSize = 34 - 12 * fly
+		local start = h.banner.AbsolutePosition + h.banner.AbsoluteSize / 2
+		local target = h.coins.Parent.AbsolutePosition + h.coins.Parent.AbsoluteSize / 2
+		h.ultimateGain.Position = Candy.point(start:Lerp(target, fly * fly))
+		local fade = math.max(0, fly - 0.6) / 0.4
+		h.ultimateGain.TextTransparency, h.ultimateStroke.Transparency = fade, fade
+		if fly == 1 then
+			h.ultimate, h.coinAt, h.ultimateGain.Visible = nil, now, false
 		end
 	end
 	h.cross.Visible = crosshair

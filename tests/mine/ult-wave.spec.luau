@@ -19,7 +19,7 @@ Test.describe("Ultimate dome", function()
 		for x = -3, 3 do
 			for y = 0, 2 do
 				for _, d in { 0, 40, 100, 499 } do
-					local nominal = 0.25 + (d + W.offset(s, x, y)) * W.duration(500) / 507
+					local nominal = W.pause + (d + W.offset(s, x, y)) * W.duration(500) / 507
 					local at = W.at(s, x, y, d)
 					assert(at >= nominal - 1e-9 and at <= nominal + 0.04 + 1e-9)
 				end
@@ -37,7 +37,7 @@ Test.describe("Ultimate dome", function()
 			end
 		end
 		assert(math.abs(W.total(5000, 0.8) - rideAt - 0.8) < 1e-9)
-		assert(W.fogStart == 60 and W.fogEnd == 190)
+		assert(W.fogStart == 110 and W.fogEnd == 300)
 	end)
 	Test.it("preserves pre-existing holes in the old snapshot, including deep cells", function()
 		local st = State.new(57291, 7, 3, 100)

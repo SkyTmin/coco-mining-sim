@@ -389,8 +389,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			if res.ability then
 				timeline.total = Wave.total(res.delta, timeline.approach)
 			end
+			-- [владелец 11.11: «задержка в начале ульты»] the ult clock starts at the press, so the 0.25 s windup
+			-- overlaps the server round trip instead of waiting after it
+			local startAt = if res.ability and expected
+				then math.max(expected.at, now - Wave.pause)
+				else now
 			ride = {
-				at = now,
+				at = startAt,
 				timeline = timeline,
 				oldFront = oldFront,
 				offset = timeline.distance,
@@ -425,7 +430,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					local endDepth = if barrier
 						then math.min(depth + 3.4, barrier.distance - 0.15)
 						else depth + 3.4
-					at = now + waveAge
+					at = ride.at + waveAge
 					local localA = r.frame:PointToObjectSpace(start)
 					local localB = r.frame:PointToObjectSpace(finish)
 					start = r.frame:PointToWorldSpace(Vector3.new(localA.X, localA.Y, -depth + 1.2))
@@ -555,12 +560,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		elseif phase == "approach" then
 			strikePlate(now)
 			if ride.ability then
+				-- [владелец 11.11] no earth rumble while the new wall rides up after the ult
 				Dissolve.clear(breaking.dissolve)
-				Sfx.play(
-					"ult_rumble_near",
-					0.64,
-					Config.sounds.clips.ult_rumble_near[1][2] / ride.timeline.approach
-				)
 			else
 				Hud.show(hud, ride.delta, ride.blocks, ride.coins, false, now)
 			end
@@ -570,10 +571,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				if not ride.ability then
 					TravelDebris.land(debris, now, window.width * S, false)
 				end
-				Sfx.play(
-					if ride.ability then "ult_thud" else "ride_stop",
-					if ride.ability then 0.76 else 0.53
-				)
+				if not ride.ability then
+					Sfx.play("ride_stop", 0.53)
+				end
 				Intensity.land(intensity, now, ride.ability)
 			end
 			if ride.plateBroken then
@@ -793,8 +793,16 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					ride.delta * progress
 				)
 				else ride.oldFront
-			local rolling = ride ~= nil and (ride.ability or ride.delta >= 5)
-			DepthSign.step(depthSign, now, display, rolling, reduced, active)
+			-- [владелец 11.11] the sign counts the real depth every frame (no spinning or sliding digits while it
+			-- counts) and knocks only once, when the ride is over
+			DepthSign.step(
+				depthSign,
+				now,
+				display,
+				false,
+				reduced or ride ~= nil,
+				active and ride == nil
+			)
 		end
 		for origin, sign in spectatorSigns do
 			local depth = origin:GetAttribute("MineFront")
@@ -847,7 +855,16 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					table.insert(renderWindow.damage, pending.damage)
 				end
 				Wall.update(r, renderWindow, visible, nil)
-				Break.cracks(breaking, r, renderWindow, State.cellKey)
+				Break.cracks(
+					breaking,
+					r,
+					renderWindow,
+					State.cellKey,
+					nil,
+					if lastTarget
+						then State.cellKey(lastTarget.x, lastTarget.y, lastTarget.depth)
+						else nil
+				)
 			else
 				Wall.clear(r)
 				Break.clear(breaking)
