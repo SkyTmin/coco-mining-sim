@@ -7,6 +7,7 @@ export type Count = number | "max"
 export type Quote = { level: number, price: number, amount: number }
 export type Purchase = { kind: string, id: string?, count: Count }
 export type Context = {
+	golden: boolean?,
 	coins: number,
 	hitSize: number,
 	width: number,
@@ -19,10 +20,10 @@ export type Context = {
 
 local progress = Config.progress
 local Upgrade = {}
-Upgrade.cards = table.freeze({ "power", "coins", "crit" })
+Upgrade.cards = table.freeze({ "power", "coins", "crit", "keys" })
 -- [владелец 11.11] «Размер удара» is off for now: every hit is one block
 Upgrade.hitSizeEnabled = false
-local supportedCards = { power = true, coins = true, crit = true }
+local supportedCards = { power = true, coins = true, crit = true, keys = true }
 
 function Upgrade.count(value: any): boolean
 	return value == 1 or value == 10 or value == "max"
@@ -69,7 +70,7 @@ function Upgrade.quote(context: Context, purchase: Purchase): Quote?
 	local priceAt: (number) -> number
 	if kind == "pick" then
 		local rarity = progress.rarities[Config.pickaxes[context.pick].rarity]
-		level, cap = context.pickLevel, Power.cap(rarity)
+		level, cap = context.pickLevel, Power.cap(rarity, context.golden)
 		priceAt = function(current)
 			return Upgrade.pickPrice(rarity, current)
 		end
@@ -132,7 +133,7 @@ function Upgrade.morphs(id: string, before: number, after: number): { number }
 	local milestones = {}
 	local rule = progress.cards[id]
 	for i, level in rule.steps do
-		if before < level and level <= after and (id ~= "coins" or i == 1) then
+		if before < level and level <= after and (id ~= "coins" or i <= 2) then
 			table.insert(milestones, level)
 		end
 	end
