@@ -172,6 +172,12 @@ return {
 		fr = "Brise la roche dure",
 	},
 	menu_choose = { en = "Choose", ru = "Выбрать", es = "Elegir", fr = "Choisir" },
+	menu_this_run = {
+		en = "This run",
+		ru = "В этом круге",
+		es = "Esta vuelta",
+		fr = "Ce tour",
+	},
 	menu_choose_tip = {
 		en = "Choose this family for your current run.",
 		ru = "Выбрать эту семью на текущий круг.",
@@ -201,6 +207,12 @@ return {
 		ru = "Откроется на уровне семьи {1}",
 		es = "Se abre al nivel familiar {1}",
 		fr = "Ouvert au niveau de famille {1}",
+	},
+	menu_unlock_level = {
+		en = "Family\nlevel {1}",
+		ru = "Ур. семьи\n{1}",
+		es = "Familia\nniv. {1}",
+		fr = "Famille\nniv. {1}",
 	},
 	menu_master_tip = {
 		en = "Skills unlock at 3, 8 and 15. Level 40 earns Master.",

@@ -120,7 +120,7 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		end
 		local lock = Candy.icon(tile.face, "lock", offset(15, 15), UDim2.new(1, -17, 1, -16))
 		local badge, count = W.badge(tile.face, W.green)
-		Candy.fit(badge, offset(25, 17), UDim2.new(1, -24, 1, -17))
+		Candy.fit(badge, offset(25, 17), UDim2.new(0, 1, 1, -17))
 		count.TextColor3 = Candy.ink
 		tiles[id] = {
 			control = tile,
@@ -151,13 +151,13 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 	)
 	local top = Candy.frame(details, "Overview", UDim2.new(1, -10, 1, -133), offset(5, 3))
 	local stripe = W.band(top, "Rarity", UDim2.new(1, -4, 0, 7), W.yellow)
-	local icon = Candy.icon(top, "pickaxe", scale(0.70, 0.59), scale(0.15, 0.06))
-	local title = Candy.text(top, "Name", scale(0.94, 0.15), scale(0.03, 0.62), 22)
-	local rarityText = Candy.text(top, "Rarity", scale(0.94, 0.13), scale(0.03, 0.76), 15)
+	local icon = Candy.icon(top, "pickaxe", scale(0.70, 0.49), scale(0.15, 0.06))
+	local title = Candy.text(top, "Name", scale(0.94, 0.15), scale(0.03, 0.55), 22)
+	local rarityText = Candy.text(top, "Rarity", scale(0.94, 0.12), scale(0.03, 0.70), 15)
 	local _, strength =
-		W.pill(top, "Power", scale(0.47, 0.16), scale(0.02, 0.91), Candy.panelColor, 15)
+		W.pill(top, "Power", scale(0.47, 0.14), scale(0.02, 0.84), Candy.panelColor, 15)
 	local _, copies =
-		W.pill(top, "Owned", scale(0.47, 0.16), scale(0.51, 0.91), Candy.panelColor, 15)
+		W.pill(top, "Owned", scale(0.47, 0.14), scale(0.51, 0.84), Candy.panelColor, 15)
 	local perkText =
 		Candy.text(details, "Perk", UDim2.new(0.93, 0, 0, 24), UDim2.new(0.035, 0, 1, -128), 13)
 	local equip = Candy.button(

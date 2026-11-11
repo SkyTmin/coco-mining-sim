@@ -198,7 +198,7 @@ function Families.new(ctx: W.Context, page: Frame)
 		for id, tile in tiles do
 			tile.button.text.Text = t("family_" .. id)
 			tile.hint.Text = t("menu_family_" .. id)
-			tile.currentText.Text = t("family_current")
+			tile.currentText.Text = t("menu_this_run")
 			tile.current.Visible = profile.family == id
 			Candy.paint(tile.button, if id == family then "coin" else "neutral")
 		end
@@ -257,7 +257,7 @@ function Families.new(ctx: W.Context, page: Frame)
 			end
 			view.buy.box.Visible, view.locked.box.Visible = not closed, closed
 			view.buy.text.Text = if level < skill.cap then Format.short(price) else t("upgrade_cap")
-			view.locked.text.Text = t("menu_unlock_skill", skill.unlock)
+			view.locked.text.Text = t("menu_unlock_level", skill.unlock)
 			Candy.paint(view.buy, if view.affordable then "coin" else "disabled")
 			view.help = if skill.effect == "treasure"
 				then t(
