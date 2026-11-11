@@ -29,6 +29,14 @@ export type Fx = {
 	peakEmit: number,
 	dropped: number,
 }
+local function sizes(size: number): NumberSequence
+	return NumberSequence.new({
+		NumberSequenceKeypoint.new(0, size),
+		NumberSequenceKeypoint.new(Rules.shrinkAt - 0.0001, size),
+		NumberSequenceKeypoint.new(Rules.shrinkAt, size / 2),
+		NumberSequenceKeypoint.new(1, size / 2),
+	})
+end
 local directions = {
 	[Enum.NormalId.Back] = { Vector3.xAxis, -Vector3.yAxis },
 	[Enum.NormalId.Front] = { -Vector3.xAxis, -Vector3.yAxis },
@@ -53,12 +61,7 @@ function Dissolve.new(parent: Instance): Fx
 		a.Parent = root
 		local e = Instance.new("ParticleEmitter")
 		e.Name, e.Texture, e.Rate = "Grain", Config.art.dustTexture, 0
-		e.Size = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, Rules.size),
-			NumberSequenceKeypoint.new(Rules.shrinkAt - 0.0001, Rules.size),
-			NumberSequenceKeypoint.new(Rules.shrinkAt, Rules.smallSize),
-			NumberSequenceKeypoint.new(1, Rules.smallSize),
-		})
+		e.Size = sizes(Rules.size)
 		e.Transparency = NumberSequence.new({
 			NumberSequenceKeypoint.new(0, 0),
 			NumberSequenceKeypoint.new(Rules.fadeAt, 0),
@@ -123,7 +126,8 @@ function Dissolve.block(
 	at: number,
 	hit: Vector3,
 	reduced: boolean,
-	ultimate: boolean?
+	ultimate: boolean?,
+	lod: { stride: number, size: number }?
 ): number
 	local camera = workspace.CurrentCamera
 	if not camera then
@@ -156,6 +160,11 @@ function Dissolve.block(
 	local available =
 		math.min(Rules.maxParticles - alive - fx.reserved, Rules.maxEmit - fx.admitted)
 	local stride = Rules.stride(#faces, available, reduced or ultimate == true)
+	local size = Rules.size
+	if lod then
+		local count = #faces * (8 // lod.stride) ^ 2
+		stride, size = if count <= available then lod.stride else 0, lod.size
+	end
 	if stride == 0 or #faces == 0 then
 		return 0
 	end
@@ -165,17 +174,24 @@ function Dissolve.block(
 		local axes = directions[face]
 		for j = 0, 7, stride do
 			for i = 0, 7, stride do
+				-- a grain stands for its stride×stride group of cells: centre of the group, colour of its middle cell
 				local localPoint = normal * (2.5 + Rules.surfaceOffset)
-					+ axes[1] * ((i + 0.5) * Rules.size - 2.5)
-					+ axes[2] * ((j + 0.5) * Rules.size - 2.5)
+					+ axes[1] * ((i + stride / 2) * Rules.size - 2.5)
+					+ axes[2] * ((j + stride / 2) * Rules.size - 2.5)
+				local ci, cj = math.min(7, i + stride // 2), math.min(7, j + stride // 2)
+				if stride == 1 then
+					ci, cj = i, j
+				end
 				local point = block.frame:PointToWorldSpace(localPoint)
 				local noise =
 					Rules.noise(block.x * 8 + i / 2, block.y * 8 + j / 2, block.depth + face.Value)
-				local index = 1 + (tonumber(grain.cells:sub(j * 8 + i + 1, j * 8 + i + 1), 16) or 0)
+				local index = 1
+					+ (tonumber(grain.cells:sub(cj * 8 + ci + 1, cj * 8 + ci + 1), 16) or 0)
 				table.insert(events, {
 					at = at + Rules.delay((point - hit).Magnitude, noise),
 					point = point,
 					color = Config.art.grains.palettes[grain.palette][index],
+					size = size,
 					misses = 0,
 				})
 			end
@@ -198,12 +214,14 @@ function Dissolve.step(fx: Fx, now: number)
 			if event.at <= now then
 				local index, changed = nil, false
 				if fx.emitted < Rules.maxEmit and alive < Rules.maxParticles then
-					index, changed = GrainPool.take(fx.allocator, event.color, now)
+					index, changed =
+						GrainPool.take(fx.allocator, event.color .. "|" .. event.size, now)
 				end
 				if index then
 					local slot = fx.slots[index]
-					if changed then
+					if changed then -- only an emitter whose grains have all faded is recoloured / resized
 						slot.emitter.Color = ColorSequence.new(Color3.fromHex(event.color))
+						slot.emitter.Size = sizes(event.size)
 					end
 					slot.attachment.WorldPosition = event.point
 					slot.emitter.Speed = if burst.reduced

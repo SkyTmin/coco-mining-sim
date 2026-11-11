@@ -643,6 +643,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	hud.ult.Activated:Connect(function()
 		request("Ability", nil)
 	end)
+	if studio then -- QA (Studio only): set the player attribute QAUlt to any new value to press the ult button
+		player:GetAttributeChangedSignal("QAUlt"):Connect(function()
+			request("Ability", nil)
+		end)
+	end
 	for _, attribute in { "language", "MineLanguage" } do
 		player:GetAttributeChangedSignal(attribute):Connect(function()
 			dirty = true
@@ -799,16 +804,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			visible, offset = #shown.layers, 0
 			dirty = dirty or changed
 		elseif phase == "approach" then
+			-- [владелец 11.11] the camera never leaves the platform: after the ult wave the new wall rides up to the
+			-- player through the emptied tunnel, the same way as an ordinary ride (no debris: nothing breaks on the way)
 			local remaining = Ride.offset(ride.timeline, progress, false)
-			if ulting then
-				offset = ride.timeline.distance
-				cameraTravel = offset - remaining
-			else
-				offset = remaining
+			offset = remaining
+			if not ulting then
 				local speed = math.max(0, (ride.offset - offset) / math.max(dt, 0.001))
 				TravelDebris.step(debris, now, offset, window.width * S, speed, override)
-				ride.offset = offset
 			end
+			ride.offset = offset
 		end
 		Tunnel.width(tunnel, window.width)
 		Tunnel.atmosphere(
@@ -861,7 +865,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if layout or phase == "approach" then
 			table.clear(parts)
 			table.clear(moves)
-			if shown and (layout or not ulting) then
+			if shown then
 				Wall.moves(r, shown, offset, parts, moves)
 			end
 			local farLayers = if survivor then 0 else visible

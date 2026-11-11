@@ -76,28 +76,29 @@ function Render.step(
 	local camera = workspace.CurrentCamera
 	while s.events[s.cursor] and s.events[s.cursor].at <= age do
 		local cell = s.events[s.cursor]
+		local block = Break.snapshot(r, win, cell.x, cell.y, cell.d, 0)
+		local distance = if block and camera
+			then (block.frame.Position - camera.CFrame.Position).Magnitude
+			else math.huge
+		local stride, size = Rules.lod(distance)
+		local grains = if stride > 0 then (8 // stride) ^ 2 else 0
 		if
-			fx.admitted + 16 <= Rules.maxEmit
-			and fx.tail - fx.head + 1 + fx.reserved + 16 <= Rules.maxParticles
+			block
+			and grains > 0
+			and fx.admitted + grains <= Rules.maxEmit
+			and fx.tail - fx.head + 1 + fx.reserved + grains <= Rules.maxParticles
 		then
-			local block = Break.snapshot(r, win, cell.x, cell.y, cell.d, 0)
-			if
-				block
-				and camera
-				and (block.frame.Position - camera.CFrame.Position).Magnitude <= Wave.fogEnd * S
-			then
-				block.faces = {}
-				for _, side in directions do
-					if
-						(side.d == -1 and cell.d == 0)
-						or Wall.ore(win, cell.x + side.x, cell.y + side.y, cell.d + side.d) == 0
-					then
-						table.insert(block.faces, side.face)
-					end
+			block.faces = {}
+			for _, side in directions do
+				if
+					(side.d == -1 and cell.d == 0)
+					or Wall.ore(win, cell.x + side.x, cell.y + side.y, cell.d + side.d) == 0
+				then
+					table.insert(block.faces, side.face)
 				end
-				local hit = block.frame:PointToWorldSpace(Vector3.new(0, 0, S / 2))
-				Dissolve.block(fx, block, now, hit, reduced, true)
 			end
+			local hit = block.frame:PointToWorldSpace(Vector3.new(0, 0, S / 2))
+			Dissolve.block(fx, block, now, hit, reduced, true, { stride = stride, size = size })
 		end
 		win.layers[cell.d + 1][(cell.x + radius) * win.height + cell.y + 1] = 0
 		s.cursor += 1
