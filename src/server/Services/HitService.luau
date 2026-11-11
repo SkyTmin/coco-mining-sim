@@ -199,7 +199,7 @@ local function onIntent(player: Player, packet: any)
 				Analytics.event(player, "key_get", reward.keys, "wall")
 			end
 			if reward.pick then
-				Remotes.event("PickaxeResult"):FireClient(player, reward.pick)
+				Remotes.event("Toast"):FireClient(player, "pick_wall_storm")
 				Analytics.event(player, "pick_get", 1, "wall", reward.pick.id)
 			end
 		end

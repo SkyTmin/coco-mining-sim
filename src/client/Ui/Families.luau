@@ -9,6 +9,8 @@ local Strings = require(Shared.Strings)
 local Candy = require(script.Parent.Candy)
 local Families = {}
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
+local PICK_CELL_HEIGHT, PICK_CELL_GAP = 280, 8
+local FIRST_ACTION_Y, ACTION_HEIGHT = 149, 32
 
 local function scroll(parent: Instance, name: string, top: number): ScrollingFrame
 	local frame = Instance.new("ScrollingFrame")
@@ -20,8 +22,15 @@ local function scroll(parent: Instance, name: string, top: number): ScrollingFra
 	return frame
 end
 
-local function action(parent: Instance, name: string, y: number): Candy.Control
-	return Candy.button(parent, name, UDim2.new(1, -10, 0, 32), offset(5, y), "neutral", 13)
+local function action(parent: Instance, name: string): Candy.Control
+	return Candy.button(
+		parent,
+		name,
+		UDim2.new(1, -10, 0, ACTION_HEIGHT),
+		offset(5, FIRST_ACTION_Y),
+		"neutral",
+		13
+	)
 end
 
 function Families.new(parent: Instance, player: Player, translate: (string, ...any) -> string)
@@ -62,8 +71,8 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 		local box, surface = Candy.panel(
 			grid,
 			id,
-			UDim2.new(0.25, -8, 0, 248),
-			UDim2.new(column / 4, 2, 0, row * 256),
+			UDim2.new(0.25, -8, 0, PICK_CELL_HEIGHT),
+			UDim2.new(column / 4, 2, 0, row * (PICK_CELL_HEIGHT + PICK_CELL_GAP)),
 			true
 		)
 		local pick = Config.pickaxes[id]
@@ -76,8 +85,8 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 		local nextCircle =
 			Candy.text(box, "NextCircle", UDim2.new(1, -8, 0, 22), offset(4, 124), 11)
 		local normal, golden, merge =
-			action(box, "Equip", 149), action(box, "Gold", 181), action(box, "Merge", 213)
-		local buy = action(box, "Buy", 149)
+			action(box, "Equip"), action(box, "Gold"), action(box, "Merge")
+		local buy = action(box, "Buy")
 		normal.input.Activated:Connect(function()
 			remote:FireServer("Equip", id, false)
 		end)
@@ -106,10 +115,9 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 			buy = buy,
 		}
 	end
-	cell("starter", 0, 0)
 	for row, family in Config.familyRules.order do
 		for column, rarity in Config.familyRules.rarities do
-			cell(family .. "_" .. rarity, column - 1, row)
+			cell(family .. "_" .. rarity, column - 1, row - 1)
 		end
 		local box = Candy.panel(
 			choiceScroll,
@@ -138,6 +146,7 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 		choiceRows[family] = { box = box, title = title, hint = hint }
 		familyButtons[family] = control
 	end
+	cell("starter", 0, #Config.familyRules.order)
 	for index = 1, 4 do
 		local box = Candy.panel(
 			familyScroll,
@@ -227,7 +236,14 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 			view.normal.box.Visible = entry.count > 0
 			view.golden.box.Visible = entry.golden > 0
 			view.merge.box.Visible = entry.count >= Config.familyRules.mergeNeed and id ~= "starter"
-			view.buy.box.Visible = shop == true and entry.count == 0
+			view.buy.box.Visible = shop == true
+			local actionY = FIRST_ACTION_Y
+			for _, control in { view.normal, view.golden, view.merge, view.buy } do
+				if control.box.Visible then
+					Candy.move(control.box, offset(5, actionY))
+					actionY += ACTION_HEIGHT
+				end
+			end
 			view.normal.text.Text, view.golden.text.Text, view.merge.text.Text =
 				translate("pick_take"), translate("pick_gold"), translate("pick_merge")
 			view.buy.text.Text = if family
@@ -305,12 +321,6 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 			local unlocked = Family.unlocked(profile, family, index)
 			Candy.setIcon(row.icon, "skill_" .. family .. "_" .. index)
 			row.title.Text = translate("skill_" .. family .. "_" .. index)
-			local factor = if skill.effect == "stormSeconds" then 1 else 100
-			row.benefit.Text = translate(
-				if factor == 1 then "skill_seconds" else "skill_percent",
-				Format.stat(skill.per * level * factor, locale),
-				Format.stat(skill.per * after * factor, locale)
-			)
 			if skill.effect == "treasure" then
 				row.benefit.Text = translate(
 					"skill_treasure",
@@ -318,6 +328,14 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 					after * skill.per * 100,
 					level * Config.familyRules.chestFrequencyPerLevel * 100,
 					after * Config.familyRules.chestFrequencyPerLevel * 100
+				)
+			else
+				local factor = if skill.effect == "stormSeconds" then 1 else 100
+				row.benefit.Text = translate(
+					if factor == 1 then "skill_seconds" else "skill_percent",
+					translate("skill_effect_" .. skill.effect),
+					Format.stat(skill.per * level * factor, locale),
+					Format.stat(skill.per * after * factor, locale)
 				)
 			end
 			row.level.Text = if not unlocked

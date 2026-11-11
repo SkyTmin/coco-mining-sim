@@ -32,11 +32,15 @@ local function changed(player: Player, familyChanged: boolean?)
 	end
 end
 
-local function result(player: Player, value: any, source: string)
+local function result(player: Player, value: any, source: "shop" | "chest")
 	if not value then
 		return
 	end
-	Remotes.event("PickaxeResult"):FireClient(player, value)
+	if source == "chest" then
+		Remotes.event("PickaxeResult"):FireClient(player, value)
+	else
+		Remotes.event("Toast"):FireClient(player, "pick_shop_done")
+	end
 	Analytics.event(player, "pick_get", 1, source, value.id)
 end
 

@@ -101,6 +101,7 @@ local function fresh()
 	p.deepestWorld = 5
 	now += 10
 	attributes = {}
+	table.clear(received)
 end
 local function send(op: string, a: any?, b: any?, advance: number?)
 	now += advance or 0.6
@@ -132,12 +133,27 @@ Test.describe("Family server intents", function()
 		send("OpenChest")
 		expect(p.keys).toBe(2)
 		expect(p.pickChestsOpened).toBe(1)
+		expect(received[1].name).toBe("PickaxeResult")
+		expect(received[1].values[1].id).toBe("storm_rare")
 		send("OpenChest", nil, nil, 0.49)
 		expect(p.keys).toBe(2)
 		send("OpenChest", nil, nil, 0.11)
 		expect(p.keys).toBe(1)
 		expect(p.pickChestsOpened).toBe(2)
 	end)
+	Test.it(
+		"offers one shop purchase for a collected pick without opening the key chest",
+		function()
+			fresh()
+			send("BuyPick", "storm")
+			expect(p.collection.storm_common.count).toBe(2)
+			expect(received[1].name).toBe("Toast")
+			expect(received[1].values[1]).toBe("pick_shop_done")
+			send("BuyPick", "storm")
+			expect(p.collection.storm_common.count).toBe(2)
+			expect(#received).toBe(1)
+		end
+	)
 	Test.it(
 		"changes family at most once per UTC day and uses the strongest owned variant",
 		function()
