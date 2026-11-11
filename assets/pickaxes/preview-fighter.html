@@ -23,11 +23,14 @@ fetch('picks-fighter.json').then(r => r.json()).then(data => {
     f.forEach(t => t.forEach(i => pos.push(...v[i])));
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals(); return g;
   })();
+  const OUT = +(params.get('outline') ?? 0.065);
+  const outlineMat = new THREE.MeshBasicMaterial({ color: 0x0B0612, side: THREE.BackSide });
   function material(prim) {
     const c = new THREE.Color(prim.c);
     if (prim.m === 'neon') return new THREE.MeshBasicMaterial({ color: c.clone().multiplyScalar(1.15) });
     if (prim.m === 'glass') return new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending });
     if (prim.m === 'gold') return new THREE.MeshPhongMaterial({ color: c, specular: 0xFFF2C0, shininess: 90, flatShading: true });
+    if (prim.m === 'plastic') return new THREE.MeshPhongMaterial({ color: c, specular: 0x333333, shininess: 12, flatShading: true });
     if (prim.m === 'leather') return new THREE.MeshPhongMaterial({ color: c, specular: 0x222222, shininess: 8 });
     return new THREE.MeshPhongMaterial({ color: c, specular: 0xE8F0FF, shininess: 70, flatShading: true });
   }
@@ -49,6 +52,15 @@ fetch('picks-fighter.json').then(r => r.json()).then(data => {
     }
     if (prim.m === 'glass') m.renderOrder = 2;
     group.add(m);
+    // the dark outline (Roblox: a Highlight with FillTransparency 1): an inverted hull grown by OUT studs
+    if (prim.m !== 'glass' && OUT > 0) {
+      const o = new THREE.Mesh(geo, outlineMat);
+      o.position.copy(m.position); o.quaternion.copy(m.quaternion);
+      if (prim.t === 'ball') o.scale.setScalar(prim.r + OUT);
+      else if (prim.t === 'cyl') o.scale.set(prim.r + OUT, m.scale.y + 2 * OUT, prim.r + OUT);
+      else o.scale.set(prim.s[0] + 2 * OUT, prim.s[1] + 2 * OUT, prim.s[2] + 2 * OUT);
+      group.add(o);
+    }
   }
   const energy = { storm: 0x4DD7FF, dynamite: 0xFF5A1F, rift: 0xFF9F1C, frost: 0x8FE3FF };
   ids.forEach((id, i) => {
