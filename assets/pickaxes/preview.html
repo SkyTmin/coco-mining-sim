@@ -1,0 +1,69 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Candy pickaxes</title>
+<style>body{margin:0;background:#2A2440}canvas{display:block}</style></head>
+<body>
+<script src="three.min.js"></script>
+<script>
+// Toon shading + inverted-hull ink outline = the «Конфета» look. Reads picks.json (same data the game uses).
+const params = new URLSearchParams(location.search);
+const CELL = +(params.get('cell') || 260);
+const only = params.get('only');
+fetch('picks.json').then(r => r.json()).then(data => {
+  const ids = only ? only.split(',') : Object.keys(data.picks);
+  const cols = only ? ids.length : 4, rows = Math.ceil(ids.length / cols);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: !!params.get('alpha'), preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1);
+  renderer.setSize(CELL * cols, CELL * rows);
+  renderer.setScissorTest(true);
+  document.body.appendChild(renderer.domElement);
+  const ramp = new THREE.DataTexture(new Uint8Array([90, 90, 90, 255, 175, 175, 175, 255, 255, 255, 255, 255]), 3, 1, THREE.RGBAFormat);
+  ramp.minFilter = ramp.magFilter = THREE.NearestFilter; ramp.needsUpdate = true;
+  const ink = new THREE.MeshBasicMaterial({ color: data.ink, side: THREE.BackSide, depthWrite: false });
+  function mesh(geo, prim, scene) {
+    const mat = prim.neon
+      ? new THREE.MeshBasicMaterial({ color: prim.c })
+      : new THREE.MeshToonMaterial({ color: prim.c, gradientMap: ramp });
+    if (prim.gloss) { mat.transparent = true; mat.opacity = 0.85; }
+    const m = new THREE.Mesh(geo, mat);
+    const o = new THREE.Mesh(geo, ink);
+    o.renderOrder = -1; o.visible = !prim.gloss;
+    return [m, o];
+  }
+  function add(scene, prim) {
+    let geo, place;
+    const w = data.outline;
+    if (prim.t === 'ball') {
+      geo = new THREE.SphereGeometry(1, 24, 16);
+      place = (m, k) => { m.position.set(...prim.at); m.scale.setScalar(prim.r + k); };
+    } else if (prim.t === 'cyl') {
+      const a = new THREE.Vector3(...prim.a), b = new THREE.Vector3(...prim.b);
+      const len = a.distanceTo(b);
+      geo = new THREE.CylinderGeometry(1, 1, 1, 24);
+      const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
+      place = (m, k) => { m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.copy(q); m.scale.set(prim.r + k, len + k * 0.5, prim.r + k); };
+    } else {
+      geo = new THREE.BoxGeometry(1, 1, 1);
+      place = (m, k) => { m.position.set(...prim.at); m.rotation.set(...prim.rot.map(d => d * Math.PI / 180)); m.scale.set(prim.s[0] + k * 2, prim.s[1] + k * 2, prim.s[2] + k * 2); };
+    }
+    const [m, o] = mesh(geo, prim, scene);
+    place(m, 0); place(o, w);
+    scene.add(o); scene.add(m);
+  }
+  ids.forEach((id, i) => {
+    const scene = new THREE.Scene();
+    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+    const sun = new THREE.DirectionalLight(0xffffff, 0.75); sun.position.set(-3, 5, 6); scene.add(sun);
+    const g = new THREE.Group();
+    data.picks[id].forEach(p => add(g, p));
+    g.rotation.set(0.3, 0.12, -0.78);
+    scene.add(g);
+    const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+    cam.position.set(0, 0.1, 10.5); cam.lookAt(0, 0.1, 0);
+    const x = (i % cols) * CELL, y = (rows - 1 - Math.floor(i / cols)) * CELL;
+    renderer.setViewport(x, y, CELL, CELL); renderer.setScissor(x, y, CELL, CELL);
+    if (!params.get('alpha')) renderer.setClearColor(((Math.floor(i / cols) + i) % 2) ? 0x2E2848 : 0x332C52, 1);
+    renderer.render(scene, cam);
+  });
+  document.title = 'ready';
+});
+</script></body></html>
