@@ -1,0 +1,45 @@
+{
+  "keyHits": 8000,
+  "wall": {
+    "perLayers": 40,
+    "hits": 3,
+    "tiers": [
+      {
+        "name": "Деревянный",
+        "share": 0.8,
+        "blocks": 50,
+        "key": 0.005
+      },
+      {
+        "name": "Серебряный",
+        "share": 0.15,
+        "blocks": 200,
+        "key": 0.02
+      },
+      {
+        "name": "Золотой",
+        "share": 0.045,
+        "blocks": 1000,
+        "key": 0.08
+      },
+      {
+        "name": "Кристальный",
+        "share": 0.005,
+        "blocks": 5000,
+        "key": 0.4
+      }
+    ]
+  },
+  "pick": {
+    "odds": {
+      "common": 0.6,
+      "rare": 0.3,
+      "epic": 0.085,
+      "legendary": 0.015
+    },
+    "pityEpic": 10,
+    "pityLegendary": 60
+  },
+  "keyEveryChest": 20,
+  "doubleKeyChance": 0.1
+}

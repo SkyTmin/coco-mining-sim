@@ -1,4 +1,131 @@
 {
+  "pickaxes": {
+    "starter": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#B58350"
+    },
+    "storm_common": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#FFD23F"
+    },
+    "storm_rare": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#FFD23F"
+    },
+    "storm_epic": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#FFD23F"
+    },
+    "storm_legendary": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#FFD23F"
+    },
+    "dynamite_common": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#E8352B"
+    },
+    "dynamite_rare": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#E8352B"
+    },
+    "dynamite_epic": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#E8352B"
+    },
+    "dynamite_legendary": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#E8352B"
+    },
+    "rift_common": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#FF8A1A"
+    },
+    "rift_rare": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#FF8A1A"
+    },
+    "rift_epic": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#FF8A1A"
+    },
+    "rift_legendary": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#FF8A1A"
+    },
+    "frost_common": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#6BD3FF"
+    },
+    "frost_rare": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#6BD3FF"
+    },
+    "frost_epic": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#6BD3FF"
+    },
+    "frost_legendary": {
+      "icon": "rbxassetid://131511417355722",
+      "model": "wooden_pickaxe",
+      "placeholder": true,
+      "color": "#6BD3FF"
+    }
+  },
+  "chests": {
+    "wall": [
+      {
+        "model": "CHEST",
+        "kind": "wood"
+      },
+      {
+        "model": "CHEST",
+        "kind": "silver"
+      },
+      {
+        "model": "CHEST",
+        "kind": "gold"
+      },
+      {
+        "model": "CHEST",
+        "kind": "crystal"
+      }
+    ],
+    "pick": {
+      "model": "CHEST"
+    }
+  },
   "blocks": {
     "amethyst": "rbxassetid://126149524414515",
     "amethyst_b": "rbxassetid://101453173147811",

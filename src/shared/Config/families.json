@@ -1,0 +1,242 @@
+{
+  "storm": {
+    "color": "#FFD23F",
+    "world": 2,
+    "price": 3000,
+    "ult": {
+      "stormSeconds": 5
+    },
+    "perks": {
+      "common": {
+        "size": 4,
+        "chance": 0.3,
+        "every": 1
+      },
+      "rare": {
+        "size": 6,
+        "chance": 0.35,
+        "every": 1
+      },
+      "epic": {
+        "size": 9,
+        "chance": 0.4,
+        "every": 1
+      },
+      "legendary": {
+        "size": 14,
+        "chance": 0.45,
+        "every": 1
+      }
+    },
+    "skills": [
+      {
+        "effect": "perkSize",
+        "per": 0.07,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 0
+      },
+      {
+        "effect": "coins",
+        "per": 0.15,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 3
+      },
+      {
+        "effect": "luck",
+        "per": 0.1,
+        "deferred": true,
+        "cap": 10,
+        "unlock": 8
+      },
+      {
+        "effect": "stormSeconds",
+        "per": 1,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 15
+      }
+    ]
+  },
+  "dynamite": {
+    "color": "#E8352B",
+    "world": 3,
+    "price": 40000,
+    "ult": {
+      "coinMultiplier": 1.5
+    },
+    "perks": {
+      "common": {
+        "size": 8,
+        "chance": 0.15,
+        "every": 1
+      },
+      "rare": {
+        "size": 14,
+        "chance": 0.15,
+        "every": 1
+      },
+      "epic": {
+        "size": 20,
+        "chance": 0.18,
+        "every": 1
+      },
+      "legendary": {
+        "size": 30,
+        "chance": 0.21,
+        "every": 1
+      }
+    },
+    "skills": [
+      {
+        "effect": "perkSize",
+        "per": 0.07,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 0
+      },
+      {
+        "effect": "keys",
+        "per": 0.08,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 3
+      },
+      {
+        "effect": "treasure",
+        "per": 0.2,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 8
+      },
+      {
+        "effect": "ultChest",
+        "per": 0.1,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 15
+      }
+    ]
+  },
+  "rift": {
+    "color": "#FF8A1A",
+    "world": 4,
+    "price": 5000000,
+    "ult": {
+      "nextPierce": 3
+    },
+    "perks": {
+      "common": {
+        "size": 6,
+        "chance": 0.2,
+        "every": 1
+      },
+      "rare": {
+        "size": 10,
+        "chance": 0.21,
+        "every": 1
+      },
+      "epic": {
+        "size": 15,
+        "chance": 0.24,
+        "every": 1
+      },
+      "legendary": {
+        "size": 24,
+        "chance": 0.25,
+        "every": 1
+      }
+    },
+    "skills": [
+      {
+        "effect": "perkSize",
+        "per": 0.07,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 0
+      },
+      {
+        "effect": "ultDepth",
+        "per": 0.03,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 3
+      },
+      {
+        "effect": "echo",
+        "per": 0.015,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 8
+      },
+      {
+        "effect": "pierce",
+        "per": 0.05,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 15
+      }
+    ]
+  },
+  "frost": {
+    "color": "#6BD3FF",
+    "world": 5,
+    "price": 100000000,
+    "ult": {
+      "plateMultiplier": 2
+    },
+    "perks": {
+      "common": {
+        "size": 10,
+        "chance": 1,
+        "every": 8
+      },
+      "rare": {
+        "size": 15,
+        "chance": 1,
+        "every": 7
+      },
+      "epic": {
+        "size": 22,
+        "chance": 1,
+        "every": 6
+      },
+      "legendary": {
+        "size": 32,
+        "chance": 1,
+        "every": 5
+      }
+    },
+    "skills": [
+      {
+        "effect": "perkSize",
+        "per": 0.07,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 0
+      },
+      {
+        "effect": "strength",
+        "per": 0.1,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 3
+      },
+      {
+        "effect": "plateDamage",
+        "per": 0.3,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 8
+      },
+      {
+        "effect": "brittle",
+        "per": 0.05,
+        "deferred": false,
+        "cap": 10,
+        "unlock": 15
+      }
+    ]
+  }
+}

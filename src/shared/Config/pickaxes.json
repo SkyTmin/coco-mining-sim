@@ -14,16 +14,64 @@
       "pickRareWithin": 2
     }
   },
-  "plain_common": {
-    "rarity": "common"
-  },
-  "plain_rare": {
+  "storm_rare": {
+    "family": "storm",
     "rarity": "rare"
   },
-  "plain_epic": {
+  "storm_epic": {
+    "family": "storm",
     "rarity": "epic"
   },
-  "plain_legendary": {
+  "storm_legendary": {
+    "family": "storm",
+    "rarity": "legendary"
+  },
+  "dynamite_common": {
+    "family": "dynamite",
+    "rarity": "common"
+  },
+  "dynamite_rare": {
+    "family": "dynamite",
+    "rarity": "rare"
+  },
+  "dynamite_epic": {
+    "family": "dynamite",
+    "rarity": "epic"
+  },
+  "dynamite_legendary": {
+    "family": "dynamite",
+    "rarity": "legendary"
+  },
+  "rift_common": {
+    "family": "rift",
+    "rarity": "common"
+  },
+  "rift_rare": {
+    "family": "rift",
+    "rarity": "rare"
+  },
+  "rift_epic": {
+    "family": "rift",
+    "rarity": "epic"
+  },
+  "rift_legendary": {
+    "family": "rift",
+    "rarity": "legendary"
+  },
+  "frost_common": {
+    "family": "frost",
+    "rarity": "common"
+  },
+  "frost_rare": {
+    "family": "frost",
+    "rarity": "rare"
+  },
+  "frost_epic": {
+    "family": "frost",
+    "rarity": "epic"
+  },
+  "frost_legendary": {
+    "family": "frost",
     "rarity": "legendary"
   }
 }
