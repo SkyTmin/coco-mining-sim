@@ -13,6 +13,7 @@ for _, part in
 		script.MineFeel,
 		script.Progress,
 		script.Families,
+		script.Menu,
 	}
 do
 	for key, entry in require(part) :: { [string]: Entry } do

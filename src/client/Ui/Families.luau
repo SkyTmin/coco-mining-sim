@@ -2,376 +2,294 @@
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local Family = require(Shared.Play.Family)
-local Power = require(Shared.Play.Power)
 local Format = require(Shared.Format)
 local Remotes = require(Shared.Remotes)
 local Strings = require(Shared.Strings)
 local Candy = require(script.Parent.Candy)
+local W = require(script.Parent.MenuWidgets)
+
 local Families = {}
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
-local PICK_CELL_HEIGHT, PICK_CELL_GAP = 255, 8
-local FIRST_ACTION_Y, ACTION_HEIGHT, NEXT_CIRCLE_HEIGHT = 108, 32, 16
+local order = Config.familyRules.order
+local maxFamilyLevel = 40
 
-local function scroll(parent: Instance, name: string, top: number): ScrollingFrame
-	local frame = Instance.new("ScrollingFrame")
-	frame.Name, frame.BackgroundTransparency, frame.BorderSizePixel = name, 1, 0
-	frame.ScrollBarThickness, frame.AutomaticCanvasSize = 5, Enum.AutomaticSize.Y
-	frame.CanvasSize = offset(0, 0)
-	Candy.fit(frame, UDim2.new(1, -24, 1, -top - 12), offset(12, top))
-	frame.Parent = parent
-	return frame
-end
-
-local function action(parent: Instance, name: string): Candy.Control
-	return Candy.button(
-		parent,
-		name,
-		UDim2.new(1, -10, 0, ACTION_HEIGHT),
-		offset(5, FIRST_ACTION_Y),
-		"neutral",
-		13
-	)
-end
-
-function Families.new(parent: Instance, player: Player, translate: (string, ...any) -> string)
-	local collectionPage = Candy.frame(parent, "Collection", scale(1, 1), offset(0, 0))
-	local familyPage = Candy.frame(parent, "Family", scale(1, 1), offset(0, 0))
-	local remote = Remotes.event("PickaxeIntent")
-	local grid = scroll(collectionPage, "PickaxeGrid", 30)
-	local familyScroll = scroll(familyPage, "Skills", 55)
-	local collectionTitle =
-		Candy.text(collectionPage, "Title", UDim2.new(1, -28, 0, 25), offset(14, 0), 16)
-	local familyIcon = Candy.icon(familyPage, nil, offset(44, 44), offset(14, 2))
-	local familyTitle =
-		Candy.text(familyPage, "Title", UDim2.new(1, -240, 0, 24), offset(64, 0), 16)
-	local familyHint = Candy.text(familyPage, "Hint", UDim2.new(1, -240, 0, 22), offset(64, 24), 13)
-	local bonus = Candy.text(familyPage, "Bonus", offset(162, 16), UDim2.new(1, -171, 0, 36), 12)
-	familyTitle.TextXAlignment, familyHint.TextXAlignment =
-		Enum.TextXAlignment.Left, Enum.TextXAlignment.Left
-	local cells, familyButtons, skillRows = {}, {}, {}
-	local choiceRows = {}
-	local refresh: (any) -> ()
-	local currentProfile: any
-	local choose = Candy.modal(
-		parent,
-		"FamilyChoice",
-		scale(0.78, 0.70),
-		Candy.purple,
-		function(show)
-			player:SetAttribute("MineMenuOpen", show)
+function Families.affordable(profile: any): number
+	local family = profile.family
+	if not family then
+		return 0
+	end
+	local count = 0
+	for i, skill in Config.families[family].skills do
+		local level = profile.skills[family][i]
+		if
+			Family.unlocked(profile, family, i)
+			and level < skill.cap
+			and profile.coins >= Family.skillPrice(level)
+		then
+			count += 1
 		end
-	)
-	local choiceScroll = scroll(choose.panel, "OwnedFamilies", 32)
-	local changeFamily = Candy.button(
-		familyPage,
-		"ChangeFamily",
-		offset(152, 32),
-		UDim2.new(1, -166, 0, 0),
-		"neutral",
-		14
-	)
-	changeFamily.input.Activated:Connect(function()
-		refresh(currentProfile)
-		Candy.show(choose, true)
-	end)
-	local function cell(id: string, column: number, row: number)
-		local box, surface = Candy.panel(
-			grid,
+	end
+	return count
+end
+
+function Families.new(ctx: W.Context, page: Frame)
+	local t = ctx.t
+	local profile: any
+	local selected: string? = nil
+	local refresh: (any, boolean) -> ()
+	local pickaxe = Remotes.event("PickaxeIntent")
+	local upgrades = Remotes.event("UpgradeIntent")
+	local list = Candy.frame(page, "FamilyList", UDim2.new(0.26, -4, 1, 0), offset(2, 0))
+	local tiles = {}
+	for index, id in order do
+		local button = Candy.button(
+			list,
 			id,
-			UDim2.new(0.25, -8, 0, PICK_CELL_HEIGHT),
-			UDim2.new(column / 4, 2, 0, row * (PICK_CELL_HEIGHT + PICK_CELL_GAP)),
-			true
+			UDim2.new(1, -4, 0.225, -3),
+			UDim2.new(0, 0, (index - 1) * 0.249, 1),
+			"neutral",
+			16
 		)
-		local pick = Config.pickaxes[id]
-		local border = surface:FindFirstChildOfClass("UIStroke") :: UIStroke
-		local image = Candy.icon(box, "pick", offset(30, 30), offset(4, 4))
-		local stars = Candy.text(box, "Stars", UDim2.new(1, -38, 0, 30), offset(36, 4), 15)
-		local name = Candy.text(box, "Name", UDim2.new(1, -8, 0, 22), offset(4, 33), 14)
-		local count = Candy.text(box, "Count", UDim2.new(1, -8, 0, 23), offset(4, 55), 12)
-		local stats = Candy.text(box, "Stats", UDim2.new(1, -8, 0, 27), offset(4, 78), 12)
-		local nextCircle = Candy.text(
-			box,
-			"NextCircle",
-			UDim2.new(1, -8, 0, NEXT_CIRCLE_HEIGHT),
-			offset(4, 106),
+		Candy.buttonIcon(button, "family_" .. id)
+		Candy.fit(button.image, scale(0.30, 0.84), scale(0.04, 0.08))
+		Candy.fit(button.text, scale(0.62, 0.37), scale(0.35, 0.12))
+		button.text.TextXAlignment = Enum.TextXAlignment.Left
+		local hint = Candy.text(button.face, "Hint", scale(0.60, 0.39), scale(0.35, 0.51), 12)
+		hint.TextXAlignment = Enum.TextXAlignment.Left
+		local current, currentText = W.pill(
+			button.face,
+			"Current",
+			UDim2.new(0.67, 0, 0, 16),
+			UDim2.new(0.35, 0, 0, -7),
+			W.green,
+			10
+		)
+		tiles[id] = { button = button, hint = hint, current = current, currentText = currentText }
+		W.bind(ctx, button, function()
+			if profile then
+				selected = id
+				refresh(profile, false)
+			end
+		end, function()
+			return t("family_hint_" .. id) .. "\n" .. t("menu_master_tip")
+		end)
+	end
+
+	local detail =
+		Candy.frame(page, "FamilyDetails", UDim2.new(0.74, -7, 1, 0), UDim2.new(0.26, 5, 0, 0))
+	local levelPanel =
+		Candy.panel(detail, "FamilyLevel", UDim2.new(1, -3, 0, 74), offset(1, 0), true)
+	local title = Candy.text(levelPanel, "Title", UDim2.new(0.94, 0, 0, 20), offset(8, 4), 17)
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	local levelText = Candy.text(levelPanel, "Level", UDim2.new(0.94, 0, 0, 14), offset(8, 24), 12)
+	levelText.TextXAlignment = Enum.TextXAlignment.Left
+	local fill = Candy.bar(levelPanel, UDim2.new(1, -32, 0, 12), offset(12, 48), W.blue)
+	local track = fill.Parent :: Frame
+	Candy.stroke(track, 2)
+	local marks = {}
+	for _, level in { 3, 8, 15, maxFamilyLevel } do
+		local box, text = W.pill(
+			track,
+			"Milestone" .. level,
+			offset(21, 21),
+			scale(level / maxFamilyLevel, 0.5),
+			Candy.panelColor,
 			11
 		)
-		local normal, golden, merge =
-			action(box, "Equip"), action(box, "Gold"), action(box, "Merge")
-		local buy = action(box, "Buy")
-		normal.input.Activated:Connect(function()
-			remote:FireServer("Equip", id, false)
-		end)
-		golden.input.Activated:Connect(function()
-			remote:FireServer("Equip", id, true)
-		end)
-		merge.input.Activated:Connect(function()
-			remote:FireServer("Merge", id)
-		end)
-		buy.input.Activated:Connect(function()
-			if pick.family then
-				remote:FireServer("BuyPick", pick.family)
-			end
-		end)
-		cells[id] = {
-			image = image,
-			stars = stars,
-			name = name,
-			count = count,
-			stats = stats,
-			nextCircle = nextCircle,
-			border = border,
-			normal = normal,
-			golden = golden,
-			merge = merge,
-			buy = buy,
-		}
+		Candy.round(box, 0)
+		box.AnchorPoint = Vector2.new(0.5, 0.5)
+		text.Text = tostring(level)
+		marks[level] = box
 	end
-	for row, family in Config.familyRules.order do
-		for column, rarity in Config.familyRules.rarities do
-			cell(family .. "_" .. rarity, column - 1, row - 1)
+	local choose = Candy.button(
+		levelPanel,
+		"Choose",
+		UDim2.new(0.33, -5, 0, 47),
+		UDim2.new(0.66, 0, 0.5, -23),
+		"confirm",
+		15
+	)
+	local switchEnabled = false
+	local switchHelp = ""
+	W.bind(ctx, choose, function()
+		if switchEnabled and selected then
+			pickaxe:FireServer("ChangeFamily", selected)
 		end
-		local box = Candy.panel(
-			choiceScroll,
-			family,
-			UDim2.new(1, -8, 0, 78),
-			offset(2, (row - 1) * 86),
-			true
-		)
-		local title = Candy.text(box, "Name", UDim2.new(0.72, -12, 0, 28), offset(6, 4), 17)
-		local hint = Candy.text(box, "Hint", UDim2.new(0.72, -12, 0, 35), offset(6, 35), 13)
-		local control = Candy.button(
-			box,
-			"Choose",
-			UDim2.new(0.27, -6, 0, 44),
-			UDim2.new(0.72, 0, 0, 16),
-			"neutral",
-			13
-		)
-		Candy.buttonIcon(control, "family_" .. family)
-		control.input.Activated:Connect(function()
-			if currentProfile and currentProfile.family ~= family then
-				remote:FireServer("ChangeFamily", family)
-				Candy.show(choose, false)
-			end
-		end)
-		choiceRows[family] = { box = box, title = title, hint = hint }
-		familyButtons[family] = control
-	end
-	cell("starter", 0, #Config.familyRules.order)
+	end, function()
+		return switchHelp
+	end)
+
+	local skillGrid = Candy.frame(detail, "Skills", UDim2.new(1, 0, 1, -85), offset(0, 82))
+	local skills = {}
 	for index = 1, 4 do
-		local box = Candy.panel(
-			familyScroll,
+		local card, surface = Candy.panel(
+			skillGrid,
 			"Skill" .. index,
-			UDim2.new(1, -8, 0, 76),
-			offset(2, (index - 1) * 82),
-			true
+			UDim2.new(0.25, -6, 1, -3),
+			UDim2.new((index - 1) / 4, 2, 0, 0)
 		)
-		local icon = Candy.icon(box, nil, offset(48, 48), offset(6, 8))
-		local title = Candy.text(box, "Title", UDim2.new(0.72, -63, 0, 20), offset(59, 2), 15)
-		local benefit = Candy.text(box, "Benefit", UDim2.new(0.72, -63, 0, 18), offset(59, 22), 13)
-		local level = Candy.text(box, "Level", UDim2.new(0.72, -63, 0, 17), offset(59, 40), 12)
-		local later = Candy.text(box, "Later", UDim2.new(0.72, -16, 0, 16), offset(8, 58), 11)
-		local buy = Candy.button(
-			box,
-			"Buy",
-			UDim2.new(0.27, -6, 0, 44),
-			UDim2.new(0.72, 0, 0, 15),
-			"coin",
-			13
-		)
-		buy.input.Activated:Connect(function()
-			if currentProfile and currentProfile.family then
-				Remotes.event("UpgradeIntent"):FireServer("BuySkill", currentProfile.family, index)
-			end
-		end)
-		skillRows[index] = {
-			box = box,
+		local content = Candy.frame(card, "Content", UDim2.new(1, 0, 1, -50), offset(0, 0))
+		local circle, icon =
+			W.iconCircle(content, "skill_storm_" .. index, scale(0.66, 0.46), scale(0.5, 0.245))
+		circle.AnchorPoint = Vector2.new(0.5, 0.5)
+		local name = Candy.text(content, "Name", scale(0.94, 0.23), scale(0.03, 0.48), 16)
+		local pips = {}
+		for pip = 1, 10 do
+			local cell = Candy.frame(
+				content,
+				"Pip" .. pip,
+				scale(0.075, 0.052),
+				scale(0.048 + (pip - 1) * 0.092, 0.72),
+				Candy.rowColor
+			)
+			Candy.round(cell, 3)
+			Candy.stroke(cell, 1)
+			pips[pip] = cell
+		end
+		local _, value =
+			W.pill(content, "Benefit", scale(0.91, 0.17), scale(0.045, 0.80), Candy.rowColor, 13)
+		local at = UDim2.new(0.04, 0, 1, -49)
+		local buy = Candy.button(card, "BuySkill", UDim2.new(0.92, 0, 0, 46), at, "coin", 16)
+		local locked = Candy.button(card, "Locked", UDim2.new(0.92, 0, 0, 46), at, "neutral", 11)
+		locked.shadow.Visible = false
+		locked.face.BackgroundTransparency = 1
+		local outline = locked.face:FindFirstChildOfClass("UIStroke")
+		if outline then
+			outline.Enabled = false
+		end
+		W.dashes(locked.face)
+		Candy.buttonIcon(locked, "lock")
+		Candy.buttonIcon(buy, "coin")
+		local view = {
+			circle = circle,
 			icon = icon,
-			title = title,
-			benefit = benefit,
-			level = level,
-			later = later,
+			name = name,
+			pips = pips,
+			value = value,
 			buy = buy,
+			locked = locked,
+			surface = surface,
+			affordable = false,
+			help = "",
 		}
+		skills[index] = view
+		local function help(): string
+			return view.help
+		end
+		W.bind(ctx, buy, function()
+			if selected and view.affordable then
+				upgrades:FireServer("BuySkill", selected, index)
+			end
+		end, help)
+		W.bind(ctx, locked, function() end, help)
 	end
 
-	refresh = function(profile: any)
-		currentProfile = profile
-		if not profile then
-			return
+	local previous: { [string]: { number } } = {}
+	refresh = function(current: any, animate: boolean)
+		profile = current
+		local family = selected or profile.family or order[1]
+		selected = family
+		local config = Config.families[family]
+		local color = W.familyColors[family]
+		local familyLevel = Family.level(profile, family)
+		local levels = profile.skills[family]
+		local before = previous[family]
+		local locale = Strings.localeOf(ctx.player)
+		for id, tile in tiles do
+			tile.button.text.Text = t("family_" .. id)
+			tile.hint.Text = t("menu_family_" .. id)
+			tile.currentText.Text = t("family_current")
+			tile.current.Visible = profile.family == id
+			Candy.paint(tile.button, if id == family then "coin" else "neutral")
 		end
-		local locale = Strings.localeOf(player)
-		collectionTitle.Text = translate("collection_tab")
-			.. " · "
-			.. (
-				if profile.family
-					then translate("family_" .. profile.family)
-					else translate("family_none")
-			)
-		for id, view in cells do
-			local pick = Config.pickaxes[id]
-			local rarity = Config.progress.rarities[pick.rarity]
-			local entry = profile.collection[id] or { count = 0, golden = 0 }
-			local level = profile.circle.pickLevels[id] or 1
-			local family = pick.family and Config.families[pick.family]
-			view.name.Text = if pick.family
-				then translate("family_" .. pick.family)
-				else translate("pick_starter")
-			view.stars.Text = string.rep("★", rarity.stars)
-			local art = Config.art.pickaxes[id]
-			Candy.setIcon(view.image, "pick")
-			if art.placeholder then
-				view.image.ImageColor3 = Color3.fromHex(art.color or "B58350")
-			else
-				view.image.Image, view.image.ImageRectSize, view.image.ImageRectOffset =
-					art.icon, Vector2.zero, Vector2.zero
-			end
-			view.border.Color = if entry.golden > 0
-				then Color3.fromHex("FFD23F")
-				elseif profile.family == pick.family and family then Color3.fromHex(
-					family.color
-				)
-				else Candy.ink
-			view.count.Text = translate("pick_counts", entry.count, entry.golden)
-			local strength =
-				Power.strength(rarity, math.min(level, Power.cap(rarity)), profile.circle.cards)
-			local goldStrength = Power.strength(rarity, level, profile.circle.cards, true)
-			view.stats.Text = translate(
-				"pick_stats",
-				level,
-				Format.stat(strength, locale),
-				Format.stat(goldStrength, locale)
-			)
-			local deferred = profile.nextFamily[id] == true
-			view.nextCircle.Text = if deferred then translate("family_next") else ""
-			local shop = family and pick.rarity == "common" and not profile.boughtPickaxes[id]
-			view.normal.box.Visible = entry.count > 0
-			view.golden.box.Visible = entry.golden > 0
-			view.merge.box.Visible = entry.count >= Config.familyRules.mergeNeed and id ~= "starter"
-			view.buy.box.Visible = shop == true
-			local actionY = if deferred then FIRST_ACTION_Y + NEXT_CIRCLE_HEIGHT else FIRST_ACTION_Y
-			for _, control in { view.normal, view.golden, view.merge, view.buy } do
-				if control.box.Visible then
-					Candy.move(control.box, offset(5, actionY))
-					actionY += ACTION_HEIGHT
-				end
-			end
-			view.normal.text.Text, view.golden.text.Text, view.merge.text.Text =
-				translate("pick_take"), translate("pick_gold"), translate("pick_merge")
-			view.buy.text.Text = if family
-				then translate("pick_buy") .. " " .. Format.short(family.price)
-				else ""
-			local canBuy = family
-				and profile.deepestWorld >= family.world
-				and profile.coins >= family.price
-			Candy.paint(view.buy, if canBuy then "coin" else "disabled")
-			Candy.paint(
-				view.normal,
-				if Family.canEquip(profile, id, false) then "confirm" else "disabled"
-			)
-			Candy.paint(
-				view.golden,
-				if Family.canEquip(profile, id, true) then "coin" else "disabled"
-			)
-			if shop and entry.count == 0 then
-				view.stats.Text = translate("pick_shop", family.world, Format.short(family.price))
-			end
+
+		local isCurrent = family == profile.family
+		local hasPick = Family.best(profile, family) ~= nil
+		local now = os.time()
+		local daySeconds = Config.familyRules.daySeconds
+		local waitTime = math.floor(now / daySeconds) <= profile.familyChangeDay
+		switchEnabled = not isCurrent and hasPick and not waitTime
+		switchHelp = if not hasPick then t("menu_choose_needs_pick") else t("menu_choose_tip")
+		choose.box.Visible = not isCurrent
+		local minutes =
+			math.max(0, math.ceil(((profile.familyChangeDay + 1) * daySeconds - now) / 60))
+		choose.text.Text = if hasPick and waitTime
+			then t("menu_choose_wait", minutes // 60, minutes % 60)
+			else t("menu_choose")
+		Candy.paint(choose, if switchEnabled then "confirm" else "disabled")
+		title.Text = t("family_" .. family) .. " · " .. t("menu_family_" .. family)
+		levelText.Text = t("upgrade_level", t("menu_fraction", familyLevel, maxFamilyLevel))
+		local width = if isCurrent then 1 else 0.63
+		Candy.fit(title, UDim2.new(width, -12, 0, 20), offset(8, 4))
+		Candy.fit(levelText, UDim2.new(width, -12, 0, 14), offset(8, 24))
+		Candy.fit(track, UDim2.new(width, -28, 0, 12), offset(12, 48))
+		fill.BackgroundColor3, fill.Size = color, scale(familyLevel / maxFamilyLevel, 1)
+		for milestone, mark in marks do
+			mark.BackgroundColor3 = if familyLevel >= milestone then W.yellow else Candy.panelColor
 		end
-		local family = profile.family
-		Candy.setIcon(familyIcon, if family then "family_" .. family else nil)
-		choose.title.Text = translate("family_tab")
-		changeFamily.text.Text = translate("family_change")
-		familyTitle.Text = if family
-			then translate("family_permanent") .. " · " .. translate(
-				"family_level",
-				translate("family_" .. family),
-				Family.level(profile, family)
-			)
-			else translate("family_none")
-		familyHint.Text = if family
-			then translate("family_hint_" .. family)
-			else translate("family_permanent")
-		bonus.Text =
-			translate("family_bonus", Format.stat((Family.coinBonus(profile) - 1) * 100, locale))
-		local tomorrow = math.floor(os.time() / Config.familyRules.daySeconds)
-			<= profile.familyChangeDay
-		local ownedIndex = 0
-		if tomorrow then
-			changeFamily.text.Text = translate("family_tomorrow")
-		end
-		for _, id in Config.familyRules.order do
-			local control, row = familyButtons[id], choiceRows[id]
-			local owned = Family.best(profile, id) ~= nil
-			row.box.Visible = owned
-			if owned then
-				Candy.move(row.box, offset(2, ownedIndex * 86))
-				ownedIndex += 1
-			end
-			row.title.Text, row.hint.Text =
-				translate("family_" .. id), translate("family_hint_" .. id)
-			control.text.Text = if tomorrow and id ~= family
-				then translate("family_tomorrow")
-				elseif id == family then translate("family_current")
-				else translate("family_change")
-			Candy.paint(
-				control,
-				if id == family
-					then "purple"
-					elseif owned and not tomorrow then "confirm"
-					else "disabled"
-			)
-		end
-		for index, row in skillRows do
-			row.box.Visible = family ~= nil
-			if not family then
-				continue
-			end
-			local cfg, levels = Config.families[family], profile.skills[family]
-			local skill, level = cfg.skills[index], levels[index]
-			local after = math.min(skill.cap, level + 1)
+
+		for index, view in skills do
+			local skill, level = config.skills[index], levels[index]
+			local nextLevel = math.min(level + 1, skill.cap)
+			local closed = familyLevel < skill.unlock
 			local price = Family.skillPrice(level)
-			local unlocked = Family.unlocked(profile, family, index)
-			Candy.setIcon(row.icon, "skill_" .. family .. "_" .. index)
-			row.title.Text = translate("skill_" .. family .. "_" .. index)
-			if skill.effect == "treasure" then
-				row.benefit.Text = translate(
+			view.affordable = Family.unlocked(profile, family, index)
+				and level < skill.cap
+				and profile.coins >= price
+			Candy.setIcon(view.icon, "skill_" .. family .. "_" .. index)
+			view.circle.BackgroundColor3 = color
+			view.icon.ImageTransparency = if closed then 0.42 else 0
+			view.surface.BackgroundColor3 = if closed then Candy.rowColor else Candy.panelColor
+			view.name.Text = t("skill_" .. family .. "_" .. index)
+			view.name.TextTransparency = if closed then 0.27 else 0
+			local seconds = skill.effect == "stormSeconds"
+			local factor = if seconds then 1 else 100
+			local value = Format.stat(skill.per * level * factor, locale)
+			local nextValue = Format.stat(skill.per * nextLevel * factor, locale)
+			local beforeValue = if seconds then t("menu_seconds", value) else "+" .. value .. "%"
+			local afterValue = if seconds
+				then t("menu_seconds", nextValue)
+				else "+" .. nextValue .. "%"
+			view.value.Text = beforeValue
+				.. (if level < skill.cap then " → " .. afterValue else "")
+			for pip, cell in view.pips do
+				cell.BackgroundColor3 = if pip <= level then color else Candy.rowColor
+			end
+			view.buy.box.Visible, view.locked.box.Visible = not closed, closed
+			view.buy.text.Text = if level < skill.cap then Format.short(price) else t("upgrade_cap")
+			view.locked.text.Text = t("menu_unlock_skill", skill.unlock)
+			Candy.paint(view.buy, if view.affordable then "coin" else "disabled")
+			view.help = if skill.effect == "treasure"
+				then t(
 					"skill_treasure",
-					level * skill.per * 100,
-					after * skill.per * 100,
-					level * Config.familyRules.chestFrequencyPerLevel * 100,
-					after * Config.familyRules.chestFrequencyPerLevel * 100
+					value,
+					nextValue,
+					Format.stat(level * Config.familyRules.chestFrequencyPerLevel * 100, locale),
+					Format.stat(nextLevel * Config.familyRules.chestFrequencyPerLevel * 100, locale)
 				)
-			else
-				local factor = if skill.effect == "stormSeconds" then 1 else 100
-				row.benefit.Text = translate(
-					if factor == 1 then "skill_seconds" else "skill_percent",
-					translate("skill_effect_" .. skill.effect),
-					Format.stat(skill.per * level * factor, locale),
-					Format.stat(skill.per * after * factor, locale)
+				else t(
+					if seconds then "skill_seconds" else "skill_percent",
+					t("skill_effect_" .. skill.effect),
+					value,
+					nextValue
+				)
+			if closed then
+				view.help = t("menu_unlock_skill", skill.unlock) .. "\n" .. view.help
+			elseif not isCurrent then
+				view.help = t("menu_choose_skill") .. "\n" .. view.help
+			elseif skill.deferred or (family == "dynamite" and index == 2) then
+				view.help ..= "\n" .. t(
+					if skill.deferred then "skill_later" else "skill_eggs_later"
 				)
 			end
-			row.level.Text = if not unlocked
-				then translate("skill_lock", skill.unlock)
-				else translate("skill_level", level, Format.short(price))
-			row.later.Text = if skill.deferred
-				then translate("skill_later")
-				elseif family == "dynamite" and index == 2 then translate("skill_eggs_later")
-				else ""
-			row.buy.text.Text = if level >= skill.cap
-				then translate("upgrade_cap")
-				else translate("pick_buy")
-			Candy.paint(
-				row.buy,
-				if unlocked
-						and level < skill.cap
-						and profile.coins >= price
-					then "coin"
-					else "disabled"
-			)
+			if animate and before and level > before[index] then
+				W.bump(view.icon, ctx, true)
+			end
 		end
+		previous[family] = table.clone(levels)
 	end
-	return { collection = collectionPage, family = familyPage, refresh = refresh }
+
+	return { refresh = refresh }
 end
 
 return Families

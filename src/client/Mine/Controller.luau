@@ -39,7 +39,6 @@ local TravelDebris = require(Client.Fx.TravelDebris)
 local Haptics = require(Client.Fx.Haptics)
 local Footsteps = require(Client.Fx.Footsteps)
 local FamilyFx = require(Client.Fx.FamilyFx)
-local PickaxeChest = require(Client.Ui.PickaxeChest)
 
 local Controller = {}
 local mine = Config.mine
@@ -83,24 +82,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local jumpButton: GuiObject? = nil
 	local lastPhase = "idle"
 	local hapticsOn = true
-	local chest = PickaxeChest.new(guiParent, player, translate, hud.wallet)
 	local familyToast = require(Client.Toast).create(guiParent, translate)
-	FamilyFx.configure(
-		function(cell, front)
-			local r = renderer
-			if not r then
-				return nil
-			end
-			local depth = cell.d or (front or 0) + cell.dRel
-			local entry = r.cells[State.cellKey(cell.x, cell.y, depth)]
-			return entry and entry.part
-		end,
-		chest.result,
-		function(key)
-			familyToast(key, nil)
-		end
-	)
-	Remotes.event("PickaxeResult").OnClientEvent:Connect(FamilyFx.chestOpen)
 	local function frozen(points: { any }, front: number)
 		frozenCells = {}
 		for _, cell in points do
@@ -140,7 +122,23 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			)
 		end
 	end
-	local stepUpgrades = Upgrades.new(guiParent, player, translate, haptic)
+	local menu = Upgrades.new(guiParent, player, translate, haptic, hud.wallet)
+	FamilyFx.configure(
+		function(cell, front)
+			local r = renderer
+			if not r then
+				return nil
+			end
+			local depth = cell.d or (front or 0) + cell.dRel
+			local entry = r.cells[State.cellKey(cell.x, cell.y, depth)]
+			return entry and entry.part
+		end,
+		menu.chestResult,
+		function(key)
+			familyToast(key, nil)
+		end
+	)
+	Remotes.event("PickaxeResult").OnClientEvent:Connect(FamilyFx.chestOpen)
 	local previousCards: { [string]: number }? = nil
 	ProfileState.changed:Connect(function()
 		local p = ProfileState.getProfile()
@@ -1054,7 +1052,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local depth = if aimed then window.front + aimed.dRel else window.front
 		local hardness = Worlds.durability(depth)
 		local need = Power.hits(hardness, equipped.strength)
-		stepUpgrades(now, active, window.front, need, equipped.strength, hardness, reduced)
+		menu.step(now, active, window.front, need, equipped.strength, reduced)
 		local hint = nil
 		if r.pulse.Enabled then
 			r.pulse.FillTransparency = 0.60 + math.sin(now * 6) * 0.19

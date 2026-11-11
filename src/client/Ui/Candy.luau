@@ -18,7 +18,7 @@ Candy.font = Font.fromEnum(Enum.Font.GothamBlack)
 -- Variant A sizes in design pixels at 667 px. Insets and the UIScale are applied once.
 local WIDTH = 667
 local BORDER, CORNER, SHADOW = WIDTH * 0.0055, WIDTH * 0.022, WIDTH * 0.007
-local ATLAS = "rbxassetid://113228730616786"
+local ATLAS = "rbxassetid://92693559444389"
 local ICON_SIZE, ICON_COLUMNS = 96, 6
 local ICONS = {
 	coin = 0,
@@ -38,7 +38,6 @@ local ICONS = {
 	shape6 = 14,
 	width = 15,
 	pick = 16,
-	keys = 26,
 	family_storm = 18,
 	skill_storm_1 = 19,
 	skill_storm_2 = 20,
@@ -59,6 +58,11 @@ local ICONS = {
 	skill_frost_2 = 38,
 	skill_frost_3 = 39,
 	skill_frost_4 = 40,
+	cards = 42,
+	chest = 43,
+	keys = 44,
+	chest_rays = 45,
+	pickaxe = 46,
 }
 
 type Geometry = { size: UDim2, at: UDim2 }
@@ -78,6 +82,8 @@ export type Window = {
 	layer: Frame,
 	panel: Frame,
 	title: TextLabel,
+	ribbon: Frame,
+	close: Control,
 	open: boolean,
 	onChange: (boolean) -> (),
 	dimmer: TextButton,
@@ -552,7 +558,7 @@ function Candy.modal(
 	dimmer.Parent = layer
 	local panel = Candy.panel(layer, "Panel", size, UDim2.fromScale(0.5, 0.55))
 	panel.AnchorPoint, panel.Active = Vector2.new(0.5, 0.5), true
-	local title =
+	local title, ribbon =
 		Candy.ribbon(panel, "Title", UDim2.fromOffset(154, 36), UDim2.fromOffset(16, -15), color)
 	local close = Candy.button(
 		panel,
@@ -569,6 +575,8 @@ function Candy.modal(
 		layer = layer,
 		panel = panel,
 		title = title,
+		ribbon = ribbon,
+		close = close,
 		open = false,
 		onChange = onChange,
 		dimmer = dimmer,

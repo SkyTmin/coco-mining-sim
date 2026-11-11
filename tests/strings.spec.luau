@@ -55,6 +55,7 @@ Test.describe("Strings", function()
 				"mine_settings",
 				"mine_plate_remaining",
 				"mine_ult_layers",
+				"menu_families_equal",
 			}
 		do
 			expect(Strings.has(key)).toBe(true)
@@ -103,6 +104,20 @@ Test.describe("Strings", function()
 				"creative_chests_100",
 				"creative_first_storm",
 				"creative_first_key",
+				"menu_chest",
+				"menu_open",
+				"menu_improve",
+				"menu_browse",
+				"menu_skills",
+				"menu_all",
+				"menu_from_chest",
+				"menu_equip",
+				"menu_choose",
+				"menu_open_key",
+				"menu_no_keys",
+				"menu_opening",
+				"menu_claim",
+				"menu_again",
 			}
 		do
 			for _, language in LOCALES do
