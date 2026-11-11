@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Экран шахты</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.k{font-family:'Nunito',sans-serif;font-weight:900;color:#1E2140}
+.pill{background:#FFF8EC;border:3px solid #1E2140;border-radius:14px;box-shadow:0 4px 0 #1E2140}
+.btn{font-family:'Nunito',sans-serif;font-weight:900;color:#1E2140;border:3px solid #1E2140;box-shadow:0 4px 0 #1E2140;cursor:pointer;text-decoration:none;transition:transform 60ms,box-shadow 60ms,filter 120ms}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(4px);box-shadow:0 0 0 #1E2140}
+.dot{position:absolute;right:-6px;top:-6px;width:16px;height:16px;border-radius:50%;background:#FF4D5E;border:3px solid #FFF8EC}
+.new{outline:4px dashed #FF4D5E;outline-offset:6px}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.pulse{animation:pulse 1.2s ease-in-out infinite}
+a{color:#1E2140}a:hover{color:#1E2140}
+</style>
+</helmet>
+<div class="k" style="width:1280px;height:720px;position:relative;overflow:hidden;background:linear-gradient(#5A6386,#2E3350 55%,#7A5A44 55%,#5E4434)">
+  <div style="position:absolute;left:150px;top:120px;width:980px;height:450px;background:#3E4566;border:6px solid #6B4A2E"></div>
+  <div style="position:absolute;left:170px;top:140px;display:grid;grid-template-columns:repeat(9,104px);gap:0">
+    <sc-for list="{{blocks}}" as="b" hint-placeholder-count="36">
+      <div style="width:104px;height:104px;box-sizing:border-box;border:3px solid #2C3150;background:{{b.c}};position:relative">
+        <sc-if value="{{b.ore}}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:30px;top:34px;width:22px;height:22px;border-radius:50%;background:#1E2140;box-shadow:26px 14px 0 -4px #1E2140,10px 34px 0 -6px #1E2140"></span></sc-if>
+      </div>
+    </sc-for>
+  </div>
+  <div aria-hidden="true" style="position:absolute;left:637px;top:357px;width:6px;height:6px;border-radius:50%;background:#fff"></div>
+
+  <div style="position:absolute;left:18px;top:16px;display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+    <div class="pill" style="display:flex;align-items:center;gap:8px;padding:4px 16px 4px 6px;font-size:20px;border-radius:999px">
+      <svg width="32" height="32" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19" fill="#FFC83D" stroke="#1E2140" stroke-width="4"></circle><path d="M24 13l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="#FFF3A6" stroke="#1E2140" stroke-width="2.5" stroke-linejoin="round"></path></svg>
+      73.1K
+    </div>
+    <div class="pill" style="display:flex;align-items:center;gap:6px;padding:2px 14px 2px 6px;font-size:17px;border-radius:999px;margin-left:10px">
+      <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true"><circle cx="15" cy="24" r="9" fill="#FFC83D" stroke="#1E2140" stroke-width="4"></circle><path d="M23 21h19v6h-4v6h-5v-6h-10z" fill="#FFC83D" stroke="#1E2140" stroke-width="4" stroke-linejoin="round"></path></svg>
+      9
+    </div>
+  </div>
+
+  <div class="pill" style="position:absolute;left:510px;top:14px;width:260px;box-sizing:border-box;padding:6px 12px 6px">
+    <div style="font-size:15px">Мир 1 · Луговой слой</div>
+    <div style="height:9px;margin-top:5px;background:#E4D6BD;border:2px solid #1E2140;border-radius:999px;overflow:hidden"><div style="width:22%;height:100%;background:#A07850"></div></div>
+    <div style="font-size:11px;text-align:center;margin-top:3px">До Плиты 382</div>
+  </div>
+
+  <div style="position:absolute;right:16px;top:14px;display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+    <div style="display:flex;gap:8px">
+      <button class="btn" aria-label="Вид" style="width:44px;height:44px;border-radius:50%;background:#FFF8EC;padding:0;display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 48 48" aria-hidden="true"><path d="M4 24c10-14 30-14 40 0-10 14-30 14-40 0z" fill="#fff" stroke="#1E2140" stroke-width="4"></path><circle cx="24" cy="24" r="7" fill="#2EC4B6" stroke="#1E2140" stroke-width="3"></circle></svg></button>
+      <button class="btn" aria-label="Настройки" style="width:44px;height:44px;border-radius:50%;background:#FFF8EC;padding:0;display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="15" fill="#5B74C2" stroke="#1E2140" stroke-width="5" stroke-dasharray="7 4"></circle><circle cx="24" cy="24" r="6" fill="#FFF8EC" stroke="#1E2140" stroke-width="3"></circle></svg></button>
+    </div>
+    <button class="btn" style="height:30px;padding:0 12px;border-radius:999px;background:#FFF8EC;font-size:13px">Тест-режим</button>
+  </div>
+
+  <div style="position:absolute;left:18px;bottom:18px;display:flex;gap:10px;align-items:flex-end">
+    <a href="Menu.dc.html" class="btn" style="position:relative;display:flex;align-items:center;gap:8px;height:52px;padding:0 18px 0 10px;border-radius:14px;background:#A855F7;color:#fff;font-size:17px;text-shadow:0 2px 0 #1E2140">
+      <svg width="34" height="34" viewBox="0 0 48 48" aria-hidden="true"><path d="M7 15c8-8 22-9 32-2l-3 3c-8-5-18-5-25 1z" fill="#C8B6FF" stroke="#1E2140" stroke-width="3.5" stroke-linejoin="round"></path><path d="M21 13l4 4-15 22-4-4z" fill="#B0703C" stroke="#1E2140" stroke-width="3.5" stroke-linejoin="round"></path><path d="M36 26l8 9h-5v9h-6v-9h-5z" fill="#22C55E" stroke="#1E2140" stroke-width="3.5" stroke-linejoin="round"></path></svg>
+      Улучшения<span class="dot"></span>
+    </a>
+    <a href="Pickaxes.dc.html" class="btn new" style="position:relative;display:flex;align-items:center;gap:6px;height:52px;padding:0 16px 0 8px;border-radius:14px;background:#3D8BFF;color:#fff;font-size:17px;text-shadow:0 2px 0 #1E2140">
+      <svg width="34" height="34" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 17c9-10 27-10 38 0l-4 3c-8-6-21-7-30 0z" fill="#8BE1FF" stroke="#1E2140" stroke-width="3.5" stroke-linejoin="round"></path><path d="M22 13h5v31h-5z" fill="#B0703C" stroke="#1E2140" stroke-width="3.5" stroke-linejoin="round" transform="rotate(35 24 28)"></path></svg>
+      Кирки<span class="dot"></span>
+    </a>
+    <a href="Family.dc.html" class="btn new" style="position:relative;display:flex;align-items:center;gap:6px;height:52px;padding:0 16px 0 8px;border-radius:14px;background:#45CFFF;font-size:17px">
+      <svg width="34" height="34" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3l18 10.5v21L24 45 6 34.5v-21z" fill="#1A78D6" stroke="#1E2140" stroke-width="3.5" stroke-linejoin="round"></path><path d="M21 12h9l-4 9h6l-11 15 3-11h-5z" fill="#FFE14D" stroke="#1E2140" stroke-width="2.5" stroke-linejoin="round"></path></svg>
+      Семья
+    </a>
+  </div>
+
+  <a href="Chest.dc.html" aria-label="Сундук кирок" class="btn new {{pulse}}" style="position:absolute;right:122px;bottom:22px;width:68px;height:68px;border-radius:20px;background:#28337A;display:flex;align-items:center;justify-content:center">
+    <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><path d="M6 22h36v18H6z" fill="#3A4AA8" stroke="#1E2140" stroke-width="3.5" stroke-linejoin="round"></path><path d="M6 22c0-10 36-10 36 0z" fill="#5B6CD0" stroke="#1E2140" stroke-width="3.5" stroke-linejoin="round"></path><path d="M14 13v27M34 13v27" stroke="#FFC83D" stroke-width="5"></path><path d="M20 24h8v9h-8z" fill="#FFC83D" stroke="#1E2140" stroke-width="3"></path></svg>
+    <span style="position:absolute;right:-10px;top:-10px;min-width:26px;height:26px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:#FFC83D;border:3px solid #1E2140;font-size:14px;display:flex;align-items:center;justify-content:center">9</span>
+  </a>
+  <button class="btn" onClick="{{tapUlt}}" aria-label="Ульта" style="position:absolute;right:20px;bottom:18px;width:88px;height:88px;border-radius:50%;padding:0;background:conic-gradient(#FFE14D {{ultDeg}},#4B3F6B 0);display:flex;align-items:center;justify-content:center">
+    <span style="width:70px;height:70px;border-radius:50%;border:3px solid #1E2140;background:linear-gradient(160deg,#A855F7,#EC4899);display:flex;align-items:center;justify-content:center">
+      <svg width="40" height="40" viewBox="0 0 48 48" aria-hidden="true"><path d="M20 4h14l-7 15h9L16 44l5-18h-8z" fill="#FFE14D" stroke="#1E2140" stroke-width="3.5" stroke-linejoin="round"></path></svg>
+    </span>
+  </button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { ready: false }; }
+  renderVals() {
+    const pal = ['#8E9AC8', '#8592C2', '#97A3CF', '#7F8BBE'];
+    const blocks = [];
+    for (let i = 0; i < 36; i++) blocks.push({ c: pal[(i * 5 + (i >> 2)) % 4], ore: [1, 8, 12, 19, 26, 30, 34].includes(i) });
+    return {
+      blocks, pulse: 'pulse',
+      ultDeg: this.state.ready ? '360deg' : '250deg',
+      tapUlt: () => this.setState({ ready: !this.state.ready }),
+    };
+  }
+}
+</script>
+</body>
+</html>

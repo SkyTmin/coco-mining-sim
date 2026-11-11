@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Кирки: коллекция</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.k{font-family:'Nunito',sans-serif;font-weight:900;color:#1E2140}
+.chip{font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;color:#1E2140;height:48px;padding:0 18px;border:4px solid #1E2140;border-radius:999px;box-shadow:0 4px 0 #1E2140;cursor:pointer;display:flex;align-items:center;gap:8px}
+.chip:active{transform:translateY(4px);box-shadow:none}
+.pc{font-family:'Nunito',sans-serif;font-weight:900;color:#1E2140;position:relative;height:118px;padding:0;border:4px solid #1E2140;border-radius:20px;box-shadow:0 5px 0 #1E2140;background:#FFF8EC;cursor:pointer;overflow:hidden;transition:transform 100ms}
+.pc:hover{transform:translateY(-3px)}
+.pc:active{transform:translateY(5px);box-shadow:none}
+.btn{font-family:'Nunito',sans-serif;font-weight:900;border:4px solid #1E2140;border-radius:18px;box-shadow:0 6px 0 #1E2140;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:translateY(6px);box-shadow:none}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.05)}100%{transform:scale(1)}}
+.pop{animation:pop 220ms ease-out}
+a{color:#1E2140}a:hover{color:#1E2140}
+</style>
+</helmet>
+<div class="k" style="width:1280px;height:720px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#3A3352,#0E0C16)">
+  <div style="position:absolute;left:44px;top:64px;width:1192px;height:620px;box-sizing:border-box;background:#FFF8EC;border:5px solid #1E2140;border-radius:32px;box-shadow:0 10px 0 #1E2140;padding:44px 24px 24px;display:flex;gap:22px">
+    <div style="position:absolute;left:34px;top:-34px;transform:rotate(-2deg);background:#3D8BFF;color:#fff;border:5px solid #1E2140;border-radius:20px;box-shadow:0 6px 0 #1E2140;padding:8px 28px;font-size:34px;text-shadow:0 3px 0 #1E2140">Кирки · 3 из 16</div>
+    <a href="Menu.dc.html" aria-label="Закрыть" style="position:absolute;right:-26px;top:-26px;width:72px;height:72px;border-radius:50%;background:#FF4D5E;border:5px solid #1E2140;box-shadow:0 6px 0 #1E2140;display:flex;align-items:center;justify-content:center;text-decoration:none">
+      <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="#fff" stroke-width="4.5" stroke-linecap="round"></path></svg>
+    </a>
+
+    <div style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
+          <button class="chip" onClick="{{f.pick}}" style="background:{{f.bg}}">
+            <span style="width:16px;height:16px;border-radius:50%;border:3px solid #1E2140;background:{{f.dot}}"></span>{{f.name}}
+          </button>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+        <sc-for list="{{cards}}" as="c" hint-placeholder-count="16">
+          <button class="pc" onClick="{{c.pick}}" aria-label="{{c.aria}}" style="{{c.ring}}">
+            <div style="position:absolute;left:0;right:0;top:0;height:10px;background:{{c.rc}}"></div>
+            <div style="display:flex;align-items:center;height:100%;padding:8px 8px 4px;box-sizing:border-box;gap:4px;opacity:{{c.op}}">
+              <svg width="78" height="78" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 17c9-10 27-10 38 0l-4 3c-8-6-21-7-30 0z" fill="{{c.fc}}" stroke="#1E2140" stroke-width="3" stroke-linejoin="round"></path><path d="M22 13h5v31h-5z" fill="{{c.hc}}" stroke="#1E2140" stroke-width="3" stroke-linejoin="round" transform="rotate(35 24 28)"></path><circle cx="24" cy="15" r="4" fill="{{c.gem}}" stroke="#1E2140" stroke-width="2"></circle></svg>
+              <div style="text-align:left;flex:1;min-width:0">
+                <div style="font-size:18px;color:{{c.rcText}}">{{c.stars}}</div>
+                <div style="font-size:17px">{{c.fname}}</div>
+                <div style="font-size:15px;opacity:.7;font-weight:800">{{c.sub}}</div>
+              </div>
+            </div>
+            <sc-if value="{{c.locked}}" hint-placeholder-val="{{ false }}">
+              <svg style="position:absolute;right:8px;bottom:8px" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="3" fill="#B8BDC9" stroke="#1E2140" stroke-width="2.5"></rect><path d="M8 10V7a4 4 0 018 0v3" fill="none" stroke="#1E2140" stroke-width="2.5"></path></svg>
+            </sc-if>
+            <sc-if value="{{c.count}}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute;right:8px;bottom:8px;background:#22C55E;color:#fff;border:3px solid #1E2140;border-radius:999px;padding:0 8px;font-size:15px">×{{c.count}}</span>
+            </sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div class="pop" style="width:330px;flex:none;background:#F2E6D2;border:4px solid #1E2140;border-radius:24px;padding:16px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;overflow:hidden">
+      <div style="position:absolute;left:0;right:0;top:0;height:14px;background:{{sel.rc}}"></div>
+      <div style="width:170px;height:170px;margin-top:8px;border-radius:50%;background:radial-gradient(circle,{{sel.glow}} 0%,rgba(255,255,255,0) 68%);display:flex;align-items:center;justify-content:center">
+        <svg width="150" height="150" viewBox="0 0 48 48" aria-hidden="true" style="opacity:{{sel.op}}"><path d="M5 17c9-10 27-10 38 0l-4 3c-8-6-21-7-30 0z" fill="{{sel.fc}}" stroke="#1E2140" stroke-width="2.6" stroke-linejoin="round"></path><path d="M22 13h5v31h-5z" fill="{{sel.hc}}" stroke="#1E2140" stroke-width="2.6" stroke-linejoin="round" transform="rotate(35 24 28)"></path><circle cx="24" cy="15" r="4" fill="{{sel.gem}}" stroke="#1E2140" stroke-width="2"></circle></svg>
+      </div>
+      <div style="font-size:30px;text-align:center;line-height:1.05">{{sel.fname}}</div>
+      <div style="font-size:22px;color:{{sel.rcText}}">{{sel.stars}} {{sel.rname}}</div>
+      <div style="width:100%;display:flex;gap:8px">
+        <div style="flex:1;background:#FFF8EC;border:3px solid #1E2140;border-radius:14px;padding:6px;text-align:center"><div style="font-size:14px;opacity:.7">Сила</div><div style="font-size:24px">{{sel.power}}</div></div>
+        <div style="flex:1;background:#FFF8EC;border:3px solid #1E2140;border-radius:14px;padding:6px;text-align:center"><div style="font-size:14px;opacity:.7">Есть</div><div style="font-size:24px">{{sel.have}}</div></div>
+      </div>
+      <div style="width:100%;background:#FFF8EC;border:3px solid #1E2140;border-radius:14px;padding:8px 10px;box-sizing:border-box;font-size:17px;text-align:center">{{sel.perk}}</div>
+      <sc-if value="{{sel.locked}}" hint-placeholder-val="{{ false }}">
+        <a href="Chest.dc.html" class="btn" style="width:100%;height:60px;margin-top:auto;background:#22C55E;color:#fff;font-size:22px;text-shadow:0 2px 0 #1E2140">Достать из Сундука</a>
+      </sc-if>
+      <sc-if value="{{sel.owned}}" hint-placeholder-val="{{ true }}">
+        <div style="width:100%;margin-top:auto;display:flex;flex-direction:column;gap:10px">
+          <button class="btn" onClick="{{equip}}" style="height:60px;background:{{equipBg}};color:#fff;font-size:24px;text-shadow:0 2px 0 #1E2140">{{equipText}}</button>
+          <button class="btn" style="height:48px;background:#B8BDC9;color:#1E2140;font-size:18px">Слить в золотую · 1/3</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { fam: 'all', sel: 'storm_1', equipped: 'storm_0' }; }
+  renderVals() {
+    const FAM = [
+      { id: 'storm', name: 'Гроза', c: '#45CFFF', gem: '#FFE14D', perk: ['Молния: 30 % → 4 блока', 'Молния: 35 % → 6 блоков', 'Молния: 40 % → 9, с потолка', 'Молния: 45 % → 14, вглубь'] },
+      { id: 'dynamite', name: 'Динамит', c: '#FF6A2A', gem: '#FFD23F', perk: ['Взрыв: 15 % → 3×3', 'Взрыв: 15 % → 3×3 на 2 слоя', 'Взрыв: 18 % → двойной', 'Взрыв: 21 % → 5×3 на 2 слоя'] },
+      { id: 'rift', name: 'Разлом', c: '#FFA51C', gem: '#FFF1C2', perk: ['Трещина: 20 % → 6 слоёв', 'Трещина: 21 % → 10 слоёв', 'Трещина: 24 % → 15 слоёв', 'Трещина: 25 % → на всю высоту'] },
+      { id: 'frost', name: 'Мороз', c: '#BDEFFF', gem: '#FFFFFF', perk: ['Каждый 8-й удар колет 10', 'Каждый 7-й удар колет 15', 'Каждый 6-й удар колет 22', 'Каждый 5-й удар колет 32'] },
+    ];
+    const R = [
+      { name: 'Обычная', c: '#A9B4C2', t: '#5F6B7C', s: '★', p: 1, glow: 'rgba(169,180,194,.7)' },
+      { name: 'Редкая', c: '#3FA9FF', t: '#1F6FC2', s: '★★', p: 1.5, glow: 'rgba(63,169,255,.7)' },
+      { name: 'Эпическая', c: '#A35BFF', t: '#7A35D6', s: '★★★', p: 2.2, glow: 'rgba(163,91,255,.75)' },
+      { name: 'Легендарная', c: '#FF9F1C', t: '#C26A00', s: '★★★★', p: 3.2, glow: 'rgba(255,159,28,.8)' },
+    ];
+    const OWN = { storm_0: 1, storm_1: 1, dynamite_0: 2 };
+    const fam = this.state.fam;
+    const all = [];
+    FAM.forEach((f) => R.forEach((r, i) => {
+      const id = f.id + '_' + i, n = OWN[id] || 0;
+      all.push({ id, f, r, i, n });
+    }));
+    const mk = (x) => ({
+      fname: x.f.name, fc: x.f.c, gem: x.i >= 1 ? x.f.gem : '#9CA5B7', hc: x.i === 3 ? '#FFC83D' : x.i === 2 ? '#7A35D6' : '#B0703C',
+      rc: x.r.c, rcText: x.r.t, stars: x.r.s, rname: x.r.name, op: x.n ? 1 : 0.35, locked: !x.n, owned: !!x.n, count: x.n > 1 ? x.n : 0,
+      power: (2 * x.r.p).toFixed(1).replace('.', ','), have: x.n ? x.n + ' шт.' : 'нет', perk: x.f.perk[x.i], glow: x.r.glow,
+    });
+    const cards = all.filter((x) => fam === 'all' || x.f.id === fam).map((x) => ({
+      ...mk(x), sub: x.n ? (x.id === this.state.equipped ? 'в руке' : 'ур. 1') : 'нет', aria: x.f.name + ' ' + x.r.name,
+      ring: x.id === this.state.sel ? 'outline:5px solid #FFC83D;outline-offset:2px' : '',
+      pick: () => this.setState({ sel: x.id }),
+    }));
+    const selX = all.find((x) => x.id === this.state.sel) || all[0];
+    const filters = [{ id: 'all', name: 'Все', dot: '#1E2140' }, ...FAM.map((f) => ({ id: f.id, name: f.name, dot: f.c }))].map((f) => ({
+      ...f, bg: f.id === fam ? '#FFC83D' : '#FFF8EC', pick: () => this.setState({ fam: f.id }),
+    }));
+    const inHand = this.state.equipped === this.state.sel;
+    return {
+      filters, cards, sel: mk(selX),
+      equipText: inHand ? 'В руке ✓' : 'В руку', equipBg: inHand ? '#16A34A' : '#3D8BFF',
+      equip: () => this.setState({ equipped: this.state.sel }),
+    };
+  }
+}
+</script>
+</body>
+</html>

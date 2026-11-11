@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Сундук кирок</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.k{font-family:'Nunito',sans-serif;font-weight:900;color:#1E2140}
+.btn{font-family:'Nunito',sans-serif;font-weight:900;border:5px solid #1E2140;border-radius:20px;box-shadow:0 7px 0 #1E2140;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none}
+.btn:active{transform:translateY(7px);box-shadow:none}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+@keyframes shake{0%,100%{transform:rotate(0)}20%{transform:rotate(-9deg) scale(1.04)}40%{transform:rotate(9deg) scale(1.08)}60%{transform:rotate(-7deg) scale(1.12)}80%{transform:rotate(7deg) scale(1.16)}}
+@keyframes rays{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes reveal{0%{transform:scale(.2) rotate(-12deg);opacity:0}60%{transform:scale(1.12) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.bob{animation:bob 2.2s ease-in-out infinite}
+.shake{animation:shake 700ms ease-in-out}
+a{color:#1E2140}a:hover{color:#1E2140}
+</style>
+</helmet>
+<div class="k" style="width:1280px;height:720px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#3A3352,#0E0C16)">
+  <div style="position:absolute;left:44px;top:64px;width:1192px;height:620px;box-sizing:border-box;background:#FFF8EC;border:5px solid #1E2140;border-radius:32px;box-shadow:0 10px 0 #1E2140;padding:40px 30px 26px;display:flex;gap:30px">
+    <div style="position:absolute;left:34px;top:-34px;transform:rotate(-2deg);background:#28337A;color:#fff;border:5px solid #1E2140;border-radius:20px;box-shadow:0 6px 0 #1E2140;padding:8px 28px;font-size:34px;text-shadow:0 3px 0 #1E2140">Сундук кирок</div>
+    <a href="Menu.dc.html" aria-label="Закрыть" style="position:absolute;right:-26px;top:-26px;width:72px;height:72px;border-radius:50%;background:#FF4D5E;border:5px solid #1E2140;box-shadow:0 6px 0 #1E2140;display:flex;align-items:center;justify-content:center;text-decoration:none">
+      <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="#fff" stroke-width="4.5" stroke-linecap="round"></path></svg>
+    </a>
+
+    <div style="width:520px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(circle at 50% 45%,#C9D2FF 0%,#F2E6D2 62%);border:4px solid #1E2140;border-radius:26px;position:relative;overflow:hidden">
+      <div class="{{chestAnim}}" style="width:330px;height:300px">
+        <svg width="330" height="300" viewBox="0 0 66 60" aria-hidden="true">
+          <path d="M6 30h54v26H6z" fill="#3A4AA8" stroke="#1E2140" stroke-width="2.6" stroke-linejoin="round"></path>
+          <path d="M6 30c0-17 54-17 54 0z" fill="#5B6CD0" stroke="#1E2140" stroke-width="2.6" stroke-linejoin="round"></path>
+          <path d="M8 26c3-9 15-12 25-12" stroke="#93A2F0" stroke-width="2.4" fill="none" stroke-linecap="round"></path>
+          <path d="M18 15v41M48 15v41" stroke="#1E2140" stroke-width="7"></path>
+          <path d="M18 15v41M48 15v41" stroke="#FFC83D" stroke-width="4.4"></path>
+          <path d="M4 28h58v5H4z" fill="#FFC83D" stroke="#1E2140" stroke-width="2.2"></path>
+          <path d="M27 34h12v12l-6 5-6-5z" fill="#FFC83D" stroke="#1E2140" stroke-width="2.2" stroke-linejoin="round"></path>
+          <circle cx="33" cy="40" r="2.2" fill="#1E2140"></circle>
+          <circle cx="11" cy="30.5" r="2.3" fill="#45CFFF" stroke="#1E2140" stroke-width="1.4"></circle>
+          <circle cx="25" cy="30.5" r="2.3" fill="#FF6A2A" stroke="#1E2140" stroke-width="1.4"></circle>
+          <circle cx="41" cy="30.5" r="2.3" fill="#FFA51C" stroke="#1E2140" stroke-width="1.4"></circle>
+          <circle cx="55" cy="30.5" r="2.3" fill="#BDEFFF" stroke="#1E2140" stroke-width="1.4"></circle>
+        </svg>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:#FFF8EC;border:4px solid #1E2140;border-radius:999px;box-shadow:0 5px 0 #1E2140;padding:6px 22px 6px 10px;font-size:28px">
+        <svg width="40" height="40" viewBox="0 0 48 48" aria-hidden="true"><circle cx="15" cy="24" r="9" fill="#FFC83D" stroke="#1E2140" stroke-width="4"></circle><path d="M23 21h19v6h-4v6h-5v-6h-10z" fill="#FFC83D" stroke="#1E2140" stroke-width="4" stroke-linejoin="round"></path></svg>
+        У тебя {{keys}} ключей
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:26px">Что может выпасть</div>
+      <sc-for list="{{odds}}" as="o" hint-placeholder-count="4">
+        <div style="display:flex;align-items:center;gap:12px;background:#F2E6D2;border:4px solid #1E2140;border-radius:18px;padding:8px 14px">
+          <span style="width:120px;font-size:20px;color:{{o.t}}">{{o.stars}}</span>
+          <span style="flex:1;font-size:20px">{{o.name}}</span>
+          <span style="width:150px;height:22px;background:#E4D6BD;border:3px solid #1E2140;border-radius:999px;overflow:hidden"><span style="display:block;height:100%;width:{{o.w}};background:{{o.c}}"></span></span>
+          <span style="width:70px;text-align:right;font-size:22px">{{o.p}}</span>
+        </div>
+      </sc-for>
+      <div style="font-size:17px;font-weight:800;opacity:.75">Семья — любая из четырёх, поровну</div>
+      <div style="display:flex;gap:12px">
+        <sc-for list="{{pity}}" as="g" hint-placeholder-count="2">
+          <div style="flex:1;background:#FFF8EC;border:4px solid #1E2140;border-radius:18px;padding:8px 12px">
+            <div style="font-size:17px">{{g.label}}</div>
+            <div style="height:18px;margin-top:6px;background:#E4D6BD;border:3px solid #1E2140;border-radius:999px;overflow:hidden"><div style="height:100%;width:{{g.w}};background:{{g.c}}"></div></div>
+          </div>
+        </sc-for>
+      </div>
+      <button class="btn" onClick="{{open}}" style="margin-top:auto;height:82px;background:{{openBg}};color:#fff;font-size:32px;text-shadow:0 3px 0 #1E2140">
+        <svg width="44" height="44" viewBox="0 0 48 48" aria-hidden="true"><circle cx="15" cy="24" r="9" fill="#FFC83D" stroke="#1E2140" stroke-width="4"></circle><path d="M23 21h19v6h-4v6h-5v-6h-10z" fill="#FFC83D" stroke="#1E2140" stroke-width="4" stroke-linejoin="round"></path></svg>
+        {{openText}}
+      </button>
+    </div>
+  </div>
+
+  <sc-if value="{{revealed}}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(14,12,22,.72);display:flex;align-items:center;justify-content:center">
+      <div style="position:absolute;width:760px;height:760px;border-radius:50%;background:repeating-conic-gradient({{res.glow}} 0 12deg,rgba(255,255,255,0) 12deg 24deg);animation:rays 9s linear infinite;opacity:.55"></div>
+      <div style="position:relative;width:400px;background:#FFF8EC;border:6px solid #1E2140;border-radius:32px;box-shadow:0 10px 0 #1E2140;padding:22px;display:flex;flex-direction:column;align-items:center;gap:8px;animation:reveal 520ms cubic-bezier(.2,1.4,.4,1)">
+        <div style="position:absolute;left:0;right:0;top:0;height:18px;border-radius:26px 26px 0 0;background:{{res.c}}"></div>
+        <span style="margin-top:10px;background:#22C55E;color:#fff;border:4px solid #1E2140;border-radius:999px;padding:2px 16px;font-size:20px;text-shadow:0 2px 0 #1E2140">{{res.tag}}</span>
+        <svg width="190" height="190" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 17c9-10 27-10 38 0l-4 3c-8-6-21-7-30 0z" fill="{{res.fc}}" stroke="#1E2140" stroke-width="2.4" stroke-linejoin="round"></path><path d="M22 13h5v31h-5z" fill="#B0703C" stroke="#1E2140" stroke-width="2.4" stroke-linejoin="round" transform="rotate(35 24 28)"></path><circle cx="24" cy="15" r="4" fill="#FFE14D" stroke="#1E2140" stroke-width="2"></circle></svg>
+        <div style="font-size:36px">{{res.fname}}</div>
+        <div style="font-size:26px;color:{{res.t}}">{{res.stars}} {{res.name}}</div>
+        <div style="display:flex;gap:10px;width:100%;margin-top:8px">
+          <button class="btn" onClick="{{close}}" style="flex:1;height:64px;background:#3D8BFF;color:#fff;font-size:24px;text-shadow:0 2px 0 #1E2140">Забрать</button>
+          <button class="btn" onClick="{{again}}" style="flex:1;height:64px;background:#22C55E;color:#fff;font-size:22px;text-shadow:0 2px 0 #1E2140">Ещё раз</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { keys: 9, phase: 'idle', n: 0, toEpic: 9, toLeg: 59 }; }
+  componentWillUnmount() { clearTimeout(this.t); }
+  renderVals() {
+    const R = [
+      { name: 'Обычная', stars: '★', c: '#A9B4C2', t: '#5F6B7C', p: '60 %', w: '60%', glow: 'rgba(169,180,194,.9)' },
+      { name: 'Редкая', stars: '★★', c: '#3FA9FF', t: '#1F6FC2', p: '30 %', w: '30%', glow: 'rgba(63,169,255,.9)' },
+      { name: 'Эпическая', stars: '★★★', c: '#A35BFF', t: '#7A35D6', p: '8,5 %', w: '8.5%', glow: 'rgba(163,91,255,.9)' },
+      { name: 'Легендарная', stars: '★★★★', c: '#FF9F1C', t: '#C26A00', p: '1,5 %', w: '3%', glow: 'rgba(255,159,28,.95)' },
+    ];
+    const SEQ = [[1, 'Гроза', '#45CFFF', 'Новая!'], [0, 'Динамит', '#FF6A2A', 'Повтор · +1'], [2, 'Разлом', '#FFA51C', 'Новая!'], [3, 'Мороз', '#BDEFFF', 'Новая!']];
+    const st = this.state, s = SEQ[st.n % SEQ.length], r = R[s[0]];
+    const open = () => {
+      if (st.phase !== 'idle' || st.keys < 1) return;
+      this.setState({ phase: 'opening', keys: st.keys - 1 });
+      this.t = setTimeout(() => this.setState({ phase: 'revealed', toEpic: s[0] >= 2 ? 10 : Math.max(0, st.toEpic - 1), toLeg: s[0] >= 3 ? 60 : Math.max(0, st.toLeg - 1) }), 720);
+    };
+    return {
+      keys: st.keys, odds: R, revealed: st.phase === 'revealed',
+      chestAnim: st.phase === 'opening' ? 'shake' : 'bob',
+      res: { ...r, fname: s[1], fc: s[2], tag: s[3] },
+      pity: [
+        { label: 'Эпическая точно — через ' + st.toEpic, w: ((10 - st.toEpic) / 10) * 100 + '%', c: '#A35BFF' },
+        { label: 'Легендарная точно — через ' + st.toLeg, w: ((60 - st.toLeg) / 60) * 100 + '%', c: '#FF9F1C' },
+      ],
+      openText: st.keys > 0 ? 'Открыть · 1 ключ' : 'Нет ключей',
+      openBg: st.keys > 0 ? '#22C55E' : '#B8BDC9',
+      open,
+      close: () => this.setState({ phase: 'idle', n: st.n + 1 }),
+      again: () => { this.setState({ phase: 'idle', n: st.n + 1 }); setTimeout(open, 30); },
+    };
+  }
+}
+</script>
+</body>
+</html>
