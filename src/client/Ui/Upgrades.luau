@@ -69,9 +69,11 @@ local function dockButton(
 	x: number,
 	kind: string
 )
-	local control = Candy.button(parent, name, offset(width, 49), UDim2.new(0, x, 1, -21), kind, 17)
+	-- icon-only, one compact row bottom-left [владелец 11.11: «нижние кнопки все влево кроме ульты и уменьшить»]
+	local control =
+		Candy.button(parent, name, offset(width, width), UDim2.new(0, x, 1, -18), kind, 17)
 	control.box.AnchorPoint = Vector2.new(0, 1)
-	Candy.buttonIcon(control, key)
+	Candy.buttonIcon(control, key, true)
 	return control
 end
 
@@ -84,23 +86,23 @@ function Upgrades.new(
 )
 	local hud = Candy.layer(parent, "UpgradesHUD", 5)
 	hud.Visible = false
-	local upgradeButton = dockButton(hud, "OpenUpgrades", "upgrades", 146, 15, "purple")
-	local picksButton = dockButton(hud, "OpenCollection", "pickaxe", 101, 169, "confirm")
-	local familyButton = dockButton(hud, "OpenFamily", "lock", 106, 278, "neutral")
+	local upgradeButton = dockButton(hud, "OpenUpgrades", "upgrades", 46, 15, "purple")
+	local picksButton = dockButton(hud, "OpenCollection", "pickaxe", 46, 67, "confirm")
+	local familyButton = dockButton(hud, "OpenFamily", "lock", 46, 119, "neutral")
 	local upgradeDot, collectionDot, familyDot =
 		Candy.dot(upgradeButton.face), Candy.dot(picksButton.face), Candy.dot(familyButton.face)
-	local stronger = Candy.panel(hud, "GetStronger", offset(146, 29), UDim2.new(0, 15, 1, -80))
+	local stronger = Candy.panel(hud, "GetStronger", offset(150, 29), UDim2.new(0, 15, 1, -70))
 	stronger.AnchorPoint, stronger.Visible = Vector2.new(0, 1), false
 	local strongerText = Candy.text(stronger, "Hint", scale(0.95, 0.88), scale(0.025, 0.06), 14)
 	local chestButton = Candy.button(
 		hud,
 		"OpenPickaxeChest",
-		offset(59, 59),
-		UDim2.new(1, -112, 1, -22),
+		offset(46, 46),
+		UDim2.new(0, 171, 1, -18),
 		"neutral",
 		17
 	)
-	chestButton.box.AnchorPoint = Vector2.new(1, 1)
+	chestButton.box.AnchorPoint = Vector2.new(0, 1)
 	W.tone(chestButton, W.navy)
 	Candy.buttonIcon(chestButton, "chest", true)
 	local chestBadge, chestCount = W.badge(chestButton.face, W.yellow)

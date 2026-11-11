@@ -7,6 +7,7 @@ local Remotes = require(Shared.Remotes)
 local Strings = require(Shared.Strings)
 local Candy = require(script.Parent.Candy)
 local W = require(script.Parent.MenuWidgets)
+local RewardBurst = require(script.Parent.Parent.Fx.RewardBurst)
 
 local Families = {}
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
@@ -284,6 +285,13 @@ function Families.new(ctx: W.Context, page: Frame)
 			end
 			if animate and before and level > before[index] then
 				W.bump(view.icon, ctx, true)
+				RewardBurst.show({
+					icon = "skill_" .. family .. "_" .. index,
+					palette = RewardBurst.palettes[family],
+					kicker = t("burst_skill_up"),
+					title = t("skill_" .. family .. "_" .. index),
+					subtitle = t("burst_level", level),
+				})
 			end
 		end
 		previous[family] = table.clone(levels)

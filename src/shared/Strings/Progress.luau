@@ -260,4 +260,22 @@ return {
 		es = "Premio de la losa +{1}",
 		fr = "Récompense de dalle +{1}",
 	},
+	burst_skill_up = {
+		en = "Skill up!",
+		ru = "Навык прокачан!",
+		es = "¡Habilidad mejorada!",
+		fr = "Compétence améliorée !",
+	},
+	burst_level = {
+		en = "Level {1}",
+		ru = "Уровень {1}",
+		es = "Nivel {1}",
+		fr = "Niveau {1}",
+	},
+	burst_morph = {
+		en = "New power!",
+		ru = "Новая сила!",
+		es = "¡Nuevo poder!",
+		fr = "Nouveau pouvoir !",
+	},
 }

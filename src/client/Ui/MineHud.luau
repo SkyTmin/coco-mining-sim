@@ -111,8 +111,8 @@ function Hud.new(
 	remaining.ZIndex = 3
 
 	local focus =
-		Candy.button(gui, "FaceWall", offset(144, 45), UDim2.new(0.5, 0, 1, -20), "neutral", 17)
-	focus.box.AnchorPoint, focus.box.Visible = Vector2.new(0.5, 1), false
+		Candy.button(gui, "FaceWall", offset(118, 46), UDim2.new(0, 223, 1, -18), "neutral", 16)
+	focus.box.AnchorPoint, focus.box.Visible = Vector2.new(0, 1), false
 	focus.box.Parent = Candy.layer(guiParent, "MineReturn", 6)
 	local fade = Candy.frame(
 		Candy.layer(guiParent, "ReturnFade", 30),
