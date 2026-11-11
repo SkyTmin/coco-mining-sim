@@ -86,19 +86,23 @@ function Upgrades.new(
 )
 	local hud = Candy.layer(parent, "UpgradesHUD", 5)
 	hud.Visible = false
-	local upgradeButton = dockButton(hud, "OpenUpgrades", "upgrades", 46, 15, "purple")
-	local picksButton = dockButton(hud, "OpenCollection", "pickaxe", 46, 67, "confirm")
-	local familyButton = dockButton(hud, "OpenFamily", "lock", 46, 119, "neutral")
+	local upgradeButton = dockButton(hud, "OpenUpgrades", "upgrades", 50, 16, "purple")
+	local picksButton = dockButton(hud, "OpenCollection", "pickaxe", 50, 80, "confirm")
+	local familyButton = dockButton(hud, "OpenFamily", "lock", 50, 144, "neutral")
 	local upgradeDot, collectionDot, familyDot =
 		Candy.dot(upgradeButton.face), Candy.dot(picksButton.face), Candy.dot(familyButton.face)
-	local stronger = Candy.panel(hud, "GetStronger", offset(150, 29), UDim2.new(0, 15, 1, -70))
+	-- [владелец 11.11: «небрежно»] small dots tucked into the corner, never over the next button
+	for _, dot in { upgradeDot, collectionDot, familyDot } do
+		Candy.fit(dot, offset(12, 12), UDim2.new(1, -14, 0, 2))
+	end
+	local stronger = Candy.panel(hud, "GetStronger", offset(150, 29), UDim2.new(0, 16, 1, -78))
 	stronger.AnchorPoint, stronger.Visible = Vector2.new(0, 1), false
 	local strongerText = Candy.text(stronger, "Hint", scale(0.95, 0.88), scale(0.025, 0.06), 14)
 	local chestButton = Candy.button(
 		hud,
 		"OpenPickaxeChest",
-		offset(46, 46),
-		UDim2.new(0, 171, 1, -18),
+		offset(50, 50),
+		UDim2.new(0, 208, 1, -18),
 		"neutral",
 		17
 	)
@@ -106,6 +110,7 @@ function Upgrades.new(
 	W.tone(chestButton, W.navy)
 	Candy.buttonIcon(chestButton, "chest", true)
 	local chestBadge, chestCount = W.badge(chestButton.face, W.yellow)
+	Candy.fit(chestBadge, offset(20, 20), UDim2.new(1, -15, 0, -7))
 	local chestZoom = Instance.new("UIScale")
 	chestZoom.Parent = chestButton.box
 	local pulse: Tween? = nil

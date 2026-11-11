@@ -206,7 +206,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			and player:GetAttribute("MineUpgradesOpen") ~= true
 	end
 	local function canHit(): boolean
-		return canControl() and window ~= nil and ride == nil and #echoes == 0
+		-- [владелец 11.11] the wall can be dug while it rides up to the player; only the ult locks digging
+		return canControl() and window ~= nil and not (ride and ride.ability) and #echoes == 0
 	end
 	local function aim(screen: Vector2): any?
 		local r = renderer
