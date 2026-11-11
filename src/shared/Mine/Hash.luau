@@ -39,6 +39,17 @@ end
 
 local u32 = Hash.u32
 
+-- Same hash for two already-unsigned inputs; the range histogram calls this once per chunk.
+function Hash.pair(a: number, b: number): number
+	local h = band(0x9e3779b9 * 65599 + a, MASK)
+	h = band(h * 65599 + b, MASK)
+	h = bxor(h, rshift(h, 16))
+	h = band(band(h, 0xffff) * 0x85ebca6b + lshift(rshift(h, 16) * 0xca6b, 16), MASK)
+	h = bxor(h, rshift(h, 13))
+	h = band(band(h, 0xffff) * 0xc2b2ae35 + lshift(rshift(h, 16) * 0xae35, 16), MASK)
+	return bxor(h, rshift(h, 16))
+end
+
 function Hash.unit(a: number?, b: number?, c: number?, d: number?, e: number?, f: number?): number
 	return u32(a, b, c, d, e, f) * SCALE
 end

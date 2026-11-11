@@ -8,10 +8,19 @@ local MineGen = require(script.Parent.MineGen)
 local Shapes = require(script.Parent.Shapes)
 local Worlds = require(script.Parent.Worlds)
 local Power = require(script.Parent.Parent.Play.Power)
+local WallChests = require(script.Parent.Parent.Play.WallChests)
 type State = MineState.MineState
 type Range = MineState.Range
 
-export type Pick = { strength: number, shape: string, ultLayers: number }
+export type Pick = {
+	strength: number,
+	shape: string,
+	ultLayers: number,
+	chestFrequency: number?,
+	plateMultiplier: number?,
+	forcedPierce: number?,
+	brittle: boolean?,
+}
 export type HitResult = {
 	cells: { { x: number, y: number, d: number, gen: number } },
 	runs: { Range },
@@ -47,13 +56,16 @@ local function describeRange(
 	end
 end
 
-local function tally(st: State, res: HitResult, out: { Range })
+local function tally(st: State, res: HitResult, out: { Range }, pick: Pick?)
 	MineState.compact(st, out)
 	local windowEnd = st.front + mine.window
 	for _, run in out do
 		describeRange(res, windowEnd, run.x, run.y, run.a, run.b)
 		MineGen.rangeHist(st.seed, run.x, run.y, run.a, run.b, res.hist, res.finds)
 		res.blocks += run.b - run.a
+	end
+	if pick and pick.chestFrequency then
+		WallChests.tally(st, out, res, pick.chestFrequency)
 	end
 end
 
@@ -93,7 +105,11 @@ local function damageCell(
 		MineState.removeCell(st, x, y, d, out)
 		return math.max(0, amount - left)
 	end
-	st.damage[key] = 1 - (left - amount) / hp
+	local progress = 1 - (left - amount) / hp
+	-- Tiny crack overflow can round to zero at high hardness; zero is not a damaged cell.
+	if progress > 0 then
+		st.damage[key] = progress
+	end
 	return nil
 end
 
@@ -122,7 +138,12 @@ function Resolve.hit(
 		if d ~= st.front or d ~= barrier then
 			return nil
 		end
-		hitPlate(st, barrier, Power.plate(strength, Worlds.of(barrier).plate.hp, false), res)
+		hitPlate(
+			st,
+			barrier,
+			Power.plate(strength, Worlds.of(barrier).plate.hp, false) * (pick.plateMultiplier or 1),
+			res
+		)
 		return res
 	end
 
@@ -143,22 +164,38 @@ function Resolve.hit(
 	local out: { Range } = {}
 	local hardness = Worlds.durability(d)
 	local hp = Power.blockHP(hardness, pick.strength)
-	local extra = Power.pierce(hardness, strength, strike) - 1
+	local extra = math.max(Power.pierce(hardness, strength, strike), pick.forcedPierce or 1) - 1
 	local overflow: { { x: number, y: number, amount: number } }? = if strike and strike.cracks
 		then {}
 		else nil
 	for _, cell in shape do
 		local column, row = cell.x, cell.y
 		if MineState.isSolid(st, column, row, d) then
-			local excess = damageCell(st, column, row, d, hp, strength, out)
+			local chest = pick.chestFrequency
+				and WallChests.at(st, column, row, d, pick.chestFrequency)
+			local amount = if chest then 1 else if pick.brittle then hp else strength
+			local excess = damageCell(
+				st,
+				column,
+				row,
+				d,
+				if chest then Config.chests.wall.hits else hp,
+				amount,
+				out
+			)
 			if excess then
 				if overflow and excess > 0 then
 					table.insert(overflow, { x = column, y = row, amount = excess })
 				end
 				local nextDepth = d + 1
-				for _ = 1, extra do
+				for _ = 1, (if chest then 0 else extra) do
 					nextDepth = MineState.nextSolid(st, column, row, nextDepth)
 					if nextDepth >= barrier then
+						break
+					end
+					local nextChest = pick.chestFrequency
+						and WallChests.at(st, column, row, nextDepth, pick.chestFrequency)
+					if nextChest then
 						break
 					end
 					MineState.removeRange(st, column, row, nextDepth, nextDepth + 1, out)
@@ -172,13 +209,48 @@ function Resolve.hit(
 			for _, offset in neighbors do
 				local column, row = spill.x + offset[1], spill.y + offset[2]
 				if MineState.isExposed(st, column, row, d) then
+					if
+						pick.chestFrequency
+						and WallChests.at(st, column, row, d, pick.chestFrequency)
+					then
+						continue
+					end
 					damageCell(st, column, row, d, hp, spill.amount, out)
 					break
 				end
 			end
 		end
 	end
-	tally(st, res, out)
+	tally(st, res, out, pick)
+	return res
+end
+
+-- Perks hit each requested block once, with ordinary HP and no recursive procs or piercing.
+function Resolve.perk(
+	st: State,
+	pick: Pick,
+	points: { { x: number, y: number, d: number } }
+): HitResult
+	local res, out = result(), {}
+	local barrier = MineState.barrier(st)
+	for _, cell in points do
+		if cell.d >= barrier or not MineState.isExposed(st, cell.x, cell.y, cell.d) then
+			continue
+		end
+		local chest = pick.chestFrequency
+			and WallChests.at(st, cell.x, cell.y, cell.d, pick.chestFrequency)
+		local hp = Power.blockHP(Worlds.durability(cell.d), pick.strength)
+		damageCell(
+			st,
+			cell.x,
+			cell.y,
+			cell.d,
+			if chest then Config.chests.wall.hits else hp,
+			if chest then Config.chests.wall.hits else pick.strength,
+			out
+		)
+	end
+	tally(st, res, out, pick)
 	return res
 end
 
@@ -193,10 +265,15 @@ function Resolve.ult(st: State, pick: Pick): HitResult
 	local finish = st.front + layers
 	local left = (finish - math.max(st.front, barrier)) / layers
 	MineState.removeLayers(st, st.front, finish, out)
-	tally(st, res, out)
+	tally(st, res, out, pick)
 	if barrier < DEPTH_END and (finish > barrier or st.front == barrier) then
 		local hp = Worlds.of(barrier).plate.hp
-		hitPlate(st, barrier, Power.plate(pick.strength, hp, true, left), res)
+		hitPlate(
+			st,
+			barrier,
+			Power.plate(pick.strength, hp, true, left) * (pick.plateMultiplier or 1),
+			res
+		)
 	end
 	return res
 end
