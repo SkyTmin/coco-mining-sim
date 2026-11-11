@@ -81,7 +81,29 @@ Test.describe("Strings", function()
 			"Блоки −87 · Монеты +232"
 		)
 		for _, key in
-			{ "creative_title", "creative_on", "creative_off", "creative_coins", "creative_reset" }
+			{
+				"creative_title",
+				"creative_on",
+				"creative_off",
+				"creative_coins",
+				"creative_reset",
+				"collection_tab",
+				"family_tab",
+				"family_change",
+				"family_tomorrow",
+				"family_current",
+				"pick_take",
+				"pick_gold",
+				"pick_merge",
+				"pick_buy",
+				"pick_grant",
+				"pick_chest_open",
+				"creative_keys",
+				"creative_collection_reset",
+				"creative_chests_100",
+				"creative_first_storm",
+				"creative_first_key",
+			}
 		do
 			for _, language in LOCALES do
 				local length = utf8.len(Strings.t(key, language, 100))

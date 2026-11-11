@@ -20,15 +20,6 @@ return {
 		fr = "Carte débloquée : Critique",
 	},
 	pick_starter = { en = "Wooden", ru = "Деревянная", es = "Madera", fr = "Bois" },
-	pick_plain_common = { en = "Common", ru = "Обычная", es = "Común", fr = "Commune" },
-	pick_plain_rare = { en = "Rare", ru = "Редкая", es = "Rara", fr = "Rare" },
-	pick_plain_epic = { en = "Epic", ru = "Эпическая", es = "Épica", fr = "Épique" },
-	pick_plain_legendary = {
-		en = "Legendary",
-		ru = "Легендарная",
-		es = "Legendaria",
-		fr = "Légendaire",
-	},
 	pick_storm_common = { en = "Storm", ru = "Гроза", es = "Tormenta", fr = "Orage" },
 	creative_multiply = {
 		en = "Coins ×{1}",

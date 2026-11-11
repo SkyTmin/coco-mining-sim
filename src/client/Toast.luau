@@ -2,6 +2,7 @@
 
 local player = game:GetService("Players").LocalPlayer
 local Candy = require(script.Parent.Ui.Candy)
+local Sfx = require(game:GetService("ReplicatedStorage").Shared.Sfx)
 
 type Translate = (string, ...any) -> string
 type Message = { key: string, args: { any }? }
@@ -35,6 +36,9 @@ function Toast.create(playerGui: Instance, translate: Translate): (string, { any
 		player:GetAttributeChangedSignal(attribute):Connect(refresh)
 	end
 	return function(key, args)
+		if key == "key_received" then
+			Sfx.play("buy_soft", 0.3)
+		end
 		table.insert(queue, { key = key, args = args })
 		if showing then
 			return
