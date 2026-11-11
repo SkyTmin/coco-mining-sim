@@ -38,6 +38,8 @@ local Lightning = require(Client.Fx.Lightning)
 local TravelDebris = require(Client.Fx.TravelDebris)
 local Haptics = require(Client.Fx.Haptics)
 local Footsteps = require(Client.Fx.Footsteps)
+local FamilyFx = require(Client.Fx.FamilyFx)
+local PickaxeChest = require(Client.Ui.PickaxeChest)
 
 local Controller = {}
 local mine = Config.mine
@@ -64,6 +66,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local spectatorSigns: { [BasePart]: DepthSign.Sign } = {}
 	local tunnel: any, breaking: any, lightning: any, debris: any
 	local window: any, ride: any, pending: any
+	local echoes: { any } = {}
+	local frozenCells: { any } = {}
 	local events: { any } = {}
 	local parts: { BasePart } = {}
 	local moves: { CFrame } = {}
@@ -79,6 +83,31 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local jumpButton: GuiObject? = nil
 	local lastPhase = "idle"
 	local hapticsOn = true
+	local chest = PickaxeChest.new(guiParent, player, translate)
+	local familyToast = require(Client.Toast).create(guiParent, translate)
+	FamilyFx.configure(
+		function(cell, front)
+			local r = renderer
+			if not r then
+				return nil
+			end
+			local depth = cell.d or (front or 0) + cell.dRel
+			local entry = r.cells[State.cellKey(cell.x, cell.y, depth)]
+			return entry and entry.part
+		end,
+		chest.result,
+		function(key)
+			familyToast(key, nil)
+		end
+	)
+	Remotes.event("PickaxeResult").OnClientEvent:Connect(FamilyFx.chestOpen)
+	local function frozen(points: { any }, front: number)
+		frozenCells = {}
+		for _, cell in points do
+			table.insert(frozenCells, { x = cell.x, y = cell.y, d = front + cell.dRel })
+		end
+		dirty = true
+	end
 
 	local function profile(): any
 		return ProfileState.getProfile()
@@ -90,7 +119,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		return Circle.pick(
 			id,
 			(p and p.circle) or defaultCircle,
-			if window then window.front else 0
+			if window then window.front else 0,
+			p
 		)
 	end
 	local function currentOffset(now: number): number
@@ -173,7 +203,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		return active and not menuOpen() and player:GetAttribute("MineUpgradesOpen") ~= true
 	end
 	local function canHit(): boolean
-		return canControl() and window ~= nil and ride == nil
+		return canControl() and window ~= nil and ride == nil and #echoes == 0
 	end
 	local function aim(screen: Vector2): any?
 		local r = renderer
@@ -235,8 +265,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					Shapes.cells(settings.shape, cell.x, cell.y, window.width, window.height)
 				for _, point in shape do
 					if point.x == cell.x and point.y == cell.y then
-						local hp = Power.blockHP(Worlds.durability(depth), settings.strength)
-						local after = progress + settings.strength / hp
+						local chestTier = Wire.chestTier(ore)
+						local hp = if chestTier
+							then Config.chests.wall.hits
+							else Power.blockHP(Worlds.durability(depth), settings.strength)
+						local after = progress + (if chestTier then 1 else settings.strength) / hp
 						if after >= 1 - 0.5 / 255 then
 							expected.hidden = State.cellKey(cell.x, cell.y, depth)
 						else
@@ -274,6 +307,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			Camera.hold(view, false)
 		end
 		window, pending, ride, dirty = win, nil, nil, true
+		table.clear(echoes)
+		frozen(win.frozen or {}, win.front)
 		abilityQueued = false
 		if breaking then
 			Dissolve.clear(breaking.dissolve)
@@ -417,7 +452,21 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				Camera.swing(view, now, Wave.pause * 2)
 			end
 		end
+		local fxResult = table.clone(res)
+		fxResult.events = nil
 		for i, event in res.events do
+			event.front = oldFront
+			event.result = fxResult
+			if event.kind >= 3 then
+				if event.kind == 3 then
+					FamilyFx.perk(event)
+				elseif event.kind == 4 then
+					FamilyFx.ult(event.family, event)
+				elseif event.kind == 5 then
+					frozen(event.points, oldFront)
+				end
+				continue
+			end
 			local a, b = event.points[1], event.points[2]
 			if a and b then
 				local at = now + event.delayMs / 1000
@@ -506,6 +555,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			onWindow(packet)
 		elseif kind == "layers" then
 			local part = Wire.decodeLayers(packet)
+			local queued = echoes[#echoes]
+			if part and queued and part.front == queued.res.front then
+				table.insert(queued.tail, part)
+				return
+			end
 			local result = pending and pending.result
 			if part and result and result.delta > 0 and part.front == result.front then
 				table.insert(pending.tail, part)
@@ -514,6 +568,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 		elseif kind == "result" then
 			local res = Wire.decodeResult(packet)
+			if res and res.accepted and res.ability and res.seq == 0 and ride then
+				table.insert(echoes, { res = res, visual = visual, tail = {} })
+				return
+			end
 			local expected = pending
 			if
 				res
@@ -698,6 +756,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if abilityQueued and not pending and now >= nextHit and canHit() then
 			request("Ability", nil)
 		end
+		if not ride and not pending and echoes[1] then
+			local queued = table.remove(echoes, 1)
+			applyResult(queued.res, queued.visual)
+			for _, part in queued.tail do
+				applyLayers(part)
+			end
+		end
 		local current = profile()
 		if current and not savedView then
 			v.mode, savedView = current.settings.camera, true
@@ -716,6 +781,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if not active then
 			closeSettings()
 		end
+		chest.active(active)
 		local settings = current and current.settings
 		local reduced = ProfileState.preference("reducedMotion")
 		Sfx.level(ProfileState.preference("sfx"))
@@ -855,6 +921,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					table.insert(renderWindow.damage, pending.damage)
 				end
 				Wall.update(r, renderWindow, visible, nil)
+				FamilyFx.frozen(frozenCells)
 				Break.cracks(
 					breaking,
 					r,

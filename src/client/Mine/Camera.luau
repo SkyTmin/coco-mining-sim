@@ -23,7 +23,9 @@ export type View = {
 	swingAt: number,
 	swingDuration: number,
 	firstItem: Model?,
-	firstRoot: Part?,
+	firstRoot: BasePart?,
+	firstId: string?,
+	firstGold: boolean?,
 	bob: number,
 	held: { frame: CFrame, focus: CFrame, humanoid: Humanoid?, speed: number? }?,
 	hidden: Model?,
@@ -250,9 +252,20 @@ local function drawHeld(
 		end
 		return
 	end
+	local id = view.player:GetAttribute("MinePickaxe") or "starter"
+	local golden = view.player:GetAttribute("MinePickaxeGolden") == true
+	if view.firstItem and view.firstId ~= id then
+		view.firstItem:Destroy()
+		view.firstItem, view.firstRoot = nil, nil
+	end
 	if not view.firstItem then
-		view.firstItem, view.firstRoot = PickModel.view()
+		view.firstItem, view.firstRoot = PickModel.forPick(id, CFrame.identity, true, true)
 		view.firstItem.Name = "FirstPersonPickaxe"
+		PickModel.appearance(view.firstItem, id, golden)
+		view.firstId, view.firstGold = id, golden
+	elseif view.firstGold ~= golden then
+		PickModel.appearance(view.firstItem, id, golden)
+		view.firstGold = golden
 	end
 	local item, root = view.firstItem, view.firstRoot
 	if not item or not root then

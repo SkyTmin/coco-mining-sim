@@ -11,6 +11,7 @@ local BlockPool = require(script.Parent.BlockPool)
 
 local S = Config.mine.blockSize
 local BlockArt = require(script.Parent.BlockArt)
+local ArtModel = require(game:GetService("ReplicatedStorage").Shared.Models.ArtModel)
 local WallRenderer = {}
 local SPARK_LAYERS = Config.mine.nearWindow
 
@@ -210,8 +211,28 @@ local function addCell(
 	local art = Config.art.worlds[Worlds.of(d).id]
 	local tile = art.slots[ore]
 	local texture = if tile then BlockArt.select(tile, x, y, d) else art.lining
+	local tier = Wire.chestTier(ore)
+	local previousArt = part:GetAttribute("ChestTier")
+	if previousArt ~= tier then
+		local old = part:FindFirstChild("ArtModel")
+		if old then
+			old:Destroy()
+		end
+		part:SetAttribute("ChestTier", tier)
+		if tier then
+			local entry = Config.art.chests.wall[tier]
+			local model = entry and ArtModel.mount(entry.model, part)
+			part.Transparency = if model then 1 else 0
+		else
+			part.Transparency = 0
+		end
+	end
 	if part.MaterialVariant ~= "COCOMine_" .. texture then
 		BlockArt.apply(part, texture)
+	end
+	if tier and not part:FindFirstChild("ArtModel") then
+		part.MaterialVariant = ""
+		part.Color = Color3.fromHex(({ "B9855A", "C7D3DF", "FFD23F", "AA8CF4" })[tier])
 	end
 	local rel = d - win.front
 	sparkle(r, cell, tile ~= nil and tile.glow and rel < SPARK_LAYERS)

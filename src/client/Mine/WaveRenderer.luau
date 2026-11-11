@@ -6,6 +6,7 @@ local Gen = require(Shared.Mine.MineGen)
 local Worlds = require(Shared.Mine.Worlds)
 local Wire = require(Shared.Mine.MineWire)
 local Wave = require(Shared.Mine.UltWave)
+local WallChests = require(Shared.Play.WallChests)
 local Rules = require(Shared.Mine.DissolveRules)
 local Break = require(script.Parent.Parent.Fx.BlockBreak)
 local Dissolve = require(script.Parent.Parent.Fx.Dissolve)
@@ -49,7 +50,11 @@ function Render.new(st: State.MineState, after: any): Sweep
 						ore = Wire.PLATE
 					else
 						local index, kind = Gen.cellAt(st.seed, x, y, depth)
-						ore = if kind then Wire.CHEST else index
+						local chest = WallChests.at(st, x, y, depth)
+						ore = if chest
+							then Wire.chest(chest.tier)
+							elseif kind then Wire.CHEST
+							else index
 						table.insert(events, { x = x, y = y, d = d, at = Wave.at(rule, x, y, d) })
 					end
 				end

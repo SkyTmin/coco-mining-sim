@@ -105,7 +105,7 @@ function Hud.new(
 		fill.Parent :: Frame,
 		"PlateRemaining",
 		UDim2.new(1, -10, 1, -2),
-		UDim2.new(0, 5, 0, 1),
+		offset(5, 1),
 		11
 	)
 	remaining.ZIndex = 3
