@@ -64,6 +64,16 @@ local function logCustom(
 	end
 end
 
+function Analytics.event(
+	player: Player,
+	event: string,
+	value: number,
+	first: string,
+	second: string?
+)
+	task.defer(logCustom, player, event, value, first, second)
+end
+
 local function flush(player: Player)
 	for step, name in steps do
 		local key, seen = tostring(step), "seen:" .. step

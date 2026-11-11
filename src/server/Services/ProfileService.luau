@@ -253,6 +253,13 @@ function ProfileService.Elapsed(player: Player): number
 	return if session then math.floor(os.clock() - session.startedAt) else 0
 end
 
+function ProfileService.PlaySeconds(player: Player): number
+	local session = sessions[player]
+	return if session
+		then session.profile.stats.playSeconds + math.floor(os.clock() - session.playAt)
+		else 0
+end
+
 function ProfileService.FailLoad(player: Player)
 	local session = sessions[player]
 	if not session or not session.canSave then

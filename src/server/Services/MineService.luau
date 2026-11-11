@@ -11,6 +11,9 @@ local Wire = require(Shared.Mine.MineWire)
 local Worlds = require(Shared.Mine.Worlds)
 local Validate = require(Shared.Mine.Validate)
 local Power = require(Shared.Play.Power)
+local Family = require(Shared.Play.Family)
+local Perks = require(Shared.Play.Perks)
+local WallChests = require(Shared.Play.WallChests)
 local ProfileService = require(script.Parent.ProfileService)
 local PlotService = require(script.Parent.PlotService)
 
@@ -24,6 +27,8 @@ export type Session = {
 	resyncAt: number,
 	hit: Timing,
 	ult: Timing,
+	perks: Perks.Runtime,
+	perkFamily: string?,
 }
 
 local mine = Config.mine
@@ -55,7 +60,11 @@ local function layers(st: State.MineState, offset: number, limit: number): { { n
 						ore = Wire.PLATE
 					else
 						local index, kind = Gen.cellAt(st.seed, x, y, d)
-						ore = if kind then Wire.CHEST else index
+						local chest = WallChests.at(st, x, y, d)
+						ore = if chest
+							then Wire.chest(chest.tier)
+							elseif kind then Wire.CHEST
+							else index
 					end
 				end
 				table.insert(layer, ore)
@@ -117,6 +126,12 @@ end
 function MineService.window(s: Session)
 	local st = s.state
 	PlotService.depth(s.plot, st.front)
+	local frozen = {}
+	for _, cell in Perks.frozen(s.perks, st) do
+		if #frozen < 200 then
+			table.insert(frozen, { x = cell.x, y = cell.y, dRel = cell.d - st.front })
+		end
+	end
 	send(
 		"window",
 		s.plot,
@@ -128,6 +143,7 @@ function MineService.window(s: Session)
 			charge = s.charge,
 			plateDamage = st.plateDamage,
 			damage = MineService.damage(st),
+			frozen = frozen,
 			layers = layers(st, 0, mine.nearWindow),
 		})
 	)
@@ -156,6 +172,7 @@ end
 function MineService.reset(s: Session, depth: number, width: number)
 	s.state = State.new(s.state.seed, width, mine.height, depth)
 	s.charge = 0
+	s.perks = Perks.new()
 	MineService.window(s)
 end
 
@@ -190,9 +207,35 @@ function MineService.Start()
 			resyncAt = -math.huge,
 			hit = { count = 0, total = 0, max = 0 },
 			ult = { count = 0, total = 0, max = 0 },
+			perks = Perks.new(),
+			perkFamily = profile.family,
 		}
+		s.state.chestFrequency = Family.effects(profile).chestFrequency
 		sessions[player], subscribers[plot] = s, { [player] = true }
 		MineService.window(s)
+	end)
+	task.spawn(function()
+		while true do
+			task.wait(1)
+			for player, session in sessions do
+				if workspace:GetServerTimeNow() < (player:GetAttribute("MineReturnAfter") or 0) then
+					continue
+				end
+				local changed = ProfileService.Read(player, function(profile)
+					local frequency = Family.effects(profile).chestFrequency
+					local changed = session.state.chestFrequency ~= frequency
+					session.state.chestFrequency = frequency
+					return WallChests.stage(
+						session.state,
+						profile,
+						ProfileService.PlaySeconds(player)
+					) or changed
+				end)
+				if changed then
+					MineService.window(session)
+				end
+			end
+		end
 	end)
 	ProfileService.BeforeSave(function(player)
 		local s = sessions[player]

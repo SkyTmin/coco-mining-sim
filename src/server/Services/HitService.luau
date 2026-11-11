@@ -7,13 +7,13 @@ local Remotes = require(Shared.Remotes)
 local State = require(Shared.Mine.MineState)
 local Resolve = require(Shared.Mine.Resolve)
 local Codec = require(Shared.Mine.MineCodec)
-local Economy = require(Shared.Mine.Economy)
 local Validate = require(Shared.Mine.Validate)
 local Worlds = require(Shared.Mine.Worlds)
 local Wire = require(Shared.Mine.MineWire)
 local Ride = require(Shared.Mine.Ride)
 local Wave = require(Shared.Mine.UltWave)
-local Storm = require(Shared.Play.Storm)
+local Perks = require(Shared.Play.Perks)
+local MiningAction = require(Shared.Play.MiningAction)
 local Circle = require(Shared.Play.Circle)
 local Power = require(Shared.Play.Power)
 local MineService = require(script.Parent.MineService)
@@ -86,81 +86,6 @@ local function publish(
 	})
 end
 
-local function merge(base: HitResult, extra: HitResult)
-	for _, cell in extra.cells do
-		cell.gen = 1
-		table.insert(base.cells, cell)
-	end
-	for _, run in extra.runs do
-		table.insert(base.runs, run)
-	end
-	for _, find in extra.finds do
-		table.insert(base.finds, find)
-	end
-	for key, count in extra.hist do
-		base.hist[key] = (base.hist[key] or 0) + count
-	end
-	base.blocks += extra.blocks
-end
-
-local function stormHit(
-	s: Session,
-	pick: Circle.Pick,
-	x: number,
-	y: number,
-	d: number,
-	res: HitResult,
-	events: { any },
-	strike: Power.Strike
-)
-	local st = s.state
-	if not pick.storm or d >= State.barrier(st) or budget.maxGen < 1 then
-		return
-	end
-	local rng = {
-		range = function(_: any, lo: number, hi: number)
-			return s.rng:NextInteger(lo, hi)
-		end,
-	}
-	local route = Storm.chain(st, rng, x, y, d, pick.storm)
-	local previous = point(x, y, d, st.front)
-	local single = { strength = pick.strength, shape = "single", ultLayers = 0 }
-	for i, nextCell in route do
-		if #res.cells + 4 > budget.maxCells or #res.runs + 4 > budget.maxRuns then
-			break
-		end
-		local struck = Resolve.hit(st, single, nextCell.x, nextCell.y, nextCell.d, strike)
-		if struck then
-			merge(res, struck)
-			local nextPoint = point(nextCell.x, nextCell.y, nextCell.d, st.front)
-			table.insert(
-				events,
-				{ kind = 1, gen = 1, delayMs = (i - 1) * 45, points = { previous, nextPoint } }
-			)
-			previous = nextPoint
-		end
-	end
-end
-
-local function stormUlt(s: Session, events: { any })
-	local st = s.state
-	local radius = (st.width - 1) // 2
-	local count, waveSize = s.rng:NextInteger(12, 24), s.rng:NextInteger(4, 6)
-	for i = 1, count do
-		local x, y = s.rng:NextInteger(-radius, radius), s.rng:NextInteger(0, st.height - 1)
-		local other = if x < radius then x + 1 else math.max(-radius, x - 1)
-		table.insert(events, {
-			kind = 2,
-			gen = 1,
-			delayMs = 600 + ((i - 1) // waveSize) * 150,
-			points = {
-				{ x = x, y = y, dRel = 0 },
-				{ x = other, y = (y + 1) % st.height, dRel = if i == count then 10 else 0 },
-			},
-		})
-	end
-end
-
 -- 0 = the pickaxe's own ult depth
 local CREATIVE_ULT_LAYERS = { 0, 40, 150, 500, 1500, 5000 }
 
@@ -172,11 +97,8 @@ end
 
 local function onIntent(player: Player, packet: any)
 	local intent = Wire.decodeIntent(packet)
-	if not intent then
-		return
-	end
 	local s = MineService.get(player)
-	if not s then
+	if not intent or not s then
 		return
 	end
 	local started = os.clock()
@@ -188,110 +110,114 @@ local function onIntent(player: Player, packet: any)
 		return
 	end
 	local st = s.state
-	local pick, cards, hitCounter, critCounter
-	ProfileService.Read(player, function(profile)
-		pick = Circle.pick(profile.pickaxe, profile.circle, st.front)
-		cards = profile.circle.cards
-		hitCounter, critCounter = profile.hitCounter, profile.critCounter
-		return true
+	local pick = ProfileService.Read(player, function(p)
+		return Circle.pick(p.pickaxe, p.circle, st.front, p)
 	end)
 	local own = PlotService.onOwnPlatform(player)
+	if not pick or not own or not Validate.take(s.bucket, started, pick.interval) then
+		MineService.reject(player, s, intent.seq)
+		return
+	end
+	local ability = intent.op == "Ability"
+	local creative = player:GetAttribute("CreativeAllowed") == true
+	local endless = creative and player:GetAttribute("CreativeUltEndless") == true
+	local d = if ability
+		then st.front
+		else Validate.target(st, own, intent.x, intent.y, intent.dRel)
 	if
-		not pick
-		or not cards
-		or not hitCounter
-		or not critCounter
-		or not own
-		or not Validate.take(s.bucket, started, pick.interval)
+		not d
+		or (
+			ability
+			and (
+				not (endless or s.charge >= pick.ultCharge)
+				or intent.dRel >= mine.window
+				or not State.inWall(st, intent.x, intent.y)
+			)
+		)
 	then
 		MineService.reject(player, s, intent.seq)
 		return
 	end
-	local oldFront = st.front
-	local res: HitResult?
-	local strike: Power.Strike?
-	local visual = nil
-	local events: { any } = {}
-	local ability = intent.op == "Ability"
-	-- QA (creative test mode) [владелец 11.11]: the ult may stay charged and its depth may be forced
-	local creative = player:GetAttribute("CreativeAllowed") == true
-	local endless = creative and player:GetAttribute("CreativeUltEndless") == true
-	if ability and creative then
-		local forced = player:GetAttribute("CreativeUltLayers")
-		if type(forced) == "number" and forced > 0 then
-			pick = table.clone(pick)
-			pick.ultLayers = forced
-		end
-	end
-	if ability then
-		if
-			(endless or s.charge >= pick.ultCharge)
-			and intent.dRel < mine.window
-			and State.inWall(st, intent.x, intent.y)
-		then
-			visual = Codec.encode(st)
-			res = Resolve.ult(st, pick)
-			s.charge = if endless then pick.ultCharge else 0
-			if pick.family == "storm" then
-				stormUlt(s, events)
+	local forced = if creative then player:GetAttribute("CreativeUltLayers") else nil
+	local returnAfter = workspace:GetServerTimeNow()
+	for wave = 1, 2 do
+		local outcome
+		ProfileService.Mutate(player, function(profile)
+			if s.perkFamily ~= profile.family then
+				s.perks, s.perkFamily = Perks.new(), profile.family
 			end
+			outcome = MiningAction.perform(st, profile, s.perks, {
+				ability = ability,
+				now = started,
+				x = intent.x,
+				y = intent.y,
+				d = d,
+				echo = wave == 2,
+				ultLayers = if type(forced) == "number" and forced > 0 then forced else nil,
+			})
+		end)
+		if not outcome then
+			MineService.reject(player, s, intent.seq)
+			return
 		end
-	else
-		local d = Validate.target(st, own, intent.x, intent.y, intent.dRel)
-		if d then
-			strike = Power.strike(st.seed, hitCounter + 1, critCounter, pick.strength, cards)
-			res = Resolve.hit(st, pick, intent.x, intent.y, d, strike)
-			if res then
-				s.charge = math.min(pick.ultCharge, s.charge + 1)
-				stormHit(s, pick, intent.x, intent.y, d, res, events, strike)
-			end
-		end
-	end
-	if not res then
-		MineService.reject(player, s, intent.seq)
-		return
-	end
-	local coins = Economy.coinsFor(res.hist, cards.coins, strike and strike.coinMultiplier)
-		+ (res.plateReward or 0)
-	local blocks, plateBroken = res.blocks, res.plateBroken
-	local delta = State.advance(st)
-	if ability or delta > 0 then
-		player:SetAttribute(
-			"MineReturnAfter",
-			workspace:GetServerTimeNow()
-				+ (
-					if ability
-						then Wave.total(
-							delta,
-							if delta > 0 then Ride.timeline(delta, false).approach else 0
-						)
-						else Ride.timeline(delta, false).total
+		s.charge = if ability
+			then (if endless then pick.ultCharge else 0)
+			else math.min(pick.ultCharge, s.charge + 1)
+		local delta = outcome.delta
+		if ability or delta > 0 then
+			returnAfter += if ability
+				then Wave.total(
+					delta,
+					if delta > 0 then Ride.timeline(delta, false).approach else 0
 				)
+				else Ride.timeline(delta, false).total
+			player:SetAttribute("MineReturnAfter", returnAfter)
+		end
+		publish(
+			s,
+			if wave == 1 then intent.seq else 0,
+			outcome.oldFront,
+			outcome.res,
+			outcome.events,
+			outcome.coins,
+			ability,
+			outcome.strike,
+			outcome.visual
 		)
-	end
-	local oldWorld, world = Worlds.of(oldFront).index, Worlds.of(st.front).index
-	local newCards = {}
-	ProfileService.Mutate(player, function(profile)
-		profile.coins += coins
-		profile.stats.blocks += blocks
-		profile.stats.layers += delta
-		if strike then
-			profile.hitCounter += 1
-			profile.critCounter += if strike.crit then 1 else 0
+		for _, id in outcome.newCards do
+			Remotes.event("Toast"):FireClient(player, "card_unlocked_" .. id)
 		end
-		if plateBroken then
-			profile.platesBroken += 1
+		if outcome.keys > 0 then
+			Remotes.event("Toast"):FireClient(player, "key_received", { outcome.keys })
 		end
-		if world > oldWorld then
-			newCards = Circle.reach(profile, world)
+		if outcome.hitKeys > 0 then
+			Analytics.event(player, "key_get", outcome.hitKeys, "hits")
 		end
-	end)
-	publish(s, intent.seq, oldFront, res, events, coins, ability, strike, visual)
-	for _, id in newCards do
-		Remotes.event("Toast"):FireClient(player, "card_unlocked_" .. id)
+		for _, reward in outcome.rewards do
+			Analytics.event(player, "wall_chest", reward.tier, tostring(reward.keys > 0))
+			if reward.keys > 0 then
+				Analytics.event(player, "key_get", reward.keys, "wall")
+			end
+			if reward.pick then
+				Remotes.event("PickaxeResult"):FireClient(player, reward.pick)
+				Analytics.event(player, "pick_get", 1, "wall", reward.pick.id)
+			end
+		end
+		Pickaxe.refresh(player)
+		Analytics.mined(
+			player,
+			ability,
+			outcome.res.blocks,
+			delta,
+			outcome.oldWorld,
+			outcome.world,
+			outcome.res.plateBroken
+		)
+		if not outcome.echo then
+			break
+		end
 	end
 	record(if ability then s.ult else s.hit, (os.clock() - started) * 1000)
-	Analytics.mined(player, ability, blocks, delta, oldWorld, world, plateBroken)
 end
 
 -- the endless test ult stays charged across mine resets too
@@ -313,7 +239,7 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 	local st = s.state
 	if op == "mine.equip" then
 		if type(a) == "string" then
-			Pickaxe.equip(player, a)
+			Pickaxe.equip(player, a, b == true, true)
 		end
 		return
 	elseif op == "mine.level" then
@@ -323,8 +249,8 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 				local rarity = Config.progress.rarities[Config.pickaxes[id].rarity]
 				local level = profile.circle.pickLevels[id] or 1
 				profile.circle.pickLevels[id] = if a == 0
-					then Power.cap(rarity)
-					else math.clamp(level + a, 1, Power.cap(rarity))
+					then Power.cap(rarity, profile.pickaxeGolden)
+					else math.clamp(level + a, 1, Power.cap(rarity, profile.pickaxeGolden))
 			end)
 		end
 		return
