@@ -364,7 +364,7 @@ function Camera.step(
 	view.waveBlend = if wave then 1 else math.max(0, view.waveBlend - dt / 0.14)
 	if view.waveBlend > 0 then
 		local localEye = view.frame:PointToObjectSpace(eye)
-		local tracking = view.frame:PointToWorldSpace(Vector3.new(localEye.X, localEye.Y, 10))
+		local tracking = view.frame:PointToWorldSpace(Vector3.new(localEye.X, localEye.Y, 0))
 		eye = eye:Lerp(tracking, view.waveBlend)
 	end
 	camera.CFrame = CFrame.lookAt(eye + shake, eye + shake + direction)

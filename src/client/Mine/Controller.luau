@@ -73,6 +73,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local nextHit, lastRequest = -math.huge, -math.huge
 	local abilityQueued, returning = false, false
 	local travelled = 0
+	local landingAt, landingGap = -math.huge, 0
 	local lastCharge = -1
 	local fpsAt, frames = os.clock(), 0
 	local autoFrames, autoTime = 0, 0
@@ -96,7 +97,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	end
 	local function currentOffset(now: number): number
 		if not ride then
-			return 0
+			return landingGap * math.clamp(1 - (now - landingAt) / 0.14, 0, 1)
 		end
 		local phase, progress = Ride.phase(ride.timeline, now - ride.at)
 		return if phase == "approach" then Ride.offset(ride.timeline, progress, ride.ability) else 0
@@ -275,6 +276,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			WaveRenderer.clear(ride.sweep, renderer)
 		end
 		window, pending, ride, dirty = win, nil, nil, true
+		landingAt = -math.huge
 		abilityQueued = false
 		if breaking then
 			Dissolve.clear(breaking.dissolve)
@@ -420,7 +422,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				if res.ability then
 					local t = 0.06 + 0.87 * (i - 1) / math.max(1, #res.events - 1)
 					local waveAge = Wave.pause + t * (ride.timeline.total - Wave.pause)
-					local depth = (Wave.camera(ride.sweep.rule, waveAge) + 2) * S
+					local depth = (Wave.camera(ride.sweep.rule, waveAge)) * S
 					local endDepth = if barrier
 						then math.min(depth + 3.4, barrier.distance - 0.15)
 						else depth + 3.4
@@ -589,6 +591,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 			if ride.ability then
 				travelled += ride.delta * S
+				landingAt = now
+				landingGap = (ride.delta - Wave.camera(ride.sweep.rule, ride.timeline.total)) * S
 				WaveRenderer.clear(ride.sweep, renderer)
 				Hud.finishUltimate(hud, now)
 				Hud.rollPlate(hud, ride.oldFront, window.front, now)
@@ -758,7 +762,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 		if depthSign then
 			local display = if ride and ride.ability
-				then ride.oldFront + math.floor(Wave.camera(ride.sweep.rule, now - ride.at) + 2)
+				then ride.oldFront + math.floor(Wave.camera(ride.sweep.rule, now - ride.at))
 				elseif not ride then window.front
 				elseif phase == "approach" then ride.oldFront + math.floor(
 					ride.delta * progress
@@ -773,12 +777,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				DepthSign.step(sign, now, depth, false, reduced, false)
 			end
 		end
-		local shown, visible, offset = window, #window.layers, 0
+		local shown, visible, offset = window, #window.layers, currentOffset(now)
+		local landingMoving = now - landingAt <= 0.14 + dt
 		local survivor = false
 		local sweeping = ride and ride.ability
-		local shift = travelled
+		local shift = travelled - (if not ride then offset else 0)
 		if sweeping then
-			shift += (Wave.camera(ride.sweep.rule, now - ride.at) + 2) * S
+			shift += Wave.camera(ride.sweep.rule, now - ride.at) * S
 		end
 		Dissolve.begin(breaking.dissolve, now, shift, -r.frame.LookVector, dt)
 		if sweeping then
@@ -835,7 +840,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				else 0
 			Wall.plate(r, sceneWindow, plate, translate, pick().strength, flash)
 		end
-		if layout or phase == "approach" then
+		if layout or phase == "approach" or landingMoving then
 			table.clear(parts)
 			table.clear(moves)
 			if shown then

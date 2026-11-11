@@ -2,6 +2,7 @@
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local Rules = require(Shared.Mine.DissolveRules)
+local GrainPool = require(Shared.Mine.GrainPool)
 
 local Dissolve = {}
 export type Block = {
@@ -14,7 +15,9 @@ export type Block = {
 }
 export type Fx = {
 	root: Part,
-	emitters: { [string]: { ParticleEmitter } },
+	emitters: { ParticleEmitter },
+	slots: { { emitter: ParticleEmitter, attachment: Attachment } },
+	allocator: GrainPool.Bank,
 	bursts: { any },
 	living: { number },
 	head: number,
@@ -37,7 +40,6 @@ local directions = {
 	[Enum.NormalId.Top] = { Vector3.xAxis, Vector3.zAxis },
 	[Enum.NormalId.Bottom] = { Vector3.xAxis, -Vector3.zAxis },
 }
-
 function Dissolve.new(parent: Instance): Fx
 	local folder = Instance.new("Folder")
 	folder.Name = "GrainEmitters"
@@ -47,44 +49,42 @@ function Dissolve.new(parent: Instance): Fx
 	root.CanCollide, root.CanQuery, root.CanTouch, root.CastShadow = false, false, false, false
 	root.Size = Vector3.one * 0.1
 	root.Parent = folder
-	local emitters = {}
-	for name, colors in Config.art.grains.palettes do
-		local palette = {}
-		for i, color in colors do
-			local attachment = Instance.new("Attachment")
-			attachment.Name = name .. "_" .. i
-			attachment.Parent = root
-			local e = Instance.new("ParticleEmitter")
-			e.Name, e.Texture, e.Rate = "Grain", Config.art.dustTexture, 0
-			e.Color = ColorSequence.new(Color3.fromHex(color))
-			e.Size = NumberSequence.new({
-				NumberSequenceKeypoint.new(0, Rules.size),
-				NumberSequenceKeypoint.new(Rules.shrinkAt - 0.0001, Rules.size),
-				NumberSequenceKeypoint.new(Rules.shrinkAt, Rules.smallSize),
-				NumberSequenceKeypoint.new(1, Rules.smallSize),
-			})
-			e.Transparency = NumberSequence.new({
-				NumberSequenceKeypoint.new(0, 0),
-				NumberSequenceKeypoint.new(Rules.fadeAt, 0),
-				NumberSequenceKeypoint.new(1, 1),
-			})
-			e.Lifetime = NumberRange.new(Rules.lifeMin, Rules.lifeMax)
-			e.Speed = NumberRange.new(Rules.speedMin, Rules.speedMax)
-			e.SpreadAngle = Vector2.new(360, 360)
-			e.Rotation, e.RotSpeed = NumberRange.new(0), NumberRange.new(0)
-			e.Orientation = Enum.ParticleOrientation.FacingCamera
-			e.LightInfluence, e.LightEmission, e.Brightness = 0, 0, 1
-			e.Squash = NumberSequence.new(0)
-			e.Drag, e.Acceleration = Rules.drag, Vector3.new(0, Rules.rise * Rules.relax, 0)
-			e.WindAffectsDrag, e.LockedToPart, e.VelocityInheritance = false, false, 1
-			e.Parent = attachment
-			palette[i] = e
-		end
-		emitters[name] = palette
+	local emitters, slots = {}, {}
+	for i = 1, Rules.pool do
+		local a = Instance.new("Attachment")
+		a.Name = "Grain_" .. i
+		a.Parent = root
+		local e = Instance.new("ParticleEmitter")
+		e.Name, e.Texture, e.Rate = "Grain", Config.art.dustTexture, 0
+		e.Size = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, Rules.size),
+			NumberSequenceKeypoint.new(Rules.shrinkAt - 0.0001, Rules.size),
+			NumberSequenceKeypoint.new(Rules.shrinkAt, Rules.smallSize),
+			NumberSequenceKeypoint.new(1, Rules.smallSize),
+		})
+		e.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0),
+			NumberSequenceKeypoint.new(Rules.fadeAt, 0),
+			NumberSequenceKeypoint.new(1, 1),
+		})
+		e.Lifetime = NumberRange.new(Rules.lifeMin, Rules.lifeMax)
+		e.Speed = NumberRange.new(Rules.speedMin, Rules.speedMax)
+		e.SpreadAngle = Vector2.new(360, 360)
+		e.Rotation, e.RotSpeed = NumberRange.new(0), NumberRange.new(0)
+		e.Orientation = Enum.ParticleOrientation.FacingCamera
+		e.LightInfluence, e.LightEmission, e.Brightness = 0, 0, 1
+		e.Squash = NumberSequence.new(0)
+		e.Drag, e.Acceleration = Rules.drag, Vector3.new(0, Rules.rise * Rules.relax, 0)
+		e.WindAffectsDrag, e.LockedToPart, e.VelocityInheritance = false, false, 1
+		e.Parent = a
+		emitters[i] = e
+		slots[i] = { emitter = e, attachment = a }
 	end
 	return {
 		root = root,
 		emitters = emitters,
+		slots = slots,
+		allocator = GrainPool.new(Rules.pool),
 		bursts = {},
 		living = {},
 		head = 1,
@@ -100,19 +100,16 @@ function Dissolve.new(parent: Instance): Fx
 		dropped = 0,
 	}
 end
-
 function Dissolve.clear(fx: Fx)
-	for _, palette in fx.emitters do
-		for _, e in palette do
-			e:Clear()
-		end
+	for _, e in fx.emitters do
+		e:Clear()
 	end
+	GrainPool.clear(fx.allocator)
 	table.clear(fx.bursts)
 	table.clear(fx.living)
 	fx.head, fx.tail, fx.reserved = 1, 0, 0
 	fx.admitted, fx.emitted, fx.velocity = 0, 0, Vector3.zero
 end
-
 function Dissolve.begin(fx: Fx, now: number, shift: number, axis: Vector3, dt: number)
 	while fx.living[fx.head] and now >= fx.living[fx.head] do
 		fx.living[fx.head] = nil
@@ -124,23 +121,29 @@ function Dissolve.begin(fx: Fx, now: number, shift: number, axis: Vector3, dt: n
 	end
 	dt = math.max(dt, 0.001)
 	local velocity = axis * ((shift - fx.shift) / dt)
-	-- The mine moves past a stationary player. Transform particle motion into that moving frame.
+	-- Transform physical particle motion into the mine's moving coordinate frame.
 	local acceleration = Vector3.new(0, Rules.rise * Rules.relax, 0)
 		+ (velocity - fx.velocity) / dt
 		+ velocity * Rules.relax
 	fx.root.AssemblyLinearVelocity = velocity
 	if acceleration ~= fx.acceleration then
-		for _, palette in fx.emitters do
-			for _, e in palette do
-				e.Acceleration = acceleration
-			end
+		for _, e in fx.emitters do
+			e.Acceleration = acceleration
 		end
 		fx.acceleration = acceleration
 	end
 	fx.shift, fx.velocity, fx.admitted, fx.emitted = shift, velocity, 0, 0
+	GrainPool.begin(fx.allocator, now)
 end
 
-function Dissolve.block(fx: Fx, block: Block, at: number, hit: Vector3, reduced: boolean): number
+function Dissolve.block(
+	fx: Fx,
+	block: Block,
+	at: number,
+	hit: Vector3,
+	reduced: boolean,
+	ultimate: boolean?
+): number
 	local camera = workspace.CurrentCamera
 	if not camera then
 		return 0
@@ -160,10 +163,18 @@ function Dissolve.block(fx: Fx, block: Block, at: number, hit: Vector3, reduced:
 			end
 		end
 	end
+	-- The ultimate requests sixteen grains per block. Pick the most directly facing face.
+	if ultimate and #faces > 1 then
+		table.sort(faces, function(a, b)
+			local eye = block.frame:PointToObjectSpace(camera.CFrame.Position)
+			return Vector3.FromNormalId(a):Dot(eye) > Vector3.FromNormalId(b):Dot(eye)
+		end)
+		faces = { faces[1] }
+	end
 	local alive = fx.tail - fx.head + 1
 	local available =
 		math.min(Rules.maxParticles - alive - fx.reserved, Rules.maxEmit - fx.admitted)
-	local stride = Rules.stride(#faces, available, reduced)
+	local stride = Rules.stride(#faces, available, reduced or ultimate == true)
 	if stride == 0 or #faces == 0 then
 		return 0
 	end
@@ -179,10 +190,12 @@ function Dissolve.block(fx: Fx, block: Block, at: number, hit: Vector3, reduced:
 				local point = block.frame:PointToWorldSpace(localPoint)
 				local noise =
 					Rules.noise(block.x * 8 + i / 2, block.y * 8 + j / 2, block.depth + face.Value)
+				local index = 1 + (tonumber(grain.cells:sub(j * 8 + i + 1, j * 8 + i + 1), 16) or 0)
 				table.insert(events, {
 					at = at + Rules.delay((point - hit).Magnitude, noise),
 					point = point,
-					color = 1 + (tonumber(grain.cells:sub(j * 8 + i + 1, j * 8 + i + 1), 16) or 0),
+					color = Config.art.grains.palettes[grain.palette][index],
+					misses = 0,
 				})
 			end
 		end
@@ -192,37 +205,47 @@ function Dissolve.block(fx: Fx, block: Block, at: number, hit: Vector3, reduced:
 	end)
 	fx.reserved += #events
 	fx.admitted += #events
-	table.insert(
-		fx.bursts,
-		{ events = events, head = 1, palette = grain.palette, reduced = reduced, shift = fx.shift }
-	)
+	table.insert(fx.bursts, { events = events, reduced = reduced, shift = fx.shift })
 	return #events
 end
-
 function Dissolve.step(fx: Fx, now: number, axis: Vector3)
 	local alive = fx.tail - fx.head + 1
 	for i = #fx.bursts, 1, -1 do
 		local burst = fx.bursts[i]
-		while burst.events[burst.head] and burst.events[burst.head].at <= now do
-			local event = burst.events[burst.head]
-			if fx.emitted >= Rules.maxEmit then
-				break
+		for j = #burst.events, 1, -1 do
+			local event = burst.events[j]
+			if event.at <= now then
+				local index, changed = nil, false
+				if fx.emitted < Rules.maxEmit and alive < Rules.maxParticles then
+					index, changed = GrainPool.take(fx.allocator, event.color, now)
+				end
+				if index then
+					local slot = fx.slots[index]
+					if changed then
+						slot.emitter.Color = ColorSequence.new(Color3.fromHex(event.color))
+					end
+					slot.attachment.WorldPosition = event.point + axis * (fx.shift - burst.shift)
+					slot.emitter.Speed = if burst.reduced
+						then NumberRange.new(0)
+						else NumberRange.new(Rules.speedMin, Rules.speedMax)
+					slot.emitter:Emit(1)
+					fx.emitted += 1
+					fx.tail += 1
+					fx.living[fx.tail] = now + Rules.lifeMax
+					alive += 1
+				else
+					event.misses += 1
+				end
+				if index or event.misses > Rules.waitFrames then
+					if not index then
+						fx.dropped += 1
+					end
+					table.remove(burst.events, j)
+					fx.reserved -= 1
+				end
 			end
-			local e = fx.emitters[burst.palette][event.color]
-			local attachment = e.Parent :: Attachment
-			attachment.WorldPosition = event.point + axis * (fx.shift - burst.shift)
-			e.Speed = if burst.reduced
-				then NumberRange.new(0)
-				else NumberRange.new(Rules.speedMin, Rules.speedMax)
-			e:Emit(1)
-			burst.head += 1
-			fx.reserved -= 1
-			fx.emitted += 1
-			fx.tail += 1
-			fx.living[fx.tail] = now + Rules.lifeMax
-			alive += 1
 		end
-		if not burst.events[burst.head] then
+		if #burst.events == 0 then
 			table.remove(fx.bursts, i)
 		end
 	end

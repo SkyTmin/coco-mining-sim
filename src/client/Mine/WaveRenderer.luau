@@ -78,7 +78,7 @@ function Render.step(
 	reduced: boolean
 ): (any, number)
 	local st, rule = s.state, s.rule
-	local slow = Wave.camera(rule, age) + 2
+	local slow = Wave.camera(rule, age)
 	local lo, hi = rule.depth, 0
 	local radius = (st.width - 1) // 2
 	local cleared = {}
@@ -172,7 +172,7 @@ function Render.step(
 				end
 			end
 			local hit = block.frame:PointToWorldSpace(Vector3.new(0, 0, S / 2))
-			Dissolve.block(fx, block, s.at + cell.at, hit, reduced)
+			Dissolve.block(fx, block, s.at + cell.at, hit, reduced, true)
 		end
 	end
 	for i = #s.shrinking, 1, -1 do
