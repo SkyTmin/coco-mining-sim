@@ -43,11 +43,11 @@ PASS Mine generation / repeats 1,000 cells across evictions and changes generati
 PASS Grain emitter pool / reserves each emitter once per frame and prefers its live color
 PASS Grain emitter pool / never recolors an emitter within 0.9 seconds of its last emission
 PASS Grain emitter pool / preserves all live colors through mixed demand and 200 frames of reuse
-Mine speed: 5000 layers × 15 lanes = 3.993 ms (limit 5 ms)
+Mine speed: 5000 layers × 15 lanes = 1.732 ms (limit 5 ms)
 PASS Mine performance / removes and tallies 5,000 layers across 15 lanes in under 5 ms
-Mine speed: 25000 layers × 45 lanes = 55.170 ms (limit 100 ms)
+Mine speed: 25000 layers × 45 lanes = 26.740 ms (limit 100 ms)
 PASS Mine performance / removes and tallies 25,000 layers across 45 lanes in under 100 ms
-Mine speed: 10,000 hits = 182.269 ms (limit 200 ms)
+Mine speed: 10,000 hits = 79.162 ms (limit 200 ms)
 PASS Mine performance / processes 10,000 ordinary hits in under 200 ms
 PASS Mining hits / uses independent hit counters, rounding up and capping at eight
 PASS Mining hits / breaks the plate by the 160th weak hit
@@ -82,8 +82,8 @@ PASS Persistence / requires both the job and the acquisition token
 PASS Persistence / expires a lock only after ten minutes without renewal
 PASS Family art hooks / accepts Claude's manifest without changing logical pickaxe IDs and rejects malformed entries
 PASS Pickaxe chest / spends exactly one key, rejects empty wallets and guarantees the first Rare family
-Chest 1M: base 60.0305/29.9823/8.4881/1.4991%; with pity 56.0908/28.0036/13.3915/2.5141%
-PASS Pickaxe chest / samples one million base rolls within 0.3 percentage points and never violates either pity
+Chest 1M: base 60.0305/29.9823/8.4881/1.4991%; with pity 56.0908/28.0036/13.3915/2.5141% (expected 56.0551/28.0276/13.4013/2.5160%)
+PASS Pickaxe chest / matches the base and post-pity odds in one million draws within 0.3 percentage points
 PASS Circle profiles / migrates an old mine once while preserving coins and preferences
 PASS Circle profiles / retires a nine-block wall and refunds its price once
 PASS Circle profiles / unlocks cards and worlds permanently and mutates only affordable purchases
@@ -141,8 +141,10 @@ PASS Wall chests / takes exactly three direct hits at any strength and persists 
 PASS Wall chests / stages Storm and the first key once, retrying when an ult broke the key chest
 PASS Family server intents / rejects foreign equipment, unowned gold, locked skills, empty chests and insufficient duplicates
 PASS Family server intents / atomically charges a key once and rejects double clicks before 0.5 seconds
+PASS Family server intents / offers one shop purchase for a collected pick without opening the key chest
 PASS Family server intents / changes family at most once per UTC day and uses the strongest owned variant
 PASS Family server intents / accepts BuySkill only for an unlocked active skill and gates every Creative action
+PASS Mine startup / opens a mine when the profile loads before the PlayerAdded plot assignment
 PASS Server mining validation / rejects other plots, occluded cells, voids, and invalid coordinates
 PASS Server mining validation / bounds burst size and refills at the pickaxe interval
 PASS Mining sounds / caps playback at the levels in the specification
@@ -150,14 +152,14 @@ PASS Mining sounds / has five distinct, non-repeating hit and break variants
 PASS Mining sounds / uses the uploaded atlas and the complete set of clips
 PASS Mining sounds / quietens sustained digging and recovers during a pause
 PASS Mining sounds / uses no harsh built-in audio
-PASS Strings / Families.luau has all locales and matching placeholders
-PASS Strings / Progress.luau has all locales and matching placeholders
 PASS Strings / Core.luau has all locales and matching placeholders
+PASS Strings / Families.luau has all locales and matching placeholders
+PASS Strings / Mine.luau has all locales and matching placeholders
 PASS Strings / MineFeel.luau has all locales and matching placeholders
 PASS Strings / MineSlice.luau has all locales and matching placeholders
-PASS Strings / Mine.luau has all locales and matching placeholders
+PASS Strings / Progress.luau has all locales and matching placeholders
 PASS Strings / loads stage keys and falls back to English and then the key
 PASS Strings / uses the specified Russian names in progress UI
 PASS Strings / substitutes arguments and keeps buttons within twelve characters
 PASS Wire / round-trips holes and mixed keys at every depth
-136 passed, 0 failed (35 spec files)
+138 passed, 0 failed (36 spec files)
