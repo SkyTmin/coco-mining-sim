@@ -5,6 +5,7 @@ local Shared = game:GetService("ReplicatedStorage").Shared
 local Format = require(Shared.Format)
 local Worlds = require(Shared.Mine.Worlds)
 local Candy = require(script.Parent.Candy)
+local Sfx = require(Shared.Sfx)
 local Hud = {}
 
 local yellow = Color3.fromHex("FFC83D")
@@ -17,6 +18,56 @@ local offset, scale = UDim2.fromOffset, UDim2.fromScale
 local KO_FONT = Font.new(Candy.font.Family, Enum.FontWeight.Heavy, Enum.FontStyle.Italic)
 local KO_TILT = -4
 local KO_SLAM, KO_LIFE, KO_FADE = 0.16, 1.55, 0.3
+-- [владелец 11.11] combo tiers: the title's colours climb with the layers counted so far; crossing a threshold
+-- flashes and pops the title into the next colour [пороги и цвета — решение]
+local function gradient(...: string): ColorSequence
+	local colors = { ... }
+	local keys = {}
+	for i, hex in colors do
+		table.insert(keys, ColorSequenceKeypoint.new((i - 1) / (#colors - 1), Color3.fromHex(hex)))
+	end
+	return ColorSequence.new(keys)
+end
+local KO_TIERS: { { from: number, colors: ColorSequence, edge: Color3, shimmer: boolean? } } = {
+	{ from = 0, colors = gradient("FFFFFF", "DCE6F5", "8FA6C9"), edge = Color3.fromHex("8FA6C9") }, -- silver
+	{
+		from = 100,
+		colors = gradient("F2FFE0", "8CF06A", "1FAE5B"),
+		edge = Color3.fromHex("1FAE5B"),
+	}, -- green
+	{
+		from = 500,
+		colors = gradient("FFF7C2", "FFC83D", "FF9A1A"),
+		edge = Color3.fromHex("FFA51F"),
+	}, -- gold
+	{
+		from = 2000,
+		colors = gradient("FFF1A8", "FF7A1A", "D61F2C"),
+		edge = Color3.fromHex("E8352B"),
+	}, -- fire
+	{
+		from = 5000,
+		colors = gradient("FFE0F4", "FF4FA3", "9B1BD6"),
+		edge = Color3.fromHex("C026D3"),
+	}, -- magenta
+	{
+		from = 10000,
+		colors = gradient("6BF2FF", "8B5CFF", "FF4FD8", "FFD23F", "6BF2FF"),
+		edge = Color3.fromHex("8B5CFF"),
+		shimmer = true,
+	}, -- cosmic: the colours run through the letters
+}
+local function tierOf(layers: number): number
+	local tier = 1
+	for i, t in KO_TIERS do
+		if layers >= t.from then
+			tier = i
+		end
+	end
+	return tier
+end
+local KO_TIER_POP = 0.16
+
 -- after the ult lands: the title pops, holds, then fades while the coins fly to the wallet (the same 0.6 s + 0.35 s)
 local KO_HOLD, KO_POP = 0.6, 0.18
 
@@ -160,15 +211,21 @@ function Hud.new(
 	layers.FontFace, layers.Rotation, layers.ZIndex = KO_FONT, KO_TILT, 3
 	local koGradient = Instance.new("UIGradient")
 	koGradient.Rotation = 90
-	koGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromHex("FFF7C2")),
-		ColorSequenceKeypoint.new(0.45, Color3.fromHex("FFC83D")),
-		ColorSequenceKeypoint.new(0.7, Color3.fromHex("FF7A1A")),
-		ColorSequenceKeypoint.new(1, Color3.fromHex("D61F2C")),
-	})
 	koGradient.Parent = layers
 	local layersStroke = Candy.stroke(layers, 3.5, true)
 	layersStroke.Color = Color3.fromHex("1A0B08")
+	-- tier effects: a coloured aura behind the letters (stronger each tier) and a shockwave frame on every tier-up
+	local aura =
+		Candy.text(bannerBox, "KoAura", UDim2.new(1, -8, 0, 58), offset(4, 4), 50, Candy.white)
+	aura.FontFace, aura.Rotation, aura.ZIndex = KO_FONT, KO_TILT, 2
+	local auraStroke = Candy.stroke(aura, 9, true)
+	local koRing =
+		Candy.frame(bannerBox, "KoRing", UDim2.new(1.06, 0, 0, 58), UDim2.new(0.5, 0, 0, 33))
+	koRing.AnchorPoint, koRing.Rotation, koRing.ZIndex = center, KO_TILT, 1
+	local ringScale = Instance.new("UIScale")
+	ringScale.Parent = koRing
+	local ringStroke = Candy.stroke(koRing, 5)
+	ringStroke.Transparency = 1
 	local banner =
 		Candy.text(bannerBox, "Reward", UDim2.new(1, -16, 0, 26), offset(8, 66), 22, Candy.white)
 	banner.FontFace, banner.Rotation, banner.ZIndex = KO_FONT, KO_TILT, 3
@@ -256,6 +313,10 @@ function Hud.new(
 		band = band,
 		bandEdge = bandEdge,
 		koGradient = koGradient,
+		aura = aura,
+		auraStroke = auraStroke,
+		ringScale = ringScale,
+		ringStroke = ringStroke,
 		layersStroke = layersStroke,
 		bannerStroke = bannerStroke,
 		money = money,
@@ -477,28 +538,79 @@ function Hud.step(
 			h.layers.Text = h.translate("mine_layers_gain", math.floor(reward.delta * progress))
 		end
 		h.banner.Visible = reward.ultimate
+		local tier = tierOf(math.floor(reward.delta * progress))
+		if tier ~= reward.tier then
+			local t = KO_TIERS[tier]
+			h.koGradient.Color, h.bandEdge.BackgroundColor3 = t.colors, t.edge
+			h.koGradient.Rotation = if t.shimmer then 0 else 90
+			reward.tierAt = if reward.tier then now else nil
+			reward.tier = tier
+			h.aura.TextColor3, h.auraStroke.Color, h.ringStroke.Color = t.edge, t.edge, t.edge
+			if reward.tierAt then
+				Sfx.play("level_tick", 0.6, 0.85 + 0.12 * tier)
+				if tier >= 4 then
+					Sfx.play("crit_soft", 0.4 + 0.05 * tier, 0.9 + 0.05 * tier)
+				end
+			end
+		end
+		-- the aura: none at the first tier, then brighter each tier, breathing from the fourth on
+		h.aura.Text = h.layers.Text
+		local auraLimit = h.aura:FindFirstChildOfClass("UITextSizeConstraint")
+		local layersLimit = h.layers:FindFirstChildOfClass("UITextSizeConstraint")
+		if auraLimit and layersLimit then
+			auraLimit.MaxTextSize = layersLimit.MaxTextSize
+		end
+		local glow = if tier <= 1 then 1 else 0.82 - 0.1 * (tier - 2)
+		if tier >= 4 and not reduced then
+			glow += 0.12 * math.sin(now * (4 + tier))
+		end
+		if KO_TIERS[tier].shimmer then
+			h.koGradient.Offset = Vector2.new(if reduced then 0 else math.sin(now * 2.4) * 0.35, 0)
+		else
+			h.koGradient.Offset = Vector2.zero
+		end
+		local tierPop = if reward.tierAt
+			then math.clamp((now - reward.tierAt) / KO_TIER_POP, 0, 1)
+			else 1
+		-- the shockwave: the slanted frame grows out of the band and fades, wider for higher tiers
+		local wave = if reward.tierAt then math.clamp((now - reward.tierAt) / 0.4, 0, 1) else 1
+		h.ringScale.Scale = 1 + (0.25 + 0.08 * tier) * (1 - (1 - wave) ^ 2)
+		h.ringStroke.Transparency = if reduced then 1 else wave
 		-- slam: from 2.3x down to 1 with a small overshoot (ease-out-back), then one short shake
 		local slam = math.clamp(age / KO_SLAM, 0, 1)
 		local back = 1 + 2.70158 * (slam - 1) ^ 3 + 1.70158 * (slam - 1) ^ 2
 		local pop = if reward.ended then math.clamp((now - reward.ended) / KO_POP, 0, 1) else 1
-		h.koScale.Scale = if reduced then 1 else (2.3 + (1 - 2.3) * back) * (1 + 0.18 * (1 - pop))
+		h.koScale.Scale = if reduced
+			then 1
+			else (2.3 + (1 - 2.3) * back)
+				* (1 + 0.18 * (1 - pop))
+				* (1 + (0.08 + 0.03 * tier) * (1 - tierPop))
+		-- shake: once on the slam, again on each tier-up (harder each tier), and a constant tremor from the fifth
+		local strength = 0
+		if age >= KO_SLAM and age <= KO_SLAM + 0.18 then
+			strength = 6 * (1 - (age - KO_SLAM) / 0.18)
+		end
+		if reward.tierAt and now - reward.tierAt < 0.22 then
+			strength = math.max(strength, (2 + 2 * tier) * (1 - (now - reward.tierAt) / 0.22))
+		end
+		if tier >= 5 and not reward.ended then
+			strength = math.max(strength, 1.2 + 0.6 * (tier - 5))
+		end
 		local shake = if reduced
-				or age < KO_SLAM
-				or age > KO_SLAM + 0.18
 			then Vector2.zero
-			else Vector2.new(math.random() - 0.5, math.random() - 0.5)
-				* 6
-				* (1 - (age - KO_SLAM) / 0.18)
+			else Vector2.new(math.random() - 0.5, math.random() - 0.5) * strength
 		h.bannerBox.Position = UDim2.new(0.5, shake.X, if gain then 0.32 else 0.76, shake.Y)
 		h.band.Position = UDim2.new(-0.05 - 1.2 * (1 - math.clamp(age / 0.12, 0, 1)) ^ 2, 0, 0, 6)
 		-- a white flash on impact and again on the final pop
-		h.koGradient.Enabled = reduced or (age > 0.07 and pop > 0.4)
+		h.koGradient.Enabled = reduced or (age > 0.07 and pop > 0.4 and tierPop > 0.35)
 		local fade = if reward.ultimate
 			then (if reward.ended
 				then math.clamp((now - reward.ended - KO_HOLD) / KO_FADE, 0, 1)
 				else 0)
 			else math.clamp((age - (KO_LIFE - KO_FADE)) / KO_FADE, 0, 1)
 		h.layers.TextTransparency, h.layersStroke.Transparency = fade, fade
+		local auraFade = math.clamp(glow, 0, 1) + (1 - math.clamp(glow, 0, 1)) * fade
+		h.aura.TextTransparency, h.auraStroke.Transparency = auraFade, auraFade
 		h.banner.TextTransparency, h.bannerStroke.Transparency = fade, fade
 		h.band.BackgroundTransparency = 0.2 + 0.8 * fade
 		h.bandEdge.BackgroundTransparency = fade
