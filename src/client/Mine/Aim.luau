@@ -31,7 +31,14 @@ function Aim.at(r: Renderer.Renderer, win: any, screen: Vector2): any?
 	if not Renderer.exposed(win, x, y, relative) then
 		return nil
 	end
-	return { x = x, y = y, dRel = relative, position = cell.part.Position, color = cell.part.Color }
+	return {
+		x = x,
+		y = y,
+		dRel = relative,
+		position = cell.part.Position,
+		hitPosition = hit and hit.Position,
+		color = cell.part.Color,
+	}
 end
 
 return Aim

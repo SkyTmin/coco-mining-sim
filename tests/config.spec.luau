@@ -88,12 +88,18 @@ Test.describe("Config", function()
 					expect(entry.dust).toEqual(block.dust)
 					for _, alt in entry.alts do
 						checkTexture(alt)
+						local grain = config.art.grains.textures[alt]
+						expect(#grain.cells).toBe(64)
+						expect(#config.art.grains.palettes[grain.palette]).toBe(16)
 					end
 					expect(entry.variants).toEqual(block.variants)
 					expect(entry.glow).toBe(block.glow == true)
 					checkTexture(entry.texture)
 					for _, variant in entry.variants do
 						checkTexture(variant)
+						local grain = config.art.grains.textures[variant]
+						expect(#grain.cells).toBe(64)
+						expect(#config.art.grains.palettes[grain.palette]).toBe(16)
 					end
 				end
 			end

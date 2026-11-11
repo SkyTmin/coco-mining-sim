@@ -5,6 +5,7 @@ local TweenService = game:GetService("TweenService")
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local Worlds = require(Shared.Mine.Worlds)
+local Wave = require(Shared.Mine.UltWave)
 local BlockArt = require(script.Parent.BlockArt)
 
 local S = Config.mine.blockSize
@@ -57,10 +58,14 @@ local function tileGrid(t: any, width: number)
 	end
 	local grid = Instance.new("Folder")
 	grid.Name, t.grid = "TunnelBlocks", grid
+	t.tiles = {}
 	local rock = t.rock or Config.art.worlds[Config.worlds[1].id].lining
 	local function cube(name: string, x: number, y: number, depth: number, texture: string)
 		local tile = part(grid, name, CUBE, t.frame * CFrame.new(x, y, -depth), Color3.new(1, 1, 1))
 		BlockArt.apply(tile, texture)
+		if name ~= "PlatformBlock" then
+			table.insert(t.tiles, { part = tile, x = x, y = y, base = depth, depth = depth })
+		end
 	end
 	local radius = (width / S - 1) / 2
 	for depth = S / 2, SIMPLE_FROM - S / 2, S do
@@ -210,18 +215,18 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 	local moving = Instance.new("Folder")
 	moving.Name, moving.Parent = "MineDepth", parent
 	local mass = part(moving, "FarOreMass", Vector3.one, frame, gray, Enum.Material.Slate)
+	local background = part(moving, "FogBackground", Vector3.one, frame, gray, Enum.Material.Neon)
+	background.Transparency = 1
+	local wallFrames = {}
+	for i, p in walls do
+		wallFrames[i] = frame:ToObjectSpace(p.CFrame)
+	end
 	local face = part(moving, "SurvivorFace", Vector3.one, frame, LAMP, Enum.Material.Neon)
 	local ticks = {}
 	local tickCount = math.ceil((SIMPLE_FROM + 2) / (10 * S))
 	for i = 1, tickCount do
 		ticks[i] =
 			part(moving, "DepthMark", Vector3.new(4, 0.06, 0.35), frame, trim, Enum.Material.Metal)
-	end
-
-	local wave = {}
-	for i = 1, 10 do
-		wave[i] = part(moving, "FractureRing", Vector3.one, frame, LAMP, Enum.Material.Neon)
-		wave[i].Transparency = 1
 	end
 
 	local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
@@ -232,6 +237,10 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 		spans = spans,
 		edges = edges,
 		walls = walls,
+		wallFrames = wallFrames,
+		wallTravel = 0,
+		background = background,
+		ultimate = false,
 		platform = platform,
 		frameParts = frameParts,
 		details = details,
@@ -240,7 +249,6 @@ function Tunnel.new(parent: Instance, frame: CFrame, plot: Instance): any
 		mass = mass,
 		face = face,
 		ticks = ticks,
-		wave = wave,
 		lamps = lamps,
 		glow = glow,
 		active = false,
@@ -327,7 +335,13 @@ local function decorations(t: any, world: Worlds.World)
 	end
 end
 
-function Tunnel.atmosphere(t: any, active: boolean, front: number, quality: number)
+function Tunnel.atmosphere(
+	t: any,
+	active: boolean,
+	front: number,
+	quality: number,
+	ultimate: boolean?
+)
 	if not active then
 		if t.active then
 			for _, tween in t.tweens do
@@ -339,21 +353,29 @@ function Tunnel.atmosphere(t: any, active: boolean, front: number, quality: numb
 			Lighting.FogStart, Lighting.FogEnd, Lighting.FogColor = old[4], old[5], old[6]
 			Lighting.ShadowSoftness = old[7]
 			if t.atmosphere then
+				t.atmosphere.Parent = Lighting
 				t.atmosphere.Density = t.density
 			end
 		end
-		t.active = false
+		t.active, t.ultimate = false, false
+		t.background.Transparency = 1
+		t.mass.Transparency = 0
 		return
 	end
 	local world = Worlds.of(front)
 	decorations(t, world)
-	if t.active and t.world == world and t.quality == quality then
+	local wasUltimate = t.ultimate
+	local dome = ultimate == true
+	if t.active and t.world == world and t.quality == quality and wasUltimate == dome then
 		return
 	end
 	local changed = not t.active or t.world ~= world
 	local shouldFade = t.active and t.world ~= world
-	t.active, t.world, t.quality = true, world, quality
+	t.active, t.world, t.quality, t.ultimate = true, world, quality, dome
 	local look = world.look
+	local fog = if look
+		then rgb(look.fog)
+		else colorOf(world):Lerp(Color3.fromRGB(34, 37, 51), 0.65)
 	if changed then
 		for _, tween in t.tweens do
 			tween:Cancel()
@@ -371,11 +393,9 @@ function Tunnel.atmosphere(t: any, active: boolean, front: number, quality: numb
 		local art = Config.art.worlds[world.id]
 		BlockArt.preload(world.id, world.index == 1)
 		t.lampColor = Color3.fromHex(art.light)
-		paint(
-			Lighting,
-			"FogColor",
-			if look then rgb(look.fog) else colorOf(world):Lerp(Color3.fromRGB(34, 37, 51), 0.65)
-		)
+		if not dome then
+			paint(Lighting, "FogColor", fog)
+		end
 		paint(t.glow, "Color", if look then rgb(look.glow) else colorOf(Worlds.of(world.finish)))
 		local rock = art.lining
 		t.rock, t.platformArt = rock, if world.index == 1 then "planks" else rock
@@ -408,9 +428,26 @@ function Tunnel.atmosphere(t: any, active: boolean, front: number, quality: numb
 	Lighting.Ambient = Color3.fromRGB(118, 112, 109)
 	Lighting.OutdoorAmbient = Color3.fromRGB(126, 119, 115)
 	Lighting.Brightness, Lighting.ShadowSoftness = 1.32, 0.55
-	Lighting.FogStart, Lighting.FogEnd = depthConfig.fogStart, LENGTH
-	if t.atmosphere then
-		t.atmosphere.Density = 0
+	if dome then
+		for _, tween in t.tweens do
+			tween:Cancel()
+		end
+		if t.atmosphere then
+			t.atmosphere.Parent = nil
+		end
+		local lining = Color3.fromHex(Config.art.worlds[world.id].liningFog)
+		Lighting.FogStart, Lighting.FogEnd, Lighting.FogColor =
+			Wave.fogStart * S, Wave.fogEnd * S, lining
+		t.background.Color = lining
+	else
+		Lighting.FogStart, Lighting.FogEnd = depthConfig.fogStart, LENGTH
+		if wasUltimate then
+			Lighting.FogColor = fog
+		end
+		if t.atmosphere then
+			t.atmosphere.Parent = Lighting
+			t.atmosphere.Density = 0
+		end
 	end
 end
 
@@ -422,15 +459,44 @@ function Tunnel.moves(
 	survivor: boolean,
 	plateDistance: number?,
 	parts: { BasePart },
-	frames: { CFrame }
+	frames: { CFrame },
+	travel: number?
 )
 	local function move(p: BasePart, x: number, y: number, depth: number)
 		table.insert(parts, p)
 		table.insert(frames, t.frame * CFrame.new(x, y, -depth))
 	end
+	for _, tile in t.tiles do
+		local depth = tile.base
+			+ math.max(
+					0,
+					math.ceil(
+						((travel or 0) - Config.plots.platformDepth * S - tile.base) / SIMPLE_FROM
+					)
+				)
+				* SIMPLE_FROM
+		if depth ~= tile.depth then
+			tile.depth = depth
+			move(tile.part, tile.x, tile.y, depth)
+		end
+	end
+	local wallTravel = math.max(0, (travel or 0) - Config.plots.platformDepth * S)
+	if wallTravel ~= t.wallTravel then
+		t.wallTravel = wallTravel
+		for i, p in t.walls do
+			table.insert(parts, p)
+			table.insert(frames, t.frame * CFrame.new(0, 0, -wallTravel) * t.wallFrames[i])
+		end
+	end
 	local world = Worlds.of(win.front)
 	local rock = colorOf(world):Lerp(Color3.fromRGB(70, 65, 62), 0.46)
 	local width, height = win.width * S, win.height * S
+	t.background.Transparency = if t.ultimate then 0 else 1
+	t.mass.Transparency = if t.ultimate then 1 else 0
+	if t.ultimate then
+		t.background.Size = Vector3.new(width * 2, height * 2, 0.2)
+		move(t.background, 0, height / 2, (travel or 0) + (Wave.fogEnd + 8) * S)
+	end
 	local start = offset + visible * S
 	if plateDistance and math.abs(plateDistance - start) < S then
 		start = plateDistance + S
@@ -456,42 +522,6 @@ function Tunnel.moves(
 			move(tick, 0, 0.045, depth)
 		end
 		depth += markerSpacing
-	end
-end
-
-function Tunnel.dim(t: any, ratio: number)
-	if t.active then
-		Lighting.Brightness = 1.32 * ratio
-		for _, lamp in t.lamps do
-			lamp.part.Color = lamp.part.Color:Lerp(Color3.new(0, 0, 0), 1 - ratio)
-		end
-	end
-end
-
-function Tunnel.wave(t: any, depth: number?, strength: number, color: Color3)
-	for i, piece in t.wave do
-		piece.Transparency = if depth then 0.18 + (1 - strength) * 0.63 else 1
-		if depth then
-			local angle = (i - 1) * 2 * math.pi / #t.wave
-			local nextAngle = i * 2 * math.pi / #t.wave
-			local function point(a: number): Vector3
-				return Vector3.new(
-					math.cos(a) * t.width * 0.47,
-					HEIGHT * (0.5 + 0.47 * math.sin(a)),
-					-depth
-				)
-			end
-			local a, b = point(angle), point(nextAngle)
-			local span = (b - a).Magnitude
-			piece.Color, piece.Size = color, Vector3.new(0.34, 0.34, span + 0.12)
-			piece.CFrame = t.frame * CFrame.lookAt((a + b) / 2, b)
-		end
-	end
-	for _, lamp in t.lamps do
-		local flash = if depth
-			then math.clamp(1 - math.abs(depth - lamp.depth) / (lamp.spacing * 1.25), 0, 1) * strength
-			else 0
-		lamp.part.Color = t.lampColor:Lerp(color:Lerp(Color3.new(1, 1, 1), 0.52), flash)
 	end
 end
 

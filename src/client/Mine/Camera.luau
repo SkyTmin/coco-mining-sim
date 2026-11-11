@@ -25,6 +25,7 @@ export type View = {
 	firstItem: Model?,
 	firstRoot: Part?,
 	bob: number,
+	held: { frame: CFrame, focus: CFrame, humanoid: Humanoid?, speed: number? }?,
 	hidden: Model?,
 	hideNew: RBXScriptConnection?,
 	body: { [string]: Applied },
@@ -272,7 +273,14 @@ local function drawHeld(
 	root.CFrame = camera.CFrame * bob * Swing.held(root.Size.Y, swingProgress(view, os.clock()))
 end
 
-function Camera.step(view: View, active: boolean, shake: Vector3, dt: number, reduced: boolean)
+function Camera.step(
+	view: View,
+	active: boolean,
+	shake: Vector3,
+	dt: number,
+	reduced: boolean,
+	travel: number?
+)
 	local camera = workspace.CurrentCamera
 	local character = view.player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -352,9 +360,36 @@ function Camera.step(view: View, active: boolean, shake: Vector3, dt: number, re
 			0
 		)
 		else headCenter - facing * 11 + Vector3.new(0, 2.5, 0)
-	camera.CFrame = CFrame.lookAt(eye + shake, eye + shake + direction)
-	camera.Focus = CFrame.new(eye + direction * 24)
+	if view.held then
+		local offset = view.frame.LookVector * (travel or 0)
+		camera.CFrame, camera.Focus = view.held.frame + offset, view.held.focus + offset
+	else
+		camera.CFrame = CFrame.lookAt(eye + shake, eye + shake + direction)
+		camera.Focus = CFrame.new(eye + direction * 24)
+	end
 	drawHeld(view, camera, humanoid, first, dt, reduced)
 end
 
+function Camera.hold(view: View, enabled: boolean)
+	local held = view.held
+	local camera = workspace.CurrentCamera
+	if enabled and not held and camera then
+		local character = view.player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		view.held = {
+			frame = camera.CFrame,
+			focus = camera.Focus,
+			humanoid = humanoid,
+			speed = humanoid and humanoid.WalkSpeed,
+		}
+		if humanoid then
+			humanoid.WalkSpeed = 0
+		end
+	elseif not enabled and held then
+		if held.humanoid and held.speed and held.humanoid.WalkSpeed == 0 then
+			held.humanoid.WalkSpeed = held.speed
+		end
+		view.held = nil
+	end
+end
 return Camera

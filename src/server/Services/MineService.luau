@@ -66,10 +66,6 @@ local function layers(st: State.MineState, offset: number, limit: number): { { n
 	return layers
 end
 
-function MineService.face(st: State.MineState, depth: number): { number }
-	return layers(st, depth - st.front, depth - st.front + 1)[1]
-end
-
 function MineService.damage(st: State.MineState): { any }
 	local out = {}
 	local radius = (st.width - 1) // 2
@@ -92,10 +88,10 @@ function MineService.damage(st: State.MineState): { any }
 	return out
 end
 
-local function send(kind: string, plot: number, packet: buffer)
+local function send(kind: string, plot: number, packet: buffer, visual: any?)
 	for player in subscribers[plot] or {} do
 		if player.Parent == Players then
-			windowRemote:FireClient(player, kind, packet)
+			windowRemote:FireClient(player, kind, packet, visual)
 		end
 	end
 end
@@ -143,7 +139,7 @@ function MineService.result(s: Session, res: any)
 	if res.delta > 0 then
 		res.layers = layers(s.state, 0, mine.nearWindow)
 	end
-	send("result", s.plot, Wire.encodeResult(res))
+	send("result", s.plot, Wire.encodeResult(res), res.visual)
 	if res.delta > 0 then
 		sendTail(s)
 	end

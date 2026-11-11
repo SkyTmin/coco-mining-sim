@@ -354,6 +354,1448 @@
     "world_seed_golden": "rbxassetid://102180366265350",
     "world_seed_rainbow": "rbxassetid://71771750058908"
   },
+  "grains": {
+    "grid": 8,
+    "grainPx": 4,
+    "palettes": {
+      "w1": [
+        "#b1a7a7",
+        "#a59eab",
+        "#9f9aae",
+        "#a399a2",
+        "#a89288",
+        "#9993a4",
+        "#918da1",
+        "#8f879b",
+        "#89879d",
+        "#9f7a73",
+        "#8b8499",
+        "#827d91",
+        "#746d89",
+        "#716a89",
+        "#6d6686",
+        "#5e5874"
+      ],
+      "golden": [
+        "#feeca6",
+        "#fad876",
+        "#f7ca58",
+        "#f4bf40",
+        "#eec768",
+        "#eeb843",
+        "#e6bc58",
+        "#cac189",
+        "#e7ad38",
+        "#e1a32e",
+        "#daa034",
+        "#b5a66f",
+        "#d89024",
+        "#c28e3f",
+        "#c97d1b",
+        "#a95d38"
+      ],
+      "rainbow": [
+        "#b1ef7a",
+        "#77f2aa",
+        "#c5ce72",
+        "#7fccb3",
+        "#6debb3",
+        "#6addbd",
+        "#66cfae",
+        "#65becc",
+        "#bb9584",
+        "#8298ba",
+        "#65a4cd",
+        "#6683d7",
+        "#cb6cdd",
+        "#bf57a9",
+        "#7d6ed8",
+        "#8358b7"
+      ],
+      "cosmic": [
+        "#77768c",
+        "#685669",
+        "#5e4679",
+        "#40437b",
+        "#53316d",
+        "#3f3071",
+        "#313165",
+        "#2f2464",
+        "#3d1e54",
+        "#281c5a",
+        "#241a55",
+        "#221851",
+        "#1e164a",
+        "#1c1445",
+        "#1a1341",
+        "#17113b"
+      ],
+      "w2": [
+        "#ce8962",
+        "#cb7f58",
+        "#cd7a4f",
+        "#c47651",
+        "#b38d76",
+        "#b27b5a",
+        "#b67456",
+        "#a47264",
+        "#837f6b",
+        "#bb704f",
+        "#a36d5f",
+        "#947155",
+        "#8a544f",
+        "#845c59",
+        "#83504e",
+        "#794a4e"
+      ],
+      "w3": [
+        "#e0d9e7",
+        "#d8cfe1",
+        "#cfc5db",
+        "#c6c0d6",
+        "#c8b8d1",
+        "#bcb5cc",
+        "#bca9c5",
+        "#aca4b8",
+        "#b99bb5",
+        "#aaa1b8",
+        "#a194af",
+        "#9088a8",
+        "#9485a5",
+        "#8a82a3",
+        "#9e76b2",
+        "#806fa4"
+      ],
+      "w4": [
+        "#e6c388",
+        "#e7c17e",
+        "#e8c078",
+        "#e6be77",
+        "#d8b888",
+        "#deb66e",
+        "#cca975",
+        "#b1967b",
+        "#be985a",
+        "#b09477",
+        "#9c7e61",
+        "#927a6e",
+        "#92796c",
+        "#8f7565",
+        "#9d7740",
+        "#846b63"
+      ],
+      "w5": [
+        "#b1dcec",
+        "#a8d5eb",
+        "#a0d4ec",
+        "#95cfe9",
+        "#97c6e1",
+        "#93bdd9",
+        "#84bad7",
+        "#8ba4bb",
+        "#87a2bc",
+        "#7ba6c9",
+        "#7397c4",
+        "#6d88ad",
+        "#7085a5",
+        "#6982a6",
+        "#6182bd",
+        "#5a74ae"
+      ],
+      "w6": [
+        "#918ebb",
+        "#8f7bb7",
+        "#9b75b8",
+        "#8c74b5",
+        "#926dc2",
+        "#936da5",
+        "#8269a6",
+        "#7b6db3",
+        "#7c708d",
+        "#8562b8",
+        "#8863a1",
+        "#7d63a3",
+        "#6a538e",
+        "#67508f",
+        "#634991",
+        "#5f458c"
+      ],
+      "w7": [
+        "#8ba3ba",
+        "#7888a4",
+        "#747f9d",
+        "#667c9f",
+        "#697698",
+        "#667094",
+        "#626687",
+        "#5d7096",
+        "#576992",
+        "#5b6184",
+        "#54638d",
+        "#4e5c87",
+        "#4c4f77",
+        "#414774",
+        "#404472",
+        "#3d406e"
+      ],
+      "w8": [
+        "#89a95e",
+        "#639f61",
+        "#68995c",
+        "#5f995a",
+        "#799158",
+        "#619259",
+        "#5c9359",
+        "#598e59",
+        "#7d8253",
+        "#688369",
+        "#628063",
+        "#546a5d",
+        "#4f6e5d",
+        "#486654",
+        "#466254",
+        "#435a53"
+      ],
+      "w9": [
+        "#6b8fab",
+        "#4c7fa1",
+        "#4b7b9e",
+        "#3d7a9f",
+        "#506d8e",
+        "#437599",
+        "#37749c",
+        "#326e98",
+        "#46678a",
+        "#445f83",
+        "#32658f",
+        "#3a547c",
+        "#395077",
+        "#2c4d7a",
+        "#2c4a78",
+        "#303e66"
+      ],
+      "w10": [
+        "#bf6e42",
+        "#9a6448",
+        "#cf593b",
+        "#b2583e",
+        "#a25643",
+        "#85514f",
+        "#684951",
+        "#5d4d6c",
+        "#b63839",
+        "#8f3c49",
+        "#7c2c4f",
+        "#7c2c3e",
+        "#694156",
+        "#504261",
+        "#6a3854",
+        "#4f3352"
+      ]
+    },
+    "textures": {
+      "pebble": {
+        "palette": "w1",
+        "cells": "c777777ca201122da211202da222212da222222da002012da222222dceeeeeee"
+      },
+      "pebble_b": {
+        "palette": "w1",
+        "cells": "c777777ca222212da201111da122212da212212da111102da215222dceeeeeee"
+      },
+      "pebble_c": {
+        "palette": "w1",
+        "cells": "c777777ca215221da210102da211112da212221da212210da211212dceeeeeee"
+      },
+      "flint": {
+        "palette": "w1",
+        "cells": "c777777ca212121da211112da2e8222da2c6202da282811da255222dceeeeeee"
+      },
+      "flint_b": {
+        "palette": "w1",
+        "cells": "c777777ca562212da511112da126255da22e822da11b505da202221dceeeeeee"
+      },
+      "flint_c": {
+        "palette": "w1",
+        "cells": "c777777ca212122da218262da255252da2cd222da268111da121102dceeeeeee"
+      },
+      "coal": {
+        "palette": "w1",
+        "cells": "c777777cab622b6da655a76da25cff5da66cff5dabf2511da252222dceeeeeee"
+      },
+      "coal_b": {
+        "palette": "w1",
+        "cells": "c777777ca122522da2bcbc5da7ffa52da5cfc72daa55c62da661221dceeeeeee"
+      },
+      "coal_c": {
+        "palette": "w1",
+        "cells": "c777777caba2222daba2155da6ea5b6da226ef6da205ffbda2215a2dceeeeeee"
+      },
+      "copper": {
+        "palette": "w1",
+        "cells": "c777777ca113131daa99397da9993a3da394932da149012da133222dceeeeeee"
+      },
+      "copper_b": {
+        "palette": "w1",
+        "cells": "c777777ca133212da1a9402da199944da537333da349993da113571dceeeeeee"
+      },
+      "copper_c": {
+        "palette": "w1",
+        "cells": "c777777ca513b31da535940da441332da905991da307990da221a32dceeeeeee"
+      },
+      "firefly_amber": {
+        "palette": "w1",
+        "cells": "c777777ca20b340da149444da444494da349999da340431da044310dceeeeeee"
+      },
+      "firefly_amber_b": {
+        "palette": "w1",
+        "cells": "c777777ca23ca40da090944da149943da793044da493344da003430dceeeeeee"
+      },
+      "firefly_amber_c": {
+        "palette": "w1",
+        "cells": "c777777ca239310da344043da499943da494993da434494da011200dceeeeeee"
+      },
+      "pebble_golden": {
+        "palette": "golden",
+        "cells": "8666666862111218611111286222212862222228611211286212222889999999"
+      },
+      "flint_golden": {
+        "palette": "golden",
+        "cells": "86666668621212186111112862bb222861b6412864b4b1186142422889999999"
+      },
+      "coal_golden": {
+        "palette": "golden",
+        "cells": "866666686b62166866426b68622dff28626bff286bf464186442222889999999"
+      },
+      "copper_golden": {
+        "palette": "golden",
+        "cells": "866666686222121866db2f686dad2b2862b6d428646d41286222222889999999"
+      },
+      "firefly_amber_golden": {
+        "palette": "golden",
+        "cells": "86666668611d2618616d66286686ba68626d89d8626464186166221889999999"
+      },
+      "red_stone_golden": {
+        "palette": "golden",
+        "cells": "a555555a523233295223333953332229522222395222222952233339accccccc"
+      },
+      "copper_w2_golden": {
+        "palette": "golden",
+        "cells": "a555555a522223395233333953da332952d66b295266623952623339accccccc"
+      },
+      "tin_golden": {
+        "palette": "golden",
+        "cells": "a555555a522272295222463953b6b429527777295274472953423239accccccc"
+      },
+      "malachite_golden": {
+        "palette": "golden",
+        "cells": "a555555a5222652956d6bb595abbbbb952b6bb6956b2b6b952233569accccccc"
+      },
+      "turquoise_golden": {
+        "palette": "golden",
+        "cells": "a555555a5226b67952fbb669536642295bbb7b695bb76bb951463649accccccc"
+      },
+      "white_stone_golden": {
+        "palette": "golden",
+        "cells": "6111111610000002100000021000000210000002100000021000000263333335"
+      },
+      "quartz_golden": {
+        "palette": "golden",
+        "cells": "611111161000100210001002100770021000700210110b021000070263333335"
+      },
+      "iron_golden": {
+        "palette": "golden",
+        "cells": "6111111610000002177700021077b702100bbb721007b7021001710263333335"
+      },
+      "rose_quartz_golden": {
+        "palette": "golden",
+        "cells": "6111111617b0000217b7b002110b77021070700210070b721000077263333335"
+      },
+      "amethyst_golden": {
+        "palette": "golden",
+        "cells": "611111161000000210bb770210bb7b7210b7bb02100bb7721007777263333335"
+      },
+      "sandstone_golden": {
+        "palette": "golden",
+        "cells": "5444444540000005400000054000000540000005400000054000000555555558"
+      },
+      "silver_golden": {
+        "palette": "golden",
+        "cells": "5444444541100015410000154070001540700715407070154000000555555558"
+      },
+      "gold_golden": {
+        "palette": "golden",
+        "cells": "54444445410041054110410541b7b7054164d40541641b054011100555555558"
+      },
+      "river_pearl_golden": {
+        "palette": "golden",
+        "cells": "544444454001111540717705470777754070b705477077754000000555555558"
+      },
+      "nugget_golden": {
+        "palette": "golden",
+        "cells": "544444454001711541dbd115417110054bb44b654dd61dd54111011555555558"
+      },
+      "frozen_stone_golden": {
+        "palette": "golden",
+        "cells": "5444444540000003400000034000000340000003400000034111111353333338"
+      },
+      "ice_golden": {
+        "palette": "golden",
+        "cells": "5444444540000003400000034077000340700003407070034101011353333338"
+      },
+      "froststone_golden": {
+        "palette": "golden",
+        "cells": "54444445470007034000770340077b0340077b03477070034101111353333338"
+      },
+      "sapphire_golden": {
+        "palette": "golden",
+        "cells": "544444454000000347b70b734bbb070347b7b703477b70034111111353333338"
+      },
+      "eternal_ice_golden": {
+        "palette": "golden",
+        "cells": "5444444540070703407777034777777340777773407777034077710353333338"
+      },
+      "mycelium_golden": {
+        "palette": "golden",
+        "cells": "c888888c8333332c8333333c8333333c8333333c8888888c8858888cccccccce"
+      },
+      "sporite_golden": {
+        "palette": "golden",
+        "cells": "c888888c8333332c8333333c83d5333c83a58d3c88a8a58c8888888cccccccce"
+      },
+      "glowshroom_golden": {
+        "palette": "golden",
+        "cells": "c888888c8333b62c8333b63c85bbbb3c85bbbb5c85bb6b5c8868888cccccccce"
+      },
+      "topaz_golden": {
+        "palette": "golden",
+        "cells": "c888888c8333532c83d3dd3c8addaaac8383dd5c88d5a8ac8858888cccccccce"
+      },
+      "moonstone_golden": {
+        "palette": "golden",
+        "cells": "c888888c8326b61c86bb744c8366633c8bb77bbc8b7747bc8466654cccccccce"
+      },
+      "mantle_golden": {
+        "palette": "golden",
+        "cells": "c999999c9528cc8e92189c9e9338899e9388899e9888899e9988859eceeeeeee"
+      },
+      "platinum_golden": {
+        "palette": "golden",
+        "cells": "c999999c9959385e9613398e9d7b598e9d7b898e9ab6b58e9865538eceeeeeee"
+      },
+      "diamond_golden": {
+        "palette": "golden",
+        "cells": "c999999c9d688a6e9618865e9985b68e9a55b68e9db3a88e98a9958eceeeeeee"
+      },
+      "brilliant_golden": {
+        "palette": "golden",
+        "cells": "c999999c9a69952e9b7b8b6e9b0b5d5e92b4b68e9647658e9225858eceeeeeee"
+      },
+      "giant_diamond_golden": {
+        "palette": "golden",
+        "cells": "c999999c996bad7e967bbbde9dbb77de95bb77de95bbbdae94bbb86eceeeeeee"
+      },
+      "moss_stone_golden": {
+        "palette": "golden",
+        "cells": "c888888a8333333c8533383c8338333c8333338c8383333c8333383ccccccccc"
+      },
+      "resin_golden": {
+        "palette": "golden",
+        "cells": "c888888a8388333c8388833c833dd83c833ad33c83338dac83335d8ccccccccc"
+      },
+      "emerald_golden": {
+        "palette": "golden",
+        "cells": "c888888a8333333c8b6d333c856bbd3c833d6b5c8335f63c8333633ccccccccc"
+      },
+      "sap_crystal_golden": {
+        "palette": "golden",
+        "cells": "c888888a8ad3333c8adad53c835b6d3c85b6d33c83366bdc83353ddccccccccc"
+      },
+      "world_seed_golden": {
+        "palette": "golden",
+        "cells": "c888888a8385332c83bddd3c83dd63ac83d5dd5c833dd58c823a884ccccccccc"
+      },
+      "sea_stone_golden": {
+        "palette": "golden",
+        "cells": "e999999c9889985e999cc99e9cccccce9cc99cce9998899e9989999eeeeeeeee"
+      },
+      "salt_golden": {
+        "palette": "golden",
+        "cells": "e999999c9889985e98dac99e9a7bac9e9abb5cce98b6d89e9869a98eeeeeeeee"
+      },
+      "aquamarine_golden": {
+        "palette": "golden",
+        "cells": "e999999c9ba99a5e9dacadae99cdbdce9caabdce9ab8899e9889989eeeeeeeee"
+      },
+      "pearl_golden": {
+        "palette": "golden",
+        "cells": "e999999c9889855e9bbba7be9b0b6dde9db6bd9e986b688e988a889eeeeeeeee"
+      },
+      "black_pearl_golden": {
+        "palette": "golden",
+        "cells": "e999999c99cfadde9aefffde9effbffe9cdfffde99fdfd9e9dffd9deeeeeeeee"
+      },
+      "basalt_golden": {
+        "palette": "golden",
+        "cells": "eccccccecec99cafcceeee9fcee8ee8fc9cce88fccceee9fc9cac98fefffffff"
+      },
+      "obsidian_golden": {
+        "palette": "golden",
+        "cells": "ecccccceceddceafceddee8fcecdfe8fcc5dfc8fceceefefcc85cd8fefffffff"
+      },
+      "garnet_golden": {
+        "palette": "golden",
+        "cells": "ecccccceceecceafcfffec9fceffffafccefffdfcecfffefcc8ada8fefffffff"
+      },
+      "ruby_golden": {
+        "palette": "golden",
+        "cells": "eccccccecffcccafcffffe9fceefffafcefffecfccefdfffcc88cddfefffffff"
+      },
+      "fire_ruby_golden": {
+        "palette": "golden",
+        "cells": "ecccccceceeecc5fccdedfcfccdddedfccfeef9fcccfeeefc88ddd6fefffffff"
+      },
+      "pebble_rainbow": {
+        "palette": "rainbow",
+        "cells": "822011572000145a2001457b001457be11457bec1457becc557beccc7abeeccd"
+      },
+      "flint_rainbow": {
+        "palette": "rainbow",
+        "cells": "822011572000145a2001457b009657be11977bec14a7becc557beccc7abeeccd"
+      },
+      "coal_rainbow": {
+        "palette": "rainbow",
+        "cells": "822011572200167a200167ab0016ffbe115affec16f7becc557beccc7abeeccd"
+      },
+      "copper_rainbow": {
+        "palette": "rainbow",
+        "cells": "822011572200145a228348ab088859be119399ec14399ecc557beccc7abeeccd"
+      },
+      "firefly_amber_rainbow": {
+        "palette": "rainbow",
+        "cells": "822011572008133a2008333b0023229e113322fc14839ecc5399eccc7abeeccd"
+      },
+      "red_stone_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572200145a2001557b001557be11457bee6457becc557beccd7abeecdd"
+      },
+      "copper_w2_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572200145a2001457b008357be119398ee64998ecc559beccd7abeecdd"
+      },
+      "tin_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572200355a2001377b00339abe11379bee6457b9cc557beccd7abeecdd"
+      },
+      "malachite_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572200655a2066667b06667abe1165abee6567bb9c557beccd7abeecdd"
+      },
+      "turquoise_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572201655a2096a7ab016557be16677bee6677bbec557beccd7abeecdd"
+      },
+      "white_stone_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157200014572001457b001457be01457bec1457becc557beccc77becccd"
+      },
+      "quartz_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157200014572001457b001697be0145abec1457bfcc557beecc77becccd"
+      },
+      "iron_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157220014572206557b006899be01499fec145a8fcc557beccc77becccd"
+      },
+      "rose_quartz_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157228014572283957b0039c9be01939bec1459efdc557bedcc77becccd"
+      },
+      "amethyst_rainbow": {
+        "palette": "rainbow",
+        "cells": "822001572000145720ff7a7b0099eeee0197beec147ffecc557beccc77becccd"
+      },
+      "sandstone_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157200014572001457b001457be01457bec1457becc557beccc77becccd"
+      },
+      "silver_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157200014572001457b006557be01557bec1477becc557beccc77becccd"
+      },
+      "gold_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157200021572001357b008339be013389ec143398cc557beccc77becccd"
+      },
+      "river_pearl_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157200014572031937b0333399e013599ec1337becc557beccc77becccd"
+      },
+      "nugget_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157200063372088839b003137be068389fc1889988c5379eccc77becccd"
+      },
+      "frozen_stone_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157200014572001457b001457be01457bec1457becc557beccc77becccd"
+      },
+      "ice_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157200014572001457b003357be01357bec1477becc557beccc77becccd"
+      },
+      "froststone_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157220015572011577b00169abe0157abec15a7becc557beccc77becccd"
+      },
+      "sapphire_rainbow": {
+        "palette": "rainbow",
+        "cells": "822001572001155722b65bab09ba7bbe04a7bbec157bbecc557beccc77becccd"
+      },
+      "eternal_ice_rainbow": {
+        "palette": "rainbow",
+        "cells": "82200157200615572067577b016537be015777ec1477becc557aeccc77becccd"
+      },
+      "mycelium_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572200145a2001557b001577be1157abee657abecc57abeccd7abeecdd"
+      },
+      "sporite_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572200145a2001557b006657be116579ee65379ecc57abeccd7abeecdd"
+      },
+      "glowshroom_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572201655a2011577b01667abe1167abee657abaec57abeecd7abeecdd"
+      },
+      "topaz_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572200655a2081887b0083399e11339fee638aefdc57abeccd7abeecdd"
+      },
+      "moonstone_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572200333a2093977b003377be139399ee6999b99c53abeccd7abeecdd"
+      },
+      "mantle_rainbow": {
+        "palette": "rainbow",
+        "cells": "822066672201667a200667ab00157abe6157abef657abeed67abeccd7abffddd"
+      },
+      "platinum_rainbow": {
+        "palette": "rainbow",
+        "cells": "822066672206157a200157ab06997abe6637abef6697becd677beccd7abffddd"
+      },
+      "diamond_rainbow": {
+        "palette": "rainbow",
+        "cells": "822066672201667a201657ab0665aabe66579bef6677becd67abeccd7abffddd"
+      },
+      "brilliant_rainbow": {
+        "palette": "rainbow",
+        "cells": "822066672206655a223359ab033979be61339bef6539becd657beccd7abffddd"
+      },
+      "giant_diamond_rainbow": {
+        "palette": "rainbow",
+        "cells": "822066672209667a201aaaab067637be667a77ff657abfed65abeecd7abffddd"
+      },
+      "moss_stone_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572200157a2001577b001557be11577bee6577becc55abeccd7abeecdd"
+      },
+      "resin_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572220157a2023657b00188abe11579bee6577bffc55abedcd7abeecdd"
+      },
+      "emerald_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572200155a2016577b01167abe11577bee6577becc55abeccd7abeecdd"
+      },
+      "sap_crystal_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572280155a2286657b001309be16039bee6553998c577be9dd7abeecdd"
+      },
+      "world_seed_rainbow": {
+        "palette": "rainbow",
+        "cells": "822016572200143a2088397b0088229e118398ee643889dc5379f88d7abeecdd"
+      },
+      "sea_stone_rainbow": {
+        "palette": "rainbow",
+        "cells": "822066672206657a206667ab06667abe6667abef657abeed67abeecd7abffddd"
+      },
+      "salt_rainbow": {
+        "palette": "rainbow",
+        "cells": "822066672206657a206667ab06997abe66997bef6597beed67abeccd7abffddd"
+      },
+      "aquamarine_rainbow": {
+        "palette": "rainbow",
+        "cells": "822066672206667a206667ab0666aabe6667abef667abeed67abeccd7abffddd"
+      },
+      "pearl_rainbow": {
+        "palette": "rainbow",
+        "cells": "822066672206657a2893399b090979be66939bef6339becd67abeccd7abffddd"
+      },
+      "black_pearl_rainbow": {
+        "palette": "rainbow",
+        "cells": "822066672229669a226f9abb06f99ffe669affff66fbffed67bffecd7abffddd"
+      },
+      "basalt_rainbow": {
+        "palette": "rainbow",
+        "cells": "882288898226667f226667af26657abd8667abed867abfcd87abeccd9ffddddd"
+      },
+      "obsidian_rainbow": {
+        "palette": "rainbow",
+        "cells": "882288898286667f226667af266afbbd8657bbed867abffd87abefcd9ffddddd"
+      },
+      "garnet_rainbow": {
+        "palette": "rainbow",
+        "cells": "882288898226667f288967af269dffbd8669fffd867fdffd87abfccd9ffddddd"
+      },
+      "ruby_rainbow": {
+        "palette": "rainbow",
+        "cells": "882288898888367f2888f9af2688dfed86d9fffd869fffdd87abeddd9ffddddd"
+      },
+      "fire_ruby_rainbow": {
+        "palette": "rainbow",
+        "cells": "882288898228633f2288889f268888fd86888ffd86988ddd83affd8d9ffddddd"
+      },
+      "pebble_cosmic": {
+        "palette": "cosmic",
+        "cells": "b999999b9957735c9527733c9779335c9745979c9425553c9757577cbccccccd"
+      },
+      "flint_cosmic": {
+        "palette": "cosmic",
+        "cells": "b999999b9759735c9507733c9735335c9533777c9524353c9747577cbccccccd"
+      },
+      "coal_cosmic": {
+        "palette": "cosmic",
+        "cells": "b999999b9759755c9329733c9999465c9745667c9744553c9747577cbccccccd"
+      },
+      "copper_cosmic": {
+        "palette": "cosmic",
+        "cells": "b999999b9757735c9404513c9401245c9411447c9411253c9744577cbccccccd"
+      },
+      "firefly_amber_cosmic": {
+        "palette": "cosmic",
+        "cells": "b999999b9748520c9301111c9411001c9411001c9411142c9111471cbccccccd"
+      },
+      "red_stone_cosmic": {
+        "palette": "cosmic",
+        "cells": "caaaaaaca979966da52a936dabbb535da74599ada545773da7577b9dcdddddde"
+      },
+      "copper_w2_cosmic": {
+        "palette": "cosmic",
+        "cells": "caaaaaacaa79956da52a936da918435da511418da411123da8285a9dcdddddde"
+      },
+      "tin_cosmic": {
+        "palette": "cosmic",
+        "cells": "caaaaaaca977036da507206da723003da522027da402202da725666dcdddddde"
+      },
+      "malachite_cosmic": {
+        "palette": "cosmic",
+        "cells": "caaaaaaca969966da626336daa36333da723666da515366da757796dcdddddde"
+      },
+      "turquoise_cosmic": {
+        "palette": "cosmic",
+        "cells": "caaaaaaca967630da336333da966335da633366da333333da255670dcdddddde"
+      },
+      "white_stone_cosmic": {
+        "palette": "cosmic",
+        "cells": "977777797535533972055339755523397322555974223329754335399aaaaaab"
+      },
+      "quartz_cosmic": {
+        "palette": "cosmic",
+        "cells": "977777797533533973023339755302397522235974242229754522299aaaaaab"
+      },
+      "iron_cosmic": {
+        "palette": "cosmic",
+        "cells": "977777797533333971043039734002297520212974220229754525399aaaaaab"
+      },
+      "rose_quartz_cosmic": {
+        "palette": "cosmic",
+        "cells": "977777797523333972222039752202397200223972022029732222299aaaaaab"
+      },
+      "amethyst_cosmic": {
+        "palette": "cosmic",
+        "cells": "977777797533530972023339752200397522325972222339704322099aaaaaab"
+      },
+      "sandstone_cosmic": {
+        "palette": "cosmic",
+        "cells": "a777777a7535533a7305533a7555333a7523555a7424352a7545355aabbbbbbc"
+      },
+      "silver_cosmic": {
+        "palette": "cosmic",
+        "cells": "a777777a7755533a7305533a7523233a7522225a7202222a7325355aabbbbbbc"
+      },
+      "gold_cosmic": {
+        "palette": "cosmic",
+        "cells": "a777777a7755123a7305103a7512013a7511115a7411212a7524343aabbbbbbc"
+      },
+      "river_pearl_cosmic": {
+        "palette": "cosmic",
+        "cells": "a777777a7535533a7202003a7302000a7202022a7202220a7325332aabbbbbbc"
+      },
+      "nugget_cosmic": {
+        "palette": "cosmic",
+        "cells": "a777777a7524410a7211101a7521123a7411144a7111111a7022250aabbbbbbc"
+      },
+      "frozen_stone_cosmic": {
+        "palette": "cosmic",
+        "cells": "a777777a7535533a7205333a7555233a7523555a7424552a7545575aabbbbbbb"
+      },
+      "ice_cosmic": {
+        "palette": "cosmic",
+        "cells": "a777777a7535533a7205333a7302233a7302355a7202232a7525375aabbbbbbb"
+      },
+      "froststone_cosmic": {
+        "palette": "cosmic",
+        "cells": "a777777a7325532a7205303a7553003a7322025a7202332a7525575aabbbbbbb"
+      },
+      "sapphire_cosmic": {
+        "palette": "cosmic",
+        "cells": "a777777a7535533a7303333a7303333a7323335a7323332a7553575aabbbbbbb"
+      },
+      "eternal_ice_cosmic": {
+        "palette": "cosmic",
+        "cells": "a777777a7533330a7200303a7303000a7303003a7302232a7023350aabbbbbbb"
+      },
+      "mycelium_cosmic": {
+        "palette": "cosmic",
+        "cells": "dbbbbbbdbb7ba66eb62b936ebbbb566eb947bbbeb848995eb9899c9edeeeeeef"
+      },
+      "sporite_cosmic": {
+        "palette": "cosmic",
+        "cells": "dbbbbbbdbb7ba66eb62a936eba46536eb814668eb814165eb8486c9edeeeeeef"
+      },
+      "glowshroom_cosmic": {
+        "palette": "cosmic",
+        "cells": "dbbbbbbdbb79336eb629336eb936036eb73303aeb523333eb956767edeeeeeef"
+      },
+      "topaz_cosmic": {
+        "palette": "cosmic",
+        "cells": "dbbbbbbdbb7a856eb518103eb804111eb814148eb414481eb849788edeeeeeef"
+      },
+      "moonstone_cosmic": {
+        "palette": "cosmic",
+        "cells": "dbbbbbbdb956220eb500002eb723236eb200023eb000200eb044360edeeeeeef"
+      },
+      "mantle_cosmic": {
+        "palette": "cosmic",
+        "cells": "eccccccedb7cd66fd50cb36fdbbc666fd947ccdfd8489a5fd98a9bafefffffff"
+      },
+      "platinum_cosmic": {
+        "palette": "cosmic",
+        "cells": "eccccccedc7ca66fd507936fd700366fd8026ccfd802255fd8465a9fefffffff"
+      },
+      "diamond_cosmic": {
+        "palette": "cosmic",
+        "cells": "ecccccced53cb35fd30c633fddb9036fd94506bfd504675fd95aab9fefffffff"
+      },
+      "brilliant_cosmic": {
+        "palette": "cosmic",
+        "cells": "eccccccedc5bc36fd302603fd200235fd40223bfd400265fd7447b9fefffffff"
+      },
+      "giant_diamond_cosmic": {
+        "palette": "cosmic",
+        "cells": "eccccccedd63930fd500333fd603003fd723006fd503333fd2333a2fefffffff"
+      },
+      "moss_stone_cosmic": {
+        "palette": "cosmic",
+        "cells": "dbbbbbbdba7ba66eb62b936ebbbb566eb946babeb848795eb9897c9edeeeeeee"
+      },
+      "resin_cosmic": {
+        "palette": "cosmic",
+        "cells": "dbbbbbbdba88a66eb511636ebb81026eb94418beb848818eb989648edeeeeeee"
+      },
+      "emerald_cosmic": {
+        "palette": "cosmic",
+        "cells": "dbbbbbbdb96aa66eb329736eba60336eb943666eb845335eb989399edeeeeeee"
+      },
+      "sap_crystal_cosmic": {
+        "palette": "cosmic",
+        "cells": "dbbbbbbdb616966eb611136eb961016eb80116aeb821111eb988611edeeeeeee"
+      },
+      "world_seed_cosmic": {
+        "palette": "cosmic",
+        "cells": "dbbbbbbdba88931eb401113eba11004eb811118eb810144eb184110edeeeeeee"
+      },
+      "sea_stone_cosmic": {
+        "palette": "cosmic",
+        "cells": "fccccccedc9dc66fd62eb36fdede667fdb48ceefd8489a5fda8bacafffffffff"
+      },
+      "salt_cosmic": {
+        "palette": "cosmic",
+        "cells": "fccccccedc9dc66fd62ab36fda00367fd8026defd402265fd9486c9fffffffff"
+      },
+      "aquamarine_cosmic": {
+        "palette": "cosmic",
+        "cells": "fcccccced66dc36fd32e933fdddc336fda5506dfd505695fd95b9cafffffffff"
+      },
+      "pearl_cosmic": {
+        "palette": "cosmic",
+        "cells": "fccccccedb6bb36fd302602fd000135fd40204cfd400265fd9457cafffffffff"
+      },
+      "black_pearl_cosmic": {
+        "palette": "cosmic",
+        "cells": "fccccccedc99b62fd628666fdd880a6fda488c9fd848665fd4869c2fffffffff"
+      },
+      "basalt_cosmic": {
+        "palette": "cosmic",
+        "cells": "811111181facd668182fc3681feb66681a48fbb81848bc581a8aac9888888888"
+      },
+      "obsidian_cosmic": {
+        "palette": "cosmic",
+        "cells": "811111181e99d6681727a3681fc706681b456bb8184877581b89767888888888"
+      },
+      "garnet_cosmic": {
+        "palette": "cosmic",
+        "cells": "811111181d8dd6681848b3681d8144681b848188184814681b88899888888888"
+      },
+      "ruby_cosmic": {
+        "palette": "cosmic",
+        "cells": "811111181c888678184842681e841488181488c8184444481b88844888888888"
+      },
+      "fire_ruby_cosmic": {
+        "palette": "cosmic",
+        "cells": "811111181e8e8418180111181d11014818111188181118881188411888888888"
+      },
+      "red_stone": {
+        "palette": "w2",
+        "cells": "d777777da132233ca222999ca999100ca111013ca011222ca222999cdeeeeeef"
+      },
+      "red_stone_b": {
+        "palette": "w2",
+        "cells": "d777777da930229ca291123ca291033ca129102ca229112ca229102cdeeeeeef"
+      },
+      "red_stone_c": {
+        "palette": "w2",
+        "cells": "d777777da932222ca221121ca200101ca019939ca393332ca322222cdeeeeeef"
+      },
+      "copper_w2": {
+        "palette": "w2",
+        "cells": "d777777da222229ca323393ca3a6330ca061111ca110012ca212339cdeeeeeef"
+      },
+      "copper_w2_b": {
+        "palette": "w2",
+        "cells": "d777777da390133ca293012ca239013ca365511ca235022ca229012cdeeeeeef"
+      },
+      "copper_w2_c": {
+        "palette": "w2",
+        "cells": "d777777da323393ca2612a5ca100101ca131161ca936333ca223221cdeeeeeef"
+      },
+      "tin": {
+        "palette": "w2",
+        "cells": "d777777da220403ca211409ca647440ca044441ca044041ca301316cdeeeeeef"
+      },
+      "tin_b": {
+        "palette": "w2",
+        "cells": "d777777da310119ca044441ca104002ca744442ca140443ca219012cdeeeeeef"
+      },
+      "tin_c": {
+        "palette": "w2",
+        "cells": "d777777da922232ca251150ca144044ca040741ca644440ca304001cdeeeeeef"
+      },
+      "malachite": {
+        "palette": "w2",
+        "cells": "d777777da212663ca3d5885cab8bb88ca1558b5ca580a58ca212367cdeeeeeef"
+      },
+      "malachite_b": {
+        "palette": "w2",
+        "cells": "d777777dab50369ca5b8585ca2b8458ca365155cad85881ca359552cdeeeeeef"
+      },
+      "malachite_c": {
+        "palette": "w2",
+        "cells": "d777777da9bbd62ca388851ca184801ca585d59ca8568b3ca512122cdeeeeeef"
+      },
+      "turquoise": {
+        "palette": "w2",
+        "cells": "d777777da105754ca1d7877ca655410caa84475ca884488ca415554cdeeeeeef"
+      },
+      "turquoise_b": {
+        "palette": "w2",
+        "cells": "d777777da954154ca6884b7ca384873ca156802ca585444ca487404cdeeeeeef"
+      },
+      "turquoise_c": {
+        "palette": "w2",
+        "cells": "d777777da658554cab80484ca140880ca585759caa85855ca413054cdeeeeeef"
+      },
+      "white_stone": {
+        "palette": "w3",
+        "cells": "d777777d9002112b9001323b9241132b9020012b9320022b9430022bdddddddf"
+      },
+      "white_stone_b": {
+        "palette": "w3",
+        "cells": "d777777d9335111b9333311b9333323b9333332b9222542b9510123bdddddddf"
+      },
+      "white_stone_c": {
+        "palette": "w3",
+        "cells": "d777777d9000012b9000031b9100253b9025553b9003555b9001555bdddddddf"
+      },
+      "quartz": {
+        "palette": "w3",
+        "cells": "d777777d9235520b9355520b9447930b9313630b93552b3b9452051bdddddddf"
+      },
+      "quartz_b": {
+        "palette": "w3",
+        "cells": "d777777d9333410b93a3223b95a3322b9025333b9001aa0b9023550bdddddddf"
+      },
+      "quartz_c": {
+        "palette": "w3",
+        "cells": "d777777d9133555b955a534b9359322b93422a0b91522a1b9101510bdddddddf"
+      },
+      "iron": {
+        "palette": "w3",
+        "cells": "d777777d9240000b988a402b92a8c93b942acd4b9356c80b9335a51bdddddddf"
+      },
+      "iron_b": {
+        "palette": "w3",
+        "cells": "d777777d9443400b9acac10b9aa6690b9268c86b92227c6b9222222bdddddddf"
+      },
+      "iron_c": {
+        "palette": "w3",
+        "cells": "d777777d9aa4510b9cc8810b967a8a1b926cc86b90004a0b9000053bdddddddf"
+      },
+      "rose_quartz": {
+        "palette": "w3",
+        "cells": "d777777d9ac2210b9ae8e40b956a8a2b9184810b90044a8b9001086bdddddddf"
+      },
+      "rose_quartz_b": {
+        "palette": "w3",
+        "cells": "d777777d9044643b96a5463b98e46e5b9128641b9368844b9018284bdddddddf"
+      },
+      "rose_quartz_c": {
+        "palette": "w3",
+        "cells": "d777777d9444031b904a541b90a48e8b90284e8b921e884b9347664bdddddddf"
+      },
+      "amethyst": {
+        "palette": "w3",
+        "cells": "d777777d9122123b92ff9a4b93efeeab94e6ee5b923fe66b9246665bdddddddf"
+      },
+      "amethyst_b": {
+        "palette": "w3",
+        "cells": "d777777d965e922b96aee63b99e59e2b94aaee0b946fef0b9455961bdddddddf"
+      },
+      "amethyst_c": {
+        "palette": "w3",
+        "cells": "d777777d9961322b9ee6e13b95ef6e6b95ffa63b9321ee6b92003a4bdddddddf"
+      },
+      "sandstone": {
+        "palette": "w4",
+        "cells": "c777777b9213333c9333311c9333311c9113321c9111333c9211233ccddddddf"
+      },
+      "sandstone_b": {
+        "palette": "w4",
+        "cells": "c777777b9111333c9112333c9113333c9113332c9123331c9133333ccddddddf"
+      },
+      "sandstone_c": {
+        "palette": "w4",
+        "cells": "c777777b9336666c9335666c9333335c9333111c9331111c9331111ccddddddf"
+      },
+      "silver": {
+        "palette": "w4",
+        "cells": "c777777b9653336c9611335c9374116c9144474c9144445c9041133ccddddddf"
+      },
+      "silver_b": {
+        "palette": "w4",
+        "cells": "c777777b9111441c9111041c9100044c904b444c9144111c9336531ccddddddf"
+      },
+      "silver_c": {
+        "palette": "w4",
+        "cells": "c777777b9665240c96610b4c9141100c9204144c9214114c9333333ccddddddf"
+      },
+      "gold": {
+        "palette": "w4",
+        "cells": "c777777b9653652c9653553c9688863c9588863c9586583c9355532ccddddddf"
+      },
+      "gold_b": {
+        "palette": "w4",
+        "cells": "c777777b9233333c9558682c9358332c9885861c9683861c9533333ccddddddf"
+      },
+      "gold_c": {
+        "palette": "w4",
+        "cells": "c777777b9111112c9361155c95e6355c9353882c9686883c9555311ccddddddf"
+      },
+      "river_pearl": {
+        "palette": "w4",
+        "cells": "c777777b9316666c9174740c9746464c9040760c9440644c9003214ccddddddf"
+      },
+      "river_pearl_b": {
+        "palette": "w4",
+        "cells": "c777777b9400040c9447440c9064444c9040044c9770740c9001641ccddddddf"
+      },
+      "river_pearl_c": {
+        "palette": "w4",
+        "cells": "c777777b9066701c9044702c9044403c9040745c9400761c9402113ccddddddf"
+      },
+      "nugget": {
+        "palette": "w4",
+        "cells": "c777777b9125851c95e8855c9365533c9885588c9ee85e8c9255365ccddddddf"
+      },
+      "nugget_b": {
+        "palette": "w4",
+        "cells": "c777777b9558362c9888688c9688885c9355865c98e5555c9285552ccddddddf"
+      },
+      "nugget_c": {
+        "palette": "w4",
+        "cells": "c777777b9668865c9ae5885c96858e6c98e5863c98e5e65c9356655ccddddddf"
+      },
+      "frozen_stone": {
+        "palette": "w5",
+        "cells": "c777777c8000111b8001111b8022222b8333333b8444444b8555555bcddddddd"
+      },
+      "frozen_stone_b": {
+        "palette": "w5",
+        "cells": "c777777c8112345b8112345b8112345b8012345b8002345b8000345bcddddddd"
+      },
+      "frozen_stone_c": {
+        "palette": "w5",
+        "cells": "c777777c8555555b8444444b8333333b8222220b8111100b8111000bcddddddd"
+      },
+      "ice": {
+        "palette": "w5",
+        "cells": "c777777c8000111b8001111b8075222b8254233b8351544b8444455bcddddddd"
+      },
+      "ice_b": {
+        "palette": "w5",
+        "cells": "c777777c8112345b8112345b8114255b8017544b8005245b8000345bcddddddd"
+      },
+      "ice_c": {
+        "palette": "w5",
+        "cells": "c777777c8554545b8445254b8322242b8277210b8154100b8111000bcddddddd"
+      },
+      "froststone": {
+        "palette": "w5",
+        "cells": "c777777c8540154b8401542b80269a2b83499a3b8994544b8555555bcddddddd"
+      },
+      "froststone_b": {
+        "palette": "w5",
+        "cells": "c777777c8122345b8169595b855a545b809a655b8402655b8110345bcddddddd"
+      },
+      "froststone_c": {
+        "palette": "w5",
+        "cells": "c777777c8665555b8654455b8395354b82228a4b8112ba5b8111150bcddddddd"
+      },
+      "sapphire": {
+        "palette": "w5",
+        "cells": "c777777c8001121b87fa3f6b8eee393b85e6e63b869e544b8555555bcddddddd"
+      },
+      "sapphire_b": {
+        "palette": "w5",
+        "cells": "c777777c8123345b82af945b82efe99b8156469b855eae6b8001695bcddddddd"
+      },
+      "sapphire_c": {
+        "palette": "w5",
+        "cells": "c777777c8556e66b866afa6b8663443b8e33ae1b8226ef1b8112950bcddddddd"
+      },
+      "eternal_ice": {
+        "palette": "w5",
+        "cells": "c777777c8009241b8059663b8466566b8369669b8494663b8266652bcddddddd"
+      },
+      "eternal_ice_b": {
+        "palette": "w5",
+        "cells": "c777777c812a963b81a0696b8169a66b8492366b8592466b8002633bcddddddd"
+      },
+      "eternal_ice_c": {
+        "palette": "w5",
+        "cells": "c777777c8549552b8666464b8699963b8463a94b8659596b8211000bcddddddd"
+      },
+      "mycelium": {
+        "palette": "w6",
+        "cells": "d666666cb444444eb444444eb444444eb999999eb999999eb999999edfffffff"
+      },
+      "mycelium_b": {
+        "palette": "w6",
+        "cells": "d666666cb444999eb444999eb444999eb444999eb444999eb444999edfffffff"
+      },
+      "mycelium_c": {
+        "palette": "w6",
+        "cells": "d666666cb999999eb999999eb999999eb444444eb444444eb444444edfffffff"
+      },
+      "sporite": {
+        "palette": "w6",
+        "cells": "d666666cb444444eb424444eb483434eb463583eb685539eb959999edfffffff"
+      },
+      "sporite_b": {
+        "palette": "w6",
+        "cells": "d666666cb444359eb444359eb444366eb258356eb215399eb444999edfffffff"
+      },
+      "sporite_c": {
+        "palette": "w6",
+        "cells": "d666666cb9999b9eb9593c6eb333433eb435438eb421421eb444444edfffffff"
+      },
+      "glowshroom": {
+        "palette": "w6",
+        "cells": "d666666cb441014eb444014eb477774eb477774eb977773eb977979edfffffff"
+      },
+      "glowshroom_b": {
+        "palette": "w6",
+        "cells": "d666666cb114479eb107777eb110139eb771779eb371779eb444499edfffffff"
+      },
+      "glowshroom_c": {
+        "palette": "w6",
+        "cells": "d666666cb999999eb979977eb787411eb411771eb370771eb400004edfffffff"
+      },
+      "topaz": {
+        "palette": "w6",
+        "cells": "d666666cb424224eb282882eba85555eb3528a5eba55a55eb9599a5edfffffff"
+      },
+      "topaz_b": {
+        "palette": "w6",
+        "cells": "d666666cb5224a9eb558585eb2a8558eb252355eb882885eb2245a9edfffffff"
+      },
+      "topaz_c": {
+        "palette": "w6",
+        "cells": "d666666cb9b8869eb588859eb455829eb252854eb522854eb224224edfffffff"
+      },
+      "moonstone": {
+        "palette": "w6",
+        "cells": "d666666cb422120eb311020eb412244eb110013eb000201eb033330edfffffff"
+      },
+      "moonstone_b": {
+        "palette": "w6",
+        "cells": "d666666cb423460eb300163eb313004eb214039eb302231eb012020edfffffff"
+      },
+      "moonstone_c": {
+        "palette": "w6",
+        "cells": "d666666cb993130eb302310eb314004eb304314eb302012eb024220edfffffff"
+      },
+      "mantle": {
+        "palette": "w7",
+        "cells": "c666666c9215bb5d9104abad922778ad924778ad945777ad957772adceeeeeef"
+      },
+      "mantle_b": {
+        "palette": "w7",
+        "cells": "c666666c95bbbbbd9bbbbb5d9bbbbbbd9bbbbbad940aaaad9417521dceeeeeef"
+      },
+      "mantle_c": {
+        "palette": "w7",
+        "cells": "c666666c9212227d922225bd92224bad944abb8d9448b02d9144b4adceeeeeef"
+      },
+      "platinum": {
+        "palette": "w7",
+        "cells": "c666666c9827272d9201277d9b01487d9b015a7d9a21424d9512114dceeeeeef"
+      },
+      "platinum_b": {
+        "palette": "w7",
+        "cells": "c666666c955b844d955aa82d977a744d9150124d9001487d9101a82dceeeeeef"
+      },
+      "platinum_c": {
+        "palette": "w7",
+        "cells": "c666666c9b8ab84d9ba4712d9b84741d9b00572d9212701d9244811dceeeeeef"
+      },
+      "diamond": {
+        "palette": "w7",
+        "cells": "c666666c9715531d9204333d9a42124d9a21124d9a11744d95a7a24dceeeeeef"
+      },
+      "diamond_b": {
+        "palette": "w7",
+        "cells": "c666666c95a8747d9b77432d9711135d9873337d920837ad971a8a4dceeeeeef"
+      },
+      "diamond_c": {
+        "palette": "w7",
+        "cells": "c666666c9a4ba21d9737211d9733111d9422431d9443400d9144211dceeeeeef"
+      },
+      "brilliant": {
+        "palette": "w7",
+        "cells": "c666666c9a18a21d9404412d9201252d9110115d9100127d9111427dceeeeeef"
+      },
+      "brilliant_b": {
+        "palette": "w7",
+        "cells": "c666666c9158abbd92505a2d9220121d9212111d9101124d9412444dceeeeeef"
+      },
+      "brilliant_c": {
+        "palette": "w7",
+        "cells": "c666666c9212542d9114014d900414ad9014247d9145002d94a852adceeeeeef"
+      },
+      "giant_diamond": {
+        "palette": "w7",
+        "cells": "c666666c9a28881d92038a7d9713008d921700ad92338abd9033371dceeeeeef"
+      },
+      "giant_diamond_b": {
+        "palette": "w7",
+        "cells": "c666666c9188830d9170031d9470773d9733871d9708a81d912b330dceeeeeef"
+      },
+      "giant_diamond_c": {
+        "palette": "w7",
+        "cells": "c666666c9413330d9313337d9810337d9a30337d9733313d9011210dceeeeeef"
+      },
+      "moss_stone": {
+        "palette": "w8",
+        "cells": "b999999ba136376da766671da357363da326517da276236da266376dbeeeeeef"
+      },
+      "moss_stone_b": {
+        "palette": "w8",
+        "cells": "b999999ba636676da756137da363553da567677da365266da136366dbeeeeeef"
+      },
+      "moss_stone_c": {
+        "palette": "w8",
+        "cells": "b999999ba353267da635632da722666da356763da236666da363632dbeeeeeef"
+      },
+      "resin": {
+        "palette": "w8",
+        "cells": "b999999ba244266da248522da628856da35a845da26348ada366282dbeeeeeef"
+      },
+      "resin_b": {
+        "palette": "w8",
+        "cells": "b999999ba623773da585237da588423da654855da262885da135585dbeeeeeef"
+      },
+      "resin_c": {
+        "palette": "w8",
+        "cells": "b999999ba242266da888566da588453da3522b5da156784da663122dbeeeeeef"
+      },
+      "emerald": {
+        "palette": "w8",
+        "cells": "b999999ba113363da117352da311771da6671a3da263c16da366113dbeeeeeef"
+      },
+      "emerald_b": {
+        "palette": "w8",
+        "cells": "b999999ba311673da777717da161163da761711da261776da136616dbeeeeeef"
+      },
+      "emerald_c": {
+        "palette": "w8",
+        "cells": "b999999ba671162dac16115da3161c3da377711da253611da363755dbeeeeeef"
+      },
+      "sap_crystal": {
+        "palette": "w8",
+        "cells": "b999999ba252233da542422da224053da302203da322044da535222dbeeeeeef"
+      },
+      "sap_crystal_b": {
+        "palette": "w8",
+        "cells": "b999999ba322253da542037da542202da224222da670022da625202dbeeeeeef"
+      },
+      "sap_crystal_c": {
+        "palette": "w8",
+        "cells": "b999999ba222262da224552da670042da625242da124402da632222dbeeeeeef"
+      },
+      "world_seed": {
+        "palette": "w8",
+        "cells": "b999999ba152250da200882da248004da284882da240404da035400dbeeeeeef"
+      },
+      "world_seed_b": {
+        "palette": "w8",
+        "cells": "b999999ba408450da040427da404400da544042da228082da032420dbeeeeeef"
+      },
+      "world_seed_c": {
+        "palette": "w8",
+        "cells": "b999999ba482530da844002da200484da280442da124804da062580dbeeeeeef"
+      },
+      "sea_stone": {
+        "palette": "w9",
+        "cells": "b444444b8116611d8667766d877aa77d8aa55aad8553355d8337733dbeeeeeee"
+      },
+      "sea_stone_b": {
+        "palette": "w9",
+        "cells": "b444444b8167a53d867a537d867a537d8167a53d8167a51d867a537dbeeeeeee"
+      },
+      "sea_stone_c": {
+        "palette": "w9",
+        "cells": "b444444b8773167d8335633d855aa62d8aa77aad8776677d8661137dbeeeeeee"
+      },
+      "salt": {
+        "palette": "w9",
+        "cells": "b444444b8116711d8356766d8600577d85000aad8100216d8213331dbeeeeeee"
+      },
+      "salt_b": {
+        "palette": "w9",
+        "cells": "b444444b8117a53d812a516d866a111d8150011d8130423d8677237dbeeeeeee"
+      },
+      "salt_c": {
+        "palette": "w9",
+        "cells": "b444444b8771337d8310101d8512602d86005aad8610377d8631166dbeeeeeee"
+      },
+      "aquamarine": {
+        "palette": "w9",
+        "cells": "b444444b8117311d8337633d87aa337d876117ad8313135d8137613dbeeeeeee"
+      },
+      "aquamarine_b": {
+        "palette": "w9",
+        "cells": "b444444b8137a31d837a613d8611117d8363616d8136311d813a726dbeeeeeee"
+      },
+      "aquamarine_c": {
+        "palette": "w9",
+        "cells": "b444444b8366267d8111513d8635a31d8a77757d8776516d8373116dbeeeeeee"
+      },
+      "pearl": {
+        "palette": "w9",
+        "cells": "b444444b8116111d8201100d8000125d8200026d8100012d8331216dbeeeeeee"
+      },
+      "pearl_b": {
+        "palette": "w9",
+        "cells": "b444444b8133751d8100112d8300000d8312001d8000001d8133512dbeeeeeee"
+      },
+      "pearl_c": {
+        "palette": "w9",
+        "cells": "b444444b8266413d8101000d8001152d8128005d8168004d8163113dbeeeeeee"
+      },
+      "black_pearl": {
+        "palette": "w9",
+        "cells": "b444444b83ab584d87df9bad8dcb0fbd8a8bff8d85b8985d8198451dbeeeeeee"
+      },
+      "black_pearl_b": {
+        "palette": "w9",
+        "cells": "b444444b817fe84d82f0f98d85dff8ad8ae95bbd8bfaa99d805ab50dbeeeeeee"
+      },
+      "black_pearl_c": {
+        "palette": "w9",
+        "cells": "b444444b827e551d889b595d8b4fcc8d8afffcad89bfafbd8457320dbeeeeeee"
+      },
+      "basalt": {
+        "palette": "w10",
+        "cells": "611111161d74898b1ddfed4b1f62ed3b1469d42b197fdd4b1864942b6bbbbbbf"
+      },
+      "basalt_b": {
+        "palette": "w10",
+        "cells": "6111111618649f3b19dfddfb18ee432b19f4dd3b1ddf174b1ed6598b6bbbbbbf"
+      },
+      "basalt_c": {
+        "palette": "w10",
+        "cells": "6111111612c6428b14d7f79b19dec03b12f926db14dd4d7b18984deb6bbbbbbf"
+      },
+      "obsidian": {
+        "palette": "w10",
+        "cells": "611111161e79898b1d77dd2b1d557d2b1605774b197d777b1842912b6bbbbbbf"
+      },
+      "obsidian_b": {
+        "palette": "w10",
+        "cells": "6111111618435f2b197d1d4b18775d2b14647d3b1dd4174b1e7f498b6bbbbbbf"
+      },
+      "obsidian_c": {
+        "palette": "w10",
+        "cells": "6111111613d2948b1175d79b12177d6b19d7055b1470d77b1898d7eb6bbbbbbf"
+      },
+      "garnet": {
+        "palette": "w10",
+        "cells": "611111161c79898b1ee9d74b1d98af2b16dce54b197facfb1844942b6bbbbbbf"
+      },
+      "garnet_b": {
+        "palette": "w10",
+        "cells": "6111111618225c2b19afad4b184e444b14eaa83b1d7dde2b1ed6598b6bbbbbbf"
+      },
+      "garnet_c": {
+        "palette": "w10",
+        "cells": "6111111613f9468b1eace79b19ce9c5b14fa98db1470c7db18984deb6bbbbbbf"
+      },
+      "ruby": {
+        "palette": "w10",
+        "cells": "611111161ae8888b1da59c4b1f952e3b1c9a5c9b19cc453b1842332b6bbbbbbf"
+      },
+      "ruby_b": {
+        "palette": "w10",
+        "cells": "6111111618839c2b19ec5d4b189c984b15c4ec3b17e2993b1ace388b6bbbbbbf"
+      },
+      "ruby_c": {
+        "palette": "w10",
+        "cells": "6111111612ee348b13ccec9b18f2999b12e5295b14c999cb18989ccb6bbbbbbf"
+      },
+      "fire_ruby": {
+        "palette": "w10",
+        "cells": "611111161a7f882b1d13365b1502023b1555450b1961155b1243410b6bbbbbbf"
+      },
+      "fire_ruby_b": {
+        "palette": "w10",
+        "cells": "6111111618303d1b135056db1813434b1953043b1d55040b1166542b6bbbbbbf"
+      },
+      "fire_ruby_c": {
+        "palette": "w10",
+        "cells": "6111111613344c2b1445469b1210143b1242346b1255326b1298450b6bbbbbbf"
+      }
+    }
+  },
   "cracks": [
     [
       "rbxassetid://130971222944576",
@@ -413,6 +1855,7 @@
   "worlds": {
     "meadow": {
       "lining": "pebble_lining",
+      "liningFog": "#5a5664",
       "light": "#ffe2a8",
       "slots": [
         {
@@ -508,6 +1951,7 @@
     },
     "copper_caves": {
       "lining": "red_stone_lining",
+      "liningFog": "#663f31",
       "light": "#ffb36b",
       "slots": [
         {
@@ -603,6 +2047,7 @@
     },
     "quartz_veins": {
       "lining": "white_stone_lining",
+      "liningFog": "#6f6a78",
       "light": "#ffd2ef",
       "slots": [
         {
@@ -698,6 +2143,7 @@
     },
     "gold_river": {
       "lining": "sandstone_lining",
+      "liningFog": "#776346",
       "light": "#ffe58a",
       "slots": [
         {
@@ -793,6 +2239,7 @@
     },
     "ice_grottoes": {
       "lining": "frozen_stone_lining",
+      "liningFog": "#6b879b",
       "light": "#bfeaff",
       "slots": [
         {
@@ -888,6 +2335,7 @@
     },
     "mushroom_forest": {
       "lining": "mycelium_lining",
+      "liningFog": "#46345f",
       "light": "#7ff5d8",
       "slots": [
         {
@@ -983,6 +2431,7 @@
     },
     "diamond_mantle": {
       "lining": "mantle_lining",
+      "liningFog": "#363c52",
       "light": "#d8f4ff",
       "slots": [
         {
@@ -1078,6 +2527,7 @@
     },
     "emerald_roots": {
       "lining": "moss_stone_lining",
+      "liningFog": "#344d34",
       "light": "#9dffb8",
       "slots": [
         {
@@ -1173,6 +2623,7 @@
     },
     "underground_sea": {
       "lining": "sea_stone_lining",
+      "liningFog": "#223e55",
       "light": "#7fe8ff",
       "slots": [
         {
@@ -1268,6 +2719,7 @@
     },
     "magma_springs": {
       "lining": "basalt_lining",
+      "liningFog": "#5b3232",
       "light": "#ff7a3a",
       "slots": [
         {

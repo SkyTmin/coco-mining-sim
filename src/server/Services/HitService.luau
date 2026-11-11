@@ -12,6 +12,7 @@ local Validate = require(Shared.Mine.Validate)
 local Worlds = require(Shared.Mine.Worlds)
 local Wire = require(Shared.Mine.MineWire)
 local Ride = require(Shared.Mine.Ride)
+local Wave = require(Shared.Mine.UltWave)
 local Storm = require(Shared.Play.Storm)
 local Circle = require(Shared.Play.Circle)
 local Power = require(Shared.Play.Power)
@@ -39,7 +40,7 @@ local function publish(
 	coins: number,
 	ability: boolean,
 	strike: Power.Strike?,
-	lastFace: any?
+	visual: Codec.SavedMine?
 )
 	local st = s.state
 	local delta = st.front - oldFront
@@ -66,7 +67,7 @@ local function publish(
 		plot = s.plot,
 		delta = delta,
 		ability = ability,
-		lastFace = if delta > 0 then lastFace else nil,
+		visual = visual,
 		heavy = strike and strike.heavy,
 		crit = strike and strike.crit,
 		mega = strike and strike.mega,
@@ -206,7 +207,7 @@ local function onIntent(player: Player, packet: any)
 	local oldFront = st.front
 	local res: HitResult?
 	local strike: Power.Strike?
-	local lastFace = nil
+	local visual = nil
 	local events: { any } = {}
 	local ability = intent.op == "Ability"
 	if ability then
@@ -215,10 +216,7 @@ local function onIntent(player: Player, packet: any)
 			and intent.dRel < mine.window
 			and State.inWall(st, intent.x, intent.y)
 		then
-			local finish = math.min(st.front + pick.ultLayers, State.barrier(st))
-			if finish > st.front then
-				lastFace = { depth = finish - 1, tiles = MineService.face(st, finish - 1) }
-			end
+			visual = Codec.encode(st)
 			res = Resolve.ult(st, pick)
 			s.charge = 0
 			if pick.family == "storm" then
@@ -247,7 +245,15 @@ local function onIntent(player: Player, packet: any)
 	if ability or delta > 0 then
 		player:SetAttribute(
 			"MineReturnAfter",
-			workspace:GetServerTimeNow() + Ride.timeline(delta, ability).total
+			workspace:GetServerTimeNow()
+				+ (
+					if ability
+						then Wave.total(
+							delta,
+							if delta > 0 then Ride.timeline(delta, false).approach else 0
+						)
+						else Ride.timeline(delta, false).total
+				)
 		)
 	end
 	local oldWorld, world = Worlds.of(oldFront).index, Worlds.of(st.front).index
@@ -267,7 +273,7 @@ local function onIntent(player: Player, packet: any)
 			newCards = Circle.reach(profile, world)
 		end
 	end)
-	publish(s, intent.seq, oldFront, res, events, coins, ability, strike, lastFace)
+	publish(s, intent.seq, oldFront, res, events, coins, ability, strike, visual)
 	for _, id in newCards do
 		Remotes.event("Toast"):FireClient(player, "card_unlocked_" .. id)
 	end

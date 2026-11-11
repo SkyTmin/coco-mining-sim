@@ -1,5 +1,18 @@
 {
   "_why": "Решения новой игры. [вики 18] идентификаторы миров и слотов; [решение] временные RGB руд по палитрам миров.",
+  "liningFog": {
+    "_note": "[решение] ТЗ-03ж §4: средние RGB исходных PNG облицовки Claude из assets/blocks/upload, округлённые до байта.",
+    "pebble_lining": "#5a5664",
+    "red_stone_lining": "#663f31",
+    "white_stone_lining": "#6f6a78",
+    "sandstone_lining": "#776346",
+    "frozen_stone_lining": "#6b879b",
+    "mycelium_lining": "#46345f",
+    "mantle_lining": "#363c52",
+    "moss_stone_lining": "#344d34",
+    "sea_stone_lining": "#223e55",
+    "basalt_lining": "#5b3232"
+  },
   "game": {
     "defaultLanguage": "en",
     "languages": ["en", "ru", "es", "fr"],

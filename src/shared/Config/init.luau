@@ -129,7 +129,13 @@ export type ArtConfig = {
 	blocks: { [string]: string },
 	cracks: { { string } },
 	dustTexture: string,
-	worlds: { [string]: { lining: string, light: string, slots: { ArtTile } } },
+	grains: {
+		grid: number,
+		grainPx: number,
+		palettes: { [string]: { string } },
+		textures: { [string]: { palette: string, cells: string } },
+	},
+	worlds: { [string]: { lining: string, liningFog: string, light: string, slots: { ArtTile } } },
 	variantOdds: { [string]: number },
 }
 export type WorldLook = {

@@ -1,37 +1,39 @@
 --!strict
 local Test = require("../lib/expect")
 local R = require("./fixture").load("DissolveRules")
-Test.describe("Dissolve timing and budgets", function()
+Test.describe("Grain release and budgets", function()
 	Test.it(
-		"staggers pierced blocks across pre-existing holes independently in each lane",
+		"releases radially from the hit within 140 ms with smooth deterministic noise",
 		function()
-			local delays = R.stagger({
-				{ x = 0, y = 1, dRel = 20 },
-				{ x = 1, y = 1, dRel = 20 },
-				{ x = 0, y = 1, dRel = 29 },
-				{ x = 0, y = 1, dRel = 40 },
-				{ x = 0, y = 1, dRel = 55 },
-			}, 3)
-			Test.expect(delays).toEqual({ 0, 0, 0.04, 0.08, 0.12 })
+			assert(R.delay(0, 0) == 0)
+			assert(math.abs(R.delay(3.75, 1) - 0.14) < 1e-9)
+			assert(R.delay(9, 1) == R.delay(3.75, 1))
+			for i = 0, 100 do
+				local x = i / 10
+				local n = R.noise(x, 2, 57)
+				assert(n >= 0 and n <= 1 and n == R.noise(x, 2, 57))
+				assert(math.abs(n - R.noise(x + 0.001, 2, 57)) < 0.01)
+			end
 		end
 	)
-	Test.it("finishes each ghost within 0.45 seconds and limits the two visual modes", function()
-		assert(R.delay + R.shrink <= 0.45)
-		assert(
-			R.normalPieces == 96 and R.normalDust == 600 and R.ultPieces == 120 and R.ultDust == 800
-		)
-		assert(
-			R.pieces == 8
-				and R.pieceSize == 2.5
-				and R.dustPerPiece == 6
-				and R.dustFallback == 12
-				and R.dustReduced == 8
-		)
-	end)
-	Test.it("uses the requested center wave, pause and shrink samples", function()
-		assert(R.frontDelay(0, 1, 3) == 0)
-		assert(R.frontDelay(3, 1, 3) == 0.24)
-		assert(R.pause == 0.4 and math.abs(R.pause + R.wave - 1.2) < 1e-9)
-		assert(R.sample(0) == 0 and R.sample(0.11) == 0.5 and R.sample(0.22) == 1)
+	Test.it(
+		"uses the same size and every second grid cell for reduced motion and overload",
+		function()
+			assert(R.grid == 8 and R.size == 0.625 and R.smallSize == 0.3125)
+			assert(R.stride(1, 400, false) == 1 and R.stride(3, 192, false) == 1)
+			assert(R.stride(1, 63, false) == 2 and R.stride(3, 191, false) == 2)
+			assert(R.stride(1, 400, true) == 2)
+			assert(R.stride(3, 47, true) == 0 and R.stride(0, 400, false) == 0)
+			assert(R.maxEmit == 400 and R.maxParticles == 4000)
+		end
+	)
+	Test.it("matches exponential relaxation to the requested upward velocity", function()
+		for _, t in { 0.2, 0.4, 0.6 } do
+			local x, y, z = R.position(t, 2.1, 0, 0)
+			local k = (1 - math.exp(-2.5 * t)) / 2.5
+			assert(math.abs(x - 2.1 * k) < 1e-9 and z == 0)
+			assert(math.abs(y - 4.06 * (t - k)) < 1e-9)
+		end
+		assert(math.abs(R.drag - 2.5 / math.log(2)) < 1e-9)
 	end)
 end)
