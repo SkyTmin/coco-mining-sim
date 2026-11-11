@@ -32,15 +32,15 @@ const glowTex = (() => { const c = document.createElement('canvas'); c.width = c
   x.fillStyle = g; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); })();
 const basic = (c) => new THREE.MeshBasicMaterial({ color: new THREE.Color(c) });
 const ink = new THREE.MeshBasicMaterial({ color: INK });
-fetch('picks-cel.json').then(r => r.json()).then(data => {
-  const ids = only ? only.split(',') : Object.keys(data.picks);
-  const cols = only ? Math.min(ids.length, 4) : 4, rows = Math.ceil(ids.length / cols);
+fetch(params.get('data') || 'picks-cel.json').then(r => r.json()).then(data => {
+  const items = data.picks || data.chests; const ids = only ? only.split(',') : Object.keys(items);
+  const cols = +(params.get('cols') || (only ? Math.min(ids.length, 4) : 4)), rows = Math.ceil(ids.length / cols);
   const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(1); renderer.setSize(CELL * cols, CELL * rows); renderer.setScissorTest(true);
   document.body.appendChild(renderer.domElement);
   ids.forEach((id, i) => {
     const scene = new THREE.Scene(), g = new THREE.Group();
-    data.picks[id].forEach((p, k) => {
+    items[id].forEach((p, k) => {
       const ro = k * 2;
       if (p.t === 'poly') {
         const m = new THREE.Mesh(shapeGeo(p.pts, p.d), [basic(p.c), basic(p.side || p.c)]); m.position.z = p.z; m.renderOrder = ro + 1; g.add(m);
@@ -49,6 +49,16 @@ fetch('picks-cel.json').then(r => r.json()).then(data => {
         const a = new THREE.Vector3(...p.a), b = new THREE.Vector3(...p.b), mid = a.clone().add(b).multiplyScalar(0.5), q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
         const m = new THREE.Mesh(new THREE.CylinderGeometry(p.r, p.r, a.distanceTo(b), 20), basic(p.c)); m.position.copy(mid); m.quaternion.copy(q); g.add(m);
         if (p.ol) { const o = new THREE.Mesh(new THREE.CylinderGeometry(p.r + p.ol, p.r + p.ol, a.distanceTo(b) + p.ol * 2, 20), new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide })); o.position.copy(mid); o.quaternion.copy(q); g.add(o); }
+      } else if (p.t === 'box') {
+        // faces: +x, -x, +y (top, light), -y, +z (front), -z
+        const mats = [basic(p.side || p.c), basic(p.side || p.c), basic(p.top || p.c), basic(p.side || p.c), basic(p.c), basic(p.c)];
+        const m = new THREE.Mesh(new THREE.BoxGeometry(...p.s), mats); m.position.set(...p.at); if (p.ry) m.rotation.y = p.ry; if (p.rz) m.rotation.z = p.rz; g.add(m);
+        if (p.ol) { const o = new THREE.Mesh(new THREE.BoxGeometry(p.s[0] + p.ol * 2, p.s[1] + p.ol * 2, p.s[2] + p.ol * 2), new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide })); o.position.copy(m.position); o.rotation.copy(m.rotation); g.add(o); }
+      } else if (p.t === 'hcyl') {
+        // a half cylinder lid along X: flat side down
+        const geo = new THREE.CylinderGeometry(p.r, p.r, p.len, 24, 1, false, 0, Math.PI); geo.rotateZ(Math.PI / 2);
+        const m = new THREE.Mesh(geo, basic(p.c)); m.position.set(...p.at); g.add(m);
+        if (p.ol) { const go = new THREE.CylinderGeometry(p.r + p.ol, p.r + p.ol, p.len + p.ol * 2, 24, 1, false, 0, Math.PI); go.rotateZ(Math.PI / 2); const o = new THREE.Mesh(go, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide })); o.position.copy(m.position); g.add(o); }
       } else if (p.t === 'ball') {
         const m = new THREE.Mesh(new THREE.SphereGeometry(p.r, 20, 14), basic(p.c)); m.position.set(...p.at); g.add(m);
         if (p.ol) { const o = new THREE.Mesh(new THREE.SphereGeometry(p.r + p.ol, 20, 14), new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide })); o.position.set(...p.at); g.add(o); }
@@ -59,7 +69,8 @@ fetch('picks-cel.json').then(r => r.json()).then(data => {
     });
     g.rotation.set(+(params.get('rx') ?? -0.12), +(params.get('ry') ?? 0.3), +(params.get('rz') ?? -0.785));
     scene.add(g);
-    const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100); cam.position.set(0.3, 0.55, 11.3); cam.lookAt(0.3, 0.55, 0);
+    const cv = (params.get('cam') || '0.3,0.55,11.3').split(',').map(Number);
+    const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100); cam.position.set(...cv); cam.lookAt(cv[0], cv[1], 0);
     const x = (i % cols) * CELL, y = (rows - 1 - Math.floor(i / cols)) * CELL;
     renderer.setViewport(x, y, CELL, CELL); renderer.setScissor(x, y, CELL, CELL);
     renderer.setClearColor(((Math.floor(i / cols) + i) % 2) ? 0x2B2B30 : 0x313137, 1);
