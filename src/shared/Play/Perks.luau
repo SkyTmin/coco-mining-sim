@@ -124,38 +124,39 @@ function Perks.route(
 			add(cell.x, cell.y, cell.d)
 		end
 	end
-	-- [владелец 11.11: «часть навыков пусть бьёт самые ближние блоки, чтобы шахта не стояла»] when the perk starts behind
-	-- the front, a share of it first clears the nearest exposed leftovers, shallowest first, closest to the hit first
-	if start > st.front then
-		local near = math.min(limit, math.max(1, math.ceil(limit * NEAR_SHARE)))
-		local leftovers = {}
-		for depth = st.front, start - 1 do
-			for column = -radius, radius do
-				for row = 0, st.height - 1 do
-					if
-						State.isSolid(st, column, row, depth)
-						and State.isExposed(st, column, row, depth)
-					then
-						table.insert(leftovers, {
-							x = column,
-							y = row,
-							d = depth,
-							score = (depth - st.front) * 1000
-								+ math.abs(column - x) * 3
-								+ math.abs(row - y),
-						})
-					end
+	-- [владелец 11.11: «все навыки частью должны бить ближайшие блоки в первом ряду»] every perk first spends a share on
+	-- the front-most exposed leftovers: the shallowest layer first, closest to the hit first, so the wall keeps moving
+	local near = math.min(limit, math.max(1, math.ceil(limit * NEAR_SHARE)))
+	local leftovers = {}
+	for depth = st.front, stop - 1 do
+		if #leftovers >= near then
+			break
+		end
+		for column = -radius, radius do
+			for row = 0, st.height - 1 do
+				if
+					State.isSolid(st, column, row, depth)
+					and State.isExposed(st, column, row, depth)
+				then
+					table.insert(leftovers, {
+						x = column,
+						y = row,
+						d = depth,
+						score = (depth - st.front) * 1000 + math.abs(column - x) * 3 + math.abs(
+							row - y
+						),
+					})
 				end
 			end
 		end
-		table.sort(leftovers, function(a, b)
-			return if a.score == b.score
-				then State.cellKey(a.x, a.y, a.d) < State.cellKey(b.x, b.y, b.d)
-				else a.score < b.score
-		end)
-		for i = 1, math.min(near, #leftovers) do
-			add(leftovers[i].x, leftovers[i].y, leftovers[i].d)
-		end
+	end
+	table.sort(leftovers, function(a, b)
+		return if a.score == b.score
+			then State.cellKey(a.x, a.y, a.d) < State.cellKey(b.x, b.y, b.d)
+			else a.score < b.score
+	end)
+	for i = 1, math.min(near, #leftovers) do
+		add(leftovers[i].x, leftovers[i].y, leftovers[i].d)
 	end
 	for depth = start, stop - 1 do
 		local layerStart = #route
