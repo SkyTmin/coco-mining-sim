@@ -1,6 +1,12 @@
 --!strict
 return {
 	menu_title = { en = "Menu", ru = "Меню", es = "Menú", fr = "Menu" },
+	menu_dock_upgrades = {
+		en = "Upgrades",
+		ru = "Улучшения",
+		es = "Mejoras",
+		fr = "Améliorer",
+	},
 	menu_chest = { en = "Chest", ru = "Сундук", es = "Cofre", fr = "Coffre" },
 	menu_open = { en = "Open", ru = "Открыть", es = "Abrir", fr = "Ouvrir" },
 	menu_improve = { en = "Upgrade", ru = "Улучшить", es = "Mejorar", fr = "Améliorer" },
@@ -101,6 +107,7 @@ return {
 		fr = "Force {1} → {2}",
 	},
 	menu_gold = { en = "Gold", ru = "Золотая", es = "Dorado", fr = "Dorée" },
+	menu_wooden = { en = "Wood", ru = "Дерево", es = "Madera", fr = "Bois" },
 	menu_in_hand = { en = "Equipped", ru = "В руке", es = "En mano", fr = "Équipée" },
 	menu_equip = { en = "Equip", ru = "В руку", es = "Equipar", fr = "Équiper" },
 	menu_missing = { en = "Missing", ru = "Нет", es = "Falta", fr = "Absente" },
@@ -209,8 +216,8 @@ return {
 		fr = "Ouvert au niveau de famille {1}",
 	},
 	menu_unlock_level = {
-		en = "Family\nlevel {1}",
-		ru = "Ур. семьи\n{1}",
+		en = "Family\nLv. {1}",
+		ru = "Семья\nур. {1}",
 		es = "Familia\nniv. {1}",
 		fr = "Famille\nniv. {1}",
 	},

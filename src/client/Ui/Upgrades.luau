@@ -252,7 +252,7 @@ function Upgrades.new(
 
 	refresh = function(animate: boolean)
 		local profile = ProfileState.getProfile()
-		upgradeButton.text.Text = translate("upgrade_title")
+		upgradeButton.text.Text = translate("menu_dock_upgrades")
 		picksButton.text.Text = translate("collection_tab")
 		familyButton.text.Text = translate("family_tab")
 		strongerText.Text = "↓  " .. translate("upgrade_stronger")

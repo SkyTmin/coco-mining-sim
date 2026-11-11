@@ -76,7 +76,17 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 			14
 		)
 		if family ~= "all" then
-			Candy.buttonIcon(control, "family_" .. family)
+			local mark = Candy.frame(
+				control.face,
+				"FamilyColor",
+				offset(8, 8),
+				scale(0.075, 0.5),
+				W.familyColors[family]
+			)
+			mark.AnchorPoint = Vector2.new(0, 0.5)
+			Candy.round(mark, 0)
+			Candy.stroke(mark, 1)
+			Candy.fit(control.text, scale(0.81, 0.84), scale(0.16, 0.08))
 		end
 		filters[family] = control
 		W.bind(ctx, control, function()
@@ -102,18 +112,18 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		tile.text.Visible = false
 		local stripe = W.band(tile.face, "Rarity", UDim2.new(1, -4, 0, 6), W.rarityColors[rarity])
 		Candy.round(stripe, 3)
-		local image = Candy.icon(tile.face, "pickaxe", scale(0.39, 0.74), scale(0.02, 0.18))
+		local image = Candy.icon(tile.face, "pickaxe", scale(0.31, 0.74), scale(0.02, 0.18))
 		W.pickIcon(image, id)
 		local stars = Candy.text(
 			tile.face,
 			"Stars",
-			scale(0.54, 0.22),
-			scale(0.41, 0.17),
+			scale(0.61, 0.22),
+			scale(0.34, 0.17),
 			13,
 			W.rarityText[rarity]
 		)
-		local name = Candy.text(tile.face, "Name", scale(0.54, 0.28), scale(0.41, 0.37), 13)
-		local state = Candy.text(tile.face, "State", scale(0.50, 0.26), scale(0.41, 0.65), 11)
+		local name = Candy.text(tile.face, "Name", scale(0.63, 0.28), scale(0.34, 0.37), 13)
+		local state = Candy.text(tile.face, "State", scale(0.57, 0.26), scale(0.34, 0.65), 11)
 		stars.Text = W.stars(rarity)
 		for _, label in { stars, name, state } do
 			label.TextXAlignment = Enum.TextXAlignment.Left
@@ -255,7 +265,7 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 			visible += 1
 			local entry = profile.collection[pickId]
 			local count = if entry then entry.count + entry.golden else 0
-			tile.name.Text = W.pickName(t, pickId)
+			tile.name.Text = if pickId == "starter" then t("menu_wooden") else W.pickName(t, pickId)
 			tile.state.Text = if count == 0
 				then t("menu_missing")
 				elseif profile.pickaxe == pickId then t("menu_in_hand")

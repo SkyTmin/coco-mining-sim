@@ -105,14 +105,20 @@ Test.describe("Strings", function()
 				"creative_first_storm",
 				"creative_first_key",
 				"menu_chest",
+				"menu_dock_upgrades",
 				"menu_open",
 				"menu_improve",
 				"menu_browse",
 				"menu_skills",
 				"menu_all",
 				"menu_from_chest",
+				"menu_merge_count",
 				"menu_equip",
+				"menu_gold",
+				"menu_in_hand",
 				"menu_choose",
+				"menu_choose_wait",
+				"menu_world",
 				"menu_open_key",
 				"menu_no_keys",
 				"menu_opening",
@@ -121,7 +127,7 @@ Test.describe("Strings", function()
 			}
 		do
 			for _, language in LOCALES do
-				local length = utf8.len(Strings.t(key, language, 100))
+				local length = utf8.len(Strings.t(key, language, 100, 59))
 				assert(length and length <= 12, key .. " is too long in " .. language)
 			end
 		end
