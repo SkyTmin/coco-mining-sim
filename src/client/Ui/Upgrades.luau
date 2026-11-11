@@ -166,9 +166,12 @@ function Upgrades.new(
 		local control = purchase(box, kind, UDim2.new(0.30, -10, 0.76, 0), scale(0.70, 0.07))
 		return { box = box, sticker = sticker, name = title, details = details, buy = control }
 	end
+	-- [владелец 11.11] «Размер удара» is hidden while Upgrade.hitSizeEnabled is off
+	local shift = if Upgrade.hitSizeEnabled then 0 else 1
 	local hit = row("HitSize", "shape1", 1, "hitSize")
-	local width = row("Width", "width", 2, "width")
-	local pick = row("Level", "pick", 3, "pick")
+	hit.box.Visible = Upgrade.hitSizeEnabled
+	local width = row("Width", "width", 2 - shift, "width")
+	local pick = row("Level", "pick", 3 - shift, "pick")
 	local oldShape = Candy.icon(hit.box, "shape1", offset(25, 25), UDim2.new(0, 53, 0.52, 0))
 	local nextShape = Candy.icon(hit.box, "shape2", offset(25, 25), UDim2.new(0, 109, 0.52, 0))
 	Candy.fit(hit.details, offset(25, 22), UDim2.new(0, 81, 0.52, 0))

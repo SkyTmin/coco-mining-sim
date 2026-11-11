@@ -11,7 +11,7 @@ export const mine = {
 	height: 3,
 	plateHits: 20, // hits to break the Guard Slab at recommended strength
 	plateCap: 160,
-	plateUltMultiplier: 3,
+	plateUltMultiplier: 15, // a full ult into the Slab = 15 hits; scaled by the share of its layers left [решение 11.11]
 	plateReward: 500, // [решение ТЗ-03] times the rock value of the broken world
 	ultCharge: Number(process.env.ULT || 45), // hits to charge the ult (pass «Быстрая ульта»: 34)
 };

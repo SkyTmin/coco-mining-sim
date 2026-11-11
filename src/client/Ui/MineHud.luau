@@ -12,6 +12,11 @@ local center = Vector2.new(0.5, 0.5)
 local right = Vector2.new(1, 0)
 local bottom = Vector2.new(1, 1)
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
+-- [владелец 11.11] the reward banner is a fighting-game «knock-out» title: heavy italic letters with a gold → red
+-- gradient and a dark outline that slam onto a slanted band, shake once and fade
+local KO_FONT = Font.new(Candy.font.Family, Enum.FontWeight.Heavy, Enum.FontStyle.Italic)
+local KO_TILT = -4
+local KO_SLAM, KO_LIFE, KO_FADE = 0.16, 1.55, 0.3
 
 function Hud.new(
 	guiParent: Instance,
@@ -37,13 +42,20 @@ function Hud.new(
 		task.defer(positionWallet)
 	end)
 	task.defer(positionWallet)
+	-- [владелец 11.11] compact: the world name, then one bar with «to the slab» written inside it
 	local worldCard =
-		Candy.panel(gui, "WorldCard", UDim2.new(0.30, -4, 0, 64), UDim2.new(0.5, 0, 0, 16))
+		Candy.panel(gui, "WorldCard", UDim2.new(0.30, -4, 0, 41), UDim2.new(0.5, 0, 0, 16))
 	worldCard.AnchorPoint = Vector2.new(0.5, 0)
-	local world = Candy.text(worldCard, "WorldProgress", UDim2.new(1, -10, 0, 22), offset(5, 4), 16)
-	local fill = Candy.bar(worldCard, UDim2.new(1, -22, 0, 9), offset(11, 29), yellow)
-	local remaining =
-		Candy.text(worldCard, "PlateRemaining", UDim2.new(1, -10, 0, 20), offset(5, 39), 12)
+	local world = Candy.text(worldCard, "WorldProgress", UDim2.new(1, -12, 0, 18), offset(6, 3), 15)
+	local fill = Candy.bar(worldCard, UDim2.new(1, -16, 0, 14), offset(8, 23), yellow)
+	local remaining = Candy.text(
+		fill.Parent :: Frame,
+		"PlateRemaining",
+		UDim2.new(1, -10, 1, -2),
+		UDim2.new(0, 5, 0, 1),
+		11
+	)
+	remaining.ZIndex = 3
 
 	local focus =
 		Candy.button(gui, "FaceWall", offset(144, 45), UDim2.new(0.5, 0, 1, -20), "neutral", 17)
@@ -116,10 +128,50 @@ function Hud.new(
 	arrow.Text, arrow.AnchorPoint, arrow.Visible = translate("mine_arrow"), center, false
 	Candy.stroke(arrow, 2, true)
 
-	local bannerBox = Candy.panel(gui, "MineReward", offset(254, 56), scale(0.5, 0.76))
+	local bannerBox = Candy.frame(gui, "MineReward", offset(340, 96), scale(0.5, 0.76))
 	bannerBox.AnchorPoint, bannerBox.Visible = center, false
-	local banner = Candy.text(bannerBox, "Reward", UDim2.new(1, -12, 0, 27), offset(6, 24), 20)
-	local layers = Candy.text(bannerBox, "FractureLayers", UDim2.new(1, 0, 0, 25), offset(0, 0), 17)
+	local koScale = Instance.new("UIScale")
+	koScale.Parent = bannerBox
+	local band = Candy.frame(
+		bannerBox,
+		"KoBand",
+		UDim2.new(1.1, 0, 0, 54),
+		UDim2.new(-0.05, 0, 0, 6),
+		Color3.fromHex("15142A")
+	)
+	band.Rotation = KO_TILT
+	local bandEdge = Candy.frame(
+		band,
+		"Edge",
+		UDim2.new(1, 0, 0, 5),
+		UDim2.new(0, 0, 1, -5),
+		Color3.fromHex("E8352B")
+	)
+	local layers = Candy.text(
+		bannerBox,
+		"FractureLayers",
+		UDim2.new(1, -8, 0, 58),
+		offset(4, 4),
+		50,
+		Candy.white
+	)
+	layers.FontFace, layers.Rotation, layers.ZIndex = KO_FONT, KO_TILT, 3
+	local koGradient = Instance.new("UIGradient")
+	koGradient.Rotation = 90
+	koGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromHex("FFF7C2")),
+		ColorSequenceKeypoint.new(0.45, Color3.fromHex("FFC83D")),
+		ColorSequenceKeypoint.new(0.7, Color3.fromHex("FF7A1A")),
+		ColorSequenceKeypoint.new(1, Color3.fromHex("D61F2C")),
+	})
+	koGradient.Parent = layers
+	local layersStroke = Candy.stroke(layers, 3.5, true)
+	layersStroke.Color = Color3.fromHex("1A0B08")
+	local banner =
+		Candy.text(bannerBox, "Reward", UDim2.new(1, -16, 0, 26), offset(8, 66), 22, Candy.white)
+	banner.FontFace, banner.Rotation, banner.ZIndex = KO_FONT, KO_TILT, 3
+	local bannerStroke = Candy.stroke(banner, 2.5, true)
+	bannerStroke.Color = Color3.fromHex("1A0B08")
 	local worldBanner = Candy.panel(gui, "WorldEntered", offset(284, 59), UDim2.new(0.5, 0, 0, 109))
 	worldBanner.AnchorPoint, worldBanner.Visible = Vector2.new(0.5, 0), false
 	local newWorld, worldRibbon = Candy.ribbon(
@@ -198,6 +250,12 @@ function Hud.new(
 		plateReward = plateReward,
 		banner = banner,
 		layers = layers,
+		koScale = koScale,
+		band = band,
+		bandEdge = bandEdge,
+		koGradient = koGradient,
+		layersStroke = layersStroke,
+		bannerStroke = bannerStroke,
 		money = money,
 		translate = translate,
 		amount = -1,
@@ -364,23 +422,43 @@ function Hud.step(
 		h.plateReward.Text = h.translate("mine_plate_reward", Format.short(entered.reward))
 	end
 	local reward = h.reward
-	Candy.move(h.bannerBox, scale(0.5, if gain then 0.32 else 0.76))
-	h.bannerBox.Visible = reward ~= nil and now - reward.at < 1.55
+	h.bannerBox.Visible = reward ~= nil and now - reward.at < KO_LIFE
 	if h.bannerBox.Visible then
+		local age = now - reward.at
 		local progress = if reward.ultimate
-			then h.fractureProgress
-			else math.clamp((now - reward.at) / 0.63, 0, 1)
-		h.layers.Visible = reward.ultimate
-		h.layers.Text =
-			h.translate("mine_ult_layers", Format.grouped(math.floor(reward.delta * progress)))
-		Candy.move(h.banner, offset(6, if h.layers.Visible then 24 else 14))
-		h.banner.Text = if reward.ultimate
-			then h.translate(
+			then h.fractureProgress or 1
+			else math.clamp(age / 0.63, 0, 1)
+		if reward.ultimate then
+			h.layers.Text =
+				h.translate("mine_ult_layers", Format.grouped(math.floor(reward.delta * progress)))
+			h.banner.Text = h.translate(
 				"mine_ult_value",
 				Format.grouped(math.floor(reward.blocks * progress)),
 				Format.short(math.floor(reward.coins * progress))
 			)
-			else h.translate("mine_layers_gain", math.floor(reward.delta * progress))
+		else
+			h.layers.Text = h.translate("mine_layers_gain", math.floor(reward.delta * progress))
+		end
+		h.banner.Visible = reward.ultimate
+		-- slam: from 2.3x down to 1 with a small overshoot (ease-out-back), then one short shake
+		local slam = math.clamp(age / KO_SLAM, 0, 1)
+		local back = 1 + 2.70158 * (slam - 1) ^ 3 + 1.70158 * (slam - 1) ^ 2
+		h.koScale.Scale = if reduced then 1 else 2.3 + (1 - 2.3) * back
+		local shake = if reduced
+				or age < KO_SLAM
+				or age > KO_SLAM + 0.18
+			then Vector2.zero
+			else Vector2.new(math.random() - 0.5, math.random() - 0.5)
+				* 6
+				* (1 - (age - KO_SLAM) / 0.18)
+		h.bannerBox.Position = UDim2.new(0.5, shake.X, if gain then 0.32 else 0.76, shake.Y)
+		h.band.Position = UDim2.new(-0.05 - 1.2 * (1 - math.clamp(age / 0.12, 0, 1)) ^ 2, 0, 0, 6)
+		h.koGradient.Enabled = reduced or age > 0.07 -- a white flash on impact
+		local fade = math.clamp((age - (KO_LIFE - KO_FADE)) / KO_FADE, 0, 1)
+		h.layers.TextTransparency, h.layersStroke.Transparency = fade, fade
+		h.banner.TextTransparency, h.bannerStroke.Transparency = fade, fade
+		h.band.BackgroundTransparency = 0.2 + 0.8 * fade
+		h.bandEdge.BackgroundTransparency = fade
 	end
 	for _, item in h.money do
 		local t = now - item.at

@@ -77,9 +77,14 @@ function Power.ult(
 	return math.max(1, math.floor(layers / Power.hits(hardness, strength)))
 end
 
-function Power.plate(strength: number, hp: number, ability: boolean): number
-	local amount = strength * (if ability then mine.plate.ultMultiplier else 1)
-	return math.max(amount, hp / mine.plate.cap)
+-- One hit on the plate; the ult is worth `ultMultiplier` hits times the share of its layers it had left when it
+-- reached the plate [владелец 11.11: «ульта должна наносить урон плите»; число — решение].
+function Power.plate(strength: number, hp: number, ability: boolean, left: number?): number
+	local hit = math.max(strength, hp / mine.plate.cap)
+	if not ability then
+		return hit
+	end
+	return hit * mine.plate.ultMultiplier * math.clamp(left or 1, 0, 1)
 end
 
 function Power.strike(

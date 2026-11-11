@@ -191,10 +191,12 @@ function Resolve.ult(st: State, pick: Pick): HitResult
 	local out: { Range } = {}
 	local barrier = MineState.barrier(st)
 	local finish = st.front + layers
+	local left = (finish - math.max(st.front, barrier)) / layers
 	MineState.removeLayers(st, st.front, finish, out)
 	tally(st, res, out)
 	if barrier < DEPTH_END and (finish > barrier or st.front == barrier) then
-		hitPlate(st, barrier, Power.plate(pick.strength, Worlds.of(barrier).plate.hp, true), res)
+		local hp = Worlds.of(barrier).plate.hp
+		hitPlate(st, barrier, Power.plate(pick.strength, hp, true, left), res)
 	end
 	return res
 end

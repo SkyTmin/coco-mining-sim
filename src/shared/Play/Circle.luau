@@ -122,7 +122,7 @@ function Circle.pick(id: string, circle: Types.Circle, depth: number): Pick
 	local pick = Config.pickaxes[id] or Config.pickaxes.starter
 	local rarity = Config.progress.rarities[pick.rarity]
 	local level = circle.pickLevels[id] or 1
-	local shape = Config.progress.hitSizes[circle.hitSize]
+	local shape = Config.progress.hitSizes[if Upgrade.hitSizeEnabled then circle.hitSize else 1]
 	local strength = Power.strength(rarity, level, circle.cards)
 	return {
 		rarity = pick.rarity,

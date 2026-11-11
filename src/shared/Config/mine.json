@@ -19,7 +19,7 @@
   "plate": {
     "hits": 20,
     "cap": 160,
-    "ultMultiplier": 3
+    "ultMultiplier": 15
   },
   "ultCharge": 45
 }

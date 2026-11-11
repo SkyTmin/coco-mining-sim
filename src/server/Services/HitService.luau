@@ -329,7 +329,9 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 		end
 		return
 	elseif op == "mine.depth" then
-		local world = if type(a) == "number" and a % 1 == 0 then Worlds.at(a) else nil
+		-- 0 = the world the mine is in now
+		local index = if a == 0 then Worlds.of(st.front).index else a
+		local world = if type(index) == "number" and index % 1 == 0 then Worlds.at(index) else nil
 		if world then
 			local depth = if b == true then world.plateDepth - 30 else world.start
 			ProfileService.Mutate(player, function(profile)

@@ -89,7 +89,6 @@ function CreativeWindow.start(
 		operationButtons[i] = control
 	end
 
-	local selectedWorld = 1
 	local level, minus, plus, maxLevel = slot(12), slot(13), slot(14), slot(15)
 	minus.text.Text, plus.text.Text = "−1", "+1"
 	for control, change in { [minus] = -1, [plus] = 1, [maxLevel] = 0 } do
@@ -97,18 +96,19 @@ function CreativeWindow.start(
 			creative:FireServer("mine.level", change)
 		end)
 	end
-	local world, nextWorld, depth, beforePlate = slot(16), slot(17), slot(18), slot(19)
-	nextWorld.text.Text = "→"
-	nextWorld.input.Activated:Connect(function()
-		selectedWorld = selectedWorld % #Config.worlds + 1
-		world.text.Text = translate("creative_depth_world", selectedWorld)
-	end)
-	depth.input.Activated:Connect(function()
-		creative:FireServer("mine.depth", selectedWorld)
-	end)
+	-- [владелец 11.11] one button per world moves straight to its start; «30 before slab» uses the current world
+	local beforePlate = slot(16)
 	beforePlate.input.Activated:Connect(function()
-		creative:FireServer("mine.depth", selectedWorld, true)
+		creative:FireServer("mine.depth", 0, true)
 	end)
+	local worldButtons: { Candy.Control } = {}
+	for index = 1, #Config.worlds do
+		local control = slot(23 + index)
+		control.input.Activated:Connect(function()
+			creative:FireServer("mine.depth", index)
+		end)
+		worldButtons[index] = control
+	end
 	-- QA [владелец 11.11]: endless ult and a forced ult depth, both kept by the server as player attributes
 	local ultEndless, ultLayers = slot(20), slot(21)
 	ultEndless.input.Activated:Connect(function()
@@ -174,9 +174,10 @@ function CreativeWindow.start(
 			translate("creative_multiply", 10), translate("creative_multiply", 1000)
 		reset.text.Text = translate("creative_circle")
 		maxLevel.text.Text = translate("upgrade_max")
-		world.text.Text = translate("creative_depth_world", selectedWorld)
-		depth.text.Text, beforePlate.text.Text =
-			translate("creative_depth_start"), translate("creative_depth_plate")
+		for index, control in worldButtons do
+			control.text.Text = translate("creative_depth_world", index)
+		end
+		beforePlate.text.Text = translate("creative_depth_plate")
 		ultEndless.text.Text = translate(
 			if player:GetAttribute("CreativeUltEndless") == true
 				then "creative_ult_endless_on"

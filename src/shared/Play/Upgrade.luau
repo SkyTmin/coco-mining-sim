@@ -20,6 +20,8 @@ export type Context = {
 local progress = Config.progress
 local Upgrade = {}
 Upgrade.cards = table.freeze({ "power", "coins", "crit" })
+-- [владелец 11.11] «Размер удара» is off for now: every hit is one block
+Upgrade.hitSizeEnabled = false
 local supportedCards = { power = true, coins = true, crit = true }
 
 function Upgrade.count(value: any): boolean
@@ -49,6 +51,9 @@ function Upgrade.quote(context: Context, purchase: Purchase): Quote?
 		return nil
 	end
 	if kind == "hitSize" then
+		if not Upgrade.hitSizeEnabled then
+			return nil
+		end
 		local stage = progress.hitSizes[context.hitSize + 1]
 		return if stage then { level = stage.id, price = stage.price, amount = 1 } else nil
 	elseif kind == "width" then

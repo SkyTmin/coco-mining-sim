@@ -20,7 +20,9 @@ Test.describe("Circle power", function()
 		for _, example in { { 199, 1 }, { 200, 2 }, { 2000, 3 }, { 20000, 4 } } do
 			expect(Power.pierce(20, example[1])).toBe(example[2])
 		end
-		expect(Power.plate(30, 600, true)).toBe(90)
+		expect(Power.plate(30, 600, true)).toBe(450)
+		expect(Power.plate(30, 600, true, 0.5)).toBe(225)
+		expect(Power.plate(30, 600, true, 0)).toBe(0)
 		expect(Power.plate(0.01, 600, false) * 160).toBe(600)
 		expect(Power.coins(1.5, 1)).toBe(1)
 		expect(Power.coins(5, 3, 3)).toBe(24)
