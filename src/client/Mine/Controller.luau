@@ -46,6 +46,7 @@ local S = mine.blockSize
 local PENTATONIC = { 1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2 }
 local STORM = Color3.fromRGB(139, 225, 255)
 local WARM = Color3.fromRGB(255, 207, 144)
+local NO_DAMAGE = { damage = {} }
 
 function Controller.start(guiParent: Instance, translate: (string, ...any) -> string)
 	local player = Players.LocalPlayer
@@ -73,6 +74,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local lastShown: any, lastVisible: number?
 	local seq, quality, maxParts = 0, 2, 0
 	local dirty, active = true, false
+	local digging = false
 	local nextHit, lastRequest = -math.huge, -math.huge
 	local abilityQueued, returning = false, false
 	local lastCharge = -1
@@ -198,7 +200,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			or player:GetAttribute("MineSettingsOpen") == true
 	end
 	local function canControl(): boolean
-		return active and not menuOpen() and player:GetAttribute("MineUpgradesOpen") ~= true
+		return active
+			and not returning
+			and not menuOpen()
+			and player:GetAttribute("MineUpgradesOpen") ~= true
 	end
 	local function canHit(): boolean
 		return canControl() and window ~= nil and ride == nil and #echoes == 0
@@ -215,10 +220,21 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		Remotes.event("CameraView"):FireServer(view.mode)
 	end
 
+	local function stopDigging()
+		if not digging then
+			return
+		end
+		digging, dirty = false, true
+		if breaking and renderer then
+			Break.cracks(breaking, renderer, NO_DAMAGE, State.cellKey)
+		end
+		intent:FireServer(Wire.encodeIntent("DigStop"))
+	end
+
 	local function request(kind: string, target: any?)
 		local v = view
 		local now = os.clock()
-		if not v or not canHit() or returning then
+		if not v or not canHit() then
 			return
 		end
 		local settings = pick()
@@ -235,6 +251,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if ability then
 			abilityQueued = false
 		end
+		if not digging then
+			window.damage = {}
+		end
+		digging = true
 		local cell = target or { x = 0, y = 0, dRel = 0 }
 		if target then
 			lastTarget = { x = target.x, y = target.y, depth = window.front + target.dRel }
@@ -293,12 +313,29 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		intent:FireServer(Wire.encodeIntent(kind, seq, cell.x, cell.y, cell.dRel))
 	end
 
-	local function onWindow(packet: any)
+	local function onWindow(packet: any, damageReset: boolean?)
 		local win = Wire.decodeWindow(packet)
 		if
 			not win
 			or (player:GetAttribute("Plot") ~= nil and win.plot ~= player:GetAttribute("Plot"))
 		then
+			return
+		end
+		if
+			damageReset == true
+			and window
+			and win.plot == window.plot
+			and win.width == window.width
+			and win.height == window.height
+		then
+			-- Earlier results can still be waiting for the swing or wave to reach the wall.
+			window.damage, dirty = win.damage, true
+			if pending and pending.result then
+				pending.result.damage, pending.damage = win.damage, nil
+			end
+			for _, queued in echoes do
+				queued.res.damage = win.damage
+			end
 			return
 		end
 		if view then
@@ -550,7 +587,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 
 	windowRemote.OnClientEvent:Connect(function(kind, packet, visual)
 		if kind == "window" then
-			onWindow(packet)
+			onWindow(packet, visual)
 		elseif kind == "layers" then
 			local part = Wire.decodeLayers(packet)
 			local queued = echoes[#echoes]
@@ -728,6 +765,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		hit = function(target)
 			request("Hit", target)
 		end,
+		stop = stopDigging,
 		toggle = toggle,
 		focus = faceWall,
 		ult = function()
@@ -912,7 +950,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if layout then
 			if shown then
 				local renderWindow = shown
-				if shown == window and pending and pending.impacted and pending.damage then
+				if
+					digging
+					and shown == window
+					and pending
+					and pending.impacted
+					and pending.damage
+				then
 					renderWindow = table.clone(window)
 					renderWindow.damage = table.clone(window.damage)
 					table.insert(renderWindow.damage, pending.damage)
@@ -922,7 +966,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				Break.cracks(
 					breaking,
 					r,
-					renderWindow,
+					if digging then renderWindow else NO_DAMAGE,
 					State.cellKey,
 					nil,
 					if lastTarget

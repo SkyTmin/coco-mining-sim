@@ -7,6 +7,7 @@ local expect = Test.expect
 Test.describe("Mine startup", function()
 	Test.it("opens a mine when the profile loads before the PlayerAdded plot assignment", function()
 		local players = { PlayerRemoving = { Connect = function() end } }
+		local runService = { Heartbeat = { Connect = function() end } }
 		local player = { Parent = players }
 		local profile = { coins = 0, pickaxe = "starter" }
 		Circle.initialize(profile)
@@ -39,6 +40,7 @@ Test.describe("Mine startup", function()
 				GetService = function(_, name)
 					return if name == "Players"
 						then players
+						elseif name == "RunService" then runService
 						else { Shared = loader.node("src/shared") }
 				end,
 			},

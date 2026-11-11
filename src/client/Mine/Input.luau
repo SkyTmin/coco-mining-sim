@@ -8,7 +8,17 @@ local Input = {}
 function Input.start(callbacks: any)
 	local touch: InputObject?
 	local gesture: Gesture.Gesture?
-	local heldMouse, rotating = false, false
+	local heldMouse, heldGamepad, rotating = false, false, false
+	local wasActive, wasFirst = false, false
+	local function stopIfReleased()
+		if not heldMouse and not heldGamepad and not (gesture and gesture.holding) then
+			callbacks.stop()
+		end
+	end
+	local function cancel()
+		heldMouse, heldGamepad, rotating, touch, gesture = false, false, false, nil, nil
+		callbacks.stop()
+	end
 
 	local function center(): Vector2
 		local camera = workspace.CurrentCamera
@@ -47,9 +57,13 @@ function Input.start(callbacks: any)
 		moveTouch(input)
 		local tap = Gesture.finish(gesture, os.clock())
 			and input.UserInputState == Enum.UserInputState.End
+		local dug = gesture.holding
 		touch, gesture = nil, nil
 		if tap and callbacks.active() then
-			strike(center())
+			dug = strike(center())
+		end
+		if dug then
+			stopIfReleased()
 		end
 	end
 	InputService.InputBegan:Connect(function(input, processed)
@@ -75,6 +89,8 @@ function Input.start(callbacks: any)
 		end
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			heldMouse = strike(mousePoint())
+		elseif input.KeyCode == Enum.KeyCode.ButtonR2 then
+			heldGamepad = strike(center())
 		elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
 			rotating = true
 		end
@@ -93,21 +109,28 @@ function Input.start(callbacks: any)
 	InputService.InputEnded:Connect(function(input)
 		if input == touch then
 			endTouch(input)
-		elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+		elseif input.UserInputType == Enum.UserInputType.MouseButton1 and heldMouse then
 			heldMouse = false
+			stopIfReleased()
+		elseif input.KeyCode == Enum.KeyCode.ButtonR2 and heldGamepad then
+			heldGamepad = false
+			stopIfReleased()
 		elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
 			rotating = false
 		end
 	end)
-	InputService.WindowFocusReleased:Connect(function()
-		heldMouse, rotating, touch, gesture = false, false, nil, nil
-	end)
+	InputService.WindowFocusReleased:Connect(cancel)
 	RunService.RenderStepped:Connect(function()
+		local active, first = callbacks.active(), callbacks.first()
+		if (wasActive and not active) or (wasFirst and not first) then
+			cancel()
+		end
+		wasActive, wasFirst = active, first
 		local digging = gesture and Gesture.step(gesture, os.clock())
-		if not callbacks.canHit() then
+		if not active or not callbacks.canHit() then
 			return
 		end
-		if digging then
+		if digging or heldGamepad then
 			strike(center())
 		elseif heldMouse then
 			strike(mousePoint())

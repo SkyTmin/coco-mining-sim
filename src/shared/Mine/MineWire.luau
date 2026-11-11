@@ -4,7 +4,7 @@ local Config = require(script.Parent.Parent.Config)
 local mine = Config.mine
 local cascade = Config.cascade
 local Wire = { CHEST = 64, PLATE = 65 }
-local opcodes = { Hit = 1, Ability = 2, Resync = 3 }
+local opcodes = { Hit = 1, Ability = 2, Resync = 3, DigStop = 4 }
 
 function Wire.chest(tier: number): number
 	return if tier == 1 then Wire.CHEST else Wire.CHEST + tier
@@ -19,9 +19,10 @@ local function check(condition: boolean)
 end
 
 function Wire.encodeIntent(op: string, seq: number?, x: number?, y: number?, dRel: number?): buffer
-	local out = buffer.create(if op == "Resync" then 1 else 6)
+	local argless = op == "Resync" or op == "DigStop"
+	local out = buffer.create(if argless then 1 else 6)
 	buffer.writeu8(out, 0, (opcodes :: { [string]: number })[op])
-	if op ~= "Resync" then
+	if not argless then
 		buffer.writeu16(out, 1, seq :: number)
 		buffer.writei8(out, 3, x :: number)
 		buffer.writeu8(out, 4, y :: number)
@@ -40,7 +41,10 @@ function Wire.decodeIntent(value: any): any?
 	end
 	local opcode = buffer.readu8(value, 0)
 	if n == 1 then
-		return if opcode == 3 then { op = "Resync" } else nil
+		return if opcode == opcodes.Resync
+			then { op = "Resync" }
+			elseif opcode == opcodes.DigStop then { op = "DigStop" }
+			else nil
 	end
 	if opcode ~= 1 and opcode ~= 2 then
 		return nil

@@ -31,13 +31,26 @@ Test.describe("Mine codec", function()
 		State.removeRange(st, -2, 1, 5010, 5190, out)
 		State.removeCell(st, 2, 0, 128, out)
 		State.widen(st, 9)
-		st.damage[State.cellKey(3, 1, 125)] = 0.5
+		local key = State.cellKey(3, 1, 125)
+		st.damage[key] = 0.5
 		local encoded = Codec.encode(st)
+		expect(next(encoded.damage)).toBe(nil)
+		expect(st.damage[key]).toBe(0.5)
 		local decoded = assert(Codec.decode(serde.decode("json", serde.encode("json", encoded))))
 		expect(next(decoded.damage)).toBe(nil)
 		st.damage = {}
 		expect(decoded).toEqual(st)
 		expect(Codec.encode(decoded)).toEqual(encoded)
+	end)
+
+	Test.it("ignores legacy block damage and keeps saved plate damage", function()
+		local st = State.new(17, 5, 3, 498)
+		st.plateDamage = 6
+		local legacy = Codec.encode(st)
+		legacy.damage[State.cellKey(0, 1, 498)] = 0.75
+		local decoded = assert(Codec.decode(legacy))
+		expect(next(decoded.damage)).toBe(nil)
+		expect(decoded.plateDamage).toBe(6)
 	end)
 
 	Test.it("rejects more than fifty malformed saves with explanations", function()

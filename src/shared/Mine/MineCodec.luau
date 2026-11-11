@@ -12,6 +12,7 @@ export type SavedMine = {
 	h: number,
 	front: number,
 	plateDamage: number,
+	damage: { [number]: number },
 	top: string,
 	holes: string,
 	chests: { any }?,
@@ -62,6 +63,7 @@ function MineCodec.encode(st: State): SavedMine
 		h = st.height,
 		front = st.front,
 		plateDamage = st.plateDamage,
+		damage = {},
 		top = Bytes.base64Encode(tops, topOffset),
 		holes = Bytes.base64Encode(intervals, holeOffset),
 		chests = if #chests > 0 then chests else nil,
@@ -103,6 +105,7 @@ function MineCodec.decode(data: any): (State?, string?)
 		return nil, "Holes: " .. (intervalError or "Invalid base64")
 	end
 
+	-- Block damage belongs to the current dig, so any saved damage is ignored.
 	local st = MineState.new(data.seed, data.w, data.h)
 	st.front, st.plateDamage = data.front, data.plateDamage
 	if data.chestFrequency ~= nil then

@@ -1,6 +1,7 @@
 --!strict
 
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local Remotes = require(Shared.Remotes)
@@ -25,6 +26,12 @@ export type Session = {
 	bucket: Validate.Bucket,
 	charge: number,
 	resyncAt: number,
+	lastHitAt: number,
+	hitInterval: number,
+	digStopAt: number,
+	ultUntil: number?,
+	stopAfterUlt: boolean,
+	lastTarget: number?,
 	hit: Timing,
 	ult: Timing,
 	perks: Perks.Runtime,
@@ -32,6 +39,9 @@ export type Session = {
 }
 
 local mine = Config.mine
+local DIG_GRACE = 0.3
+local DIG_SWEEP_INTERVAL = 0.1
+local DIG_STOP_INTERVAL = 0.5
 local MineService = {}
 local sessions: { [Player]: Session } = {}
 local subscribers: { [number]: { [Player]: boolean } } = {}
@@ -123,7 +133,7 @@ local function sendTail(s: Session)
 	end
 end
 
-function MineService.window(s: Session)
+function MineService.window(s: Session, damageReset: boolean?)
 	local st = s.state
 	PlotService.depth(s.plot, st.front)
 	local frozen = {}
@@ -145,9 +155,47 @@ function MineService.window(s: Session)
 			damage = MineService.damage(st),
 			frozen = frozen,
 			layers = layers(st, 0, mine.nearWindow),
-		})
+		}),
+		damageReset
 	)
 	sendTail(s)
+end
+
+local function clearDamage(s: Session)
+	if next(s.state.damage) ~= nil then
+		table.clear(s.state.damage)
+		MineService.window(s, true)
+	end
+end
+
+function MineService.stopDigging(s: Session, now: number)
+	if now - s.digStopAt < DIG_STOP_INTERVAL then
+		return
+	end
+	s.digStopAt = now
+	local ultUntil = s.ultUntil
+	if ultUntil and now < ultUntil then
+		s.stopAfterUlt = true
+		return
+	end
+	s.stopAfterUlt = false
+	clearDamage(s)
+end
+
+local function expireDamage(s: Session, now: number)
+	local ultUntil = s.ultUntil
+	if ultUntil then
+		-- The server applies each wave up front. Its timed playback is still mining.
+		s.lastHitAt = math.max(s.lastHitAt, math.min(now, ultUntil))
+		if now < ultUntil then
+			return
+		end
+		s.ultUntil = nil
+	end
+	if s.stopAfterUlt or now - s.lastHitAt > s.hitInterval + DIG_GRACE then
+		s.stopAfterUlt = false
+		clearDamage(s)
+	end
 end
 
 function MineService.result(s: Session, res: any)
@@ -173,6 +221,8 @@ function MineService.reset(s: Session, depth: number, width: number)
 	s.state = State.new(s.state.seed, width, mine.height, depth)
 	s.charge = 0
 	s.perks = Perks.new()
+	s.lastHitAt, s.ultUntil, s.stopAfterUlt = -math.huge, nil, false
+	s.lastTarget = nil
 	MineService.window(s)
 end
 
@@ -209,6 +259,10 @@ function MineService.Start()
 			bucket = Validate.bucket(os.clock()),
 			charge = 0,
 			resyncAt = -math.huge,
+			lastHitAt = -math.huge,
+			hitInterval = 0,
+			digStopAt = -math.huge,
+			stopAfterUlt = false,
 			hit = { count = 0, total = 0, max = 0 },
 			ult = { count = 0, total = 0, max = 0 },
 			perks = Perks.new(),
@@ -217,6 +271,19 @@ function MineService.Start()
 		s.state.chestFrequency = Family.effects(profile).chestFrequency
 		sessions[player], subscribers[plot] = s, { [player] = true }
 		MineService.window(s)
+	end)
+	local sweptAt = os.clock()
+	RunService.Heartbeat:Connect(function()
+		local now = os.clock()
+		if now - sweptAt < DIG_SWEEP_INTERVAL then
+			return
+		end
+		sweptAt = now
+		for _, session in sessions do
+			if next(session.state.damage) ~= nil then
+				expireDamage(session, now)
+			end
+		end
 	end)
 	task.spawn(function()
 		while true do

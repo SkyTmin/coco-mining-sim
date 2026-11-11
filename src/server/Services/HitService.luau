@@ -11,7 +11,6 @@ local Validate = require(Shared.Mine.Validate)
 local Worlds = require(Shared.Mine.Worlds)
 local Wire = require(Shared.Mine.MineWire)
 local Ride = require(Shared.Mine.Ride)
-local Wave = require(Shared.Mine.UltWave)
 local Perks = require(Shared.Play.Perks)
 local MiningAction = require(Shared.Play.MiningAction)
 local Circle = require(Shared.Play.Circle)
@@ -25,6 +24,7 @@ local Analytics = require(script.Parent.Analytics)
 type Session = MineService.Session
 type HitResult = Resolve.HitResult
 local mine, budget = Config.mine, Config.cascade
+local RESET_ON_RETARGET = false
 local HitService = {}
 
 local function point(x: number, y: number, d: number, front: number): any
@@ -108,6 +108,9 @@ local function onIntent(player: Player, packet: any)
 			MineService.window(s)
 		end
 		return
+	elseif intent.op == "DigStop" then
+		MineService.stopDigging(s, started)
+		return
 	end
 	local st = s.state
 	local pick = ProfileService.Read(player, function(p)
@@ -138,8 +141,20 @@ local function onIntent(player: Player, packet: any)
 		MineService.reject(player, s, intent.seq)
 		return
 	end
+	if RESET_ON_RETARGET and not ability then
+		local target = State.cellKey(intent.x, intent.y, d)
+		if s.lastTarget and s.lastTarget ~= target then
+			for key in st.damage do
+				if key ~= target then
+					st.damage[key] = nil
+				end
+			end
+		end
+		s.lastTarget = target
+	end
 	local forced = if creative then player:GetAttribute("CreativeUltLayers") else nil
-	local returnAfter = workspace:GetServerTimeNow()
+	local serverTime = workspace:GetServerTimeNow()
+	local duration = 0
 	for wave = 1, 2 do
 		local outcome
 		ProfileService.Mutate(player, function(profile)
@@ -160,18 +175,19 @@ local function onIntent(player: Player, packet: any)
 			MineService.reject(player, s, intent.seq)
 			return
 		end
+		if wave == 1 then
+			s.lastHitAt, s.hitInterval, s.stopAfterUlt = started, pick.interval, false
+		end
 		s.charge = if ability
 			then (if endless then pick.ultCharge else 0)
 			else math.min(pick.ultCharge, s.charge + 1)
 		local delta = outcome.delta
 		if ability or delta > 0 then
-			returnAfter += if ability
-				then Wave.total(
-					delta,
-					if delta > 0 then Ride.timeline(delta, false).approach else 0
-				)
-				else Ride.timeline(delta, false).total
-			player:SetAttribute("MineReturnAfter", returnAfter)
+			duration += if ability then outcome.duration else Ride.timeline(delta, false).total
+			if ability then
+				s.ultUntil = math.max(s.ultUntil or started, started + duration)
+			end
+			player:SetAttribute("MineReturnAfter", serverTime + duration)
 		end
 		publish(
 			s,
