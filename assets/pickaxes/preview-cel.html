@@ -1,0 +1,70 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Cel pickaxes</title>
+<style>body{margin:0;background:#2B2B30}canvas{display:block}</style></head>
+<body>
+<script src="three.min.js"></script>
+<script>
+// Flat cel look: unlit colours, black outline slabs (offset outline polygons), additive glows; reads picks-cel.json.
+const params = new URLSearchParams(location.search);
+const CELL = +(params.get('cell') || 300);
+const only = params.get('only');
+const INK = 0x15121E;
+function signedArea(p) { let a = 0; for (let i = 0; i < p.length; i++) { const [x1, y1] = p[i], [x2, y2] = p[(i + 1) % p.length]; a += x1 * y2 - x2 * y1; } return a / 2; }
+function offset(pts, d) {
+  const p = signedArea(pts) < 0 ? pts.slice().reverse() : pts, n = p.length, out = [];
+  for (let i = 0; i < n; i++) {
+    const a = p[(i - 1 + n) % n], b = p[i], c = p[(i + 1) % n];
+    const e1 = [b[0] - a[0], b[1] - a[1]], e2 = [c[0] - b[0], c[1] - b[1]];
+    const l1 = Math.hypot(...e1) || 1, l2 = Math.hypot(...e2) || 1;
+    const n1 = [e1[1] / l1, -e1[0] / l1], n2 = [e2[1] / l2, -e2[0] / l2];
+    let m = [n1[0] + n2[0], n1[1] + n2[1]]; const ml = Math.hypot(...m) || 1; m = [m[0] / ml, m[1] / ml];
+    const k = Math.min(2.5, 1 / Math.max(0.2, m[0] * n1[0] + m[1] * n1[1]));
+    out.push([b[0] + m[0] * d * k, b[1] + m[1] * d * k]);
+  }
+  return out;
+}
+function shapeGeo(pts, depth) {
+  const s = new THREE.Shape(); pts.forEach(([x, y], i) => (i ? s.lineTo(x, y) : s.moveTo(x, y)));
+  const g = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: false }); g.translate(0, 0, -depth / 2); return g;
+}
+const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.35, 'rgba(255,255,255,0.45)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); })();
+const basic = (c) => new THREE.MeshBasicMaterial({ color: new THREE.Color(c) });
+const ink = new THREE.MeshBasicMaterial({ color: INK });
+fetch('picks-cel.json').then(r => r.json()).then(data => {
+  const ids = only ? only.split(',') : Object.keys(data.picks);
+  const cols = only ? Math.min(ids.length, 4) : 4, rows = Math.ceil(ids.length / cols);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1); renderer.setSize(CELL * cols, CELL * rows); renderer.setScissorTest(true);
+  document.body.appendChild(renderer.domElement);
+  ids.forEach((id, i) => {
+    const scene = new THREE.Scene(), g = new THREE.Group();
+    data.picks[id].forEach((p, k) => {
+      const ro = k * 2;
+      if (p.t === 'poly') {
+        const m = new THREE.Mesh(shapeGeo(p.pts, p.d), [basic(p.c), basic(p.side || p.c)]); m.position.z = p.z; m.renderOrder = ro + 1; g.add(m);
+        if (p.ol) { const o = new THREE.Mesh(shapeGeo(offset(p.pts, p.ol), p.d * 0.92), ink); o.position.z = p.z - p.d * 0.06 - 0.003; o.renderOrder = ro; g.add(o); }
+      } else if (p.t === 'cyl') {
+        const a = new THREE.Vector3(...p.a), b = new THREE.Vector3(...p.b), mid = a.clone().add(b).multiplyScalar(0.5), q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
+        const m = new THREE.Mesh(new THREE.CylinderGeometry(p.r, p.r, a.distanceTo(b), 20), basic(p.c)); m.position.copy(mid); m.quaternion.copy(q); g.add(m);
+        if (p.ol) { const o = new THREE.Mesh(new THREE.CylinderGeometry(p.r + p.ol, p.r + p.ol, a.distanceTo(b) + p.ol * 2, 20), new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide })); o.position.copy(mid); o.quaternion.copy(q); g.add(o); }
+      } else if (p.t === 'ball') {
+        const m = new THREE.Mesh(new THREE.SphereGeometry(p.r, 20, 14), basic(p.c)); m.position.set(...p.at); g.add(m);
+        if (p.ol) { const o = new THREE.Mesh(new THREE.SphereGeometry(p.r + p.ol, 20, 14), new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide })); o.position.set(...p.at); g.add(o); }
+      } else if (p.t === 'glow') {
+        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(p.c), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.8 }));
+        sp.position.set(...p.at); sp.scale.setScalar(p.r * 2); sp.renderOrder = -1; g.add(sp);
+      }
+    });
+    g.rotation.set(+(params.get('rx') ?? -0.12), +(params.get('ry') ?? 0.3), +(params.get('rz') ?? -0.785));
+    scene.add(g);
+    const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100); cam.position.set(0.3, 0.55, 11.3); cam.lookAt(0.3, 0.55, 0);
+    const x = (i % cols) * CELL, y = (rows - 1 - Math.floor(i / cols)) * CELL;
+    renderer.setViewport(x, y, CELL, CELL); renderer.setScissor(x, y, CELL, CELL);
+    renderer.setClearColor(((Math.floor(i / cols) + i) % 2) ? 0x2B2B30 : 0x313137, 1);
+    renderer.render(scene, cam);
+  });
+  document.title = 'ready';
+});
+</script></body></html>
