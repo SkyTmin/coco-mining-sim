@@ -12,6 +12,7 @@ local Circle = require(Shared.Play.Circle)
 local Upgrade = require(Shared.Play.Upgrade)
 local ProfileState = require(script.Parent.Parent.ProfileState)
 local Candy = require(script.Parent.Candy)
+local Families = require(script.Parent.Families)
 
 local Upgrades = {}
 local progress = Config.progress
@@ -105,6 +106,7 @@ function Upgrades.new(
 	local tipLabel = Candy.text(tip, "Hint", scale(0.95, 0.88), scale(0.025, 0.06), 15)
 
 	local front, isCards, selectedCard = 0, false, "power"
+	local pageIndex = 1
 	local held: PurchaseControl?
 	local pressed: InputObject?
 	local nextRepeat = math.huge
@@ -128,26 +130,28 @@ function Upgrades.new(
 	)
 	local panel = modal.panel
 	local tabs = {}
-	for i, key in { "upgrade_pickaxe", "upgrade_cards" } do
+	for i, key in { "upgrade_pickaxe", "upgrade_cards", "collection_tab", "family_tab" } do
 		local tab = Candy.button(
 			panel,
 			if i == 1 then "PickaxeTab" else "CardsTab",
-			offset(96, 34),
-			UDim2.new(0.5 + (i - 1) * 0.21, 0, 0, -16),
+			UDim2.new(0.23, -3, 0, 30),
+			UDim2.new(0.04 + (i - 1) * 0.23, 0, 0, 25),
 			"neutral",
 			16
 		)
 		tab.face.Rotation, tab.shadow.Rotation = -2, -2
 		tab.input.Activated:Connect(function()
 			isCards = i == 2
+			pageIndex = i
 			held, pressed = nil, nil
 			refresh(false)
 		end)
-		tabs[key] = tab
+		tabs[key] = { control = tab, index = i }
 	end
-
-	local pickPage = Candy.frame(panel, "Pickaxe", scale(1, 1), offset(0, 0))
-	local cardPage = Candy.frame(panel, "Cards", scale(1, 1), offset(0, 0))
+	local body = Candy.frame(panel, "Body", UDim2.new(1, 0, 1, -60), offset(0, 60))
+	local pickPage = Candy.frame(body, "Pickaxe", scale(1, 1), offset(0, 0))
+	local cardPage = Candy.frame(body, "Cards", scale(1, 1), offset(0, 0))
+	local familyPages = Families.new(body, player, translate)
 	local function row(key: string, icon: string, index: number, kind: string)
 		local box = Candy.panel(
 			pickPage,
@@ -196,8 +200,8 @@ function Upgrades.new(
 		local box, surface = Candy.panel(
 			cardPage,
 			id,
-			UDim2.new(1 / 3, -19, 0.59, 0),
-			UDim2.new((i - 1) / 3, 13, 0.12, 0),
+			UDim2.new(1 / 4, -16, 0.59, 0),
+			UDim2.new((i - 1) / 4, 11, 0.12, 0),
 			true
 		)
 		local border = surface:FindFirstChildOfClass("UIStroke")
@@ -322,10 +326,9 @@ function Upgrades.new(
 			return
 		end
 		modal.title.Text = translate("upgrade_title")
-		for key, tab in tabs do
-			local selected = isCards == (key == "upgrade_cards")
-			tab.text.Text = translate(key)
-			Candy.paint(tab, if selected then "purple" else "neutral")
+		for key, entry in tabs do
+			entry.control.text.Text = translate(key)
+			Candy.paint(entry.control, if pageIndex == entry.index then "purple" else "neutral")
 		end
 		for _, strip in { pickQuantity, cardQuantity } do
 			for i, control in strip.buttons do
@@ -336,7 +339,9 @@ function Upgrades.new(
 				Candy.paint(control, if count == strip.count then "purple" else "neutral")
 			end
 		end
-		pickPage.Visible, cardPage.Visible = not isCards, isCards
+		pickPage.Visible, cardPage.Visible = pageIndex == 1, pageIndex == 2
+		familyPages.collection.Visible, familyPages.family.Visible = pageIndex == 3, pageIndex == 4
+		familyPages.refresh(profile)
 		local locale = Strings.localeOf(player)
 		hit.name.Text = translate("upgrade_hit_size", ctx.hitSize)
 		local afterShape = math.min(#shapeIcons, ctx.hitSize + 1)
@@ -361,8 +366,8 @@ function Upgrades.new(
 			pickLevels = table.clone(profile.circle.pickLevels),
 		}
 		nextCircle.pickLevels[ctx.pick] = if quote then quote.level else ctx.pickLevel
-		local currentPick = Circle.pick(ctx.pick, profile.circle, front)
-		local nextPick = Circle.pick(ctx.pick, nextCircle, front)
+		local currentPick = Circle.pick(ctx.pick, profile.circle, front, profile)
+		local nextPick = Circle.pick(ctx.pick, nextCircle, front, profile)
 		pick.details.Text = translate(
 			"upgrade_pick_preview",
 			Format.stat(currentPick.strength, locale),
@@ -399,7 +404,7 @@ function Upgrades.new(
 					"upgrade_morph_at",
 					after,
 					translate(
-						if id == "coins" and after > rule.steps[1]
+						if id == "coins" and after > rule.steps[2]
 							then "upgrade_soon"
 							else "morph_" .. id .. "_" .. after
 					)

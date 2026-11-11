@@ -3,6 +3,9 @@
 local ContextActionService = game:GetService("ContextActionService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local Shared = game:GetService("ReplicatedStorage").Shared
+local Config = require(Shared.Config)
+local Strings = require(Shared.Strings)
 
 local Candy = {}
 Candy.ink = Color3.fromHex("1E2140")
@@ -38,6 +41,17 @@ local ICONS = {
 	width = 15,
 	pick = 16,
 }
+
+-- Claude can replace these placeholder entries with { image = "rbxassetid://…" }.
+Candy.icons = {} :: { [string]: any }
+for _, family in Config.familyRules.order do
+	Candy.icons["family_" .. family] = { family = family, color = Config.families[family].color }
+	for index = 1, 4 do
+		Candy.icons["skill_" .. family .. "_" .. index] =
+			{ family = family, index = index, color = Config.families[family].color }
+	end
+end
+Candy.icons.keys = { key = "card_keys", color = "FFD23F" }
 
 type Geometry = { size: UDim2, at: UDim2 }
 export type Control = {
@@ -242,6 +256,31 @@ function Candy.text(
 end
 
 function Candy.setIcon(image: ImageLabel, key: string?)
+	local placeholder = image:FindFirstChild("Placeholder")
+	if placeholder then
+		placeholder:Destroy()
+	end
+	image.ImageTransparency, image.ImageColor3 = 0, Candy.white
+	image.Image, image.ImageRectSize = ATLAS, Vector2.new(96, 96)
+	local custom = key and Candy.icons[key]
+	if custom then
+		image.Visible = true
+		if custom.image then
+			image.Image, image.ImageRectSize, image.ImageRectOffset =
+				custom.image, Vector2.zero, Vector2.zero
+		else
+			image.ImageTransparency = 1
+			local label =
+				Candy.text(image, "Placeholder", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), 18)
+			label.BackgroundTransparency, label.BackgroundColor3 = 0, Color3.fromHex(custom.color)
+			local text = Strings.t(custom.key or "family_" .. custom.family, Strings.localeOf(nil))
+			label.Text = if custom.index
+				then tostring(custom.index)
+				else text:sub(1, (utf8.offset(text, 2) or #text + 1) - 1)
+			Candy.round(label, 6)
+		end
+		return
+	end
 	local i = if key then ICONS[key] else nil
 	image.Visible = i ~= nil
 	if i then
