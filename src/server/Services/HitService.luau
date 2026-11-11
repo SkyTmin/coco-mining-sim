@@ -161,6 +161,9 @@ local function stormUlt(s: Session, events: { any })
 	end
 end
 
+-- 0 = the pickaxe's own ult depth
+local CREATIVE_ULT_LAYERS = { 0, 40, 150, 500, 1500, 5000 }
+
 local function record(timing: MineService.Timing, elapsed: number)
 	timing.count += 1
 	timing.total += elapsed
@@ -210,15 +213,25 @@ local function onIntent(player: Player, packet: any)
 	local visual = nil
 	local events: { any } = {}
 	local ability = intent.op == "Ability"
+	-- QA (creative test mode) [владелец 11.11]: the ult may stay charged and its depth may be forced
+	local creative = player:GetAttribute("CreativeAllowed") == true
+	local endless = creative and player:GetAttribute("CreativeUltEndless") == true
+	if ability and creative then
+		local forced = player:GetAttribute("CreativeUltLayers")
+		if type(forced) == "number" and forced > 0 then
+			pick = table.clone(pick)
+			pick.ultLayers = forced
+		end
+	end
 	if ability then
 		if
-			s.charge >= pick.ultCharge
+			(endless or s.charge >= pick.ultCharge)
 			and intent.dRel < mine.window
 			and State.inWall(st, intent.x, intent.y)
 		then
 			visual = Codec.encode(st)
 			res = Resolve.ult(st, pick)
-			s.charge = 0
+			s.charge = if endless then pick.ultCharge else 0
 			if pick.family == "storm" then
 				stormUlt(s, events)
 			end
@@ -281,6 +294,14 @@ local function onIntent(player: Player, packet: any)
 	Analytics.mined(player, ability, blocks, delta, oldWorld, world, plateBroken)
 end
 
+-- the endless test ult stays charged across mine resets too
+local function refill(player: Player, s: MineService.Session)
+	if player:GetAttribute("CreativeUltEndless") == true then
+		s.charge = mine.ultCharge
+		MineService.window(s)
+	end
+end
+
 function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 	if player:GetAttribute("CreativeAllowed") ~= true then
 		return
@@ -315,6 +336,7 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 				Circle.reach(profile, world.index)
 			end)
 			MineService.reset(s, depth, st.width)
+			refill(player, s)
 		end
 		return
 	elseif op == "mine.reset" or op == "reset" then
@@ -323,10 +345,25 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 			profile.coins = 0
 		end)
 		MineService.reset(s, 0, st.width)
+		refill(player, s)
 		return
 	elseif op == "mine.charge" then
 		s.charge = mine.ultCharge
 		MineService.window(s)
+		return
+	elseif op == "mine.ultEndless" then
+		local on = player:GetAttribute("CreativeUltEndless") ~= true
+		player:SetAttribute("CreativeUltEndless", on)
+		if on then
+			s.charge = mine.ultCharge
+			MineService.window(s)
+		end
+		return
+	elseif op == "mine.ultLayers" then
+		local steps = CREATIVE_ULT_LAYERS
+		local current = player:GetAttribute("CreativeUltLayers")
+		local index = table.find(steps, if type(current) == "number" then current else 0) or 1
+		player:SetAttribute("CreativeUltLayers", steps[index % #steps + 1])
 		return
 	elseif op == "mine.stats" then
 		local bytes = #game:GetService("HttpService"):JSONEncode(Codec.encode(st))

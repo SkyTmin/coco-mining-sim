@@ -180,7 +180,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		return if r and canHit() then Aim.at(r, window, screen) else nil
 	end
 	local function toggle()
-		if not view or not active or menuOpen() or ride then
+		if not view or not active or menuOpen() or (ride and not ride.ability) then
 			return
 		end
 		view.mode = if view.mode == "first" then "third" else "first"
@@ -406,8 +406,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			if res.ability and old then
 				ride.sweep = WaveRenderer.new(old, window)
 			end
+			-- [владелец 11.11] the camera is never frozen during the ult: the player looks around and walks
+			-- as usual while the wave runs away down the shaft; the camera never travels on its own either
 			if res.ability and view then
-				Camera.hold(view, true)
 				Camera.swing(view, now, Wave.pause * 2)
 			end
 		end
@@ -677,7 +678,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			request("Ability", nil)
 		end,
 		pan = function(delta)
-			if view and not (ride and ride.ability) then
+			if view then
 				Camera.pan(view, delta)
 			end
 		end,

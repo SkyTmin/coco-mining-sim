@@ -109,6 +109,14 @@ function CreativeWindow.start(
 	beforePlate.input.Activated:Connect(function()
 		creative:FireServer("mine.depth", selectedWorld, true)
 	end)
+	-- QA [владелец 11.11]: endless ult and a forced ult depth, both kept by the server as player attributes
+	local ultEndless, ultLayers = slot(20), slot(21)
+	ultEndless.input.Activated:Connect(function()
+		creative:FireServer("mine.ultEndless")
+	end)
+	ultLayers.input.Activated:Connect(function()
+		creative:FireServer("mine.ultLayers")
+	end)
 	local performance =
 		Candy.text(panel, "Performance", UDim2.new(1, -24, 0, 22), UDim2.new(0, 12, 0.75, 0), 14)
 
@@ -169,6 +177,15 @@ function CreativeWindow.start(
 		world.text.Text = translate("creative_depth_world", selectedWorld)
 		depth.text.Text, beforePlate.text.Text =
 			translate("creative_depth_start"), translate("creative_depth_plate")
+		ultEndless.text.Text = translate(
+			if player:GetAttribute("CreativeUltEndless") == true
+				then "creative_ult_endless_on"
+				else "creative_ult_endless_off"
+		)
+		local forced = player:GetAttribute("CreativeUltLayers")
+		ultLayers.text.Text = if type(forced) == "number" and forced > 0
+			then translate("creative_ult_layers", forced)
+			else translate("creative_ult_auto")
 		local profile = ProfileState.getProfile()
 		level.text.Text = translate(
 			"creative_pick_level",
@@ -207,6 +224,8 @@ function CreativeWindow.start(
 			"MineFPS",
 			"MineParts",
 			"MineHitMs",
+			"CreativeUltEndless",
+			"CreativeUltLayers",
 		}
 	do
 		player:GetAttributeChangedSignal(attribute):Connect(refresh)

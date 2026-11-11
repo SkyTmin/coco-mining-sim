@@ -66,6 +66,30 @@ return {
 		es = "30 antes losa",
 		fr = "30 avant dalle",
 	},
+	creative_ult_endless_on = {
+		en = "Ult ∞: on",
+		ru = "Ульта ∞: вкл",
+		es = "Ulti ∞: sí",
+		fr = "Ulti ∞ : oui",
+	},
+	creative_ult_endless_off = {
+		en = "Ult ∞: off",
+		ru = "Ульта ∞: выкл",
+		es = "Ulti ∞: no",
+		fr = "Ulti ∞ : non",
+	},
+	creative_ult_layers = {
+		en = "Ult {1}",
+		ru = "Ульта {1}",
+		es = "Ulti {1}",
+		fr = "Ulti {1}",
+	},
+	creative_ult_auto = {
+		en = "Ult: pickaxe",
+		ru = "Ульта: кирка",
+		es = "Ulti: pico",
+		fr = "Ulti : pioche",
+	},
 	upgrade_title = {
 		en = "Upgrades",
 		ru = "Улучшения",
