@@ -117,7 +117,7 @@ function Upgrades.new(
 	local modal = Candy.modal(
 		parent,
 		"MineUpgrades",
-		scale(0.78, 0.69),
+		scale(0.78, 0.83),
 		Candy.purple,
 		function(show)
 			held, pressed = nil, nil

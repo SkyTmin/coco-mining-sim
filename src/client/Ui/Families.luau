@@ -9,8 +9,8 @@ local Strings = require(Shared.Strings)
 local Candy = require(script.Parent.Candy)
 local Families = {}
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
-local PICK_CELL_HEIGHT, PICK_CELL_GAP = 280, 8
-local FIRST_ACTION_Y, ACTION_HEIGHT = 149, 32
+local PICK_CELL_HEIGHT, PICK_CELL_GAP = 255, 8
+local FIRST_ACTION_Y, ACTION_HEIGHT = 123, 32
 
 local function scroll(parent: Instance, name: string, top: number): ScrollingFrame
 	local frame = Instance.new("ScrollingFrame")
@@ -38,13 +38,14 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 	local familyPage = Candy.frame(parent, "Family", scale(1, 1), offset(0, 0))
 	local remote = Remotes.event("PickaxeIntent")
 	local grid = scroll(collectionPage, "PickaxeGrid", 30)
-	local familyScroll = scroll(familyPage, "Skills", 86)
+	local familyScroll = scroll(familyPage, "Skills", 55)
 	local collectionTitle =
 		Candy.text(collectionPage, "Title", UDim2.new(1, -28, 0, 25), offset(14, 0), 16)
 	local familyIcon = Candy.icon(familyPage, nil, offset(44, 44), offset(14, 2))
-	local familyTitle = Candy.text(familyPage, "Title", UDim2.new(1, -74, 0, 24), offset(64, 0), 16)
-	local familyHint = Candy.text(familyPage, "Hint", UDim2.new(1, -74, 0, 22), offset(64, 25), 13)
-	local bonus = Candy.text(familyPage, "Bonus", UDim2.new(1, -203, 0, 26), offset(193, 52), 12)
+	local familyTitle =
+		Candy.text(familyPage, "Title", UDim2.new(1, -240, 0, 24), offset(64, 0), 16)
+	local familyHint = Candy.text(familyPage, "Hint", UDim2.new(1, -240, 0, 22), offset(64, 24), 13)
+	local bonus = Candy.text(familyPage, "Bonus", offset(162, 16), UDim2.new(1, -171, 0, 36), 12)
 	familyTitle.TextXAlignment, familyHint.TextXAlignment =
 		Enum.TextXAlignment.Left, Enum.TextXAlignment.Left
 	local cells, familyButtons, skillRows = {}, {}, {}
@@ -61,8 +62,14 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 		end
 	)
 	local choiceScroll = scroll(choose.panel, "OwnedFamilies", 32)
-	local changeFamily =
-		Candy.button(familyPage, "ChangeFamily", offset(170, 32), offset(14, 49), "neutral", 14)
+	local changeFamily = Candy.button(
+		familyPage,
+		"ChangeFamily",
+		offset(152, 32),
+		UDim2.new(1, -166, 0, 0),
+		"neutral",
+		14
+	)
 	changeFamily.input.Activated:Connect(function()
 		refresh(currentProfile)
 		Candy.show(choose, true)
@@ -79,11 +86,11 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 		local border = surface:FindFirstChildOfClass("UIStroke") :: UIStroke
 		local image = Candy.icon(box, "pick", offset(30, 30), offset(4, 4))
 		local stars = Candy.text(box, "Stars", UDim2.new(1, -38, 0, 30), offset(36, 4), 15)
-		local name = Candy.text(box, "Name", UDim2.new(1, -8, 0, 28), offset(4, 35), 14)
-		local count = Candy.text(box, "Count", UDim2.new(1, -8, 0, 27), offset(4, 63), 12)
-		local stats = Candy.text(box, "Stats", UDim2.new(1, -8, 0, 33), offset(4, 90), 12)
+		local name = Candy.text(box, "Name", UDim2.new(1, -8, 0, 22), offset(4, 33), 14)
+		local count = Candy.text(box, "Count", UDim2.new(1, -8, 0, 23), offset(4, 55), 12)
+		local stats = Candy.text(box, "Stats", UDim2.new(1, -8, 0, 27), offset(4, 78), 12)
 		local nextCircle =
-			Candy.text(box, "NextCircle", UDim2.new(1, -8, 0, 22), offset(4, 124), 11)
+			Candy.text(box, "NextCircle", UDim2.new(1, -8, 0, 16), offset(4, 106), 11)
 		local normal, golden, merge =
 			action(box, "Equip"), action(box, "Gold"), action(box, "Merge")
 		local buy = action(box, "Buy")
@@ -151,20 +158,20 @@ function Families.new(parent: Instance, player: Player, translate: (string, ...a
 		local box = Candy.panel(
 			familyScroll,
 			"Skill" .. index,
-			UDim2.new(1, -8, 0, 104),
-			offset(2, (index - 1) * 112),
+			UDim2.new(1, -8, 0, 76),
+			offset(2, (index - 1) * 82),
 			true
 		)
 		local icon = Candy.icon(box, nil, offset(48, 48), offset(6, 8))
-		local title = Candy.text(box, "Title", UDim2.new(0.72, -63, 0, 25), offset(59, 3), 15)
-		local benefit = Candy.text(box, "Benefit", UDim2.new(0.72, -63, 0, 24), offset(59, 29), 13)
-		local level = Candy.text(box, "Level", UDim2.new(0.72, -16, 0, 20), offset(8, 55), 12)
-		local later = Candy.text(box, "Later", UDim2.new(0.72, -16, 0, 20), offset(8, 76), 11)
+		local title = Candy.text(box, "Title", UDim2.new(0.72, -63, 0, 20), offset(59, 2), 15)
+		local benefit = Candy.text(box, "Benefit", UDim2.new(0.72, -63, 0, 18), offset(59, 22), 13)
+		local level = Candy.text(box, "Level", UDim2.new(0.72, -63, 0, 17), offset(59, 40), 12)
+		local later = Candy.text(box, "Later", UDim2.new(0.72, -16, 0, 16), offset(8, 58), 11)
 		local buy = Candy.button(
 			box,
 			"Buy",
 			UDim2.new(0.27, -6, 0, 44),
-			UDim2.new(0.72, 0, 0, 32),
+			UDim2.new(0.72, 0, 0, 15),
 			"coin",
 			13
 		)

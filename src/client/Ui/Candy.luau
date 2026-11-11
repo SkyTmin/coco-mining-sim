@@ -3,8 +3,6 @@
 local ContextActionService = game:GetService("ContextActionService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local Shared = game:GetService("ReplicatedStorage").Shared
-local Strings = require(Shared.Strings)
 
 local Candy = {}
 Candy.ink = Color3.fromHex("1E2140")
@@ -40,6 +38,7 @@ local ICONS = {
 	shape6 = 14,
 	width = 15,
 	pick = 16,
+	keys = 26,
 	family_storm = 18,
 	skill_storm_1 = 19,
 	skill_storm_2 = 20,
@@ -265,25 +264,13 @@ function Candy.text(
 end
 
 function Candy.setIcon(image: ImageLabel, key: string?)
-	local placeholder = image:FindFirstChild("Placeholder")
-	if placeholder then
-		placeholder:Destroy()
-	end
 	image.ImageTransparency, image.ImageColor3 = 0, Candy.white
 	local i = if key then ICONS[key] else nil
-	image.Visible = i ~= nil or key == "keys"
+	image.Visible = i ~= nil
 	if i then
 		image.Image, image.ImageRectSize = ATLAS, Vector2.new(ICON_SIZE, ICON_SIZE)
 		image.ImageRectOffset =
 			Vector2.new(i % ICON_COLUMNS * ICON_SIZE, i // ICON_COLUMNS * ICON_SIZE)
-	elseif key == "keys" then
-		image.ImageTransparency = 1
-		local label =
-			Candy.text(image, "Placeholder", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), 18)
-		label.BackgroundTransparency, label.BackgroundColor3 = 0, Color3.fromHex("FFD23F")
-		local text = Strings.t("card_keys", Strings.localeOf(nil))
-		label.Text = text:sub(1, (utf8.offset(text, 2) or #text + 1) - 1)
-		Candy.round(label, 6)
 	end
 end
 
