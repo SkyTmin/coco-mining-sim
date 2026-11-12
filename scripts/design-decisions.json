@@ -30,7 +30,79 @@
     "seedMax": 2147483647
   },
   "events": {
-    "hud": {"_note": "[решение ТЗ-05 §6.4] функциональная дуга и мягкий шаг", "ticks": 48, "radius": 0.7, "tickPixels": 4, "labelWidth": 96, "labelHeight": 22, "labelX": -11, "labelY": -28, "fontSize": 15, "gain": 0.12, "pitchStep": 0.08, "pulseSeconds": 0.25},
+    "codes": {
+      "rubble": 69,
+      "bomb": 70,
+      "vein": 71
+    },
+    "visual": {
+      "_note": "[вики 11 §3.7; решение ТЗ-05 §10.6] функциональные сигналы событий",
+      "layer": 12,
+      "edges": [
+        [
+          1,
+          0.025,
+          0,
+          0
+        ],
+        [
+          1,
+          0.025,
+          0,
+          0.975
+        ],
+        [
+          0.015,
+          1,
+          0,
+          0
+        ],
+        [
+          0.015,
+          1,
+          0.985,
+          0
+        ]
+      ],
+      "gold": "FFD23F",
+      "red": "E8352B",
+      "gray": "909090",
+      "feverWidth": 0.25,
+      "labelHeight": 0.08,
+      "feverX": 0.375,
+      "feverY": 0.14,
+      "fontSize": 18,
+      "arrowSize": 44,
+      "outline": 0.08,
+      "timerSize": 54,
+      "ringWidth": 3,
+      "gain": 0.12,
+      "blastTransparency": 0.65,
+      "blastSeconds": 0.2,
+      "saturation": 0.2,
+      "edgeTransparency": 0.8,
+      "pulseBase": 0.15,
+      "pulseRange": 0.15,
+      "pulseSpeed": 6,
+      "arrowRadius": 0.42,
+      "fadeSeconds": 1,
+      "ringSegments": 32,
+      "ringRadius": 0.46
+    },
+    "hud": {
+      "_note": "[решение ТЗ-05 §6.4] функциональная дуга и мягкий шаг",
+      "ticks": 48,
+      "radius": 0.7,
+      "tickPixels": 4,
+      "labelWidth": 96,
+      "labelHeight": 22,
+      "labelX": -11,
+      "labelY": -28,
+      "fontSize": 15,
+      "gain": 0.12,
+      "pitchStep": 0.08,
+      "pulseSeconds": 0.25
+    },
     "_note": "[решение ТЗ-05 P15–P21] технические пределы событий",
     "slotGapSeconds": 5,
     "activeWithinSeconds": 5,
@@ -84,7 +156,12 @@
   },
   "game": {
     "defaultLanguage": "en",
-    "languages": ["en", "ru", "es", "fr"],
+    "languages": [
+      "en",
+      "ru",
+      "es",
+      "fr"
+    ],
     "autosaveSeconds": 120,
     "profileVersion": 4,
     "defaultAutoQuality": 2,
@@ -98,23 +175,52 @@
     "_note": "[решение] userId владельца и тестеров; создатель места и Studio — всегда"
   },
   "mine": {
-    "blockSize": 5, "maxWidth": 15, "maxHeight": 7, "maxDepth": 2147483647,
-    "chunk": 50, "window": 60, "nearWindow": 25, "layerBatch": 12, "maxHoles": 4000,
+    "blockSize": 5,
+    "maxWidth": 15,
+    "maxHeight": 7,
+    "maxDepth": 2147483647,
+    "chunk": 50,
+    "window": 60,
+    "nearWindow": 25,
+    "layerBatch": 12,
+    "maxHoles": 4000,
     "_note": "[решение ТЗ-01] формат шахты и размер блока; [владелец] ТЗ-03б §2, окно 60 и трещины до 25 слоёв; [решение] дальние порции по 12 слоёв"
   },
   "plots": {
-    "count": 8, "entranceRadius": 65, "frameWidth": 7, "platformDepth": 6, "spectatorDepth": 3,
-    "retiredWidth": { "width": 9, "refund": 500000, "_note": "[владелец] ТЗ-03б §1, возврат цены ширины из этапа 3" },
+    "count": 8,
+    "entranceRadius": 65,
+    "frameWidth": 7,
+    "platformDepth": 6,
+    "spectatorDepth": 3,
+    "retiredWidth": {
+      "width": 9,
+      "refund": 500000,
+      "_note": "[владелец] ТЗ-03б §1, возврат цены ширины из этапа 3"
+    },
     "_note": "[решение ТЗ-02, поправка 09.11] площадки по кругу, размеры в блоках кроме радиуса в studs"
   },
   "pickaxes": {
-    "starter": { "family": null, "rarity": "wood" },
-    "storm_common": { "family": "storm", "rarity": "common",
-                      "storm": { "jumps": [3, 5], "pickRareWithin": 2 } },
+    "starter": {
+      "family": null,
+      "rarity": "wood"
+    },
+    "storm_common": {
+      "family": "storm",
+      "rarity": "common",
+      "storm": {
+        "jumps": [
+          3,
+          5
+        ],
+        "pickRareWithin": 2
+      }
+    },
     "_note": "[решение ТЗ-02] параметры проверки Грозы; сила и уровни берутся из баланса"
   },
   "cascade": {
-    "maxGen": 3, "maxCells": 400, "maxRuns": 8,
+    "maxGen": 3,
+    "maxCells": 400,
+    "maxRuns": 8,
     "_note": "[решение 06] бюджет каскада на удар"
   },
   "fx": {
@@ -171,114 +277,904 @@
         20
       ]
     },
-    "depth": { "fogStart": 1500, "fogEnd": 4000, "simpleFrom": 300, "lampSpacing": 20, "middleSpacing": 40, "distantSpacing": 80 },
+    "depth": {
+      "fogStart": 1500,
+      "fogEnd": 4000,
+      "simpleFrom": 300,
+      "lampSpacing": 20,
+      "middleSpacing": 40,
+      "distantSpacing": 80
+    },
     "impactTime": 0.13,
     "ult": {
-      "windup": 0.4, "fractureMin": 0.8, "fractureMax": 0.8, "fracturePerLog": 0.108,
-      "empty": 0.30, "approachBase": 0.45, "approachPerLog": 0.35,
-      "distanceBase": 155, "distancePerLog": 100, "distanceDeep": 430
+      "windup": 0.4,
+      "fractureMin": 0.8,
+      "fractureMax": 0.8,
+      "fracturePerLog": 0.108,
+      "empty": 0.3,
+      "approachBase": 0.45,
+      "approachPerLog": 0.35,
+      "distanceBase": 155,
+      "distancePerLog": 100,
+      "distanceDeep": 430
     },
     "_note": "[владелец] ТЗ-03б §2, туман 1500–4000 и дальние лампы через 80; ТЗ-03е §10, пауза 0,4 с и волна 0,8 с; [решение] глубокий пролом до дальней зоны"
   },
   "sounds": {
     "atlasId": "rbxassetid://82198684260089",
     "rules": {
-      "maxVolume": 0.5, "frequentVolume": 0.25, "linkVolume": 0.12,
-      "depthVolume": 0.10, "defaultSfx": 0.6,
-      "frequentLufs": -26, "rareLufs": -20, "lowpassHz": 9000, "fadeSeconds": 0.01,
-      "pitchSpread": 0.08, "fatigueDelay": 3, "fatigueGain": 0.6,
-      "voices": { "hit_soft": 2, "break_soft": 3, "coin": 1 }
+      "maxVolume": 0.5,
+      "frequentVolume": 0.25,
+      "linkVolume": 0.12,
+      "depthVolume": 0.1,
+      "defaultSfx": 0.6,
+      "frequentLufs": -26,
+      "rareLufs": -20,
+      "lowpassHz": 9000,
+      "fadeSeconds": 0.01,
+      "pitchSpread": 0.08,
+      "fatigueDelay": 3,
+      "fatigueGain": 0.6,
+      "voices": {
+        "hit_soft": 2,
+        "break_soft": 3,
+        "coin": 1
+      }
     },
     "clips": {
-      "hit_soft": [[0,0.52],[0.64,0.52],[1.28,0.52],[1.92,0.52],[2.56,0.52]],
-      "break_soft": [[3.2,0.48],[3.8,0.48],[4.4,0.48],[5,0.48],[5.6,0.48]],
-      "coin": [[6.2,0.48]],
-      "link_note": [[6.8,0.44]],
-      "bolt_soft": [[7.36,0.46],[7.94,0.46]],
-      "ride_stop": [[8.52,0.5],[9.14,0.5]],
-      "ult_windup": [[9.76,0.45]],
-      "ult_whump": [[10.33,0.52]],
-      "ult_rumble_away": [[10.97,0.92]],
-      "ult_rumble_near": [[12.01,1.76]],
-      "ult_thud": [[13.89,0.54]],
-      "plate_hit": [[14.55,0.58],[15.25,0.58]],
-      "plate_break": [[15.95,0.68]],
-      "ui_tap": [[16.75,0.44]],
-      "buy_soft": [[17.31,0.44],[17.87,0.44],[18.43,0.44]],
-      "level_tick": [[18.99,0.44]],
-      "card_morph": [[19.55,0.74]],
-      "heavy_hit": [[20.41,0.49]],
-      "crit_soft": [[21.02,0.44],[21.58,0.44]],
-      "coin_rain": [[22.14,0.57]],
-      "world_enter": [[22.83,1.02]],
-      "depth_knock": [[23.97,0.44],[24.53,0.44],[25.09,0.44]],
-      "locked": [[25.65,0.49]],
-      "step_dirt": [[26.26,0.46],[26.84,0.46]],
-      "step_stone": [[27.42,0.46],[28,0.46]]
+      "hit_soft": [
+        [
+          0,
+          0.52
+        ],
+        [
+          0.64,
+          0.52
+        ],
+        [
+          1.28,
+          0.52
+        ],
+        [
+          1.92,
+          0.52
+        ],
+        [
+          2.56,
+          0.52
+        ]
+      ],
+      "break_soft": [
+        [
+          3.2,
+          0.48
+        ],
+        [
+          3.8,
+          0.48
+        ],
+        [
+          4.4,
+          0.48
+        ],
+        [
+          5,
+          0.48
+        ],
+        [
+          5.6,
+          0.48
+        ]
+      ],
+      "coin": [
+        [
+          6.2,
+          0.48
+        ]
+      ],
+      "link_note": [
+        [
+          6.8,
+          0.44
+        ]
+      ],
+      "bolt_soft": [
+        [
+          7.36,
+          0.46
+        ],
+        [
+          7.94,
+          0.46
+        ]
+      ],
+      "ride_stop": [
+        [
+          8.52,
+          0.5
+        ],
+        [
+          9.14,
+          0.5
+        ]
+      ],
+      "ult_windup": [
+        [
+          9.76,
+          0.45
+        ]
+      ],
+      "ult_whump": [
+        [
+          10.33,
+          0.52
+        ]
+      ],
+      "ult_rumble_away": [
+        [
+          10.97,
+          0.92
+        ]
+      ],
+      "ult_rumble_near": [
+        [
+          12.01,
+          1.76
+        ]
+      ],
+      "ult_thud": [
+        [
+          13.89,
+          0.54
+        ]
+      ],
+      "plate_hit": [
+        [
+          14.55,
+          0.58
+        ],
+        [
+          15.25,
+          0.58
+        ]
+      ],
+      "plate_break": [
+        [
+          15.95,
+          0.68
+        ]
+      ],
+      "ui_tap": [
+        [
+          16.75,
+          0.44
+        ]
+      ],
+      "buy_soft": [
+        [
+          17.31,
+          0.44
+        ],
+        [
+          17.87,
+          0.44
+        ],
+        [
+          18.43,
+          0.44
+        ]
+      ],
+      "level_tick": [
+        [
+          18.99,
+          0.44
+        ]
+      ],
+      "card_morph": [
+        [
+          19.55,
+          0.74
+        ]
+      ],
+      "heavy_hit": [
+        [
+          20.41,
+          0.49
+        ]
+      ],
+      "crit_soft": [
+        [
+          21.02,
+          0.44
+        ],
+        [
+          21.58,
+          0.44
+        ]
+      ],
+      "coin_rain": [
+        [
+          22.14,
+          0.57
+        ]
+      ],
+      "world_enter": [
+        [
+          22.83,
+          1.02
+        ]
+      ],
+      "depth_knock": [
+        [
+          23.97,
+          0.44
+        ],
+        [
+          24.53,
+          0.44
+        ],
+        [
+          25.09,
+          0.44
+        ]
+      ],
+      "locked": [
+        [
+          25.65,
+          0.49
+        ]
+      ],
+      "step_dirt": [
+        [
+          26.26,
+          0.46
+        ],
+        [
+          26.84,
+          0.46
+        ]
+      ],
+      "step_stone": [
+        [
+          27.42,
+          0.46
+        ],
+        [
+          28,
+          0.46
+        ]
+      ]
     },
     "_note": "[владелец] ТЗ-02б §3; [решение] atlasId после загрузки владельцем, сегменты выводит build-sounds.mjs"
   },
   "ores": [
-    {"id":"pebble","color":[120,84,52]},
-    {"id":"flint","color":[128,126,122]},
-    {"id":"coal","color":[48,47,50]},
-    {"id":"copper","color":[193,109,64]},
-    {"id":"firefly_amber","color":[255,198,80]},
-    {"id":"red_stone","color":[148,83,55]},
-    {"id":"tin","color":[181,184,190]},
-    {"id":"malachite","color":[50,141,104]},
-    {"id":"turquoise","color":[62,196,184]},
-    {"id":"white_stone","color":[200,191,198]},
-    {"id":"quartz","color":[232,224,225]},
-    {"id":"iron","color":[140,146,151]},
-    {"id":"rose_quartz","color":[226,151,181]},
-    {"id":"amethyst","color":[142,79,192]},
-    {"id":"sandstone","color":[167,129,86]},
-    {"id":"silver","color":[199,209,219]},
-    {"id":"gold","color":[227,174,53]},
-    {"id":"river_pearl","color":[235,229,205]},
-    {"id":"nugget","color":[250,199,72]},
-    {"id":"frozen_stone","color":[106,144,162]},
-    {"id":"ice","color":[156,219,241]},
-    {"id":"froststone","color":[124,172,199]},
-    {"id":"sapphire","color":[56,98,209]},
-    {"id":"eternal_ice","color":[176,244,251]},
-    {"id":"mycelium","color":[109,84,126]},
-    {"id":"sporite","color":[140,91,159]},
-    {"id":"glowshroom","color":[174,117,215]},
-    {"id":"topaz","color":[228,165,79]},
-    {"id":"moonstone","color":[185,202,239]},
-    {"id":"mantle","color":[80,87,116]},
-    {"id":"platinum","color":[203,208,218]},
-    {"id":"diamond","color":[78,195,223]},
-    {"id":"brilliant","color":[131,217,246]},
-    {"id":"giant_diamond","color":[162,236,248]},
-    {"id":"moss_stone","color":[74,97,79]},
-    {"id":"resin","color":[240,163,66]},
-    {"id":"emerald","color":[47,195,107]},
-    {"id":"sap_crystal","color":[126,224,156]},
-    {"id":"world_seed","color":[229,245,150]},
-    {"id":"sea_stone","color":[63,111,139]},
-    {"id":"salt","color":[215,237,229]},
-    {"id":"aquamarine","color":[82,207,204]},
-    {"id":"pearl","color":[233,214,236]},
-    {"id":"black_pearl","color":[99,73,124]},
-    {"id":"basalt","color":[65,63,70]},
-    {"id":"obsidian","color":[47,39,62]},
-    {"id":"garnet","color":[118,30,62]},
-    {"id":"ruby","color":[190,44,69]},
-    {"id":"fire_ruby","color":[248,75,50]}
+    {
+      "id": "pebble",
+      "color": [
+        120,
+        84,
+        52
+      ]
+    },
+    {
+      "id": "flint",
+      "color": [
+        128,
+        126,
+        122
+      ]
+    },
+    {
+      "id": "coal",
+      "color": [
+        48,
+        47,
+        50
+      ]
+    },
+    {
+      "id": "copper",
+      "color": [
+        193,
+        109,
+        64
+      ]
+    },
+    {
+      "id": "firefly_amber",
+      "color": [
+        255,
+        198,
+        80
+      ]
+    },
+    {
+      "id": "red_stone",
+      "color": [
+        148,
+        83,
+        55
+      ]
+    },
+    {
+      "id": "tin",
+      "color": [
+        181,
+        184,
+        190
+      ]
+    },
+    {
+      "id": "malachite",
+      "color": [
+        50,
+        141,
+        104
+      ]
+    },
+    {
+      "id": "turquoise",
+      "color": [
+        62,
+        196,
+        184
+      ]
+    },
+    {
+      "id": "white_stone",
+      "color": [
+        200,
+        191,
+        198
+      ]
+    },
+    {
+      "id": "quartz",
+      "color": [
+        232,
+        224,
+        225
+      ]
+    },
+    {
+      "id": "iron",
+      "color": [
+        140,
+        146,
+        151
+      ]
+    },
+    {
+      "id": "rose_quartz",
+      "color": [
+        226,
+        151,
+        181
+      ]
+    },
+    {
+      "id": "amethyst",
+      "color": [
+        142,
+        79,
+        192
+      ]
+    },
+    {
+      "id": "sandstone",
+      "color": [
+        167,
+        129,
+        86
+      ]
+    },
+    {
+      "id": "silver",
+      "color": [
+        199,
+        209,
+        219
+      ]
+    },
+    {
+      "id": "gold",
+      "color": [
+        227,
+        174,
+        53
+      ]
+    },
+    {
+      "id": "river_pearl",
+      "color": [
+        235,
+        229,
+        205
+      ]
+    },
+    {
+      "id": "nugget",
+      "color": [
+        250,
+        199,
+        72
+      ]
+    },
+    {
+      "id": "frozen_stone",
+      "color": [
+        106,
+        144,
+        162
+      ]
+    },
+    {
+      "id": "ice",
+      "color": [
+        156,
+        219,
+        241
+      ]
+    },
+    {
+      "id": "froststone",
+      "color": [
+        124,
+        172,
+        199
+      ]
+    },
+    {
+      "id": "sapphire",
+      "color": [
+        56,
+        98,
+        209
+      ]
+    },
+    {
+      "id": "eternal_ice",
+      "color": [
+        176,
+        244,
+        251
+      ]
+    },
+    {
+      "id": "mycelium",
+      "color": [
+        109,
+        84,
+        126
+      ]
+    },
+    {
+      "id": "sporite",
+      "color": [
+        140,
+        91,
+        159
+      ]
+    },
+    {
+      "id": "glowshroom",
+      "color": [
+        174,
+        117,
+        215
+      ]
+    },
+    {
+      "id": "topaz",
+      "color": [
+        228,
+        165,
+        79
+      ]
+    },
+    {
+      "id": "moonstone",
+      "color": [
+        185,
+        202,
+        239
+      ]
+    },
+    {
+      "id": "mantle",
+      "color": [
+        80,
+        87,
+        116
+      ]
+    },
+    {
+      "id": "platinum",
+      "color": [
+        203,
+        208,
+        218
+      ]
+    },
+    {
+      "id": "diamond",
+      "color": [
+        78,
+        195,
+        223
+      ]
+    },
+    {
+      "id": "brilliant",
+      "color": [
+        131,
+        217,
+        246
+      ]
+    },
+    {
+      "id": "giant_diamond",
+      "color": [
+        162,
+        236,
+        248
+      ]
+    },
+    {
+      "id": "moss_stone",
+      "color": [
+        74,
+        97,
+        79
+      ]
+    },
+    {
+      "id": "resin",
+      "color": [
+        240,
+        163,
+        66
+      ]
+    },
+    {
+      "id": "emerald",
+      "color": [
+        47,
+        195,
+        107
+      ]
+    },
+    {
+      "id": "sap_crystal",
+      "color": [
+        126,
+        224,
+        156
+      ]
+    },
+    {
+      "id": "world_seed",
+      "color": [
+        229,
+        245,
+        150
+      ]
+    },
+    {
+      "id": "sea_stone",
+      "color": [
+        63,
+        111,
+        139
+      ]
+    },
+    {
+      "id": "salt",
+      "color": [
+        215,
+        237,
+        229
+      ]
+    },
+    {
+      "id": "aquamarine",
+      "color": [
+        82,
+        207,
+        204
+      ]
+    },
+    {
+      "id": "pearl",
+      "color": [
+        233,
+        214,
+        236
+      ]
+    },
+    {
+      "id": "black_pearl",
+      "color": [
+        99,
+        73,
+        124
+      ]
+    },
+    {
+      "id": "basalt",
+      "color": [
+        65,
+        63,
+        70
+      ]
+    },
+    {
+      "id": "obsidian",
+      "color": [
+        47,
+        39,
+        62
+      ]
+    },
+    {
+      "id": "garnet",
+      "color": [
+        118,
+        30,
+        62
+      ]
+    },
+    {
+      "id": "ruby",
+      "color": [
+        190,
+        44,
+        69
+      ]
+    },
+    {
+      "id": "fire_ruby",
+      "color": [
+        248,
+        75,
+        50
+      ]
+    }
   ],
   "worlds": [
-    {"id":"meadow","look":{"material":"Ground","wall":[103,80,63],"fog":[73,90,68],"lamp":[255,222,156],"glow":[184,207,115],"decor":[102,152,70]},"color":[140,100,60],"oreIds":["pebble","flint","coal","copper","firefly_amber"]},
-    {"id":"copper_caves","look":{"material":"Sandstone","wall":[120,73,58],"fog":[109,64,61],"lamp":[255,165,108],"glow":[240,119,78],"decor":[169,87,61]},"color":[154,93,64],"oreIds":["red_stone","copper","tin","malachite","turquoise"]},
-    {"id":"quartz_veins","look":{"material":"Limestone","wall":[151,147,152],"fog":[103,113,135],"lamp":[211,228,255],"glow":[193,199,255],"decor":[230,240,254]},"color":[213,164,186],"oreIds":["white_stone","quartz","iron","rose_quartz","amethyst"]},
-    {"id":"gold_river","color":[186,154,79],"oreIds":["sandstone","silver","gold","river_pearl","nugget"]},
-    {"id":"ice_grottoes","color":[111,178,218],"oreIds":["frozen_stone","ice","froststone","sapphire","eternal_ice"]},
-    {"id":"mushroom_forest","color":[105,75,142],"oreIds":["mycelium","sporite","glowshroom","topaz","moonstone"]},
-    {"id":"diamond_mantle","color":[74,126,152],"oreIds":["mantle","platinum","diamond","brilliant","giant_diamond"]},
-    {"id":"emerald_roots","color":[83,145,89],"oreIds":["moss_stone","resin","emerald","sap_crystal","world_seed"]},
-    {"id":"underground_sea","color":[58,131,161],"oreIds":["sea_stone","salt","aquamarine","pearl","black_pearl"]},
-    {"id":"magma_springs","color":[72,56,56],"oreIds":["basalt","obsidian","garnet","ruby","fire_ruby"]}
+    {
+      "id": "meadow",
+      "look": {
+        "material": "Ground",
+        "wall": [
+          103,
+          80,
+          63
+        ],
+        "fog": [
+          73,
+          90,
+          68
+        ],
+        "lamp": [
+          255,
+          222,
+          156
+        ],
+        "glow": [
+          184,
+          207,
+          115
+        ],
+        "decor": [
+          102,
+          152,
+          70
+        ]
+      },
+      "color": [
+        140,
+        100,
+        60
+      ],
+      "oreIds": [
+        "pebble",
+        "flint",
+        "coal",
+        "copper",
+        "firefly_amber"
+      ]
+    },
+    {
+      "id": "copper_caves",
+      "look": {
+        "material": "Sandstone",
+        "wall": [
+          120,
+          73,
+          58
+        ],
+        "fog": [
+          109,
+          64,
+          61
+        ],
+        "lamp": [
+          255,
+          165,
+          108
+        ],
+        "glow": [
+          240,
+          119,
+          78
+        ],
+        "decor": [
+          169,
+          87,
+          61
+        ]
+      },
+      "color": [
+        154,
+        93,
+        64
+      ],
+      "oreIds": [
+        "red_stone",
+        "copper",
+        "tin",
+        "malachite",
+        "turquoise"
+      ]
+    },
+    {
+      "id": "quartz_veins",
+      "look": {
+        "material": "Limestone",
+        "wall": [
+          151,
+          147,
+          152
+        ],
+        "fog": [
+          103,
+          113,
+          135
+        ],
+        "lamp": [
+          211,
+          228,
+          255
+        ],
+        "glow": [
+          193,
+          199,
+          255
+        ],
+        "decor": [
+          230,
+          240,
+          254
+        ]
+      },
+      "color": [
+        213,
+        164,
+        186
+      ],
+      "oreIds": [
+        "white_stone",
+        "quartz",
+        "iron",
+        "rose_quartz",
+        "amethyst"
+      ]
+    },
+    {
+      "id": "gold_river",
+      "color": [
+        186,
+        154,
+        79
+      ],
+      "oreIds": [
+        "sandstone",
+        "silver",
+        "gold",
+        "river_pearl",
+        "nugget"
+      ]
+    },
+    {
+      "id": "ice_grottoes",
+      "color": [
+        111,
+        178,
+        218
+      ],
+      "oreIds": [
+        "frozen_stone",
+        "ice",
+        "froststone",
+        "sapphire",
+        "eternal_ice"
+      ]
+    },
+    {
+      "id": "mushroom_forest",
+      "color": [
+        105,
+        75,
+        142
+      ],
+      "oreIds": [
+        "mycelium",
+        "sporite",
+        "glowshroom",
+        "topaz",
+        "moonstone"
+      ]
+    },
+    {
+      "id": "diamond_mantle",
+      "color": [
+        74,
+        126,
+        152
+      ],
+      "oreIds": [
+        "mantle",
+        "platinum",
+        "diamond",
+        "brilliant",
+        "giant_diamond"
+      ]
+    },
+    {
+      "id": "emerald_roots",
+      "color": [
+        83,
+        145,
+        89
+      ],
+      "oreIds": [
+        "moss_stone",
+        "resin",
+        "emerald",
+        "sap_crystal",
+        "world_seed"
+      ]
+    },
+    {
+      "id": "underground_sea",
+      "color": [
+        58,
+        131,
+        161
+      ],
+      "oreIds": [
+        "sea_stone",
+        "salt",
+        "aquamarine",
+        "pearl",
+        "black_pearl"
+      ]
+    },
+    {
+      "id": "magma_springs",
+      "color": [
+        72,
+        56,
+        56
+      ],
+      "oreIds": [
+        "basalt",
+        "obsidian",
+        "garnet",
+        "ruby",
+        "fire_ruby"
+      ]
+    }
   ]
 }

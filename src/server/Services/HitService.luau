@@ -14,8 +14,6 @@ local Ride = require(Shared.Mine.Ride)
 local Perks = require(Shared.Play.Perks)
 local MiningAction = require(Shared.Play.MiningAction)
 local Circle = require(Shared.Play.Circle)
-local Family = require(Shared.Play.Family)
-local Income = require(Shared.Play.Income)
 local Streak = require(Shared.Play.Streak)
 local Pace = require(Shared.Play.Pace)
 local Power = require(Shared.Play.Power)
@@ -24,6 +22,7 @@ local ProfileService = require(script.Parent.ProfileService)
 local PlotService = require(script.Parent.PlotService)
 local Pickaxe = require(script.Parent.PickaxeService)
 local Analytics = require(script.Parent.Analytics)
+local EventService = require(script.Parent.EventService)
 
 type Session = MineService.Session
 type HitResult = Resolve.HitResult
@@ -166,6 +165,9 @@ local function onIntent(player: Player, packet: any)
 	local serverTime = workspace:GetServerTimeNow()
 	Streak.decay(s.streak, math.min(serverTime, s.streakUntil), true)
 	Streak.decay(s.streak, serverTime, false)
+	local actionIncome = ProfileService.Read(player, function(p)
+		return EventService.income(s, p, serverTime, ability)
+	end)
 	local duration = 0
 	for wave = 1, 2 do
 		local outcome, failure
@@ -176,11 +178,7 @@ local function onIntent(player: Player, packet: any)
 			outcome, failure = MiningAction.perform(st, profile, s.perks, {
 				ability = ability,
 				now = started,
-				income = Income.context(
-					profile,
-					Family.effects(profile),
-					{ Streak.multiplier(s.streak) }
-				),
+				income = actionIncome,
 				x = intent.x,
 				y = intent.y,
 				d = d,
@@ -201,6 +199,12 @@ local function onIntent(player: Player, packet: any)
 		s.charge = if ability
 			then (if endless then pick.ultCharge else 0)
 			else math.min(pick.ultCharge, s.charge + 1)
+		EventService.after(
+			player,
+			s,
+			outcome,
+			{ now = serverTime, ability = ability, x = intent.x, y = intent.y, d = d }
+		)
 		if not ability then
 			Streak.add(s.streak, serverTime, pick.interval, "hand")
 		end
@@ -225,6 +229,7 @@ local function onIntent(player: Player, packet: any)
 			outcome.strike,
 			outcome.visual
 		)
+		EventService.flush(player, s)
 		for _, id in outcome.newCards do
 			Remotes.event("Toast"):FireClient(player, "card_unlocked_" .. id)
 		end

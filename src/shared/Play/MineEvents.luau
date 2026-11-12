@@ -154,4 +154,122 @@ function Events.hitBomb(e: any, st: any, now: number): boolean
 		and Events.inTime(e.bomb, now)
 		and not State.isSolid(st, e.bomb.cell.x, e.bomb.cell.y, e.bomb.cell.d)
 end
+-- Scheduling is pure too: tests use the same clock and slot transitions as the server.
+local function emit(
+	out: { any },
+	kind: number,
+	deadline: number?,
+	points: { any }?,
+	reason: number?,
+	total: number?
+)
+	table.insert(out, {
+		type = kind,
+		deadline = deadline or 0,
+		points = points or {},
+		reason = reason or 0,
+		total = total or 0,
+	})
+end
+function Events.fever(e: any, now: number, source: string): { any }
+	local out = {}
+	e.vein, e.bomb, e.giftAt = nil, nil, nil
+	e.feverSource = source
+	e.feverUntil = now + (if source == "gift" then cfg.fever.giftSeconds else cfg.fever.seconds)
+	e.feverTotal = 0
+	emit(out, 3, e.feverUntil, {}, if source == "gift" then 1 else 0)
+	return out
+end
+function Events.start(e: any, st: any, kind: string, now: number, random: () -> number): { any }?
+	if not Events.free(e, now) then
+		return nil
+	end
+	local out = {}
+	if kind == "vein" then
+		local cells = Events.veinCells(st, e, random)
+		if #cells == 0 then
+			e.veinAt = now + cfg.retrySeconds
+			e.retryAt = e.veinAt
+			return nil
+		end
+		e.vein = { cells = cells, deadline = now + cfg.vein.windowSeconds }
+		emit(out, 1, e.vein.deadline, cells)
+	elseif kind == "fever" then
+		return Events.fever(e, now, "vein")
+	else
+		return nil
+	end
+	return out
+end
+function Events.after(e: any, st: any, request: any, coins: number): { any }
+	local out = {}
+	if not request.ability then
+		e.lastHand = request.now
+	end
+	if request.now < e.feverUntil then
+		e.feverTotal += coins
+	end
+	if e.giftAt and not request.ability then
+		out = Events.fever(e, request.now, "gift")
+		e.feverTotal = coins
+	elseif Events.hitVein(e, st, request) then
+		emit(out, 2, 0, e.vein.cells, 1)
+		out[#out].source = if request.ability
+			then "ult"
+			elseif request.source then request.source
+			else "hand"
+		for _, event in Events.fever(e, request.now, "vein") do
+			table.insert(out, event)
+		end
+	end
+	return out
+end
+function Events.tick(
+	e: any,
+	st: any,
+	now: number,
+	playSeconds: number,
+	seen: boolean,
+	blocked: boolean,
+	random: () -> number
+): { any }
+	local out = {}
+	if e.vein and not Events.inTime(e.vein, now) then
+		emit(out, 2, 0, e.vein.cells, 0)
+		e.vein = nil
+		e.freeAt = now + cfg.slotGapSeconds
+		e.veinAt = now
+			+ cfg.vein.minSeconds
+			+ random() * (cfg.vein.maxSeconds - cfg.vein.minSeconds)
+	end
+	if e.feverUntil > 0 and now >= e.feverUntil then
+		emit(out, 4, 0, {}, 0, e.feverTotal)
+		e.feverUntil = 0
+		e.freeAt = now + cfg.slotGapSeconds
+		e.veinAt = now
+			+ cfg.vein.minSeconds
+			+ random() * (cfg.vein.maxSeconds - cfg.vein.minSeconds)
+	end
+	if e.giftAt and now >= e.giftAt then
+		for _, event in Events.fever(e, now, "gift") do
+			table.insert(out, event)
+		end
+	end
+	if now < (e.pollAt or 0) then
+		return out
+	end
+	e.pollAt = now + cfg.tickSeconds
+	if blocked or now - e.lastHand > cfg.activeWithinSeconds or not Events.free(e, now) then
+		return out
+	end
+	local due = if seen then now >= e.veinAt else playSeconds >= cfg.vein.firstPlaySeconds
+	if due and now >= (e.retryAt or 0) then
+		local spawned = Events.start(e, st, "vein", now, random)
+		for _, event in spawned or {} do
+			table.insert(out, event)
+		end
+	end
+	return out
+end
+
 return Events

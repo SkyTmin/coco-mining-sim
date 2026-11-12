@@ -22,6 +22,9 @@ local PlotService = require(script.Parent.PlotService)
 
 export type Timing = { count: number, total: number, max: number }
 export type Session = {
+	player: Player,
+	events: any?,
+	eventQueue: { any }?,
 	state: State.MineState,
 	plot: number,
 	rng: Random,
@@ -49,6 +52,10 @@ local DIG_SWEEP_INTERVAL = 0.1
 local DIG_STOP_INTERVAL = 0.5
 local MineService = {}
 local sessions: { [Player]: Session } = {}
+local resetHooks: { (Player, Session) -> () } = {}
+function MineService.OnReset(fn: (Player, Session) -> ())
+	table.insert(resetHooks, fn)
+end
 local subscribers: { [number]: { [Player]: boolean } } = {}
 local windowRemote = Remotes.event("MineWindow")
 
@@ -60,7 +67,8 @@ local function fresh(rng: Random, width: number): State.MineState
 	return State.new(rng:NextInteger(1, 2147483647), width, mine.height)
 end
 
-local function layers(st: State.MineState, offset: number, limit: number): { { number } }
+local function layers(s: Session, offset: number, limit: number): { { number } }
+	local st = s.state
 	local layers = {}
 	local radius = (st.width - 1) // 2
 	for relative = offset, limit - 1 do
@@ -80,6 +88,25 @@ local function layers(st: State.MineState, offset: number, limit: number): { { n
 							then Wire.chest(chest.tier)
 							elseif kind then Wire.CHEST
 							else index
+					end
+				end
+				local e = s.events
+				if e and ore > 0 and ore ~= Wire.PLATE and not Wire.chestTier(ore) then
+					local key = State.cellKey(x, y, d)
+					if e.rubble[key] then
+						ore = Wire.RUBBLE
+					end
+					if
+						e.bomb
+						and State.cellKey(e.bomb.cell.x, e.bomb.cell.y, e.bomb.cell.d) == key
+					then
+						ore = Wire.BOMB
+					end
+					for _, cell in (e.vein and e.vein.cells) or {} do
+						if State.cellKey(cell.x, cell.y, cell.d) == key then
+							ore = Wire.VEIN
+							break
+						end
 					end
 				end
 				table.insert(layer, ore)
@@ -132,13 +159,17 @@ local function sendTail(s: Session)
 				width = st.width,
 				height = st.height,
 				offset = offset,
-				layers = layers(st, offset, math.min(offset + mine.layerBatch, mine.window)),
+				layers = layers(s, offset, math.min(offset + mine.layerBatch, mine.window)),
 			})
 		)
 	end
 end
 
-function MineService.window(s: Session, damageReset: boolean?)
+function MineService.event(s: Session, event: any)
+	send("event", s.plot, Wire.encodeEvent(event))
+end
+
+function MineService.window(s: Session, damageReset: any)
 	local st = s.state
 	PlotService.depth(s.plot, st.front)
 	local frozen = {}
@@ -159,7 +190,7 @@ function MineService.window(s: Session, damageReset: boolean?)
 			plateDamage = st.plateDamage,
 			damage = MineService.damage(st),
 			frozen = frozen,
-			layers = layers(st, 0, mine.nearWindow),
+			layers = layers(s, 0, mine.nearWindow),
 		}),
 		damageReset
 	)
@@ -206,7 +237,7 @@ end
 function MineService.result(s: Session, res: any)
 	PlotService.depth(s.plot, s.state.front)
 	if res.delta > 0 then
-		res.layers = layers(s.state, 0, mine.nearWindow)
+		res.layers = layers(s, 0, mine.nearWindow)
 	end
 	send("result", s.plot, Wire.encodeResult(res), res.visual)
 	if res.delta > 0 then
@@ -229,6 +260,9 @@ function MineService.reset(s: Session, depth: number, width: number)
 	s.streak, s.streakUntil, s.pace = Streak.new(workspace:GetServerTimeNow()), 0, Pace.new()
 	s.lastHitAt, s.ultUntil, s.stopAfterUlt = -math.huge, nil, false
 	s.lastTarget = nil
+	for _, fn in resetHooks do
+		fn(s.player, s)
+	end
 	MineService.window(s)
 end
 
@@ -259,6 +293,7 @@ function MineService.Start()
 		end
 		local rng = Random.new()
 		local s: Session = {
+			player = player,
 			state = state or fresh(rng, profile.width),
 			plot = plot,
 			rng = rng,

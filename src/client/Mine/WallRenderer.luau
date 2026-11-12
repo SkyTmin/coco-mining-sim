@@ -263,7 +263,8 @@ local function addCell(
 	local part = cell.part
 	part.Size = Vector3.one * S
 	local art = Config.art.worlds[Worlds.of(d).id]
-	local tile = art.slots[ore]
+	local eventCell = ore == Wire.VEIN or ore == Wire.BOMB or ore == Wire.RUBBLE
+	local tile = art.slots[if eventCell then 1 else ore]
 	local texture = if tile then BlockArt.select(tile, x, y, d) else art.lining
 	local tier = Wire.chestTier(ore)
 	local previousArt = part:GetAttribute("ChestTier")
@@ -284,6 +285,16 @@ local function addCell(
 	end
 	if part.MaterialVariant ~= "COCOMine_" .. texture then
 		BlockArt.apply(part, texture)
+	end
+	if eventCell then
+		part.Color = Color3.fromHex(
+			if ore == Wire.VEIN
+				then Config.events.visual.gold
+				elseif ore == Wire.BOMB then Config.events.visual.red
+				else Config.events.visual.gray
+		)
+	else
+		part.Color = Color3.new(1, 1, 1)
 	end
 	if tier and not part:FindFirstChild("ArtModel") then
 		part.MaterialVariant = ""

@@ -40,6 +40,7 @@ local TravelDebris = require(Client.Fx.TravelDebris)
 local Haptics = require(Client.Fx.Haptics)
 local Footsteps = require(Client.Fx.Footsteps)
 local FamilyFx = require(Client.Fx.FamilyFx)
+local EventFx = require(Client.Fx.EventFx)
 
 local Controller = {}
 local mine = Config.mine
@@ -57,6 +58,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local world = Instance.new("Folder")
 	world.Name, world.Parent = "LocalMine", workspace
 	local hud = Hud.new(guiParent, world, translate)
+	local eventFx: any = nil
+	local feverUntil, combo = 0, false
 	local rush = StreakHud.new(hud, translate)
 	local closeSettings = Settings.start(player, guiParent, hud.gear, translate)
 	local vibrate = Haptics.new(world)
@@ -157,7 +160,12 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	)
 	Remotes.event("PickaxeResult").OnClientEvent:Connect(FamilyFx.chestOpen)
 	local previousCards: { [string]: number }? = nil
-	ProfileState.changed:Connect(function()
+	ProfileState.changed:Connect(function(full)
+		if full and eventFx then
+			eventFx.clear()
+			feverUntil, combo = 0, false
+			rush.clear()
+		end
 		local p = ProfileState.getProfile()
 		if p then
 			local cards = p.circle.cards
@@ -210,6 +218,20 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local r = renderer
 		return if r then Wall.position(r, point.x, point.y, point.dRel, offset) else Vector3.zero
 	end
+	eventFx = EventFx.new(
+		guiParent,
+		world,
+		function(cell)
+			return targetPosition(
+				{ x = cell.x, y = cell.y, dRel = cell.d - (window and window.front or 0) },
+				currentOffset(os.clock())
+			)
+		end,
+		translate,
+		function(key, ...)
+			familyToast(key, { ... })
+		end
+	)
 	local function menuOpen(): boolean
 		return player:GetAttribute("MineMenuOpen") == true
 			or player:GetAttribute("MineSettingsOpen") == true
@@ -329,12 +351,31 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		intent:FireServer(Wire.encodeIntent(kind, seq, cell.x, cell.y, cell.dRel))
 	end
 
-	local function onWindow(packet: any, damageReset: boolean?)
+	local function onWindow(packet: any, damageReset: any)
 		local win = Wire.decodeWindow(packet)
 		if
 			not win
 			or (player:GetAttribute("Plot") ~= nil and win.plot ~= player:GetAttribute("Plot"))
 		then
+			return
+		end
+		if damageReset == "events" and window then
+			if
+				pending
+				and pending.result
+				and pending.result.front == win.front
+				and pending.result.delta > 0
+			then
+				pending.result.layers = win.layers
+			end
+			for _, queued in echoes do
+				if queued.res.front == win.front then
+					queued.res.layers = win.layers
+				end
+			end
+			if window.front == win.front then
+				window.layers, window.damage, dirty = win.layers, win.damage, true
+			end
 			return
 		end
 		if
@@ -684,10 +725,40 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			else
 				applyLayers(part)
 			end
+		elseif kind == "event" then
+			local event = Wire.decodeEvent(packet)
+			if not event or not window or event.plot ~= window.plot then
+				return
+			end
+			if event.type == 1 then
+				eventFx.veinStart(event.points, event.deadline)
+			elseif event.type == 2 then
+				eventFx.veinEnd(event.reason)
+			elseif event.type == 3 then
+				feverUntil = event.deadline
+				if ride and ride.ability then
+					combo = true
+					if hud.reward then
+						hud.reward.combo = true
+					end
+				end
+				eventFx.feverStart(event.deadline, if event.reason == 1 then "gift" else "vein")
+			elseif event.type == 4 then
+				eventFx.feverEnd(event.total)
+			elseif event.type == 5 then
+				eventFx.bombStart(event.points[1], event.deadline)
+			elseif event.type == 6 then
+				eventFx.bombFizzle(event.points)
+			elseif event.type == 7 then
+				eventFx.rubble(event.points)
+			end
 		elseif kind == "result" then
 			local res = Wire.decodeResult(packet)
 			if res and res.accepted then
 				rush.sync(res, workspace:GetServerTimeNow())
+				if res.ability then
+					combo = workspace:GetServerTimeNow() < feverUntil
+				end
 			end
 			if res and res.accepted and res.ability and res.seq == 0 and ride then
 				table.insert(echoes, { res = res, visual = visual, tail = {} })
@@ -733,6 +804,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local atPlate = ride.barrier and ride.barrier.layers == 0
 		if phase == "wave" then
 			Hud.show(hud, ride.delta, ride.blocks, ride.coins, true, now)
+			hud.reward.combo = combo
+			if combo then
+				Sfx.play("level_tick", Config.events.visual.gain)
+			end
 			Sfx.play("ult_whump", 0.68)
 		elseif phase == "settle" then
 			strikePlate(now)
@@ -1230,6 +1305,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			active,
 			reduced
 		)
+		eventFx.step(workspace:GetServerTimeNow(), dt, active, reduced)
+		if tunnel then
+			Tunnel.fever(tunnel, active and workspace:GetServerTimeNow() < feverUntil)
+		end
 		Hud.step(hud, now, active, v.mode == "first" and canHit(), hint, reduced)
 		if not jumpButton then
 			local touchGui = guiParent:FindFirstChild("TouchGui")

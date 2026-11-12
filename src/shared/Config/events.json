@@ -1,4 +1,62 @@
 {
+  "codes": {
+    "rubble": 69,
+    "bomb": 70,
+    "vein": 71
+  },
+  "visual": {
+    "layer": 12,
+    "edges": [
+      [
+        1,
+        0.025,
+        0,
+        0
+      ],
+      [
+        1,
+        0.025,
+        0,
+        0.975
+      ],
+      [
+        0.015,
+        1,
+        0,
+        0
+      ],
+      [
+        0.015,
+        1,
+        0.985,
+        0
+      ]
+    ],
+    "gold": "FFD23F",
+    "red": "E8352B",
+    "gray": "909090",
+    "feverWidth": 0.25,
+    "labelHeight": 0.08,
+    "feverX": 0.375,
+    "feverY": 0.14,
+    "fontSize": 18,
+    "arrowSize": 44,
+    "outline": 0.08,
+    "timerSize": 54,
+    "ringWidth": 3,
+    "gain": 0.12,
+    "blastTransparency": 0.65,
+    "blastSeconds": 0.2,
+    "saturation": 0.2,
+    "edgeTransparency": 0.8,
+    "pulseBase": 0.15,
+    "pulseRange": 0.15,
+    "pulseSpeed": 6,
+    "arrowRadius": 0.42,
+    "fadeSeconds": 1,
+    "ringSegments": 32,
+    "ringRadius": 0.46
+  },
   "hud": {
     "ticks": 48,
     "radius": 0.7,

@@ -71,7 +71,7 @@ function ProfileState.setSnapshot(snapshot: any)
 	end
 	table.clear(earlyPatches)
 	profile = decoded
-	changed:Fire()
+	changed:Fire(true)
 end
 
 function ProfileState.applyPatch(ops: { Types.ProfilePatchOp })

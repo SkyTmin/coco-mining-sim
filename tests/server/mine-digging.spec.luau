@@ -118,7 +118,15 @@ local function startMine(depth: number, prepare: ((any) -> ())?)
 			end,
 		},
 		task = { spawn = function() end },
-		Random = { new = function() end },
+		Random = {
+			new = function()
+				return {
+					NextNumber = function()
+						return 0.5
+					end,
+				}
+			end,
+		},
 	})
 	local service = loader.load("src/server/Services/MineService.luau")
 	service.Start()

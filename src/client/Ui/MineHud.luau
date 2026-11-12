@@ -532,11 +532,12 @@ function Hud.step(
 		if reward.ultimate then
 			h.layers.Text =
 				h.translate("mine_ult_layers", Format.grouped(math.floor(reward.delta * progress)))
-			h.banner.Text = h.translate(
-				"mine_ult_value",
-				Format.grouped(math.floor(reward.blocks * progress)),
-				Format.short(math.floor(reward.coins * progress))
-			)
+			h.banner.Text = (if reward.combo then h.translate("combo") .. " " else "")
+				.. h.translate(
+					"mine_ult_value",
+					Format.grouped(math.floor(reward.blocks * progress)),
+					Format.short(math.floor(reward.coins * progress))
+				)
 		else
 			h.layers.Text = h.translate("mine_layers_gain", math.floor(reward.delta * progress))
 		end

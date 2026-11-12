@@ -422,7 +422,11 @@ function Tunnel.atmosphere(
 			end
 		end
 		for _, lamp in t.lamps do
-			paint(lamp.part, "Color", t.lampColor)
+			paint(
+				lamp.part,
+				"Color",
+				if t.fever then Color3.fromHex(Config.events.visual.gold) else t.lampColor
+			)
 		end
 	end
 	Lighting.Ambient = Color3.fromRGB(118, 112, 109)
@@ -448,6 +452,16 @@ function Tunnel.atmosphere(
 			t.atmosphere.Parent = Lighting
 			t.atmosphere.Density = 0
 		end
+	end
+end
+
+function Tunnel.fever(t: any, active: boolean)
+	if t.fever == active then
+		return
+	end
+	t.fever = active
+	for _, lamp in t.lamps do
+		lamp.part.Color = if active then Color3.fromHex(Config.events.visual.gold) else t.lampColor
 	end
 end
 
