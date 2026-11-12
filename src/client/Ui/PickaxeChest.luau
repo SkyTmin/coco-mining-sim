@@ -122,11 +122,13 @@ end
 
 function Chest.new(ctx: W.Context, page: Frame)
 	local t = ctx.t
-	local preview, surface =
-		Candy.panel(page, "ChestPreview", UDim2.new(0.43, -7, 1, -4), offset(2, 0), true)
+	-- laid out like the pick screen [владелец 12.11: «пройдись по всему меню»]: the chest card on the left (44 %),
+	-- the keys as a chip in its corner; on the right a left-aligned column — the odds as plain rows, the two
+	-- guarantees as rows with a bar, and «Открыть» at the bottom, on the same line as «Улучшить» on the pick screen
+	local preview, surface = Candy.panel(page, "ChestPreview", scale(0.44, 1), scale(0, 0), true)
 	surface.BackgroundColor3 = Color3.fromHex("DDE2FF")
 	preview:SetAttribute("ChestModel", chestArt)
-	local art = Candy.frame(preview, "ChestArt", scale(0.75, 0.65), scale(0.5, 0.42))
+	local art = Candy.frame(preview, "ChestArt", scale(0.8, 0.7), scale(0.5, 0.42))
 	art.AnchorPoint = Vector2.new(0.5, 0.5)
 	local template = CelMesh.template("chest_pickaxe", CelChestData.pickaxe, {
 		size = 2,
@@ -141,71 +143,60 @@ function Chest.new(ctx: W.Context, page: Frame)
 	else
 		Candy.icon(art, "chest", scale(1, 1), scale(0, 0))
 	end
-	local keyBox, keyLabel = W.pill(
-		preview,
-		"Keys",
-		UDim2.new(0.88, 0, 0, 42),
-		UDim2.new(0.06, 0, 1, -52),
-		Candy.panelColor,
-		20
-	)
+	local keyBox =
+		Candy.frame(preview, "Keys", UDim2.new(0.6, 0, 0, 36), UDim2.new(0.2, 0, 1, -48), Candy.ink)
+	keyBox.BackgroundTransparency = 0.25
 	Candy.round(keyBox, 0)
-	Candy.icon(keyBox, "keys", scale(0.24, 0.84), scale(0.03, 0.08))
-	Candy.fit(keyLabel, scale(0.71, 0.86), scale(0.26, 0.07))
+	Candy.stroke(keyBox, 2)
+	Candy.icon(keyBox, "keys", scale(0.26, 0.8), scale(0.06, 0.1))
+	local keyLabel =
+		Candy.text(keyBox, "Label", scale(0.62, 0.76), scale(0.33, 0.12), 17, Candy.white)
 
 	local right =
-		Candy.frame(page, "ChestOdds", UDim2.new(0.57, -7, 1, 0), UDim2.new(0.43, 5, 0, 0))
-	local info = Candy.frame(right, "Info", UDim2.new(1, 0, 1, -54), offset(0, 0))
-	local oddsTitle = Candy.text(info, "Title", scale(0.98, 0.10), scale(0.01, 0), 20)
+		Candy.frame(page, "ChestOdds", UDim2.new(0.56, -12, 1, 0), UDim2.new(0.44, 12, 0, 0))
+	local info = Candy.frame(right, "Info", scale(1, 1), scale(0, 0))
+	local oddsTitle = Candy.text(info, "Title", scale(0.8, 0.1), scale(0, 0), 19)
 	oddsTitle.TextXAlignment = Enum.TextXAlignment.Left
+	local ROW = 0.085
 	local rows = {}
 	for index, rarity in Config.familyRules.rarities do
-		local row = Candy.panel(
-			info,
-			rarity,
-			scale(0.99, 0.101),
-			scale(0, 0.104 + (index - 1) * 0.110),
-			true
-		)
+		local y = 0.115 + (index - 1) * ROW
 		local stars = Candy.text(
-			row,
-			"Stars",
-			scale(0.18, 0.84),
-			scale(0.025, 0.08),
-			15,
+			info,
+			"Stars_" .. rarity,
+			scale(0.17, ROW),
+			scale(0, y),
+			14,
 			W.rarityText[rarity]
 		)
+		stars.TextXAlignment = Enum.TextXAlignment.Left
 		stars.Text = W.stars(rarity)
-		local name = Candy.text(row, "Name", scale(0.38, 0.84), scale(0.22, 0.08), 15)
+		local name = Candy.text(info, "Name_" .. rarity, scale(0.33, ROW), scale(0.18, y), 14)
 		name.TextXAlignment = Enum.TextXAlignment.Left
-		local bar = Candy.bar(row, scale(0.22, 0.47), scale(0.60, 0.27), W.rarityColors[rarity])
+		local bar = Candy.bar(
+			info,
+			scale(0.3, ROW * 0.45),
+			scale(0.53, y + ROW * 0.275),
+			W.rarityColors[rarity]
+		)
 		bar.Size = scale(rules.odds[rarity], 1)
-		local value = Candy.text(row, "Odds", scale(0.15, 0.84), scale(0.83, 0.08), 16)
+		local value = Candy.text(info, "Odds_" .. rarity, scale(0.15, ROW), scale(0.85, y), 14)
+		value.TextXAlignment = Enum.TextXAlignment.Right
 		rows[rarity] = { name = name, value = value }
 	end
-	local familyText = Candy.text(info, "FamilyOdds", scale(0.99, 0.10), scale(0, 0.55), 13)
+	local familyText = Candy.text(info, "FamilyOdds", scale(1, 0.07), scale(0, 0.465), 12)
+	familyText.TextXAlignment = Enum.TextXAlignment.Left
+	familyText.TextColor3 = Color3.fromHex("6B6F8C")
 	local pity = {}
 	for index, key in { "epic", "legendary" } do
-		local box = Candy.panel(
-			info,
-			"Pity_" .. key,
-			scale(0.482, 0.30),
-			scale((index - 1) * 0.507, 0.665),
-			true
-		)
-		local label = Candy.text(box, "Label", scale(0.94, 0.56), scale(0.03, 0.04), 14)
-		local bar = Candy.bar(box, scale(0.90, 0.20), scale(0.05, 0.69), W.rarityColors[key])
+		local y = 0.56 + (index - 1) * 0.1
+		local label = Candy.text(info, "Pity_" .. key, scale(0.6, 0.08), scale(0, y), 13)
+		label.TextXAlignment = Enum.TextXAlignment.Left
+		local bar = Candy.bar(info, scale(0.38, 0.04), scale(0.62, y + 0.02), W.rarityColors[key])
 		Candy.stroke(bar.Parent :: Frame, 2)
 		pity[key] = { label = label, bar = bar }
 	end
-	local open = Candy.button(
-		right,
-		"OpenChest",
-		UDim2.new(0.99, 0, 0, 47),
-		UDim2.new(0, 0, 1, -50),
-		"robux",
-		22
-	)
+	local open = Candy.button(right, "OpenChest", scale(1, 0.22), scale(0, 0.78), "robux", 20)
 	Candy.buttonIcon(open, "keys")
 
 	local profile: any

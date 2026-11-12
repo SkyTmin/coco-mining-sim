@@ -136,13 +136,18 @@ function Upgrades.new(
 	local body = Candy.frame(modal.panel, "Body", UDim2.new(1, -28, 1, -28), offset(14, 14))
 	modal.ribbon.Visible = false
 	local hub = Candy.frame(body, "Hub", scale(1, 1), offset(0, 0))
+	-- the hub on the page grid too: its title in the header row, the section cards below
+	local hubTitle = Candy.text(hub, "Title", scale(0.6, W.HEAD), scale(0, 0), 20)
+	hubTitle.TextXAlignment = Enum.TextXAlignment.Left
+	local hubCards = Candy.frame(hub, "Cards", scale(1, 1 - W.BODY), scale(0, W.BODY))
+	local hubBoxes = {}
 	-- [владелец 12.11: «сбоку толстые кнопки, всё слиплось»] a slimmer rail and a clear gap before the page
 	local rail = Candy.frame(body, "Sections", UDim2.new(0, 68, 1, 0), offset(0, 0))
 	local content = Candy.frame(body, "SectionsBody", UDim2.new(1, -82, 1, 0), offset(82, 0))
 	local cards, rails, pages = {}, {}, {}
 	for index, section in sections do
 		local card = Candy.button(
-			hub,
+			hubCards,
 			section.id,
 			UDim2.new(1 / #sections, -8, 1, -5),
 			UDim2.new((index - 1) / #sections, 4, 0, 0),
@@ -156,24 +161,17 @@ function Upgrades.new(
 		local hint = Candy.text(card.face, "Hint", scale(0.93, 0.094), scale(0.035, 0.50), 14)
 		local _, status =
 			W.pill(card.face, "Status", scale(0.91, 0.111), scale(0.045, 0.61), Candy.rowColor, 16)
-		local fill = if section.id == "collection"
-			then Candy.bar(card.face, scale(0.88, 0.042), scale(0.06, 0.739), W.blue)
-			else nil
+		-- one look for one role: every action is the same yellow button, no extra bar [владелец 12.11]
+		local fill: Frame? = nil
 		local action, actionText = W.pill(
 			card.face,
 			"Action",
 			UDim2.new(0.88, 0, 0, 44),
 			UDim2.new(0.06, 0, 1, -50),
-			if section.id == "collection"
-				then W.blue
-				elseif section.id == "chest" then W.green
-				else W.yellow,
+			W.yellow,
 			17
 		)
 		Candy.round(action, 10)
-		if section.id == "collection" then
-			actionText.TextColor3 = Candy.white
-		end
 		local badge, amount =
 			W.badge(head, if section.id == "chest" then W.yellow else Color3.fromHex("FF4D5E"))
 		amount.TextColor3 = if section.id == "chest" then Candy.ink else Candy.white
@@ -189,6 +187,7 @@ function Upgrades.new(
 			count = amount,
 		}
 		W.lift(card)
+		table.insert(hubBoxes, card.box)
 		W.bind(ctx, card, function()
 			navigate(section.id)
 		end, function()
@@ -216,6 +215,7 @@ function Upgrades.new(
 		end)
 		pages[section.id] = Candy.frame(content, section.id, scale(1, 1), offset(0, 0))
 	end
+	W.row(hubBoxes, UDim.new(0, 0), UDim.new(1, 0))
 
 	local upgrades = UpgradeCards.new(ctx, pages.cards)
 	local collection = Collection.new(ctx, pages.collection, function()
@@ -350,6 +350,7 @@ function Upgrades.new(
 		end
 		if page == "hub" then
 			modal.title.Text, modal.ribbon.BackgroundColor3 = translate("menu_title"), Candy.purple
+			hubTitle.Text = translate("menu_title")
 		elseif page == "cards" then
 			upgrades.refresh(profile, front, animate)
 		elseif page == "collection" then

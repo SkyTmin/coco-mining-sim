@@ -346,4 +346,95 @@ function Widgets.dashes(parent: Frame)
 	end
 end
 
+-- ── one grid for every menu page [владелец 12.11: «пройдись по всему меню… неровно, негармонично»] ─────────────
+-- page = a header row (HEAD of the height: a title or tabs on the left, switches on the right; it stops CLOSE units
+-- short of the window's close button) and the body below it (from BODY), always with GAP between things
+Widgets.GAP = 8
+Widgets.HEAD = 0.13
+Widgets.BODY = 0.13 + 0.035
+Widgets.CLOSE = 30
+
+-- lays the given boxes side by side inside their parent: equal shares (or weights), GAP between, flush at both ends
+function Widgets.row(boxes: { GuiObject }, y: UDim, h: UDim, weights: { number }?)
+	local sum = 0
+	for index in boxes do
+		sum += if weights then weights[index] else 1
+	end
+	local x = 0
+	local n = #boxes
+	for index, box in boxes do
+		local w = (if weights then weights[index] else 1) / sum
+		-- every box gives up the same share of the gaps, so all keep their exact proportion
+		Candy.fit(
+			box,
+			UDim2.new(w, -Widgets.GAP * (n - 1) * w, h.Scale, h.Offset),
+			UDim2.new(x, Widgets.GAP * (index - 1) - Widgets.GAP * (n - 1) * x, y.Scale, y.Offset)
+		)
+		x += w
+	end
+end
+
+export type UpgradeCard = {
+	box: Frame,
+	surface: Frame,
+	band: Frame,
+	circle: Frame,
+	icon: ImageLabel,
+	name: TextLabel,
+	level: TextLabel,
+	value: TextLabel,
+	buy: Candy.Control,
+	locked: Candy.Control,
+}
+
+-- the one upgrade card of the menu (cards of the circle, family skills): a coloured band with the icon, the name, the
+-- level, «before → after» and the buy button at the bottom; the same shares in every card
+function Widgets.upgradeCard(
+	parent: Instance,
+	name: string,
+	color: Color3,
+	iconKey: string
+): UpgradeCard
+	local box, surface = Candy.panel(parent, name, scale(0.25, 1), scale(0, 0))
+	local band = Widgets.band(box, "Header", UDim2.new(1, -4, 0.34, -2), color)
+	local circle, icon = Widgets.iconCircle(box, iconKey, scale(0.62, 0.27), scale(0.5, 0.17))
+	circle.AnchorPoint = Vector2.new(0.5, 0.5)
+	local title = Candy.text(box, "Name", scale(0.92, 0.12), scale(0.04, 0.36), 17)
+	local level = Candy.text(box, "Level", scale(0.92, 0.08), scale(0.04, 0.48), 13)
+	level.TextColor3 = Color3.fromHex("6B6F8C")
+	local value = Candy.text(box, "Value", scale(0.92, 0.1), scale(0.04, 0.575), 15)
+	local buy =
+		Candy.button(box, "Buy", UDim2.new(1, -12, 0.22, 0), UDim2.new(0, 6, 0.74, 0), "coin", 17)
+	Candy.buttonIcon(buy, "coin")
+	local locked = Candy.button(
+		box,
+		"Locked",
+		UDim2.new(1, -12, 0.22, 0),
+		UDim2.new(0, 6, 0.74, 0),
+		"neutral",
+		12
+	)
+	locked.shadow.Visible = false
+	locked.face.BackgroundTransparency = 1
+	local outline = locked.face:FindFirstChildOfClass("UIStroke")
+	if outline then
+		outline.Enabled = false
+	end
+	Widgets.dashes(locked.face)
+	Candy.buttonIcon(locked, "lock")
+	locked.box.Visible = false
+	return {
+		box = box,
+		surface = surface,
+		band = band,
+		circle = circle,
+		icon = icon,
+		name = title,
+		level = level,
+		value = value,
+		buy = buy,
+		locked = locked,
+	}
+end
+
 return Widgets

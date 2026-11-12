@@ -97,47 +97,37 @@ function Cards.new(ctx: W.Context, cardsPage: Frame)
 		end
 	end
 
-	local circle = Candy.text(cardsPage, "Circle", UDim2.new(0.53, 0, 0, 47), offset(2, 0), 20)
+	-- the page grid (W.HEAD / W.BODY): the title on the left of the header row, ×1 / ×10 / max on its right; four
+	-- upgrade cards below
+	local circle = Candy.text(cardsPage, "Circle", scale(0.5, W.HEAD), scale(0, 0), 20)
 	circle.TextXAlignment = Enum.TextXAlignment.Left
-	local cardCount =
-		Cards.quantity(ctx, cardsPage, UDim2.new(0.36, 0, 0, 47), scale(0.64, 0), refreshCurrent)
-	local grid = Candy.frame(cardsPage, "UpgradeCards", UDim2.new(1, 0, 1, -55), offset(0, 53))
+	local header = Candy.frame(cardsPage, "Header", UDim2.new(1, -W.CLOSE, W.HEAD, 0), scale(0, 0))
+	local cardCount = Cards.quantity(ctx, header, scale(0.4, 1), scale(0.6, 0), refreshCurrent)
+	Candy.fit(cardCount.frame, scale(0.42, 1), scale(0.58, 0))
+	local countBoxes = {}
+	for _, button in cardCount.buttons do
+		table.insert(countBoxes, button.box)
+	end
+	W.row(countBoxes, UDim.new(0, 0), UDim.new(1, 0))
+	local grid = Candy.frame(cardsPage, "UpgradeCards", scale(1, 1 - W.BODY), scale(0, W.BODY))
 	local controls = {}
-	for index, id in Upgrade.cards do
-		local box =
-			Candy.panel(grid, id, UDim2.new(0.25, -7, 1, -3), UDim2.new((index - 1) / 4, 3, 0, 0))
-		local color = cardColors[id]
-		local content = Candy.frame(box, "Content", UDim2.new(1, 0, 1, -52), offset(0, 0))
-		W.band(content, "Header", UDim2.new(1, -4, 0.47, -2), color)
-		local iconPlate, icon = W.iconCircle(content, id, scale(0.63, 0.39), scale(0.5, 0.237))
-		iconPlate.AnchorPoint = Vector2.new(0.5, 0.5)
-		local title = Candy.text(content, "Name", scale(0.94, 0.14), scale(0.03, 0.47), 20)
-		local hint = Candy.text(content, "Hint", scale(0.94, 0.12), scale(0.03, 0.61), 13)
-		local level = Candy.text(content, "Level", scale(0.92, 0.11), scale(0.04, 0.73), 14)
-		local _, value =
-			W.pill(content, "Change", scale(0.92, 0.135), scale(0.04, 0.85), Candy.rowColor, 15)
-		local buy = Candy.button(
-			box,
-			"BuyCard",
-			UDim2.new(0.92, 0, 0, 46),
-			UDim2.new(0.04, 0, 1, -48),
-			"coin",
-			17
-		)
-		Candy.buttonIcon(buy, "coin")
+	local boxes = {}
+	for _, id in Upgrade.cards do
+		local card = W.upgradeCard(grid, id, cardColors[id], id)
+		table.insert(boxes, card.box)
 		local view = {
-			icon = icon,
-			title = title,
-			hint = hint,
-			level = level,
-			value = value,
-			buy = buy,
+			icon = card.icon,
+			title = card.name,
+			hint = "",
+			level = card.level,
+			value = card.value,
+			buy = card.buy,
 			quote = nil :: Upgrade.Quote?,
 			help = "",
 			previous = nil :: number?,
 		}
 		controls[id] = view
-		W.bind(ctx, buy, function()
+		W.bind(ctx, card.buy, function()
 			if currentProfile and Upgrade.pay(currentProfile.coins, view.quote) then
 				remote:FireServer("BuyCard", id, cardCount.value)
 			end
@@ -145,6 +135,7 @@ function Cards.new(ctx: W.Context, cardsPage: Frame)
 			return view.help
 		end)
 	end
+	W.row(boxes, UDim.new(0, 0), UDim.new(1, 0))
 
 	refresh = function(profile: any, front: number, animate: boolean)
 		currentProfile, currentFront = profile, front
@@ -168,7 +159,7 @@ function Cards.new(ctx: W.Context, cardsPage: Frame)
 			view.quote = Upgrade.quote(context, { kind = "card", id = id, count = cardCount.value })
 			local price = view.quote
 				or Upgrade.quote(context, { kind = "card", id = id, count = 1 })
-			view.title.Text, view.hint.Text = t("card_" .. id), t("menu_card_" .. id)
+			view.title.Text, view.hint = t("card_" .. id), t("menu_card_" .. id)
 			view.level.Text = t("upgrade_level", level)
 			view.value.Text = cardValue(id, level, locale)
 				.. (if price then " → " .. cardValue(id, price.level, locale) else "")
@@ -181,7 +172,7 @@ function Cards.new(ctx: W.Context, cardsPage: Frame)
 				view.buy,
 				if Upgrade.pay(context.coins, view.quote) then "coin" else "disabled"
 			)
-			view.help = view.hint.Text .. " · " .. t("menu_circle_tip")
+			view.help = view.hint .. " · " .. t("menu_circle_tip")
 			for i, milestone in rule.steps do
 				if milestone > level then
 					local name = t(
