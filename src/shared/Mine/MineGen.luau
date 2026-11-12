@@ -11,6 +11,7 @@ export type Find = { x: number, y: number, d: number, kind: string }
 type Special = { d: number, kind: string }
 type Entry = {
 	key: number,
+	baseKey: number,
 	cells: { number },
 	kinds: { [number]: string },
 	previous: Entry?,
@@ -22,9 +23,25 @@ local CACHE_SIZE = 256
 local u32 = Hash.u32
 local unit = Hash.unit
 local step = Hash.step
+local pair = Hash.pair
 local SCALE = 1 / 4294967296
 local floor = math.floor
 local MineGen = {}
+
+-- Quota arithmetic is world-constant. Random steps below the last fractional slot cannot affect the result.
+local quotaRules = {}
+for index in Config.worlds do
+	local world = assert(Worlds.at(index))
+	local bases, fractions, randomDownTo = {}, {}, #world.weights + 1
+	for ore, weight in world.weights do
+		local expected = CHUNK * weight
+		bases[ore], fractions[ore] = floor(expected), expected % 1
+		if ore > 1 and fractions[ore] > 0 then
+			randomDownTo = math.min(randomDownTo, ore)
+		end
+	end
+	quotaRules[index] = { bases = bases, fractions = fractions, randomDownTo = randomDownTo }
+end
 
 local function chooseKind(key: number, salt: number, world: World): string
 	local kinds = world.specials.kinds
@@ -64,13 +81,16 @@ end
 
 local function fillQuota(key: number, world: World, reserved: number, counts: { number })
 	local weights = world.weights
-	local roll = step(key)
+	local rule = quotaRules[world.index]
+	local bases, fractions, randomDownTo = rule.bases, rule.fractions, rule.randomDownTo
+	local roll = if randomDownTo <= #weights then step(key) else key
 	local remaining = CHUNK
 	for ore = #weights, 2, -1 do
-		local expected = CHUNK * weights[ore]
-		local amount = floor(expected)
-		roll = step(roll)
-		if roll * SCALE < expected - amount then
+		local amount = bases[ore]
+		if ore >= randomDownTo then
+			roll = step(roll)
+		end
+		if roll * SCALE < fractions[ore] then
 			amount += 1
 		end
 		amount = math.min(amount, remaining)
@@ -86,6 +106,48 @@ local function fillQuota(key: number, world: World, reserved: number, counts: { 
 		local amount = math.min(reserved, counts[ore])
 		counts[ore] -= amount
 		reserved -= amount
+	end
+end
+
+local function addQuota(
+	key: number,
+	world: World,
+	reserved: number,
+	hist: { [number]: number },
+	counts: { number }
+)
+	local rule, baseKey = quotaRules[world.index], world.index * 64
+	local bases, fractions, randomDownTo = rule.bases, rule.fractions, rule.randomDownTo
+	local size = #world.weights
+	-- When the cheapest slot can cover every reservation, accumulate directly without a temporary quota.
+	if bases[1] - (size - 1) >= reserved then
+		local roll = if randomDownTo <= size then step(key) else key
+		local remaining = CHUNK - reserved
+		for ore = size, 2, -1 do
+			local amount = bases[ore]
+			if ore >= randomDownTo then
+				roll = step(roll)
+			end
+			if roll * SCALE < fractions[ore] then
+				amount += 1
+			end
+			remaining -= amount
+			if amount > 0 then
+				local id = baseKey + ore
+				hist[id] = (hist[id] or 0) + amount
+			end
+		end
+		if remaining > 0 then
+			hist[baseKey + 1] = (hist[baseKey + 1] or 0) + remaining
+		end
+	else
+		fillQuota(key, world, reserved, counts)
+		for ore = 1, size do
+			if counts[ore] > 0 then
+				local id = baseKey + ore
+				hist[id] = (hist[id] or 0) + counts[ore]
+			end
+		end
 	end
 end
 
@@ -152,7 +214,7 @@ local function buildChunk(seed: number, x: number, y: number, c: number, key: nu
 			cursor += 1
 		end
 	end
-	return { key = key, cells = cells, kinds = kinds }
+	return { key = key, baseKey = world.index * 64, cells = cells, kinds = kinds }
 end
 
 local cache: { [number]: Entry } = {}
@@ -234,6 +296,18 @@ function MineGen.rangeHist(
 	if b <= a then
 		return
 	end
+	if b == a + 1 then
+		local entry = getChunk(seed, x, y, a // CHUNK)
+		local offset = a % CHUNK + 1
+		local ore = entry.cells[offset]
+		if ore == 0 then
+			table.insert(finds, { x = x, y = y, d = a, kind = entry.kinds[offset] })
+		else
+			local key = entry.baseKey + ore
+			hist[key] = (hist[key] or 0) + 1
+		end
+		return
+	end
 	local world = Worlds.of(a)
 	local counts: { number } = {}
 	local laneSeed: number? = nil
@@ -246,16 +320,15 @@ function MineGen.rangeHist(
 		local finish = start + CHUNK
 		if a <= start and finish <= b then
 			laneSeed = laneSeed or u32(seed, x, y)
-			local word = u32(laneSeed, c)
+			local word = pair(laneSeed, c)
 			local first, second = specialSlots(word, world)
-			fillQuota(word, world, if second ~= 0 then 2 elseif first ~= 0 then 1 else 0, counts)
-			for ore = 1, #world.weights do
-				local amount = counts[ore]
-				if amount > 0 then
-					local key = baseKey + ore
-					hist[key] = (hist[key] or 0) + amount
-				end
-			end
+			addQuota(
+				word,
+				world,
+				if second ~= 0 then 2 elseif first ~= 0 then 1 else 0,
+				hist,
+				counts
+			)
 			if first ~= 0 then
 				table.insert(
 					finds,

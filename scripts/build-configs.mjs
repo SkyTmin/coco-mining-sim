@@ -3,6 +3,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
+import { familyConfig, familyArt, validateFamilies } from "./family-config.mjs";
 import {
   mine as balanceMine, worlds as balanceWorlds, oreSlots, hitSizes, rarities,
   pickLevel, gold, cards, cardGrowth, cardEffects,
@@ -252,6 +253,7 @@ function validateMineStrings(decisions) {
 
 function validatePickaxes(data) {
   const errors = [];
+  if (Object.keys(withoutNotes(data)).length !== 17) errors.push("pickaxes must contain starter and sixteen family picks");
   for (const [id, family] of [["starter", null], ["storm_common", "storm"]]) {
     const pick = data[id];
     if (pick?.family !== family || pick?.rarity !== (id === "starter" ? "wood" : "common")) {
@@ -261,6 +263,12 @@ function validatePickaxes(data) {
   const storm = data.storm_common?.storm;
   if (storm?.jumps?.[0] !== 3 || storm.jumps[1] !== 5 || storm.pickRareWithin !== 2) {
     errors.push("pickaxes.storm_common.storm must specify 3–5 jumps and radius 2");
+  }
+  for (const family of ["storm", "dynamite", "rift", "frost"]) {
+    for (const rarity of rarities.slice(1)) {
+      const id = family + "_" + rarity.id;
+      if (data[id]?.family !== family || data[id]?.rarity !== rarity.id) errors.push("Missing pickaxe " + id);
+    }
   }
   return errors;
 }
@@ -303,12 +311,11 @@ function withBalance(input) {
       specials: { perChunk: 0, kinds: [["chest", 1]] },
     };
   });
-  const pickaxes = !isObject(input.pickaxes) ? input.pickaxes : {
-    ...input.pickaxes,
-    ...Object.fromEntries(rarities.slice(1).map(({ id }) => ["plain_" + id, { rarity: id }])),
-  };
+  const family = familyConfig(input);
+  const pickaxes = family.pickaxes;
   const blocks = Object.fromEntries(Object.entries(blockIds).map(([file, { id }]) => [file.slice(0, -4), id]));
   const art = {
+    ...familyArt(pickaxes, family.families),
     blocks,
     grains,
     cracks: blockManifest.cracks.sets.map((set) => Array.from({length:blockManifest.cracks.stages},
@@ -324,7 +331,7 @@ function withBalance(input) {
       })),
     }])),
   };
-  return { ...input, mine, worlds, pickaxes, progress, art };
+  return { ...input, ...family, mine, worlds, pickaxes, progress, art };
 }
 
 function duplicateBalance(input) {
@@ -335,7 +342,7 @@ function duplicateBalance(input) {
       if (Object.hasOwn(value, field)) errors.push(`${label}.${field} comes from balance/data.mjs`);
     }
   };
-  check(input, ["progress"], "config");
+  check(input, ["progress", "families", "familyRules", "chests"], "config");
   check(input.mine, ["startWidth", "height", "maxHitsPerBlock", "passThrough", "plate", "ultCharge"], "mine");
   for (const [index, world] of (Array.isArray(input.worlds) ? input.worlds : []).entries()) {
     check(world, ["length", "ores", "prices", "rareFrom", "richness", "durability", "hardStart", "hardEnd", "rockValue", "plate", "specials"], `worlds[${index}]`);
@@ -393,6 +400,9 @@ const sections = [
     emit: withoutNotes,
   },
   { name: "pickaxes", validate: validatePickaxes, emit: withoutNotes },
+  { name: "families", validate: validateFamilies, emit: withoutNotes },
+  { name: "familyRules", validate: () => [], emit: withoutNotes },
+  { name: "chests", validate: () => [], emit: withoutNotes },
   { name: "progress", validate: () => [], emit: withoutNotes },
   {
     name: "fx",

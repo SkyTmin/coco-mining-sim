@@ -4,16 +4,25 @@ local Config = require(script.Parent.Parent.Config)
 local mine = Config.mine
 local cascade = Config.cascade
 local Wire = { CHEST = 64, PLATE = 65 }
-local opcodes = { Hit = 1, Ability = 2, Resync = 3 }
+local opcodes = { Hit = 1, Ability = 2, Resync = 3, DigStop = 4 }
+
+function Wire.chest(tier: number): number
+	return if tier == 1 then Wire.CHEST else Wire.CHEST + tier
+end
+
+function Wire.chestTier(ore: number): number?
+	return if ore == Wire.CHEST then 1 elseif ore >= 66 and ore <= 68 then ore - Wire.CHEST else nil
+end
 
 local function check(condition: boolean)
 	assert(condition, "Malformed mine packet")
 end
 
 function Wire.encodeIntent(op: string, seq: number?, x: number?, y: number?, dRel: number?): buffer
-	local out = buffer.create(if op == "Resync" then 1 else 6)
+	local argless = op == "Resync" or op == "DigStop"
+	local out = buffer.create(if argless then 1 else 6)
 	buffer.writeu8(out, 0, (opcodes :: { [string]: number })[op])
-	if op ~= "Resync" then
+	if not argless then
 		buffer.writeu16(out, 1, seq :: number)
 		buffer.writei8(out, 3, x :: number)
 		buffer.writeu8(out, 4, y :: number)
@@ -32,7 +41,10 @@ function Wire.decodeIntent(value: any): any?
 	end
 	local opcode = buffer.readu8(value, 0)
 	if n == 1 then
-		return if opcode == 3 then { op = "Resync" } else nil
+		return if opcode == opcodes.Resync
+			then { op = "Resync" }
+			elseif opcode == opcodes.DigStop then { op = "DigStop" }
+			else nil
 	end
 	if opcode ~= 1 and opcode ~= 2 then
 		return nil
@@ -182,7 +194,7 @@ local function getLayers(get: Get): (number, number, { { number } })
 		for i = 1, lanes do
 			if layer[i] == -1 then
 				local ore = get("u8")
-				check(ore > 0 and ore <= Wire.PLATE)
+				check(ore > 0 and ore <= Wire.chest(4))
 				layer[i] = ore
 			end
 		end
@@ -212,6 +224,11 @@ function Wire.encodeWindow(win: any): buffer
 	put("f64", win.plateDamage)
 	putLayers(put, win.width, win.height, win.layers)
 	putDamage(put, win.damage)
+	local frozen = win.frozen or {}
+	put("u8", #frozen)
+	for _, cell in frozen do
+		putPoint(put, cell)
+	end
 	return finish()
 end
 
@@ -229,6 +246,14 @@ function Wire.decodeWindow(data: any): any?
 		win.width, win.height, win.layers = getLayers(get)
 		check(#win.layers == mine.nearWindow)
 		win.damage = getDamage(get)
+		local frozen = get("u8")
+		check(frozen <= 200)
+		if frozen > 0 then
+			win.frozen = {}
+			for i = 1, frozen do
+				win.frozen[i] = getPoint(get)
+			end
+		end
 		return win
 	end)
 end
@@ -289,6 +314,16 @@ function Wire.encodeResult(res: any): buffer
 		put("u8", event.kind)
 		put("u8", event.gen)
 		put("u16", event.delayMs)
+		if event.kind >= 3 then
+			put("u8", assert(table.find(Config.familyRules.order, event.family)))
+			put("u8", assert(table.find(Config.familyRules.rarities, event.rarity)))
+			put("u16", event.durationMs)
+			if event.kind == 4 then
+				put("u16", event.buffMs or 0)
+			end
+			-- visual-only proc marks (FxFlags): which skill fired, never an amount
+			put("u8", event.flags or 0)
+		end
 		put("u8", #event.points)
 		for _, point in event.points do
 			putPoint(put, point)
@@ -348,9 +383,26 @@ function Wire.decodeResult(data: any): any?
 		check(events <= 25)
 		res.events = table.create(events)
 		for i = 1, events do
-			local event = { kind = get("u8"), gen = get("u8"), delayMs = get("u16"), points = {} }
+			local event =
+				{ kind = get("u8"), gen = get("u8"), delayMs = get("u16"), points = {} } :: any
+			if event.kind >= 3 then
+				check(event.kind <= 6)
+				event.family = Config.familyRules.order[get("u8")]
+				event.rarity = Config.familyRules.rarities[get("u8")]
+				event.durationMs = get("u16")
+				if event.kind == 4 then
+					event.buffMs = get("u16")
+				end
+				event.flags = get("u8")
+				check(event.family ~= nil and event.rarity ~= nil)
+				event.type = if event.kind == 3
+					then "perk"
+					elseif event.kind == 4 then "ult"
+					elseif event.kind == 5 then "frozen"
+					else "proc"
+			end
 			local count = get("u8")
-			check(count <= 6 and event.gen <= cascade.maxGen)
+			check(count <= (if event.kind >= 3 then 200 else 6) and event.gen <= cascade.maxGen)
 			for j = 1, count do
 				event.points[j] = getPoint(get)
 			end

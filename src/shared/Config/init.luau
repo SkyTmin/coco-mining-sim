@@ -34,6 +34,19 @@ export type PickaxeConfig = {
 	rarity: string,
 	storm: { jumps: { number }, pickRareWithin: number }?,
 }
+export type FamilyConfig = {
+	color: string,
+	world: number,
+	price: number,
+	perks: { [string]: { size: number, chance: number, every: number } },
+	ult: {
+		stormSeconds: number?,
+		coinMultiplier: number?,
+		nextPierce: number?,
+		plateMultiplier: number?,
+	},
+	skills: { { effect: string, per: number, deferred: boolean, cap: number, unlock: number } },
+}
 export type RarityConfig = { stars: number, power: number, cap: number, ult: number, lvlC0: number }
 export type CardConfig = {
 	c0: number,
@@ -61,6 +74,9 @@ export type ProgressConfig = {
 		megaEvery: number,
 		megaMultiplier: number,
 		critPierce: number,
+		chestMultiplier: number,
+		keyEveryChest: number,
+		doubleKeyChance: number,
 	},
 }
 export type PlotConfig = {
@@ -126,6 +142,8 @@ export type ArtTile = {
 	glow: boolean,
 }
 export type ArtConfig = {
+	pickaxes: { [string]: { icon: string, model: string, placeholder: boolean?, color: string? } },
+	chests: any,
 	blocks: { [string]: string },
 	cracks: { { string } },
 	dustTexture: string,
@@ -168,6 +186,9 @@ return {
 	mine = mine,
 	plots = require(script:WaitForChild("plots")) :: PlotConfig,
 	pickaxes = require(script:WaitForChild("pickaxes")) :: { [string]: PickaxeConfig },
+	families = require(script:WaitForChild("families")) :: { [string]: FamilyConfig },
+	familyRules = require(script:WaitForChild("familyRules")),
+	chests = require(script:WaitForChild("chests")),
 	progress = progress,
 	fx = require(script:WaitForChild("fx")) :: FxConfig,
 	sounds = require(script:WaitForChild("sounds")) :: SoundsConfig,

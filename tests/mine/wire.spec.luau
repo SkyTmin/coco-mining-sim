@@ -93,6 +93,15 @@ Test.describe("Mine protocol", function()
 		expect(Wire.decodeResult(truncated)).toBe(nil)
 	end)
 
+	Test.it("encodes DigStop as an argumentless intent and rejects a payload", function()
+		local stop = Wire.encodeIntent("DigStop")
+		expect(buffer.len(stop)).toBe(1)
+		expect(Wire.decodeIntent(stop)).toEqual({ op = "DigStop" })
+		local withPayload = Wire.encodeIntent("Hit", 1, 0, 0, 0)
+		buffer.copy(withPayload, 0, stop)
+		expect(Wire.decodeIntent(withPayload)).toBe(nil)
+	end)
+
 	Test.it("keeps the first window under 4 KiB with 4000 holes", function()
 		local st, removed = State.new(303, 7, 3, 1600), {}
 		for i = 0, 3999 do
@@ -139,7 +148,7 @@ Test.describe("Mine protocol", function()
 				buffer.writeu8(data, j, rand(0, 255))
 			end
 			if len == 1 or len == 6 then
-				buffer.writeu8(data, 0, rand(4, 255))
+				buffer.writeu8(data, 0, rand(5, 255))
 			end
 			expect(Wire.decodeIntent(data)).toBe(nil)
 		end

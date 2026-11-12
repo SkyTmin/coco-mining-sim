@@ -18,6 +18,23 @@ export type Circle = {
 }
 
 export type Profile = {
+	collection: { [string]: { count: number, golden: number } },
+	family: string?,
+	nextFamily: { [string]: boolean },
+	skills: { [string]: { number } },
+	keys: number,
+	keyHits: number,
+	chestPity: { epic: number, legendary: number },
+	staged: { [string]: boolean },
+	familyChangeDay: number,
+	pickaxeGolden: boolean,
+	boughtPickaxes: { [string]: boolean },
+	pickChestsOpened: number,
+	merges: number,
+	wallChestsOpened: number,
+	keySerial: number,
+	wallChestKeyCounter: number,
+	ultCounter: number,
 	circle: Circle,
 	width: number,
 	unlocked: { cards: { [string]: boolean }, worlds: { [string]: boolean } },

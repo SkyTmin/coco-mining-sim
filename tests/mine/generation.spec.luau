@@ -9,6 +9,13 @@ local Economy = Fixture.load("Economy")
 local expect = Test.expect
 
 Test.describe("Mine generation", function()
+	Test.it("keeps the unsigned pair fast path identical to the canonical hash", function()
+		for i = 0, 10000 do
+			local a = (i * 429491) % 4294967296
+			local b = (i * 214741) % 4294967296
+			expect(Hash.pair(a, b)).toBe(Hash.u32(a, b))
+		end
+	end)
 	Test.it(
 		"hash is deterministic, treats signed inputs as u32, and distributes 100,000 samples",
 		function()

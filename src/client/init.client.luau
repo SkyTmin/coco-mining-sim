@@ -37,6 +37,7 @@ Remotes.event("ProfilePatch").OnClientEvent:Connect(function(ops)
 	end
 end)
 
+require(script.Fx.CelPicks).start()
 local Strings = require(Shared:WaitForChild("Strings"))
 local function translate(key: string, ...: any): string
 	return Strings.t(key, Strings.localeOf(player), ...)

@@ -2,8 +2,10 @@
 
 local Players = game:GetService("Players")
 local Shared = game:GetService("ReplicatedStorage").Shared
+local Config = require(Shared.Config)
 local Circle = require(Shared.Play.Circle)
 local Upgrade = require(Shared.Play.Upgrade)
+local Family = require(Shared.Play.Family)
 local Worlds = require(Shared.Mine.Worlds)
 local State = require(Shared.Mine.MineState)
 local Remotes = require(Shared.Remotes)
@@ -40,6 +42,26 @@ function UpgradeService.Start()
 				return
 			end
 			lastAt[player] = at
+			if op == "BuySkill" then
+				if
+					type(a) ~= "string"
+					or not Config.families[a]
+					or type(b) ~= "number"
+					or b % 1 ~= 0
+					or b < 1
+					or b > 4
+				then
+					return
+				end
+				local bought = false
+				ProfileService.Mutate(player, function(profile)
+					bought = Family.buySkill(profile, a, b)
+				end)
+				if bought then
+					Analytics.event(player, "skill_buy", b, a)
+				end
+				return
+			end
 			local purchase = intent(op, a, b)
 			local session = MineService.get(player)
 			if not purchase or not session then

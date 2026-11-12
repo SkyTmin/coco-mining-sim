@@ -150,8 +150,14 @@ local function acquire(
 			dataStore:UpdateAsync(keyFor(player), function(old: any)
 				local now = os.time()
 				local lock = if typeof(old) == "table" then old._lock else nil
+				-- Studio (its own QA store): a "studio" lock is a previous Play that stopped before releasing it; waiting
+				-- 10 min for it to go stale loaded an empty profile on every quick restart [найдено 12.11]
+				local studioLeftover = RunService:IsStudio()
+					and typeof(lock) == "table"
+					and lock.job == "studio"
 				locked = not Persistence.isStale(lock, now)
 					and not Persistence.owns(lock, JOB_ID, token)
+					and not studioLeftover
 				profile, fresh = nil, false
 				if locked then
 					return nil
@@ -251,6 +257,13 @@ end
 function ProfileService.Elapsed(player: Player): number
 	local session = sessions[player]
 	return if session then math.floor(os.clock() - session.startedAt) else 0
+end
+
+function ProfileService.PlaySeconds(player: Player): number
+	local session = sessions[player]
+	return if session
+		then session.profile.stats.playSeconds + math.floor(os.clock() - session.playAt)
+		else 0
 end
 
 function ProfileService.FailLoad(player: Player)

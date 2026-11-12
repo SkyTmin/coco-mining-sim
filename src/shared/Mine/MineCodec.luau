@@ -12,8 +12,11 @@ export type SavedMine = {
 	h: number,
 	front: number,
 	plateDamage: number,
+	damage: { [number]: number },
 	top: string,
 	holes: string,
+	chests: { any }?,
+	chestFrequency: number?,
 }
 
 local mine = Config.mine
@@ -44,6 +47,15 @@ function MineCodec.encode(st: State): SavedMine
 			end
 		end
 	end
+	local chests = {}
+	for _, chest in st.chests do
+		if MineState.isSolid(st, chest.x, chest.y, chest.d) then
+			table.insert(chests, table.clone(chest))
+		end
+	end
+	table.sort(chests, function(a, b)
+		return MineState.cellKey(a.x, a.y, a.d) < MineState.cellKey(b.x, b.y, b.d)
+	end)
 	return {
 		v = MineState.version,
 		seed = st.seed,
@@ -51,8 +63,11 @@ function MineCodec.encode(st: State): SavedMine
 		h = st.height,
 		front = st.front,
 		plateDamage = st.plateDamage,
+		damage = {},
 		top = Bytes.base64Encode(tops, topOffset),
 		holes = Bytes.base64Encode(intervals, holeOffset),
+		chests = if #chests > 0 then chests else nil,
+		chestFrequency = st.chestFrequency,
 	}
 end
 
@@ -90,8 +105,18 @@ function MineCodec.decode(data: any): (State?, string?)
 		return nil, "Holes: " .. (intervalError or "Invalid base64")
 	end
 
+	-- Block damage belongs to the current dig, so any saved damage is ignored.
 	local st = MineState.new(data.seed, data.w, data.h)
 	st.front, st.plateDamage = data.front, data.plateDamage
+	if data.chestFrequency ~= nil then
+		if
+			type(data.chestFrequency) ~= "number"
+			or not (data.chestFrequency >= 1 and data.chestFrequency <= 1.3)
+		then
+			return nil, "Invalid chest frequency"
+		end
+		st.chestFrequency = data.chestFrequency
+	end
 	local topOffset, holeOffset = 0, 0
 	local barrier = MineState.barrier(st)
 	local radius = (st.width - 1) // 2
@@ -138,6 +163,40 @@ function MineCodec.decode(data: any): (State?, string?)
 	local ok, problem = MineState.check(st)
 	if not ok then
 		return nil, problem
+	end
+	if data.chests ~= nil then
+		if type(data.chests) ~= "table" or #data.chests > 8 then
+			return nil, "Invalid chest overrides"
+		end
+		for _, chest in data.chests do
+			if
+				type(chest) ~= "table"
+				or not integer(chest.x, -7, 7)
+				or not integer(chest.y, 0, mine.maxHeight - 1)
+				or not integer(chest.d, st.front, MineState.barrier(st) - 1)
+				or not integer(chest.tier, 1, 4)
+				or not MineState.isSolid(st, chest.x, chest.y, chest.d)
+				or (
+					chest.stage ~= nil
+					and chest.stage ~= "firstStorm"
+					and chest.stage ~= "firstKey"
+				)
+			then
+				return nil, "Invalid saved chest"
+			end
+			local key = MineState.cellKey(chest.x, chest.y, chest.d)
+			if st.chests[key] then
+				return nil, "Duplicate saved chest"
+			end
+			st.chests[key] = {
+				x = chest.x,
+				y = chest.y,
+				d = chest.d,
+				tier = chest.tier,
+				stage = chest.stage,
+				kind = "chest",
+			}
+		end
 	end
 	return st
 end

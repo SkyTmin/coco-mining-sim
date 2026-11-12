@@ -1,0 +1,165 @@
+PASS Config / loads both generated sections without notes
+PASS Config / generates canonical balance without editable duplicates
+PASS Config / ships verified Claude PNG IDs, four cracks and all world slots and variants
+PASS Config / rejects simulation overrides for production config
+PASS Config / reports all invalid sections and exits with code one
+PASS Format / short 0
+PASS Format / short 7
+PASS Format / short 999
+PASS Format / short 1000
+PASS Format / short 1149
+PASS Format / short 1150
+PASS Format / short 1999
+PASS Format / short 11500
+PASS Format / short 115000
+PASS Format / short 999999
+PASS Format / short 1000000
+PASS Format / short 1150000000000
+PASS Format / short -1500
+PASS Format / short 1e+33
+PASS Format / short 1.15e+36
+PASS Format / groups with narrow nonbreaking spaces
+PASS Mine codec / round trips widened lanes and deep holes while dropping ordinary damage
+Mine codec: 73 malformed saves rejected
+PASS Mine codec / rejects more than fifty malformed saves with explanations
+Mine codec: 4,000 intervals = 10830 bytes of JSON
+PASS Mine codec / keeps a save with 4,000 sparse intervals below 20 KiB
+PASS Mine config generation / emits the ten canonical worlds, five slots and localized names
+PASS Mine config generation / rejects duplicated balance and missing ore or world strings
+PASS Grain release and budgets / releases radially from the hit within 140 ms with smooth deterministic noise
+PASS Grain release and budgets / uses the same size and every second grid cell for reduced motion and overload
+PASS Grain release and budgets / thins the ult wave with distance: 16 / 4 / 1 grains, bigger far away
+PASS Grain release and budgets / matches exponential relaxation to the requested upward velocity
+Diversity world 1: 3.2810 types, 0.000% ore sheets
+Diversity world 2: 3.4940 types, 0.000% ore sheets
+Diversity world 3: 3.2770 types, 0.000% ore sheets
+PASS Wall diversity / mixes 2000 deterministic 7x3 faces per world without ore sheets
+PASS Mine generation / keeps the unsigned pair fast path identical to the canonical hash
+PASS Mine generation / hash is deterministic, treats signed inputs as u32, and distributes 100,000 samples
+PASS Mine generation / uses world boundaries, price indices and capped durability in the tail
+PASS Mine generation / preserves chunk quotas and replaces ore at both distinct special slots
+PASS Mine generation / rangeHist matches a cell-by-cell scan for 10,000 ranges
+PASS Mine generation / repeats 1,000 cells across evictions and changes generation with the seed
+PASS Grain emitter pool / reserves each emitter once per frame and prefers its live color
+PASS Grain emitter pool / never recolors an emitter within 0.9 seconds of its last emission
+PASS Grain emitter pool / preserves all live colors through mixed demand and 200 frames of reuse
+Mine speed: 5000 layers × 15 lanes = 1.732 ms (limit 5 ms)
+PASS Mine performance / removes and tallies 5,000 layers across 15 lanes in under 5 ms
+Mine speed: 25000 layers × 45 lanes = 26.740 ms (limit 100 ms)
+PASS Mine performance / removes and tallies 25,000 layers across 45 lanes in under 100 ms
+Mine speed: 10,000 hits = 79.162 ms (limit 200 ms)
+PASS Mine performance / processes 10,000 ordinary hits in under 200 ms
+PASS Mining hits / uses independent hit counters, rounding up and capping at eight
+PASS Mining hits / breaks the plate by the 160th weak hit
+PASS Mining hits / pierces 2, 3 and 4 layers at the exact thresholds
+PASS Mining hits / rejects hidden or out-of-window targets and skips an existing 4,999-layer hole
+PASS Mining hits / clips ordinary cuts, persists plate damage and grants the plate reward once
+PASS Mining hits / does not cross a plate on a piercing hit or create a second plate in the tail
+PASS Mining shapes / contains each target and returns the correct cells at every edge and corner
+PASS Mine ride / moves ordinary ore by the layer size and comes to rest
+PASS Mine ride / preserves an empty interval for a short or long ultimate
+PASS Mine ride / clears the near window and sends the wave to the distant survivor
+PASS Mine ride / keeps the same plate visible at its depth until it starts approaching
+PASS Mine ride / strikes an adjacent plate in place and reveals damage at impact
+PASS Mine state / waits for the final intact cell even beside a 5,000-layer cut
+PASS Mine state / passes pre-cleared layers 101–103 in one advance after clearing layer 100
+PASS Mine state / preserves a deep hole and centered lanes after movement and widening
+PASS Mine state / keeps invariants through 100,000 randomized operations and 100 round trips
+PASS Mine state / matches removed ranges and the front against an independent 3×2 cell grid
+PASS Mine state / compacts 5,000 holes by crediting solid gaps without filling old holes
+PASS Mobile gesture / waits 0.12 seconds and keeps digging while aiming after a hold
+PASS Mobile gesture / turns without hits when the thumb drags before the hold
+PASS Mobile gesture / accepts a short stationary tap exactly once
+PASS Ultimate dome / uses the logarithmic durations of the approved demo
+PASS Ultimate dome / schedules a quadratic seven-layer dome plus at most 40 ms of noise
+PASS Ultimate dome / finishes all cells before the separate ride, even at depth 5000
+PASS Ultimate dome / preserves pre-existing holes in the old snapshot, including deep cells
+PASS Mine protocol / round trips intents, full masks, incremental layers, effects and rejects
+MineWindow with 4000 holes: 1460 bytes
+PASS Mine protocol / keeps the first window under 4 KiB with 4000 holes
+PASS Mine protocol / rejects 10,000 randomized malformed inputs without throwing
+PASS Persistence / requires both the job and the acquisition token
+PASS Persistence / expires a lock only after ten minutes without renewal
+PASS Family art hooks / accepts Claude's manifest without changing logical pickaxe IDs and rejects malformed entries
+PASS Pickaxe chest / spends exactly one key, rejects empty wallets and guarantees the first Rare family
+Chest 1M: base 60.0305/29.9823/8.4881/1.4991%; with pity 56.0908/28.0036/13.3915/2.5141% (expected 56.0551/28.0276/13.4013/2.5160%)
+PASS Pickaxe chest / matches the base and post-pity odds in one million draws within 0.3 percentage points
+PASS Circle profiles / migrates an old mine once while preserving coins and preferences
+PASS Circle profiles / retires a nine-block wall and refunds its price once
+PASS Circle profiles / unlocks cards and worlds permanently and mutates only affordable purchases
+PASS Depth counter / moves only changed digits and settles after 150 milliseconds
+PASS Depth counter / always lands on the final number after fast rolling, with and without motion
+PASS Depth counter / groups nearby depths and uses a decimal comma in Russian
+PASS Family data / defines sixteen picks, four perks and four permanent skills per family
+PASS Family wire hooks / preserves chest kinds, frozen flags and typed family events with server timing
+PASS Families and collection / migrates v2 without losing the mine, keeps Storm, and replaces retired picks
+PASS Families and collection / rejects damaged permanent fields instead of silently overwriting progress
+PASS Families and collection / assigns the first Storm, defers other families, and enforces ownership
+PASS Families and collection / selects the strongest level and gold variant on a once-per-UTC-day transition
+PASS Families and collection / gates skill purchases, retains every family and applies only active skills
+PASS Families and collection / merges three duplicates without resetting their level or losing the equipped pick
+PASS Families and collection / sells each common once forever and checks the unlocked world and balance
+PASS Keys / carries fractional hits, applies the card and active skill, and awards at exactly 8000
+PASS Keys / doubles ten percent only at card level twenty and never reuses a spent-key roll
+PASS Authoritative family mining / starts the Storm buff after the entire ult animation and applies Dynamite to all ult block coins
+PASS Authoritative family mining / keeps a valid mine when tiny crack overflow rounds below one damage unit
+PASS Authoritative family mining / uses x2 Frost plate damage and the remaining-layer fraction after the skill bonus
+PASS Authoritative family mining / awards wall coins once, grants no ult key and retries the staged key for hand mining
+PASS Authoritative family mining / echo is a complete second wave with no charge and cannot recurse
+PASS Family perks / centers deep perks on the actual target and keeps base explosions in their named footprint
+Perk storm/common: 1.19904 extra blocks/hit
+Perk storm/rare: 2.10186 extra blocks/hit
+Perk storm/epic: 3.59730 extra blocks/hit
+Perk storm/legendary: 6.29496 extra blocks/hit
+Perk dynamite/common: 1.20424 extra blocks/hit
+Perk dynamite/rare: 2.10742 extra blocks/hit
+Perk dynamite/epic: 3.61280 extra blocks/hit
+Perk dynamite/legendary: 6.10566 extra blocks/hit
+Perk rift/common: 1.20282 extra blocks/hit
+Perk rift/rare: 2.10540 extra blocks/hit
+Perk rift/epic: 3.60045 extra blocks/hit
+Perk rift/legendary: 5.74770 extra blocks/hit
+Perk frost/common: 1.25000 extra blocks/hit
+Perk frost/rare: 2.14275 extra blocks/hit
+Perk frost/epic: 3.66652 extra blocks/hit
+Perk frost/legendary: 6.40000 extra blocks/hit
+PASS Family perks / mines the advertised extra blocks over 100000 homogeneous-wall hits per family and rarity
+PASS Family perks / bounds every route at the plate and window and respects ordinary hardness
+PASS Family perks / marks frozen cells, removes mined flags and prefers frozen cells at shatter
+PASS Family perks / scales size with skills without changing the chance and exposes all ult modifiers
+PASS Circle power / interpolates only by depth and derives capped hits, pierce and ultimate
+PASS Circle power / derives heavy hits, rain and each tenth critical hit deterministically
+PASS Circle power / shifts the whole row, cross and square in at the edge
+PASS Storm / uses a repeatable route of unique exposed solids within the cascade budget
+PASS Storm / prefers a rare ore within two cells over a closer common ore
+PASS Circle purchases / quotes single, ten and maximum levels, gates worlds and stops at caps
+PASS Circle purchases / reports every playable transformation crossed by a bulk purchase
+PASS Circle purchases / accepts at most ten attempts per second and spends large prices in number
+PASS Wall chests / generates one per forty layers, increases frequency, and samples the four tiers
+PASS Wall chests / prices every chest by its own depth, applies greed and permits keys only from hand hits
+PASS Wall chests / takes exactly three direct hits at any strength and persists staged chests across reloads
+PASS Wall chests / stages Storm and the first key once, retrying when an ult broke the key chest
+PASS Family server intents / rejects foreign equipment, unowned gold, locked skills, empty chests and insufficient duplicates
+PASS Family server intents / atomically charges a key once and rejects double clicks before 0.5 seconds
+PASS Family server intents / offers one shop purchase for a collected pick without opening the key chest
+PASS Family server intents / changes family at most once per UTC day and uses the strongest owned variant
+PASS Family server intents / accepts BuySkill only for an unlocked active skill and gates every Creative action
+PASS Mine startup / opens a mine when the profile loads before the PlayerAdded plot assignment
+PASS Server mining validation / rejects other plots, occluded cells, voids, and invalid coordinates
+PASS Server mining validation / bounds burst size and refills at the pickaxe interval
+PASS Mining sounds / caps playback at the levels in the specification
+PASS Mining sounds / has five distinct, non-repeating hit and break variants
+PASS Mining sounds / uses the uploaded atlas and the complete set of clips
+PASS Mining sounds / quietens sustained digging and recovers during a pause
+PASS Mining sounds / uses no harsh built-in audio
+PASS Strings / Core.luau has all locales and matching placeholders
+PASS Strings / Families.luau has all locales and matching placeholders
+PASS Strings / Mine.luau has all locales and matching placeholders
+PASS Strings / MineFeel.luau has all locales and matching placeholders
+PASS Strings / MineSlice.luau has all locales and matching placeholders
+PASS Strings / Progress.luau has all locales and matching placeholders
+PASS Strings / loads stage keys and falls back to English and then the key
+PASS Strings / uses the specified Russian names in progress UI
+PASS Strings / substitutes arguments and keeps buttons within twelve characters
+PASS Wire / round-trips holes and mixed keys at every depth
+138 passed, 0 failed (36 spec files)

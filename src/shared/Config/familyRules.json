@@ -1,0 +1,23 @@
+{
+  "order": [
+    "storm",
+    "dynamite",
+    "rift",
+    "frost"
+  ],
+  "rarities": [
+    "common",
+    "rare",
+    "epic",
+    "legendary"
+  ],
+  "skillFirstCost": 100000,
+  "skillGrowth": 10,
+  "accountCoins": 0.01,
+  "chestFrequencyPerLevel": 0.03,
+  "mergeNeed": 3,
+  "daySeconds": 86400,
+  "openInterval": 0.5,
+  "firstStorm": 225,
+  "firstKey": 900
+}

@@ -1,0 +1,20 @@
+11.11.2026, Windows, stage-04. Проверенная сборка 8ae5a96, main 9d099f8.
+Node v24.15.0.
+rokit.toml: Rojo 7.7.1, StyLua 2.6.0, Selene 0.32.0, Lune 0.10.4.
+
+node scripts/build-configs.mjs — код 0, 15 секций и дерево материалов.
+stylua --check src tests — код 0.
+selene src — 0 errors, 0 warnings, 0 parse errors.
+rojo build -o build/game.rbxl — код 0, 254 694 Б, 0,107 с.
+lune run tests — 138 passed, 0 failed (36 spec files), 63,445 с. См. TESTS.txt.
+node scripts/simulate-economy.mjs 60 — код 0, восемь сценариев, сид 3032026, 8,186 с. См. ECONOMY.txt.
+git diff --check — код 0.
+
+Шахта, замеры Lune на Windows
+5000 слоёв ×15 дорожек — 1,732 мс < 5 мс.
+25000 слоёв ×45 дорожек — 26,740 мс < 100 мс.
+10000 обычных ударов — 79,162 мс < 200 мс.
+
+Studio Play Solo 87020443315503 — 902×339 px, профиль v3 из хранилища в памяти.
+Проверены игровые RemoteEvent, постановочный ключ, новые окна и атлас 113228730616786.
+Финальная синхронизация в Edit — сверены исходники 106 скриптов, 162 материала в дереве.

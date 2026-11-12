@@ -105,14 +105,16 @@ function Hud.new(
 		fill.Parent :: Frame,
 		"PlateRemaining",
 		UDim2.new(1, -10, 1, -2),
-		UDim2.new(0, 5, 0, 1),
+		offset(5, 1),
 		11
 	)
 	remaining.ZIndex = 3
 
 	local focus =
-		Candy.button(gui, "FaceWall", offset(144, 45), UDim2.new(0.5, 0, 1, -20), "neutral", 17)
+		Candy.button(gui, "FaceWall", offset(140, 50), UDim2.new(0.5, 0, 1, -18), "neutral", 15)
 	focus.box.AnchorPoint, focus.box.Visible = Vector2.new(0.5, 1), false
+	-- [владелец 11.11] bottom centre, shown only off the mine platform; a pickaxe tells what it does
+	Candy.buttonIcon(focus, "pick")
 	focus.box.Parent = Candy.layer(guiParent, "MineReturn", 6)
 	local fade = Candy.frame(
 		Candy.layer(guiParent, "ReturnFade", 30),
@@ -299,6 +301,7 @@ function Hud.new(
 		fill = fill,
 		remaining = remaining,
 		coins = coins,
+		wallet = wallet,
 		walletSurface = walletSurface,
 		cross = cross,
 		arrow = arrow,

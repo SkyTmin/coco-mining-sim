@@ -3,6 +3,7 @@
 local ContextActionService = game:GetService("ContextActionService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 
 local Candy = {}
 Candy.ink = Color3.fromHex("1E2140")
@@ -18,7 +19,8 @@ Candy.font = Font.fromEnum(Enum.Font.GothamBlack)
 -- Variant A sizes in design pixels at 667 px. Insets and the UIScale are applied once.
 local WIDTH = 667
 local BORDER, CORNER, SHADOW = WIDTH * 0.0055, WIDTH * 0.022, WIDTH * 0.007
-local ATLAS = "rbxassetid://131511417355722"
+local ATLAS = "rbxassetid://92693559444389"
+local ICON_SIZE, ICON_COLUMNS = 96, 6
 local ICONS = {
 	coin = 0,
 	upgrades = 1,
@@ -37,6 +39,31 @@ local ICONS = {
 	shape6 = 14,
 	width = 15,
 	pick = 16,
+	family_storm = 18,
+	skill_storm_1 = 19,
+	skill_storm_2 = 20,
+	skill_storm_3 = 21,
+	skill_storm_4 = 22,
+	family_dynamite = 24,
+	skill_dynamite_1 = 25,
+	skill_dynamite_2 = 26,
+	skill_dynamite_3 = 27,
+	skill_dynamite_4 = 28,
+	family_rift = 30,
+	skill_rift_1 = 31,
+	skill_rift_2 = 32,
+	skill_rift_3 = 33,
+	skill_rift_4 = 34,
+	family_frost = 36,
+	skill_frost_1 = 37,
+	skill_frost_2 = 38,
+	skill_frost_3 = 39,
+	skill_frost_4 = 40,
+	cards = 42,
+	chest = 43,
+	keys = 44,
+	chest_rays = 45,
+	pickaxe = 46,
 }
 
 type Geometry = { size: UDim2, at: UDim2 }
@@ -51,15 +78,19 @@ export type Control = {
 	kind: string,
 	pressed: boolean,
 	tween: Tween?,
+	flat: boolean?, -- a quiet tab: no shadow, even after a press
 }
 export type Window = {
 	layer: Frame,
 	panel: Frame,
 	title: TextLabel,
+	ribbon: Frame,
+	close: Control,
 	open: boolean,
 	onChange: (boolean) -> (),
 	dimmer: TextButton,
 	tween: Tween?,
+	centerY: number, -- where the panel's centre rests (below Roblox's top bar), set by Candy.modal
 }
 local windowOpen: Window?
 local unit = 1
@@ -242,17 +273,19 @@ function Candy.text(
 end
 
 function Candy.setIcon(image: ImageLabel, key: string?)
+	image.ImageTransparency, image.ImageColor3 = 0, Candy.white
 	local i = if key then ICONS[key] else nil
 	image.Visible = i ~= nil
 	if i then
-		image.ImageRectOffset = Vector2.new(i % 6 * 96, i // 6 * 96)
+		image.Image, image.ImageRectSize = ATLAS, Vector2.new(ICON_SIZE, ICON_SIZE)
+		image.ImageRectOffset =
+			Vector2.new(i % ICON_COLUMNS * ICON_SIZE, i // ICON_COLUMNS * ICON_SIZE)
 	end
 end
 
 function Candy.icon(parent: Instance, key: string?, size: UDim2, at: UDim2): ImageLabel
 	local label = Instance.new("ImageLabel")
 	label.Name, label.BackgroundTransparency, label.ScaleType = "Sticker", 1, Enum.ScaleType.Fit
-	label.Image, label.ImageRectSize = ATLAS, Vector2.new(96, 96)
 	Candy.fit(label, size, at)
 	Candy.setIcon(label, key)
 	label.Parent = parent
@@ -335,7 +368,7 @@ function Candy.press(button: Control, down: boolean)
 		return
 	end
 	button.pressed = down
-	button.shadow.Visible = not down
+	button.shadow.Visible = not down and not button.flat
 	if button.tween then
 		button.tween:Cancel()
 	end
@@ -473,14 +506,15 @@ function Candy.show(window: Window, open: boolean)
 	if open then
 		windowOpen = window
 		window.layer.Visible = true
-		window.panel.Position = UDim2.fromScale(0.5, 0.58)
+		local centerY = window.centerY or 0.55
+		window.panel.Position = UDim2.fromScale(0.5, centerY + 0.03)
 		window.dimmer.BackgroundTransparency = 1
 		TweenService:Create(window.dimmer, TweenInfo.new(0.12), { BackgroundTransparency = 0.55 })
 			:Play()
 		local tween = TweenService:Create(
 			window.panel,
 			TweenInfo.new(0.2, Enum.EasingStyle.Back),
-			{ Position = UDim2.fromScale(0.5, 0.55) }
+			{ Position = UDim2.fromScale(0.5, centerY) }
 		)
 		window.tween = tween
 		tween:Play()
@@ -528,7 +562,7 @@ function Candy.modal(
 	dimmer.Parent = layer
 	local panel = Candy.panel(layer, "Panel", size, UDim2.fromScale(0.5, 0.55))
 	panel.AnchorPoint, panel.Active = Vector2.new(0.5, 0.5), true
-	local title =
+	local title, ribbon =
 		Candy.ribbon(panel, "Title", UDim2.fromOffset(154, 36), UDim2.fromOffset(16, -15), color)
 	local close = Candy.button(
 		panel,
@@ -541,14 +575,46 @@ function Candy.modal(
 	)
 	close.box.AnchorPoint = Vector2.new(0.5, 0.5)
 	close.text.Text = "×"
-	local window: Window = {
+	-- keep the title ribbon below Roblox's own top-bar buttons [владелец 12.11: на телефоне «Кирки» ушло под меню
+	-- Roblox]: the panel's top (minus the ribbon above it) starts under the inset, its bottom 8 units above the edge
+	local window: Window
+	local function place()
+		local app = canvas
+		if not app or app.Size.Y.Offset <= 0 or app.AbsoluteSize.Y <= 0 then
+			return
+		end
+		local height = app.Size.Y.Offset
+		local k = app.AbsoluteSize.Y / height
+		local inset = math.max(GuiService:GetGuiInset().Y, GuiService.TopbarInset.Max.Y) / k
+		local wanted = size.Y.Scale + size.Y.Offset / height
+		local topFree = (inset + 24) / height
+		local free = 1 - topFree - 8 / height
+		local h = math.min(wanted, free)
+		local top = math.max((1 - wanted) / 2 + 0.05, topFree)
+		top = math.min(top, 1 - 8 / height - h)
+		window.centerY = top + h / 2
+		Candy.fit(
+			panel,
+			UDim2.new(size.X.Scale, size.X.Offset, h, 0),
+			UDim2.fromScale(0.5, window.centerY)
+		)
+	end
+	if canvas then
+		canvas:GetPropertyChangedSignal("AbsoluteSize"):Connect(place)
+	end
+	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(place)
+	window = {
 		layer = layer,
 		panel = panel,
 		title = title,
+		ribbon = ribbon,
+		close = close,
 		open = false,
 		onChange = onChange,
 		dimmer = dimmer,
+		centerY = 0.55,
 	}
+	task.defer(place)
 	close.input.Activated:Connect(function()
 		Candy.show(window, false)
 	end)

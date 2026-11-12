@@ -11,6 +11,9 @@ local BlockPool = require(script.Parent.BlockPool)
 
 local S = Config.mine.blockSize
 local BlockArt = require(script.Parent.BlockArt)
+local ArtModel = require(game:GetService("ReplicatedStorage").Shared.Models.ArtModel)
+local CelMesh = require(script.Parent.Parent.Fx.CelMesh)
+local CelChestData = require(script.Parent.Parent.Fx.CelChestData)
 local WallRenderer = {}
 local SPARK_LAYERS = Config.mine.nearWindow
 
@@ -186,6 +189,58 @@ function WallRenderer.sparkles(r: Renderer, now: number)
 	end
 end
 
+local hex = Color3.fromHex
+local CHEST_AURA: { [string]: { level: number, colors: { Color3 }, moteColors: { Color3 }? } } = {
+	silver = { level = 1, colors = { hex("FFFFFF"), hex("CFE6FF"), hex("7A8BA6") } },
+	gold = { level = 2, colors = { hex("FFF6A8"), hex("FFC83D"), hex("B46B00") } },
+	crystal = { level = 3, colors = { hex("F2D9FF"), hex("B066FF"), hex("5F239F") } },
+	-- the pickaxe chest: one comet per family
+	pickaxe = {
+		level = 2,
+		colors = { hex("E3E8FF"), hex("7E8BFF"), hex("2A3CA8") },
+		moteColors = { hex("45CFFF"), hex("FF6A2A"), hex("FFA51C"), hex("BDEFFF") },
+	},
+}
+-- the chest aura (twinkles and orbiting comets) in chest model space; nil for the plain wooden chest
+function WallRenderer.chestAura(kind: string): any
+	local a = CHEST_AURA[kind]
+	return a
+		and {
+			centre = Vector3.new(0, 0.05, 0),
+			radius = if kind == "pickaxe" then 0.85 else 0.72,
+			level = a.level,
+			style = "chest",
+			colors = a.colors,
+			moteColors = a.moteColors,
+		}
+end
+
+-- [владелец 11.11: «закинь все что ты сделал»] wall chests are the cel chests (CelChestData), front towards the player
+-- the cel chest template of `kind` (also used by the QA mirror)
+function WallRenderer.chestTemplate(kind: string): Model?
+	local prims = CelChestData[kind]
+	return prims
+		and CelMesh.template("chest_" .. kind, prims, {
+			size = S * 0.96,
+			axes = "xyz",
+			sizeAxes = "all",
+			solidBounds = true,
+			aura = WallRenderer.chestAura(kind),
+		})
+end
+
+local function chestModel(kind: string?, part: BasePart): Model?
+	local template = if kind then WallRenderer.chestTemplate(kind) else nil
+	if not template then
+		return nil
+	end
+	local model = CelMesh.attach(template, part, CFrame.new(0, -S * 0.02, 0))
+	model.Name = "ArtModel"
+	model:SetAttribute("CelChest", kind) -- QA mirror rebuilds it from this
+	model.Parent = part
+	return model
+end
+
 local function addCell(
 	r: Renderer,
 	key: number,
@@ -210,8 +265,29 @@ local function addCell(
 	local art = Config.art.worlds[Worlds.of(d).id]
 	local tile = art.slots[ore]
 	local texture = if tile then BlockArt.select(tile, x, y, d) else art.lining
+	local tier = Wire.chestTier(ore)
+	local previousArt = part:GetAttribute("ChestTier")
+	if previousArt ~= tier then
+		local old = part:FindFirstChild("ArtModel")
+		if old then
+			old:Destroy()
+		end
+		part:SetAttribute("ChestTier", tier)
+		if tier then
+			local entry = Config.art.chests.wall[tier]
+			local model = entry
+				and (chestModel(entry.kind, part) or ArtModel.mount(entry.model, part))
+			part.Transparency = if model then 1 else 0
+		else
+			part.Transparency = 0
+		end
+	end
 	if part.MaterialVariant ~= "COCOMine_" .. texture then
 		BlockArt.apply(part, texture)
+	end
+	if tier and not part:FindFirstChild("ArtModel") then
+		part.MaterialVariant = ""
+		part.Color = Color3.fromHex(({ "B9855A", "C7D3DF", "FFD23F", "AA8CF4" })[tier])
 	end
 	local rel = d - win.front
 	sparkle(r, cell, tile ~= nil and tile.glow and rel < SPARK_LAYERS)

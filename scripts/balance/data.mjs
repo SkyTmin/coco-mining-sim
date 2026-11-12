@@ -85,6 +85,7 @@ export const cardEffects = {
 	heavyEvery: 10, heavyMultiplier: 5, powerPierce: 1,
 	rainChance: 0.02, rainMultiplier: 10,
 	critMultiplier: 3, megaEvery: 10, megaMultiplier: 10, critPierce: 1,
+	chestMultiplier: 2, keyEveryChest: 20, doubleKeyChance: 0.10, // [вики 18 §4]
 };
 
 // Family skills: permanent (never reset), bought with coins, only for the family chosen for the current circle.
@@ -102,6 +103,29 @@ export const familyRules = {
 export const familySkill = { levels: 10, firstCost: 100_000, costGrowth: 10, unlockAt: [0, 3, 8, 15], accountCoinsPerLevel: 0.01,
 	feature: 0.07, stormCoins: 0.15, stormLuck: 0.10, stormFront: 1, dynKeys: 0.08, dynChestCoins: 0.20, dynChestMore: 0.03, dynUltChest: 0.10,
 	riftUlt: 0.03, riftEcho: 0.015, riftPierce: 0.05, frostPower: 0.10, frostSlab: 0.30, frostBrittle: 0.05 };
+
+// [вики 18 §3.2, ТЗ-04] Runtime values; content text below remains documentation only.
+export const familyGameplay = {
+	storm: { color: '#FFD23F', chances: [0.30, 0.35, 0.40, 0.45], sizes: [4, 6, 9, 14],
+		ult: { stormSeconds: 5 }, skills: [
+			['perkSize', familySkill.feature], ['coins', familySkill.stormCoins], ['luck', familySkill.stormLuck, true], ['stormSeconds', familySkill.stormFront],
+		] },
+	dynamite: { color: '#E8352B', chances: [0.15, 0.15, 0.18, 0.21], sizes: [8, 14, 20, 30],
+		ult: { coinMultiplier: 1.5 }, skills: [
+			['perkSize', familySkill.feature], ['keys', familySkill.dynKeys], ['treasure', familySkill.dynChestCoins], ['ultChest', familySkill.dynUltChest],
+		] },
+	rift: { color: '#FF8A1A', chances: [0.20, 0.21, 0.24, 0.25], sizes: [6, 10, 15, 24],
+		ult: { nextPierce: 3 }, skills: [
+			['perkSize', familySkill.feature], ['ultDepth', familySkill.riftUlt], ['echo', familySkill.riftEcho], ['pierce', familySkill.riftPierce],
+		] },
+	frost: { color: '#6BD3FF', every: [8, 7, 6, 5], sizes: [10, 15, 22, 32],
+		ult: { plateMultiplier: 2 }, skills: [
+			['perkSize', familySkill.feature], ['strength', familySkill.frostPower], ['plateDamage', familySkill.frostSlab], ['brittle', familySkill.frostBrittle],
+		] },
+};
+
+// [решение ТЗ-04 §§7–10] UTC day, request interval and staged play-time thresholds.
+export const familyTiming = { daySeconds: 86400, openInterval: 0.5, firstStorm: 225, firstKey: 900 };
 
 
 export const rebirth = {
@@ -151,7 +175,7 @@ export const families = [
 	{ id: 'frost', name: 'Мороз', icon: '❄', best: 'ломает твёрдое', bestIcon: '🛡',
 		skills: [['Иней', 'раскол задевает на 7 % больше блоков', '+70 %'], ['Ледяная хватка', '+10 % Силы', '×2'], ['Ледолом', '+30 % урона по Плите', '×4'], ['Хрупкий лёд', '+5 % шанса сломать блок с одного удара при любой прочности', '50 %']], world: 5, price: 100_000_000,
 		feature: ['каждый 8-й удар раскалывает до 10 замёрзших блоков', 'каждый 7-й — до 15', 'каждый 6-й — до 22', 'каждый 5-й — до 32 (весь слой и часть следующего)'],
-		ult: 'Ледниковый период', ultBonus: 'ульта в Плиту бьёт ×6 вместо ×3' },
+		ult: 'Ледниковый период', ultBonus: 'ульта в Плиту бьёт ×2 от обычной (30 ударов × доля слоёв)' },
 ];
 
 export const cardSteps = {

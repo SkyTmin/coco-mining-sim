@@ -47,7 +47,7 @@ Test.describe("Circle purchases", function()
 
 	Test.it("reports every playable transformation crossed by a bulk purchase", function()
 		expect(Upgrade.morphs("power", 9, 50)).toEqual({ 10, 25, 50 })
-		expect(Upgrade.morphs("coins", 0, 55)).toEqual({ 10 })
+		expect(Upgrade.morphs("coins", 0, 55)).toEqual({ 10, 25 })
 		expect(Upgrade.morphs("crit", 10, 25)).toEqual({ 25 })
 	end)
 

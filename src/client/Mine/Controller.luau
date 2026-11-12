@@ -38,6 +38,7 @@ local Lightning = require(Client.Fx.Lightning)
 local TravelDebris = require(Client.Fx.TravelDebris)
 local Haptics = require(Client.Fx.Haptics)
 local Footsteps = require(Client.Fx.Footsteps)
+local FamilyFx = require(Client.Fx.FamilyFx)
 
 local Controller = {}
 local mine = Config.mine
@@ -45,6 +46,7 @@ local S = mine.blockSize
 local PENTATONIC = { 1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2 }
 local STORM = Color3.fromRGB(139, 225, 255)
 local WARM = Color3.fromRGB(255, 207, 144)
+local NO_DAMAGE = { damage = {} }
 
 function Controller.start(guiParent: Instance, translate: (string, ...any) -> string)
 	local player = Players.LocalPlayer
@@ -64,12 +66,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local spectatorSigns: { [BasePart]: DepthSign.Sign } = {}
 	local tunnel: any, breaking: any, lightning: any, debris: any
 	local window: any, ride: any, pending: any
+	local echoes: { any } = {}
+	local frozenCells: { any } = {}
 	local events: { any } = {}
 	local parts: { BasePart } = {}
 	local moves: { CFrame } = {}
 	local lastShown: any, lastVisible: number?
 	local seq, quality, maxParts = 0, 2, 0
 	local dirty, active = true, false
+	local digging = false
 	local nextHit, lastRequest = -math.huge, -math.huge
 	local abilityQueued, returning = false, false
 	local lastCharge = -1
@@ -79,6 +84,14 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local jumpButton: GuiObject? = nil
 	local lastPhase = "idle"
 	local hapticsOn = true
+	local familyToast = require(Client.Toast).create(guiParent, translate)
+	local function frozen(points: { any }, front: number)
+		frozenCells = {}
+		for _, cell in points do
+			table.insert(frozenCells, { x = cell.x, y = cell.y, d = front + cell.dRel })
+		end
+		dirty = true
+	end
 
 	local function profile(): any
 		return ProfileState.getProfile()
@@ -90,7 +103,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		return Circle.pick(
 			id,
 			(p and p.circle) or defaultCircle,
-			if window then window.front else 0
+			if window then window.front else 0,
+			p
 		)
 	end
 	local function currentOffset(now: number): number
@@ -110,7 +124,36 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			)
 		end
 	end
-	local stepUpgrades = Upgrades.new(guiParent, player, translate, haptic)
+	local menu = Upgrades.new(guiParent, player, translate, haptic, hud.wallet)
+	FamilyFx.configure(
+		function(cell, front)
+			local r = renderer
+			if not r then
+				return nil
+			end
+			local depth = cell.d or (front or 0) + cell.dRel
+			local entry = r.cells[State.cellKey(cell.x, cell.y, depth)]
+			return entry and entry.part
+		end,
+		menu.chestResult,
+		function(key)
+			familyToast(key, nil)
+		end,
+		{
+			bolt = function(a: Vector3, b: Vector3, branch: boolean, style: any?)
+				if lightning then
+					Lightning.bolt(lightning, a, b, os.clock(), 1, branch, style)
+				end
+			end,
+			trauma = function(amount: number, frequency: number, decay: number)
+				Intensity.trauma(intensity, amount, os.clock(), frequency, decay)
+			end,
+			flash = function(color: Color3, strength: number)
+				Intensity.flash(intensity, strength, color, os.clock())
+			end,
+		}
+	)
+	Remotes.event("PickaxeResult").OnClientEvent:Connect(FamilyFx.chestOpen)
 	local previousCards: { [string]: number }? = nil
 	ProfileState.changed:Connect(function()
 		local p = ProfileState.getProfile()
@@ -170,10 +213,14 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			or player:GetAttribute("MineSettingsOpen") == true
 	end
 	local function canControl(): boolean
-		return active and not menuOpen() and player:GetAttribute("MineUpgradesOpen") ~= true
+		return active
+			and not returning
+			and not menuOpen()
+			and player:GetAttribute("MineUpgradesOpen") ~= true
 	end
 	local function canHit(): boolean
-		return canControl() and window ~= nil and ride == nil
+		-- [владелец 11.11] the wall can be dug while it rides up to the player; only the ult locks digging
+		return canControl() and window ~= nil and not (ride and ride.ability) and #echoes == 0
 	end
 	local function aim(screen: Vector2): any?
 		local r = renderer
@@ -187,10 +234,21 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		Remotes.event("CameraView"):FireServer(view.mode)
 	end
 
+	local function stopDigging()
+		if not digging then
+			return
+		end
+		digging, dirty = false, true
+		if breaking and renderer then
+			Break.cracks(breaking, renderer, NO_DAMAGE, State.cellKey)
+		end
+		intent:FireServer(Wire.encodeIntent("DigStop"))
+	end
+
 	local function request(kind: string, target: any?)
 		local v = view
 		local now = os.clock()
-		if not v or not canHit() or returning then
+		if not v or not canHit() then
 			return
 		end
 		local settings = pick()
@@ -207,6 +265,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if ability then
 			abilityQueued = false
 		end
+		if not digging then
+			window.damage = {}
+		end
+		digging = true
 		local cell = target or { x = 0, y = 0, dRel = 0 }
 		if target then
 			lastTarget = { x = target.x, y = target.y, depth = window.front + target.dRel }
@@ -235,8 +297,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					Shapes.cells(settings.shape, cell.x, cell.y, window.width, window.height)
 				for _, point in shape do
 					if point.x == cell.x and point.y == cell.y then
-						local hp = Power.blockHP(Worlds.durability(depth), settings.strength)
-						local after = progress + settings.strength / hp
+						local chestTier = Wire.chestTier(ore)
+						local hp = if chestTier
+							then Config.chests.wall.hits
+							else Power.blockHP(Worlds.durability(depth), settings.strength)
+						local after = progress + (if chestTier then 1 else settings.strength) / hp
 						if after >= 1 - 0.5 / 255 then
 							expected.hidden = State.cellKey(cell.x, cell.y, depth)
 						else
@@ -262,7 +327,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		intent:FireServer(Wire.encodeIntent(kind, seq, cell.x, cell.y, cell.dRel))
 	end
 
-	local function onWindow(packet: any)
+	local function onWindow(packet: any, damageReset: boolean?)
 		local win = Wire.decodeWindow(packet)
 		if
 			not win
@@ -270,10 +335,29 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		then
 			return
 		end
+		if
+			damageReset == true
+			and window
+			and win.plot == window.plot
+			and win.width == window.width
+			and win.height == window.height
+		then
+			-- Earlier results can still be waiting for the swing or wave to reach the wall.
+			window.damage, dirty = win.damage, true
+			if pending and pending.result then
+				pending.result.damage, pending.damage = win.damage, nil
+			end
+			for _, queued in echoes do
+				queued.res.damage = win.damage
+			end
+			return
+		end
 		if view then
 			Camera.hold(view, false)
 		end
 		window, pending, ride, dirty = win, nil, nil, true
+		table.clear(echoes)
+		frozen(win.frozen or {}, win.front)
 		abilityQueued = false
 		if breaking then
 			Dissolve.clear(breaking.dissolve)
@@ -351,10 +435,39 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				if plateBroken then oldWorld.plate.hp else res.plateDamage
 			)
 			else nil
+		-- skills first: a perk's blocks are played by shells that react before they break, so their grains start later
+		local plan: FamilyFx.Plan = {}
+		if not res.ability then
+			local function snap(point: any): any
+				return Break.snapshot(r, window, point.x, point.y, point.dRel, oldOffset)
+			end
+			for _, event in res.events do
+				if event.kind == 3 or event.kind == 6 then
+					event.front, event.origin = oldFront, target
+					local part = if event.kind == 3
+						then FamilyFx.perk(event, snap)
+						else FamilyFx.proc(event, snap)
+					for k, v in part do
+						plan[k] = v
+					end
+				end
+			end
+		end
 		if not res.ability then
 			for _, cell in res.cells do
-				local block = Break.snapshot(r, window, cell.x, cell.y, cell.dRel, oldOffset)
-				if block then
+				local planned = plan[cell.x .. "|" .. cell.y .. "|" .. cell.dRel]
+				local block = if planned and not planned.grains
+					then nil
+					else Break.snapshot(r, window, cell.x, cell.y, cell.dRel, oldOffset)
+				if block and planned then
+					Dissolve.block(
+						breaking.dissolve,
+						block,
+						now + planned.at,
+						block.frame.Position,
+						ProfileState.preference("reducedMotion")
+					)
+				elseif block then
 					local hit = if expected
 							and expected.hitPosition
 							and (block.frame.Position - expected.position).Magnitude < 0.1
@@ -417,7 +530,38 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				Camera.swing(view, now, Wave.pause * 2)
 			end
 		end
+		local fxResult = table.clone(res)
+		fxResult.events = nil
+		-- frost reports its frozen blocks on every hit; a hit without that report means no frost pick (the server
+		-- drops the frozen set with the family), so the ice must go too
+		local reportsFrozen = false
+		for _, event in res.events do
+			reportsFrozen = reportsFrozen or event.kind == 5
+		end
+		if not res.ability and not reportsFrozen and #frozenCells > 0 then
+			frozenCells = {}
+			dirty = true
+		end
 		for i, event in res.events do
+			event.front = oldFront
+			event.result = fxResult
+			if event.kind >= 3 then
+				-- perks break their blocks before the effect plays: hand the effect world positions, not parts
+				if event.kind ~= 5 then
+					event.positions, event.origin = {}, target
+					for _, point in event.points do
+						table.insert(event.positions, targetPosition(point, oldOffset))
+					end
+				end
+				if event.kind == 3 or event.kind == 6 then
+					continue -- played above, before the blocks broke
+				elseif event.kind == 4 then
+					FamilyFx.ult(event.family, event)
+				elseif event.kind == 5 then
+					frozen(event.points, oldFront)
+				end
+				continue
+			end
 			local a, b = event.points[1], event.points[2]
 			if a and b then
 				local at = now + event.delayMs / 1000
@@ -452,6 +596,27 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				end
 				if res.rain then
 					Sfx.play("coin_rain", 0.63)
+				end
+			end
+			local family = pick().family
+			if family then
+				FamilyFx.handHit(
+					family,
+					if expected and expected.hitPosition then expected.hitPosition else target,
+					r.frame.LookVector * -1,
+					expected ~= nil and expected.plate == true
+				)
+			end
+			for _, find in res.finds do
+				if find.kind == 2 then
+					for _, cell in res.cells do
+						if
+							State.cellKey(cell.x, cell.y, oldFront + cell.dRel) % 65536 == find.id
+						then
+							FamilyFx.treasure(targetPosition(cell, oldOffset))
+							break
+						end
+					end
 				end
 			end
 			if res.blocks > 0 and not plateBroken then
@@ -503,9 +668,14 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 
 	windowRemote.OnClientEvent:Connect(function(kind, packet, visual)
 		if kind == "window" then
-			onWindow(packet)
+			onWindow(packet, visual)
 		elseif kind == "layers" then
 			local part = Wire.decodeLayers(packet)
+			local queued = echoes[#echoes]
+			if part and queued and part.front == queued.res.front then
+				table.insert(queued.tail, part)
+				return
+			end
 			local result = pending and pending.result
 			if part and result and result.delta > 0 and part.front == result.front then
 				table.insert(pending.tail, part)
@@ -514,6 +684,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 		elseif kind == "result" then
 			local res = Wire.decodeResult(packet)
+			if res and res.accepted and res.ability and res.seq == 0 and ride then
+				table.insert(echoes, { res = res, visual = visual, tail = {} })
+				return
+			end
 			local expected = pending
 			if
 				res
@@ -648,6 +822,31 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		player:GetAttributeChangedSignal("QAUlt"):Connect(function()
 			request("Ability", nil)
 		end)
+		-- QAHit = any new value: one hand hit on the nearest exposed block (centre first), as a tap would
+		player:GetAttributeChangedSignal("QAHit"):Connect(function()
+			if not window then
+				return
+			end
+			local radius = (window.width - 1) // 2
+			for relative = 0, #window.layers - 1 do
+				local best, score = nil, math.huge
+				for x = -radius, radius do
+					for y = 0, window.height - 1 do
+						local ore = Wall.ore(window, x, y, relative)
+						if ore and ore ~= 0 then
+							local s = math.abs(x) * 3 + math.abs(y - 1)
+							if s < score then
+								best, score = { x = x, y = y, dRel = relative }, s
+							end
+						end
+					end
+				end
+				if best then
+					request("Hit", best)
+					return
+				end
+			end
+		end)
 	end
 	for _, attribute in { "language", "MineLanguage" } do
 		player:GetAttributeChangedSignal(attribute):Connect(function()
@@ -672,6 +871,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		hit = function(target)
 			request("Hit", target)
 		end,
+		stop = stopDigging,
 		toggle = toggle,
 		focus = faceWall,
 		ult = function()
@@ -697,6 +897,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 		if abilityQueued and not pending and now >= nextHit and canHit() then
 			request("Ability", nil)
+		end
+		if not ride and not pending and echoes[1] then
+			local queued = table.remove(echoes, 1)
+			applyResult(queued.res, queued.visual)
+			for _, part in queued.tail do
+				applyLayers(part)
+			end
 		end
 		local current = profile()
 		if current and not savedView then
@@ -849,16 +1056,23 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if layout then
 			if shown then
 				local renderWindow = shown
-				if shown == window and pending and pending.impacted and pending.damage then
+				if
+					digging
+					and shown == window
+					and pending
+					and pending.impacted
+					and pending.damage
+				then
 					renderWindow = table.clone(window)
 					renderWindow.damage = table.clone(window.damage)
 					table.insert(renderWindow.damage, pending.damage)
 				end
 				Wall.update(r, renderWindow, visible, nil)
+				FamilyFx.frozen(frozenCells)
 				Break.cracks(
 					breaking,
 					r,
-					renderWindow,
+					if digging then renderWindow else NO_DAMAGE,
 					State.cellKey,
 					nil,
 					if lastTarget
@@ -921,6 +1135,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			Sfx.play("link_note", 0.77, PENTATONIC[(event.i - 1) % #PENTATONIC + 1])
 		end
 		Lightning.step(lightning, now)
+		FamilyFx.step(now, dt, function()
+			return if renderer then targetPosition({ x = 0, y = 1, dRel = 0 }, 0) else nil
+		end)
 		Camera.step(
 			v,
 			active,
@@ -929,8 +1146,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			reduced,
 			cameraTravel
 		)
-		local dig = Vector3.new(0, 3.5, Config.plots.platformDepth * S * 0.72)
-		hud.focus.Visible = (p - dig).Magnitude > 6 or Camera.away(v)
+		-- [владелец 11.11] «К шахте» only once the player has left the mine platform
+		hud.focus.Visible = not active
 		hud.focusInput.Interactable = ride == nil and not returning
 		if hud.focus.Visible then
 			local keyHint = if UserInputService.TouchEnabled or v.mode ~= "first"
@@ -988,7 +1205,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local depth = if aimed then window.front + aimed.dRel else window.front
 		local hardness = Worlds.durability(depth)
 		local need = Power.hits(hardness, equipped.strength)
-		stepUpgrades(now, active, window.front, need, equipped.strength, hardness, reduced)
+		menu.step(now, active, window.front, need, equipped.strength, reduced)
 		local hint = nil
 		if r.pulse.Enabled then
 			r.pulse.FillTransparency = 0.60 + math.sin(now * 6) * 0.19

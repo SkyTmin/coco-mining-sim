@@ -19,15 +19,18 @@ return {
 		es = "Carta desbloqueada: Crítico",
 		fr = "Carte débloquée : Critique",
 	},
-	pick_starter = { en = "Wooden", ru = "Деревянная", es = "Madera", fr = "Bois" },
-	pick_plain_common = { en = "Common", ru = "Обычная", es = "Común", fr = "Commune" },
-	pick_plain_rare = { en = "Rare", ru = "Редкая", es = "Rara", fr = "Rare" },
-	pick_plain_epic = { en = "Epic", ru = "Эпическая", es = "Épica", fr = "Épique" },
-	pick_plain_legendary = {
-		en = "Legendary",
-		ru = "Легендарная",
-		es = "Legendaria",
-		fr = "Légendaire",
+	-- [владелец 13.11: у стартовой кирки должны быть имя, облик и история] a flint knapped and tied to a branch
+	pick_starter = {
+		en = "Flintpick",
+		ru = "Кремнёвка",
+		es = "Pico de sílex",
+		fr = "Pioche de silex",
+	},
+	pick_starter_lore = {
+		en = "A branch, a flint and some twine. Every miner's first day starts with one.",
+		ru = "Ветка, кремень и бечёвка. С такой начинается первый день каждого шахтёра.",
+		es = "Una rama, un sílex y un cordel. Así empieza el primer día de todo minero.",
+		fr = "Une branche, un silex et de la ficelle. Le premier jour de tout mineur commence ainsi.",
 	},
 	pick_storm_common = { en = "Storm", ru = "Гроза", es = "Tormenta", fr = "Orage" },
 	creative_multiply = {
@@ -268,5 +271,29 @@ return {
 		ru = "Награда Плиты +{1}",
 		es = "Premio de la losa +{1}",
 		fr = "Récompense de dalle +{1}",
+	},
+	burst_skill_up = {
+		en = "Skill up!",
+		ru = "Навык прокачан!",
+		es = "¡Habilidad mejorada!",
+		fr = "Compétence améliorée !",
+	},
+	burst_level = {
+		en = "Level {1}",
+		ru = "Уровень {1}",
+		es = "Nivel {1}",
+		fr = "Niveau {1}",
+	},
+	burst_morph = {
+		en = "New power!",
+		ru = "Новая сила!",
+		es = "¡Nuevo poder!",
+		fr = "Nouveau pouvoir !",
+	},
+	burst_pick_up = {
+		en = "Pickaxe up!",
+		ru = "Кирка прокачана!",
+		es = "¡Pico mejorado!",
+		fr = "Pioche améliorée !",
 	},
 }

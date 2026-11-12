@@ -154,6 +154,9 @@
     "critMultiplier": 3,
     "megaEvery": 10,
     "megaMultiplier": 10,
-    "critPierce": 1
+    "critPierce": 1,
+    "chestMultiplier": 2,
+    "keyEveryChest": 20,
+    "doubleKeyChance": 0.1
   }
 }

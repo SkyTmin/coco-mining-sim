@@ -80,16 +80,27 @@ const mirror = (pts) => pts.map(([x, y]) => [-x, y]).reverse();
 function build(family, ri) {
   const f = FAM[family];
   const P = [];
-  const poly = (pts, c, o = {}) => P.push({ t: 'poly', pts, z: o.z ?? 0, d: o.d ?? 0.02, c, side: o.side, ol: o.ol ?? 0 });
+  const poly = (pts, c, o = {}) => P.push({ t: 'poly', pts, z: o.z ?? 0, d: o.d ?? 0.02, c, side: o.side, ol: o.ol ?? 0, ...(o.nobevel ? { nobevel: 1 } : {}) });
   const cyl = (a, b, r, c, ol = 0.05) => P.push({ t: 'cyl', a, b, r, c, ol });
-  const ball = (at, r, c, ol = 0.05) => P.push({ t: 'ball', at, r, c, ol });
+  const ball = (at, r, c, ol = 0.05, zs = 0) => P.push({ t: 'ball', at, r, c, ol, zs });
+  // zs: the export thickens the metal ×THICK; a rivet / stud placed on a face follows that face
+  const stud = (x, y, z, r, c) => { ball([x, y, z], r, c, 0, 1); ball([x, y, -z], r, c, 0, 1); }; // no ink: tiny, and budget
+  const ring = (y, h, r, c, tilt = 0, ol = 0.03) => cyl([tilt, y, 0], [-tilt, y + h, 0], r, c, ol);
+  const box = (at, sz, c, top, side, ol = 0.04) => P.push({ t: 'box', at, s: sz, c, top: top || c, side: side || c, ol });
   const glow = (at, r, c) => P.push({ t: 'glow', at, r, c });
   const decal = (pts, c, z, ol = 0.03) => poly(pts, c, { z, d: 0.02, ol });
   const both = (pts, fn) => { fn(pts); fn(mirror(pts)); };
   const metal = ri === 0 ? PAL.iron : ri === 1 ? PAL.steel : null;
   const headCol = metal || f.cr;
-  const AD = 0.34; // arm thickness
-  const FZ = AD / 2 + 0.012; // front face of the arms
+  const AD = 0.34; // thickness of the attached pieces (flames, icicles, forks)
+  // [владелец 12.11: «сбоку плоско/кирпич»] a stepped forged cross-section: a thin cutting edge, a thicker ridge,
+  // the thickest core; the ridge and core stop short of the tip, so the arm runs out into a sharp point
+  const AE = 0.17; // the edge (the whole arm outline)
+  const FZ = AE / 2 + 0.012; // its front face
+  const RD = 0.34; // the ridge
+  const RZ = RD / 2 + 0.012;
+  const CD = 0.46; // the core
+  const CZ = CD / 2 + 0.012;
 
   // ---------- macro: family silhouette, growing with rarity ----------
   let e, extra = []; const flames = [];
@@ -127,12 +138,26 @@ function build(family, ri) {
     for (const [a, b] of segs) {
       const body = shift(mir(armPoly(e, a, b)), s);
       const mat = family === 'rift' && ri <= 1 ? f.stone : headCol;
-      poly(body, mat[1], { d: AD, side: mat[2], ol: 0.07 });
+      poly(body, mat[1], { d: AE, side: mat[2], ol: 0.07 });
       decal(shift(mir(armBand(e, 0.62, 0.97, a, b)), s), mat[0], FZ, 0);
       decal(shift(mir(armBand(e, 0.02, 0.26, a, b)), s), mat[2], FZ, 0);
+      // the sharpened cutting edge: a bright hairline along the bottom, from the middle of the arm to the tip
+      decal(shift(mir(armBand(e, 0.0, 0.07, Math.max(a, 0.18), b)), s), ri <= 1 ? '#FFFFFF' : mat[0], FZ + 0.002, 0);
+      // macro: the spine ridge (raised in the middle of the arm, both faces), with its own light top
+      const rb = Math.min(b, 0.84), cb = Math.min(b, 0.62);
+      if (rb > a + 0.05) {
+        poly(shift(mir(armBand(e, 0.28, 0.82, a, rb)), s), mat[1], { d: RD, side: mat[2], ol: 0, nobevel: 1 });
+        decal(shift(mir(armBand(e, 0.7, 0.82, a, rb)), s), mat[0], RZ, 0);
+        decal(shift(mir(armBand(e, 0.28, 0.36, a, rb)), s), mat[2], RZ, 0);
+      }
+      if (cb > a + 0.05) {
+        poly(shift(mir(armBand(e, 0.42, 0.68, a, cb)), s), mat[1], { d: CD, side: mat[2], ol: 0 });
+        decal(shift(mir(armBand(e, 0.6, 0.68, a, cb)), s), mat[0], CZ, 0);
+      }
       // micro: family-coloured inset on metal heads, gold rim on legendary
-      if (ri <= 1 && family !== 'rift') decal(shift(mir(armBand(e, 0.3, 0.5, a, b * 0.92)), s), f.cr[1], FZ + 0.004, 0);
-      if (ri === 3) decal(shift(mir(armBand(e, 0.86, 1.0, a, b * 0.96)), s), PAL.gold[1], FZ + 0.006, 0);
+      if (ri <= 1 && family !== 'rift') decal(shift(mir(armBand(e, 0.46, 0.56, a, cb * 0.95)), s), f.cr[1], CZ + 0.004, 0);
+      if (ri >= 2) decal(shift(mir(armBand(e, 0.86, 1.0, a, b * 0.96)), s), ri === 3 ? PAL.gold[1] : PAL.steel[0], FZ + 0.006, 0);
+      if (ri === 3) decal(shift(mir(armBand(e, 0.04, 0.12, Math.max(a, 0.1), b * 0.8)), s), PAL.gold[0], FZ + 0.006, 0);
     }
     for (const x of extra) poly(mir(x), headCol[1], { d: AD * 0.8, side: headCol[2], ol: 0.06 });
     for (const fl of flames) { // a lick = outer flame + inner yellow tongue, rooted in the edge
@@ -140,17 +165,27 @@ function build(family, ri) {
       poly(mir(base), headCol[1], { z: -0.04, d: AD * 0.7, side: headCol[2], ol: 0.06 });
       poly(mir(xf(FLAME.map(([x, y]) => [x * 0.55, y * 0.6 + 0.28]), fl.at[0], fl.at[1], fl.s, fl.rot - Math.PI / 2)), '#FFD23F', { z: AD * 0.35 + 0.01, d: 0.02, ol: 0 });
     }
+    // micro: domed rivets along the ridge (both faces), more with rarity; gold on legendary
+    const rivetC = ri === 0 ? PAL.iron[2] : ri === 1 ? PAL.steel[1] : PAL.gold[1];
+    [[0.16], [0.14, 0.34], [0.12, 0.3, 0.48], [0.12, 0.3, 0.48]][ri].forEach((t) => {
+      const i = Math.round(t * (e.top.length - 1));
+      const px = lerp(e.bot[i][0], e.top[i][0], 0.55), py = lerp(e.bot[i][1], e.top[i][1], 0.55);
+      stud(s * (px + spread), py, CD / 2, 0.055, rivetC);
+    });
+    // family 3D on the arm tip: tesla balls (storm), a fuse cap (dynamite)
+    const tip = [(e.top[e.top.length - 1][0] + e.bot[e.bot.length - 1][0]) / 2, (e.top[e.top.length - 1][1] + e.bot[e.bot.length - 1][1]) / 2];
+    if (family === 'storm' && ri >= 2) ball([s * (tip[0] - 0.02), tip[1] + 0.06, 0], ri === 3 ? 0.12 : 0.09, f.accent, 0.035);
     // family micro on the arm
     if (family === 'dynamite' && ri === 1) for (const t of [0.25, 0.5]) { // dynamite-stick bands
       const i = Math.round(t * (e.top.length - 1)); const p0 = e.bot[i], p1 = e.top[i];
       const mid = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2]; const ang = Math.atan2(p1[1] - p0[1], p1[0] - p0[0]);
-      decal(mir([rect(mid[0], mid[1], Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) * 1.08, 0.09, ang)].flat()), '#2E1212', FZ + 0.008, 0.02);
+      decal(mir([rect(mid[0], mid[1], Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) * 1.08, 0.09, ang)].flat()), '#2E1212', CZ + 0.008, 0.02);
     }
     if (family === 'storm' && ri >= 1) { // a lightning streak along the arm
-      decal(mir(armBand(e, 0.44, 0.56, 0.12, 0.8)), ri >= 2 ? '#FFFFFF' : f.cr[0], FZ + 0.008, 0);
+      decal(mir(armBand(e, 0.5, 0.58, 0.1, 0.6)), ri >= 2 ? '#FFFFFF' : f.cr[0], CZ + 0.008, 0);
     }
     if (family === 'rift' && ri <= 1) { // the crack running along a stone arm
-      decal(mir(armBand(e, 0.46, 0.56, 0.1, 0.85).map(([x, y], k) => [x + (k % 3 === 0 ? 0.03 : -0.02), y])), f.glow, FZ + 0.008, 0.02);
+      decal(mir(armBand(e, 0.48, 0.58, 0.1, 0.84).map(([x, y], k) => [x + (k % 3 === 0 ? 0.03 : -0.02), y])), f.glow, CZ + 0.008, 0.02);
     }
     if (family === 'frost') { // icicles hanging under the arm, more with rarity
       const ts = [[], [0.35, 0.6], [0.25, 0.45, 0.65], [0.2, 0.36, 0.52, 0.68]][ri];
@@ -165,6 +200,15 @@ function build(family, ri) {
       });
     }
   }
+  if ((family === 'rift' || family === 'frost') && ri >= 1) { // a crystal cluster growing out of the top of the joint
+    const g = f.gem || f.cr;
+    const spikes = ri === 1 ? [[0.12, 0.42, -0.25]] : ri === 2 ? [[-0.16, 0.5, 0.3], [0.14, 0.62, -0.2]] : [[-0.26, 0.5, 0.45], [0, 0.72, 0], [0.26, 0.5, -0.45]];
+    if (!(family === 'frost' && ri === 3)) spikes.forEach(([x, h, rot]) => {
+      const pts = xf([[-0.11, 0], [0.11, 0], [0.05, h * 0.8], [0, h], [-0.05, h * 0.8]], x, CY + 0.3, 1, -rot * 0.6);
+      poly(pts, g[1], { z: -0.06, d: 0.3, side: g[2], ol: 0.05 });
+      decal(xf([[-0.03, 0.05], [0.03, 0.05], [0.0, h * 0.85]], x, CY + 0.3, 1, -rot * 0.6), g[0], 0.105, 0);
+    });
+  }
   if (family === 'frost' && ri === 3) { // legendary: an ice crown behind the joint
     [[-0.34, 0.75, -0.25], [0, 1.05, 0], [0.34, 0.75, 0.25]].forEach(([x, h, rot]) => poly(xf([[-0.13, 0], [0.13, 0], [0.04, h], [-0.04, h]], x, CY + 0.35, 1, -rot), f.cr[0], { z: -0.12, d: 0.24, side: f.cr[2], ol: 0.06 }));
   }
@@ -175,23 +219,51 @@ function build(family, ri) {
   const hc = ri === 0 ? PAL.wood : null;
   const handleCol = hc ? hc[1] : f.handle;
   cyl([0, -2.3, 0], [0, 1.25, 0], 0.15, handleCol, 0.055);
-  decal(rect(-0.06, -0.5, 0.05, 3.3), hc ? hc[0] : '#FFFFFF', 0.152, 0); // highlight strip
-  if (ri === 0) { for (const y of [-1.6, -0.6, 0.4]) decal(rect(0.04, y, 0.03, 0.5), PAL.wood[2], 0.153, 0); // grain
-    for (let i = 0; i < 4; i++) decal(xf(rect(0, 0, 0.32, 0.07), 0, -2.0 + i * 0.13, 1, 0.3), f.cr[ri === 0 && family === 'frost' ? 2 : 1], 0.16, 0.02); } // rope in the family colour
-  else for (let i = 0; i < 6; i++) decal(xf(rect(0, 0, 0.33, 0.1), 0, -2.05 + i * 0.17, 1, i % 2 ? -0.35 : 0.35), f.wrap, 0.16, 0.025);
+  // no flat stripes on the round handle: a decal floats off the cylinder and shows as a loose line from the side
+  // [владелец 12.11: «полоски у рукоятки портят вид»]
   const capCol = ri === 0 ? PAL.iron[1] : ri === 1 ? PAL.steel[1] : PAL.gold[1];
-  if (ri >= 1) { cyl([0, -2.38, 0], [0, -2.22, 0], 0.2, capCol); cyl([0, 0.95, 0], [0, 1.15, 0], 0.19, capCol); }
-  if (ri >= 2) cyl([0, -1.08, 0], [0, -0.98, 0], 0.18, capCol);
+  // the grip is 3D rings now (visible from every side), not stripes painted on the front
+  if (ri === 0) {
+    const rope = family === 'frost' ? f.cr[2] : f.cr[1];
+    for (let i = 0; i < 5; i++) ring(-2.08 + i * 0.1, 0.075, 0.172, i % 2 ? rope : PAL.wood[0], 0.025, 0.02); // rope
+    ring(0.92, 0.2, 0.19, PAL.iron[1], 0, 0.04); // iron socket band under the head
+    ring(0.97, 0.04, 0.2, PAL.iron[0], 0, 0);
+  } else {
+    // leather grip: rings slanted alternately like a wound strap, a lighter edge every other turn
+    const n = ri === 1 ? 6 : 8;
+    for (let i = 0; i < n; i++) ring(-2.12 + i * 0.14, 0.12, 0.178, i % 2 ? f.wrap : f.handle, i % 2 ? 0.03 : -0.03, 0.025);
+    ring(-2.38, 0.16, 0.2, capCol); // pommel ferrule
+    ring(-2.14 + n * 0.14, 0.06, 0.19, capCol, 0, 0.03); // grip end ferrule
+    ring(0.92, 0.24, 0.2, capCol); // socket
+    ring(0.98, 0.05, 0.215, ri === 1 ? PAL.steel[0] : PAL.gold[0], 0, 0);
+  }
+  if (ri >= 2) ring(-1.08 + (ri === 3 ? 0.18 : 0), 0.1, 0.18, capCol);
+  if (ri === 3) for (const y of [-0.45, 0.0, 0.45]) ring(y, 0.07, 0.168, PAL.gold[1], 0.04, 0.025); // gold spiral bands
+  // family 3D on the handle
+  if (family === 'storm' && ri >= 1) // a copper coil wound under the head
+    for (let i = 0; i < 4 + ri; i++) ring(0.25 + i * 0.12, 0.06, 0.168, i % 2 ? '#B5652A' : '#E89A4C', 0.05, 0.02);
+  if (family === 'dynamite' && ri >= 1) { // dynamite sticks strapped behind the shaft, with fuses
+    const xs = ri === 1 ? [0] : ri === 2 ? [-0.1, 0.1] : [-0.18, 0, 0.18];
+    for (const x of xs) {
+      cyl([x, -0.95, -0.24], [x, -0.05, -0.24], 0.095, '#D8352A', 0.035);
+      cyl([x, -0.35, -0.24], [x, -0.27, -0.24], 0.1, '#F2E6CF', 0); // paper band
+      cyl([x, -0.05, -0.24], [x + 0.05, 0.12, -0.3], 0.02, '#E8D2A6', 0.015); // fuse
+    }
+    for (const y of [-0.8, -0.2]) box([0, y, -0.12], [Math.max(0.36, xs.length * 0.2 + 0.12), 0.06, 0.36], '#3A2418', '#5A3A28', '#2A1810', 0.025); // straps
+  }
   if (ri === 0) ball([0, -2.32, 0], 0.17, PAL.wood[1]);
   if (ri === 2) poly(xf([[0, 0.25], [0.15, 0], [0, -0.3], [-0.15, 0]], 0, -2.55, 1), f.cr[1], { d: 0.2, side: f.cr[2], ol: 0.05 });
   if (ri === 3) { poly(xf([[0, 0.3], [0.2, 0.02], [0, -0.42], [-0.2, 0.02]], 0, -2.65, 1), f.cr[1], { d: 0.26, side: f.cr[2], ol: 0.06 }); glow([0, -2.65, 0.1], 0.5, f.glow); }
 
   // ---------- joint + emblem ----------
-  const JZ = 0.3; // joint half depth
+  const JZ = 0.24; // joint half depth
   if (ri === 0) {
-    poly(rect(0, CY, 0.78, 0.78), PAL.iron[1], { d: JZ * 2, side: PAL.iron[2], ol: 0.06 });
-    decal(rect(0, CY + 0.27, 0.78, 0.14), PAL.iron[0], JZ + 0.01, 0);
-    for (const [x, y] of [[-0.29, -0.29], [0.29, -0.29], [-0.29, 0.29], [0.29, 0.29]]) decal(circle(x, CY + y, 0.045, 8), PAL.iron[2], JZ + 0.012, 0.015);
+    // an octagonal iron collar (a square block read as a brick from the side)
+    const oct = circle(0, CY, 0.46, 8, Math.PI / 8);
+    poly(oct, PAL.iron[1], { d: JZ * 2, side: PAL.iron[2], ol: 0.06 });
+    decal([oct[1], oct[2], oct[3], [-0.4, CY + 0.2], [0.4, CY + 0.2]], PAL.iron[0], JZ + 0.01, 0);
+    decal([oct[5], oct[6], [0.4, CY - 0.26], [-0.4, CY - 0.26]], PAL.iron[2], JZ + 0.01, 0);
+    for (const [x, y] of [[-0.27, -0.27], [0.27, -0.27], [-0.27, 0.27], [0.27, 0.27]]) stud(x, CY + y, JZ, 0.07, PAL.iron[2]);
   } else {
     const frame = ri === 1 ? PAL.steel : ri === 2 ? PAL.steel : PAL.gold;
     if (ri === 3) poly(star(0, CY, 0.82, 0.62, 6, Math.PI / 6), PAL.gold[1], { d: JZ * 1.6, side: PAL.gold[2], ol: 0.06, z: -0.02 });
@@ -199,34 +271,81 @@ function build(family, ri) {
     const hx = circle(0, CY, 0.62, 6, Math.PI / 6);
     decal([hx[0], hx[1], hx[2], [-0.537, CY + 0.08], [0.537, CY + 0.08]], frame[0], JZ + 0.01, 0);
     if (ri === 2) decal(circle(0, CY, 0.56, 6, Math.PI / 6), PAL.gold[1], JZ + 0.012, 0.02);
+    // rivets in the frame corners
+    for (const [x, y] of circle(0, 0, 0.55, 6, 0)) stud(x, CY + y, JZ, ri === 3 ? 0.06 : 0.05, ri === 1 ? PAL.steel[2] : PAL.gold[2]);
   }
   // the emblem: on a disc (rare) or a faceted family gem (epic, legendary); engraved small on common
-  const EZ = JZ + 0.03, es = ri === 0 ? 0.95 : 1.05;
+  // the emblem sits on the top gem layer from epic (front 0.45), on the joint before
+  const EZ = ri >= 2 ? 0.39 : JZ + 0.03, es = ri === 0 ? 0.95 : ri >= 2 ? 0.72 : 1.05;
+  // [владелец 12.11: «эмблемы плохо читаются»] always a contrasting plate under the mark, a thick ink rim
+  const plate = family === 'dynamite' ? '#FFE9C2' : f.disc;
+  if (ri === 0) decal(circle(0, CY, 0.42, 20), plate, EZ - 0.01, 0.035);
   if (ri >= 1) {
-    if (ri === 1) decal(circle(0, CY, 0.47, 24), f.disc, EZ - 0.01, 0.03);
-    else { const g = f.gem || f.cr; decal(circle(0, CY, 0.5, 6, 0), g[2], EZ - 0.01, 0.03); decal([[0, CY], ...circle(0, CY, 0.5, 6, 0).slice(1, 4)], g[1], EZ - 0.005, 0); decal([[0, CY], ...circle(0, CY, 0.5, 6, 0).slice(4, 6), circle(0, CY, 0.5, 6, 0)[0]], g[0], EZ - 0.004, 0); }
+    if (ri === 1) { decal(circle(0, CY, 0.5, 24), PAL.steel[0], EZ - 0.012, 0.035); decal(circle(0, CY, 0.43, 24), plate, EZ - 0.01, 0); }
+    else {
+      // a faceted gem that stands out of the frame on both faces: three stepped bevelled layers, dark to light
+      const g = f.gem || f.cr;
+      poly(circle(0, CY, 0.52, 6, 0), g[2], { d: 0.56, side: g[2], ol: 0.04 });
+      poly(circle(0, CY, 0.45, 6, 0), g[1], { d: 0.66, side: g[2], ol: 0 });
+      // the facet ring: light top-left, dark bottom-right, around the flat table that carries the emblem
+      const hx = circle(0, CY, 0.45, 6, 0);
+      decal([[0, CY], hx[1], hx[2], hx[3]], g[0], 0.335, 0);
+      poly(circle(0, CY, 0.34, 24), plate, { d: 0.74, side: g[2], ol: 0.03 });
+    }
   }
-  const mc = ri === 0 ? f.cr[2] : f.mark;
-  if (family === 'storm') decal(xf(BOLT, 0, CY, es * 0.62), mc, EZ, 0.03);
-  else if (family === 'dynamite') {
-    decal(circle(-0.05 * es, CY - 0.06 * es, 0.22 * es, 18), ri === 0 ? f.cr[2] : '#231414', EZ, 0.03);
-    decal(circle(-0.11 * es, CY + 0.0, 0.06 * es, 10), '#FFFFFF', EZ + 0.003, 0);
-    decal(xf(rect(0, 0, 0.07, 0.2), 0.13 * es, CY + 0.2 * es, es, -0.7), '#E8D2A6', EZ, 0.02);
-    decal(star(0.22 * es, CY + 0.3 * es, 0.12 * es, 0.05 * es, 6), '#FFD23F', EZ + 0.004, 0.02);
+  // [владелец 12.11: «не больше, а детальнее — чтобы было видно, что это»] layered pictograms, each read at a glance:
+  // storm = a cloud with a bolt, dynamite = a bundle of sticks with a lit fuse, rift = a rock split by a glowing crack,
+  // frost = a branched snowflake. Every layer has ink; layers step forward 0.004.
+  const L = (k) => EZ + k * 0.004;
+  const at = (pts, k = 1) => xf(pts, 0, CY, es * k);
+  if (family === 'storm') {
+    const cloud = [...circle(-0.17, 0.12, 0.13, 10, Math.PI * 0.5).slice(0, 7), ...circle(0.0, 0.2, 0.17, 12, Math.PI * 0.9).slice(0, 8), ...circle(0.19, 0.1, 0.12, 10, Math.PI * 1.3).slice(0, 7)];
+    decal(at([[-0.3, 0.02], ...cloud.filter(([, y]) => y > 0.02), [0.31, 0.02]]), '#E8EEF8', L(0), 0.03);
+    decal(at([[-0.26, 0.03], [0.27, 0.03], [0.24, 0.07], [-0.22, 0.07]]), '#A9B6CC', L(1), 0); // cloud underside
+    const bolt = [[0.02, 0.06], [0.16, 0.06], [0.05, -0.1], [0.15, -0.1], [-0.1, -0.42], [-0.02, -0.16], [-0.12, -0.16]];
+    decal(at(bolt), f.accent, L(2), 0.03);
+    decal(at([[0.06, 0.04], [0.11, 0.04], [0.02, -0.1], [-0.01, -0.1]]), '#FFFFFF', L(3), 0); // bolt highlight
+  } else if (family === 'dynamite') {
+    for (const [x, rot] of [[-0.15, 0.12], [0.15, -0.12], [0, 0]]) { // back two first, then the front stick
+      const stick = xf([[-0.085, -0.3], [0.085, -0.3], [0.085, 0.22], [0.05, 0.26], [-0.05, 0.26], [-0.085, 0.22]], x, -0.04, 1, rot);
+      decal(at(stick), x === 0 ? '#E8402F' : '#B82A20', L(x === 0 ? 2 : 0), 0.03);
+      decal(at(xf(rect(0, 0.0, 0.17, 0.07), x, -0.04, 1, rot)), '#F4E9D2', L(x === 0 ? 3 : 1), 0); // paper band
+      if (x === 0) decal(at(xf(rect(-0.045, -0.02, 0.03, 0.42), x, -0.04, 1, rot)), '#FF8A6E', L(3), 0); // shine
+    }
+    decal(at(rect(0, -0.16, 0.44, 0.06)), '#3A2418', L(4), 0.02); // the tie round the bundle
+    decal(at([[0.0, 0.22], [0.03, 0.22], [0.1, 0.3], [0.16, 0.31], [0.16, 0.34], [0.09, 0.33], [0.0, 0.25]]), '#E8D2A6', L(4), 0.015); // fuse
+    decal(at(star(0.2, 0.34, 0.11, 0.045, 7)), '#FFD23F', L(5), 0.02);
+    decal(at(star(0.2, 0.34, 0.05, 0.02, 7)), '#FFFFFF', L(6), 0);
   } else if (family === 'rift') {
-    // a bold crack: a jagged wedge from top to bottom with two side branches
-    const crack = [[-0.05, 0.4], [0.07, 0.4], [-0.02, 0.15], [0.12, 0.02], [-0.01, -0.16], [0.08, -0.42], [-0.08, -0.14], [0.02, 0.02], [-0.12, 0.14]];
-    decal(xf(crack, 0, CY, es), mc, EZ, 0.03);
-    decal(xf([[0, 0], [0.2, 0.1], [0.24, 0.04], [0.02, -0.06]], 0.06 * es, CY + 0.02 * es, es), mc, EZ, 0.025);
-    decal(xf([[0, 0], [-0.2, -0.08], [-0.22, -0.02], [-0.02, 0.06]], -0.02 * es, CY - 0.1 * es, es), mc, EZ, 0.025);
+    const rock = [[-0.32, -0.12], [-0.22, -0.3], [0.06, -0.34], [0.3, -0.2], [0.33, 0.08], [0.18, 0.3], [-0.1, 0.33], [-0.3, 0.16]];
+    decal(at(rock), '#8C7A66', L(0), 0.03);
+    decal(at([[-0.3, 0.16], [-0.1, 0.33], [0.18, 0.3], [0.1, 0.18], [-0.18, 0.12]]), '#B9A68F', L(1), 0); // lit top
+    decal(at([[0.3, -0.2], [0.06, -0.34], [0.0, -0.24], [0.2, -0.12]]), '#5A4A3C', L(1), 0); // shadow
+    const crack = [[-0.04, 0.36], [0.06, 0.36], [0.0, 0.14], [0.1, 0.02], [0.01, -0.14], [0.07, -0.38], [-0.04, -0.38], [-0.07, -0.14], [0.01, 0.02], [-0.09, 0.14]];
+    decal(at(crack), '#FFB13D', L(2), 0.025);
+    decal(at([[-0.01, 0.3], [0.02, 0.3], [-0.02, 0.14], [0.05, 0.02], [-0.01, -0.12], [0.02, -0.3], [-0.01, -0.3], [-0.03, -0.12], [0.02, 0.02], [-0.04, 0.14]]), '#FFF4C8', L(3), 0); // white-hot core
+    for (const [x, y, r] of [[0.38, 0.26, 0.05], [-0.4, -0.24, 0.04], [0.42, -0.08, 0.03]]) decal(at(xf([[-1, -0.6], [0.8, -1], [1, 0.7], [-0.5, 1]], x, y, r)), '#8C7A66', L(2), 0.015); // flying chips
   } else {
-    for (let k = 0; k < 3; k++) decal(xf(rect(0, 0, 0.64, 0.09), 0, CY, es, (k * Math.PI) / 3), mc, EZ, 0.025);
-    for (let k = 0; k < 6; k++) { const a = (k * Math.PI) / 3; for (const d of [-1, 1]) decal(xf(rect(0, 0, 0.16, 0.06), Math.cos(a) * 0.2 * es, CY + Math.sin(a) * 0.2 * es, es, a + d * 0.8), mc, EZ + 0.002, 0.02); }
+    const ice = '#BDEFFF';
+    for (let k = 0; k < 6; k++) {
+      const a = (k * Math.PI) / 3 + Math.PI / 2;
+      const arm = xf(rect(0, 0.19, 0.075, 0.38), 0, 0, 1, a - Math.PI / 2);
+      decal(at(arm), ice, L(0), 0.025);
+      for (const [d, len, w] of [[0.17, 0.13, 0.05], [0.28, 0.09, 0.04]]) for (const side of [-1, 1]) {
+        const cx = Math.cos(a) * d, cy = Math.sin(a) * d;
+        decal(at(xf(rect(0, len / 2, w, len), cx, cy, 1, a - Math.PI / 2 + side * 0.85)), ice, L(0), 0.02);
+      }
+      decal(at(xf(rect(0, 0.2, 0.025, 0.3), 0, 0, 1, a - Math.PI / 2)), '#FFFFFF', L(1), 0); // bright spine
+      decal(at(xf([[0, 0.43], [0.05, 0.37], [0, 0.33], [-0.05, 0.37]], 0, 0, 1, a - Math.PI / 2)), '#FFFFFF', L(1), 0.015); // tip crystal
+    }
+    decal(at(circle(0, 0, 0.1, 6, Math.PI / 6)), '#FFFFFF', L(2), 0.02);
+    decal(at(circle(0, 0, 0.05, 6, 0)), '#7FD0FF', L(3), 0);
   }
   if (ri >= 2) glow([0, CY, 0.4], ri === 3 ? 0.9 : 0.6, f.glow);
 
   // ---------- effects around: flat comic sprites, more with rarity ----------
   const fx = [0, 2, 4, 7][ri];
+  const fxStart = P.length; // everything from here is a floating effect: the game spins it around the head
   const r = rng(31 + ri * 7 + family.length);
   const spots = [[-1.9, 2.6], [1.95, 2.55], [0.95, 3.25], [-1.05, 3.3], [2.45, 1.35], [-2.5, 1.4], [0, 3.6]];
   for (let k = 0; k < fx; k++) {
@@ -245,10 +364,80 @@ function build(family, ri) {
       else for (let q = 0; q < 3; q++) poly(xf(rect(0, 0, 0.62, 0.11), x, y, s, rot + (q * Math.PI) / 3), '#FFFFFF', { ...o, z: z + q * 0.002 });
     }
   }
+  for (let i = fxStart; i < P.length; i++) P[i].fx = 1;
+  return P;
+}
+
+// ---------- the starter: «Кремнёвка» [владелец 13.11: «стартовая кирка — случайная заглушка; нужен характер и лор»] ----------
+// Lore: a branch, a knapped flint and twine — what every miner ties together on the first day at the mine mouth.
+// Read at a glance: a grey-blue chipped stone head (no metal, no family colour), a living branch with bark, a cut
+// twig with one green leaf, a pale sawn end, and a twine lashing with a knot and two loose ends. Humble and warm, so
+// the first metal head of a family pick feels like a real step up.
+function buildStarter() {
+  const P = [];
+  const poly = (pts, c, o = {}) => P.push({ t: 'poly', pts, z: o.z ?? 0, d: o.d ?? 0.02, c, side: o.side, ol: o.ol ?? 0, ...(o.nobevel ? { nobevel: 1 } : {}) });
+  const cyl = (a, b, r, c, ol = 0.05) => P.push({ t: 'cyl', a, b, r, c, ol });
+  const ball = (at, r, c, ol = 0.05, zs = 0) => P.push({ t: 'ball', at, r, c, ol, zs });
+  const ring = (y, h, r, c, tilt = 0, ol = 0.03) => cyl([tilt, y, 0], [-tilt, y + h, 0], r, c, ol);
+  const decal = (pts, c, z, ol = 0.03) => poly(pts, c, { z, d: 0.02, ol });
+  const FLINT = ['#8D97A8', '#4C5667', '#272E3B'];
+  const CORTEX = ['#F3EEDF', '#D9CFB6']; // the chalky outer crust of a flint nodule, left on the back edge
+  const BARK = ['#9C6B3F', '#7A4E2B', '#4E3019'];
+  const CUT = '#E9C28A';
+  const TWINE = ['#E8CF97', '#C9A464', '#8E6C36'];
+  const LEAF = ['#9BE15D', '#4FAE2E', '#2E7419'];
+
+  // the head: two chipped flint arms, a little unequal (made by hand), blunt-ish points
+  const ED = 0.24, FZ = ED / 2 + 0.012, RD = 0.38, RZ = RD / 2 + 0.012;
+  for (const s of [1, -1]) {
+    const e = armEdges({ w0: 0.64, w1: 0.1, reach: s > 0 ? 52 : 47, jag: 0.13, seed: s > 0 ? 3 : 11, n: 11, pow: 0.85 });
+    const mir = (pts) => (s > 0 ? pts : mirror(pts));
+    poly(mir(armPoly(e)), FLINT[1], { d: ED, side: FLINT[2], ol: 0.07 });
+    decal(mir(armBand(e, 0.5, 0.78)), FLINT[0], FZ, 0);
+    decal(mir(armBand(e, 0.8, 1.0, 0, 0.8)), CORTEX[0], FZ + 0.002, 0);
+    decal(mir(armBand(e, 0.03, 0.24)), FLINT[2], FZ, 0);
+    poly(mir(armBand(e, 0.3, 0.8, 0, 0.7)), FLINT[1], { d: RD, side: FLINT[2], ol: 0, nobevel: 1 });
+    decal(mir(armBand(e, 0.62, 0.8, 0, 0.7)), FLINT[0], RZ, 0);
+    decal(mir(armBand(e, 0.0, 0.05, 0.2, 1)), '#C8D4E4', FZ + 0.003, 0); // the knapped edge catches the light
+    // conchoidal chips: small pale facets knocked off along the edges
+    const r = rng(s > 0 ? 17 : 29);
+    for (const t of [0.22, 0.44, 0.66, 0.84]) {
+      const i = Math.round(t * (e.top.length - 1));
+      const top = r() > 0.5;
+      const p = top ? e.top[i] : e.bot[i], q = top ? e.top[Math.min(i + 1, e.top.length - 1)] : e.bot[Math.min(i + 1, e.bot.length - 1)];
+      const c = [lerp(e.bot[i][0], e.top[i][0], 0.5), lerp(e.bot[i][1], e.top[i][1], 0.5)];
+      decal(mir([p, q, [lerp(p[0], c[0], 0.45), lerp(p[1], c[1], 0.45)]]), top ? '#B4BECC' : '#1C222D', RZ + 0.004, 0);
+    }
+  }
+  // the branch: two slightly bent pieces, poking out above the head, with a pale sawn end at both ends
+  cyl([0, -2.3, 0], [0.07, -0.5, 0], 0.15, BARK[1], 0.055);
+  cyl([0.07, -0.5, 0], [0, CY + 0.62, 0], 0.15, BARK[1], 0.055);
+  ball([0, -2.32, 0], 0.152, CUT, 0.05);
+  ball([0, CY + 0.64, 0], 0.152, CUT, 0.05);
+  for (const [y, tilt] of [[-1.85, 0.04], [-1.25, -0.05], [-0.15, 0.05], [0.55, -0.04]]) ring(y, 0.05, 0.158, BARK[2], tilt, 0); // bark seams
+  // a cut twig with one leaf: the branch was alive yesterday
+  cyl([0.08, -0.95, 0], [0.5, -0.55, 0.02], 0.07, BARK[0], 0.04);
+  ball([0.51, -0.54, 0.02], 0.071, CUT, 0.035);
+  const leaf = [[0, 0], [0.18, 0.12], [0.36, 0.34], [0.46, 0.62], [0.3, 0.5], [0.12, 0.34], [0.02, 0.16]];
+  poly(xf(leaf, 0.36, -0.68, 1, -0.2), LEAF[1], { z: 0.05, d: 0.06, side: LEAF[2], ol: 0.04 });
+  decal(xf([[0.03, 0.04], [0.4, 0.55], [0.37, 0.56]], 0.36, -0.68, 1, -0.2), LEAF[0], 0.083, 0); // the vein
+  // the lashing: wraps round the branch under and over the head, an X across the joint on both faces, a knot with
+  // two loose ends
+  for (let i = 0; i < 4; i++) ring(1.0 + i * 0.09, 0.07, 0.172, i % 2 ? TWINE[2] : TWINE[1], 0.03, 0.02);
+  for (let i = 0; i < 2; i++) ring(CY + 0.36 + i * 0.09, 0.07, 0.172, i % 2 ? TWINE[2] : TWINE[1], -0.03, 0.02);
+  for (const z of [RZ + 0.01, -(RZ + 0.01)]) for (const rot of [0.75, -0.75]) {
+    decal(rect(0, CY, 0.12, 1.0, rot), TWINE[1], z, 0.03);
+    decal(rect(0, CY + 0.02, 0.04, 0.9, rot), TWINE[0], z + Math.sign(z) * 0.003, 0);
+  }
+  ball([0, CY, RZ + 0.03], 0.12, TWINE[1], 0.04, 1);
+  ball([0, CY, -(RZ + 0.03)], 0.12, TWINE[1], 0.04, 1);
+  cyl([0.02, CY - 0.05, RZ + 0.05], [0.16, CY - 0.5, RZ + 0.08], 0.035, TWINE[1], 0.02);
+  cyl([-0.02, CY - 0.05, RZ + 0.05], [-0.1, CY - 0.44, RZ + 0.06], 0.035, TWINE[2], 0.02);
   return P;
 }
 
 const out = { picks: {} };
 for (const family of Object.keys(FAM)) RARITIES.forEach((r, i) => (out.picks[`${family}_${r}`] = build(family, i)));
+out.picks.starter = buildStarter();
 writeFileSync(new URL('./picks-cel.json', import.meta.url), JSON.stringify(out));
 console.log('picks:', Object.keys(out.picks).length, 'max prims:', Math.max(...Object.values(out.picks).map((x) => x.length)));

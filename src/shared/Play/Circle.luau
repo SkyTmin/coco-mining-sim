@@ -7,6 +7,8 @@ local MineState = require(script.Parent.Parent.Mine.MineState)
 local MineCodec = require(script.Parent.Parent.Mine.MineCodec)
 local Power = require(script.Parent.Power)
 local Upgrade = require(script.Parent.Upgrade)
+local Family = require(script.Parent.Family)
+local Collection = require(script.Parent.Collection)
 
 type Profile = Types.Profile
 export type Pick = Config.PickaxeConfig & {
@@ -16,10 +18,12 @@ export type Pick = Config.PickaxeConfig & {
 	interval: number,
 	ultLayers: number,
 	ultCharge: number,
+	chestFrequency: number,
+	plateMultiplier: number,
 }
 
 local Circle = {}
-Circle.profileVersion = 2
+Circle.profileVersion = 3
 
 function Circle.new(): Types.Circle
 	return { hitSize = 1, pickLevels = {}, cards = {} }
@@ -33,6 +37,7 @@ function Circle.initialize(profile: any)
 	profile.deepestWorld, profile.platesBroken = 1, 0
 	profile.hitCounter, profile.critCounter = 0, 0
 	profile.funnel = {}
+	Collection.initialize(profile)
 end
 
 local function integer(value: any, min: number, max: number): boolean
@@ -44,7 +49,19 @@ function Circle.migrate(profile: any): boolean
 		Circle.initialize(profile)
 		profile.mine = nil
 	end
-	if profile.v ~= Circle.profileVersion then
+	if profile.v == 2 then
+		if type(profile.circle) ~= "table" or type(profile.circle.pickLevels) ~= "table" then
+			return false
+		end
+		Collection.initialize(profile)
+		for id in profile.circle.pickLevels do
+			if id:match("^plain_") then
+				profile.circle.pickLevels[id] = nil
+			end
+		end
+		profile.v = Circle.profileVersion
+	end
+	if profile.v ~= Circle.profileVersion or not Collection.validate(profile) then
 		return false
 	end
 	local circle, unlocked = profile.circle, profile.unlocked
@@ -78,7 +95,11 @@ function Circle.migrate(profile: any): boolean
 	end
 	for id, level in circle.pickLevels do
 		local pick = Config.pickaxes[id]
-		if not pick or not integer(level, 1, Power.cap(Config.progress.rarities[pick.rarity])) then
+		local gold = profile.collection[id] and profile.collection[id].golden > 0
+		if
+			not pick
+			or not integer(level, 1, Power.cap(Config.progress.rarities[pick.rarity], gold))
+		then
 			return false
 		end
 	end
@@ -115,15 +136,27 @@ function Circle.migrate(profile: any): boolean
 	if not Config.pickaxes[profile.pickaxe] then
 		profile.pickaxe = "starter"
 	end
+	if not Family.canEquip(profile, profile.pickaxe, profile.pickaxeGolden) then
+		profile.pickaxe, profile.pickaxeGolden = "starter", false
+	end
+	for _, id in Upgrade.cards do
+		if profile.deepestWorld >= Config.progress.cards[id].world then
+			profile.unlocked.cards[id] = true
+		end
+	end
 	return true
 end
 
-function Circle.pick(id: string, circle: Types.Circle, depth: number): Pick
+function Circle.pick(id: string, circle: Types.Circle, depth: number, profile: Profile?): Pick
 	local pick = Config.pickaxes[id] or Config.pickaxes.starter
 	local rarity = Config.progress.rarities[pick.rarity]
-	local level = circle.pickLevels[id] or 1
+	local golden = profile ~= nil and profile.pickaxeGolden
+	local level = math.min(circle.pickLevels[id] or 1, Power.cap(rarity, golden))
 	local shape = Config.progress.hitSizes[if Upgrade.hitSizeEnabled then circle.hitSize else 1]
-	local strength = Power.strength(rarity, level, circle.cards)
+	local effects = if profile
+		then Family.effects(profile)
+		else { strength = 1, ultDepth = 1, chestFrequency = 1, plateDamage = 1 }
+	local strength = Power.strength(rarity, level, circle.cards, golden) * effects.strength
 	return {
 		rarity = pick.rarity,
 		family = pick.family,
@@ -132,8 +165,15 @@ function Circle.pick(id: string, circle: Types.Circle, depth: number): Pick
 		strength = strength,
 		shape = shape.shape,
 		interval = shape.interval,
-		ultLayers = Power.ult(rarity, level, Worlds.durability(depth), strength),
+		ultLayers = math.max(
+			1,
+			math.floor(
+				Power.ult(rarity, level, Worlds.durability(depth), strength) * effects.ultDepth
+			)
+		),
 		ultCharge = Config.mine.ultCharge,
+		chestFrequency = effects.chestFrequency,
+		plateMultiplier = effects.plateDamage,
 	}
 end
 
@@ -144,7 +184,14 @@ function Circle.context(profile: Profile, world: number): Upgrade.Context
 		width = profile.width,
 		world = math.max(world, profile.deepestWorld),
 		pick = profile.pickaxe,
-		pickLevel = profile.circle.pickLevels[profile.pickaxe] or 1,
+		golden = profile.pickaxeGolden,
+		pickLevel = math.min(
+			profile.circle.pickLevels[profile.pickaxe] or 1,
+			Power.cap(
+				Config.progress.rarities[Config.pickaxes[profile.pickaxe].rarity],
+				profile.pickaxeGolden
+			)
+		),
 		cards = profile.circle.cards,
 		unlockedCards = profile.unlocked.cards,
 	}

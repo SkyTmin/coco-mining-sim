@@ -55,6 +55,7 @@ Test.describe("Strings", function()
 				"mine_settings",
 				"mine_plate_remaining",
 				"mine_ult_layers",
+				"menu_families_equal",
 			}
 		do
 			expect(Strings.has(key)).toBe(true)
@@ -81,10 +82,52 @@ Test.describe("Strings", function()
 			"Блоки −87 · Монеты +232"
 		)
 		for _, key in
-			{ "creative_title", "creative_on", "creative_off", "creative_coins", "creative_reset" }
+			{
+				"creative_title",
+				"creative_on",
+				"creative_off",
+				"creative_coins",
+				"creative_reset",
+				"collection_tab",
+				"family_tab",
+				"family_change",
+				"family_tomorrow",
+				"family_current",
+				"pick_take",
+				"pick_gold",
+				"pick_merge",
+				"pick_buy",
+				"pick_grant",
+				"pick_chest_open",
+				"creative_keys",
+				"creative_collection_reset",
+				"creative_chests_100",
+				"creative_first_storm",
+				"creative_first_key",
+				"menu_chest",
+				"menu_dock_upgrades",
+				"menu_open",
+				"menu_improve",
+				"menu_browse",
+				"menu_skills",
+				"menu_all",
+				"menu_from_chest",
+				"menu_merge_count",
+				"menu_equip",
+				"menu_gold",
+				"menu_in_hand",
+				"menu_choose",
+				"menu_choose_wait",
+				"menu_world",
+				"menu_open_key",
+				"menu_no_keys",
+				"menu_opening",
+				"menu_claim",
+				"menu_again",
+			}
 		do
 			for _, language in LOCALES do
-				local length = utf8.len(Strings.t(key, language, 100))
+				local length = utf8.len(Strings.t(key, language, 100, 59))
 				assert(length and length <= 12, key .. " is too long in " .. language)
 			end
 		end

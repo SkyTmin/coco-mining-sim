@@ -65,7 +65,7 @@ local function instance(path: string): Node
 	}) :: any
 end
 
-local function createLoader(overrides: { [string]: any })
+local function createLoader(overrides: { [string]: any }, globals: { [string]: any }?)
 	local results: { [string]: { [number]: any, n: number } } = {}
 	local loading: { [string]: boolean } = {}
 
@@ -86,9 +86,11 @@ local function createLoader(overrides: { [string]: any })
 			if sourcePath:match("%.json$") then
 				return table.pack(serde.decode("json", source))
 			end
+			local environment = table.clone(globals or {})
+			environment.script, environment.require = module, requireNode
 			local chunk = luau.load(source, {
 				debugName = sourcePath,
-				environment = { script = module, require = requireNode },
+				environment = environment,
 			})
 			return table.pack(chunk())
 		end)
@@ -102,6 +104,7 @@ local function createLoader(overrides: { [string]: any })
 	end
 
 	return {
+		node = instance,
 		load = function(path: string): any
 			if not directories["."] then
 				index(".")

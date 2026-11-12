@@ -17,6 +17,10 @@ export type MineState = {
 	holeCount: number,
 	damage: { [number]: number },
 	plateDamage: number,
+	chests: {
+		[number]: { x: number, y: number, d: number, tier: number, stage: string?, kind: string },
+	},
+	chestFrequency: number?,
 }
 
 local mine = Config.mine
@@ -70,6 +74,7 @@ function MineState.new(seed: number, width: number, height: number, depth: numbe
 		holeCount = 0,
 		damage = {},
 		plateDamage = 0,
+		chests = {},
 	}
 end
 
