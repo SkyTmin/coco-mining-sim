@@ -15,6 +15,8 @@ local Power = require(Shared.Play.Power)
 local Family = require(Shared.Play.Family)
 local Perks = require(Shared.Play.Perks)
 local WallChests = require(Shared.Play.WallChests)
+local Streak = require(Shared.Play.Streak)
+local Pace = require(Shared.Play.Pace)
 local ProfileService = require(script.Parent.ProfileService)
 local PlotService = require(script.Parent.PlotService)
 
@@ -35,6 +37,9 @@ export type Session = {
 	hit: Timing,
 	ult: Timing,
 	perks: Perks.Runtime,
+	streak: any,
+	streakUntil: number,
+	pace: any,
 	perkFamily: string?,
 }
 
@@ -221,6 +226,7 @@ function MineService.reset(s: Session, depth: number, width: number)
 	s.state = State.new(s.state.seed, width, mine.height, depth)
 	s.charge = 0
 	s.perks = Perks.new()
+	s.streak, s.streakUntil, s.pace = Streak.new(workspace:GetServerTimeNow()), 0, Pace.new()
 	s.lastHitAt, s.ultUntil, s.stopAfterUlt = -math.huge, nil, false
 	s.lastTarget = nil
 	MineService.window(s)
@@ -266,6 +272,9 @@ function MineService.Start()
 			hit = { count = 0, total = 0, max = 0 },
 			ult = { count = 0, total = 0, max = 0 },
 			perks = Perks.new(),
+			streak = Streak.new(workspace:GetServerTimeNow()),
+			streakUntil = 0,
+			pace = Pace.new(),
 			perkFamily = profile.family,
 		}
 		s.state.chestFrequency = Family.effects(profile).chestFrequency

@@ -44,6 +44,11 @@ Test.describe("Mine startup", function()
 						else { Shared = loader.node("src/shared") }
 				end,
 			},
+			workspace = {
+				GetServerTimeNow = function()
+					return 1000
+				end,
+			},
 			task = { spawn = function() end },
 			Random = {
 				new = function()

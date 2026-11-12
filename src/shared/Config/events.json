@@ -1,4 +1,17 @@
 {
+  "hud": {
+    "ticks": 48,
+    "radius": 0.7,
+    "tickPixels": 4,
+    "labelWidth": 96,
+    "labelHeight": 22,
+    "labelX": -11,
+    "labelY": -28,
+    "fontSize": 15,
+    "gain": 0.12,
+    "pitchStep": 0.08,
+    "pulseSeconds": 0.25
+  },
   "slotGapSeconds": 5,
   "activeWithinSeconds": 5,
   "latencyGrace": 0.25,

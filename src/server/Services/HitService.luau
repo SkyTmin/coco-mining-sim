@@ -14,6 +14,10 @@ local Ride = require(Shared.Mine.Ride)
 local Perks = require(Shared.Play.Perks)
 local MiningAction = require(Shared.Play.MiningAction)
 local Circle = require(Shared.Play.Circle)
+local Family = require(Shared.Play.Family)
+local Income = require(Shared.Play.Income)
+local Streak = require(Shared.Play.Streak)
+local Pace = require(Shared.Play.Pace)
 local Power = require(Shared.Play.Power)
 local MineService = require(script.Parent.MineService)
 local ProfileService = require(script.Parent.ProfileService)
@@ -77,6 +81,8 @@ local function publish(
 		mega = strike and strike.mega,
 		rain = strike and strike.rain,
 		charge = s.charge,
+		streak = math.floor(s.streak.gauge * Config.events.streakWireScale),
+		streakTier = Streak.tier(s.streak),
 		plateDamage = st.plateDamage,
 		damage = MineService.damage(st),
 		blocks = res.blocks,
@@ -158,6 +164,8 @@ local function onIntent(player: Player, packet: any)
 	end
 	local forced = if creative then player:GetAttribute("CreativeUltLayers") else nil
 	local serverTime = workspace:GetServerTimeNow()
+	Streak.decay(s.streak, math.min(serverTime, s.streakUntil), true)
+	Streak.decay(s.streak, serverTime, false)
 	local duration = 0
 	for wave = 1, 2 do
 		local outcome, failure
@@ -168,6 +176,11 @@ local function onIntent(player: Player, packet: any)
 			outcome, failure = MiningAction.perform(st, profile, s.perks, {
 				ability = ability,
 				now = started,
+				income = Income.context(
+					profile,
+					Family.effects(profile),
+					{ Streak.multiplier(s.streak) }
+				),
 				x = intent.x,
 				y = intent.y,
 				d = d,
@@ -188,12 +201,17 @@ local function onIntent(player: Player, packet: any)
 		s.charge = if ability
 			then (if endless then pick.ultCharge else 0)
 			else math.min(pick.ultCharge, s.charge + 1)
+		if not ability then
+			Streak.add(s.streak, serverTime, pick.interval, "hand")
+		end
+		Pace.record(s.pace, serverTime, outcome.delta)
 		local delta = outcome.delta
 		if ability or delta > 0 then
 			duration += if ability then outcome.duration else Ride.timeline(delta, false).total
 			if ability then
 				s.ultUntil = math.max(s.ultUntil or started, started + duration)
 			end
+			s.streakUntil = serverTime + duration
 			player:SetAttribute("MineReturnAfter", serverTime + duration)
 		end
 		publish(

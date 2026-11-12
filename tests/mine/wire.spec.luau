@@ -50,6 +50,8 @@ Test.describe("Mine protocol", function()
 			plot = 8,
 			front = 36004,
 			accepted = true,
+			streak = 253,
+			streakTier = 2,
 			delta = 4,
 			ability = true,
 			heavy = true,

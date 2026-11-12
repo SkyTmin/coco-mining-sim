@@ -26,6 +26,7 @@ local Aim = require(script.Parent.Aim)
 local Camera = require(script.Parent.Camera)
 local Input = require(script.Parent.Input)
 local Hud = require(Client.Ui.MineHud)
+local StreakHud = require(Client.Ui.StreakHud)
 local Settings = require(Client.Ui.MineSettings)
 local Upgrades = require(Client.Ui.Upgrades)
 local Intensity = require(Client.Fx.Intensity)
@@ -56,6 +57,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local world = Instance.new("Folder")
 	world.Name, world.Parent = "LocalMine", workspace
 	local hud = Hud.new(guiParent, world, translate)
+	local rush = StreakHud.new(hud, translate)
 	local closeSettings = Settings.start(player, guiParent, hud.gear, translate)
 	local vibrate = Haptics.new(world)
 	local footsteps = Footsteps.new()
@@ -684,6 +686,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 		elseif kind == "result" then
 			local res = Wire.decodeResult(packet)
+			if res and res.accepted then
+				rush.sync(res, workspace:GetServerTimeNow())
+			end
 			if res and res.accepted and res.ability and res.seq == 0 and ride then
 				table.insert(echoes, { res = res, visual = visual, tail = {} })
 				return
@@ -1218,6 +1223,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if hud.ultimate and ride and ride.ability then
 			hud.ultimate.progress = ultProgress
 		end
+		rush.step(
+			workspace:GetServerTimeNow(),
+			ride ~= nil
+				or workspace:GetServerTimeNow() < (player:GetAttribute("MineReturnAfter") or 0),
+			active,
+			reduced
+		)
 		Hud.step(hud, now, active, v.mode == "first" and canHit(), hint, reduced)
 		if not jumpButton then
 			local touchGui = guiParent:FindFirstChild("TouchGui")

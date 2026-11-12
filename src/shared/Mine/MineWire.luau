@@ -340,6 +340,8 @@ function Wire.encodeResult(res: any): buffer
 		put("u32", res.delta)
 		putLayers(put, res.width, res.height, res.layers)
 	end
+	put("u16", res.streak or 0)
+	put("u8", res.streakTier or 0)
 	put("u8", res.charge)
 	put("f64", res.plateDamage)
 	putDamage(put, res.damage)
@@ -419,6 +421,11 @@ function Wire.decodeResult(data: any): any?
 			res.width, res.height, res.layers = getLayers(get)
 			check(res.delta > 0 and res.delta <= front and #res.layers == mine.nearWindow)
 		end
+		res.streak, res.streakTier = get("u16"), get("u8")
+		check(
+			res.streak <= Config.events.streak.cap * Config.events.streakWireScale
+				and res.streakTier <= #Config.events.streak.tiers
+		)
 		res.charge, res.plateDamage, res.damage = get("u8"), get("f64"), getDamage(get)
 		if bit32.btest(flags, 128) then
 			local depth = get("u32")
