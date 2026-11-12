@@ -62,6 +62,7 @@ function chest(kind) {
     if (kind === 'crystal') { poly(star(0, by + BH / 2 - 0.04, 0.11, 0.07, 6), C.cyan[1], lz + 0.03, { ol: 0.015 }); poly(circle(0, by + BH / 2 - 0.04, 0.045, 6), '#FFFFFF', lz + 0.035, { ol: 0 }); }
   }
   // effects: a glint (silver), sparkles (gold), floating shards + glow (crystal)
+  const fxStart = P.length; // floating effects: the game spins them around the chest
   const fx = { wood: [], silver: [[0.55, 0.62, 0.08]], gold: [[-0.62, 0.55, 0.1], [0.66, 0.4, 0.08], [0.15, 0.82, 0.07]], crystal: [[-0.66, 0.45, 0.1], [0.7, 0.62, 0.1], [0.1, 0.9, 0.08]] }[kind];
   for (const [x, y, s] of fx) poly(star(x, y, s, s * 0.3, 4), '#FFFFFF', 0.5, { ol: 0.015 });
   if (kind === 'crystal') {
@@ -69,6 +70,7 @@ function chest(kind) {
     glow([0, 0.05, -0.2], 1.1, '#C58BFF');
   }
   if (kind === 'gold') glow([0, 0.05, -0.2], 0.9, '#FFC83D');
+  for (let i = fxStart; i < P.length; i++) if (P[i].t === 'poly') P[i].fx = 1;
   return P;
 }
 
@@ -94,7 +96,9 @@ function pickaxeChest() {
   // family gems on the front of the lid band: storm, dynamite, rift, frost
   [['#45CFFF', -0.5], ['#FF6A2A', -0.17], ['#FFA51C', 0.17], ['#BDEFFF', 0.5]].forEach(([c, x]) => poly(circle(x, by + BH / 2 + 0.01, 0.06, 6, Math.PI / 6), c, D * 1.05 / 2 + 0.015, { d: 0.04, ol: 0.015 }));
   P.push({ t: 'glow', at: [0, 0.05, -0.3], r: 1.2, c: '#7E8BFF' });
+  const fxStart = P.length;
   for (const [x, y, s] of [[-0.85, 0.5, 0.1], [0.88, 0.35, 0.09], [0.3, 0.75, 0.07]]) poly(star(x, y, s, s * 0.3, 4), '#FFFFFF', 0.5, { ol: 0.015 });
+  for (let i = fxStart; i < P.length; i++) P[i].fx = 1;
   return P;
 }
 

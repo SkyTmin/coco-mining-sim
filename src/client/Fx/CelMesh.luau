@@ -6,6 +6,7 @@
 -- as (x, y, z) → (−z, y, x), the same frame the old voxel pickaxe used (thickness along X, height along Y).
 -- Built once per (id, size); callers clone the template. Returns nil when EditableMesh is unavailable.
 local AssetService = game:GetService("AssetService")
+local CelAura = require(script.Parent.CelAura)
 local CelMesh = {}
 
 local INK = Color3.fromHex("15121E")
@@ -188,6 +189,88 @@ local function prism(
 	end
 end
 
+-- [владелец 12.11: «кирки плоские»] a slab with a chamfer: the face is inset, a sloped band runs round it, so the
+-- metal catches light at its edges and reads as forged, not cut from a sheet. False when the inset folds over
+-- (thin spikes): the caller then draws the plain slab.
+local function bevelled(
+	b: Builder,
+	pts: { Vector2 },
+	tris: { number },
+	z: number,
+	d: number,
+	faceColor: Color3,
+	sideColor: Color3
+): boolean
+	local cut = math.min(d * 0.3, 0.09)
+	local inner = offset(pts, -cut)
+	if signedArea(inner) <= 0 then
+		return false
+	end
+	for i = 1, #tris, 3 do
+		local a, c2, c3 = inner[tris[i]], inner[tris[i + 1]], inner[tris[i + 2]]
+		local o1, o2, o3 = pts[tris[i]], pts[tris[i + 1]], pts[tris[i + 2]]
+		local before = (o2 - o1).X * (o3 - o1).Y - (o2 - o1).Y * (o3 - o1).X
+		local after = (c2 - a).X * (c3 - a).Y - (c2 - a).Y * (c3 - a).X
+		if before > 1e-9 and after <= 0 then
+			return false
+		end
+	end
+	local half = d / 2
+	local z1, z0 = z + half, z - half
+	local band = faceColor:Lerp(sideColor, 0.45)
+	-- the two faces, inset
+	for i = 1, #tris, 3 do
+		local p1, p2, p3 = inner[tris[i]], inner[tris[i + 1]], inner[tris[i + 2]]
+		for _, side in { 1, -1 } do
+			local zz = if side == 1 then z1 else z0
+			face(
+				b,
+				Vector3.new(p1.X, p1.Y, zz),
+				Vector3.new(p2.X, p2.Y, zz),
+				Vector3.new(p3.X, p3.Y, zz),
+				Vector3.new(0, 0, side),
+				faceColor,
+				false
+			)
+		end
+	end
+	for i, p in pts do
+		local k = i % #pts + 1
+		local q = pts[k]
+		local e = q - p
+		if e.Magnitude > 1e-6 then
+			local edgeOut = Vector3.new(e.Y, -e.X, 0).Unit
+			local ip, iq = inner[i], inner[k]
+			-- chamfer bands front and back
+			for _, side in { 1, -1 } do
+				local zFace, zRim = z + side * half, z + side * (half - cut)
+				quad(
+					b,
+					Vector3.new(p.X, p.Y, zRim),
+					Vector3.new(q.X, q.Y, zRim),
+					Vector3.new(iq.X, iq.Y, zFace),
+					Vector3.new(ip.X, ip.Y, zFace),
+					edgeOut + Vector3.new(0, 0, side),
+					band,
+					false
+				)
+			end
+			-- the straight side between the chamfers
+			quad(
+				b,
+				Vector3.new(p.X, p.Y, z0 + cut),
+				Vector3.new(q.X, q.Y, z0 + cut),
+				Vector3.new(q.X, q.Y, z1 - cut),
+				Vector3.new(p.X, p.Y, z1 - cut),
+				edgeOut,
+				sideColor,
+				false
+			)
+		end
+	end
+	return true
+end
+
 local function cylinder(
 	b: Builder,
 	a: Vector3,
@@ -342,7 +425,7 @@ end
 local function fill(b: Builder, prims: { { any } }, outline: boolean)
 	for _, p in prims do
 		local kind = p[1]
-		if kind == "p" then
+		if kind == "p" or kind == "q" then
 			local z, d, ol = p[2], p[3], p[6]
 			local flat, pts = p[7], {}
 			for i = 1, #flat, 2 do
@@ -357,16 +440,10 @@ local function fill(b: Builder, prims: { { any } }, outline: boolean)
 					prism(b, offset(pts, ol), p[8], z - half, z + half, INK, INK, true)
 				end
 			else
-				prism(
-					b,
-					pts,
-					p[8],
-					z - d / 2,
-					z + d / 2,
-					Color3.fromHex(p[4]),
-					Color3.fromHex(p[5]),
-					false
-				)
+				local faceColor, sideColor = Color3.fromHex(p[4]), Color3.fromHex(p[5])
+				if not (p[9] == 1 and bevelled(b, pts, p[8], z, d, faceColor, sideColor)) then
+					prism(b, pts, p[8], z - d / 2, z + d / 2, faceColor, sideColor, false)
+				end
 			end
 		elseif kind == "c" then
 			local a, c, r, ol =
@@ -489,7 +566,14 @@ export type Options = {
 	tilt: number?, -- degrees about Roblox X (the old voxel pickaxe used 45)
 	sizeAxes: string?, -- "yz" (default: height/width as the pickaxe) or "all"
 	solidBounds: boolean?, -- size by the solid parts only (chests: the sparkles around do not shrink the chest)
+	unit: number?, -- studs per model unit; overrides `size` (every pickaxe the same size)
+	origin: Vector3?, -- model-space point placed at the template origin (the grip); default: the bounds centre
+	noGlow: boolean?, -- skip the soft glow discs and lights ("g")
+	aura: CelAura.Spec?, -- rarity aura: twinkling sparkles and orbiting motes (CelAura)
 	axes: string?, -- "swap" (default: (x, y, z) → (−z, y, x), the pickaxe frame) or "xyz" (kept, front = +Z)
+	-- thinner towards the tips: z × (1 − k·t), t = 0 at |x| ≤ from … 1 at |x| ≥ to (model units); the head reads
+	-- as forged metal from the side, not as a flat cut-out [владелец 12.11: «сбоку кажется плоским»]
+	taper: { from: number, to: number, k: number }?,
 }
 
 local cache: { [string]: Model | false } = {}
@@ -503,6 +587,12 @@ function CelMesh.template(key: string, prims: { { any } }, options: Options): Mo
 		.. (options.tilt or 0)
 		.. "|"
 		.. (options.axes or "swap")
+		.. "|"
+		.. tostring(options.unit)
+		.. "|"
+		.. tostring(options.origin)
+		.. "|"
+		.. tostring(options.aura and options.aura.level)
 	local hit = cache[cacheKey]
 	if hit ~= nil then
 		return if hit then hit else nil
@@ -521,30 +611,49 @@ function CelMesh.template(key: string, prims: { { any } }, options: Options): Mo
 		local span = if options.sizeAxes == "all"
 			then math.max(extent.X, extent.Y, extent.Z)
 			else math.max(extent.Y, extent.Z)
-		local scale = options.size / math.max(span, 1e-3)
-		local centre = (low + high) / 2
+		local scale = options.unit or options.size / math.max(span, 1e-3)
+		local centre = if options.origin
+			then turn:VectorToWorldSpace(swap(options.origin))
+			else (low + high) / 2
+		local taper = options.taper
 		local function transform(v: Vector3): Vector3
+			if taper then
+				local t = math.clamp((math.abs(v.X) - taper.from) / (taper.to - taper.from), 0, 1)
+				v = Vector3.new(v.X, v.Y, v.Z * (1 - taper.k * t))
+			end
 			return (turn:VectorToWorldSpace(swap(v)) - centre) * scale
 		end
 		local m = Instance.new("Model")
 		m.Name = "Cel_" .. key
+		local solid = {}
+		for _, p in prims do
+			if p[1] ~= "q" then
+				table.insert(solid, p)
+			end
+		end
+		-- colour and ink in one mesh: half the meshes against the device budget
 		local body = newBuilder(transform)
-		fill(body, prims, false)
-		local ink = newBuilder(transform)
-		fill(ink, prims, true)
+		fill(body, solid, false)
+		fill(body, solid, true)
+		-- the old flat comic sprites ("q") are not drawn any more: the aura replaces them [владелец 11.11]
+		if options.aura then
+			CelAura.build(m, options.aura, transform, function(v: Vector3): Vector3
+				return turn:VectorToWorldSpace(swap(v))
+			end, scale)
+		end
 		local bodyPart = meshPart(body, "CelBody")
 		if not bodyPart then
 			return nil
 		end
 		bodyPart.Parent = m
 		m.PrimaryPart = bodyPart
-		local inkPart = meshPart(ink, "CelInk")
-		if inkPart then
-			inkPart.Parent = m
-		end
+		bodyPart.PivotOffset = bodyPart.CFrame:Inverse()
+		-- the solid bounds centre in template space: callers that centre the model (icons, first person) use it
+		local solidLow, solidHigh = bounds(prims, turn, swap, true)
+		m:SetAttribute("BodyCentre", ((solidLow + solidHigh) / 2 - centre) * scale)
 		-- glows: a soft round billboard and a light, sized in model units
 		for _, p in prims do
-			if p[1] == "g" then
+			if p[1] == "g" and not options.noGlow then
 				local at = transform(Vector3.new(p[2], p[3], p[4]))
 				local r = p[5] * scale
 				local color = Color3.fromHex(p[6])
@@ -584,20 +693,123 @@ function CelMesh.template(key: string, prims: { { any } }, options: Options): Mo
 	return result
 end
 
--- Clone the template and weld it to `root` with `relative` (root space). Parts become unanchored, massless, welded.
-function CelMesh.attach(template: Model, root: BasePart, relative: CFrame): Model
+-- floating effects that orbit: weld → (relative, part frame, centre, axis, speed)
+type Spinner = {
+	weld: Weld?,
+	part: BasePart,
+	model: Model?,
+	relative: CFrame,
+	frame: CFrame,
+	centre: Vector3,
+	axis: Vector3,
+	speed: number,
+}
+local spinners: { [BasePart]: Spinner } = {}
+local spinning: RBXScriptConnection? = nil
+local function spinFrame(s: Spinner, t: number): CFrame
+	return s.relative
+		* CFrame.new(s.centre)
+		* CFrame.fromAxisAngle(s.axis, t * s.speed)
+		* CFrame.new(-s.centre)
+		* s.frame
+end
+local function startSpinning()
+	if spinning then
+		return
+	end
+	spinning = game:GetService("RunService").RenderStepped:Connect(function()
+		local t = os.clock()
+		for part, s in spinners do
+			local weld, model = s.weld, s.model
+			if not part.Parent then
+				spinners[part] = nil
+			elseif weld then
+				weld.C0 = spinFrame(s, t)
+			elseif model then
+				part.CFrame = model:GetPivot() * spinFrame(s, t)
+			end
+		end
+	end)
+end
+
+-- A clone scaled by `scale` around the template origin (one template serves every size).
+function CelMesh.clone(template: Model, scale: number?): Model
 	local model = template:Clone()
+	if scale and scale ~= 1 then
+		model:ScaleTo(scale)
+		local body = model:GetAttribute("BodyCentre")
+		if typeof(body) == "Vector3" then
+			model:SetAttribute("BodyCentre", body * scale)
+		end
+	end
+	return model
+end
+
+-- Clone the template (scaled) and weld it to `root` with `relative` (root space). Parts are unanchored and welded.
+function CelMesh.attach(template: Model, root: BasePart, relative: CFrame, scale: number?): Model
+	local model = CelMesh.clone(template, scale)
 	model.Name = "CelModel"
 	for _, part in model:GetDescendants() do
 		if part:IsA("BasePart") then
 			local offsetFrame = relative * part.CFrame
+			local frame = part.CFrame
 			part.CFrame, part.Anchored = root.CFrame * offsetFrame, false
 			local weld = Instance.new("Weld")
 			weld.Part0, weld.Part1, weld.C0, weld.Parent = root, part, offsetFrame, part
+			local centre, axis, speed =
+				part:GetAttribute("SpinCentre"),
+				part:GetAttribute("SpinAxis"),
+				part:GetAttribute("SpinSpeed")
+			if
+				typeof(centre) == "Vector3"
+				and typeof(axis) == "Vector3"
+				and type(speed) == "number"
+			then
+				spinners[part] = {
+					weld = weld,
+					part = part,
+					relative = relative,
+					frame = frame,
+					centre = centre * model:GetScale(),
+					axis = axis,
+					speed = speed,
+				}
+				startSpinning()
+			end
 		end
 	end
 	model.Parent = root.Parent
 	return model
+end
+
+-- Orbit the floating effects of a loose clone (a ViewportFrame preview); call after it is scaled and placed.
+function CelMesh.animate(model: Model)
+	local pivot = model:GetPivot()
+	local scale = model:GetScale()
+	for _, part in model:GetDescendants() do
+		if part:IsA("BasePart") then
+			local centre, axis, speed =
+				part:GetAttribute("SpinCentre"),
+				part:GetAttribute("SpinAxis"),
+				part:GetAttribute("SpinSpeed")
+			if
+				typeof(centre) == "Vector3"
+				and typeof(axis) == "Vector3"
+				and type(speed) == "number"
+			then
+				spinners[part] = {
+					part = part,
+					model = model,
+					relative = CFrame.identity,
+					frame = pivot:ToObjectSpace(part.CFrame),
+					centre = centre * scale,
+					axis = axis,
+					speed = speed,
+				}
+				startSpinning()
+			end
+		end
+	end
 end
 
 return CelMesh

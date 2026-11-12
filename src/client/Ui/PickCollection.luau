@@ -130,7 +130,8 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		end
 		local lock = Candy.icon(tile.face, "lock", offset(15, 15), UDim2.new(1, -17, 1, -16))
 		local badge, count = W.badge(tile.face, W.green)
-		Candy.fit(badge, offset(25, 17), UDim2.new(0, 1, 1, -17))
+		-- [владелец 11.11: «стоит не ровно»] the count sits in the bottom-right corner, never over the pickaxe
+		Candy.fit(badge, offset(27, 17), UDim2.new(1, -30, 1, -20))
 		count.TextColor3 = Candy.ink
 		tiles[id] = {
 			control = tile,

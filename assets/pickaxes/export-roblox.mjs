@@ -97,9 +97,9 @@ function emitModel(prims) {
 			const tris = triangulate(pts);
 			points += pts.length;
 			out.push(
-				`{ "p", ${r3(p.z)}, ${r3(p.d)}, ${col(p.c)}, ${col(p.side || p.c)}, ${r3(p.ol || 0)}, { ${pts
+				`{ "${p.fx ? "q" : "p"}", ${r3(p.z)}, ${r3(p.d)}, ${col(p.c)}, ${col(p.side || p.c)}, ${r3(p.ol || 0)}, { ${pts
 					.map(([x, y]) => `${r3(x)}, ${r3(y)}`)
-					.join(", ")} }, { ${tris.map((i) => i + 1).join(", ")} } }`,
+					.join(", ")} }, { ${tris.map((i) => i + 1).join(", ")} }${p.bevel ? ", 1" : ""} }`,
 			);
 		} else if (p.t === "cyl") {
 			out.push(`{ "c", ${vec(p.a)}, ${vec(p.b)}, ${r3(p.r)}, ${col(p.c)}, ${r3(p.ol || 0)} }`);
@@ -136,7 +136,34 @@ function write(file, items, header) {
 }
 
 // one module per family: a Roblox ModuleScript holds at most 200 000 characters
-const picks = JSON.parse(readFileSync(join(here, "picks-cel.json"), "utf8")).picks;
+// [владелец 12.11: «кирки плоские»] thicker metal: solid slabs ×THICK, the thin front decals ride on the new front face
+// of the slab they sat on, and the decals are mirrored onto the back so the pickaxe reads from both sides
+const THICK = 2.4; // [владелец 12.11 ×2: «плоские»] with the client taper (CelPicks) towards the tips
+function thicken(prims) {
+	const solid = prims.filter((p) => p.t === "poly" && !p.fx && p.d >= 0.15);
+	const fronts = [...new Set(solid.map((p) => +(p.z + p.d / 2).toFixed(3)))].sort((a, b) => a - b);
+	const out = [];
+	for (const p of prims) {
+		if (p.t !== "poly" || p.fx) {
+			out.push(p);
+		} else if (p.d >= 0.15) {
+			out.push({ ...p, z: p.z * THICK, d: p.d * THICK, bevel: 1 });
+		} else {
+			// the slab front this decal sits on: the largest original front not above it
+			const z = p.z;
+			const front = fronts.filter((f) => f <= Math.abs(z) + 0.02).pop() ?? 0;
+			const solidAt = solid.find((q) => +(q.z + q.d / 2).toFixed(3) === front);
+			const newFront = solidAt ? solidAt.z * THICK + (solidAt.d * THICK) / 2 : front;
+			const shifted = Math.sign(z) * (Math.abs(z) + newFront - front);
+			out.push({ ...p, z: shifted });
+			if (z > 0) out.push({ ...p, z: -shifted });
+		}
+	}
+	return out;
+}
+const picks = Object.fromEntries(
+	Object.entries(JSON.parse(readFileSync(join(here, "picks-cel.json"), "utf8")).picks).map(([id, prims]) => [id, thicken(prims)]),
+);
 const dir = join(here, "../../src/client/Fx/CelPickData");
 mkdirSync(dir, { recursive: true });
 const families = [...new Set(Object.keys(picks).map((id) => id.split("_")[0]))];

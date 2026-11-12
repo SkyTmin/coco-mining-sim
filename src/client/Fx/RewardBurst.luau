@@ -17,6 +17,11 @@ export type Burst = {
 	kicker: string,
 	title: string,
 	subtitle: string?,
+	-- 0..1, the size of the moment [владелец 11.11: «эффект сопоставимым к редкости»]: common 0.35 … legendary 1.
+	-- Fewer flecks, fainter rays and dim, a shorter run and a quieter sound for the small ones.
+	power: number?,
+	-- draws over the relic icon (a pickaxe model in a ViewportFrame) after the atlas icon is set
+	decorate: ((ImageLabel) -> ())?,
 }
 
 local DURATION = 2.3
@@ -322,33 +327,45 @@ local function play(burst: Burst)
 	local screen = gui :: ScreenGui
 	paint(burst.palette or RewardBurst.palettes.legendary)
 	Candy.setIcon(parts.icon, burst.icon)
+	local old = parts.icon:FindFirstChild("CelIcon")
+	if old then
+		old:Destroy()
+	end
+	if burst.decorate then
+		burst.decorate(parts.icon)
+	end
+	local power = math.clamp(burst.power or 1, 0.2, 1)
+	local duration = DURATION * (0.7 + 0.3 * power)
+	local fleckCount = math.max(4, math.floor(18 * power + 0.5))
 	parts.kicker.Text, parts.title.Text, parts.subtitle.Text =
 		burst.kicker, burst.title, burst.subtitle or ""
 	screen.Enabled = true
-	Sfx.play("card_morph", 0.5)
+	Sfx.play("card_morph", 0.3 + 0.2 * power)
 	local started = os.clock()
 	local done = false
 	local connection
 	connection = RunService.RenderStepped:Connect(function()
 		local now = os.clock() - started
-		local p = math.min(now / DURATION, 1)
+		local p = math.min(now / duration, 1)
 		local view = screen.AbsoluteSize
 		local scene = sample(SCENE, p, EASE)[1]
 		parts.root.GroupTransparency = 1 - scene
 		local flash = sample(FLASH, p, EASE)
-		parts.dim.BackgroundTransparency = 1 - 0.72 * flash[1]
+		parts.dim.BackgroundTransparency = 1 - 0.72 * flash[1] * (0.45 + 0.55 * power)
 		for i, g in parts.glows do
-			g.BackgroundTransparency = 1 - flash[1] * ({ 0.35, 0.45, 0.55, 0.5 })[i]
-			local k = ({ 1.0, 0.74, 0.5, 0.3 })[i] * 0.9 * flash[2]
+			g.BackgroundTransparency = 1
+				- flash[1] * ({ 0.35, 0.45, 0.55, 0.5 })[i] * (0.5 + 0.5 * power)
+			local k = ({ 1.0, 0.74, 0.5, 0.3 })[i] * 0.9 * flash[2] * (0.7 + 0.3 * power)
 			g.Size = UDim2.fromScale(k, k)
 		end
 		local rays = sample(RAYS, p, EASE)
 		parts.rays.Rotation = rays[3]
 		parts.rays.Size = UDim2.fromScale(1.2 * rays[2], 1.2 * rays[2])
 		for _, bar in parts.bars do
-			bar.BackgroundTransparency = 1 - 0.72 * rays[1]
+			bar.BackgroundTransparency = 1 - 0.72 * rays[1] * power
 		end
-		for _, f in parts.flecks do
+		for index, f in parts.flecks do
+			f.frame.Visible = index <= fleckCount
 			local q = math.clamp((now - f.delay) / 1.2, 0, 1)
 			local e = FLECK(q)
 			local alpha = if q < 0.15 then q / 0.15 else 1 - (q - 0.15) / 0.85

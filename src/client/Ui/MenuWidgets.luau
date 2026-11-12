@@ -5,6 +5,8 @@ local Config = require(Shared.Config)
 local Sfx = require(Shared.Sfx)
 local ProfileState = require(script.Parent.Parent.ProfileState)
 local Candy = require(script.Parent.Candy)
+local CelMesh = require(script.Parent.Parent.Fx.CelMesh)
+local CelPicks = require(script.Parent.Parent.Fx.CelPicks)
 
 local Widgets = {}
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
@@ -229,8 +231,58 @@ function Widgets.badge(parent: Instance, color: Color3): (Frame, TextLabel)
 	return badge, label
 end
 
+-- [владелец 11.11: «обнови кирки иконки»] the cel model itself in a ViewportFrame over the icon slot
+local function celIcon(image: ImageLabel, id: string): boolean
+	local template = CelPicks.template(id)
+	local view = image:FindFirstChild("CelIcon") :: ViewportFrame?
+	if not template then
+		if view then
+			view:Destroy()
+		end
+		return false
+	end
+	if not view then
+		local frame = Instance.new("ViewportFrame")
+		frame.Name, frame.BackgroundTransparency, frame.Size = "CelIcon", 1, UDim2.fromScale(1, 1)
+		frame.LightDirection, frame.Ambient =
+			Vector3.new(-1, -1, -0.4), Color3.fromRGB(200, 200, 200)
+		local camera = Instance.new("Camera")
+		camera.FieldOfView = 30
+		camera.Parent = frame
+		frame.CurrentCamera = camera
+		frame.Parent = image
+		image:GetPropertyChangedSignal("ImageTransparency"):Connect(function()
+			frame.ImageTransparency = image.ImageTransparency
+		end)
+		view = frame
+	end
+	local frame = view :: ViewportFrame
+	if frame:GetAttribute("Pick") ~= id then
+		frame:SetAttribute("Pick", id)
+		frame:ClearAllChildren()
+		local model = CelMesh.clone(template)
+		model:PivotTo(CFrame.new(-CelPicks.bodyCentre(template, 1)))
+		model.Parent = frame
+		local camera = Instance.new("Camera")
+		camera.FieldOfView = 30
+		-- the blade faces −X in the pickaxe frame; frame the whole model with its effects
+		local size = model:GetExtentsSize()
+		local fit = math.max(size.Y, size.Z) * 0.5 / math.tan(math.rad(15)) + size.X
+		camera.CFrame = CFrame.lookAt(Vector3.new(-fit, 0, 0), Vector3.zero)
+		camera.Parent = frame
+		frame.CurrentCamera = camera
+		CelMesh.animate(model)
+	end
+	frame.ImageTransparency = image.ImageTransparency
+	image.Image = ""
+	return true
+end
+
 function Widgets.pickIcon(image: ImageLabel, id: string)
 	Candy.setIcon(image, "pickaxe")
+	if celIcon(image, id) then
+		return
+	end
 	local art = Config.art.pickaxes[id]
 	if art.placeholder then
 		image.ImageColor3 = Candy.white:Lerp(Color3.fromHex(art.color), 0.5)

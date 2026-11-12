@@ -189,20 +189,55 @@ function WallRenderer.sparkles(r: Renderer, now: number)
 	end
 end
 
+local hex = Color3.fromHex
+local CHEST_AURA: { [string]: { level: number, colors: { Color3 }, moteColors: { Color3 }? } } = {
+	silver = { level = 1, colors = { hex("FFFFFF"), hex("CFE6FF"), hex("7A8BA6") } },
+	gold = { level = 2, colors = { hex("FFF6A8"), hex("FFC83D"), hex("B46B00") } },
+	crystal = { level = 3, colors = { hex("F2D9FF"), hex("B066FF"), hex("5F239F") } },
+	-- the pickaxe chest: one comet per family
+	pickaxe = {
+		level = 2,
+		colors = { hex("E3E8FF"), hex("7E8BFF"), hex("2A3CA8") },
+		moteColors = { hex("45CFFF"), hex("FF6A2A"), hex("FFA51C"), hex("BDEFFF") },
+	},
+}
+-- the chest aura (twinkles and orbiting comets) in chest model space; nil for the plain wooden chest
+function WallRenderer.chestAura(kind: string): any
+	local a = CHEST_AURA[kind]
+	return a
+		and {
+			centre = Vector3.new(0, 0.05, 0),
+			radius = if kind == "pickaxe" then 0.85 else 0.72,
+			level = a.level,
+			style = "chest",
+			colors = a.colors,
+			moteColors = a.moteColors,
+		}
+end
+
 -- [владелец 11.11: «закинь все что ты сделал»] wall chests are the cel chests (CelChestData), front towards the player
+-- the cel chest template of `kind` (also used by the QA mirror)
+function WallRenderer.chestTemplate(kind: string): Model?
+	local prims = CelChestData[kind]
+	return prims
+		and CelMesh.template("chest_" .. kind, prims, {
+			size = S * 0.96,
+			axes = "xyz",
+			sizeAxes = "all",
+			solidBounds = true,
+			aura = WallRenderer.chestAura(kind),
+		})
+end
+
 local function chestModel(kind: string?, part: BasePart): Model?
-	local prims = if kind then CelChestData[kind] else nil
-	local template = prims
-		and CelMesh.template(
-			"chest_" .. kind,
-			prims,
-			{ size = S * 0.96, axes = "xyz", sizeAxes = "all", solidBounds = true }
-		)
+	local template = if kind then WallRenderer.chestTemplate(kind) else nil
 	if not template then
 		return nil
 	end
 	local model = CelMesh.attach(template, part, CFrame.new(0, -S * 0.02, 0))
-	model.Name, model.Parent = "ArtModel", part
+	model.Name = "ArtModel"
+	model:SetAttribute("CelChest", kind) -- QA mirror rebuilds it from this
+	model.Parent = part
 	return model
 end
 

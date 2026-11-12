@@ -227,6 +227,7 @@ function build(family, ri) {
 
   // ---------- effects around: flat comic sprites, more with rarity ----------
   const fx = [0, 2, 4, 7][ri];
+  const fxStart = P.length; // everything from here is a floating effect: the game spins it around the head
   const r = rng(31 + ri * 7 + family.length);
   const spots = [[-1.9, 2.6], [1.95, 2.55], [0.95, 3.25], [-1.05, 3.3], [2.45, 1.35], [-2.5, 1.4], [0, 3.6]];
   for (let k = 0; k < fx; k++) {
@@ -245,6 +246,7 @@ function build(family, ri) {
       else for (let q = 0; q < 3; q++) poly(xf(rect(0, 0, 0.62, 0.11), x, y, s, rot + (q * Math.PI) / 3), '#FFFFFF', { ...o, z: z + q * 0.002 });
     }
   }
+  for (let i = fxStart; i < P.length; i++) P[i].fx = 1;
   return P;
 }
 

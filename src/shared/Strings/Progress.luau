@@ -278,4 +278,10 @@ return {
 		es = "¡Nuevo poder!",
 		fr = "Nouveau pouvoir !",
 	},
+	burst_pick_up = {
+		en = "Pickaxe up!",
+		ru = "Кирка прокачана!",
+		es = "¡Pico mejorado!",
+		fr = "Pioche améliorée !",
+	},
 }

@@ -8,6 +8,7 @@ local Strings = require(Shared.Strings)
 local ArtModel = require(Shared.Models.ArtModel)
 local CelMesh = require(script.Parent.Parent.Fx.CelMesh)
 local CelChestData = require(script.Parent.Parent.Fx.CelChestData)
+local WallRenderer = require(script.Parent.Parent.Mine.WallRenderer)
 local ProfileState = require(script.Parent.Parent.ProfileState)
 local Candy = require(script.Parent.Candy)
 local W = require(script.Parent.MenuWidgets)
@@ -22,7 +23,9 @@ local function addModel(parent: Frame, model: Model)
 	local view = Instance.new("ViewportFrame")
 	view.Name, view.BackgroundTransparency = "ChestModel", 1
 	view.Size, view.Parent = scale(1, 1), parent
-	local size = model:GetExtentsSize()
+	-- size by the chest body, not by the glow and the sparkles around it [владелец 11.11: сундук мелкий и не по центру]
+	local body = model.PrimaryPart
+	local size = if body then body.Size else model:GetExtentsSize()
 	local maxAxis = math.max(size.X, size.Y, size.Z)
 	if maxAxis > 0 then
 		model:ScaleTo(model:GetScale() * 2 / maxAxis)
@@ -30,8 +33,11 @@ local function addModel(parent: Frame, model: Model)
 	model:PivotTo(CFrame.identity)
 	model.Parent = view
 	local camera = Instance.new("Camera")
-	camera.CFrame, camera.Parent = CFrame.lookAt(Vector3.new(3.1, 2.3, 3.2), Vector3.zero), view
+	camera.FieldOfView = 40
+	camera.CFrame, camera.Parent =
+		CFrame.lookAt(Vector3.new(1.6, 1.7, 4.1), Vector3.new(0, -0.05, 0)), view
 	view.CurrentCamera = camera
+	CelMesh.animate(model)
 end
 
 local function resultCard(ctx: W.Context, page: Frame, claim: () -> (), again: () -> ())
@@ -122,11 +128,13 @@ function Chest.new(ctx: W.Context, page: Frame)
 	preview:SetAttribute("ChestModel", chestArt)
 	local art = Candy.frame(preview, "ChestArt", scale(0.75, 0.65), scale(0.5, 0.42))
 	art.AnchorPoint = Vector2.new(0.5, 0.5)
-	local template = CelMesh.template(
-		"chest_pickaxe",
-		CelChestData.pickaxe,
-		{ size = 2, axes = "xyz", sizeAxes = "all", solidBounds = true }
-	)
+	local template = CelMesh.template("chest_pickaxe", CelChestData.pickaxe, {
+		size = 2,
+		axes = "xyz",
+		sizeAxes = "all",
+		solidBounds = true,
+		aura = WallRenderer.chestAura("pickaxe"),
+	})
 	local model = if template then template:Clone() else ArtModel.clone(chestArt)
 	if model then
 		addModel(art, model)

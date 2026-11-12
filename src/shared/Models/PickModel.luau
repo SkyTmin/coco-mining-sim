@@ -43,6 +43,10 @@ local heldTemplate: Model? = nil
 -- the client swaps the voxel stand-in for the cel model (src/client/Fx/CelPicks.luau) using these
 PickModel.HELD_SIZE, PickModel.TILT, PickModel.HELD_MOUNT =
 	HELD_SIZE, data.tilt, legacyGrip:Inverse() * handGrip
+-- the hand itself in the grip root's space: the cel model puts its handle grip point exactly here
+PickModel.HAND_MOUNT = legacyGrip:Inverse()
+	* CFrame.new(0.3, -0.3, -0.2)
+	* CFrame.Angles(math.rad(-105), math.pi, 0)
 
 local function build(size: number, anchored: boolean, mount: CFrame): (Model, Part)
 	local pixel = size / span
@@ -105,6 +109,14 @@ function PickModel.view(): (Model, Part)
 	return build(HELD_SIZE * 0.6, true, CFrame.identity)
 end
 
+-- [владелец 11.11: «кирки поменяй»] each client draws the cel model of this pick over the stand-in
+local function celTag(model: Model, id: string, anchored: boolean, first: boolean?)
+	model:SetAttribute("CelPick", id)
+	model:SetAttribute("CelSize", if first then HELD_SIZE * 0.6 else HELD_SIZE)
+	model:SetAttribute("CelMount", if first then "first" elseif anchored then "plain" else "held")
+	CollectionService:AddTag(model, "CelPick")
+end
+
 function PickModel.forPick(
 	id: string,
 	frame: CFrame,
@@ -136,6 +148,8 @@ function PickModel.forPick(
 			end
 			root.Anchored = anchored
 			model:PivotTo(frame)
+			-- the art model was returned here without the tag: first person kept the voxel pick [найдено 12.11]
+			celTag(model, id, anchored, first)
 			return model, root
 		end
 		model:Destroy()
@@ -147,11 +161,7 @@ function PickModel.forPick(
 	else
 		model, root = PickModel.new(PickModel.icon(id), frame, 0.056, anchored)
 	end
-	-- [владелец 11.11: «кирки поменяй»] each client draws the cel model of this pick over the voxel stand-in
-	model:SetAttribute("CelPick", id)
-	model:SetAttribute("CelSize", if first then HELD_SIZE * 0.6 else HELD_SIZE)
-	model:SetAttribute("CelMount", if first or anchored then "plain" else "held")
-	CollectionService:AddTag(model, "CelPick")
+	celTag(model, id, anchored, first)
 	return model, root
 end
 

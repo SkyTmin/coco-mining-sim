@@ -10,6 +10,9 @@ local Power = require(Shared.Play.Power)
 local Upgrade = require(Shared.Play.Upgrade)
 local Candy = require(script.Parent.Candy)
 local W = require(script.Parent.MenuWidgets)
+local RewardBurst = require(script.Parent.Parent.Fx.RewardBurst)
+-- burst size by pickaxe rarity [решение]
+local RARITY_POWER = { common = 0.35, rare = 0.55, epic = 0.78, legendary = 1 }
 
 local Cards = {}
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
@@ -247,6 +250,20 @@ function Cards.new(ctx: W.Context, pickPage: Frame, cardsPage: Frame)
 				and context.pickLevel > previousLevel
 			then
 				W.bump(image, ctx, true)
+				-- [владелец 11.11: «когда кирка прокачивается — такой же эффект, как у навыков, по редкости»]
+				local id = context.pick
+				local rarity = (Config.pickaxes[id] and Config.pickaxes[id].rarity) or "common"
+				RewardBurst.show({
+					icon = "pickaxe",
+					palette = RewardBurst.palettes[rarity] or RewardBurst.palettes.common,
+					power = RARITY_POWER[rarity] or 0.35,
+					kicker = t("burst_pick_up"),
+					title = W.pickName(t, id),
+					subtitle = t("burst_level", context.pickLevel),
+					decorate = function(slot: ImageLabel)
+						W.pickIcon(slot, id)
+					end,
+				})
 			elseif previousWidth and context.width > previousWidth then
 				W.bump(widthBuy.image, ctx, true)
 			end
