@@ -17,6 +17,11 @@
     "defaultLanguage": "en",
     "languages": ["en", "ru", "es", "fr"],
     "autosaveSeconds": 120,
+    "profileVersion": 4,
+    "defaultAutoQuality": 2,
+    "qualityLevels": 3,
+    "maxExactInteger": 9007199254740991,
+    "_profileNote": "[решение ТЗ-05 §13.3] версия профиля, стартовый уровень качества и граница точных целых Luau",
     "_note": "[владелец 09.11] английский по умолчанию; [решение] автосохранение 120 с"
   },
   "creative": {

@@ -6,5 +6,9 @@
     "es",
     "fr"
   ],
-  "autosaveSeconds": 120
+  "autosaveSeconds": 120,
+  "profileVersion": 4,
+  "defaultAutoQuality": 2,
+  "qualityLevels": 3,
+  "maxExactInteger": 9007199254740991
 }

@@ -5,6 +5,10 @@ export type GameConfig = {
 	defaultLanguage: string,
 	languages: { string },
 	autosaveSeconds: number,
+	profileVersion: number,
+	defaultAutoQuality: number,
+	qualityLevels: number,
+	maxExactInteger: number,
 }
 
 export type CreativeConfig = {

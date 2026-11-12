@@ -1,0 +1,113 @@
+{
+  "boughtPickaxes": {},
+  "chestPity": {
+    "epic": 2,
+    "legendary": 4
+  },
+  "circle": {
+    "cards": {
+      "coins": 9,
+      "power": 14
+    },
+    "hitSize": 1,
+    "pickLevels": {
+      "storm_common": 7
+    }
+  },
+  "coins": 2100000,
+  "collection": {
+    "starter": {
+      "count": 1,
+      "golden": 0
+    },
+    "storm_common": {
+      "count": 1,
+      "golden": 0
+    }
+  },
+  "critCounter": 5,
+  "deepestWorld": 5,
+  "family": "storm",
+  "familyChangeDay": 20300,
+  "firstJoin": 1000,
+  "funnel": {
+    "first_hit": true
+  },
+  "hitCounter": 900,
+  "joins": 2,
+  "keyHits": 12,
+  "keySerial": 7,
+  "keys": 7,
+  "lastJoin": 2000,
+  "merges": 0,
+  "nextFamily": {},
+  "pickChestsOpened": 4,
+  "pickaxe": "storm_common",
+  "pickaxeGolden": false,
+  "platesBroken": 4,
+  "settings": {
+    "camera": "first",
+    "effects": "auto",
+    "haptics": true,
+    "language": "ru",
+    "music": 0.7,
+    "reducedMotion": false,
+    "sfx": 0.7,
+    "ui": 1
+  },
+  "skills": {
+    "dynamite": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "frost": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "rift": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "storm": [
+      3,
+      2,
+      0,
+      0
+    ]
+  },
+  "staged": {
+    "firstKey": true,
+    "firstStorm": true
+  },
+  "stats": {
+    "blocks": 10000,
+    "layers": 900,
+    "playSeconds": 1234
+  },
+  "ultCounter": 20,
+  "unlocked": {
+    "cards": {
+      "coins": true,
+      "crit": true,
+      "keys": true,
+      "power": true
+    },
+    "worlds": {
+      "1": true,
+      "2": true,
+      "3": true,
+      "4": true,
+      "5": true
+    }
+  },
+  "v": 3,
+  "wallChestKeyCounter": 2,
+  "wallChestsOpened": 20,
+  "width": 5
+}

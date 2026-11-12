@@ -23,10 +23,23 @@ export type Pick = Config.PickaxeConfig & {
 }
 
 local Circle = {}
-Circle.profileVersion = 3
+Circle.profileVersion = Config.game.profileVersion
 
 function Circle.new(): Types.Circle
 	return { hitSize = 1, pickLevels = {}, cards = {} }
+end
+
+local function initializeRebirth(profile: any)
+	profile.cups, profile.rebirths, profile.circleDeepestPlate = 0, 0, 0
+	profile.circleStartWorld = 1
+	profile.circleStartedAt, profile.circleWorldAt = 0, 0
+	profile.liftChoice = nil
+	profile.worldBest, profile.rewards = {}, { masterEpic = "none" }
+	profile.settings = profile.settings or {}
+	profile.settings.autoQuality = Config.game.defaultAutoQuality
+	if not table.find({ "auto", "high", "normal", "low" }, profile.settings.effects) then
+		profile.settings.effects = "auto"
+	end
 end
 
 function Circle.initialize(profile: any)
@@ -38,6 +51,7 @@ function Circle.initialize(profile: any)
 	profile.hitCounter, profile.critCounter = 0, 0
 	profile.funnel = {}
 	Collection.initialize(profile)
+	initializeRebirth(profile)
 end
 
 local function integer(value: any, min: number, max: number): boolean
@@ -59,10 +73,51 @@ function Circle.migrate(profile: any): boolean
 				profile.circle.pickLevels[id] = nil
 			end
 		end
+		profile.v = 3
+	end
+	if profile.v == 3 then
+		if not integer(profile.deepestWorld, 1, #Config.worlds) then
+			return false
+		end
+		initializeRebirth(profile)
+		profile.circleDeepestPlate = profile.deepestWorld - 1
+		profile.circleWorldAt = if profile.stats then profile.stats.playSeconds or 0 else 0
 		profile.v = Circle.profileVersion
 	end
 	if profile.v ~= Circle.profileVersion or not Collection.validate(profile) then
 		return false
+	end
+	if
+		not integer(profile.cups, 0, Config.game.maxExactInteger)
+		or not integer(profile.rebirths, 0, Config.game.maxExactInteger)
+		or not integer(profile.circleDeepestPlate, 0, #Config.worlds)
+		or not integer(profile.circleStartWorld, 1, #Config.worlds)
+		or (profile.liftChoice ~= nil and not integer(profile.liftChoice, 1, #Config.worlds))
+		or type(profile.worldBest) ~= "table"
+		or type(profile.rewards) ~= "table"
+		or not table.find({ "none", "pending", "claimed" }, profile.rewards.masterEpic)
+		or type(profile.settings) ~= "table"
+		or not integer(profile.settings.autoQuality, 1, Config.game.qualityLevels)
+		or not table.find({ "auto", "high", "normal", "low" }, profile.settings.effects)
+	then
+		return false
+	end
+	for _, field in { "circleStartedAt", "circleWorldAt" } do
+		local value = profile[field]
+		if type(value) ~= "number" or not (value >= 0 and value < math.huge) then
+			return false
+		end
+	end
+	for key, value in profile.worldBest do
+		local world = if type(key) == "string" then tonumber(key) else nil
+		if
+			not integer(world, 1, #Config.worlds)
+			or tostring(world) ~= key
+			or type(value) ~= "number"
+			or not (value > 0 and value < math.huge)
+		then
+			return false
+		end
 	end
 	local circle, unlocked = profile.circle, profile.unlocked
 	if

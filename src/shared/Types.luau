@@ -9,6 +9,7 @@ export type Settings = {
 	reducedMotion: boolean,
 	haptics: boolean,
 	effects: string,
+	autoQuality: number,
 }
 
 export type Circle = {
@@ -18,6 +19,15 @@ export type Circle = {
 }
 
 export type Profile = {
+	cups: number,
+	rebirths: number,
+	circleDeepestPlate: number,
+	circleStartWorld: number,
+	circleStartedAt: number,
+	circleWorldAt: number,
+	liftChoice: number?,
+	worldBest: { [string]: number },
+	rewards: { masterEpic: "none" | "pending" | "claimed" },
 	collection: { [string]: { count: number, golden: number } },
 	family: string?,
 	nextFamily: { [string]: boolean },

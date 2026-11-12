@@ -23,7 +23,7 @@ Test.describe("Families and collection", function()
 					p.circle.pickLevels.storm_common = 7
 				end
 				assert(Circle.migrate(p))
-				expect(p.v).toBe(3)
+				expect(p.v).toBe(4)
 				expect(p.mine).toEqual({ unchanged = true })
 				expect(p.coins).toBe(1e16)
 				expect(p.circle.pickLevels.plain_legendary).toBe(nil)
