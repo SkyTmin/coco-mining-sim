@@ -135,7 +135,7 @@ function Cards.new(ctx: W.Context, cardsPage: Frame)
 			return view.help
 		end)
 	end
-	W.row(boxes, UDim.new(0, 0), UDim.new(1, 0))
+	W.row(boxes, UDim.new(0, 0), UDim.new(1, 0), nil, W.CARD_GAP)
 
 	refresh = function(profile: any, front: number, animate: boolean)
 		currentProfile, currentFront = profile, front

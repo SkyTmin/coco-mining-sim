@@ -135,6 +135,12 @@ function Upgrades.new(
 	-- already says where you are, and the ribbon ran into Roblox's top-bar buttons on phones
 	local body = Candy.frame(modal.panel, "Body", UDim2.new(1, -28, 1, -28), offset(14, 14))
 	modal.ribbon.Visible = false
+	-- the window a shade darker than the cards on it [владелец 13.11: «карточки слиплись»]: white-cream cards then
+	-- stand out as separate objects without heavier outlines
+	local windowSurface = modal.panel:FindFirstChild("Surface") :: Frame?
+	if windowSurface then
+		windowSurface.BackgroundColor3 = Color3.fromHex("E3D1B3")
+	end
 	local hub = Candy.frame(body, "Hub", scale(1, 1), offset(0, 0))
 	-- the hub on the page grid too: its title in the header row, the section cards below
 	local hubTitle = Candy.text(hub, "Title", scale(0.6, W.HEAD), scale(0, 0), 20)
@@ -215,7 +221,7 @@ function Upgrades.new(
 		end)
 		pages[section.id] = Candy.frame(content, section.id, scale(1, 1), offset(0, 0))
 	end
-	W.row(hubBoxes, UDim.new(0, 0), UDim.new(1, 0))
+	W.row(hubBoxes, UDim.new(0, 0), UDim.new(1, 0), nil, W.CARD_GAP)
 
 	local upgrades = UpgradeCards.new(ctx, pages.cards)
 	local collection = Collection.new(ctx, pages.collection, function()
@@ -339,7 +345,7 @@ function Upgrades.new(
 			end
 			tab.button.text.Text = if id == "chest" then translate("menu_chest") else title
 			Candy.setIcon(tab.button.image, icon)
-			Candy.paint(tab.button, if page == id then "coin" else "neutral")
+			W.tab(tab.button, page == id)
 			tab.badge.Visible, tab.count.Text = id ~= "chest" and count > 0, Format.short(count)
 			if page == id then
 				modal.title.Text = if id == "family" then translate("family_permanent") else title
@@ -413,6 +419,9 @@ function Upgrades.new(
 				navigate(section or target)
 				if section == "collection" and pick then
 					collection.open(pick)
+				elseif section == "collectiontab" and pick then
+					navigate("collection")
+					collection.showTab(pick)
 				end
 			end
 		end)

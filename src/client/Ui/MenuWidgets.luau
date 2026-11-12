@@ -232,34 +232,37 @@ function Widgets.badge(parent: Instance, color: Color3): (Frame, TextLabel)
 end
 
 -- [владелец 11.11: «обнови кирки иконки»] the cel model itself in a ViewportFrame over the icon slot
+-- [владелец 13.11: «при переключении семей сначала появляются другие кирки, потом нужные»] the cause: one
+-- ViewportFrame per image had its model swapped; until the new cel meshes reach the renderer the frame keeps showing
+-- its last picture — the previous family's pick over the new stage. Now every pick gets its own ViewportFrame under
+-- the image, built once and kept; switching only flips Visible, so a wrong pick can never show (at worst one empty
+-- frame on the very first look at a pick).
+local INK_SILHOUETTE = Color3.fromHex("2A2540")
+-- The second cause, found by tapping families fast: the first build of a pick's meshes waits on
+-- AssetService (CreateEditableMeshAsync / CreateMeshPartAsync), so a refresh could pause here while a newer one ran;
+-- the older then woke up and painted its family over the newer. The image remembers the pick it wants now
+-- (WantPick) and a late result for another pick leaves it alone.
 local function celIcon(image: ImageLabel, id: string, zoom: number?): boolean
 	local template = CelPicks.template(id)
-	local view = image:FindFirstChild("CelIcon") :: ViewportFrame?
+	if image:GetAttribute("WantPick") ~= id then
+		return true -- a newer request took this image while the meshes were being built
+	end
 	if not template then
-		if view then
-			view:Destroy()
+		for _, child in image:GetChildren() do
+			if child:IsA("ViewportFrame") and child:GetAttribute("Pick") then
+				child.Visible = false
+			end
 		end
 		return false
 	end
+	local name = "CelIcon_" .. id
+	local view = image:FindFirstChild(name) :: ViewportFrame?
 	if not view then
 		local frame = Instance.new("ViewportFrame")
-		frame.Name, frame.BackgroundTransparency, frame.Size = "CelIcon", 1, UDim2.fromScale(1, 1)
+		frame.Name, frame.BackgroundTransparency, frame.Size = name, 1, UDim2.fromScale(1, 1)
 		frame.LightDirection, frame.Ambient, frame.LightColor =
 			Vector3.new(1, -1, 0.6), Color3.fromRGB(215, 215, 220), Color3.fromRGB(255, 250, 240)
-		local camera = Instance.new("Camera")
-		camera.FieldOfView = 30
-		camera.Parent = frame
-		frame.CurrentCamera = camera
-		frame.Parent = image
-		image:GetPropertyChangedSignal("ImageTransparency"):Connect(function()
-			frame.ImageTransparency = image.ImageTransparency
-		end)
-		view = frame
-	end
-	local frame = view :: ViewportFrame
-	if frame:GetAttribute("Pick") ~= id then
 		frame:SetAttribute("Pick", id)
-		frame:ClearAllChildren()
 		local model = CelMesh.clone(template)
 		-- the aura is particles and trails, which a ViewportFrame does not draw; its invisible holder parts only
 		-- made the framing wrong (the pick came out small and off-centre). The stage behind draws the sparkle.
@@ -274,7 +277,6 @@ local function celIcon(image: ImageLabel, id: string, zoom: number?): boolean
 		model:PivotTo(model:GetPivot() - box.Position)
 		local camera = Instance.new("Camera")
 		camera.FieldOfView = 30
-		-- the blade faces −X in the pickaxe frame; frame the whole model with its effects
 		local size = model:GetExtentsSize()
 		-- fit both ways: the screen's vertical is model Y, its horizontal model Z; a narrow window limits the width
 		local function place()
@@ -289,14 +291,26 @@ local function celIcon(image: ImageLabel, id: string, zoom: number?): boolean
 		image:GetPropertyChangedSignal("AbsoluteSize"):Connect(place)
 		camera.Parent = frame
 		frame.CurrentCamera = camera
+		frame.Parent = image
+		view = frame
 	end
-	frame.ImageTransparency = image.ImageTransparency
+	for _, child in image:GetChildren() do
+		if child:IsA("ViewportFrame") and child:GetAttribute("Pick") then
+			child.Visible = child == view
+		end
+	end
+	local frame = view :: ViewportFrame
+	-- a pick the player has not found yet is a dark silhouette: the shape is a promise, the colours a reward
+	local missing = image:GetAttribute("Silhouette") == true
+	frame.ImageColor3 = if missing then INK_SILHOUETTE else Color3.new(1, 1, 1)
+	frame.ImageTransparency = if missing then 0.15 else image.ImageTransparency
 	image.Image = ""
 	return true
 end
 
 -- `zoom` > 1 crops into the pick (small grid cells: the head reads, the handle end may leave the frame)
 function Widgets.pickIcon(image: ImageLabel, id: string, zoom: number?)
+	image:SetAttribute("WantPick", id)
 	Candy.setIcon(image, "pickaxe")
 	if celIcon(image, id, zoom) then
 		return
@@ -308,6 +322,21 @@ function Widgets.pickIcon(image: ImageLabel, id: string, zoom: number?)
 		image.Image, image.ImageRectSize, image.ImageRectOffset =
 			art.icon, Vector2.zero, Vector2.zero
 	end
+end
+
+-- builds every pick's cel template in the background, a frame apart, so the menu never waits on a first build
+local warmed = false
+function Widgets.warmPicks(ids: { string })
+	if warmed then
+		return
+	end
+	warmed = true
+	task.spawn(function()
+		for _, id in ids do
+			CelPicks.template(id)
+			task.wait()
+		end
+	end)
 end
 
 function Widgets.pickName(t: (string, ...any) -> string, id: string): string
@@ -353,9 +382,12 @@ Widgets.GAP = 8
 Widgets.HEAD = 0.13
 Widgets.BODY = 0.13 + 0.035
 Widgets.CLOSE = 30
+-- items (cards) sit further apart than controls, so each reads as its own object [владелец 13.11: «слиплись»]
+Widgets.CARD_GAP = 12
 
 -- lays the given boxes side by side inside their parent: equal shares (or weights), GAP between, flush at both ends
-function Widgets.row(boxes: { GuiObject }, y: UDim, h: UDim, weights: { number }?)
+function Widgets.row(boxes: { GuiObject }, y: UDim, h: UDim, weights: { number }?, gap: number?)
+	local g = gap or Widgets.GAP
 	local sum = 0
 	for index in boxes do
 		sum += if weights then weights[index] else 1
@@ -367,8 +399,8 @@ function Widgets.row(boxes: { GuiObject }, y: UDim, h: UDim, weights: { number }
 		-- every box gives up the same share of the gaps, so all keep their exact proportion
 		Candy.fit(
 			box,
-			UDim2.new(w, -Widgets.GAP * (n - 1) * w, h.Scale, h.Offset),
-			UDim2.new(x, Widgets.GAP * (index - 1) - Widgets.GAP * (n - 1) * x, y.Scale, y.Offset)
+			UDim2.new(w, -g * (n - 1) * w, h.Scale, h.Offset),
+			UDim2.new(x, g * (index - 1) - g * (n - 1) * x, y.Scale, y.Offset)
 		)
 		x += w
 	end
@@ -435,6 +467,22 @@ function Widgets.upgradeCard(
 		buy = buy,
 		locked = locked,
 	}
+end
+
+-- a navigation tab: the selected one is a solid white pill with the ink outline and the shadow; the others are only
+-- their label on the panel — so the eye reads one «you are here» and the content, not a wall of equal buttons
+function Widgets.tab(button: Candy.Control, selected: boolean)
+	Candy.paint(button, "neutral")
+	button.flat = not selected
+	button.shadow.Visible = selected and not button.pressed
+	local stroke = button.face:FindFirstChildOfClass("UIStroke")
+	if stroke then
+		stroke.Transparency = if selected then 0 else 1
+	end
+	button.face.BackgroundColor3 = Color3.new(1, 1, 1)
+	button.face.BackgroundTransparency = if selected then 0 else 1
+	button.text.TextColor3 = if selected then Candy.ink else Color3.fromHex("6A6480")
+	button.image.ImageTransparency = if selected then 0 else 0.3
 end
 
 return Widgets

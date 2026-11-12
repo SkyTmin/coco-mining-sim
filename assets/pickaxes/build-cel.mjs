@@ -368,7 +368,76 @@ function build(family, ri) {
   return P;
 }
 
+// ---------- the starter: «Кремнёвка» [владелец 13.11: «стартовая кирка — случайная заглушка; нужен характер и лор»] ----------
+// Lore: a branch, a knapped flint and twine — what every miner ties together on the first day at the mine mouth.
+// Read at a glance: a grey-blue chipped stone head (no metal, no family colour), a living branch with bark, a cut
+// twig with one green leaf, a pale sawn end, and a twine lashing with a knot and two loose ends. Humble and warm, so
+// the first metal head of a family pick feels like a real step up.
+function buildStarter() {
+  const P = [];
+  const poly = (pts, c, o = {}) => P.push({ t: 'poly', pts, z: o.z ?? 0, d: o.d ?? 0.02, c, side: o.side, ol: o.ol ?? 0, ...(o.nobevel ? { nobevel: 1 } : {}) });
+  const cyl = (a, b, r, c, ol = 0.05) => P.push({ t: 'cyl', a, b, r, c, ol });
+  const ball = (at, r, c, ol = 0.05, zs = 0) => P.push({ t: 'ball', at, r, c, ol, zs });
+  const ring = (y, h, r, c, tilt = 0, ol = 0.03) => cyl([tilt, y, 0], [-tilt, y + h, 0], r, c, ol);
+  const decal = (pts, c, z, ol = 0.03) => poly(pts, c, { z, d: 0.02, ol });
+  const FLINT = ['#8D97A8', '#4C5667', '#272E3B'];
+  const CORTEX = ['#F3EEDF', '#D9CFB6']; // the chalky outer crust of a flint nodule, left on the back edge
+  const BARK = ['#9C6B3F', '#7A4E2B', '#4E3019'];
+  const CUT = '#E9C28A';
+  const TWINE = ['#E8CF97', '#C9A464', '#8E6C36'];
+  const LEAF = ['#9BE15D', '#4FAE2E', '#2E7419'];
+
+  // the head: two chipped flint arms, a little unequal (made by hand), blunt-ish points
+  const ED = 0.24, FZ = ED / 2 + 0.012, RD = 0.38, RZ = RD / 2 + 0.012;
+  for (const s of [1, -1]) {
+    const e = armEdges({ w0: 0.64, w1: 0.1, reach: s > 0 ? 52 : 47, jag: 0.13, seed: s > 0 ? 3 : 11, n: 11, pow: 0.85 });
+    const mir = (pts) => (s > 0 ? pts : mirror(pts));
+    poly(mir(armPoly(e)), FLINT[1], { d: ED, side: FLINT[2], ol: 0.07 });
+    decal(mir(armBand(e, 0.5, 0.78)), FLINT[0], FZ, 0);
+    decal(mir(armBand(e, 0.8, 1.0, 0, 0.8)), CORTEX[0], FZ + 0.002, 0);
+    decal(mir(armBand(e, 0.03, 0.24)), FLINT[2], FZ, 0);
+    poly(mir(armBand(e, 0.3, 0.8, 0, 0.7)), FLINT[1], { d: RD, side: FLINT[2], ol: 0, nobevel: 1 });
+    decal(mir(armBand(e, 0.62, 0.8, 0, 0.7)), FLINT[0], RZ, 0);
+    decal(mir(armBand(e, 0.0, 0.05, 0.2, 1)), '#C8D4E4', FZ + 0.003, 0); // the knapped edge catches the light
+    // conchoidal chips: small pale facets knocked off along the edges
+    const r = rng(s > 0 ? 17 : 29);
+    for (const t of [0.22, 0.44, 0.66, 0.84]) {
+      const i = Math.round(t * (e.top.length - 1));
+      const top = r() > 0.5;
+      const p = top ? e.top[i] : e.bot[i], q = top ? e.top[Math.min(i + 1, e.top.length - 1)] : e.bot[Math.min(i + 1, e.bot.length - 1)];
+      const c = [lerp(e.bot[i][0], e.top[i][0], 0.5), lerp(e.bot[i][1], e.top[i][1], 0.5)];
+      decal(mir([p, q, [lerp(p[0], c[0], 0.45), lerp(p[1], c[1], 0.45)]]), top ? '#B4BECC' : '#1C222D', RZ + 0.004, 0);
+    }
+  }
+  // the branch: two slightly bent pieces, poking out above the head, with a pale sawn end at both ends
+  cyl([0, -2.3, 0], [0.07, -0.5, 0], 0.15, BARK[1], 0.055);
+  cyl([0.07, -0.5, 0], [0, CY + 0.62, 0], 0.15, BARK[1], 0.055);
+  ball([0, -2.32, 0], 0.152, CUT, 0.05);
+  ball([0, CY + 0.64, 0], 0.152, CUT, 0.05);
+  for (const [y, tilt] of [[-1.85, 0.04], [-1.25, -0.05], [-0.15, 0.05], [0.55, -0.04]]) ring(y, 0.05, 0.158, BARK[2], tilt, 0); // bark seams
+  // a cut twig with one leaf: the branch was alive yesterday
+  cyl([0.08, -0.95, 0], [0.5, -0.55, 0.02], 0.07, BARK[0], 0.04);
+  ball([0.51, -0.54, 0.02], 0.071, CUT, 0.035);
+  const leaf = [[0, 0], [0.18, 0.12], [0.36, 0.34], [0.46, 0.62], [0.3, 0.5], [0.12, 0.34], [0.02, 0.16]];
+  poly(xf(leaf, 0.36, -0.68, 1, -0.2), LEAF[1], { z: 0.05, d: 0.06, side: LEAF[2], ol: 0.04 });
+  decal(xf([[0.03, 0.04], [0.4, 0.55], [0.37, 0.56]], 0.36, -0.68, 1, -0.2), LEAF[0], 0.083, 0); // the vein
+  // the lashing: wraps round the branch under and over the head, an X across the joint on both faces, a knot with
+  // two loose ends
+  for (let i = 0; i < 4; i++) ring(1.0 + i * 0.09, 0.07, 0.172, i % 2 ? TWINE[2] : TWINE[1], 0.03, 0.02);
+  for (let i = 0; i < 2; i++) ring(CY + 0.36 + i * 0.09, 0.07, 0.172, i % 2 ? TWINE[2] : TWINE[1], -0.03, 0.02);
+  for (const z of [RZ + 0.01, -(RZ + 0.01)]) for (const rot of [0.75, -0.75]) {
+    decal(rect(0, CY, 0.12, 1.0, rot), TWINE[1], z, 0.03);
+    decal(rect(0, CY + 0.02, 0.04, 0.9, rot), TWINE[0], z + Math.sign(z) * 0.003, 0);
+  }
+  ball([0, CY, RZ + 0.03], 0.12, TWINE[1], 0.04, 1);
+  ball([0, CY, -(RZ + 0.03)], 0.12, TWINE[1], 0.04, 1);
+  cyl([0.02, CY - 0.05, RZ + 0.05], [0.16, CY - 0.5, RZ + 0.08], 0.035, TWINE[1], 0.02);
+  cyl([-0.02, CY - 0.05, RZ + 0.05], [-0.1, CY - 0.44, RZ + 0.06], 0.035, TWINE[2], 0.02);
+  return P;
+}
+
 const out = { picks: {} };
 for (const family of Object.keys(FAM)) RARITIES.forEach((r, i) => (out.picks[`${family}_${r}`] = build(family, i)));
+out.picks.starter = buildStarter();
 writeFileSync(new URL('./picks-cel.json', import.meta.url), JSON.stringify(out));
 console.log('picks:', Object.keys(out.picks).length, 'max prims:', Math.max(...Object.values(out.picks).map((x) => x.length)));

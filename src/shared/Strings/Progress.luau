@@ -19,7 +19,19 @@ return {
 		es = "Carta desbloqueada: Crítico",
 		fr = "Carte débloquée : Critique",
 	},
-	pick_starter = { en = "Wooden", ru = "Деревянная", es = "Madera", fr = "Bois" },
+	-- [владелец 13.11: у стартовой кирки должны быть имя, облик и история] a flint knapped and tied to a branch
+	pick_starter = {
+		en = "Flintpick",
+		ru = "Кремнёвка",
+		es = "Pico de sílex",
+		fr = "Pioche de silex",
+	},
+	pick_starter_lore = {
+		en = "A branch, a flint and some twine. Every miner's first day starts with one.",
+		ru = "Ветка, кремень и бечёвка. С такой начинается первый день каждого шахтёра.",
+		es = "Una rama, un sílex y un cordel. Así empieza el primer día de todo minero.",
+		fr = "Une branche, un silex et de la ficelle. Le premier jour de tout mineur commence ainsi.",
+	},
 	pick_storm_common = { en = "Storm", ru = "Гроза", es = "Tormenta", fr = "Orage" },
 	creative_multiply = {
 		en = "Coins ×{1}",

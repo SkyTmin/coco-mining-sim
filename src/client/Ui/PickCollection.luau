@@ -8,6 +8,7 @@
 --           golden one (three identical picks merge into one golden), «В руке» ribbon, a lock when missing
 --   pick    tap a card: the whole page — the big pick on the left; name, rarity, level, power, what its perk does
 --           and the actions on the right (in the hand: buy levels; otherwise «В руку»); «Все кирки» returns to the cards
+local TweenService = game:GetService("TweenService")
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local Family = require(Shared.Play.Family)
@@ -23,6 +24,7 @@ local Circle = require(Shared.Play.Circle)
 local Upgrade = require(Shared.Play.Upgrade)
 local Worlds = require(Shared.Mine.Worlds)
 local RewardBurst = require(script.Parent.Parent.Fx.RewardBurst)
+local ProfileState = require(script.Parent.Parent.ProfileState)
 -- burst size by pickaxe rarity [решение]
 local RARITY_POWER = { common = 0.35, rare = 0.55, epic = 0.78, legendary = 1 }
 
@@ -55,7 +57,7 @@ Collection.total = total
 local function perk(ctx: W.Context, id: string): string
 	local pick = Config.pickaxes[id]
 	if not pick.family then
-		return ctx.t("pick_starter")
+		return ctx.t("pick_starter_lore")
 	end
 	local rule = Config.families[pick.family].perks[pick.rarity]
 	local first = if pick.family == "frost"
@@ -73,28 +75,30 @@ type Card = {
 	control: Candy.Control,
 	stage: Frame,
 	image: ImageLabel,
+	dim: Frame,
 	stars: TextLabel,
 	rarity: TextLabel,
 	level: TextLabel,
 	count: TextLabel,
 	ribbon: Frame,
 	ribbonText: TextLabel,
+	badge: Frame,
+	badgeText: TextLabel,
 	lock: ImageLabel,
-	track: Frame,
-	bar: Frame,
-	barText: TextLabel,
 	border: UIStroke,
+	tween: Tween?,
 }
 
 function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 	local t = ctx.t
 	local intent = Remotes.event("PickaxeIntent")
-	local GAP = 8
+	-- start building every pick's model now, long before the player opens the collection
+	W.warmPicks(ids)
 	local tab: string? = nil -- a family id or "starter"
 	local selected: string? = nil
 	local detailOpen = false
 	local profile: any
-	local refresh: (any, number?, boolean?) -> ()
+	local refresh: (any, number?, boolean?, boolean?) -> ()
 	local front = 0
 	local previousPick: string? = nil
 	local previousLevel: number? = nil
@@ -104,112 +108,120 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 	local mergeNeed = Config.familyRules.mergeNeed
 
 	-- ── the list ─────────────────────────────────────────────────────────────────────────────────────────────────
+	-- [владелец 13.11: «карточки слиплись, взгляд цепляется за всё сразу»] hierarchy, top to bottom:
+	--   tabs   quiet labels on the panel, only the chosen one is a solid pill (navigation must not compete with items)
+	--   cards  white cards on the darker window, 12 apart: the pick on its rarity stage is the whole message; under it
+	--          one line — level and copies. Found / missing reads at once: a missing pick is a dark silhouette on a
+	--          dimmed stage with a lock (the shape promises, the colours reward). Actions show only when they exist:
+	--          «Слить!» on the stage when three copies wait, a gold rim for a golden copy, «✓ В руке» for the held one
+	--   «Кремнёвка», the starter, is not a family: its tab opens its own screen, with its story
 	local list = Candy.frame(page, "PickList", scale(1, 1), offset(0, 0))
 	local tabKeys = table.clone(families)
 	table.insert(tabKeys, "starter")
 	local tabs = {}
+	local tabBoxes = {}
 	-- the row stops short of the window's close button in the top-right corner
-	local tabRow = Candy.frame(list, "Tabs", UDim2.new(1, -30, 0.13, 0), offset(0, 0))
-	for index, key in tabKeys do
-		local control = Candy.button(
-			tabRow,
-			"Tab_" .. key,
-			UDim2.new(1 / #tabKeys, -GAP * (#tabKeys - 1) / #tabKeys, 1, 0),
-			UDim2.new((index - 1) / #tabKeys, (index - 1) * GAP / #tabKeys, 0, 0),
-			"neutral",
-			15
-		)
+	local tabRow = Candy.frame(list, "Tabs", UDim2.new(1, -W.CLOSE, W.HEAD, 0), offset(0, 0))
+	for _, key in tabKeys do
+		local control =
+			Candy.button(tabRow, "Tab_" .. key, scale(0.2, 1), scale(0, 0), "neutral", 15)
 		local dot = Candy.frame(
 			control.face,
 			"Dot",
 			offset(12, 12),
-			scale(0.1, 0.5),
+			scale(0.08, 0.5),
 			if key == "starter" then W.rarityColors.starter else W.familyColors[key]
 		)
 		dot.AnchorPoint = Vector2.new(0, 0.5)
 		Candy.round(dot, 0)
 		Candy.stroke(dot, 2)
-		Candy.fit(control.text, scale(0.72, 0.8), scale(0.24, 0.1))
+		Candy.fit(control.text, scale(0.74, 0.8), scale(0.22, 0.1))
 		tabs[key] = control
+		table.insert(tabBoxes, control.box)
 		W.bind(ctx, control, function()
-			if profile and tab ~= key then
-				tab = key
+			if not profile then
+				return
+			end
+			if key == "starter" then
+				selected, detailOpen = "starter", true
 				refresh(profile)
+			elseif tab ~= key then
+				tab = key
+				refresh(profile, nil, nil, true)
 			end
 		end)
 	end
+	-- «Кремнёвка» is the longest name: its tab gets a little more room so every label keeps one size
+	W.row(tabBoxes, UDim.new(0, 0), UDim.new(1, 0), { 1, 1, 1, 1, 1.3 })
 
-	local chain =
-		Candy.frame(list, "Chain", UDim2.new(1, 0, 0.87, -GAP - 22), UDim2.new(0, 0, 0.13, GAP))
-	local hint = Candy.text(list, "Hint", UDim2.new(1, 0, 0, 20), UDim2.new(0, 0, 1, -20), 13)
-	hint.TextColor3 = Color3.fromHex("6B6F8C")
+	local CARD_GAP = W.CARD_GAP
+	local chain = Candy.frame(list, "Chain", UDim2.new(1, 0, 1 - W.BODY, -24), scale(0, W.BODY))
+	local hint = Candy.text(list, "Hint", UDim2.new(1, 0, 0, 18), UDim2.new(0, 0, 1, -18), 13)
+	hint.TextColor3 = Color3.fromHex("6A6480")
 
 	local cards: { Card } = {}
 	for c = 1, 4 do
-		local control = Candy.button(
-			chain,
-			"Card" .. c,
-			UDim2.new(0.25, -GAP * 3 / 4, 1, 0),
-			UDim2.new((c - 1) / 4, (c - 1) * GAP / 4, 0, 0),
-			"neutral",
-			12
-		)
+		local control = Candy.button(chain, "Card" .. c, scale(0.25, 1), scale(0, 0), "neutral", 12)
 		control.text.Visible = false
 		local stage =
-			Candy.frame(control.face, "StageHolder", UDim2.new(1, -10, 0.72, -5), offset(5, 5))
-		local image = Candy.icon(stage, "pickaxe", scale(0.94, 0.78), scale(0.03, 0.02))
+			Candy.frame(control.face, "StageHolder", UDim2.new(1, -12, 0.8, -8), offset(6, 6))
+		local image = Candy.icon(stage, "pickaxe", scale(0.94, 0.72), scale(0.03, 0.04))
 		image.ZIndex = 2
-		-- stars and the rarity name on two lines: «★★★★ Легендарная» on one line shrank to unreadable
+		local dim = Candy.frame(stage, "Dim", scale(1, 1), scale(0, 0), Candy.ink)
+		dim.BackgroundTransparency, dim.ZIndex = 0.45, 2
+		Candy.round(dim, 10)
 		local stars =
-			Candy.text(stage, "Stars", scale(0.94, 0.11), scale(0.03, 0.69), 14, Candy.white)
+			Candy.text(stage, "Stars", scale(0.94, 0.1), scale(0.03, 0.74), 14, Candy.white)
 		stars.ZIndex = 3
 		Candy.stroke(stars, 2, true)
 		local rarity =
-			Candy.text(stage, "Rarity", scale(0.94, 0.15), scale(0.03, 0.81), 14, Candy.white)
+			Candy.text(stage, "Rarity", scale(0.94, 0.14), scale(0.03, 0.84), 14, Candy.white)
 		rarity.ZIndex = 3
 		Candy.stroke(rarity, 2, true)
-		local ribbon = Candy.frame(stage, "InHand", scale(0.62, 0.13), scale(0.03, 0.03), W.green)
-		Candy.round(ribbon, 8)
+		local ribbon =
+			Candy.frame(stage, "InHand", UDim2.new(0.62, 0, 0, 24), offset(6, 6), W.green)
+		Candy.round(ribbon, 0)
 		Candy.stroke(ribbon, 2)
 		ribbon.ZIndex = 3
 		local ribbonText =
-			Candy.text(ribbon, "Label", scale(0.9, 0.86), scale(0.05, 0.07), 13, Candy.white)
+			Candy.text(ribbon, "Label", scale(0.86, 0.8), scale(0.07, 0.1), 13, Candy.white)
 		ribbonText.ZIndex = 4
-		local lock = Candy.icon(stage, "lock", offset(34, 34), UDim2.new(0.5, -17, 0.4, -17))
-		lock.ZIndex = 3
-		local level = Candy.text(control.face, "Level", scale(0.5, 0.1), scale(0.06, 0.745), 15)
-		level.TextXAlignment = Enum.TextXAlignment.Left
-		local count = Candy.text(control.face, "Count", scale(0.4, 0.1), scale(0.54, 0.745), 15)
-		count.TextXAlignment = Enum.TextXAlignment.Right
-		-- the way to the golden pick: three identical merge into one golden
-		local track = Candy.frame(
-			control.face,
-			"ToGold",
-			scale(0.88, 0.1),
-			scale(0.06, 0.865),
-			Color3.fromHex("E4D6BD")
+		-- an action waiting: three copies → «Слить!» (top-right of the stage, gold, it is the one thing to do here)
+		local badge = Candy.frame(
+			stage,
+			"Action",
+			UDim2.new(0.5, 0, 0, 24),
+			UDim2.new(0.5, -6, 0, 6),
+			W.yellow
 		)
-		Candy.round(track, 0)
-		Candy.stroke(track, 2)
-		local bar = Candy.frame(track, "Fill", scale(0, 1), scale(0, 0), Color3.fromHex("FFC83D"))
-		Candy.round(bar, 0)
-		local barText = Candy.text(track, "Label", scale(0.96, 0.86), scale(0.02, 0.07), 12)
-		barText.ZIndex = 3
+		Candy.round(badge, 0)
+		Candy.stroke(badge, 2)
+		badge.ZIndex = 3
+		local badgeText = Candy.text(badge, "Label", scale(0.86, 0.8), scale(0.07, 0.1), 13)
+		badgeText.ZIndex = 4
+		local lock = Candy.icon(stage, "lock", offset(30, 30), UDim2.new(0.5, -15, 0.38, -15))
+		lock.ZIndex = 3
+		local level = Candy.text(control.face, "Level", scale(0.55, 0.13), scale(0.07, 0.83), 15)
+		level.TextXAlignment = Enum.TextXAlignment.Left
+		local count = Candy.text(control.face, "Count", scale(0.36, 0.13), scale(0.57, 0.83), 15)
+		count.TextXAlignment = Enum.TextXAlignment.Right
+		count.TextColor3 = Color3.fromHex("6A6480")
 		local card: Card = {
 			control = control,
 			stage = stage,
 			image = image,
+			dim = dim,
 			stars = stars,
 			rarity = rarity,
 			level = level,
 			count = count,
 			ribbon = ribbon,
 			ribbonText = ribbonText,
+			badge = badge,
+			badgeText = badgeText,
 			lock = lock,
-			track = track,
-			bar = bar,
-			barText = barText,
 			border = control.face:FindFirstChildOfClass("UIStroke") :: UIStroke,
+			tween = nil,
 		}
 		cards[c] = card
 		W.bind(ctx, control, function()
@@ -224,6 +236,44 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 				then W.pickName(t, id) .. " · " .. perk(ctx, id)
 				else nil
 		end)
+	end
+	local function layCards()
+		local boxes = {}
+		for _, card in cards do
+			table.insert(boxes, card.control.box)
+		end
+		W.row(boxes, UDim.new(0, 0), UDim.new(1, 0), nil, CARD_GAP)
+	end
+	layCards()
+	-- a new family slides in: the cards rise a few units one after another (≈ 0.25 s in all); a fast second tap cancels
+	-- the first motion and starts from the final places, so nothing ever stacks or lags behind
+	local function arrive()
+		local calm = ProfileState.preference("reducedMotion")
+		for c, card in cards do
+			if card.tween then
+				card.tween:Cancel()
+				card.tween = nil
+			end
+			local box = card.control.box
+			local target = box.Position
+			if not calm and box.Visible then
+				box.Position = target + UDim2.fromOffset(0, 14)
+				local tween = TweenService:Create(
+					box,
+					TweenInfo.new(
+						0.2,
+						Enum.EasingStyle.Quad,
+						Enum.EasingDirection.Out,
+						0,
+						false,
+						(c - 1) * 0.035
+					),
+					{ Position = target }
+				)
+				card.tween = tween
+				tween:Play()
+			end
+		end
 	end
 
 	-- ── the pick screen ──────────────────────────────────────────────────────────────────────────────────────────
@@ -286,7 +336,7 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 	end
 	local levelCaption, levelPill = fact(0, 0.38)
 	local powerCaption, powerPill = fact(0.38, 0.62)
-	local perkText = left(Candy.text(info, "Perk", scale(1, 0.08), scale(0, 0.47), 14))
+	local perkText = left(Candy.text(info, "Perk", scale(1, 0.11), scale(0, 0.455), 14))
 	perkText.TextColor3 = Color3.fromHex("4A4E6E")
 
 	-- the two button rows
@@ -336,7 +386,11 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 	local buy = Candy.button(info, "Buy", scale(1, SUB.h), scale(0, SUB.y), "coin", 15)
 	Candy.buttonIcon(buy, "coin")
 	local mainRow = { quantity, improve, equip, gold, fromChest }
-	local bottomRow = { merge, swap, width, buy }
+	-- the starter's way forward: better picks come from the chest [владелец 13.11: «развитие должно вызывать интерес»]
+	local find = Candy.button(info, "FindBetter", scale(1, SUB.h), scale(0, SUB.y), "robux", 15)
+	Candy.buttonIcon(find, "chest")
+	W.bind(ctx, find, showChest)
+	local bottomRow = { merge, swap, width, buy, find }
 
 	local upgradeRemote = Remotes.event("UpgradeIntent")
 	local pickQuote: Upgrade.Quote? = nil
@@ -410,8 +464,12 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		return level, Power.strength(rarityRule, level, profile.circle.cards, displayGold)
 	end
 
-	refresh = function(current: any, newFront: number?, animate: boolean?)
+	local generation = 0
+	refresh = function(current: any, newFront: number?, animate: boolean?, switched: boolean?)
 		profile = current
+		W.warmPicks(ids)
+		generation += 1
+		local mine = generation
 		front = newFront or front
 		local locale = Strings.localeOf(ctx.player)
 		if not tab then
@@ -420,38 +478,28 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		end
 		list.Visible, details.Visible = not detailOpen, detailOpen
 
-		-- tabs
+		-- tabs: one solid pill for the chosen family; the starter tab is never «chosen» (it opens a screen)
 		for key, control in tabs do
-			control.text.Text = t(if key == "starter" then "menu_wooden" else "family_" .. key)
-			Candy.paint(control, if tab == key then "coin" else "neutral")
+			control.text.Text = t(if key == "starter" then "pick_starter" else "family_" .. key)
+			W.tab(control, tab == key)
 		end
 		hint.Text = t("menu_tap_pick")
 
-		-- the four cards of the chosen family (one centred card for the wooden starter)
-		local shown = {}
-		if tab == "starter" then
-			table.insert(shown, "starter")
-		else
-			for _, rarity in rarities do
-				table.insert(shown, (tab :: string) .. "_" .. rarity)
-			end
-		end
+		-- the four rarities of the chosen family
 		for c, card in cards do
-			local id = shown[c]
-			card.control.box.Visible = id ~= nil
-			if not id then
-				continue
+			local id = (tab :: string) .. "_" .. rarities[c]
+			local entry = profile.collection[id] or { count = 0, golden = 0 }
+			local owned = entry.count + entry.golden > 0
+			-- the pick first (its first build may wait on the engine); if a newer refresh started meanwhile, this
+			-- one stops here, so a card is always repainted whole — stage, pick and texts of one family
+			card.image:SetAttribute("Silhouette", not owned)
+			card.image.ImageTransparency = 0
+			W.pickIcon(card.image, id)
+			if mine ~= generation then
+				return
 			end
-			Candy.move(
-				card.control.box,
-				if tab == "starter"
-					then UDim2.new(0.375, GAP * 3 / 8, 0, 0)
-					else UDim2.new((c - 1) / 4, (c - 1) * GAP / 4, 0, 0)
-			)
 			card.control.box:SetAttribute("Pick", id)
 			local config = Config.pickaxes[id]
-			local entry = profile.collection[id] or { count = 0, golden = 0 }
-			local owned = entry.count + entry.golden > 0 or id == "starter"
 			local inHand = profile.pickaxe == id
 			PickStage.apply(
 				card.stage,
@@ -461,33 +509,34 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 				scale(0, 0),
 				UDim.new(0, 10)
 			)
-			W.pickIcon(card.image, id)
-			card.image.ImageTransparency = if owned then 0 else 0.62
-			card.lock.Visible = not owned
-			card.stars.Text = if config.family then W.stars(config.rarity) else ""
+			card.dim.Visible, card.lock.Visible = not owned, not owned
+			card.stars.Text = W.stars(config.rarity)
 			card.stars.TextColor3 = Color3.fromHex("FFD84A")
-			card.rarity.Text = if config.family
-				then t("menu_rarity_" .. config.rarity)
-				else t("menu_wooden")
+			card.rarity.Text = t("menu_rarity_" .. config.rarity)
 			card.rarity.TextColor3 = W.rarityColors[tone(config.rarity)]:Lerp(Candy.white, 0.45)
 			card.ribbon.Visible = inHand
 			card.ribbonText.Text = "✓ " .. t("menu_in_hand")
+			local canMergeHere = entry.count >= mergeNeed
+			card.badge.Visible = canMergeHere
+			card.badgeText.Text = t("menu_merge_go")
 			local level = levelOf(id, entry)
 			card.level.Text = if owned then t("upgrade_level", level) else t("menu_missing")
-			card.count.Text = if owned and id ~= "starter"
-				then "×" .. Format.short(entry.count + entry.golden)
-				else ""
-			local toGold = if id == "starter" then 0 else math.min(entry.count, mergeNeed)
-			card.track.Visible = id ~= "starter"
-			Candy.fit(card.bar, scale(toGold / mergeNeed, 1), scale(0, 0))
-			card.barText.Text = if toGold >= mergeNeed
-				then t("menu_merge_ready")
-				elseif entry.golden > 0 then "★ " .. t("menu_gold") .. " ×" .. Format.short(
-					entry.golden
+			card.level.TextColor3 = if owned then Candy.ink else Color3.fromHex("8A8499")
+			-- copies in one short token; a golden copy shows as the gold rim and a star
+			card.count.Text = if owned
+				then (if entry.golden > 0 then "★ ×" else "×") .. Format.short(
+					entry.count + entry.golden
 				)
-				else t("menu_to_gold", toGold)
+				else ""
+			card.count.TextColor3 = if entry.golden > 0
+				then Color3.fromHex("C98A00")
+				else Color3.fromHex("6A6480")
 			card.border.Color = if entry.golden > 0 then Color3.fromHex("E0A21A") else Candy.ink
 			card.border.Thickness = if entry.golden > 0 then 4 else 2
+		end
+		if switched and not detailOpen then
+			layCards()
+			arrive()
 		end
 
 		if not detailOpen or not selected then
@@ -518,8 +567,11 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 
 		-- the picture
 		PickStage.apply(top, tone(rarity), family, scale(1, 1), scale(0, 0), UDim.new(0, 12))
+		icon:SetAttribute("Silhouette", not owned)
 		W.pickIcon(icon, id)
-		icon.ImageTransparency = if owned then 0 else 0.5
+		if mine ~= generation then
+			return
+		end
 		back.text.Text = "←"
 		ribbon.Visible = equipped
 		ribbonText.Text = "✓ " .. t("menu_in_hand")
@@ -529,7 +581,9 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		-- the facts
 		title.Text = W.pickName(t, id)
 		rarityText.Text = (
-			if family then W.stars(rarity) .. " " .. t("menu_rarity_" .. rarity) else ""
+			if family
+				then W.stars(rarity) .. " " .. t("menu_rarity_" .. rarity)
+				else t("menu_starter_tag")
 		)
 			.. (
 				if displayGold
@@ -642,6 +696,8 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		Candy.paint(swap, if goldenInHand then "neutral" else "coin")
 		width.box.Visible = equipped and (widthQuote ~= nil or nextWidth ~= nil)
 		buy.box.Visible = shop == true
+		find.box.Visible = id == "starter"
+		find.text.Text = t("menu_find_better")
 		if shop then
 			buy.text.Text = Format.short(shopRule.price)
 			purchaseHelp = t("pick_shop", shopRule.world, Format.short(shopRule.price))
@@ -657,6 +713,14 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 	end
 	return {
 		refresh = refresh,
+		-- QA (Studio hook QaMenuPage = "collectiontab/<family>"): the same as tapping a family tab
+		showTab = function(family: string)
+			if profile and table.find(families, family) then
+				detailOpen = false
+				tab = family
+				refresh(profile, nil, nil, true)
+			end
+		end,
 		-- back to the cards (entering «Кирки» from the rail or the hub)
 		showList = function()
 			detailOpen = false
@@ -664,7 +728,7 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		-- open the pick screen of one pick (the dock button opens the one in the hand; QA)
 		open = function(id: string)
 			if Config.pickaxes[id] then
-				tab, selected, detailOpen = Config.pickaxes[id].family or "starter", id, true
+				tab, selected, detailOpen = Config.pickaxes[id].family or tab, id, true
 				if profile then
 					refresh(profile)
 				end

@@ -172,7 +172,7 @@ const dir = join(here, "../../src/client/Fx/CelPickData");
 mkdirSync(dir, { recursive: true });
 const families = [...new Set(Object.keys(picks).map((id) => id.split("_")[0]))];
 for (const family of families) {
-	const items = Object.fromEntries(Object.entries(picks).filter(([id]) => id.startsWith(family + "_")));
+	const items = Object.fromEntries(Object.entries(picks).filter(([id]) => id === family || id.startsWith(family + "_")));
 	write(join(dir, `${family}.luau`), items, "assets/pickaxes/picks-cel.json");
 }
 writeFileSync(

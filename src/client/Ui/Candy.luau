@@ -78,6 +78,7 @@ export type Control = {
 	kind: string,
 	pressed: boolean,
 	tween: Tween?,
+	flat: boolean?, -- a quiet tab: no shadow, even after a press
 }
 export type Window = {
 	layer: Frame,
@@ -367,7 +368,7 @@ function Candy.press(button: Control, down: boolean)
 		return
 	end
 	button.pressed = down
-	button.shadow.Visible = not down
+	button.shadow.Visible = not down and not button.flat
 	if button.tween then
 		button.tween:Cancel()
 	end

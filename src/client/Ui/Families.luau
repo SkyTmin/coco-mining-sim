@@ -68,12 +68,14 @@ function Families.new(ctx: W.Context, page: Frame)
 	W.row(tabBoxes, UDim.new(0, 0), UDim.new(1, 0))
 
 	local STRIP = 0.19
-	local levelPanel = Candy.panel(page, "FamilyLevel", scale(1, STRIP), scale(0, W.BODY), true)
-	local title = Candy.text(levelPanel, "Title", scale(0.4, 0.42), scale(0.03, 0.06), 16)
+	-- the family level lies straight on the window (no box round it: one frame less between the eye and the skills)
+	local levelPanel = Candy.frame(page, "FamilyLevel", scale(1, STRIP), scale(0, W.BODY))
+	local title = Candy.text(levelPanel, "Title", scale(0.42, 0.42), scale(0, 0.06), 16)
 	title.TextXAlignment = Enum.TextXAlignment.Left
-	local levelText = Candy.text(levelPanel, "Level", scale(0.22, 0.42), scale(0.43, 0.06), 15)
+	local levelText = Candy.text(levelPanel, "Level", scale(0.22, 0.42), scale(0.42, 0.06), 15)
 	levelText.TextXAlignment = Enum.TextXAlignment.Right
-	local fill = Candy.bar(levelPanel, scale(0.6, 0.2), scale(0.04, 0.6), W.blue)
+	local fill =
+		Candy.bar(levelPanel, UDim2.new(0.64, -12, 0.2, 0), UDim2.new(0, 2, 0.6, 0), W.blue)
 	local track = fill.Parent :: Frame
 	Candy.stroke(track, 2)
 	local marks = {}
@@ -92,9 +94,9 @@ function Families.new(ctx: W.Context, page: Frame)
 		marks[level] = box
 	end
 	local choose =
-		Candy.button(levelPanel, "Choose", scale(0.3, 0.72), scale(0.68, 0.14), "confirm", 15)
+		Candy.button(levelPanel, "Choose", scale(0.32, 0.8), scale(0.68, 0.1), "confirm", 15)
 	local current, currentText =
-		W.pill(levelPanel, "Current", scale(0.3, 0.72), scale(0.68, 0.14), W.green, 15)
+		W.pill(levelPanel, "Current", scale(0.32, 0.8), scale(0.68, 0.1), W.green, 15)
 	currentText.TextColor3 = Candy.white
 	local switchEnabled = false
 	local switchHelp = ""
@@ -128,6 +130,7 @@ function Families.new(ctx: W.Context, page: Frame)
 			buy = card.buy,
 			locked = card.locked,
 			surface = card.surface,
+			shadow = card.box:FindFirstChild("Shadow") :: Frame,
 			affordable = false,
 			help = "",
 		}
@@ -142,7 +145,7 @@ function Families.new(ctx: W.Context, page: Frame)
 		end, help)
 		W.bind(ctx, card.locked, function() end, help)
 	end
-	W.row(cardBoxes, UDim.new(0, 0), UDim.new(1, 0))
+	W.row(cardBoxes, UDim.new(0, 0), UDim.new(1, 0), nil, W.CARD_GAP)
 
 	local previous: { [string]: { number } } = {}
 	refresh = function(current: any, animate: boolean)
@@ -159,7 +162,7 @@ function Families.new(ctx: W.Context, page: Frame)
 			-- the family of this circle carries a tick
 			tile.button.text.Text = (if profile.family == id then "✓ " else "")
 				.. t("family_" .. id)
-			Candy.paint(tile.button, if id == family then "coin" else "neutral")
+			W.tab(tile.button, id == family)
 		end
 
 		local isCurrent = family == profile.family
@@ -195,7 +198,10 @@ function Families.new(ctx: W.Context, page: Frame)
 			Candy.setIcon(view.icon, "skill_" .. family .. "_" .. index)
 			view.band.BackgroundColor3 = color
 			view.icon.ImageTransparency = if closed then 0.42 else 0
+			-- a closed skill steps back (flat, see-through) so the eye goes to what can be bought now
 			view.surface.BackgroundColor3 = if closed then Candy.rowColor else Candy.panelColor
+			view.surface.BackgroundTransparency = if closed then 0.45 else 0
+			view.shadow.Visible = not closed
 			view.name.Text = t("skill_" .. family .. "_" .. index)
 			view.name.TextTransparency = if closed then 0.27 else 0
 			local seconds = skill.effect == "stormSeconds"
