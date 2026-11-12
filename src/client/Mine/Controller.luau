@@ -59,6 +59,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	world.Name, world.Parent = "LocalMine", workspace
 	local hud = Hud.new(guiParent, world, translate)
 	local eventFx: any = nil
+	local rebirthUi: any = nil
 	local feverUntil, combo = 0, false
 	local rush = StreakHud.new(hud, translate)
 	local closeSettings = Settings.start(player, guiParent, hud.gear, translate)
@@ -129,7 +130,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			)
 		end
 	end
-	local menu = Upgrades.new(guiParent, player, translate, haptic, hud.wallet)
+	local menu = Upgrades.new(guiParent, player, translate, haptic, hud.wallet, function(master)
+		if rebirthUi then
+			rebirthUi.open(master)
+		end
+	end)
 	FamilyFx.configure(
 		function(cell, front)
 			local r = renderer
@@ -232,9 +237,24 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			familyToast(key, { ... })
 		end
 	)
+	rebirthUi = require(Client.Ui.RebirthWindow).new(
+		guiParent,
+		player,
+		translate,
+		familyToast,
+		function()
+			menu.close()
+			closeSettings()
+		end,
+		function(data, done)
+			eventFx.rebirthTransition(data, done)
+		end
+	)
 	local function menuOpen(): boolean
 		return player:GetAttribute("MineMenuOpen") == true
 			or player:GetAttribute("MineSettingsOpen") == true
+			or player:GetAttribute("MineRebirthOpen") == true
+			or player:GetAttribute("MineRebirthTransition") == true
 	end
 	local function canControl(): boolean
 		return active
@@ -1319,6 +1339,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			reduced
 		)
 		eventFx.step(workspace:GetServerTimeNow(), dt, active, reduced)
+		rebirthUi.step(now, dt, active, reduced)
 		if tunnel then
 			Tunnel.fever(tunnel, active and workspace:GetServerTimeNow() < feverUntil)
 		end

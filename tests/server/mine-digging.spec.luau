@@ -36,6 +36,7 @@ local function startMine(depth: number, prepare: ((any) -> ())?)
 	local windows, results = {}, {}
 	local loader
 	loader = Loader.withOverrides({
+		["src/server/Services/RebirthService.luau"] = { hint = function() end },
 		["src/shared/Remotes.luau"] = {
 			event = function(name)
 				if name == "MineIntent" then
@@ -63,6 +64,9 @@ local function startMine(depth: number, prepare: ((any) -> ())?)
 			end,
 		},
 		["src/server/Services/ProfileService.luau"] = {
+			PlaySeconds = function()
+				return now
+			end,
 			OnLoaded = function(callback)
 				loaded = callback
 			end,

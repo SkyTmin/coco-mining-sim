@@ -276,9 +276,12 @@ local function prepareSave(player: Player): boolean
 	return true
 end
 
-function ProfileService.Replicate(player: Player)
+function ProfileService.Replicate(player: Player, full: boolean?)
 	local session = sessions[player]
 	if session then
+		if full then
+			session.sent = nil
+		end
 		player:SetAttribute("language", session.profile.settings.language)
 		session.replicateDue = true
 	end

@@ -253,6 +253,28 @@ function MineService.reject(player: Player, s: Session, seq: number)
 	)
 end
 
+-- Prepare all mutable session objects outside the profile transaction.
+function MineService.prepareAdopt(state: State.MineState, now: number): any
+	return {
+		state = state,
+		perks = Perks.new(),
+		streak = Streak.new(now),
+		pace = Pace.new(),
+		bucket = Validate.bucket(os.clock()),
+		events = {},
+		eventQueue = {},
+	}
+end
+function MineService.adopt(s: Session, prepared: any)
+	s.state, s.perks, s.streak, s.pace, s.bucket =
+		prepared.state, prepared.perks, prepared.streak, prepared.pace, prepared.bucket
+	s.charge, s.streakUntil, s.lastHitAt, s.hitInterval, s.digStopAt, s.resyncAt =
+		0, 0, -math.huge, 0, -math.huge, -math.huge
+	s.ultUntil, s.lastTarget, s.perkFamily = nil, nil, nil
+	s.stopAfterUlt = false
+	s.events, s.eventQueue, s.eventDirty = prepared.events, prepared.eventQueue, false
+end
+
 function MineService.reset(s: Session, depth: number, width: number)
 	s.state = State.new(s.state.seed, width, mine.height, depth)
 	s.charge = 0

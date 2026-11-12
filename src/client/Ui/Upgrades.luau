@@ -1,6 +1,8 @@
 --!strict
 local TweenService = game:GetService("TweenService")
 local Shared = game:GetService("ReplicatedStorage").Shared
+local Config = require(Shared.Config)
+local Rebirth = require(Shared.Play.Rebirth)
 local Family = require(Shared.Play.Family)
 local Format = require(Shared.Format)
 local Strings = require(Shared.Strings)
@@ -18,6 +20,13 @@ local offset, scale = UDim2.fromOffset, UDim2.fromScale
 -- [владелец 12.11: «это объединить можно»] no separate «Кирка» page any more: the pick in the hand is upgraded on its
 -- own screen inside «Кирки» (PickCollection)
 local sections = {
+	{
+		id = "rebirth",
+		title = "rebirth_title",
+		icon = "ult",
+		color = Candy.purple,
+		action = "menu_open",
+	},
 	{
 		id = "cards",
 		title = "upgrade_cards",
@@ -77,7 +86,8 @@ function Upgrades.new(
 	player: Player,
 	translate: (string, ...any) -> string,
 	feedback: (string, number) -> (),
-	wallet: Frame
+	wallet: Frame,
+	openRebirth: ((boolean?) -> ())?
 )
 	local hud = Candy.layer(parent, "UpgradesHUD", 5)
 	hud.Visible = false
@@ -307,7 +317,16 @@ function Upgrades.new(
 			return
 		end
 
+		local q = Rebirth.quote(profile)
+		local pendingMaster = profile.rewards.masterEpic == "pending"
 		local statuses = {
+			rebirth = if pendingMaster
+				then translate("master_epic_entry")
+				elseif not q.available then translate(
+					"rebirth_need_plate",
+					math.max(Config.rebirth.firstAfterWorld, profile.circleStartWorld)
+				)
+				else translate("rebirth_gain", q.gain),
 			cards = translate("menu_affordable", summary.cardCount),
 			collection = translate(
 				"menu_strength_change",
@@ -323,6 +342,7 @@ function Upgrades.new(
 			chest = translate("pick_chest_keys", Format.short(keys)),
 		}
 		local counts = {
+			rebirth = if pendingMaster or player:GetAttribute("RebirthHint") == 2 then 1 else 0,
 			cards = summary.cardCount,
 			collection = fresh + summary.pickCount,
 			family = skillCount,
@@ -332,14 +352,20 @@ function Upgrades.new(
 			local id = section.id
 			local card, tab = cards[id], rails[id]
 			local title = translate(section.title)
-			local icon = if id == "family" then familyIcon else section.icon
+			local icon = if id == "rebirth"
+					and not q.available
+					and not pendingMaster
+				then "lock"
+				elseif id == "family" then familyIcon
+				else section.icon
 			local count = counts[id]
 			card.title.Text = title
 			card.hint.Text = translate("menu_" .. id .. "_hint")
 			card.status.Text, card.action.Text = statuses[id], translate(section.action)
 			Candy.setIcon(card.icon, icon)
 			card.head.BackgroundColor3 = if id == "family" then familyColor else section.color
-			card.badge.Visible, card.count.Text = count > 0, Format.short(count)
+			card.badge.Visible, card.count.Text =
+				count > 0, if id == "rebirth" then translate("rebirth_up") else Format.short(count)
 			if card.fill then
 				card.fill.Size = scale(ownedCount / Collection.total, 1)
 			end
@@ -373,6 +399,12 @@ function Upgrades.new(
 		refresh(false)
 	end
 	navigate = function(target: string)
+		if target == "rebirth" and openRebirth then
+			Candy.show(modal, false)
+			local p = ProfileState.getProfile()
+			openRebirth(p and p.rewards.masterEpic == "pending")
+			return
+		end
 		page = target
 		if target == "collection" then
 			collection.showList()
@@ -406,6 +438,9 @@ function Upgrades.new(
 	end)
 	Candy.fit(modal.ribbon, offset(200, 34), offset(17, -17))
 	layout()
+	player:GetAttributeChangedSignal("RebirthHint"):Connect(function()
+		refresh(false)
+	end)
 	ProfileState.changed:Connect(function()
 		refresh(true)
 	end)
@@ -434,6 +469,9 @@ function Upgrades.new(
 	refresh(false)
 
 	return {
+		close = function()
+			Candy.show(modal, false)
+		end,
 		chestResult = chest.result,
 		step = function(
 			now: number,

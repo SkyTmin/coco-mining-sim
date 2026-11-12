@@ -3,6 +3,7 @@
 local Lighting = game:GetService("Lighting")
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
+local Profile = require(script.Parent.Parent.ProfileState)
 local Sfx = require(Shared.Sfx)
 local Candy = require(script.Parent.Parent.Ui.Candy)
 local Fx = {}
@@ -155,8 +156,91 @@ function Fx.new(
 		toast("rubble_toast")
 	end
 	function api.rubble(cells: { any }) end
+	local transition: any = nil
+	local transitionUi = Config.rebirth.ui
+	local scene = Candy.layer(parent, "RebirthTransition", Config.rebirth.ui.transitionLayer)
+	scene.Visible = false
+	local backdrop = Instance.new("TextButton")
+	backdrop.Name, backdrop.Text, backdrop.AutoButtonColor = "RebirthBackdrop", "", false
+	backdrop.Size, backdrop.BackgroundColor3, backdrop.Parent =
+		UDim2.fromScale(1, 1), Color3.new(), scene
+	local trails = {}
+	for i = 1, transitionUi.flightBars do
+		local bar = Candy.frame(
+			scene,
+			"WorldFlight",
+			UDim2.fromScale(transitionUi.flightBarWidth, transitionUi.flightBarHeight),
+			UDim2.fromScale((i - 0.5) / transitionUi.flightBars, 0),
+			Candy.white
+		)
+		bar.BackgroundTransparency = transitionUi.flightAlpha
+		table.insert(trails, bar)
+	end
+	local flash = Candy.frame(
+		scene,
+		"SmallFlash",
+		UDim2.fromScale(Config.rebirth.ui.flashWidth, Config.rebirth.ui.flashHeight),
+		UDim2.fromScale(0.5, 0.5),
+		Color3.fromHex(Config.rebirth.ui.transitionGold)
+	)
+	flash.AnchorPoint = Vector2.new(0.5, 0.5)
+	local title = Candy.text(
+		scene,
+		"Multiplier",
+		UDim2.fromScale(transitionUi.transitionTitleSize[1], transitionUi.transitionTitleSize[2]),
+		UDim2.fromScale(transitionUi.transitionTitleAt[1], transitionUi.transitionTitleAt[2]),
+		Config.rebirth.ui.transitionFont,
+		Candy.white
+	)
+	local detail = Candy.text(
+		scene,
+		"Reward",
+		UDim2.fromScale(transitionUi.transitionRewardSize[1], transitionUi.transitionRewardSize[2]),
+		UDim2.fromScale(transitionUi.transitionRewardAt[1], transitionUi.transitionRewardAt[2]),
+		Config.rebirth.ui.transitionSmallFont,
+		Candy.white
+	)
+	local skip = Candy.text(
+		scene,
+		"Skip",
+		UDim2.fromScale(transitionUi.transitionSkipSize[1], transitionUi.transitionSkipSize[2]),
+		UDim2.fromScale(transitionUi.transitionSkipAt[1], transitionUi.transitionSkipAt[2]),
+		cfg.fontSize,
+		Candy.white
+	)
+	local function finishTransition()
+		local old = transition
+		transition = nil
+		scene.Visible = false
+		if old then
+			old.done()
+		end
+	end
+	backdrop.Activated:Connect(function()
+		if
+			transition
+			and workspace:GetServerTimeNow() - transition.at >= Config.rebirth.skipSeconds
+		then
+			finishTransition()
+		end
+	end)
 	function api.rebirthTransition(data: any, onDone: () -> ())
-		onDone()
+		api.clear()
+		transition = { at = workspace:GetServerTimeNow(), data = data, done = onDone }
+		scene.Visible = true
+		title.Text = translate("rebirth_forever", data.cups + 1)
+		detail.Text = translate("rebirth_gain", data.gain)
+			.. "\n"
+			.. (
+				if data.serial == 1
+					then translate("rebirth_wow")
+					elseif data.newRank then translate(
+						"rank_up",
+						translate("rank_" .. data.rank)
+					)
+					else ""
+			)
+		skip.Text = translate("rebirth_skip")
 	end
 	function api.clear()
 		vein, bomb, feverUntil = nil, nil, 0
@@ -169,6 +253,34 @@ function Fx.new(
 		end
 	end
 	function api.step(now: number, dt: number, active: boolean?, reduced: boolean?)
+		if transition then
+			local age = now - transition.at
+			local calm = Profile.preference("reducedMotion") == true
+			local ratio = math.clamp(age / Config.rebirth.transitionSeconds, 0, 1)
+			local worlds = Config.worlds
+			local index = math.max(1, math.ceil((transition.data.fromWorld or 1) * (1 - ratio)))
+			local color = worlds[index].color
+			backdrop.BackgroundColor3 = if calm
+				then Color3.new()
+				else Color3.fromRGB(color[1], color[2], color[3])
+			backdrop.BackgroundTransparency = Config.rebirth.ui.dimAlpha
+			for i, bar in trails do
+				bar.Visible = not calm
+				bar.Position = UDim2.fromScale(
+					(i - 0.5) / transitionUi.flightBars,
+					(age * transitionUi.flightSpeed + i / transitionUi.flightBars)
+							% (1 + transitionUi.flightBarHeight)
+						- transitionUi.flightBarHeight
+				)
+			end
+			flash.Visible = not calm
+				and age >= Config.rebirth.ui.flashAt
+				and age < Config.rebirth.ui.flashAt + Config.rebirth.ui.flashSeconds
+			skip.Visible = age >= Config.rebirth.skipSeconds
+			if ratio >= 1 then
+				finishTransition()
+			end
+		end
 		local lit = feverUntil > now and active ~= false
 		overlay.Enabled = lit
 		overlay.Saturation = cfg.saturation

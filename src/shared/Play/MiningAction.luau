@@ -239,7 +239,17 @@ function MiningAction.perform(
 	local oldWorld, world = Worlds.of(front).index, Worlds.of(st.front).index
 	profile.stats.blocks += res.blocks
 	profile.stats.layers += delta
+	local worldTime = nil
 	if res.plateBroken then
+		profile.circleDeepestPlate = math.max(profile.circleDeepestPlate, oldWorld)
+		local playSeconds = request.playSeconds or profile.stats.playSeconds
+		local elapsed = math.max(0, playSeconds - profile.circleWorldAt)
+		local key = tostring(oldWorld)
+		worldTime = { world = oldWorld, seconds = elapsed, previous = profile.worldBest[key] }
+		if elapsed > 0 and (not profile.worldBest[key] or elapsed < profile.worldBest[key]) then
+			profile.worldBest[key] = elapsed
+		end
+		profile.circleWorldAt = playSeconds
 		profile.platesBroken += 1
 	end
 	local cards = if world > oldWorld then Circle.reach(profile, world) else {}
@@ -280,6 +290,7 @@ function MiningAction.perform(
 		delta = delta,
 		duration = duration,
 		oldWorld = oldWorld,
+		worldTime = worldTime,
 		world = world,
 		newCards = cards,
 		visual = visual,

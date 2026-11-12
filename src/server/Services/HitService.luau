@@ -22,6 +22,7 @@ local ProfileService = require(script.Parent.ProfileService)
 local PlotService = require(script.Parent.PlotService)
 local Pickaxe = require(script.Parent.PickaxeService)
 local Analytics = require(script.Parent.Analytics)
+local RebirthService = require(script.Parent.RebirthService)
 local EventService = require(script.Parent.EventService)
 
 type Session = MineService.Session
@@ -181,6 +182,7 @@ local function onIntent(player: Player, packet: any)
 				income = actionIncome,
 				marks = s.events,
 				serverNow = serverTime,
+				playSeconds = ProfileService.PlaySeconds(player),
 				x = intent.x,
 				y = intent.y,
 				d = d,
@@ -250,6 +252,10 @@ local function onIntent(player: Player, packet: any)
 				Remotes.event("Toast"):FireClient(player, "pick_wall_storm")
 				Analytics.event(player, "pick_get", 1, "wall", reward.pick.id)
 			end
+		end
+		if outcome.worldTime then
+			RebirthService.hint(player)
+			Remotes.event("WorldTime"):FireClient(player, outcome.worldTime)
 		end
 		Pickaxe.refresh(player)
 		Analytics.mined(
