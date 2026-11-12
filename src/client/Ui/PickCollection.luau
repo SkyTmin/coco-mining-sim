@@ -215,69 +215,57 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 	end
 
 	-- ── the details ──────────────────────────────────────────────────────────────────────────────────────────────
-	local details = Candy.panel(page, "SelectedPick", scale(1, 1), offset(0, 0), true)
+	-- [владелец 12.11, телефон: «тут ужасно»] no frame inside the frame; the picture takes the whole left half with
+	-- «Назад» on its corner; everything on the right is laid out in shares of the height, so a short phone page
+	-- does not push the buttons over the text
+	local details = Candy.frame(page, "SelectedPick", scale(1, 1), offset(0, 0))
 	details.Visible = false
-	local back =
-		Candy.button(details, "Back", UDim2.new(0.2, 0, 0, 36), offset(8, 8), "neutral", 15)
-	W.bind(ctx, back, function()
-		detailOpen = false
-		if profile then
-			refresh(profile)
-		end
-	end)
-	local top = Candy.frame(details, "Overview", UDim2.new(0.47, -8, 1, -60), offset(8, 52))
-	local icon = Candy.icon(top, "pickaxe", scale(0.94, 0.86), scale(0.03, 0.04))
+	local top = Candy.frame(details, "Overview", scale(0.46, 1), scale(0, 0))
+	local icon = Candy.icon(top, "pickaxe", scale(0.9, 0.74), scale(0.05, 0.11))
 	icon.ZIndex = 2
-	local ribbon = Candy.frame(top, "InHand", scale(0.4, 0.09), scale(0.03, 0.03), W.green)
+	local ribbon = Candy.frame(top, "InHand", scale(0.5, 0.12), scale(0.25, 0.85), W.green)
 	Candy.round(ribbon, 8)
 	Candy.stroke(ribbon, 2)
 	ribbon.ZIndex = 3
 	local ribbonText =
 		Candy.text(ribbon, "Label", scale(0.9, 0.86), scale(0.05, 0.07), 14, Candy.white)
 	ribbonText.ZIndex = 4
+	local back = Candy.button(details, "Back", offset(108, 34), offset(6, 6), "neutral", 15)
+	W.bind(ctx, back, function()
+		detailOpen = false
+		if profile then
+			refresh(profile)
+		end
+	end)
 
-	local info =
-		Candy.frame(details, "Info", UDim2.new(0.53, -16, 1, -16), UDim2.new(0.47, 8, 0, 8))
-	local title = Candy.text(info, "Name", scale(1, 0.13), scale(0, 0.02), 28)
-	local rarityText = Candy.text(info, "Rarity", scale(1, 0.08), scale(0, 0.16), 17)
+	local info = Candy.frame(details, "Info", UDim2.new(0.54, -10, 1, 0), UDim2.new(0.46, 10, 0, 0))
+	local title = Candy.text(info, "Name", scale(1, 0.15), scale(0, 0), 28)
+	local rarityText = Candy.text(info, "Rarity", scale(1, 0.09), scale(0, 0.15), 17)
 	local _, strength =
-		W.pill(info, "Power", scale(0.485, 0.11), scale(0, 0.27), Candy.panelColor, 15)
+		W.pill(info, "Power", scale(0.485, 0.12), scale(0, 0.27), Candy.panelColor, 15)
 	local _, copies =
-		W.pill(info, "Owned", scale(0.485, 0.11), scale(0.515, 0.27), Candy.panelColor, 15)
-	local perkText = Candy.text(info, "Perk", scale(1, 0.2), scale(0, 0.41), 15)
+		W.pill(info, "Owned", scale(0.485, 0.12), scale(0.515, 0.27), Candy.panelColor, 15)
+	local perkText = Candy.text(info, "Perk", scale(1, 0.17), scale(0, 0.41), 15)
 	perkText.TextWrapped = true
 
-	-- one main button (equip; the golden variant beside it when both exist; «from chest» when missing), one smaller
-	-- below (merge into golden, or buy in the shop)
-	local MAIN_Y, SUB_Y = -94, -44
-	local equip = Candy.button(
-		info,
-		"Equip",
-		UDim2.new(1, 0, 0, 44),
-		UDim2.new(0, 0, 1, MAIN_Y),
-		"confirm",
-		17
-	)
-	local gold = Candy.button(
-		info,
-		"EquipGold",
-		UDim2.new(0.49, 0, 0, 44),
-		UDim2.new(0.51, 0, 1, MAIN_Y),
-		"coin",
-		16
-	)
-	local fromChest = Candy.button(
-		info,
-		"FindInChest",
-		UDim2.new(1, 0, 0, 44),
-		UDim2.new(0, 0, 1, MAIN_Y),
-		"robux",
-		16
-	)
-	local merge =
-		Candy.button(info, "Merge", UDim2.new(1, 0, 0, 38), UDim2.new(0, 0, 1, SUB_Y), "coin", 15)
-	local buy =
-		Candy.button(info, "Buy", UDim2.new(1, 0, 0, 38), UDim2.new(0, 0, 1, SUB_Y), "coin", 15)
+	-- one main row (equip; the golden variant beside it when both exist; «from chest» when missing), one row below
+	-- (merge into golden, or buy in the shop); rows are shares of the height
+	local MAIN = { y = 0.6, h = 0.19 }
+	local SUB = { y = 0.81, h = 0.19 }
+	local function row(r: { y: number, h: number }, x: number, w: number): (UDim2, UDim2)
+		return UDim2.new(w, 0, r.h, -4), UDim2.new(x, 0, r.y, 2)
+	end
+	local equip = Candy.button(info, "Equip", scale(1, MAIN.h), scale(0, MAIN.y), "confirm", 17)
+	local gold =
+		Candy.button(info, "EquipGold", scale(0.49, MAIN.h), scale(0.51, MAIN.y), "coin", 16)
+	local fromChest =
+		Candy.button(info, "FindInChest", scale(1, MAIN.h), scale(0, MAIN.y), "robux", 16)
+	local merge = Candy.button(info, "Merge", scale(1, SUB.h), scale(0, SUB.y), "coin", 15)
+	local buy = Candy.button(info, "Buy", scale(1, SUB.h), scale(0, SUB.y), "coin", 15)
+	for _, b in { equip, gold, fromChest, merge, buy } do
+		local r = if b == merge or b == buy then SUB else MAIN
+		Candy.fit(b.box, row(r, if b == gold then 0.51 else 0, if b == gold then 0.49 else 1))
+	end
 	Candy.buttonIcon(buy, "coin")
 	W.bind(ctx, equip, function()
 		if canEquip and selected then
@@ -440,11 +428,7 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		local inHandNow = equipped and profile.pickaxeGolden == primaryGold
 		ribbon.Visible = equipped
 		ribbonText.Text = "✓ " .. t("menu_in_hand")
-		Candy.fit(
-			equip.box,
-			UDim2.new(if twoVariants then 0.49 else 1, 0, 0, 44),
-			UDim2.new(0, 0, 1, MAIN_Y)
-		)
+		Candy.fit(equip.box, row(MAIN, 0, if twoVariants then 0.49 else 1))
 		equip.box.Visible = owned and (twoVariants or not inHandNow)
 		gold.box.Visible, fromChest.box.Visible = twoVariants, not owned
 		equip.text.Text = if inHandNow then t("menu_in_hand") else t("menu_equip")
@@ -454,22 +438,20 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 			equip,
 			if not canEquip then "disabled" elseif inHandNow then "neutral" else "confirm"
 		)
-		Candy.paint(gold, if canGold then "coin" else "disabled")
+		Candy.paint(
+			gold,
+			if not canGold
+				then "disabled"
+				elseif equipped and profile.pickaxeGolden then "neutral"
+				else "coin"
+		)
 		fromChest.text.Text = t("menu_from_chest")
 
 		local showMerge, showShop = owned and id ~= "starter", shop == true
 		merge.box.Visible, buy.box.Visible = showMerge, showShop
 		local split = showMerge and showShop
-		Candy.fit(
-			merge.box,
-			UDim2.new(if split then 0.49 else 1, 0, 0, 38),
-			UDim2.new(0, 0, 1, SUB_Y)
-		)
-		Candy.fit(
-			buy.box,
-			UDim2.new(if split then 0.49 else 1, 0, 0, 38),
-			UDim2.new(if split then 0.51 else 0, 0, 1, SUB_Y)
-		)
+		Candy.fit(merge.box, row(SUB, 0, if split then 0.49 else 1))
+		Candy.fit(buy.box, row(SUB, if split then 0.51 else 0, if split then 0.49 else 1))
 		merge.text.Text = t("menu_merge_count", math.min(entry.count, mergeNeed))
 		mergeHelp = t("menu_merge_tip") .. "\n" .. t("pick_counts", entry.count, entry.golden)
 		Candy.paint(merge, if canMerge then "coin" else "disabled")

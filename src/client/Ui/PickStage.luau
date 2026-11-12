@@ -287,10 +287,11 @@ function PickStage.apply(
 		Color3.new(0, 0, 0),
 		0.55
 	)
-	shadow.AnchorPoint, shadow.Visible = Vector2.new(0.5, 0.5), not mini
+	-- off [владелец 12.11]: on a phone the dark ellipse read as an empty progress bar under the pick
+	shadow.AnchorPoint, shadow.Visible = Vector2.new(0.5, 0.5), false
 	round(shadow, UDim.new(0.5, 0))
 	flat(shadow, 9)
-	if look.ring and not mini then
+	if false and look.ring and not mini then
 		local ring =
 			frame(stage, "Ring", UDim2.fromScale(0.62, 0.085), UDim2.fromScale(0.5, 0.9), light, 1)
 		ring.AnchorPoint = Vector2.new(0.5, 0.5)

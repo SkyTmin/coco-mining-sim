@@ -3,6 +3,7 @@
 local ContextActionService = game:GetService("ContextActionService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 
 local Candy = {}
 Candy.ink = Color3.fromHex("1E2140")
@@ -571,6 +572,32 @@ function Candy.modal(
 	)
 	close.box.AnchorPoint = Vector2.new(0.5, 0.5)
 	close.text.Text = "×"
+	-- keep the title ribbon below Roblox's own top-bar buttons [владелец 12.11: на телефоне «Кирки» ушло под меню
+	-- Roblox]: the panel's top (minus the ribbon above it) starts under the inset, its bottom 8 units above the edge
+	local function place()
+		local app = canvas
+		if not app or app.Size.Y.Offset <= 0 or app.AbsoluteSize.Y <= 0 then
+			return
+		end
+		local height = app.Size.Y.Offset
+		local k = app.AbsoluteSize.Y / height
+		local inset = GuiService:GetGuiInset().Y / k
+		local wanted = size.Y.Scale + size.Y.Offset / height
+		local topFree = (inset + 24) / height
+		local free = 1 - topFree - 8 / height
+		local h = math.min(wanted, free)
+		local top = math.max((1 - wanted) / 2 + 0.05, topFree)
+		top = math.min(top, 1 - 8 / height - h)
+		Candy.fit(
+			panel,
+			UDim2.new(size.X.Scale, size.X.Offset, h, 0),
+			UDim2.fromScale(0.5, top + h / 2)
+		)
+	end
+	if canvas then
+		canvas:GetPropertyChangedSignal("AbsoluteSize"):Connect(place)
+	end
+	task.defer(place)
 	local window: Window = {
 		layer = layer,
 		panel = panel,
