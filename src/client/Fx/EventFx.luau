@@ -142,7 +142,7 @@ function Fx.new(
 			part.Anchored, part.CanCollide, part.CanTouch, part.CanQuery = true, false, false, false
 			part.Material, part.Color, part.Transparency =
 				Enum.Material.Neon, Color3.fromHex(cfg.gold), cfg.blastTransparency
-			part.Position, part.Parent = position(cell), world
+			part.Position, part.Parent = cell.position or position(cell), world
 			task.delay(cfg.blastSeconds, function()
 				part:Destroy()
 			end)

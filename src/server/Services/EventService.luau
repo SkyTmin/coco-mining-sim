@@ -44,16 +44,21 @@ function Service.income(s: any, profile: any, now: number, ability: boolean): an
 end
 function Service.after(player: Player, s: any, outcome: any, request: any)
 	local e = Service.ensure(s, request.now)
+	if outcome.blast then
+		s.eventDirty = true
+		Analytics.event(player, "bomb_defuse", 1, if request.ability then "ult" else "hand")
+	end
 	append(s, Events.after(e, s.state, request, outcome.coins))
 	attributes(player, e)
 end
 function Service.flush(player: Player, s: any)
 	local queue = s.eventQueue or {}
-	if #queue == 0 then
+	if #queue == 0 and not s.eventDirty then
 		return
 	end
 	-- Color-only windows do not interrupt a pending swing or wall ride on the client.
 	Mine.window(s, "events")
+	s.eventDirty = false
 	for _, event in queue do
 		event.plot, event.front = s.plot, s.state.front
 		Mine.event(s, event)
@@ -69,6 +74,10 @@ function Service.flush(player: Player, s: any)
 				1,
 				event.source or "hand"
 			)
+		elseif event.type == 5 then
+			Analytics.event(player, "bomb_spawn", 1, "")
+		elseif event.type == 6 then
+			Analytics.event(player, "bomb_miss", 1, "")
 		elseif event.type == 3 then
 			Analytics.event(player, "fever_start", 1, if event.reason == 1 then "gift" else "vein")
 		end

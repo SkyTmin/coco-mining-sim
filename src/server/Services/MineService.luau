@@ -343,7 +343,8 @@ function MineService.Start()
 					return WallChests.stage(
 						session.state,
 						profile,
-						ProfileService.PlaySeconds(player)
+						ProfileService.PlaySeconds(player),
+						session.events
 					) or changed
 				end)
 				if changed then

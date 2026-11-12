@@ -126,7 +126,7 @@ function WallChests.tally(st: any, out: { State.Range }, res: any, multiplier: n
 	end
 end
 
-function WallChests.place(st: any, stage: string?): any?
+function WallChests.place(st: any, stage: string?, marks: any?): any?
 	local barrier = State.barrier(st)
 	if st.front >= barrier then
 		return nil
@@ -157,7 +157,22 @@ function WallChests.place(st: any, stage: string?): any?
 		end
 		for y = 0, st.height - 1 do
 			for x = -radius, radius do
-				if State.isExposed(st, x, y, d) and not WallChests.at(st, x, y, d) then
+				local marked = false
+				if marks then
+					marked = marks.rubble[State.cellKey(x, y, d)] == true
+					local cells = if marks.vein
+						then marks.vein.cells
+						elseif marks.bomb then { marks.bomb.cell }
+						else {}
+					for _, cell in cells do
+						marked = marked or (cell.x == x and cell.y == y and cell.d == d)
+					end
+				end
+				if
+					not marked
+					and State.isExposed(st, x, y, d)
+					and not WallChests.at(st, x, y, d)
+				then
 					local chest = { x = x, y = y, d = d, tier = 2, stage = stage, kind = "chest" }
 					st.chests[State.cellKey(x, y, d)] = chest
 					st.damage[State.cellKey(x, y, d)] = nil
@@ -169,10 +184,10 @@ function WallChests.place(st: any, stage: string?): any?
 	return nil
 end
 
-function WallChests.stage(st: any, profile: any, playSeconds: number): boolean
+function WallChests.stage(st: any, profile: any, playSeconds: number, marks: any?): boolean
 	for _, name in { "firstStorm", "firstKey" } do
 		if not profile.staged[name] and playSeconds >= Config.familyRules[name] then
-			if WallChests.place(st, name) then
+			if WallChests.place(st, name, marks) then
 				return true
 			end
 		end

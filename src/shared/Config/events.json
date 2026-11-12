@@ -79,6 +79,7 @@
   "bombDepth": 1,
   "streakWireScale": 10,
   "streakHideSeconds": 3,
+  "bombSalt": 1409,
   "streak": {
     "multipliers": [
       1.25,

@@ -320,7 +320,7 @@ function Wire.encodeResult(res: any): buffer
 		put("u8", event.kind)
 		put("u8", event.gen)
 		put("u16", event.delayMs)
-		if event.kind >= 3 then
+		if event.kind >= 3 and event.kind <= 6 then
 			put("u8", assert(table.find(Config.familyRules.order, event.family)))
 			put("u8", assert(table.find(Config.familyRules.rarities, event.rarity)))
 			put("u16", event.durationMs)
@@ -328,6 +328,9 @@ function Wire.encodeResult(res: any): buffer
 				put("u16", event.buffMs or 0)
 			end
 			-- visual-only proc marks (FxFlags): which skill fired, never an amount
+			put("u8", event.flags or 0)
+		end
+		if event.kind == 7 then
 			put("u8", event.flags or 0)
 		end
 		put("u8", #event.points)
@@ -393,7 +396,7 @@ function Wire.decodeResult(data: any): any?
 		for i = 1, events do
 			local event =
 				{ kind = get("u8"), gen = get("u8"), delayMs = get("u16"), points = {} } :: any
-			if event.kind >= 3 then
+			if event.kind >= 3 and event.kind <= 6 then
 				check(event.kind <= 6)
 				event.family = Config.familyRules.order[get("u8")]
 				event.rarity = Config.familyRules.rarities[get("u8")]
@@ -409,8 +412,21 @@ function Wire.decodeResult(data: any): any?
 					elseif event.kind == 5 then "frozen"
 					else "proc"
 			end
+			check(event.kind >= 1 and event.kind <= 7)
+			if event.kind == 7 then
+				event.flags = get("u8")
+			end
 			local count = get("u8")
-			check(count <= (if event.kind >= 3 then 200 else 6) and event.gen <= cascade.maxGen)
+			check(
+				count
+						<= (if event.kind == 7
+							then Config.events.bomb.box[1]
+								* Config.events.bomb.box[2]
+								* Config.events.bomb.box[3]
+							elseif event.kind >= 3 then 200
+							else 6)
+					and event.gen <= cascade.maxGen
+			)
 			for j = 1, count do
 				event.points[j] = getPoint(get)
 			end

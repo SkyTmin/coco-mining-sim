@@ -179,6 +179,8 @@ local function onIntent(player: Player, packet: any)
 				ability = ability,
 				now = started,
 				income = actionIncome,
+				marks = s.events,
+				serverNow = serverTime,
 				x = intent.x,
 				y = intent.y,
 				d = d,

@@ -68,6 +68,13 @@ Test.describe("Mine protocol", function()
 			runs = { { x = -2, y = 1, a = 36030, b = 36160 } },
 			events = {
 				{
+					kind = 7,
+					gen = 1,
+					delayMs = 0,
+					flags = 0,
+					points = table.create(26, { x = 0, y = 0, dRel = 0 }),
+				},
+				{
 					kind = 1,
 					gen = 1,
 					delayMs = 45,

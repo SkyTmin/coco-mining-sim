@@ -588,6 +588,19 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		for i, event in res.events do
 			event.front = oldFront
 			event.result = fxResult
+			if event.kind == 7 then
+				local cells = {}
+				for _, point in event.points do
+					table.insert(cells, {
+						x = point.x,
+						y = point.y,
+						d = oldFront + point.dRel,
+						position = targetPosition(point, oldOffset),
+					})
+				end
+				eventFx.bombDefused(cells)
+				continue
+			end
 			if event.kind >= 3 then
 				-- perks break their blocks before the effect plays: hand the effect world positions, not parts
 				if event.kind ~= 5 then

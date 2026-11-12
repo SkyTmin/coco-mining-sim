@@ -194,6 +194,17 @@ function Events.start(e: any, st: any, kind: string, now: number, random: () -> 
 		end
 		e.vein = { cells = cells, deadline = now + cfg.vein.windowSeconds }
 		emit(out, 1, e.vein.deadline, cells)
+	elseif kind == "bomb" then
+		if Worlds.of(st.front).index < cfg.bomb.fromWorld then
+			return nil
+		end
+		local cell = Events.bombCell(st, e, random)
+		if not cell then
+			e.bombAt = now + cfg.retrySeconds
+			return nil
+		end
+		e.bomb = { cell = cell, deadline = now + cfg.bomb.fuseSeconds }
+		emit(out, 5, e.bomb.deadline, { cell })
 	elseif kind == "fever" then
 		return Events.fever(e, now, "vein")
 	else
@@ -234,6 +245,20 @@ function Events.tick(
 	random: () -> number
 ): { any }
 	local out = {}
+	if e.bomb and not Events.inTime(e.bomb, now) then
+		local cells = Events.rubbleCells(st)
+		for _, cell in cells do
+			e.rubble[Events.key(cell)] = true
+			st.damage[Events.key(cell)] = nil
+		end
+		emit(out, 6, 0, cells)
+		emit(out, 7, 0, cells)
+		e.bomb = nil
+		e.freeAt = now + cfg.slotGapSeconds
+		e.bombAt = now
+			+ cfg.bomb.minSeconds
+			+ random() * (cfg.bomb.maxSeconds - cfg.bomb.minSeconds)
+	end
 	if e.vein and not Events.inTime(e.vein, now) then
 		emit(out, 2, 0, e.vein.cells, 0)
 		e.vein = nil
@@ -266,6 +291,11 @@ function Events.tick(
 	if due and now >= (e.retryAt or 0) then
 		local spawned = Events.start(e, st, "vein", now, random)
 		for _, event in spawned or {} do
+			table.insert(out, event)
+		end
+	end
+	if now >= e.bombAt and Events.free(e, now) then
+		for _, event in Events.start(e, st, "bomb", now, random) or {} do
 			table.insert(out, event)
 		end
 	end

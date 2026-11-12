@@ -17,10 +17,11 @@ local Perks = require(script.Parent.Perks)
 local WallChests = require(script.Parent.WallChests)
 local Keys = require(script.Parent.Keys)
 local FxFlags = require(script.Parent.FxFlags)
+local MineEvents = require(script.Parent.MineEvents)
 local Income = require(script.Parent.Income)
 local MiningAction = {}
 
-local function merge(base: any, extra: any)
+local function merge(base: any, extra: any, source: string?)
 	for _, cell in extra.cells do
 		cell.gen = 1
 		table.insert(base.cells, cell)
@@ -29,7 +30,7 @@ local function merge(base: any, extra: any)
 		table.insert(base.runs, run)
 	end
 	for _, find in extra.finds do
-		find.source = "perk"
+		find.source = source or "perk"
 		table.insert(base.finds, find)
 	end
 	for key, value in extra.hist do
@@ -72,6 +73,7 @@ function MiningAction.perform(
 ): (any?, string?)
 	local front = st.front
 	local pick = Circle.pick(profile.pickaxe, profile.circle, front, profile)
+	pick.marks = request.marks
 	local effects = Family.effects(profile)
 	local income = request.income or Income.context(profile, effects)
 	if not Income.safeAction(profile, effects, income) then
@@ -169,6 +171,34 @@ function MiningAction.perform(
 		* (if strike then strike.coinMultiplier else (ult and ult.coinMultiplier or 1))
 	local coins = Economy.coinsFor(res.hist, profile.circle.cards.coins, multiplier)
 		+ (res.plateReward or 0) * commonMultiplier
+	local blast = nil
+	if
+		request.marks and MineEvents.hitBomb(request.marks, st, request.serverNow or request.now)
+	then
+		local cell = request.marks.bomb.cell
+		blast = Resolve.bomb(st, pick, MineEvents.blastCells(st, cell))
+		coins += Economy.coinsFor(
+			blast.hist,
+			profile.circle.cards.coins,
+			commonMultiplier * Config.events.bomb.coinMultiplier
+		)
+		merge(res, blast, "bomb")
+		local points = {}
+		for _, point in blast.cells do
+			table.insert(points, { x = point.x, y = point.y, dRel = point.d - front })
+		end
+		table.insert(events, { kind = 7, gen = 1, delayMs = 0, flags = 0, points = points })
+		request.marks.bomb = nil
+		request.marks.freeAt = (request.serverNow or request.now) + Config.events.slotGapSeconds
+		request.marks.bombAt = (request.serverNow or request.now)
+			+ Config.events.bomb.minSeconds
+			+ Hash.unit(
+					st.seed,
+					profile.hitCounter + profile.ultCounter,
+					Config.events.bombSalt
+				)
+				* (Config.events.bomb.maxSeconds - Config.events.bomb.minSeconds)
+	end
 	profile.coins += coins
 	local keys = if ability then 0 else Keys.hit(profile, effects.keys, st.seed)
 	local hitKeys = keys
@@ -186,7 +216,7 @@ function MiningAction.perform(
 				find.source == "hand",
 				st.seed,
 				effects,
-				chestMultiplier
+				if find.source == "bomb" then commonMultiplier else chestMultiplier
 			)
 			coins += reward.coins
 			keys += reward.keys
@@ -215,7 +245,7 @@ function MiningAction.perform(
 	local cards = if world > oldWorld then Circle.reach(profile, world) else {}
 	local placed, placedChest = false, nil
 	if ability and Hash.unit(st.seed, profile.ultCounter, 509) < effects.ultChest then
-		placedChest = WallChests.place(st)
+		placedChest = WallChests.place(st, nil, request.marks)
 		placed = placedChest ~= nil
 	end
 	local echo = ability
@@ -239,6 +269,7 @@ function MiningAction.perform(
 	end
 	return {
 		res = res,
+		blast = blast,
 		events = events,
 		coins = coins,
 		keys = keys,

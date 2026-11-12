@@ -112,7 +112,8 @@
     "veinDepth": 2,
     "bombDepth": 1,
     "streakWireScale": 10,
-    "streakHideSeconds": 3
+    "streakHideSeconds": 3,
+    "bombSalt": 1409
   },
   "qualityRules": {
     "_note": "[вики 11 §5; решение ТЗ-05 P25] гистерезис авто-качества",
