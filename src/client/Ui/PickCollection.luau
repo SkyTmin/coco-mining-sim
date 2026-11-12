@@ -8,6 +8,7 @@ local Strings = require(Shared.Strings)
 local Remotes = require(Shared.Remotes)
 local Candy = require(script.Parent.Candy)
 local W = require(script.Parent.MenuWidgets)
+local PickStage = require(script.Parent.PickStage)
 
 local Collection = {}
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
@@ -112,8 +113,14 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		tile.text.Visible = false
 		local stripe = W.band(tile.face, "Rarity", UDim2.new(1, -4, 0, 6), W.rarityColors[rarity])
 		Candy.round(stripe, 3)
-		local image = Candy.icon(tile.face, "pickaxe", scale(0.31, 0.74), scale(0.02, 0.18))
-		W.pickIcon(image, id)
+		-- a square cell on the left with a small rarity backdrop; the pick fills it [владелец 12.11: «мелкие»]
+		local cell = Candy.frame(tile.face, "Cell", scale(0.3, 0.86), scale(0.02, 0.1))
+		local square = Instance.new("UIAspectRatioConstraint")
+		square.Parent = cell
+		PickStage.apply(cell, rarity, pick.family, scale(1, 1), scale(0, 0), UDim.new(0, 8), true)
+		local image = Candy.icon(cell, "pickaxe", scale(1, 1), scale(0, 0))
+		image.ZIndex = 2
+		W.pickIcon(image, id, 1.1)
 		local stars = Candy.text(
 			tile.face,
 			"Stars",
@@ -162,9 +169,17 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 	)
 	local top = Candy.frame(details, "Overview", UDim2.new(1, -10, 1, -133), offset(5, 3))
 	local stripe = W.band(top, "Rarity", UDim2.new(1, -4, 0, 7), W.yellow)
-	local icon = Candy.icon(top, "pickaxe", scale(0.70, 0.49), scale(0.15, 0.06))
-	local title = Candy.text(top, "Name", scale(0.94, 0.15), scale(0.03, 0.55), 22)
-	local rarityText = Candy.text(top, "Rarity", scale(0.94, 0.12), scale(0.03, 0.70), 15)
+	-- a card: the stage takes most of the height, the name and rarity sit on its dark bottom in white
+	-- [владелец 12.11: «выглядит так себе» — the stage was a thin strip with a tiny pick]
+	stripe.Visible = false
+	local icon = Candy.icon(top, "pickaxe", scale(0.92, 0.6), scale(0.04, 0.02))
+	icon.ZIndex = 2
+	local title = Candy.text(top, "Name", scale(0.94, 0.12), scale(0.03, 0.6), 22, Candy.white)
+	local rarityText = Candy.text(top, "Rarity", scale(0.94, 0.08), scale(0.03, 0.715), 15)
+	for _, label in { title, rarityText } do
+		label.ZIndex = 3
+		Candy.stroke(label, 2.2, true)
+	end
 	local _, strength =
 		W.pill(top, "Power", scale(0.47, 0.14), scale(0.02, 0.84), Candy.panelColor, 15)
 	local _, copies =
@@ -305,12 +320,20 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 
 		W.pickIcon(icon, id)
 		icon.ImageTransparency = if owned then 0 else 0.46
+		PickStage.apply(
+			top,
+			rarity,
+			family,
+			UDim2.fromScale(1, 0.81),
+			UDim2.fromScale(0, 0),
+			UDim.new(0, 12)
+		)
 		stripe.BackgroundColor3 = W.rarityColors[rarity]
 		title.Text = W.pickName(t, id)
 		rarityText.Text = if family
 			then W.stars(rarity) .. " " .. t("menu_rarity_" .. rarity)
 			else ""
-		rarityText.TextColor3 = W.rarityText[rarity]
+		rarityText.TextColor3 = W.rarityColors[rarity]:Lerp(Candy.white, 0.35)
 		strength.Text = t("menu_strength") .. " " .. Format.stat(power, locale)
 		copies.Text = t("menu_have") .. " " .. Format.short(count)
 		equipHelp = t("pick_counts", entry.count, entry.golden) .. "\n" .. perk(ctx, id)

@@ -10,6 +10,7 @@ local Power = require(Shared.Play.Power)
 local Upgrade = require(Shared.Play.Upgrade)
 local Candy = require(script.Parent.Candy)
 local W = require(script.Parent.MenuWidgets)
+local PickStage = require(script.Parent.PickStage)
 local RewardBurst = require(script.Parent.Parent.Fx.RewardBurst)
 -- burst size by pickaxe rarity [решение]
 local RARITY_POWER = { common = 0.35, rare = 0.55, epic = 0.78, legendary = 1 }
@@ -102,6 +103,7 @@ function Cards.new(ctx: W.Context, pickPage: Frame, cardsPage: Frame)
 		Candy.panel(pickPage, "PickPreview", UDim2.new(0.48, -5, 1, -5), offset(3, 0), true)
 	heroSurface.BackgroundColor3 = Color3.fromHex("DDF2FE")
 	local image = Candy.icon(hero, "pick", scale(0.68, 0.61), scale(0.16, 0.03))
+	image.ZIndex = 2
 	local heroName = Candy.text(hero, "Name", scale(0.95, 0.12), scale(0.025, 0.63), 24)
 	local details =
 		Candy.frame(pickPage, "PickDetails", UDim2.new(0.52, -7, 1, -5), UDim2.new(0.48, 5, 0, 0))
@@ -210,6 +212,16 @@ function Cards.new(ctx: W.Context, pickPage: Frame, cardsPage: Frame)
 		local nextPick = if single then pickAt(profile, front, single.level) else current
 		local maxLevel = Power.cap(rarity, context.golden)
 		W.pickIcon(image, context.pick)
+		-- the stage behind the pick: rarity + family [владелец 12.11: «фон где кирки поменять»]
+		local corner = heroSurface:FindFirstChildOfClass("UICorner")
+		PickStage.apply(
+			heroSurface,
+			Config.pickaxes[context.pick].rarity,
+			Config.pickaxes[context.pick].family,
+			UDim2.new(1, -8, 0.64, -4),
+			UDim2.fromOffset(4, 4),
+			corner and corner.CornerRadius
+		)
 		heroName.Text = W.pickName(t, context.pick)
 			.. " "
 			.. W.stars(Config.pickaxes[context.pick].rarity)

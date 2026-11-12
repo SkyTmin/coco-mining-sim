@@ -98,7 +98,7 @@ function CelAura.build(
 		holder.Size = spec.box * unit
 		holder.CFrame =
 			CFrame.fromMatrix(centre, direction(Vector3.xAxis), direction(Vector3.yAxis))
-		sparkle = math.min(holder.Size.X, holder.Size.Y, holder.Size.Z) * 0.45
+		sparkle = math.min(holder.Size.X, holder.Size.Y, holder.Size.Z) * 0.2
 	else
 		holder.Shape = Enum.PartType.Ball
 		holder.Size = Vector3.one * radius * 2

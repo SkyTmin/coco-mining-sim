@@ -287,12 +287,13 @@ local function cylinder(
 	local u = (if math.abs(dir.Y) < 0.9 then Vector3.yAxis else Vector3.xAxis):Cross(dir).Unit
 	local v = dir:Cross(u)
 	local ring = {}
-	for i = 1, SEGMENTS do
-		local t = (i - 1) / SEGMENTS * math.pi * 2
+	local segments = if r < 0.22 then 8 elseif r < 0.3 then 10 else SEGMENTS -- grip rings, fuses: 8 sides read round
+	for i = 1, segments do
+		local t = (i - 1) / segments * math.pi * 2
 		ring[i] = u * math.cos(t) * r + v * math.sin(t) * r
 	end
-	for i = 1, SEGMENTS do
-		local p, q = ring[i], ring[i % SEGMENTS + 1]
+	for i = 1, segments do
+		local p, q = ring[i], ring[i % segments + 1]
 		quad(b, a + p, a + q, c + q, c + p, (p + q) / 2, color, inside)
 		face(b, a, a + p, a + q, -dir, color, inside)
 		face(b, c, c + p, c + q, dir, color, inside)
@@ -300,7 +301,8 @@ local function cylinder(
 end
 
 local function sphere(b: Builder, at: Vector3, r: number, color: Color3, inside: boolean)
-	local rows, cols = 7, 12
+	-- rivets and studs are tiny: a low-poly dome reads the same under the ink and costs a fifth of the budget
+	local rows, cols = if r < 0.13 then 3 else 7, if r < 0.13 then 6 else 12
 	local function point(i: number, j: number): Vector3
 		local th, ph = i / rows * math.pi, j / cols * math.pi * 2
 		return at
@@ -434,7 +436,33 @@ local function fill(b: Builder, prims: { { any } }, outline: boolean)
 			if signedArea(pts) < 0 then
 				continue -- the exporter always writes counter-clockwise points
 			end
-			if outline then
+			-- a thin decal lying on a face: one outward cap for the colour, one cap a hair behind it for the ink rim; the
+			-- walls and the hidden back of a 0.02 slab cost vertices against the device's mesh budget for nothing
+			local thin = d < 0.05 and math.abs(z) > 0.01
+			local out = if z >= 0 then 1 else -1
+			if thin then
+				local tris = p[8]
+				local zc = z + out * d / 2
+				local ring = if ol > 0 and outline then offset(pts, ol) else nil
+				local poly = if outline then ring else pts
+				if poly then
+					-- the ink sits just behind its own colour, above any lower layer (emblem layers step 0.004)
+					local zz = if outline then zc - out * 0.0015 else zc
+					local color = if outline then INK else Color3.fromHex(p[4])
+					for i = 1, #tris, 3 do
+						local p1, p2, p3 = poly[tris[i]], poly[tris[i + 1]], poly[tris[i + 2]]
+						face(
+							b,
+							Vector3.new(p1.X, p1.Y, zz),
+							Vector3.new(p2.X, p2.Y, zz),
+							Vector3.new(p3.X, p3.Y, zz),
+							Vector3.new(0, 0, out),
+							color,
+							false
+						)
+					end
+				end
+			elseif outline then
 				if ol > 0 then
 					local half = d / 2 + ol * 0.5
 					prism(b, offset(pts, ol), p[8], z - half, z + half, INK, INK, true)
@@ -503,6 +531,7 @@ local function meshPart(b: Builder, name: string): MeshPart?
 	end
 	-- a growable EditableMesh reserves a big share of the device budget (only ~6 fit); a fixed-size copy is cheap
 	-- (76 fitted in a test), so build growable, copy fixed, free the growable one
+	local verts, faces = #b.em:GetVertices(), #b.em:GetFaces()
 	local ok, part = pcall(function()
 		local fixed =
 			AssetService:CreateEditableMeshAsync(Content.fromObject(b.em), { FixedSize = true })
@@ -517,6 +546,8 @@ local function meshPart(b: Builder, name: string): MeshPart?
 	mp.Name, mp.Material, mp.CastShadow = name, Enum.Material.SmoothPlastic, false
 	mp.Anchored, mp.CanCollide, mp.CanTouch, mp.CanQuery, mp.Massless =
 		true, false, false, false, true
+	mp:SetAttribute("Verts", verts) -- QA: the mesh budget is counted in these
+	mp:SetAttribute("Faces", faces)
 	mp.Size = b.high - b.low
 	mp.CFrame = CFrame.new((b.low + b.high) / 2)
 	return mp

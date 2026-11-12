@@ -232,7 +232,7 @@ function Widgets.badge(parent: Instance, color: Color3): (Frame, TextLabel)
 end
 
 -- [владелец 11.11: «обнови кирки иконки»] the cel model itself in a ViewportFrame over the icon slot
-local function celIcon(image: ImageLabel, id: string): boolean
+local function celIcon(image: ImageLabel, id: string, zoom: number?): boolean
 	local template = CelPicks.template(id)
 	local view = image:FindFirstChild("CelIcon") :: ViewportFrame?
 	if not template then
@@ -244,8 +244,8 @@ local function celIcon(image: ImageLabel, id: string): boolean
 	if not view then
 		local frame = Instance.new("ViewportFrame")
 		frame.Name, frame.BackgroundTransparency, frame.Size = "CelIcon", 1, UDim2.fromScale(1, 1)
-		frame.LightDirection, frame.Ambient =
-			Vector3.new(-1, -1, -0.4), Color3.fromRGB(200, 200, 200)
+		frame.LightDirection, frame.Ambient, frame.LightColor =
+			Vector3.new(1, -1, 0.6), Color3.fromRGB(215, 215, 220), Color3.fromRGB(255, 250, 240)
 		local camera = Instance.new("Camera")
 		camera.FieldOfView = 30
 		camera.Parent = frame
@@ -261,26 +261,44 @@ local function celIcon(image: ImageLabel, id: string): boolean
 		frame:SetAttribute("Pick", id)
 		frame:ClearAllChildren()
 		local model = CelMesh.clone(template)
-		model:PivotTo(CFrame.new(-CelPicks.bodyCentre(template, 1)))
+		-- the aura is particles and trails, which a ViewportFrame does not draw; its invisible holder parts only
+		-- made the framing wrong (the pick came out small and off-centre). The stage behind draws the sparkle.
+		for _, part in model:GetChildren() do
+			if part.Name == "CelAura" or part.Name == "CelMote" then
+				part:Destroy()
+			end
+		end
 		model.Parent = frame
+		-- centre the real mesh bounds on the origin (the template pivot is not reliably the grip here)
+		local box = model:GetBoundingBox()
+		model:PivotTo(model:GetPivot() - box.Position)
 		local camera = Instance.new("Camera")
 		camera.FieldOfView = 30
 		-- the blade faces −X in the pickaxe frame; frame the whole model with its effects
 		local size = model:GetExtentsSize()
-		local fit = math.max(size.Y, size.Z) * 0.5 / math.tan(math.rad(15)) + size.X
-		camera.CFrame = CFrame.lookAt(Vector3.new(-fit, 0, 0), Vector3.zero)
+		-- fit both ways: the screen's vertical is model Y, its horizontal model Z; a narrow window limits the width
+		local function place()
+			local px = image.AbsoluteSize
+			local aspect = if px.Y > 0 then px.X / px.Y else 1
+			local half = math.tan(math.rad(15))
+			local k = 0.54 / (zoom or 1)
+			local fit = math.max(size.Y * k / half, size.Z * k / (half * math.min(aspect, 1)))
+			camera.CFrame = CFrame.lookAt(Vector3.new(-fit - size.X * 0.5, 0, 0), Vector3.zero)
+		end
+		place()
+		image:GetPropertyChangedSignal("AbsoluteSize"):Connect(place)
 		camera.Parent = frame
 		frame.CurrentCamera = camera
-		CelMesh.animate(model)
 	end
 	frame.ImageTransparency = image.ImageTransparency
 	image.Image = ""
 	return true
 end
 
-function Widgets.pickIcon(image: ImageLabel, id: string)
+-- `zoom` > 1 crops into the pick (small grid cells: the head reads, the handle end may leave the frame)
+function Widgets.pickIcon(image: ImageLabel, id: string, zoom: number?)
 	Candy.setIcon(image, "pickaxe")
-	if celIcon(image, id) then
+	if celIcon(image, id, zoom) then
 		return
 	end
 	local art = Config.art.pickaxes[id]

@@ -7,7 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const TOL = 0.012; // simplification tolerance in model units (a pick is ~4.4 tall)
+const TOL = 0.022; // [12.11] 0.012 → 0.022: the same silhouette at half the points (device mesh budget) // simplification tolerance in model units (a pick is ~4.4 tall)
 const r3 = (v) => Math.round(v * 1000) / 1000;
 
 function area(p) {
@@ -144,10 +144,14 @@ function thicken(prims) {
 	const fronts = [...new Set(solid.map((p) => +(p.z + p.d / 2).toFixed(3)))].sort((a, b) => a - b);
 	const out = [];
 	for (const p of prims) {
-		if (p.t !== "poly" || p.fx) {
+		if (p.t === "ball" && p.zs) {
+			// a rivet / stud sitting on a face: follow the thickened face
+			out.push({ ...p, at: [p.at[0], p.at[1], p.at[2] * THICK] });
+		} else if (p.t !== "poly" || p.fx) {
 			out.push(p);
 		} else if (p.d >= 0.15) {
-			out.push({ ...p, z: p.z * THICK, d: p.d * THICK, bevel: 1 });
+			// the ridge (one of the stepped arm layers) needs no chamfer of its own: the edge and the core carry it
+			out.push({ ...p, z: p.z * THICK, d: p.d * THICK, bevel: p.nobevel ? 0 : 1 });
 		} else {
 			// the slab front this decal sits on: the largest original front not above it
 			const z = p.z;
