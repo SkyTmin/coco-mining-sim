@@ -89,6 +89,7 @@ export type Window = {
 	onChange: (boolean) -> (),
 	dimmer: TextButton,
 	tween: Tween?,
+	centerY: number, -- where the panel's centre rests (below Roblox's top bar), set by Candy.modal
 }
 local windowOpen: Window?
 local unit = 1
@@ -504,14 +505,15 @@ function Candy.show(window: Window, open: boolean)
 	if open then
 		windowOpen = window
 		window.layer.Visible = true
-		window.panel.Position = UDim2.fromScale(0.5, 0.58)
+		local centerY = window.centerY or 0.55
+		window.panel.Position = UDim2.fromScale(0.5, centerY + 0.03)
 		window.dimmer.BackgroundTransparency = 1
 		TweenService:Create(window.dimmer, TweenInfo.new(0.12), { BackgroundTransparency = 0.55 })
 			:Play()
 		local tween = TweenService:Create(
 			window.panel,
 			TweenInfo.new(0.2, Enum.EasingStyle.Back),
-			{ Position = UDim2.fromScale(0.5, 0.55) }
+			{ Position = UDim2.fromScale(0.5, centerY) }
 		)
 		window.tween = tween
 		tween:Play()
@@ -574,6 +576,7 @@ function Candy.modal(
 	close.text.Text = "×"
 	-- keep the title ribbon below Roblox's own top-bar buttons [владелец 12.11: на телефоне «Кирки» ушло под меню
 	-- Roblox]: the panel's top (minus the ribbon above it) starts under the inset, its bottom 8 units above the edge
+	local window: Window
 	local function place()
 		local app = canvas
 		if not app or app.Size.Y.Offset <= 0 or app.AbsoluteSize.Y <= 0 then
@@ -581,24 +584,25 @@ function Candy.modal(
 		end
 		local height = app.Size.Y.Offset
 		local k = app.AbsoluteSize.Y / height
-		local inset = GuiService:GetGuiInset().Y / k
+		local inset = math.max(GuiService:GetGuiInset().Y, GuiService.TopbarInset.Max.Y) / k
 		local wanted = size.Y.Scale + size.Y.Offset / height
 		local topFree = (inset + 24) / height
 		local free = 1 - topFree - 8 / height
 		local h = math.min(wanted, free)
 		local top = math.max((1 - wanted) / 2 + 0.05, topFree)
 		top = math.min(top, 1 - 8 / height - h)
+		window.centerY = top + h / 2
 		Candy.fit(
 			panel,
 			UDim2.new(size.X.Scale, size.X.Offset, h, 0),
-			UDim2.fromScale(0.5, top + h / 2)
+			UDim2.fromScale(0.5, window.centerY)
 		)
 	end
 	if canvas then
 		canvas:GetPropertyChangedSignal("AbsoluteSize"):Connect(place)
 	end
-	task.defer(place)
-	local window: Window = {
+	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(place)
+	window = {
 		layer = layer,
 		panel = panel,
 		title = title,
@@ -607,7 +611,9 @@ function Candy.modal(
 		open = false,
 		onChange = onChange,
 		dimmer = dimmer,
+		centerY = 0.55,
 	}
+	task.defer(place)
 	close.input.Activated:Connect(function()
 		Candy.show(window, false)
 	end)

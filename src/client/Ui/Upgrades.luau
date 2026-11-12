@@ -15,14 +15,9 @@ local PickaxeChest = require(script.Parent.PickaxeChest)
 
 local Upgrades = {}
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
+-- [владелец 12.11: «это объединить можно»] no separate «Кирка» page any more: the pick in the hand is upgraded on its
+-- own screen inside «Кирки» (PickCollection)
 local sections = {
-	{
-		id = "pick",
-		title = "upgrade_pickaxe",
-		icon = "upgrades",
-		color = Candy.purple,
-		action = "menu_improve",
-	},
 	{
 		id = "cards",
 		title = "upgrade_cards",
@@ -146,8 +141,8 @@ function Upgrades.new(
 		local card = Candy.button(
 			hub,
 			section.id,
-			UDim2.new(0.2, -8, 1, -5),
-			UDim2.new((index - 1) / 5, 4, 0, 0),
+			UDim2.new(1 / #sections, -8, 1, -5),
+			UDim2.new((index - 1) / #sections, 4, 0, 0),
 			"neutral",
 			15
 		)
@@ -200,8 +195,8 @@ function Upgrades.new(
 		local tab = Candy.button(
 			rail,
 			section.id,
-			UDim2.new(1, -3, 0.2, -10),
-			UDim2.new(0, 1, (index - 1) / 5, 0),
+			UDim2.new(1, -3, 1 / #sections, -10),
+			UDim2.new(0, 1, (index - 1) / #sections, 0),
 			"neutral",
 			12
 		)
@@ -218,7 +213,7 @@ function Upgrades.new(
 		pages[section.id] = Candy.frame(content, section.id, scale(1, 1), offset(0, 0))
 	end
 
-	local upgrades = UpgradeCards.new(ctx, pages.pick, pages.cards)
+	local upgrades = UpgradeCards.new(ctx, pages.cards)
 	local collection = Collection.new(ctx, pages.collection, function()
 		navigate("chest")
 	end)
@@ -303,13 +298,12 @@ function Upgrades.new(
 		end
 
 		local statuses = {
-			pick = translate(
+			cards = translate("menu_affordable", summary.cardCount),
+			collection = translate(
 				"menu_strength_change",
 				Format.stat(summary.power, locale),
 				Format.stat(summary.nextPower, locale)
 			),
-			cards = translate("menu_affordable", summary.cardCount),
-			collection = translate("menu_fraction", ownedCount, Collection.total),
 			family = if family
 				then translate(
 					"upgrade_level",
@@ -319,9 +313,8 @@ function Upgrades.new(
 			chest = translate("pick_chest_keys", Format.short(keys)),
 		}
 		local counts = {
-			pick = summary.pickCount,
 			cards = summary.cardCount,
-			collection = fresh,
+			collection = fresh + summary.pickCount,
 			family = skillCount,
 			chest = keys,
 		}
@@ -353,10 +346,10 @@ function Upgrades.new(
 		end
 		if page == "hub" then
 			modal.title.Text, modal.ribbon.BackgroundColor3 = translate("menu_title"), Candy.purple
-		elseif page == "pick" or page == "cards" then
+		elseif page == "cards" then
 			upgrades.refresh(profile, front, animate)
 		elseif page == "collection" then
-			collection.refresh(profile)
+			collection.refresh(profile, front, animate)
 		elseif page == "family" then
 			families.refresh(profile, animate)
 		end
@@ -370,6 +363,9 @@ function Upgrades.new(
 	end
 	navigate = function(target: string)
 		page = target
+		if target == "collection" then
+			collection.showList()
+		end
 		W.hideHint(ctx)
 		if not modal.open then
 			Candy.show(modal, true)
@@ -381,8 +377,13 @@ function Upgrades.new(
 	W.bind(ctx, upgradeButton, function()
 		navigate("hub")
 	end)
+	-- the pick button opens the pick in the hand: its level is the thing bought most often
 	W.bind(ctx, picksButton, function()
+		local profile = ProfileState.getProfile()
 		navigate("collection")
+		if profile then
+			collection.open(profile.pickaxe)
+		end
 	end)
 	W.bind(ctx, familyButton, function()
 		navigate("family")

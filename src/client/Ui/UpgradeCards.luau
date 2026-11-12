@@ -6,18 +6,14 @@ local Remotes = require(Shared.Remotes)
 local Strings = require(Shared.Strings)
 local Worlds = require(Shared.Mine.Worlds)
 local Circle = require(Shared.Play.Circle)
-local Power = require(Shared.Play.Power)
 local Upgrade = require(Shared.Play.Upgrade)
 local Candy = require(script.Parent.Candy)
 local W = require(script.Parent.MenuWidgets)
-local PickStage = require(script.Parent.PickStage)
-local RewardBurst = require(script.Parent.Parent.Fx.RewardBurst)
--- burst size by pickaxe rarity [решение]
-local RARITY_POWER = { common = 0.35, rare = 0.55, epic = 0.78, legendary = 1 }
 
 local Cards = {}
 local offset, scale = UDim2.fromOffset, UDim2.fromScale
 local counts: { Upgrade.Count } = { 1, 10, "max" }
+Cards.counts = counts
 local cardColors = {
 	power = Color3.fromHex("FF8A65"),
 	coins = W.yellow,
@@ -25,7 +21,7 @@ local cardColors = {
 	keys = W.blue,
 }
 
-local function pickAt(profile: any, front: number, level: number): Circle.Pick
+function Cards.pickAt(profile: any, front: number, level: number): Circle.Pick
 	local nextCircle = table.clone(profile.circle)
 	nextCircle.pickLevels = table.clone(nextCircle.pickLevels)
 	nextCircle.pickLevels[profile.pickaxe] = level
@@ -51,16 +47,16 @@ function Cards.summary(profile: any, front: number)
 		context = context,
 		power = current.strength,
 		nextPower = if single
-			then pickAt(profile, front, single.level).strength
+			then Cards.pickAt(profile, front, single.level).strength
 			else current.strength,
 		pickCount = if Upgrade.pay(context.coins, single) then 1 else 0,
 		cardCount = cardCount,
 	}
 end
 
-local function quantity(ctx: W.Context, parent: Instance, size: UDim2, at: UDim2, change: () -> ())
+function Cards.quantity(ctx: W.Context, parent: Instance, size: UDim2, at: UDim2, change: () -> ())
 	local strip = Candy.frame(parent, "Quantity", size, at)
-	local selector = { value = counts[1], buttons = {} :: { Candy.Control } }
+	local selector = { value = counts[1], buttons = {} :: { Candy.Control }, frame = strip }
 	for index, count in counts do
 		local button = Candy.button(
 			strip,
@@ -87,7 +83,9 @@ local function cardValue(id: string, level: number, locale: string): string
 	return "+" .. Format.stat(per * level * 100, locale) .. "%"
 end
 
-function Cards.new(ctx: W.Context, pickPage: Frame, cardsPage: Frame)
+-- the cards page; the pick level lives on the pick screen of the collection (PickCollection) [владелец 12.11:
+-- «это объединить можно»]
+function Cards.new(ctx: W.Context, cardsPage: Frame)
 	local t = ctx.t
 	local remote = Remotes.event("UpgradeIntent")
 	local refresh: (any, number, boolean) -> ()
@@ -99,60 +97,10 @@ function Cards.new(ctx: W.Context, pickPage: Frame, cardsPage: Frame)
 		end
 	end
 
-	local hero, heroSurface =
-		Candy.panel(pickPage, "PickPreview", UDim2.new(0.48, -5, 1, -5), offset(3, 0), true)
-	heroSurface.BackgroundColor3 = Color3.fromHex("DDF2FE")
-	local image = Candy.icon(hero, "pick", scale(0.68, 0.61), scale(0.16, 0.03))
-	image.ZIndex = 2
-	local heroName = Candy.text(hero, "Name", scale(0.95, 0.12), scale(0.025, 0.63), 24)
-	local details =
-		Candy.frame(pickPage, "PickDetails", UDim2.new(0.52, -7, 1, -5), UDim2.new(0.48, 5, 0, 0))
-	local levelBox = Candy.panel(details, "Level", scale(1, 0.27), scale(0, 0), true)
-	local levelLabel = Candy.text(levelBox, "Title", scale(0.9, 0.32), scale(0.05, 0.05), 15)
-	local levelValue = Candy.text(levelBox, "Value", scale(0.9, 0.52), scale(0.05, 0.39), 32)
-	local _, strength =
-		W.pill(details, "Strength", scale(1, 0.19), scale(0, 0.31), Candy.rowColor, 21)
-	local pickCount = quantity(ctx, details, UDim2.new(1, 0, 0, 47), scale(0, 0.55), refreshCurrent)
-	local pickBuy = Candy.button(
-		details,
-		"BuyPick",
-		UDim2.new(1, 0, 0, 53),
-		UDim2.new(0, 0, 1, -55),
-		"coin",
-		21
-	)
-	Candy.buttonIcon(pickBuy, "coin")
-	local widthBuy = Candy.button(
-		hero,
-		"BuyWidth",
-		UDim2.new(0.91, 0, 0, 46),
-		UDim2.new(0.045, 0, 1, -48),
-		"neutral",
-		14
-	)
-	Candy.buttonIcon(widthBuy, "width")
-	local pickQuote: Upgrade.Quote? = nil
-	local widthQuote: Upgrade.Quote? = nil
-	local pickHelp, widthHelp = "", ""
-	W.bind(ctx, pickBuy, function()
-		if currentProfile and Upgrade.pay(currentProfile.coins, pickQuote) then
-			remote:FireServer("BuyPickLevel", pickCount.value)
-		end
-	end, function()
-		return pickHelp
-	end)
-	W.bind(ctx, widthBuy, function()
-		if currentProfile and Upgrade.pay(currentProfile.coins, widthQuote) then
-			remote:FireServer("BuyWidth")
-		end
-	end, function()
-		return widthHelp
-	end)
-
 	local circle = Candy.text(cardsPage, "Circle", UDim2.new(0.53, 0, 0, 47), offset(2, 0), 20)
 	circle.TextXAlignment = Enum.TextXAlignment.Left
 	local cardCount =
-		quantity(ctx, cardsPage, UDim2.new(0.36, 0, 0, 47), scale(0.64, 0), refreshCurrent)
+		Cards.quantity(ctx, cardsPage, UDim2.new(0.36, 0, 0, 47), scale(0.64, 0), refreshCurrent)
 	local grid = Candy.frame(cardsPage, "UpgradeCards", UDim2.new(1, 0, 1, -55), offset(0, 53))
 	local controls = {}
 	for index, id in Upgrade.cards do
@@ -198,92 +146,13 @@ function Cards.new(ctx: W.Context, pickPage: Frame, cardsPage: Frame)
 		end)
 	end
 
-	local previousPick: string? = nil
-	local previousLevel: number? = nil
-	local previousWidth: number? = nil
 	refresh = function(profile: any, front: number, animate: boolean)
 		currentProfile, currentFront = profile, front
 		local context = Circle.context(profile, Worlds.of(front).index)
 		local locale = Strings.localeOf(ctx.player)
-		local rarity = Config.progress.rarities[Config.pickaxes[context.pick].rarity]
-		local current = Circle.pick(context.pick, profile.circle, front, profile)
-		pickQuote = Upgrade.quote(context, { kind = "pick", count = pickCount.value })
-		local single = pickQuote or Upgrade.quote(context, { kind = "pick", count = 1 })
-		local nextPick = if single then pickAt(profile, front, single.level) else current
-		local maxLevel = Power.cap(rarity, context.golden)
-		W.pickIcon(image, context.pick)
-		-- the stage behind the pick: rarity + family [владелец 12.11: «фон где кирки поменять»]
-		local corner = heroSurface:FindFirstChildOfClass("UICorner")
-		PickStage.apply(
-			heroSurface,
-			Config.pickaxes[context.pick].rarity,
-			Config.pickaxes[context.pick].family,
-			UDim2.new(1, -8, 0.64, -4),
-			UDim2.fromOffset(4, 4),
-			corner and corner.CornerRadius
-		)
-		heroName.Text = W.pickName(t, context.pick)
-			.. " "
-			.. W.stars(Config.pickaxes[context.pick].rarity)
-		levelLabel.Text = t("menu_pick_level")
-		levelValue.Text = t("menu_fraction", context.pickLevel, maxLevel)
-		strength.Text = t(
-			"menu_strength_change",
-			Format.stat(current.strength, locale),
-			Format.stat(nextPick.strength, locale)
-		)
-		pickBuy.text.Text = if single then Format.short(single.price) else t("upgrade_cap")
-		Candy.paint(pickBuy, if Upgrade.pay(context.coins, pickQuote) then "coin" else "disabled")
-		pickHelp = t(
-			"upgrade_pick_preview",
-			Format.stat(current.strength, locale),
-			Format.stat(nextPick.strength, locale),
-			Format.short(current.ultLayers),
-			Format.short(nextPick.ultLayers)
-		)
-
-		local nextWidth = Upgrade.nextWidth(context.width)
-		widthQuote = Upgrade.quote(context, { kind = "width", count = 1 })
-		widthBuy.text.Text = if widthQuote
-			then Format.short(widthQuote.price)
-			else t(
-				if nextWidth then "menu_world" else "upgrade_cap",
-				nextWidth and nextWidth.world
-			)
-		widthHelp = t("upgrade_width")
-			.. " · "
-			.. tostring(context.width)
-			.. (if nextWidth then " → " .. tostring(nextWidth.w) else "")
-		Candy.paint(widthBuy, if Upgrade.pay(context.coins, widthQuote) then "coin" else "disabled")
-		if animate and pickPage.Visible then
-			if
-				previousPick == context.pick
-				and previousLevel
-				and context.pickLevel > previousLevel
-			then
-				W.bump(image, ctx, true)
-				-- [владелец 11.11: «когда кирка прокачивается — такой же эффект, как у навыков, по редкости»]
-				local id = context.pick
-				local rarity = (Config.pickaxes[id] and Config.pickaxes[id].rarity) or "common"
-				RewardBurst.show({
-					icon = "pickaxe",
-					palette = RewardBurst.palettes[rarity] or RewardBurst.palettes.common,
-					power = RARITY_POWER[rarity] or 0.35,
-					kicker = t("burst_pick_up"),
-					title = W.pickName(t, id),
-					subtitle = t("burst_level", context.pickLevel),
-					decorate = function(slot: ImageLabel)
-						W.pickIcon(slot, id)
-					end,
-				})
-			elseif previousWidth and context.width > previousWidth then
-				W.bump(widthBuy.image, ctx, true)
-			end
-		end
-		previousPick, previousLevel, previousWidth = context.pick, context.pickLevel, context.width
 		circle.Text = t("menu_circle")
 
-		for _, strip in { pickCount, cardCount } do
+		for _, strip in { cardCount } do
 			for index, button in strip.buttons do
 				local count = counts[index]
 				button.text.Text = if count == "max"
