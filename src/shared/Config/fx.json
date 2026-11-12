@@ -1,4 +1,56 @@
 {
+  "quality": {
+    "debris": [
+      30,
+      80,
+      160
+    ],
+    "debrisPerSecond": [
+      30,
+      48,
+      90
+    ],
+    "particles": [
+      150,
+      400,
+      900
+    ],
+    "links": [
+      8,
+      16,
+      32
+    ],
+    "lights": [
+      0,
+      2,
+      4
+    ],
+    "lamps": [
+      2,
+      4,
+      6
+    ],
+    "bloom": [
+      false,
+      true,
+      true
+    ],
+    "blur": [
+      false,
+      false,
+      true
+    ],
+    "numbers": [
+      6,
+      10,
+      14
+    ],
+    "oreLayers": [
+      12,
+      16,
+      20
+    ]
+  },
   "depth": {
     "fogStart": 1500,
     "fogEnd": 4000,

@@ -13,6 +13,74 @@
     "sea_stone_lining": "#223e55",
     "basalt_lining": "#5b3232"
   },
+  "rebirth": {
+    "_note": "[решение ТЗ-05 §13.6, P5–P7, P18] серверные интервалы и интерфейс",
+    "holdSeconds": 1.5,
+    "hintSeconds": 2,
+    "paceWindow": 120,
+    "paceMinSeconds": 30,
+    "giftStartSeconds": 10,
+    "requestSeconds": 1,
+    "replySeconds": 5,
+    "releaseSeconds": 0.2,
+    "transitionSeconds": 2.5,
+    "skipSeconds": 0.6,
+    "worldTimeSeconds": 3,
+    "percentScale": 100,
+    "seedMax": 2147483647
+  },
+  "events": {
+    "_note": "[решение ТЗ-05 P15–P21] технические пределы событий",
+    "slotGapSeconds": 5,
+    "activeWithinSeconds": 5,
+    "latencyGrace": 0.25,
+    "retrySeconds": 10,
+    "tickSeconds": 1,
+    "veinDepth": 2,
+    "bombDepth": 1,
+    "streakWireScale": 10,
+    "streakHideSeconds": 3
+  },
+  "qualityRules": {
+    "_note": "[вики 11 §5; решение ТЗ-05 P25] гистерезис авто-качества",
+    "skipSeconds": 5,
+    "maxDt": 0.5,
+    "windowSeconds": 15,
+    "downFps": 40,
+    "upFps": 55,
+    "upSeconds": 120,
+    "cooldownSeconds": 300,
+    "pingPongSeconds": 60,
+    "saveSeconds": 60
+  },
+  "music": {
+    "_note": "[вики 12 §1–3; решение ТЗ-05 P23–P24] без ID движок молчит",
+    "bpm": 120,
+    "beatsPerBar": 4,
+    "secondsPerMinute": 60,
+    "loopSeconds": 32,
+    "worlds": [
+      {
+        "base": "",
+        "full": "",
+        "fever": ""
+      }
+    ],
+    "musicGain": 0.19952623149688797,
+    "duckGain": 0.5011872336272722,
+    "enterSeconds": 2,
+    "layerInSeconds": 0.5,
+    "layerOutSeconds": 4,
+    "crossfadeSeconds": 2,
+    "idleSeconds": 60,
+    "syncSeconds": 4,
+    "syncTolerance": 0.04,
+    "preloadSeconds": 10,
+    "quantizeSeconds": 0.15,
+    "fullTier": 2,
+    "defaultVolume": 0.7,
+    "volumeStep": 0.1
+  },
   "game": {
     "defaultLanguage": "en",
     "languages": ["en", "ru", "es", "fr"],
@@ -49,6 +117,59 @@
     "_note": "[решение 06] бюджет каскада на удар"
   },
   "fx": {
+    "quality": {
+      "_note": "[вики 11 §5; ТЗ-05 §12.1] бюджеты уровней 1–3",
+      "debris": [
+        30,
+        80,
+        160
+      ],
+      "debrisPerSecond": [
+        30,
+        48,
+        90
+      ],
+      "particles": [
+        150,
+        400,
+        900
+      ],
+      "links": [
+        8,
+        16,
+        32
+      ],
+      "lights": [
+        0,
+        2,
+        4
+      ],
+      "lamps": [
+        2,
+        4,
+        6
+      ],
+      "bloom": [
+        false,
+        true,
+        true
+      ],
+      "blur": [
+        false,
+        false,
+        true
+      ],
+      "numbers": [
+        6,
+        10,
+        14
+      ],
+      "oreLayers": [
+        12,
+        16,
+        20
+      ]
+    },
     "depth": { "fogStart": 1500, "fogEnd": 4000, "simpleFrom": 300, "lampSpacing": 20, "middleSpacing": 40, "distantSpacing": 80 },
     "impactTime": 0.13,
     "ult": {

@@ -1,0 +1,57 @@
+{
+  "slotGapSeconds": 5,
+  "activeWithinSeconds": 5,
+  "latencyGrace": 0.25,
+  "retrySeconds": 10,
+  "tickSeconds": 1,
+  "veinDepth": 2,
+  "bombDepth": 1,
+  "streakWireScale": 10,
+  "streakHideSeconds": 3,
+  "streak": {
+    "multipliers": [
+      1.25,
+      1.5,
+      2,
+      3
+    ],
+    "tiers": [
+      10,
+      25,
+      50,
+      90
+    ],
+    "grace": 1.5,
+    "decay": 1,
+    "cap": 100
+  },
+  "vein": {
+    "minSeconds": 180,
+    "maxSeconds": 360,
+    "windowSeconds": 10,
+    "firstPlaySeconds": 330,
+    "cells": [
+      3,
+      5
+    ]
+  },
+  "fever": {
+    "seconds": 30,
+    "multiplier": 5,
+    "giftSeconds": 30
+  },
+  "bomb": {
+    "fromWorld": 3,
+    "minSeconds": 120,
+    "maxSeconds": 180,
+    "fuseSeconds": 5,
+    "coinMultiplier": 2,
+    "box": [
+      3,
+      3,
+      3
+    ],
+    "rubbleLayers": 2,
+    "rubbleHits": 1
+  }
+}

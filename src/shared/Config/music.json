@@ -1,0 +1,27 @@
+{
+  "bpm": 120,
+  "beatsPerBar": 4,
+  "secondsPerMinute": 60,
+  "loopSeconds": 32,
+  "worlds": [
+    {
+      "base": "",
+      "full": "",
+      "fever": ""
+    }
+  ],
+  "musicGain": 0.19952623149688797,
+  "duckGain": 0.5011872336272722,
+  "enterSeconds": 2,
+  "layerInSeconds": 0.5,
+  "layerOutSeconds": 4,
+  "crossfadeSeconds": 2,
+  "idleSeconds": 60,
+  "syncSeconds": 4,
+  "syncTolerance": 0.04,
+  "preloadSeconds": 10,
+  "quantizeSeconds": 0.15,
+  "fullTier": 2,
+  "defaultVolume": 0.7,
+  "volumeStep": 0.1
+}

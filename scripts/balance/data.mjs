@@ -129,17 +129,19 @@ export const familyTiming = { daySeconds: 86400, openInterval: 0.5, firstStorm: 
 
 
 export const rebirth = {
+	_why: "[вики 18 §5; решение ТЗ-05 P1–P11] Кубки, ранги и условия рекомендации",
+	profitableRatio: 0.1, profitableEtaSeconds: 900,
 	firstAfterWorld: 3,
 	cups: (E.CUPS ? E.CUPS.split(',').map(Number) : [0, 0, 1, 3, 8, 25, 90, 370, 1500, 6000]), // by deepest Slab broken in the circle (index = world − 1)
 	ranks: [
-		{ cups: 1, name: 'Копатель', gives: 'удар 1×2 с начала круга', size: 2 },
-		{ cups: 3, name: 'Проходчик', gives: 'удар 1×3 с начала круга; 2-й слот питомца', size: 3, petSlots: 2 },
-		{ cups: 10, name: 'Бурильщик', gives: 'Лифт: круг можно начать с мира 3', lift: 3 },
-		{ cups: 30, name: 'Мастер', gives: 'Лифт до мира 4; 3-й слот питомца', lift: 4, petSlots: 3 },
-		{ cups: 250, name: 'Гроссмейстер', gives: 'Лифт до мира 6; след ульты', lift: 6 },
-		{ cups: 1_000, name: 'Легенда недр', gives: 'Лифт до мира 7; аура', lift: 7 },
-		{ cups: 4_000, name: 'Покоритель', gives: 'Лифт до мира 8; золотой ник', lift: 8 },
-		{ cups: 16_000, name: 'Сердце Ядра', gives: 'Лифт до мира 9; корона над ником', lift: 9 },
+		{ cups: 1, id: 'digger', name: 'Копатель', gives: 'удар 1×2 с начала круга', size: 2 },
+		{ cups: 3, id: 'tunneler', name: 'Проходчик', gives: 'удар 1×3 с начала круга; 2-й слот питомца', size: 3, petSlots: 2 },
+		{ cups: 10, id: 'driller', name: 'Бурильщик', gives: 'Лифт: круг можно начать с мира 3', lift: 3 },
+		{ cups: 30, id: 'master', name: 'Мастер', gives: 'Лифт до мира 4; 3-й слот питомца', lift: 4, petSlots: 3 },
+		{ cups: 250, id: 'grandmaster', name: 'Гроссмейстер', gives: 'Лифт до мира 6; след ульты', lift: 6 },
+		{ cups: 1_000, id: 'legend', name: 'Легенда недр', gives: 'Лифт до мира 7; аура', lift: 7 },
+		{ cups: 4_000, id: 'conqueror', name: 'Покоритель', gives: 'Лифт до мира 8; золотой ник', lift: 8 },
+		{ cups: 16_000, id: 'core_heart', name: 'Сердце Ядра', gives: 'Лифт до мира 9; корона над ником', lift: 9 },
 	],
 };
 
@@ -155,7 +157,7 @@ export const pets = {
 	],
 };
 
-export const income = { chestBonus: 1.13, tempAvg: 1.3, feverAvg: 1.44 };
+export const income = { _why: "[вики 18 §10] потолок временных бонусов", temporaryCap: 10, chestBonus: 1.13, tempAvg: 1.3, feverAvg: 1.44 };
 
 // ───────── content tables (not used by the pacing model, rendered into the wiki page) ─────────
 
@@ -225,7 +227,7 @@ export const lavka = { everyMin: 10, slots: 4, refreshRobux: 39, items: [
 	{ name: 'Радужный питомец', robux: 799, chance: 0.0005, minutes: 30 },
 ] };
 
-export const events = [
+export const eventDescriptions = [
 	{ name: 'Разгон', when: 'копаешь без пауз', gives: '4 ступени: ×1,25 / ×1,5 / ×2 / ×3 монет' },
 	{ name: 'Золотая жила → Лихорадка', when: 'раз в 3–6 мин, успеть за 10 с', gives: '×5 монет на 30 с (сверх общего потолка)' },
 	{ name: 'Бомба-таймер', when: 'с мира 3, раз в 2–3 мин, 5 с', gives: 'взрыв 3×3×3 и ×2 монет за него; не успел — 2 слоя пустого Завала' },
@@ -233,7 +235,14 @@ export const events = [
 	{ name: 'Выходные', when: 'суббота и воскресенье', gives: '×2 ключей' },
 	{ name: 'Друзья на сервере', when: 'пока друг на том же сервере', gives: '+10 % монет за друга, до +50 %' },
 ];
-export const tempCap = 10;
+export const tempCap = income.temporaryCap;
+export const events = {
+ _why: '[вики 18 §10; решение ТЗ-05 P12–P21] только утверждённые параметры событий',
+ streak: { multipliers: [1.25, 1.5, 2, 3], tiers: [10, 25, 50, 90], grace: 1.5, decay: 1, cap: 100 },
+ vein: { minSeconds: 180, maxSeconds: 360, windowSeconds: 10, firstPlaySeconds: 330, cells: [3, 5] },
+ fever: { seconds: 30, multiplier: 5, giftSeconds: 30 },
+ bomb: { fromWorld: 3, minSeconds: 120, maxSeconds: 180, fuseSeconds: 5, coinMultiplier: 2, box: [3, 3, 3], rubbleLayers: 2, rubbleHits: 1 },
+};
 
 export const calendar = [
 	'бустер «×2 монет»', 'ключ', 'яйцо', 'бустер «Удача ×2»', '2 ключа', 'яйцо', '★ эпическая кирка на выбор',

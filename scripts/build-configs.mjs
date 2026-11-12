@@ -3,10 +3,11 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
+import { validateStage5 } from "./stage5-config.mjs";
 import { familyConfig, familyArt, validateFamilies } from "./family-config.mjs";
 import {
   mine as balanceMine, worlds as balanceWorlds, oreSlots, hitSizes, rarities,
-  pickLevel, gold, cards, cardGrowth, cardEffects,
+  pickLevel, gold, cards, cardGrowth, cardEffects, rebirth, events, income,
 } from "./balance/data.mjs";
 
 const whatIf = ["G", "V", "HARD", "CUPS", "ULT"].filter((name) => process.env[name]);
@@ -331,7 +332,8 @@ function withBalance(input) {
       })),
     }])),
   };
-  return { ...input, ...family, mine, worlds, pickaxes, progress, art };
+  return { ...input, ...family, mine, worlds, pickaxes, progress, art,
+    rebirth: { ...input.rebirth, ...rebirth }, events: { ...input.events, ...events }, income };
 }
 
 function duplicateBalance(input) {
@@ -343,6 +345,9 @@ function duplicateBalance(input) {
     }
   };
   check(input, ["progress", "families", "familyRules", "chests"], "config");
+  check(input.rebirth, Object.keys(rebirth).filter(k => !k.startsWith("_")), "rebirth");
+  check(input.events, Object.keys(events).filter(k => !k.startsWith("_")), "events");
+  check(input, ["income"], "config");
   check(input.mine, ["startWidth", "height", "maxHitsPerBlock", "passThrough", "plate", "ultCharge"], "mine");
   for (const [index, world] of (Array.isArray(input.worlds) ? input.worlds : []).entries()) {
     check(world, ["length", "ores", "prices", "rareFrom", "richness", "durability", "hardStart", "hardEnd", "rockValue", "plate", "specials"], `worlds[${index}]`);
@@ -404,6 +409,12 @@ const sections = [
   { name: "familyRules", validate: () => [], emit: withoutNotes },
   { name: "chests", validate: () => [], emit: withoutNotes },
   { name: "progress", validate: () => [], emit: withoutNotes },
+  { name: "rebirth", validate: () => [], emit: withoutNotes },
+  { name: "events", validate: () => [], emit: withoutNotes },
+  { name: "income", validate: () => [], emit: withoutNotes },
+  { name: "qualityRules", validate: () => [], emit: withoutNotes },
+  { name: "music", validate: () => [], emit: withoutNotes },
+
   {
     name: "fx",
     validate: ({ ult, depth, impactTime }) =>
@@ -491,7 +502,7 @@ errors.push(...sections.flatMap(({ name, list, validate }) => {
   if (list ? Array.isArray(data) && data.length > 0 : isObject(data)) return validate(data, decisions);
   return [`${name} must be ${list ? "a nonempty array" : "an object"}`];
 }));
-errors.push(...validateMineStrings(decisions));
+errors.push(...validateMineStrings(decisions), ...validateStage5(decisions));
 if (errors.length > 0) {
   for (const error of errors) console.error(`${input}: ${error}`);
   process.exit(1);

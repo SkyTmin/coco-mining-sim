@@ -1,0 +1,11 @@
+{
+  "skipSeconds": 5,
+  "maxDt": 0.5,
+  "windowSeconds": 15,
+  "downFps": 40,
+  "upFps": 55,
+  "upSeconds": 120,
+  "cooldownSeconds": 300,
+  "pingPongSeconds": 60,
+  "saveSeconds": 60
+}
