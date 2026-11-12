@@ -131,11 +131,14 @@ function Upgrades.new(
 	Candy.move(modal.close.box, UDim2.new(1, -8, 0, 0))
 	modal.close.input.Activated:Connect(W.click)
 	local ctx = W.context(modal.panel, player, translate, feedback)
-	local body = Candy.frame(modal.panel, "Body", UDim2.new(1, -22, 1, -38), offset(11, 27))
+	-- [владелец 12.11: «неровно»] the same 14-unit margin on every side; no title ribbon — the highlighted rail item
+	-- already says where you are, and the ribbon ran into Roblox's top-bar buttons on phones
+	local body = Candy.frame(modal.panel, "Body", UDim2.new(1, -28, 1, -28), offset(14, 14))
+	modal.ribbon.Visible = false
 	local hub = Candy.frame(body, "Hub", scale(1, 1), offset(0, 0))
 	-- [владелец 12.11: «сбоку толстые кнопки, всё слиплось»] a slimmer rail and a clear gap before the page
-	local rail = Candy.frame(body, "Sections", UDim2.new(0, 64, 1, 0), offset(0, 0))
-	local content = Candy.frame(body, "SectionsBody", UDim2.new(1, -76, 1, 0), offset(76, 0))
+	local rail = Candy.frame(body, "Sections", UDim2.new(0, 68, 1, 0), offset(0, 0))
+	local content = Candy.frame(body, "SectionsBody", UDim2.new(1, -82, 1, 0), offset(82, 0))
 	local cards, rails, pages = {}, {}, {}
 	for index, section in sections do
 		local card = Candy.button(
@@ -195,8 +198,9 @@ function Upgrades.new(
 		local tab = Candy.button(
 			rail,
 			section.id,
-			UDim2.new(1, -3, 1 / #sections, -10),
-			UDim2.new(0, 1, (index - 1) / #sections, 0),
+			-- equal items, an 8-unit gap between them, flush with the top and the bottom of the page
+			UDim2.new(1, 0, 1 / #sections, -8 * (#sections - 1) / #sections),
+			UDim2.new(0, 0, (index - 1) / #sections, (index - 1) * 8 / #sections),
 			"neutral",
 			12
 		)

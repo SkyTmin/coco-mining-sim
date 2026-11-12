@@ -119,6 +119,7 @@ return {
 	},
 	menu_all_picks = { en = "All picks", ru = "Все кирки", es = "Todos", fr = "Toutes" },
 	menu_not_gold = { en = "Plain", ru = "Без золота", es = "Normal", fr = "Simple" },
+	menu_level_caption = { en = "Level", ru = "Уровень", es = "Nivel", fr = "Niveau" },
 	menu_back = { en = "Back", ru = "Назад", es = "Atrás", fr = "Retour" },
 	menu_tap_pick = {
 		en = "Tap a pickaxe to learn more",

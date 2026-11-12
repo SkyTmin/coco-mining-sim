@@ -108,12 +108,14 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 	local tabKeys = table.clone(families)
 	table.insert(tabKeys, "starter")
 	local tabs = {}
+	-- the row stops short of the window's close button in the top-right corner
+	local tabRow = Candy.frame(list, "Tabs", UDim2.new(1, -30, 0.13, 0), offset(0, 0))
 	for index, key in tabKeys do
 		local control = Candy.button(
-			list,
+			tabRow,
 			"Tab_" .. key,
-			UDim2.new(1 / #tabKeys, -GAP, 0.13, 0),
-			UDim2.new((index - 1) / #tabKeys, GAP / 2, 0, 0),
+			UDim2.new(1 / #tabKeys, -GAP * (#tabKeys - 1) / #tabKeys, 1, 0),
+			UDim2.new((index - 1) / #tabKeys, (index - 1) * GAP / #tabKeys, 0, 0),
 			"neutral",
 			15
 		)
@@ -147,8 +149,8 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		local control = Candy.button(
 			chain,
 			"Card" .. c,
-			UDim2.new(0.25, -GAP, 1, 0),
-			UDim2.new((c - 1) / 4, GAP / 2, 0, 0),
+			UDim2.new(0.25, -GAP * 3 / 4, 1, 0),
+			UDim2.new((c - 1) / 4, (c - 1) * GAP / 4, 0, 0),
 			"neutral",
 			12
 		)
@@ -225,83 +227,130 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 	end
 
 	-- ── the pick screen ──────────────────────────────────────────────────────────────────────────────────────────
-	-- [владелец 12.11: «тут ужасно… это объединить можно»] one screen for a pick: the old «Кирка» upgrade page and the
-	-- collection details are the same thing — a big picture on the left, facts and actions on the right. When the pick
-	-- is in the hand, its level is bought right here; otherwise the main action is «В руку». Everything on the right is
-	-- laid out in shares of the height, so a short phone page never pushes buttons over the text.
+	-- [владелец 12.11: «неровно, неуклюже, негармонично… это объединить можно»] one screen for a pick, on one grid:
+	--   left   the picture card (44 %): round «←» top-left, «×N» top-right (same height, same inset), «✓ В руке» bottom
+	--   right  one left-aligned column: name, rarity, one facts card split in two equal halves (level | power), the perk
+	--          line, then two button rows of the same rhythm — [×1][Улучшить price] or [В руку], and [Слить][Без золота]
+	-- every vertical block is a share of the height (gaps included), every row splits its width with 8-unit gaps
+	local GRID = 8
 	local details = Candy.frame(page, "SelectedPick", scale(1, 1), offset(0, 0))
 	details.Visible = false
 	local top = Candy.frame(details, "Overview", scale(0.44, 1), scale(0, 0))
-	local icon = Candy.icon(top, "pickaxe", scale(0.9, 0.74), scale(0.05, 0.12))
+	local icon = Candy.icon(top, "pickaxe", scale(0.86, 0.66), scale(0.07, 0.15))
 	icon.ZIndex = 2
-	local ribbon = Candy.frame(top, "InHand", scale(0.5, 0.12), scale(0.25, 0.85), W.green)
-	Candy.round(ribbon, 8)
-	Candy.stroke(ribbon, 2)
-	ribbon.ZIndex = 3
-	local ribbonText =
-		Candy.text(ribbon, "Label", scale(0.9, 0.86), scale(0.05, 0.07), 14, Candy.white)
-	ribbonText.ZIndex = 4
-	local copiesBadge =
-		Candy.frame(top, "Copies", offset(54, 28), UDim2.new(1, -60, 0, 6), Candy.panelColor)
-	Candy.round(copiesBadge, 0)
-	Candy.stroke(copiesBadge, 2)
-	copiesBadge.ZIndex = 3
-	local copiesText = Candy.text(copiesBadge, "Label", scale(0.9, 0.84), scale(0.05, 0.08), 15)
-	copiesText.ZIndex = 4
-	local back = Candy.button(details, "Back", offset(122, 34), offset(6, 6), "neutral", 14)
+	local function chip(name: string, color: Color3, size: UDim2, at: UDim2): (Frame, TextLabel)
+		local frame = Candy.frame(top, name, size, at, color)
+		Candy.round(frame, 0)
+		Candy.stroke(frame, 2)
+		frame.ZIndex = 3
+		local label =
+			Candy.text(frame, "Label", scale(0.84, 0.76), scale(0.08, 0.12), 15, Candy.white)
+		label.ZIndex = 4
+		return frame, label
+	end
+	local ribbon, ribbonText =
+		chip("InHand", W.green, UDim2.new(0.56, 0, 0, 32), UDim2.new(0.22, 0, 1, -44))
+	local copiesBadge, copiesText =
+		chip("Copies", Candy.ink, UDim2.fromOffset(60, 32), UDim2.new(1, -72, 0, 12))
+	copiesBadge.BackgroundTransparency = 0.25
+	local back = Candy.button(details, "Back", offset(40, 40), offset(8, 8), "neutral", 20)
 	W.bind(ctx, back, function()
 		detailOpen = false
 		if profile then
 			refresh(profile)
 		end
+	end, function()
+		return t("menu_all_picks")
 	end)
 
-	local info = Candy.frame(details, "Info", UDim2.new(0.56, -10, 1, 0), UDim2.new(0.44, 10, 0, 0))
-	local function at(x: number, y: number, w: number, h: number): (UDim2, UDim2)
-		return UDim2.new(w, -4, h, -4), UDim2.new(x, 2, y, 2)
+	local info = Candy.frame(details, "Info", UDim2.new(0.56, -12, 1, 0), UDim2.new(0.44, 12, 0, 0))
+	local function left(label: TextLabel): TextLabel
+		label.TextXAlignment = Enum.TextXAlignment.Left
+		return label
 	end
-	local title = Candy.text(info, "Name", scale(1, 0.13), scale(0, 0), 26)
-	local rarityText = Candy.text(info, "Rarity", scale(1, 0.08), scale(0, 0.13), 15)
-	local levelBox, levelPill =
-		W.pill(info, "Level", scale(0.38, 0.12), scale(0, 0.23), Candy.panelColor, 15)
-	local powerBox, powerPill =
-		W.pill(info, "Power", scale(0.6, 0.12), scale(0.4, 0.23), Candy.panelColor, 15)
-	Candy.fit(levelBox, at(0, 0.22, 0.38, 0.13))
-	Candy.fit(powerBox, at(0.38, 0.22, 0.62, 0.13))
-	local perkText = Candy.text(info, "Perk", scale(1, 0.12), scale(0, 0.36), 14)
-	perkText.TextWrapped = true
+	local title = left(Candy.text(info, "Name", scale(1, 0.12), scale(0, 0), 26))
+	local rarityText = left(Candy.text(info, "Rarity", scale(1, 0.07), scale(0, 0.125), 15))
+	rarityText.RichText = true
+	-- the facts card: two equal halves, a small grey caption over a bold value
+	local facts = Candy.frame(info, "Facts", scale(1, 0.21), scale(0, 0.225), Candy.panelColor)
+	Candy.round(facts, 12)
+	Candy.stroke(facts, 2)
+	local divider =
+		Candy.frame(facts, "Divider", UDim2.new(0, 2, 0.64, 0), scale(0.38, 0.18), Candy.ink)
+	divider.BackgroundTransparency = 0.8
+	local function fact(x: number, w: number): (TextLabel, TextLabel)
+		local caption = Candy.text(facts, "Caption", scale(w - 0.08, 0.3), scale(x + 0.04, 0.1), 12)
+		caption.TextColor3 = Color3.fromHex("6B6F8C")
+		local value = Candy.text(facts, "Value", scale(w - 0.08, 0.46), scale(x + 0.04, 0.42), 19)
+		return caption, value
+	end
+	local levelCaption, levelPill = fact(0, 0.38)
+	local powerCaption, powerPill = fact(0.38, 0.62)
+	local perkText = left(Candy.text(info, "Perk", scale(1, 0.08), scale(0, 0.47), 14))
+	perkText.TextColor3 = Color3.fromHex("4A4E6E")
 
-	-- in the hand: how many levels (×1 / ×10 / max) and the big «Улучшить»
-	local quantity = UpgradeCards.quantity(ctx, info, scale(1, 0.13), scale(0, 0.49), function()
-		if profile then
-			refresh(profile)
+	-- the two button rows
+	local MAIN = { y = 0.585, h = 0.22 }
+	local SUB = { y = 0.84, h = 0.16 }
+	local function lay(
+		row: { y: number, h: number },
+		buttons: { Candy.Control },
+		weights: { number }?
+	)
+		local sum = 0
+		for index in buttons do
+			sum += if weights then weights[index] else 1
 		end
-	end)
-	Candy.fit(quantity.frame, at(0, 0.49, 1, 0.14))
-	local improve = Candy.button(info, "BuyPick", scale(1, 0.2), scale(0, 0.63), "coin", 19)
-	Candy.fit(improve.box, at(0, 0.63, 1, 0.21))
+		local x = 0
+		for index, button in buttons do
+			local w = (if weights then weights[index] else 1) / sum
+			local last = index == #buttons
+			Candy.fit(
+				button.box,
+				UDim2.new(w, if last then 0 else -GRID, row.h, 0),
+				UDim2.new(x, 0, row.y, 0)
+			)
+			x += w
+		end
+	end
+	local amount = 1 -- index into UpgradeCards.counts: ×1 → ×10 → max, one tap each
+	local quantity =
+		Candy.button(info, "Quantity", scale(0.24, MAIN.h), scale(0, MAIN.y), "neutral", 17)
+	local improve =
+		Candy.button(info, "BuyPick", scale(0.76, MAIN.h), scale(0.24, MAIN.y), "coin", 19)
+	-- a caption over the price (like a shop button): «Улучшить» small on top, the price big below, the coin on the left
 	Candy.buttonIcon(improve, "coin")
-	-- not in the hand: one big «В руку» (with the golden copy beside it), or «из сундука» when missing
-	local equip = Candy.button(info, "Equip", scale(1, 0.3), scale(0, 0.52), "confirm", 19)
-	local gold = Candy.button(info, "EquipGold", scale(0.5, 0.3), scale(0.5, 0.52), "coin", 17)
-	local fromChest = Candy.button(info, "FindInChest", scale(1, 0.3), scale(0, 0.52), "robux", 17)
-	Candy.fit(fromChest.box, at(0, 0.5, 1, 0.33))
-	-- the small row at the bottom: merge into golden, swap plain / golden, width, buy in the shop
-	local merge = Candy.button(info, "Merge", scale(1, 0.15), scale(0, 0.85), "coin", 14)
-	local swap = Candy.button(info, "Swap", scale(1, 0.15), scale(0, 0.85), "coin", 14)
-	local width = Candy.button(info, "BuyWidth", scale(1, 0.15), scale(0, 0.85), "neutral", 14)
+	Candy.fit(improve.image, scale(0.2, 0.7), scale(0.05, 0.15))
+	Candy.fit(improve.text, scale(0.7, 0.5), scale(0.27, 0.42))
+	local improveCaption =
+		Candy.text(improve.face, "Caption", scale(0.7, 0.32), scale(0.27, 0.1), 15)
+	improveCaption.ZIndex = improve.text.ZIndex
+	local equip = Candy.button(info, "Equip", scale(1, MAIN.h), scale(0, MAIN.y), "confirm", 19)
+	local gold = Candy.button(info, "EquipGold", scale(0.5, MAIN.h), scale(0.5, MAIN.y), "coin", 17)
+	local fromChest =
+		Candy.button(info, "FindInChest", scale(1, MAIN.h), scale(0, MAIN.y), "robux", 17)
+	local merge = Candy.button(info, "Merge", scale(1, SUB.h), scale(0, SUB.y), "coin", 15)
+	local swap = Candy.button(info, "Swap", scale(1, SUB.h), scale(0, SUB.y), "coin", 15)
+	local width = Candy.button(info, "BuyWidth", scale(1, SUB.h), scale(0, SUB.y), "neutral", 15)
 	Candy.buttonIcon(width, "width")
-	local buy = Candy.button(info, "Buy", scale(1, 0.15), scale(0, 0.85), "coin", 14)
+	local buy = Candy.button(info, "Buy", scale(1, SUB.h), scale(0, SUB.y), "coin", 15)
 	Candy.buttonIcon(buy, "coin")
+	local mainRow = { quantity, improve, equip, gold, fromChest }
 	local bottomRow = { merge, swap, width, buy }
 
 	local upgradeRemote = Remotes.event("UpgradeIntent")
 	local pickQuote: Upgrade.Quote? = nil
 	local widthQuote: Upgrade.Quote? = nil
 	local improveHelp, widthHelp = "", ""
+	W.bind(ctx, quantity, function()
+		amount = amount % #UpgradeCards.counts + 1
+		if profile then
+			refresh(profile)
+		end
+	end)
 	W.bind(ctx, improve, function()
 		if profile and Upgrade.pay(profile.coins, pickQuote) then
-			upgradeRemote:FireServer("BuyPickLevel", quantity.value)
+			upgradeRemote:FireServer("BuyPickLevel", UpgradeCards.counts[amount])
 		end
 	end, function()
 		return improveHelp
@@ -395,7 +444,9 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 			end
 			Candy.move(
 				card.control.box,
-				UDim2.new(if tab == "starter" then 0.375 else (c - 1) / 4, GAP / 2, 0, 0)
+				if tab == "starter"
+					then UDim2.new(0.375, GAP * 3 / 8, 0, 0)
+					else UDim2.new((c - 1) / 4, (c - 1) * GAP / 4, 0, 0)
 			)
 			card.control.box:SetAttribute("Pick", id)
 			local config = Config.pickaxes[id]
@@ -469,7 +520,7 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		PickStage.apply(top, tone(rarity), family, scale(1, 1), scale(0, 0), UDim.new(0, 12))
 		W.pickIcon(icon, id)
 		icon.ImageTransparency = if owned then 0 else 0.5
-		back.text.Text = "← " .. t("menu_all_picks")
+		back.text.Text = "←"
 		ribbon.Visible = equipped
 		ribbonText.Text = "✓ " .. t("menu_in_hand")
 		copiesBadge.Visible = owned and id ~= "starter"
@@ -479,11 +530,15 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		title.Text = W.pickName(t, id)
 		rarityText.Text = (
 			if family then W.stars(rarity) .. " " .. t("menu_rarity_" .. rarity) else ""
-		) .. (if displayGold then "  · ★ " .. t("menu_gold") else "")
+		)
+			.. (
+				if displayGold
+					then '   <font color="#D08A00">★ ' .. t("menu_gold") .. "</font>"
+					else ""
+			)
 		rarityText.TextColor3 = W.rarityText[tone(rarity)]
-		levelPill.Text = if owned
-			then t("upgrade_level", t("menu_fraction", level, cap))
-			else t("menu_missing")
+		levelCaption.Text, powerCaption.Text = t("menu_level_caption"), t("menu_strength")
+		levelPill.Text = if owned then t("menu_fraction", level, cap) else t("menu_missing")
 		equipHelp = t("pick_counts", entry.count, entry.golden) .. "\n" .. perk(ctx, id)
 		if otherFamily then
 			equipHelp = t("family_next") .. " · " .. equipHelp
@@ -491,28 +546,26 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		perkText.Text = if otherFamily and owned then t("family_next") else perk(ctx, id)
 
 		-- in the hand: the level is bought here
-		quantity.frame.Visible, improve.box.Visible = equipped, equipped
 		local nextWidth: any = nil
 		if equipped then
 			local context = Circle.context(profile, Worlds.of(front).index)
 			local current = Circle.pick(context.pick, profile.circle, front, profile)
-			pickQuote = Upgrade.quote(context, { kind = "pick", count = quantity.value })
+			pickQuote =
+				Upgrade.quote(context, { kind = "pick", count = UpgradeCards.counts[amount] })
 			local single = pickQuote or Upgrade.quote(context, { kind = "pick", count = 1 })
 			local nextPick = if single
 				then UpgradeCards.pickAt(profile, front, single.level)
 				else current
-			powerPill.Text = t(
-				"menu_strength_change",
-				Format.stat(current.strength, locale),
-				Format.stat(nextPick.strength, locale)
-			)
-			improve.text.Text = if single
-				then t("menu_improve") .. "  " .. Format.short(single.price)
-				else t("upgrade_cap")
+			powerPill.Text = Format.stat(current.strength, locale)
+				.. " → "
+				.. Format.stat(nextPick.strength, locale)
+			improve.text.Text = if single then Format.short(single.price) else t("upgrade_cap")
+			improveCaption.Text = t("menu_improve")
 			Candy.paint(
 				improve,
 				if Upgrade.pay(context.coins, pickQuote) then "coin" else "disabled"
 			)
+			improveCaption.TextColor3 = improve.text.TextColor3
 			improveHelp = t(
 				"upgrade_pick_preview",
 				Format.stat(current.strength, locale),
@@ -520,13 +573,10 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 				Format.short(current.ultLayers),
 				Format.short(nextPick.ultLayers)
 			)
-			for index, button in quantity.buttons do
-				local amount = UpgradeCards.counts[index]
-				button.text.Text = if amount == "max"
-					then t("upgrade_max")
-					else "×" .. tostring(amount)
-				Candy.paint(button, if quantity.value == amount then "coin" else "neutral")
-			end
+			local count = UpgradeCards.counts[amount]
+			quantity.text.Text = if count == "max"
+				then t("upgrade_max")
+				else "×" .. tostring(count)
 			nextWidth = Upgrade.nextWidth(context.width)
 			widthQuote = Upgrade.quote(context, { kind = "width", count = 1 })
 			width.text.Text = if widthQuote
@@ -562,17 +612,20 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 			end
 			previousPick, previousLevel = id, context.pickLevel
 		else
-			powerPill.Text = t("menu_strength") .. " " .. Format.stat(power, locale)
+			powerPill.Text = Format.stat(power, locale)
 			widthQuote = nil
 		end
 
 		-- not in the hand: «В руку» (and the golden copy beside it), or «из сундука» when missing
-		local showEquip = owned and not equipped
-		equip.box.Visible = showEquip
-		gold.box.Visible = showEquip and twoVariants
-		fromChest.box.Visible = not owned
-		Candy.fit(equip.box, at(0, 0.5, if twoVariants then 0.5 else 1, 0.33))
-		Candy.fit(gold.box, at(0.5, 0.5, 0.5, 0.33))
+		local showMain = if equipped
+			then { quantity, improve }
+			elseif not owned then { fromChest }
+			elseif twoVariants then { equip, gold }
+			else { equip }
+		for _, button in mainRow do
+			button.box.Visible = table.find(showMain, button) ~= nil
+		end
+		lay(MAIN, showMain, if equipped then { 0.22, 0.78 } else nil)
 		equip.text.Text = t("menu_equip")
 		gold.text.Text = "★ " .. t("menu_gold")
 		Candy.paint(equip, if canEquip then "confirm" else "disabled")
@@ -600,9 +653,7 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 				table.insert(shown, button)
 			end
 		end
-		for index, button in shown do
-			Candy.fit(button.box, at((index - 1) / #shown, 0.85, 1 / #shown, 0.15))
-		end
+		lay(SUB, shown)
 	end
 	return {
 		refresh = refresh,
