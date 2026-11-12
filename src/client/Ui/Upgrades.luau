@@ -138,8 +138,9 @@ function Upgrades.new(
 	local ctx = W.context(modal.panel, player, translate, feedback)
 	local body = Candy.frame(modal.panel, "Body", UDim2.new(1, -22, 1, -38), offset(11, 27))
 	local hub = Candy.frame(body, "Hub", scale(1, 1), offset(0, 0))
-	local rail = Candy.frame(body, "Sections", UDim2.new(0, 71, 1, 0), offset(0, 0))
-	local content = Candy.frame(body, "SectionsBody", UDim2.new(1, -80, 1, 0), offset(80, 0))
+	-- [владелец 12.11: «сбоку толстые кнопки, всё слиплось»] a slimmer rail and a clear gap before the page
+	local rail = Candy.frame(body, "Sections", UDim2.new(0, 64, 1, 0), offset(0, 0))
+	local content = Candy.frame(body, "SectionsBody", UDim2.new(1, -76, 1, 0), offset(76, 0))
 	local cards, rails, pages = {}, {}, {}
 	for index, section in sections do
 		local card = Candy.button(
@@ -199,14 +200,14 @@ function Upgrades.new(
 		local tab = Candy.button(
 			rail,
 			section.id,
-			UDim2.new(1, -3, 0.2, -7),
+			UDim2.new(1, -3, 0.2, -10),
 			UDim2.new(0, 1, (index - 1) / 5, 0),
 			"neutral",
-			13
+			12
 		)
 		Candy.buttonIcon(tab, section.icon)
-		Candy.fit(tab.image, scale(0.64, 0.60), scale(0.18, 0.04))
-		Candy.fit(tab.text, scale(0.95, 0.31), scale(0.025, 0.65))
+		Candy.fit(tab.image, scale(0.5, 0.5), scale(0.25, 0.07))
+		Candy.fit(tab.text, scale(0.95, 0.28), scale(0.025, 0.62))
 		local railBadge, railCount = W.badge(tab.face, Color3.fromHex("FF4D5E"))
 		Candy.fit(railBadge, offset(21, 21), UDim2.new(1, -17, 0, -6))
 		railCount.TextColor3 = Candy.white
@@ -396,6 +397,20 @@ function Upgrades.new(
 	ProfileState.changed:Connect(function()
 		refresh(true)
 	end)
+	-- QA (Studio only): the player attribute QaMenuPage = "collection" | "hub" | … opens that page, so the relay
+	-- can check a window without real clicks
+	if game:GetService("RunService"):IsStudio() then
+		player:GetAttributeChangedSignal("QaMenuPage"):Connect(function()
+			local target = player:GetAttribute("QaMenuPage")
+			if type(target) == "string" and target ~= "" then
+				local section, pick = string.match(target, "^(%w+)/(.+)$")
+				navigate(section or target)
+				if section == "collection" and pick then
+					collection.open(pick)
+				end
+			end
+		end)
+	end
 	for _, attribute in { "language", "MineLanguage" } do
 		player:GetAttributeChangedSignal(attribute):Connect(function()
 			refresh(false)

@@ -111,6 +111,25 @@ return {
 	menu_in_hand = { en = "Equipped", ru = "В руке", es = "En mano", fr = "Équipée" },
 	menu_equip = { en = "Equip", ru = "В руку", es = "Equipar", fr = "Équiper" },
 	menu_missing = { en = "Missing", ru = "Нет", es = "Falta", fr = "Absente" },
+	menu_merge_ready = {
+		en = "Ready to merge!",
+		ru = "Можно слить!",
+		es = "¡Puedes fundir!",
+		fr = "Fusion prête !",
+	},
+	menu_back = { en = "Back", ru = "Назад", es = "Atrás", fr = "Retour" },
+	menu_tap_pick = {
+		en = "Tap a pickaxe to learn more",
+		ru = "Нажми на кирку, чтобы узнать больше",
+		es = "Toca un pico para saber más",
+		fr = "Touche une pioche pour en savoir plus",
+	},
+	menu_to_gold = {
+		en = "To gold {1}/3",
+		ru = "До золотой {1}/3",
+		es = "A dorado {1}/3",
+		fr = "Vers l'or {1}/3",
+	},
 	menu_have = { en = "Owned", ru = "Есть", es = "Tienes", fr = "En stock" },
 	menu_from_chest = {
 		en = "From chest",
