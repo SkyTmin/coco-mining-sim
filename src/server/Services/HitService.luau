@@ -58,7 +58,11 @@ local function publish(
 	end
 	for i = 1, math.min(#res.finds, 255) do
 		local find = res.finds[i]
-		finds[i] = { kind = 1, id = State.cellKey(find.x, find.y, find.d) % 65536 }
+		-- kind 2 = a wall chest (the client marks «Кладоискатель» on it), 1 = anything else
+		finds[i] = {
+			kind = if find.kind == "chest" then 2 else 1,
+			id = State.cellKey(find.x, find.y, find.d) % 65536,
+		}
 	end
 	MineService.result(s, {
 		seq = seq,
@@ -308,6 +312,23 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 		local current = player:GetAttribute("CreativeUltLayers")
 		local index = table.find(steps, if type(current) == "number" then current else 0) or 1
 		player:SetAttribute("CreativeUltLayers", steps[index % #steps + 1])
+		return
+	elseif op == "mine.qaFamily" and RunService:IsStudio() then
+		-- QA (Studio only, the QA profile store): family `a` with skill levels `b` (four numbers 0..10)
+		if type(a) == "string" and Config.families[a] and type(b) == "table" and #b == 4 then
+			ProfileService.Mutate(player, function(profile)
+				profile.family = a
+				local levels = {}
+				for i = 1, 4 do
+					levels[i] = math.clamp(
+						math.floor(tonumber(b[i]) or 0),
+						0,
+						Config.families[a].skills[i].cap
+					)
+				end
+				profile.skills[a] = levels
+			end)
+		end
 		return
 	elseif op == "mine.stats" then
 		local bytes = #game:GetService("HttpService"):JSONEncode(Codec.encode(st))

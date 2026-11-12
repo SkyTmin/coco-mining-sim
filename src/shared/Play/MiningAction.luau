@@ -16,6 +16,7 @@ local Family = require(script.Parent.Family)
 local Perks = require(script.Parent.Perks)
 local WallChests = require(script.Parent.WallChests)
 local Keys = require(script.Parent.Keys)
+local FxFlags = require(script.Parent.FxFlags)
 local MiningAction = {}
 
 local function merge(base: any, extra: any)
@@ -76,6 +77,7 @@ function MiningAction.perform(
 	local visual = if ability then Codec.encode(st) else nil
 	local strike, res, ult = nil, nil, nil
 	local events = {}
+	local procFlags, pierced = 0, {}
 	if ability then
 		if request.ultLayers then
 			pick.ultLayers = request.ultLayers
@@ -94,16 +96,30 @@ function MiningAction.perform(
 		pick.forcedPierce = if runtime.nextPierce > 0
 			then runtime.nextPierce
 			else Power.pierce(Worlds.durability(request.d), strike.strength, strike)
+		if runtime.nextPierce > 0 then
+			procFlags = bit32.bor(procFlags, FxFlags.ultPierce)
+		end
 		if Hash.unit(st.seed, counter, 505) < effects.pierce then
 			pick.forcedPierce += 1
+			procFlags = bit32.bor(procFlags, FxFlags.pierce)
 		end
 		pick.brittle = Hash.unit(st.seed, counter, 507) < effects.brittle
+		if pick.brittle then
+			procFlags = bit32.bor(procFlags, FxFlags.brittle)
+		end
 		if pick.family == "frost" then
 			Perks.freeze(runtime, st, request.x, request.y, request.d)
 		end
 		res = Resolve.hit(st, pick, request.x, request.y, request.d, strike)
 		if not res then
 			return nil
+		end
+		-- the hit cell first, then every hand cell it drove deeper (what «Пробой» shows)
+		table.insert(pierced, { x = request.x, y = request.y, d = request.d })
+		for _, cell in res.cells do
+			if cell.d > request.d then
+				table.insert(pierced, cell)
+			end
 		end
 		runtime.nextPierce = 0
 		profile.hitCounter, profile.critCounter =
@@ -129,7 +145,9 @@ function MiningAction.perform(
 		)
 		if #route > 0 then
 			merge(res, Resolve.perk(st, pick, route))
-			table.insert(events, event(3, pick.family, pick.rarity, route, front, 180))
+			local perk = event(3, pick.family, pick.rarity, route, front, 180)
+			perk.flags = if forced then FxFlags.stormForced else 0
+			table.insert(events, perk)
 			if pick.family == "frost" then
 				table.clear(runtime.frozen)
 			end
@@ -148,6 +166,9 @@ function MiningAction.perform(
 	profile.coins += coins
 	local keys = if ability then 0 else Keys.hit(profile, effects.keys, st.seed)
 	local hitKeys = keys
+	if hitKeys > 0 then
+		procFlags = bit32.bor(procFlags, FxFlags.key)
+	end
 	local rewards = {}
 	local chestEffects = effects
 	if ability and ult.coinMultiplier ~= 1 then
@@ -184,13 +205,30 @@ function MiningAction.perform(
 		profile.platesBroken += 1
 	end
 	local cards = if world > oldWorld then Circle.reach(profile, world) else {}
-	local placed = false
+	local placed, placedChest = false, nil
 	if ability and Hash.unit(st.seed, profile.ultCounter, 509) < effects.ultChest then
-		placed = WallChests.place(st) ~= nil
+		placedChest = WallChests.place(st)
+		placed = placedChest ~= nil
 	end
 	local echo = ability
 		and not request.echo
 		and Hash.unit(st.seed, profile.ultCounter, 511) < effects.echo
+	if ability and pick.family then
+		local ultEvent = events[1]
+		ultEvent.flags = bit32.bor(
+			if request.echo then FxFlags.echo else 0,
+			if placed then FxFlags.placed else 0
+		)
+		if placedChest then
+			-- the chest's cell, relative to the NEW front (the wall the player sees after the wave)
+			ultEvent.points =
+				{ { x = placedChest.x, y = placedChest.y, dRel = placedChest.d - st.front } }
+		end
+	elseif not ability and pick.family and procFlags ~= 0 then
+		local proc = event(6, pick.family, pick.rarity, pierced, front, 0)
+		proc.flags = procFlags
+		table.insert(events, proc)
+	end
 	return {
 		res = res,
 		events = events,

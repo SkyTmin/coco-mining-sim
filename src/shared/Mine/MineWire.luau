@@ -321,6 +321,8 @@ function Wire.encodeResult(res: any): buffer
 			if event.kind == 4 then
 				put("u16", event.buffMs or 0)
 			end
+			-- visual-only proc marks (FxFlags): which skill fired, never an amount
+			put("u8", event.flags or 0)
 		end
 		put("u8", #event.points)
 		for _, point in event.points do
@@ -384,18 +386,20 @@ function Wire.decodeResult(data: any): any?
 			local event =
 				{ kind = get("u8"), gen = get("u8"), delayMs = get("u16"), points = {} } :: any
 			if event.kind >= 3 then
-				check(event.kind <= 5)
+				check(event.kind <= 6)
 				event.family = Config.familyRules.order[get("u8")]
 				event.rarity = Config.familyRules.rarities[get("u8")]
 				event.durationMs = get("u16")
 				if event.kind == 4 then
 					event.buffMs = get("u16")
 				end
+				event.flags = get("u8")
 				check(event.family ~= nil and event.rarity ~= nil)
 				event.type = if event.kind == 3
 					then "perk"
 					elseif event.kind == 4 then "ult"
-					else "frozen"
+					elseif event.kind == 5 then "frozen"
+					else "proc"
 			end
 			local count = get("u8")
 			check(count <= (if event.kind >= 3 then 200 else 6) and event.gen <= cascade.maxGen)

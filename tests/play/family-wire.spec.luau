@@ -28,10 +28,15 @@ Test.describe("Family wire hooks", function()
 			expect(Wire.decodeWindow(Wire.encodeWindow(win))).toEqual(win)
 			local events = {}
 			for i, family in Config.familyRules.order do
-				for kind = 3, 5 do
+				for kind = 3, 6 do
 					table.insert(events, {
 						kind = kind,
-						type = if kind == 3 then "perk" elseif kind == 4 then "ult" else "frozen",
+						type = if kind == 3
+							then "perk"
+							elseif kind == 4 then "ult"
+							elseif kind == 5 then "frozen"
+							else "proc",
+						flags = (kind * 13 + i) % 128,
 						family = family,
 						rarity = Config.familyRules.rarities[i],
 						gen = 1,

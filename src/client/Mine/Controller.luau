@@ -140,10 +140,13 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			familyToast(key, nil)
 		end,
 		{
-			bolt = function(a: Vector3, b: Vector3, branch: boolean)
+			bolt = function(a: Vector3, b: Vector3, branch: boolean, style: any?)
 				if lightning then
-					Lightning.bolt(lightning, a, b, os.clock(), 1, branch)
+					Lightning.bolt(lightning, a, b, os.clock(), 1, branch, style)
 				end
+			end,
+			trauma = function(amount: number, frequency: number, decay: number)
+				Intensity.trauma(intensity, amount, os.clock(), frequency, decay)
 			end,
 			flash = function(color: Color3, strength: number)
 				Intensity.flash(intensity, strength, color, os.clock())
@@ -432,10 +435,39 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				if plateBroken then oldWorld.plate.hp else res.plateDamage
 			)
 			else nil
+		-- skills first: a perk's blocks are played by shells that react before they break, so their grains start later
+		local plan: FamilyFx.Plan = {}
+		if not res.ability then
+			local function snap(point: any): any
+				return Break.snapshot(r, window, point.x, point.y, point.dRel, oldOffset)
+			end
+			for _, event in res.events do
+				if event.kind == 3 or event.kind == 6 then
+					event.front, event.origin = oldFront, target
+					local part = if event.kind == 3
+						then FamilyFx.perk(event, snap)
+						else FamilyFx.proc(event, snap)
+					for k, v in part do
+						plan[k] = v
+					end
+				end
+			end
+		end
 		if not res.ability then
 			for _, cell in res.cells do
-				local block = Break.snapshot(r, window, cell.x, cell.y, cell.dRel, oldOffset)
-				if block then
+				local planned = plan[cell.x .. "|" .. cell.y .. "|" .. cell.dRel]
+				local block = if planned and not planned.grains
+					then nil
+					else Break.snapshot(r, window, cell.x, cell.y, cell.dRel, oldOffset)
+				if block and planned then
+					Dissolve.block(
+						breaking.dissolve,
+						block,
+						now + planned.at,
+						block.frame.Position,
+						ProfileState.preference("reducedMotion")
+					)
+				elseif block then
 					local hit = if expected
 							and expected.hitPosition
 							and (block.frame.Position - expected.position).Magnitude < 0.1
@@ -500,6 +532,16 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 		local fxResult = table.clone(res)
 		fxResult.events = nil
+		-- frost reports its frozen blocks on every hit; a hit without that report means no frost pick (the server
+		-- drops the frozen set with the family), so the ice must go too
+		local reportsFrozen = false
+		for _, event in res.events do
+			reportsFrozen = reportsFrozen or event.kind == 5
+		end
+		if not res.ability and not reportsFrozen and #frozenCells > 0 then
+			frozenCells = {}
+			dirty = true
+		end
 		for i, event in res.events do
 			event.front = oldFront
 			event.result = fxResult
@@ -511,8 +553,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 						table.insert(event.positions, targetPosition(point, oldOffset))
 					end
 				end
-				if event.kind == 3 then
-					FamilyFx.perk(event)
+				if event.kind == 3 or event.kind == 6 then
+					continue -- played above, before the blocks broke
 				elseif event.kind == 4 then
 					FamilyFx.ult(event.family, event)
 				elseif event.kind == 5 then
@@ -554,6 +596,27 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				end
 				if res.rain then
 					Sfx.play("coin_rain", 0.63)
+				end
+			end
+			local family = pick().family
+			if family then
+				FamilyFx.handHit(
+					family,
+					if expected and expected.hitPosition then expected.hitPosition else target,
+					r.frame.LookVector * -1,
+					expected ~= nil and expected.plate == true
+				)
+			end
+			for _, find in res.finds do
+				if find.kind == 2 then
+					for _, cell in res.cells do
+						if
+							State.cellKey(cell.x, cell.y, oldFront + cell.dRel) % 65536 == find.id
+						then
+							FamilyFx.treasure(targetPosition(cell, oldOffset))
+							break
+						end
+					end
 				end
 			end
 			if res.blocks > 0 and not plateBroken then
@@ -758,6 +821,31 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	if studio then -- QA (Studio only): set the player attribute QAUlt to any new value to press the ult button
 		player:GetAttributeChangedSignal("QAUlt"):Connect(function()
 			request("Ability", nil)
+		end)
+		-- QAHit = any new value: one hand hit on the nearest exposed block (centre first), as a tap would
+		player:GetAttributeChangedSignal("QAHit"):Connect(function()
+			if not window then
+				return
+			end
+			local radius = (window.width - 1) // 2
+			for relative = 0, #window.layers - 1 do
+				local best, score = nil, math.huge
+				for x = -radius, radius do
+					for y = 0, window.height - 1 do
+						local ore = Wall.ore(window, x, y, relative)
+						if ore and ore ~= 0 then
+							local s = math.abs(x) * 3 + math.abs(y - 1)
+							if s < score then
+								best, score = { x = x, y = y, dRel = relative }, s
+							end
+						end
+					end
+				end
+				if best then
+					request("Hit", best)
+					return
+				end
+			end
 		end)
 	end
 	for _, attribute in { "language", "MineLanguage" } do
@@ -1047,6 +1135,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			Sfx.play("link_note", 0.77, PENTATONIC[(event.i - 1) % #PENTATONIC + 1])
 		end
 		Lightning.step(lightning, now)
+		FamilyFx.step(now, dt, function()
+			return if renderer then targetPosition({ x = 0, y = 1, dRel = 0 }, 0) else nil
+		end)
 		Camera.step(
 			v,
 			active,
