@@ -1,5 +1,6 @@
 --!strict
 local Config = require(script.Parent.Parent.Config)
+local Power = require(script.Parent.Power)
 local Income = {}
 function Income.finite(value: any): boolean
 	return type(value) == "number" and value >= 0 and value < math.huge
@@ -42,5 +43,39 @@ function Income.valid(ctx: any): boolean
 		and Income.finite(ctx.F)
 		and ctx.F >= 1
 		and Income.finite(Income.multiplier(ctx))
+end
+-- A conservative bound rejects nonfinite arithmetic before any mutation.
+local maxPrice, maxPlate, maxChest = 0, 0, 0
+for _, world in Config.worlds do
+	for _, price in world.prices do
+		maxPrice = math.max(maxPrice, price)
+	end
+	maxPlate = math.max(maxPlate, world.plate.reward)
+end
+for _, tier in Config.chests.wall.tiers do
+	maxChest = math.max(maxChest, tier.blocks)
+end
+local maxSource = Config.progress.cardEffects.megaMultiplier
+	* Config.progress.cardEffects.rainMultiplier
+for _, family in Config.families do
+	maxSource = math.max(maxSource, family.ult.coinMultiplier or 1)
+end
+maxSource = math.max(maxSource, Config.events.bomb.coinMultiplier)
+function Income.safeAction(profile: any, effects: any, ctx: any): boolean
+	local level = profile.circle.cards.coins or 0
+	if not Income.valid(ctx) or not Income.finite(profile.coins) or not Income.finite(level) then
+		return false
+	end
+	local perCell = Power.coins(maxPrice * maxChest, level)
+			* effects.chestCoins
+			* Config.progress.cardEffects.chestMultiplier
+			* maxSource
+		+ maxPlate
+	local bound = perCell
+		* Config.mine.maxDepth
+		* Config.mine.maxWidth
+		* Config.mine.maxHeight
+		* Income.multiplier(ctx)
+	return Income.finite(bound + profile.coins)
 end
 return Income

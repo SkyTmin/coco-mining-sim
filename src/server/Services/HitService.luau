@@ -160,12 +160,12 @@ local function onIntent(player: Player, packet: any)
 	local serverTime = workspace:GetServerTimeNow()
 	local duration = 0
 	for wave = 1, 2 do
-		local outcome
+		local outcome, failure
 		ProfileService.Mutate(player, function(profile)
 			if s.perkFamily ~= profile.family then
 				s.perks, s.perkFamily = Perks.new(), profile.family
 			end
-			outcome = MiningAction.perform(st, profile, s.perks, {
+			outcome, failure = MiningAction.perform(st, profile, s.perks, {
 				ability = ability,
 				now = started,
 				x = intent.x,
@@ -176,6 +176,9 @@ local function onIntent(player: Player, packet: any)
 			})
 		end)
 		if not outcome then
+			if failure == "income" then
+				warn("[Mine] Rejected nonfinite income")
+			end
 			MineService.reject(player, s, intent.seq)
 			return
 		end

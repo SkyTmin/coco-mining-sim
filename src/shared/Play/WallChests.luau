@@ -180,7 +180,14 @@ function WallChests.stage(st: any, profile: any, playSeconds: number): boolean
 	return false
 end
 
-function WallChests.reward(profile: any, chest: any, hand: boolean, seed: number, effects: any): any
+function WallChests.reward(
+	profile: any,
+	chest: any,
+	hand: boolean,
+	seed: number,
+	effects: any,
+	incomeMultiplier: number
+): any
 	local world, mean = Worlds.of(chest.d), 0
 	for ore, weight in world.weights do
 		mean += world.orePrices[ore] * weight
@@ -190,7 +197,7 @@ function WallChests.reward(profile: any, chest: any, hand: boolean, seed: number
 	local coins = Power.coins(
 		mean * tier.blocks,
 		profile.circle.cards.coins or 0,
-		effects.coins
+		incomeMultiplier
 			* effects.chestCoins
 			* (if greedy then Config.progress.cardEffects.chestMultiplier else 1)
 	)

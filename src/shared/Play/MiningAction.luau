@@ -17,6 +17,7 @@ local Perks = require(script.Parent.Perks)
 local WallChests = require(script.Parent.WallChests)
 local Keys = require(script.Parent.Keys)
 local FxFlags = require(script.Parent.FxFlags)
+local Income = require(script.Parent.Income)
 local MiningAction = {}
 
 local function merge(base: any, extra: any)
@@ -68,10 +69,15 @@ function MiningAction.perform(
 	profile: any,
 	runtime: Perks.Runtime,
 	request: any
-): any?
+): (any?, string?)
 	local front = st.front
 	local pick = Circle.pick(profile.pickaxe, profile.circle, front, profile)
 	local effects = Family.effects(profile)
+	local income = request.income or Income.context(profile, effects)
+	if not Income.safeAction(profile, effects, income) then
+		return nil, "income"
+	end
+	local commonMultiplier = Income.multiplier(income)
 	st.chestFrequency = effects.chestFrequency
 	local ability = request.ability == true
 	local visual = if ability then Codec.encode(st) else nil
@@ -159,10 +165,10 @@ function MiningAction.perform(
 			event(5, pick.family, pick.rarity, Perks.frozen(runtime, st), front, 0)
 		)
 	end
-	local multiplier = effects.coins
+	local multiplier = commonMultiplier
 		* (if strike then strike.coinMultiplier else (ult and ult.coinMultiplier or 1))
 	local coins = Economy.coinsFor(res.hist, profile.circle.cards.coins, multiplier)
-		+ (res.plateReward or 0) * effects.coins
+		+ (res.plateReward or 0) * commonMultiplier
 	profile.coins += coins
 	local keys = if ability then 0 else Keys.hit(profile, effects.keys, st.seed)
 	local hitKeys = keys
@@ -170,16 +176,18 @@ function MiningAction.perform(
 		procFlags = bit32.bor(procFlags, FxFlags.key)
 	end
 	local rewards = {}
-	local chestEffects = effects
-	if ability and ult.coinMultiplier ~= 1 then
-		chestEffects = table.clone(effects)
-		chestEffects.coins *= ult.coinMultiplier
-	end
+	local chestMultiplier = commonMultiplier * (if ability then ult.coinMultiplier else 1)
 	for _, find in res.finds do
 		if find.kind == "chest" then
 			find.tier = find.tier or WallChests.tier(st.seed, State.cellKey(find.x, find.y, find.d))
-			local reward =
-				WallChests.reward(profile, find, find.source == "hand", st.seed, chestEffects)
+			local reward = WallChests.reward(
+				profile,
+				find,
+				find.source == "hand",
+				st.seed,
+				effects,
+				chestMultiplier
+			)
 			coins += reward.coins
 			keys += reward.keys
 			table.insert(rewards, reward)
