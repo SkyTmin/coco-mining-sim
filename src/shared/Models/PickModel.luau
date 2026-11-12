@@ -1,5 +1,6 @@
 --!strict
 
+local CollectionService = game:GetService("CollectionService")
 local data = require(script.Parent.wooden_pickaxe)
 local Config = require(script.Parent.Parent.Config)
 local ArtModel = require(script.Parent.ArtModel)
@@ -39,6 +40,9 @@ local handGrip = CFrame.new(0.3, -0.3, -0.2)
 	* CFrame.Angles(math.rad(-105), math.pi, 0)
 	* CFrame.new(0, HELD_SIZE * 0.45, HELD_SIZE * 0.45)
 local heldTemplate: Model? = nil
+-- the client swaps the voxel stand-in for the cel model (src/client/Fx/CelPicks.luau) using these
+PickModel.HELD_SIZE, PickModel.TILT, PickModel.HELD_MOUNT =
+	HELD_SIZE, data.tilt, legacyGrip:Inverse() * handGrip
 
 local function build(size: number, anchored: boolean, mount: CFrame): (Model, Part)
 	local pixel = size / span
@@ -136,10 +140,19 @@ function PickModel.forPick(
 		end
 		model:Destroy()
 	end
+	local model, root
 	if first then
-		return PickModel.view()
+		model, root = PickModel.view()
+		model:PivotTo(frame)
+	else
+		model, root = PickModel.new(PickModel.icon(id), frame, 0.056, anchored)
 	end
-	return PickModel.new(PickModel.icon(id), frame, 0.056, anchored)
+	-- [владелец 11.11: «кирки поменяй»] each client draws the cel model of this pick over the voxel stand-in
+	model:SetAttribute("CelPick", id)
+	model:SetAttribute("CelSize", if first then HELD_SIZE * 0.6 else HELD_SIZE)
+	model:SetAttribute("CelMount", if first or anchored then "plain" else "held")
+	CollectionService:AddTag(model, "CelPick")
+	return model, root
 end
 
 function PickModel.appearance(model: Model, id: string, golden: boolean)

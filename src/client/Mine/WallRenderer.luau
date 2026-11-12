@@ -12,6 +12,8 @@ local BlockPool = require(script.Parent.BlockPool)
 local S = Config.mine.blockSize
 local BlockArt = require(script.Parent.BlockArt)
 local ArtModel = require(game:GetService("ReplicatedStorage").Shared.Models.ArtModel)
+local CelMesh = require(script.Parent.Parent.Fx.CelMesh)
+local CelChestData = require(script.Parent.Parent.Fx.CelChestData)
 local WallRenderer = {}
 local SPARK_LAYERS = Config.mine.nearWindow
 
@@ -187,6 +189,23 @@ function WallRenderer.sparkles(r: Renderer, now: number)
 	end
 end
 
+-- [владелец 11.11: «закинь все что ты сделал»] wall chests are the cel chests (CelChestData), front towards the player
+local function chestModel(kind: string?, part: BasePart): Model?
+	local prims = if kind then CelChestData[kind] else nil
+	local template = prims
+		and CelMesh.template(
+			"chest_" .. kind,
+			prims,
+			{ size = S * 0.96, axes = "xyz", sizeAxes = "all", solidBounds = true }
+		)
+	if not template then
+		return nil
+	end
+	local model = CelMesh.attach(template, part, CFrame.new(0, -S * 0.02, 0))
+	model.Name, model.Parent = "ArtModel", part
+	return model
+end
+
 local function addCell(
 	r: Renderer,
 	key: number,
@@ -221,7 +240,8 @@ local function addCell(
 		part:SetAttribute("ChestTier", tier)
 		if tier then
 			local entry = Config.art.chests.wall[tier]
-			local model = entry and ArtModel.mount(entry.model, part)
+			local model = entry
+				and (chestModel(entry.kind, part) or ArtModel.mount(entry.model, part))
 			part.Transparency = if model then 1 else 0
 		else
 			part.Transparency = 0
