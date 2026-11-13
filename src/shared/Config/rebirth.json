@@ -1,0 +1,169 @@
+{
+  "holdSeconds": 1.5,
+  "hintSeconds": 2,
+  "paceWindow": 120,
+  "paceMinSeconds": 30,
+  "giftStartSeconds": 10,
+  "requestSeconds": 1,
+  "replySeconds": 5,
+  "releaseSeconds": 0.2,
+  "transitionSeconds": 2.5,
+  "skipSeconds": 0.6,
+  "worldTimeSeconds": 3,
+  "percentScale": 100,
+  "seedMax": 2147483647,
+  "ui": {
+    "width": 0.94,
+    "height": 0.9,
+    "padding": 10,
+    "font": 15,
+    "smallFont": 11,
+    "statsY": 2,
+    "statsHeight": 32,
+    "keepY": 34,
+    "resetY": 58,
+    "lineHeight": 24,
+    "familyY": 84,
+    "familyHeight": 62,
+    "startY": 150,
+    "buttonHeight": 44,
+    "holdY": 201,
+    "holdWidth": 0.48,
+    "holdX": 0.26,
+    "noticeY": 247,
+    "noticeHeight": 18,
+    "arrowWidth": 44,
+    "startWidth": 140,
+    "fireSize": 50,
+    "fireX": 272,
+    "fireBottom": 18,
+    "badgeWidth": 110,
+    "pulseGain": 0.15,
+    "pulseSpeed": 4,
+    "masterHeight": 0.55,
+    "masterY": 70,
+    "transitionLayer": 30,
+    "transitionFont": 42,
+    "transitionSmallFont": 24,
+    "transitionGold": "FFD23F",
+    "dimAlpha": 0.15,
+    "flashWidth": 0.44,
+    "flashHeight": 0.44,
+    "flashAt": 1.5,
+    "flashSeconds": 0.12,
+    "worldTimeLayer": 11,
+    "worldTimeY": 0.25,
+    "worldTimeWidth": 0.6,
+    "worldTimeHeight": 0.1,
+    "secondsPerMinute": 60,
+    "transitionTitleSize": [
+      1,
+      0.25
+    ],
+    "transitionTitleAt": [
+      0,
+      0.3
+    ],
+    "transitionRewardSize": [
+      1,
+      0.2
+    ],
+    "transitionRewardAt": [
+      0,
+      0.55
+    ],
+    "transitionSkipSize": [
+      1,
+      0.1
+    ],
+    "transitionSkipAt": [
+      0,
+      0.8
+    ],
+    "flightBars": 8,
+    "flightBarWidth": 0.06,
+    "flightBarHeight": 0.3,
+    "flightSpeed": 1.4,
+    "flightAlpha": 0.8,
+    "changedFlashSeconds": 0.3
+  },
+  "analytics": {
+    "firstRebirthStep": 15,
+    "qualitySeconds": 1
+  },
+  "profitableRatio": 0.1,
+  "profitableEtaSeconds": 900,
+  "firstAfterWorld": 3,
+  "cups": [
+    0,
+    0,
+    1,
+    3,
+    8,
+    25,
+    90,
+    370,
+    1500,
+    6000
+  ],
+  "ranks": [
+    {
+      "cups": 1,
+      "id": "digger",
+      "name": "Копатель",
+      "gives": "удар 1×2 с начала круга",
+      "size": 2
+    },
+    {
+      "cups": 3,
+      "id": "tunneler",
+      "name": "Проходчик",
+      "gives": "удар 1×3 с начала круга; 2-й слот питомца",
+      "size": 3,
+      "petSlots": 2
+    },
+    {
+      "cups": 10,
+      "id": "driller",
+      "name": "Бурильщик",
+      "gives": "Лифт: круг можно начать с мира 3",
+      "lift": 3
+    },
+    {
+      "cups": 30,
+      "id": "master",
+      "name": "Мастер",
+      "gives": "Лифт до мира 4; 3-й слот питомца",
+      "lift": 4,
+      "petSlots": 3
+    },
+    {
+      "cups": 250,
+      "id": "grandmaster",
+      "name": "Гроссмейстер",
+      "gives": "Лифт до мира 6; след ульты",
+      "lift": 6
+    },
+    {
+      "cups": 1000,
+      "id": "legend",
+      "name": "Легенда недр",
+      "gives": "Лифт до мира 7; аура",
+      "lift": 7
+    },
+    {
+      "cups": 4000,
+      "id": "conqueror",
+      "name": "Покоритель",
+      "gives": "Лифт до мира 8; золотой ник",
+      "lift": 8
+    },
+    {
+      "cups": 16000,
+      "id": "core_heart",
+      "name": "Сердце Ядра",
+      "gives": "Лифт до мира 9; корона над ником",
+      "lift": 9
+    }
+  ]
+}

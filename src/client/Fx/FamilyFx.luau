@@ -77,6 +77,7 @@ local extras: Extras = {}
 
 -- ── budget ───────────────────────────────────────────────────────────────────────────────────────────────────────
 -- phones get half of everything; a skill that finds the pools empty simply plays fewer pieces, never queues
+local Quality = require(script.Parent.Quality)
 local function lite(): boolean
 	return UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 end
@@ -150,7 +151,30 @@ local function holder(): Instance
 	return folder :: Folder
 end
 
+Quality.observe("debris", function()
+	local count = 0
+	for _, item in shells do
+		if item.busy then
+			count += 1
+		end
+	end
+	for _, item in chips do
+		if item.busy then
+			count += 1
+		end
+	end
+	for _, item in cones do
+		if item:GetAttribute("Busy") == true then
+			count += 1
+		end
+	end
+	return count
+end)
+
 local function takeShell(): Shell?
+	if Quality.reserve("debris", 1, Config.fx.qualityRuntime.debrisLeaseSeconds) == 0 then
+		return nil
+	end
 	for _, shell in shells do
 		if not shell.busy then
 			shell.busy = true
@@ -178,6 +202,9 @@ local function takeShell(): Shell?
 end
 
 local function takeCone(): ConeHandleAdornment?
+	if Quality.reserve("debris", 1, Config.fx.qualityRuntime.debrisLeaseSeconds) == 0 then
+		return nil
+	end
 	for _, cone in cones do
 		if not cone.Visible and cone:GetAttribute("Busy") ~= true then
 			cone:SetAttribute("Busy", true)
@@ -220,6 +247,9 @@ local function dress(shell: Shell, block: Block)
 end
 
 local function takeChip(): Chip?
+	if Quality.reserve("debris", 1, Config.fx.qualityRuntime.debrisLeaseSeconds) == 0 then
+		return nil
+	end
 	for _, chip in chips do
 		if not chip.busy then
 			chip.busy = true
@@ -334,6 +364,9 @@ local function pop(
 		color, position, Vector3.one * size * 0.35, 0.25
 	-- the light of a hit stays local: a whole lit-up tunnel washes every block white [стенд 12.11]
 	local glow = (bright or 0) * 0.35
+	if glow > 0 and Quality.reserve("lights", 1, time) == 0 then
+		glow = 0
+	end
 	light.Color, light.Range, light.Brightness = color, math.min(26, size * 1.8), glow
 	light.Enabled = glow > 0
 	part.Parent = holder()
@@ -646,7 +679,13 @@ local function emit(name: string, position: Vector3, count: number)
 	ring.next = ring.next % 8 + 1
 	item.at.WorldPosition = position
 	local scale = if lite() then 0.5 else 1
-	item.emitter:Emit(math.max(1, math.floor(count * scale + 0.5)))
+	item.emitter:Emit(
+		Quality.reserve(
+			"particles",
+			math.max(1, math.floor(count * scale + 0.5)),
+			item.emitter.Lifetime.Max
+		)
+	)
 end
 
 -- ── helpers ──────────────────────────────────────────────────────────────────────────────────────────────────────

@@ -1,12 +1,15 @@
 --!strict
 local TweenService = game:GetService("TweenService")
 local Shared = game:GetService("ReplicatedStorage").Shared
+local Config = require(Shared.Config)
+local Rebirth = require(Shared.Play.Rebirth)
 local Family = require(Shared.Play.Family)
 local Format = require(Shared.Format)
 local Strings = require(Shared.Strings)
 local Upgrade = require(Shared.Play.Upgrade)
 local ProfileState = require(script.Parent.Parent.ProfileState)
 local Candy = require(script.Parent.Candy)
+local Gamepad = require(script.Parent.Parent.Gamepad)
 local W = require(script.Parent.MenuWidgets)
 local UpgradeCards = require(script.Parent.UpgradeCards)
 local Collection = require(script.Parent.PickCollection)
@@ -46,6 +49,15 @@ local sections = {
 		color = W.navy,
 		action = "menu_open",
 	},
+	-- [владелец 13.11: «почему перерождение стоит первым? где логика?»] the hub goes from what is bought every minute
+	-- (cards) to the goal of the late game: rebirth last
+	{
+		id = "rebirth",
+		title = "rebirth_title",
+		icon = "ult",
+		color = Candy.purple,
+		action = "menu_open",
+	},
 }
 
 local function total(set: { [string]: boolean }): number
@@ -77,13 +89,17 @@ function Upgrades.new(
 	player: Player,
 	translate: (string, ...any) -> string,
 	feedback: (string, number) -> (),
-	wallet: Frame
+	wallet: Frame,
+	openRebirth: ((boolean?) -> ())?
 )
 	local hud = Candy.layer(parent, "UpgradesHUD", 5)
 	hud.Visible = false
-	local upgradeButton = dockButton(hud, "OpenUpgrades", "upgrades", 50, 16, "purple")
+	-- [владелец 13.11: «первая кнопка открывает меню, хотя там прокачка кирки»] the first button is the circle's cards:
+	-- the icon says what it opens, and its dot counts affordable cards
+	local upgradeButton = dockButton(hud, "OpenUpgrades", "cards", 50, 16, "purple")
 	local picksButton = dockButton(hud, "OpenCollection", "pickaxe", 50, 80, "confirm")
 	local familyButton = dockButton(hud, "OpenFamily", "lock", 50, 144, "neutral")
+	Gamepad.tag(upgradeButton.box, Enum.KeyCode.ButtonX, Vector2.new(0.12, 0.12))
 	local upgradeDot, collectionDot, familyDot =
 		Candy.dot(upgradeButton.face), Candy.dot(picksButton.face), Candy.dot(familyButton.face)
 	-- [владелец 11.11: «небрежно»] small dots tucked into the corner, never over the next button
@@ -307,7 +323,16 @@ function Upgrades.new(
 			return
 		end
 
+		local q = Rebirth.quote(profile)
+		local pendingMaster = profile.rewards.masterEpic == "pending"
 		local statuses = {
+			rebirth = if pendingMaster
+				then translate("master_epic_entry")
+				elseif not q.available then translate(
+					"rebirth_need_plate",
+					math.max(Config.rebirth.firstAfterWorld, profile.circleStartWorld)
+				)
+				else translate("rebirth_gain", q.gain),
 			cards = translate("menu_affordable", summary.cardCount),
 			collection = translate(
 				"menu_strength_change",
@@ -323,6 +348,7 @@ function Upgrades.new(
 			chest = translate("pick_chest_keys", Format.short(keys)),
 		}
 		local counts = {
+			rebirth = if pendingMaster or player:GetAttribute("RebirthHint") == 2 then 1 else 0,
 			cards = summary.cardCount,
 			collection = fresh + summary.pickCount,
 			family = skillCount,
@@ -332,14 +358,20 @@ function Upgrades.new(
 			local id = section.id
 			local card, tab = cards[id], rails[id]
 			local title = translate(section.title)
-			local icon = if id == "family" then familyIcon else section.icon
+			local icon = if id == "rebirth"
+					and not q.available
+					and not pendingMaster
+				then "lock"
+				elseif id == "family" then familyIcon
+				else section.icon
 			local count = counts[id]
 			card.title.Text = title
 			card.hint.Text = translate("menu_" .. id .. "_hint")
 			card.status.Text, card.action.Text = statuses[id], translate(section.action)
 			Candy.setIcon(card.icon, icon)
 			card.head.BackgroundColor3 = if id == "family" then familyColor else section.color
-			card.badge.Visible, card.count.Text = count > 0, Format.short(count)
+			card.badge.Visible, card.count.Text =
+				count > 0, if id == "rebirth" then translate("rebirth_up") else Format.short(count)
 			if card.fill then
 				card.fill.Size = scale(ownedCount / Collection.total, 1)
 			end
@@ -373,6 +405,12 @@ function Upgrades.new(
 		refresh(false)
 	end
 	navigate = function(target: string)
+		if target == "rebirth" and openRebirth then
+			Candy.show(modal, false)
+			local p = ProfileState.getProfile()
+			openRebirth(p and p.rewards.masterEpic == "pending")
+			return
+		end
 		page = target
 		if target == "collection" then
 			collection.showList()
@@ -386,7 +424,7 @@ function Upgrades.new(
 		end
 	end
 	W.bind(ctx, upgradeButton, function()
-		navigate("hub")
+		navigate("cards")
 	end)
 	-- the pick button opens the pick in the hand: its level is the thing bought most often
 	W.bind(ctx, picksButton, function()
@@ -406,6 +444,9 @@ function Upgrades.new(
 	end)
 	Candy.fit(modal.ribbon, offset(200, 34), offset(17, -17))
 	layout()
+	player:GetAttributeChangedSignal("RebirthHint"):Connect(function()
+		refresh(false)
+	end)
 	ProfileState.changed:Connect(function()
 		refresh(true)
 	end)
@@ -434,6 +475,15 @@ function Upgrades.new(
 	refresh(false)
 
 	return {
+		close = function()
+			Candy.show(modal, false)
+		end,
+		-- the gamepad's X: open a page of the menu (only while the HUD buttons are shown)
+		open = function(target: string)
+			if hud.Visible then
+				navigate(target)
+			end
+		end,
 		chestResult = chest.result,
 		step = function(
 			now: number,

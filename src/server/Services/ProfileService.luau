@@ -14,6 +14,7 @@ local StorageNames = require(Shared.StorageNames)
 local Types = require(Shared.Types)
 local Wire = require(Shared.Wire)
 local Circle = require(Shared.Play.Circle)
+local ProfileDefaults = require(Shared.Play.ProfileDefaults)
 
 type Profile = Types.Profile
 type ProfilePatchOp = Types.ProfilePatchOp
@@ -57,26 +58,7 @@ local releaseHooks: { (Player) -> () } = {}
 local store: DataStore? = nil
 
 function ProfileService.DefaultProfile(): Profile
-	local now = os.time()
-	local profile: any = {
-		coins = 0,
-		pickaxe = "starter",
-		stats = { blocks = 0, layers = 0, playSeconds = 0 },
-		settings = {
-			camera = "first",
-			music = 0.7,
-			sfx = Config.sounds.rules.defaultSfx,
-			ui = 1,
-			reducedMotion = false,
-			haptics = true,
-			effects = "auto",
-		},
-		firstJoin = now,
-		lastJoin = now,
-		joins = 0,
-	}
-	Circle.initialize(profile)
-	return profile
+	return ProfileDefaults.new(os.time())
 end
 
 local function migrate(data: any): (Profile?, boolean)
@@ -294,9 +276,12 @@ local function prepareSave(player: Player): boolean
 	return true
 end
 
-function ProfileService.Replicate(player: Player)
+function ProfileService.Replicate(player: Player, full: boolean?)
 	local session = sessions[player]
 	if session then
+		if full then
+			session.sent = nil
+		end
 		player:SetAttribute("language", session.profile.settings.language)
 		session.replicateDue = true
 	end

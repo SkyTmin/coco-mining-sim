@@ -52,6 +52,8 @@ Test.describe("Family wire hooks", function()
 				plot = 1,
 				front = 5,
 				accepted = true,
+				streak = 253,
+				streakTier = 2,
 				ability = true,
 				heavy = false,
 				crit = false,

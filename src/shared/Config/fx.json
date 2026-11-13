@@ -1,4 +1,56 @@
 {
+  "quality": {
+    "debris": [
+      30,
+      80,
+      160
+    ],
+    "debrisPerSecond": [
+      30,
+      48,
+      90
+    ],
+    "particles": [
+      150,
+      400,
+      900
+    ],
+    "links": [
+      8,
+      16,
+      32
+    ],
+    "lights": [
+      0,
+      2,
+      4
+    ],
+    "lamps": [
+      2,
+      4,
+      6
+    ],
+    "bloom": [
+      false,
+      true,
+      true
+    ],
+    "blur": [
+      false,
+      false,
+      true
+    ],
+    "numbers": [
+      6,
+      10,
+      14
+    ],
+    "oreLayers": [
+      12,
+      16,
+      20
+    ]
+  },
   "depth": {
     "fogStart": 1500,
     "fogEnd": 4000,
@@ -19,5 +71,15 @@
     "distanceBase": 155,
     "distancePerLog": 100,
     "distanceDeep": 430
+  },
+  "qualityRuntime": {
+    "debrisLeaseSeconds": 5,
+    "bloomIntensity": 0.12,
+    "bloomSize": 12,
+    "bloomThreshold": 2,
+    "blurSize": 8,
+    "lampRange": 24,
+    "lampBrightness": 0.6,
+    "numberSeconds": 0.7
   }
 }

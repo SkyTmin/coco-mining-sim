@@ -1,0 +1,130 @@
+{
+  "codes": {
+    "rubble": 69,
+    "bomb": 70,
+    "vein": 71
+  },
+  "visual": {
+    "layer": 12,
+    "edges": [
+      [
+        1,
+        0.025,
+        0,
+        0
+      ],
+      [
+        1,
+        0.025,
+        0,
+        0.975
+      ],
+      [
+        0.015,
+        1,
+        0,
+        0
+      ],
+      [
+        0.015,
+        1,
+        0.985,
+        0
+      ]
+    ],
+    "gold": "FFD23F",
+    "red": "E8352B",
+    "gray": "909090",
+    "feverWidth": 0.25,
+    "labelHeight": 0.08,
+    "feverX": 0.375,
+    "feverY": 0.14,
+    "fontSize": 18,
+    "arrowSize": 44,
+    "outline": 0.08,
+    "timerSize": 54,
+    "ringWidth": 3,
+    "gain": 0.12,
+    "blastTransparency": 0.65,
+    "blastSeconds": 0.2,
+    "saturation": 0.2,
+    "edgeTransparency": 0.8,
+    "pulseBase": 0.15,
+    "pulseRange": 0.15,
+    "pulseSpeed": 6,
+    "arrowRadius": 0.42,
+    "fadeSeconds": 1,
+    "ringSegments": 32,
+    "ringRadius": 0.46,
+    "feverTickSeconds": 5
+  },
+  "hud": {
+    "ticks": 48,
+    "radius": 0.7,
+    "tickPixels": 4,
+    "labelWidth": 96,
+    "labelHeight": 22,
+    "labelX": -11,
+    "labelY": -28,
+    "fontSize": 15,
+    "gain": 0.12,
+    "pitchStep": 0.08,
+    "pulseSeconds": 0.25
+  },
+  "slotGapSeconds": 5,
+  "activeWithinSeconds": 5,
+  "latencyGrace": 0.25,
+  "retrySeconds": 10,
+  "tickSeconds": 1,
+  "veinDepth": 2,
+  "bombDepth": 1,
+  "streakWireScale": 10,
+  "streakHideSeconds": 3,
+  "bombSalt": 1409,
+  "streak": {
+    "multipliers": [
+      1.25,
+      1.5,
+      2,
+      3
+    ],
+    "tiers": [
+      10,
+      25,
+      50,
+      90
+    ],
+    "grace": 1.5,
+    "decay": 1,
+    "cap": 100
+  },
+  "vein": {
+    "minSeconds": 180,
+    "maxSeconds": 360,
+    "windowSeconds": 10,
+    "firstPlaySeconds": 330,
+    "cells": [
+      3,
+      5
+    ]
+  },
+  "fever": {
+    "seconds": 30,
+    "multiplier": 5,
+    "giftSeconds": 30
+  },
+  "bomb": {
+    "fromWorld": 3,
+    "minSeconds": 120,
+    "maxSeconds": 180,
+    "fuseSeconds": 5,
+    "coinMultiplier": 2,
+    "box": [
+      3,
+      3,
+      3
+    ],
+    "rubbleLayers": 2,
+    "rubbleHits": 1
+  }
+}

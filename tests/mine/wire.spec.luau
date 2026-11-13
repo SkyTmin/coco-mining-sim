@@ -50,6 +50,8 @@ Test.describe("Mine protocol", function()
 			plot = 8,
 			front = 36004,
 			accepted = true,
+			streak = 253,
+			streakTier = 2,
 			delta = 4,
 			ability = true,
 			heavy = true,
@@ -65,6 +67,13 @@ Test.describe("Mine protocol", function()
 			cells = { { x = 2, y = 1, dRel = 1, gen = 1 } },
 			runs = { { x = -2, y = 1, a = 36030, b = 36160 } },
 			events = {
+				{
+					kind = 7,
+					gen = 1,
+					delayMs = 0,
+					flags = 0,
+					points = table.create(26, { x = 0, y = 0, dRel = 0 }),
+				},
 				{
 					kind = 1,
 					gen = 1,

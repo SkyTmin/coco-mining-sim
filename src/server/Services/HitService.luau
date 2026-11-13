@@ -14,12 +14,17 @@ local Ride = require(Shared.Mine.Ride)
 local Perks = require(Shared.Play.Perks)
 local MiningAction = require(Shared.Play.MiningAction)
 local Circle = require(Shared.Play.Circle)
+local ProfileDefaults = require(Shared.Play.ProfileDefaults)
+local Streak = require(Shared.Play.Streak)
+local Pace = require(Shared.Play.Pace)
 local Power = require(Shared.Play.Power)
 local MineService = require(script.Parent.MineService)
 local ProfileService = require(script.Parent.ProfileService)
 local PlotService = require(script.Parent.PlotService)
 local Pickaxe = require(script.Parent.PickaxeService)
 local Analytics = require(script.Parent.Analytics)
+local RebirthService = require(script.Parent.RebirthService)
+local EventService = require(script.Parent.EventService)
 
 type Session = MineService.Session
 type HitResult = Resolve.HitResult
@@ -77,6 +82,8 @@ local function publish(
 		mega = strike and strike.mega,
 		rain = strike and strike.rain,
 		charge = s.charge,
+		streak = math.floor(s.streak.gauge * Config.events.streakWireScale),
+		streakTier = Streak.tier(s.streak),
 		plateDamage = st.plateDamage,
 		damage = MineService.damage(st),
 		blocks = res.blocks,
@@ -158,16 +165,25 @@ local function onIntent(player: Player, packet: any)
 	end
 	local forced = if creative then player:GetAttribute("CreativeUltLayers") else nil
 	local serverTime = workspace:GetServerTimeNow()
+	Streak.decay(s.streak, math.min(serverTime, s.streakUntil), true)
+	Streak.decay(s.streak, serverTime, false)
+	local actionIncome = ProfileService.Read(player, function(p)
+		return EventService.income(s, p, serverTime, ability)
+	end)
 	local duration = 0
 	for wave = 1, 2 do
-		local outcome
+		local outcome, failure
 		ProfileService.Mutate(player, function(profile)
 			if s.perkFamily ~= profile.family then
 				s.perks, s.perkFamily = Perks.new(), profile.family
 			end
-			outcome = MiningAction.perform(st, profile, s.perks, {
+			outcome, failure = MiningAction.perform(st, profile, s.perks, {
 				ability = ability,
 				now = started,
+				income = actionIncome,
+				marks = s.events,
+				serverNow = serverTime,
+				playSeconds = ProfileService.PlaySeconds(player),
 				x = intent.x,
 				y = intent.y,
 				d = d,
@@ -176,6 +192,9 @@ local function onIntent(player: Player, packet: any)
 			})
 		end)
 		if not outcome then
+			if failure == "income" then
+				warn("[Mine] Rejected nonfinite income")
+			end
 			MineService.reject(player, s, intent.seq)
 			return
 		end
@@ -185,12 +204,26 @@ local function onIntent(player: Player, packet: any)
 		s.charge = if ability
 			then (if endless then pick.ultCharge else 0)
 			else math.min(pick.ultCharge, s.charge + 1)
+		EventService.after(player, s, outcome, {
+			now = serverTime,
+			ability = ability,
+			x = intent.x,
+			y = intent.y,
+			d = d,
+			feverActive = actionIncome.F == Config.events.fever.multiplier,
+		})
+		if not ability then
+			Streak.add(s.streak, serverTime, pick.interval, "hand")
+			s.streakMaximum = math.max(s.streakMaximum or 0, s.streak.maximum)
+		end
+		Pace.record(s.pace, serverTime, outcome.delta)
 		local delta = outcome.delta
 		if ability or delta > 0 then
 			duration += if ability then outcome.duration else Ride.timeline(delta, false).total
 			if ability then
 				s.ultUntil = math.max(s.ultUntil or started, started + duration)
 			end
+			s.streakUntil = serverTime + duration
 			player:SetAttribute("MineReturnAfter", serverTime + duration)
 		end
 		publish(
@@ -204,6 +237,7 @@ local function onIntent(player: Player, packet: any)
 			outcome.strike,
 			outcome.visual
 		)
+		EventService.flush(player, s)
 		for _, id in outcome.newCards do
 			Remotes.event("Toast"):FireClient(player, "card_unlocked_" .. id)
 		end
@@ -222,6 +256,10 @@ local function onIntent(player: Player, packet: any)
 				Remotes.event("Toast"):FireClient(player, "pick_wall_storm")
 				Analytics.event(player, "pick_get", 1, "wall", reward.pick.id)
 			end
+		end
+		if outcome.worldTime then
+			RebirthService.hint(player)
+			Remotes.event("WorldTime"):FireClient(player, outcome.worldTime)
 		end
 		Pickaxe.refresh(player)
 		Analytics.mined(
@@ -288,12 +326,32 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 		end
 		return
 	elseif op == "mine.reset" or op == "reset" then
+		-- [владелец 13.11: «пусть сбросить круг сбрасывает всё»] a fresh player: every field back to the defaults
+		-- (pickaxes, collection, Trophies, rank, family, keys, rewards, counters); only the settings and the join
+		-- dates stay. The window asks twice before it sends this.
 		ProfileService.Mutate(player, function(profile)
-			profile.circle = Circle.new()
-			profile.coins = 0
+			local keep = {
+				settings = profile.settings,
+				firstJoin = profile.firstJoin,
+				lastJoin = profile.lastJoin,
+				joins = profile.joins,
+			}
+			local fresh = ProfileDefaults.new(os.time())
+			for key in profile do
+				profile[key] = nil
+			end
+			for key, value in fresh do
+				profile[key] = value
+			end
+			for key, value in keep do
+				profile[key] = value
+			end
 		end)
-		MineService.reset(s, 0, st.width)
+		MineService.reset(s, 0, Config.mine.startWidth)
 		refill(player, s)
+		ProfileService.Replicate(player, true)
+		Pickaxe.refresh(player)
+		RebirthService.hint(player)
 		return
 	elseif op == "mine.charge" then
 		s.charge = mine.ultCharge

@@ -5,6 +5,10 @@ export type GameConfig = {
 	defaultLanguage: string,
 	languages: { string },
 	autosaveSeconds: number,
+	profileVersion: number,
+	defaultAutoQuality: number,
+	qualityLevels: number,
+	maxExactInteger: number,
 }
 
 export type CreativeConfig = {
@@ -190,6 +194,12 @@ return {
 	familyRules = require(script:WaitForChild("familyRules")),
 	chests = require(script:WaitForChild("chests")),
 	progress = progress,
+	rebirth = require(script:WaitForChild("rebirth")),
+	events = require(script:WaitForChild("events")),
+	income = require(script:WaitForChild("income")),
+	qualityRules = require(script:WaitForChild("qualityRules")),
+	music = require(script:WaitForChild("music")),
+
 	fx = require(script:WaitForChild("fx")) :: FxConfig,
 	sounds = require(script:WaitForChild("sounds")) :: SoundsConfig,
 	cascade = require(script:WaitForChild("cascade")) :: CascadeConfig,

@@ -20,6 +20,7 @@ export type Pick = {
 	plateMultiplier: number?,
 	forcedPierce: number?,
 	brittle: boolean?,
+	marks: any?,
 }
 export type HitResult = {
 	cells: { { x: number, y: number, d: number, gen: number } },
@@ -56,12 +57,44 @@ local function describeRange(
 	end
 end
 
+local function markedHP(pick: Pick, x: number, y: number, d: number): number?
+	local marks = pick.marks
+	if not marks then
+		return nil
+	end
+	if marks.rubble[MineState.cellKey(x, y, d)] then
+		return Config.events.bomb.rubbleHits
+	end
+	local bomb = marks.bomb
+	if bomb and bomb.cell.x == x and bomb.cell.y == y and bomb.cell.d == d then
+		return 1
+	end
+	return nil
+end
+
 local function tally(st: State, res: HitResult, out: { Range }, pick: Pick?)
 	MineState.compact(st, out)
 	local windowEnd = st.front + mine.window
 	for _, run in out do
 		describeRange(res, windowEnd, run.x, run.y, run.a, run.b)
-		MineGen.rangeHist(st.seed, run.x, run.y, run.a, run.b, res.hist, res.finds)
+		if pick and pick.marks and next(pick.marks.rubble) then
+			local start = run.a
+			for d = run.a, run.b - 1 do
+				local key = MineState.cellKey(run.x, run.y, d)
+				if pick.marks.rubble[key] then
+					if start < d then
+						MineGen.rangeHist(st.seed, run.x, run.y, start, d, res.hist, res.finds)
+					end
+					start = d + 1
+					pick.marks.rubble[key] = nil
+				end
+			end
+			if start < run.b then
+				MineGen.rangeHist(st.seed, run.x, run.y, start, run.b, res.hist, res.finds)
+			end
+		else
+			MineGen.rangeHist(st.seed, run.x, run.y, run.a, run.b, res.hist, res.finds)
+		end
 		res.blocks += run.b - run.a
 	end
 	if pick and pick.chestFrequency then
@@ -173,13 +206,14 @@ function Resolve.hit(
 		if MineState.isSolid(st, column, row, d) then
 			local chest = pick.chestFrequency
 				and WallChests.at(st, column, row, d, pick.chestFrequency)
-			local amount = if chest then 1 else if pick.brittle then hp else strength
+			local special = markedHP(pick, column, row, d)
+			local amount = if chest or special then 1 else if pick.brittle then hp else strength
 			local excess = damageCell(
 				st,
 				column,
 				row,
 				d,
-				if chest then Config.chests.wall.hits else hp,
+				if chest then Config.chests.wall.hits else special or hp,
 				amount,
 				out
 			)
@@ -215,7 +249,16 @@ function Resolve.hit(
 					then
 						continue
 					end
-					damageCell(st, column, row, d, hp, spill.amount, out)
+					local special = markedHP(pick, column, row, d)
+					damageCell(
+						st,
+						column,
+						row,
+						d,
+						special or hp,
+						if special then 1 else spill.amount,
+						out
+					)
 					break
 				end
 			end
@@ -240,15 +283,29 @@ function Resolve.perk(
 		local chest = pick.chestFrequency
 			and WallChests.at(st, cell.x, cell.y, cell.d, pick.chestFrequency)
 		local hp = Power.blockHP(Worlds.durability(cell.d), pick.strength)
+		local special = markedHP(pick, cell.x, cell.y, cell.d)
 		damageCell(
 			st,
 			cell.x,
 			cell.y,
 			cell.d,
-			if chest then Config.chests.wall.hits else hp,
-			if chest then Config.chests.wall.hits else pick.strength,
+			if chest then Config.chests.wall.hits else special or hp,
+			if chest then Config.chests.wall.hits else if special then 1 else pick.strength,
 			out
 		)
+	end
+	tally(st, res, out, pick)
+	return res
+end
+
+-- A blast removes only still-solid cells, without exposure or plate damage.
+function Resolve.bomb(st: State, pick: Pick, cells: { any }): HitResult
+	local res, out = result(), {}
+	local barrier = MineState.barrier(st)
+	for _, cell in cells do
+		if cell.d < barrier then
+			MineState.removeCell(st, cell.x, cell.y, cell.d, out)
+		end
 	end
 	tally(st, res, out, pick)
 	return res

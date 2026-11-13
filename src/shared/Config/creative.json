@@ -1,3 +1,19 @@
 {
-  "admins": []
+  "admins": [],
+  "stage5": {
+    "firstSlot": 92,
+    "cups": [
+      0,
+      9,
+      29,
+      250
+    ],
+    "plates": [
+      0,
+      3,
+      4
+    ],
+    "controlHeight": 44,
+    "rowStep": 49
+  }
 }

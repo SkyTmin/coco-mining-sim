@@ -10,6 +10,8 @@ local Config = require(Shared.Config)
 local Remotes = require(Shared.Remotes)
 local ProfileService = require(script.Parent.ProfileService)
 local HitService = require(script.Parent.HitService)
+local RebirthService = require(script.Parent.RebirthService)
+local EventService = require(script.Parent.EventService)
 local CollectionService = require(script.Parent.CollectionService)
 
 local studio = RunService:IsStudio()
@@ -64,6 +66,10 @@ function CreativeService.Start()
 					profile.coins = balance
 				end
 			end)
+		elseif type(op) == "string" and op:sub(1, 7) == "events." then
+			EventService.Creative(player, op:sub(8))
+		elseif type(op) == "string" and (op:sub(1, 8) == "rebirth." or op == "streak.tier") then
+			RebirthService.Creative(player, op, delta)
 		elseif type(op) == "string" and op:sub(1, 5) == "mine." then
 			if not CollectionService.Creative(player, op, delta, b, c) then
 				HitService.Creative(player, op, delta, b, c)

@@ -3,7 +3,13 @@
 local Config = require(script.Parent.Parent.Config)
 local mine = Config.mine
 local cascade = Config.cascade
-local Wire = { CHEST = 64, PLATE = 65 }
+local Wire = {
+	CHEST = 64,
+	PLATE = 65,
+	RUBBLE = Config.events.codes.rubble,
+	BOMB = Config.events.codes.bomb,
+	VEIN = Config.events.codes.vein,
+}
 local opcodes = { Hit = 1, Ability = 2, Resync = 3, DigStop = 4 }
 
 function Wire.chest(tier: number): number
@@ -194,7 +200,7 @@ local function getLayers(get: Get): (number, number, { { number } })
 		for i = 1, lanes do
 			if layer[i] == -1 then
 				local ore = get("u8")
-				check(ore > 0 and ore <= Wire.chest(4))
+				check(ore > 0 and ore <= Wire.VEIN)
 				layer[i] = ore
 			end
 		end
@@ -314,7 +320,7 @@ function Wire.encodeResult(res: any): buffer
 		put("u8", event.kind)
 		put("u8", event.gen)
 		put("u16", event.delayMs)
-		if event.kind >= 3 then
+		if event.kind >= 3 and event.kind <= 6 then
 			put("u8", assert(table.find(Config.familyRules.order, event.family)))
 			put("u8", assert(table.find(Config.familyRules.rarities, event.rarity)))
 			put("u16", event.durationMs)
@@ -322,6 +328,9 @@ function Wire.encodeResult(res: any): buffer
 				put("u16", event.buffMs or 0)
 			end
 			-- visual-only proc marks (FxFlags): which skill fired, never an amount
+			put("u8", event.flags or 0)
+		end
+		if event.kind == 7 then
 			put("u8", event.flags or 0)
 		end
 		put("u8", #event.points)
@@ -340,6 +349,8 @@ function Wire.encodeResult(res: any): buffer
 		put("u32", res.delta)
 		putLayers(put, res.width, res.height, res.layers)
 	end
+	put("u16", res.streak or 0)
+	put("u8", res.streakTier or 0)
 	put("u8", res.charge)
 	put("f64", res.plateDamage)
 	putDamage(put, res.damage)
@@ -385,7 +396,7 @@ function Wire.decodeResult(data: any): any?
 		for i = 1, events do
 			local event =
 				{ kind = get("u8"), gen = get("u8"), delayMs = get("u16"), points = {} } :: any
-			if event.kind >= 3 then
+			if event.kind >= 3 and event.kind <= 6 then
 				check(event.kind <= 6)
 				event.family = Config.familyRules.order[get("u8")]
 				event.rarity = Config.familyRules.rarities[get("u8")]
@@ -401,8 +412,21 @@ function Wire.decodeResult(data: any): any?
 					elseif event.kind == 5 then "frozen"
 					else "proc"
 			end
+			check(event.kind >= 1 and event.kind <= 7)
+			if event.kind == 7 then
+				event.flags = get("u8")
+			end
 			local count = get("u8")
-			check(count <= (if event.kind >= 3 then 200 else 6) and event.gen <= cascade.maxGen)
+			check(
+				count
+						<= (if event.kind == 7
+							then Config.events.bomb.box[1]
+								* Config.events.bomb.box[2]
+								* Config.events.bomb.box[3]
+							elseif event.kind >= 3 then 200
+							else 6)
+					and event.gen <= cascade.maxGen
+			)
 			for j = 1, count do
 				event.points[j] = getPoint(get)
 			end
@@ -419,6 +443,11 @@ function Wire.decodeResult(data: any): any?
 			res.width, res.height, res.layers = getLayers(get)
 			check(res.delta > 0 and res.delta <= front and #res.layers == mine.nearWindow)
 		end
+		res.streak, res.streakTier = get("u16"), get("u8")
+		check(
+			res.streak <= Config.events.streak.cap * Config.events.streakWireScale
+				and res.streakTier <= #Config.events.streak.tiers
+		)
 		res.charge, res.plateDamage, res.damage = get("u8"), get("f64"), getDamage(get)
 		if bit32.btest(flags, 128) then
 			local depth = get("u32")
@@ -428,6 +457,62 @@ function Wire.decodeResult(data: any): any?
 			res.lastFace = { depth = depth, tiles = face[1] }
 		end
 		return res
+	end)
+end
+
+function Wire.encodeEvent(event: any): buffer
+	local put, finish = writer(4096)
+	put("u8", event.type)
+	put("u8", event.plot)
+	put("u32", event.front)
+	put("f64", event.deadline)
+	put("u8", event.reason or 0)
+	put("f64", event.total or 0)
+	put("u16", #event.points)
+	for _, point in event.points do
+		put("i8", point.x)
+		put("u8", point.y)
+		put("u32", point.d)
+	end
+	return finish()
+end
+function Wire.decodeEvent(data: any): any?
+	return decode(data, function(get)
+		local e = {
+			type = get("u8"),
+			plot = get("u8"),
+			front = get("u32"),
+			deadline = get("f64"),
+			reason = get("u8"),
+			total = get("f64"),
+			points = {},
+		}
+		check(
+			e.type >= 1
+				and e.type <= 7
+				and e.plot >= 1
+				and e.plot <= Config.plots.count
+				and e.front <= mine.maxDepth
+		)
+		check(
+			e.deadline >= 0
+				and e.deadline < math.huge
+				and e.total >= 0
+				and e.total < math.huge
+				and e.reason <= 1
+		)
+		local count = get("u16")
+		check(count <= mine.maxWidth * mine.maxHeight * Config.events.bomb.rubbleLayers)
+		for i = 1, count do
+			local point = { x = get("i8"), y = get("u8"), d = get("u32") }
+			check(
+				math.abs(point.x) <= (mine.maxWidth - 1) // 2
+					and point.y < mine.maxHeight
+					and point.d <= mine.maxDepth
+			)
+			e.points[i] = point
+		end
+		return e
 	end)
 end
 

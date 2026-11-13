@@ -17,9 +17,11 @@ local Perks = require(script.Parent.Perks)
 local WallChests = require(script.Parent.WallChests)
 local Keys = require(script.Parent.Keys)
 local FxFlags = require(script.Parent.FxFlags)
+local MineEvents = require(script.Parent.MineEvents)
+local Income = require(script.Parent.Income)
 local MiningAction = {}
 
-local function merge(base: any, extra: any)
+local function merge(base: any, extra: any, source: string?)
 	for _, cell in extra.cells do
 		cell.gen = 1
 		table.insert(base.cells, cell)
@@ -28,7 +30,7 @@ local function merge(base: any, extra: any)
 		table.insert(base.runs, run)
 	end
 	for _, find in extra.finds do
-		find.source = "perk"
+		find.source = source or "perk"
 		table.insert(base.finds, find)
 	end
 	for key, value in extra.hist do
@@ -68,10 +70,16 @@ function MiningAction.perform(
 	profile: any,
 	runtime: Perks.Runtime,
 	request: any
-): any?
+): (any?, string?)
 	local front = st.front
 	local pick = Circle.pick(profile.pickaxe, profile.circle, front, profile)
+	pick.marks = request.marks
 	local effects = Family.effects(profile)
+	local income = request.income or Income.context(profile, effects)
+	if not Income.safeAction(profile, effects, income) then
+		return nil, "income"
+	end
+	local commonMultiplier = Income.multiplier(income)
 	st.chestFrequency = effects.chestFrequency
 	local ability = request.ability == true
 	local visual = if ability then Codec.encode(st) else nil
@@ -159,10 +167,43 @@ function MiningAction.perform(
 			event(5, pick.family, pick.rarity, Perks.frozen(runtime, st), front, 0)
 		)
 	end
-	local multiplier = effects.coins
+	local multiplier = commonMultiplier
 		* (if strike then strike.coinMultiplier else (ult and ult.coinMultiplier or 1))
 	local coins = Economy.coinsFor(res.hist, profile.circle.cards.coins, multiplier)
-		+ (res.plateReward or 0) * effects.coins
+		+ (res.plateReward or 0) * commonMultiplier
+	local blast = nil
+	if
+		request.marks and MineEvents.hitBomb(request.marks, st, request.serverNow or request.now)
+	then
+		local cell = request.marks.bomb.cell
+		local bombSource = if ability
+			then "ult"
+			elseif request.x == cell.x and request.y == cell.y and request.d == cell.d then "hand"
+			else "perk"
+		blast = Resolve.bomb(st, pick, MineEvents.blastCells(st, cell))
+		coins += Economy.coinsFor(
+			blast.hist,
+			profile.circle.cards.coins,
+			commonMultiplier * Config.events.bomb.coinMultiplier
+		)
+		blast.source = bombSource
+		merge(res, blast, "bomb")
+		local points = {}
+		for _, point in blast.cells do
+			table.insert(points, { x = point.x, y = point.y, dRel = point.d - front })
+		end
+		table.insert(events, { kind = 7, gen = 1, delayMs = 0, flags = 0, points = points })
+		request.marks.bomb = nil
+		request.marks.freeAt = (request.serverNow or request.now) + Config.events.slotGapSeconds
+		request.marks.bombAt = (request.serverNow or request.now)
+			+ Config.events.bomb.minSeconds
+			+ Hash.unit(
+					st.seed,
+					profile.hitCounter + profile.ultCounter,
+					Config.events.bombSalt
+				)
+				* (Config.events.bomb.maxSeconds - Config.events.bomb.minSeconds)
+	end
 	profile.coins += coins
 	local keys = if ability then 0 else Keys.hit(profile, effects.keys, st.seed)
 	local hitKeys = keys
@@ -170,16 +211,18 @@ function MiningAction.perform(
 		procFlags = bit32.bor(procFlags, FxFlags.key)
 	end
 	local rewards = {}
-	local chestEffects = effects
-	if ability and ult.coinMultiplier ~= 1 then
-		chestEffects = table.clone(effects)
-		chestEffects.coins *= ult.coinMultiplier
-	end
+	local chestMultiplier = commonMultiplier * (if ability then ult.coinMultiplier else 1)
 	for _, find in res.finds do
 		if find.kind == "chest" then
 			find.tier = find.tier or WallChests.tier(st.seed, State.cellKey(find.x, find.y, find.d))
-			local reward =
-				WallChests.reward(profile, find, find.source == "hand", st.seed, chestEffects)
+			local reward = WallChests.reward(
+				profile,
+				find,
+				find.source == "hand",
+				st.seed,
+				effects,
+				if find.source == "bomb" then commonMultiplier else chestMultiplier
+			)
 			coins += reward.coins
 			keys += reward.keys
 			table.insert(rewards, reward)
@@ -201,13 +244,23 @@ function MiningAction.perform(
 	local oldWorld, world = Worlds.of(front).index, Worlds.of(st.front).index
 	profile.stats.blocks += res.blocks
 	profile.stats.layers += delta
+	local worldTime = nil
 	if res.plateBroken then
+		profile.circleDeepestPlate = math.max(profile.circleDeepestPlate, oldWorld)
+		local playSeconds = request.playSeconds or profile.stats.playSeconds
+		local elapsed = math.max(0, playSeconds - profile.circleWorldAt)
+		local key = tostring(oldWorld)
+		worldTime = { world = oldWorld, seconds = elapsed, previous = profile.worldBest[key] }
+		if elapsed > 0 and (not profile.worldBest[key] or elapsed < profile.worldBest[key]) then
+			profile.worldBest[key] = elapsed
+		end
+		profile.circleWorldAt = playSeconds
 		profile.platesBroken += 1
 	end
 	local cards = if world > oldWorld then Circle.reach(profile, world) else {}
 	local placed, placedChest = false, nil
 	if ability and Hash.unit(st.seed, profile.ultCounter, 509) < effects.ultChest then
-		placedChest = WallChests.place(st)
+		placedChest = WallChests.place(st, nil, request.marks)
 		placed = placedChest ~= nil
 	end
 	local echo = ability
@@ -231,6 +284,7 @@ function MiningAction.perform(
 	end
 	return {
 		res = res,
+		blast = blast,
 		events = events,
 		coins = coins,
 		keys = keys,
@@ -241,6 +295,7 @@ function MiningAction.perform(
 		delta = delta,
 		duration = duration,
 		oldWorld = oldWorld,
+		worldTime = worldTime,
 		world = world,
 		newCards = cards,
 		visual = visual,

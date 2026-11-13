@@ -8,6 +8,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Candy = require(script.Parent.Parent.Ui.Candy)
+local Quality = require(script.Parent.Quality)
 local Sfx = require(game:GetService("ReplicatedStorage").Shared.Sfx)
 
 export type Palette = { main: Color3, strong: Color3, deep: Color3, soft: Color3 }
@@ -336,7 +337,8 @@ local function play(burst: Burst)
 	end
 	local power = math.clamp(burst.power or 1, 0.2, 1)
 	local duration = DURATION * (0.7 + 0.3 * power)
-	local fleckCount = math.max(4, math.floor(18 * power + 0.5))
+	local fleckCount =
+		Quality.reserve("particles", math.max(4, math.floor(18 * power + 0.5)), duration)
 	parts.kicker.Text, parts.title.Text, parts.subtitle.Text =
 		burst.kicker, burst.title, burst.subtitle or ""
 	screen.Enabled = true
@@ -407,6 +409,7 @@ end
 -- Show a burst; a burst already on screen finishes first. Repeated bursts within one purchase run are merged to the
 -- latest one so holding «buy ×10» does not stack ten overlays.
 function RewardBurst.show(burst: Burst)
+	game:GetService("Players").LocalPlayer:SetAttribute("MineAudioDuckUntil", os.clock() + DURATION)
 	if playing then
 		if #queue > 0 then
 			queue[#queue] = burst

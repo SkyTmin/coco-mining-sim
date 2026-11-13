@@ -36,6 +36,7 @@ local function startMine(depth: number, prepare: ((any) -> ())?)
 	local windows, results = {}, {}
 	local loader
 	loader = Loader.withOverrides({
+		["src/server/Services/RebirthService.luau"] = { hint = function() end },
 		["src/shared/Remotes.luau"] = {
 			event = function(name)
 				if name == "MineIntent" then
@@ -63,6 +64,9 @@ local function startMine(depth: number, prepare: ((any) -> ())?)
 			end,
 		},
 		["src/server/Services/ProfileService.luau"] = {
+			PlaySeconds = function()
+				return now
+			end,
 			OnLoaded = function(callback)
 				loaded = callback
 			end,
@@ -118,7 +122,15 @@ local function startMine(depth: number, prepare: ((any) -> ())?)
 			end,
 		},
 		task = { spawn = function() end },
-		Random = { new = function() end },
+		Random = {
+			new = function()
+				return {
+					NextNumber = function()
+						return 0.5
+					end,
+				}
+			end,
+		},
 	})
 	local service = loader.load("src/server/Services/MineService.luau")
 	service.Start()
@@ -161,7 +173,12 @@ Test.describe("Server dig lifecycle", function()
 		assert(mine.results[2].damage[1].amount > mine.results[1].damage[1].amount)
 		expect(s.lastHitAt).toBe(secondAt)
 		mine.step(secondAt + interval + 0.2)
+		local beforeStreak = s.streak.gauge
 		mine.send("Hit", 100)
+		expect(s.streak.gauge).toBe(beforeStreak)
+		expect(mine.results[2].streak).toBe(
+			math.floor(s.streak.gauge * Config.events.streakWireScale)
+		)
 		expect(mine.results[3].accepted).toBe(false)
 		expect(s.lastHitAt).toBe(secondAt)
 		expect(#mine.windows).toBe(1)

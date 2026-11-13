@@ -18,7 +18,7 @@ Test.describe("Circle profiles", function()
 			stats = { layers = 387 },
 		}
 		assert(Circle.migrate(old))
-		expect(old.v).toBe(3)
+		expect(old.v).toBe(4)
 		expect(old.coins).toBe(1e21)
 		expect(old.settings.language).toBe("ru")
 		expect(old.mine).toBe(nil)
