@@ -7,6 +7,7 @@ local Quality = require(script.Parent.Parent.Fx.Quality)
 local Format = require(Shared.Format)
 local Worlds = require(Shared.Mine.Worlds)
 local Candy = require(script.Parent.Candy)
+local Gamepad = require(script.Parent.Parent.Gamepad)
 local Sfx = require(Shared.Sfx)
 local Hud = {}
 
@@ -159,6 +160,7 @@ function Hud.new(
 	)
 	ult.box.AnchorPoint = bottom
 	Candy.buttonIcon(ult, "ult", true)
+	Gamepad.tag(ult.box, Enum.KeyCode.ButtonY, Vector2.new(0.12, 0.12))
 	local halo = Candy.frame(ult.face, "ChargeRing", scale(1.13, 1.13), scale(0.5, 0.5))
 	halo.AnchorPoint = center
 	Candy.round(halo, 0)

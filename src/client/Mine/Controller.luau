@@ -25,6 +25,7 @@ local DepthSign = require(script.Parent.DepthSign)
 local Aim = require(script.Parent.Aim)
 local Camera = require(script.Parent.Camera)
 local Input = require(script.Parent.Input)
+local Gamepad = require(script.Parent.Parent.Gamepad)
 local Hud = require(Client.Ui.MineHud)
 local StreakHud = require(Client.Ui.StreakHud)
 local Settings = require(Client.Ui.MineSettings)
@@ -1004,6 +1005,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		ult = function()
 			request("Ability", nil)
 		end,
+		menu = function()
+			menu.open("cards")
+		end,
 		pan = function(delta)
 			if view then
 				Camera.pan(view, delta)
@@ -1357,7 +1361,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if tunnel then
 			Tunnel.fever(tunnel, active and workspace:GetServerTimeNow() < feverUntil)
 		end
-		Hud.step(hud, now, active, v.mode == "first" and canHit(), hint, reduced)
+		-- a gamepad aims at the screen centre in both views, so it always gets the crosshair
+		Hud.step(
+			hud,
+			now,
+			active,
+			(v.mode == "first" or Gamepad.active()) and canHit(),
+			hint,
+			reduced
+		)
 		if not jumpButton then
 			local touchGui = guiParent:FindFirstChild("TouchGui")
 			local candidate = touchGui and touchGui:FindFirstChild("JumpButton", true)

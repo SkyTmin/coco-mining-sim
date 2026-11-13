@@ -9,6 +9,7 @@ local Strings = require(Shared.Strings)
 local Upgrade = require(Shared.Play.Upgrade)
 local ProfileState = require(script.Parent.Parent.ProfileState)
 local Candy = require(script.Parent.Candy)
+local Gamepad = require(script.Parent.Parent.Gamepad)
 local W = require(script.Parent.MenuWidgets)
 local UpgradeCards = require(script.Parent.UpgradeCards)
 local Collection = require(script.Parent.PickCollection)
@@ -98,6 +99,7 @@ function Upgrades.new(
 	local upgradeButton = dockButton(hud, "OpenUpgrades", "cards", 50, 16, "purple")
 	local picksButton = dockButton(hud, "OpenCollection", "pickaxe", 50, 80, "confirm")
 	local familyButton = dockButton(hud, "OpenFamily", "lock", 50, 144, "neutral")
+	Gamepad.tag(upgradeButton.box, Enum.KeyCode.ButtonX, Vector2.new(0.12, 0.12))
 	local upgradeDot, collectionDot, familyDot =
 		Candy.dot(upgradeButton.face), Candy.dot(picksButton.face), Candy.dot(familyButton.face)
 	-- [владелец 11.11: «небрежно»] small dots tucked into the corner, never over the next button
@@ -475,6 +477,12 @@ function Upgrades.new(
 	return {
 		close = function()
 			Candy.show(modal, false)
+		end,
+		-- the gamepad's X: open a page of the menu (only while the HUD buttons are shown)
+		open = function(target: string)
+			if hud.Visible then
+				navigate(target)
+			end
 		end,
 		chestResult = chest.result,
 		step = function(
