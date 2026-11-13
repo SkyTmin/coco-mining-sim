@@ -1,46 +1,30 @@
 --!strict
+-- «Разгон» on the HUD [владелец 13.11: «сделай также, понятно и ясно»]: a pill under the wallet — «Разгон ×1,5» and a
+-- bar to the next tier — instead of the dotted ring round the ult button. It appears once the first tier is reached
+-- [02: «разгон спрятан, пока не набран»] and hides a few seconds after the gauge falls to zero.
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local Streak = require(Shared.Play.Streak)
 local Sfx = require(Shared.Sfx)
 local Candy = require(script.Parent.Candy)
+local BoostPill = require(script.Parent.BoostPill)
 local StreakHud = {}
+
+local function progress(gauge: number, tier: number): number
+	local tiers = Config.events.streak.tiers
+	local from = tiers[tier] or 0
+	local to = tiers[tier + 1]
+	if not to then
+		return 1
+	end
+	return (gauge - from) / (to - from)
+end
+
 function StreakHud.new(hud: any, translate: (string, ...any) -> string): any
 	local cfg = Config.events.hud
 	local state = Streak.new(workspace:GetServerTimeNow())
 	local unlocked, lastTier, pulseAt, zeroAt = false, 0, -math.huge, nil
-	local ticks = {}
-	local container =
-		Candy.frame(hud.ult.Parent, "RushArc", UDim2.fromScale(1, 1), UDim2.fromScale(0, 0))
-	for i = 1, cfg.ticks do
-		local angle = (i - 1) * math.pi * 2 / cfg.ticks
-		local tick = Candy.frame(
-			container,
-			"Rush",
-			UDim2.fromOffset(cfg.tickPixels, cfg.tickPixels),
-			UDim2.fromScale(0.5 + math.sin(angle) * cfg.radius, 0.5 - math.cos(angle) * cfg.radius),
-			Candy.purple
-		)
-		tick.AnchorPoint = Vector2.new(0.5, 0.5)
-		tick.Rotation = math.deg(angle)
-		table.insert(ticks, tick)
-	end
-	local label = Candy.text(
-		container,
-		"RushLabel",
-		UDim2.fromOffset(cfg.labelWidth, cfg.labelHeight),
-		UDim2.fromOffset(cfg.labelX, cfg.labelY),
-		cfg.fontSize
-	)
-	local pill = Candy.text(
-		hud.wallet,
-		"TemporaryMultiplier",
-		UDim2.fromOffset(cfg.labelWidth, cfg.labelHeight),
-		UDim2.fromScale(0, 1),
-		cfg.fontSize,
-		Candy.purple
-	)
-	container.Visible, pill.Visible = false, false
+	local pill = BoostPill.new(hud.wallet, "Rush", "power", Candy.purple)
 	return {
 		tier = function()
 			return Streak.tier(state)
@@ -59,7 +43,7 @@ function StreakHud.new(hud: any, translate: (string, ...any) -> string): any
 			state = Streak.new(workspace:GetServerTimeNow())
 			unlocked = false
 			lastTier = 0
-			container.Visible, pill.Visible = false, false
+			BoostPill.show(pill, false)
 		end,
 		step = function(now: number, frozen: boolean, active: boolean, reduced: boolean)
 			Streak.decay(state, now, frozen)
@@ -69,19 +53,24 @@ function StreakHud.new(hud: any, translate: (string, ...any) -> string): any
 			else
 				zeroAt = zeroAt or now
 			end
-			container.Visible = active
-				and unlocked
-				and (not zeroAt or now - zeroAt < Config.events.streakHideSeconds)
-			pill.Visible = active and tier > 0
-			label.Text, pill.Text =
-				translate("streak_label") .. " " .. translate("streak_" .. tier),
-				translate("streak_" .. tier)
-			for i, tick in ticks do
-				tick.Visible = i <= math.ceil(state.gauge / Config.events.streak.cap * cfg.ticks)
-				tick.BackgroundTransparency = if not reduced
-						and now - pulseAt < cfg.pulseSeconds
-					then 0
-					else 0.25
+			BoostPill.show(
+				pill,
+				active
+					and unlocked
+					and (not zeroAt or now - zeroAt < Config.events.streakHideSeconds),
+				reduced
+			)
+			if pill.shown then
+				BoostPill.set(
+					pill,
+					translate("streak_label") .. " " .. translate("streak_" .. tier),
+					progress(state.gauge, tier)
+				)
+				-- a tier step flashes the plate white for a moment
+				local flash = not reduced and now - pulseAt < cfg.pulseSeconds
+				pill.icon.ImageColor3 = if flash then Candy.purple else Candy.white
+				local plate = pill.icon.Parent :: Frame
+				plate.BackgroundColor3 = if flash then Candy.white else Candy.purple
 			end
 		end,
 	}

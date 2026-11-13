@@ -208,10 +208,10 @@ return {
 		fr = "Creuse plus loin",
 	},
 	menu_family_frost = {
-		en = "Break hard rock",
-		ru = "Ломает твёрдое",
-		es = "Rompe roca dura",
-		fr = "Brise la roche dure",
+		en = "Breaks tough blocks",
+		ru = "Ломает крепкие блоки",
+		es = "Rompe bloques duros",
+		fr = "Brise les blocs durs",
 	},
 	menu_choose = { en = "Choose", ru = "Выбрать", es = "Elegir", fr = "Choisir" },
 	menu_this_run = {

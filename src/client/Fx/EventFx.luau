@@ -6,13 +6,15 @@ local Config = require(Shared.Config)
 local Profile = require(script.Parent.Parent.ProfileState)
 local Sfx = require(Shared.Sfx)
 local Candy = require(script.Parent.Parent.Ui.Candy)
+local BoostPill = require(script.Parent.Parent.Ui.BoostPill)
+local Format = require(Shared.Format)
 local Fx = {}
 function Fx.new(
 	parent: Instance,
 	world: Instance,
 	position: (any) -> Vector3,
 	translate: (string, ...any) -> string,
-	toast: (string, ...any) -> ()
+	wallet: Frame
 ): any
 	local cfg = Config.events.visual
 	local layer = Candy.layer(parent, "MineEvents", cfg.layer)
@@ -34,37 +36,11 @@ function Fx.new(
 		box.Visible = false
 		table.insert(edges, box)
 	end
-	local feverDial = Candy.frame(
-		layer,
-		"FeverDial",
-		UDim2.fromOffset(cfg.timerSize, cfg.timerSize),
-		UDim2.fromScale(cfg.feverX + cfg.feverWidth / 2, cfg.feverY)
-	)
-	feverDial.AnchorPoint = Vector2.new(0.5, 0)
-	local fever = Candy.text(
-		feverDial,
-		"FeverClock",
-		UDim2.fromScale(1, 1),
-		UDim2.fromScale(0, 0),
-		cfg.fontSize,
-		Color3.fromHex(cfg.gold)
-	)
-	local feverTicks = {}
-	for i = 1, cfg.ringSegments do
-		local angle = (i - 1) * math.pi * 2 / cfg.ringSegments
-		local tick = Candy.frame(
-			feverDial,
-			"FeverCountdown",
-			UDim2.fromOffset(cfg.ringWidth, cfg.ringWidth),
-			UDim2.fromScale(
-				0.5 + math.sin(angle) * cfg.ringRadius,
-				0.5 - math.cos(angle) * cfg.ringRadius
-			),
-			Color3.fromHex(cfg.gold)
-		)
-		tick.AnchorPoint = Vector2.new(0.5, 0.5)
-		table.insert(feverTicks, tick)
-	end
+	-- [владелец 13.11] the fever is a gold pill under the wallet (not a dotted ring over the wall): «Лихорадка ×5 · 26 с»
+	-- and a draining bar; the gift after a rebirth reads «Подарок ×5», and when it ends the pill shows the total
+	local gold = Color3.fromHex(cfg.gold)
+	local feverPill = BoostPill.new(wallet, "Fever", "coin", gold)
+	local feverSource, feverTotal, totalUntil = "vein", 0, 0
 	local arrow = Candy.text(
 		layer,
 		"EventArrow",
@@ -73,7 +49,7 @@ function Fx.new(
 		cfg.fontSize,
 		Color3.fromHex(cfg.gold)
 	)
-	feverDial.Visible, arrow.Visible = false, false
+	arrow.Visible = false
 	local function clearMarkers()
 		for _, holder in holders do
 			holder.part:Destroy()
@@ -131,7 +107,6 @@ function Fx.new(
 		vein = { cells = cells, deadline = deadline }
 		bomb = nil
 		markers(cells, cfg.gold)
-		toast("vein_toast")
 		Sfx.play("vein_chime", cfg.gain)
 	end
 	function api.veinEnd(reason: number)
@@ -147,23 +122,20 @@ function Fx.new(
 		feverDuration = if source == "gift"
 			then Config.events.fever.giftSeconds
 			else Config.events.fever.seconds
-		feverBeat = nil
-		toast(if source == "gift" then "gift_fever" else "fever_label")
+		feverBeat, feverSource, totalUntil = nil, source, 0
 	end
 	function api.feverEnd(total: number)
 		feverUntil = 0
-		toast("fever_total", require(Shared.Format).short(total))
+		feverTotal, totalUntil = total, workspace:GetServerTimeNow() + 2.5
 	end
 	function api.bombStart(cell: any, deadline: number)
 		bomb = { cell = cell, deadline = deadline, tick = -1 }
 		vein = nil
 		markers({ cell }, cfg.red)
-		toast("bomb_toast")
 	end
 	function api.bombDefused(points: { any })
 		bomb = nil
 		clearMarkers()
-		toast("bomb_blast")
 		for _, cell in points do
 			local part = Instance.new("Part")
 			part.Name = "BlastFact"
@@ -181,7 +153,6 @@ function Fx.new(
 	function api.bombFizzle(cells: { any })
 		bomb = nil
 		clearMarkers()
-		toast("rubble_toast")
 		Sfx.play("bomb_fizzle", cfg.gain)
 	end
 	function api.rubble(cells: { any }) end
@@ -275,8 +246,8 @@ function Fx.new(
 		vein, bomb, feverUntil = nil, nil, 0
 		clearMarkers()
 		overlay.Enabled = false
-		feverDial.Visible = false
-		feverBeat = nil
+		BoostPill.show(feverPill, false)
+		feverBeat, totalUntil = nil, 0
 		arrow.Visible = false
 		for _, edge in edges do
 			edge.Visible = false
@@ -318,14 +289,22 @@ function Fx.new(
 			edge.Visible = lit
 			edge.BackgroundTransparency = cfg.edgeTransparency
 		end
-		feverDial.Visible = lit
+		local summary = not lit and now < totalUntil and active ~= false
+		BoostPill.show(feverPill, lit or summary, reduced)
+		if summary then
+			BoostPill.set(feverPill, translate("fever_total", Format.short(feverTotal)), 1)
+		end
 		if lit then
 			local left = feverUntil - now
-			fever.Text = translate("fever_clock", math.ceil(left))
-			local ratio = math.clamp(left / feverDuration, 0, 1)
-			for i, tick in feverTicks do
-				tick.Visible = i <= math.ceil(ratio * cfg.ringSegments)
-			end
+			BoostPill.set(
+				feverPill,
+				translate(
+					if feverSource == "gift" then "fever_pill_gift" else "fever_pill",
+					Config.events.fever.multiplier
+				),
+				left / feverDuration,
+				translate("fever_seconds", math.ceil(left))
+			)
 			local beat = math.floor(now / (Config.music.secondsPerMinute / Config.music.bpm))
 			if left <= cfg.feverTickSeconds and beat ~= feverBeat then
 				Sfx.play("bomb_tick", cfg.gain)

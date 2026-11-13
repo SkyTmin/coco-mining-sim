@@ -238,20 +238,12 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local r = renderer
 		return if r then Wall.position(r, point.x, point.y, point.dRel, offset) else Vector3.zero
 	end
-	eventFx = EventFx.new(
-		guiParent,
-		world,
-		function(cell)
-			return targetPosition(
-				{ x = cell.x, y = cell.y, dRel = cell.d - (window and window.front or 0) },
-				currentOffset(os.clock())
-			)
-		end,
-		translate,
-		function(key, ...)
-			familyToast(key, { ... })
-		end
-	)
+	eventFx = EventFx.new(guiParent, world, function(cell)
+		return targetPosition(
+			{ x = cell.x, y = cell.y, dRel = cell.d - (window and window.front or 0) },
+			currentOffset(os.clock())
+		)
+	end, translate, hud.wallet)
 	rebirthUi = require(Client.Ui.RebirthWindow).new(
 		guiParent,
 		player,
