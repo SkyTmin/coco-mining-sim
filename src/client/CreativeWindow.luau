@@ -67,8 +67,23 @@ function CreativeWindow.start(
 	coins1000.input.Activated:Connect(function()
 		creative:FireServer("coins", 1000)
 	end)
+	-- the full reset cannot be undone: the first tap arms it (red «Точно? Ещё раз»), the second within 3 s sends it
+	local armedUntil = 0
+	local refresh: () -> ()
 	reset.input.Activated:Connect(function()
-		creative:FireServer("mine.reset")
+		if os.clock() < armedUntil then
+			armedUntil = 0
+			creative:FireServer("mine.reset")
+		else
+			armedUntil = os.clock() + 3
+			task.delay(3.05, function()
+				if os.clock() >= armedUntil then
+					armedUntil = 0
+					refresh()
+				end
+			end)
+		end
+		refresh()
 	end)
 	local operations = {
 		{ "pick_starter", "mine.equip", "starter" },
@@ -246,7 +261,7 @@ function CreativeWindow.start(
 		end
 	end)
 
-	local function refresh()
+	refresh = function()
 		gui.Visible = player:GetAttribute("CreativeAllowed") == true
 		if not gui.Visible then
 			Candy.show(modal, false)
@@ -261,7 +276,9 @@ function CreativeWindow.start(
 		)
 		coins10.text.Text, coins1000.text.Text =
 			translate("creative_multiply", 10), translate("creative_multiply", 1000)
-		reset.text.Text = translate("creative_circle")
+		local armed = os.clock() < armedUntil
+		reset.text.Text = translate(if armed then "creative_reset_confirm" else "creative_circle")
+		Candy.paint(reset, if armed then "close" else "neutral")
 		maxLevel.text.Text = translate("upgrade_max")
 		for index, control in worldButtons do
 			control.text.Text = translate("creative_depth_world", index)

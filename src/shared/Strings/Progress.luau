@@ -40,10 +40,16 @@ return {
 		fr = "Pièces ×{1}",
 	},
 	creative_circle = {
-		en = "Reset circle",
-		ru = "Сбросить круг",
-		es = "Reiniciar ciclo",
-		fr = "Réinit. le cycle",
+		en = "Reset all",
+		ru = "Сбросить всё",
+		es = "Reiniciar todo",
+		fr = "Tout réinit.",
+	},
+	creative_reset_confirm = {
+		en = "Sure? Again",
+		ru = "Точно? Ещё раз",
+		es = "¿Seguro? Otra vez",
+		fr = "Sûr ? Encore",
 	},
 	creative_pick_level = {
 		en = "Pick level {1}",

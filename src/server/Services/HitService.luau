@@ -14,6 +14,7 @@ local Ride = require(Shared.Mine.Ride)
 local Perks = require(Shared.Play.Perks)
 local MiningAction = require(Shared.Play.MiningAction)
 local Circle = require(Shared.Play.Circle)
+local ProfileDefaults = require(Shared.Play.ProfileDefaults)
 local Streak = require(Shared.Play.Streak)
 local Pace = require(Shared.Play.Pace)
 local Power = require(Shared.Play.Power)
@@ -325,12 +326,32 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 		end
 		return
 	elseif op == "mine.reset" or op == "reset" then
+		-- [владелец 13.11: «пусть сбросить круг сбрасывает всё»] a fresh player: every field back to the defaults
+		-- (pickaxes, collection, Trophies, rank, family, keys, rewards, counters); only the settings and the join
+		-- dates stay. The window asks twice before it sends this.
 		ProfileService.Mutate(player, function(profile)
-			profile.circle = Circle.new()
-			profile.coins = 0
+			local keep = {
+				settings = profile.settings,
+				firstJoin = profile.firstJoin,
+				lastJoin = profile.lastJoin,
+				joins = profile.joins,
+			}
+			local fresh = ProfileDefaults.new(os.time())
+			for key in profile do
+				profile[key] = nil
+			end
+			for key, value in fresh do
+				profile[key] = value
+			end
+			for key, value in keep do
+				profile[key] = value
+			end
 		end)
-		MineService.reset(s, 0, st.width)
+		MineService.reset(s, 0, Config.mine.startWidth)
 		refill(player, s)
+		ProfileService.Replicate(player, true)
+		Pickaxe.refresh(player)
+		RebirthService.hint(player)
 		return
 	elseif op == "mine.charge" then
 		s.charge = mine.ultCharge
