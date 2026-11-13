@@ -21,13 +21,6 @@ local offset, scale = UDim2.fromOffset, UDim2.fromScale
 -- own screen inside «Кирки» (PickCollection)
 local sections = {
 	{
-		id = "rebirth",
-		title = "rebirth_title",
-		icon = "ult",
-		color = Candy.purple,
-		action = "menu_open",
-	},
-	{
 		id = "cards",
 		title = "upgrade_cards",
 		icon = "cards",
@@ -53,6 +46,15 @@ local sections = {
 		title = "pick_chest_title",
 		icon = "chest",
 		color = W.navy,
+		action = "menu_open",
+	},
+	-- [владелец 13.11: «почему перерождение стоит первым? где логика?»] the hub goes from what is bought every minute
+	-- (cards) to the goal of the late game: rebirth last
+	{
+		id = "rebirth",
+		title = "rebirth_title",
+		icon = "ult",
+		color = Candy.purple,
 		action = "menu_open",
 	},
 }
@@ -91,7 +93,9 @@ function Upgrades.new(
 )
 	local hud = Candy.layer(parent, "UpgradesHUD", 5)
 	hud.Visible = false
-	local upgradeButton = dockButton(hud, "OpenUpgrades", "upgrades", 50, 16, "purple")
+	-- [владелец 13.11: «первая кнопка открывает меню, хотя там прокачка кирки»] the first button is the circle's cards:
+	-- the icon says what it opens, and its dot counts affordable cards
+	local upgradeButton = dockButton(hud, "OpenUpgrades", "cards", 50, 16, "purple")
 	local picksButton = dockButton(hud, "OpenCollection", "pickaxe", 50, 80, "confirm")
 	local familyButton = dockButton(hud, "OpenFamily", "lock", 50, 144, "neutral")
 	local upgradeDot, collectionDot, familyDot =
@@ -418,7 +422,7 @@ function Upgrades.new(
 		end
 	end
 	W.bind(ctx, upgradeButton, function()
-		navigate("hub")
+		navigate("cards")
 	end)
 	-- the pick button opens the pick in the hand: its level is the thing bought most often
 	W.bind(ctx, picksButton, function()

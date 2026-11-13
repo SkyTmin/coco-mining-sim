@@ -64,4 +64,22 @@ return {
 		es = "{1} FPS · {2} bloques · golpe {3} ms",
 		fr = "{1} IPS · {2} blocs · coup {3} ms",
 	},
+	plate_title = {
+		en = "World {1} Slab",
+		ru = "Плита мира {1}",
+		es = "Losa del mundo {1}",
+		fr = "Dalle du monde {1}",
+	},
+	plate_hits = {
+		en = "Hits: ~{1}",
+		ru = "Ударов: ~{1}",
+		es = "Golpes: ~{1}",
+		fr = "Coups : ~{1}",
+	},
+	plate_power = {
+		en = "Your strength {1} · need {2}",
+		ru = "Твоя сила {1} · нужно {2}",
+		es = "Tu fuerza {1} · hace falta {2}",
+		fr = "Ta force {1} · il faut {2}",
+	},
 }
