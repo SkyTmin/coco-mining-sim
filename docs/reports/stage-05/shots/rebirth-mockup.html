@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Перерождение</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1E2140;--paper:#FFF8EC;--row:#F2E6D2;--purple:#A855F7;--pink:#EC4899;--yellow:#FFC83D;--green:#22C55E;--dgreen:#15803D;--red:#FF4D5E;--quiet:#6B6F8C}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Nunito',sans-serif;font-weight:900;color:var(--ink)}
+.screen{width:666px;height:374px;position:relative;overflow:hidden;background:url(rebirth-studio-available.png) center/cover}
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+.panel{position:absolute;left:16px;top:58px;width:634px;height:304px;background:var(--paper);border:3.5px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--ink);padding:24px 14px 14px;display:flex;gap:12px}
+.ribbon{position:absolute;left:18px;top:-17px;transform:rotate(-2deg);background:var(--purple);color:#fff;border:3.5px solid var(--ink);border-radius:13px;box-shadow:0 4px 0 var(--ink);padding:3px 16px;font-size:20px;text-shadow:0 2px 0 var(--ink)}
+.close{position:absolute;right:-17px;top:-17px;width:44px;height:44px;border-radius:50%;background:var(--red);border:3.5px solid var(--ink);box-shadow:0 4px 0 var(--ink);display:flex;align-items:center;justify-content:center}
+.ico{display:inline-block;background-image:url(../../../../assets/ui/candy/icons.png);background-repeat:no-repeat;flex:none}
+.col{display:flex;flex-direction:column;gap:9px;min-width:0}
+.left{flex:1}
+.right{width:228px;flex:none}
+.title{font-size:15px;display:flex;align-items:center;gap:6px}
+.tiles{display:flex;gap:8px}
+.tile{flex:1;height:116px;background:#fff;border:3px solid var(--ink);border-radius:14px;box-shadow:0 4px 0 var(--ink);position:relative;display:flex;flex-direction:column;align-items:center;padding-top:6px}
+.tile .name{font-size:15px;margin-top:2px}
+.tile .hint{font-size:10.5px;font-weight:800;color:var(--quiet);text-align:center;line-height:1.05;padding:0 4px}
+.tile.sel{background:var(--yellow);transform:translateY(-3px);box-shadow:0 7px 0 var(--ink)}
+.tile.sel .hint{color:var(--ink)}
+.tile.off{background:#EDE4D3;box-shadow:0 4px 0 #b9ae9a;border-color:#8d8aa0}
+.tile.off .ico{filter:grayscale(1) opacity(.45)}
+.tile.off .name{color:#8d8aa0}
+.tile.off .hint{color:#B3202E}
+.check{position:absolute;right:-8px;top:-9px;width:24px;height:24px;border-radius:50%;background:var(--green);border:2.5px solid var(--ink);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center}
+.lockb{position:absolute;right:14px;top:30px}
+.bubble{position:relative;background:var(--row);border-radius:12px;padding:6px 10px 6px 8px;font-size:12.5px;display:flex;align-items:center;gap:8px;line-height:1.1}
+.bubble:before{content:"";position:absolute;top:-8px;left:var(--arrow,40px);border:8px solid transparent;border-top:0;border-bottom-color:var(--row)}
+.keep{display:flex;flex-direction:column;gap:4px;margin-top:auto}
+.krow{display:flex;align-items:center;gap:6px;font-size:12px}
+.krow .lab{width:80px;flex:none}
+.chip{display:flex;align-items:center;gap:3px;background:var(--row);border-radius:8px;padding:2px 6px 2px 3px;font-size:11px}
+.reward{position:relative;height:126px;border:3px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--ink);background:linear-gradient(135deg,#A855F7,#EC4899);color:#fff;padding:8px 10px;overflow:visible}
+.reward .cap{font-size:12px;opacity:.95;display:flex;align-items:center;gap:6px}
+.mult{display:flex;align-items:baseline;gap:6px;margin-top:2px;text-shadow:0 2px 0 var(--ink)}
+.mult .from{font-size:18px;opacity:.85}
+.mult .arrow{font-size:18px}
+.mult .to{font-size:31px;color:var(--yellow);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill}
+.pills{display:flex;gap:6px;margin-top:4px}
+.pill{border:2.5px solid var(--ink);border-radius:999px;padding:1px 9px;font-size:12px;color:var(--ink);background:var(--yellow);white-space:nowrap}
+.pill.rank{background:#fff}
+.sticker{position:absolute;right:26px;top:-15px;transform:rotate(6deg);background:var(--green);color:#fff;border:3px solid var(--ink);border-radius:10px;padding:1px 9px;font-size:14px;text-shadow:0 1.5px 0 var(--ink);box-shadow:0 3px 0 var(--ink)}
+.start{height:56px;background:var(--row);border-radius:14px;display:flex;align-items:center;gap:6px;padding:0 6px}
+.arr{width:40px;height:40px;border-radius:12px;background:var(--yellow);border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink);display:flex;align-items:center;justify-content:center;flex:none}
+.arr.off{opacity:.3}
+.world{flex:1;text-align:center;line-height:1}
+.world .s{font-size:10.5px;color:var(--quiet)}
+.world .b{font-size:22px;margin:1px 0}
+.go{height:64px;margin-top:auto;border:3.5px solid var(--ink);border-radius:16px;box-shadow:0 5px 0 var(--ink);background:var(--green);color:#fff;font-size:18px;line-height:1.05;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;text-shadow:0 2px 0 var(--ink);position:relative;overflow:hidden;padding:0 10px}
+.go .fill{position:absolute;left:0;top:0;bottom:0;width:var(--fill,0%);background:var(--dgreen)}
+.go span{position:relative}
+.go.locked{background:#D9D3C7;color:var(--ink);text-shadow:none;font-size:15px}
+</style></head>
+<body>
+<div class="screen"><div class="dim"></div>
+<div class="panel">
+  <div class="ribbon">Перерождение</div>
+  <div class="close"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/></svg></div>
+  <div class="col left">
+    <div class="title">Выбери семью на этот круг</div>
+    <div class="tiles" id="tiles"></div>
+    <div class="bubble" id="bubble"></div>
+    <div class="keep">
+      <div class="krow"><span class="lab" style="color:#16A34A">✓ Останется</span><span id="keep" style="display:flex;gap:4px"></span></div>
+      <div class="krow"><span class="lab" style="color:#B3202E">↺ С нуля</span><span id="lose" style="display:flex;gap:5px"></span></div>
+    </div>
+  </div>
+  <div class="col right">
+    <div class="reward" id="reward"></div>
+    <div class="start" id="start"></div>
+    <div class="go" id="go"></div>
+  </div>
+</div></div>
+<script>
+const I={coin:0,upgrades:1,crit:8,width:15,lock:5,coins:7,keys:44,pickaxe:46,family_storm:18,family_dynamite:24,family_rift:30,family_frost:36,depth:34};
+function ico(k,s){const i=I[k];return `<span class="ico" style="width:${s}px;height:${s}px;background-size:${6*s}px auto;background-position:${-(i%6)*s}px ${-Math.floor(i/6)*s}px"></span>`}
+const q=new URLSearchParams(location.search);
+const sel=q.get('f')||'dynamite', off=(q.get('off')||'').split(',').filter(Boolean), avail=q.get('a')!=='0', worth=q.get('w')!=='0';
+const fams=[['storm','Гроза','Больше монет','Молния бьёт по соседним блокам — больше монет'],['dynamite','Динамит','Ключи и сундуки','Взрывы чаще находят ключи и сундуки'],['rift','Разлом','Быстрее вглубь','Трещина пробивает блоки вниз — быстрее до Плиты'],['frost','Мороз','Ломает крепкие блоки','Лёд колет много блоков сразу — когда блоки бьются долго']];
+let html='';fams.forEach(([id,n,h])=>{const o=off.includes(id),s=id===sel&&!o;html+=`<div class="tile ${s?'sel':''} ${o?'off':''}">${ico('family_'+id,46)}<div class="name">${n}</div><div class="hint">${o?'Нет кирки':h}</div>${s?'<div class="check">✓</div>':''}${o?`<div class="lockb">${ico('lock',22)}</div>`:''}</div>`});
+document.getElementById('tiles').innerHTML=html;
+const fi=fams.findIndex(f=>f[0]===sel);const b=document.getElementById('bubble');b.style.setProperty('--arrow',(fi*(380/4)+40)+'px');
+b.innerHTML=`${ico('family_'+sel,22)}<span>${fams[fi][1]}: ${fams[fi][3].charAt(0).toLowerCase()+fams[fi][3].slice(1)}</span>`;
+const chip=(k,t)=>`<span class="chip">${ico(k,17)}${t}</span>`;
+document.getElementById('keep').innerHTML=chip('pickaxe','Кирки')+chip('crit','Навыки')+chip('keys','Ключи')+chip('width','Ширина');
+document.getElementById('lose').innerHTML=chip('coins','Монеты')+chip('upgrades','Прокачка')+chip('depth','Глубина');
+document.getElementById('reward').innerHTML=avail?`<div class="cap">${ico('coins',18)}Монеты — навсегда</div><div class="mult"><span class="from">×1.5K</span><span class="arrow">➜</span><span class="to">×1.87K</span></div><div class="pills"><span class="pill">🏆 +370 Кубков</span></div><div class="pills"><span class="pill rank">Ранг: Легенда недр</span></div>${worth?'<div class="sticker">Выгодно!</div>':''}`
+ :`<div class="cap">${ico('coins',18)}Монеты — навсегда</div><div class="mult"><span class="to">×1.5K</span></div><div class="pills"><span class="pill rank">Ранг: Легенда недр</span></div>`;
+const chev=d=>`<svg width="18" height="18" viewBox="0 0 24 24"><path d="${d<0?'M15 4L7 12l8 8':'M9 4l8 8-8 8'}" fill="none" stroke="#1E2140" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+document.getElementById('start').innerHTML=`<div class="arr">${chev(-1)}</div><div class="world"><div class="s">Начать с</div><div class="b">Мир 7</div><div class="s">Алмазная мантия</div></div><div class="arr">${chev(1)}</div>`;
+document.getElementById('go').innerHTML=avail?`<div class="fill" style="--fill:${q.get('fill')||0}%"></div><span>Держи,<br>чтобы переродиться</span>`:`${ico('lock',28)}<span>Пробей Плиту<br>мира 7</span>`;
+if(!avail)document.getElementById('go').classList.add('locked');
+</script></body></html>

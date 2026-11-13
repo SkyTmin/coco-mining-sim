@@ -143,8 +143,8 @@ return {
 	rebirth_wait = { en = "…", ru = "…", es = "…", fr = "…" },
 	rebirth_flame = { en = "🔥", ru = "🔥", es = "🔥", fr = "🔥" },
 	rebirth_up = { en = "↑", ru = "↑", es = "↑", fr = "↑" },
-	rebirth_prev = { en = "‹", ru = "‹", es = "‹", fr = "‹" },
-	rebirth_next = { en = "›", ru = "›", es = "›", fr = "›" },
+	rebirth_prev = { en = "<", ru = "<", es = "<", fr = "<" },
+	rebirth_next = { en = ">", ru = ">", es = ">", fr = ">" },
 	rebirth_gain = { en = "+🏆 {1}", ru = "+🏆 {1}", es = "+🏆 {1}", fr = "+🏆 {1}" },
 	rebirth_wow = {
 		en = "Your first rebirth!",
@@ -365,10 +365,10 @@ return {
 		fr = "Trouve une pioche de famille pour la choisir",
 	},
 	rebirth_coins_forever = {
-		en = "Coins forever",
-		ru = "Монеты навсегда",
-		es = "Monedas para siempre",
-		fr = "Pièces pour toujours",
+		en = "Coins, forever",
+		ru = "Монеты — навсегда",
+		es = "Monedas, para siempre",
+		fr = "Pièces, pour toujours",
 	},
 	rebirth_cups_gain = {
 		en = "🏆 +{1} Trophies",
@@ -389,10 +389,10 @@ return {
 		fr = "Rang : {1}",
 	},
 	rebirth_family_title = {
-		en = "Family for the round",
-		ru = "Семья круга",
-		es = "Familia de la ronda",
-		fr = "Famille du tour",
+		en = "Pick a family for this round",
+		ru = "Выбери семью на этот круг",
+		es = "Elige familia para esta ronda",
+		fr = "Choisis une famille pour ce tour",
 	},
 	rebirth_start_title = {
 		en = "Start from",
@@ -401,10 +401,10 @@ return {
 		fr = "Commencer à",
 	},
 	rebirth_lift_locked = {
-		en = "Lift opens at rank {1}",
-		ru = "Лифт откроется на ранге {1}",
-		es = "El ascensor se abre en el rango {1}",
-		fr = "L’ascenseur s’ouvre au rang {1}",
+		en = "Lift from rank {1}",
+		ru = "Лифт — с ранга {1}",
+		es = "Ascensor desde {1}",
+		fr = "Ascenseur dès {1}",
 	},
 	rebirth_lift_cap = {
 		en = "You can start up to World {1}",
@@ -425,10 +425,10 @@ return {
 		fr = "Tu gardes",
 	},
 	rebirth_lose_title = {
-		en = "Starts over",
-		ru = "Начнётся заново",
-		es = "Empieza de nuevo",
-		fr = "Repart de zéro",
+		en = "From zero",
+		ru = "С нуля",
+		es = "Desde cero",
+		fr = "À zéro",
 	},
 	rebirth_keep_picks = {
 		en = "Pickaxes",
@@ -489,5 +489,23 @@ return {
 		ru = "Нажми на семью",
 		es = "Toca una familia",
 		fr = "Touche une famille",
+	},
+	rebirth_was = {
+		en = "was ×{1}",
+		ru = "было ×{1}",
+		es = "antes ×{1}",
+		fr = "avant ×{1}",
+	},
+	rebirth_master_reward = {
+		en = "Master reward",
+		ru = "Награда Мастера",
+		es = "Premio de Maestro",
+		fr = "Prix du Maître",
+	},
+	rebirth_plate_gives = {
+		en = "Break a Slab to earn Trophies",
+		ru = "Пробей Плиту — получишь Кубки",
+		es = "Rompe una Losa para ganar Trofeos",
+		fr = "Casse une Dalle pour des Trophées",
 	},
 }
