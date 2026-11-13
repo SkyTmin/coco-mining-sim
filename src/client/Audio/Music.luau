@@ -10,6 +10,7 @@ local Music = {}
 function Music.new(player: Player): any
 	local state = Rules.new()
 	local muteUntil = 0
+	local active = false
 	local banks = {}
 	local syncAt, lastLog, warned = 0, "", false
 	local function warnOnce()
@@ -62,31 +63,40 @@ function Music.new(player: Player): any
 				warnOnce()
 				return
 			end
-			for _, s in all do
-				s:Play()
-				s.TimePosition = os.clock() % cfg.loopSeconds
-			end
 			b.ready = true
 		end)
 		return b
 	end
 	local api = {}
 	function api.step(input: any, now: number)
+		active = input.active == true
 		if now < muteUntil then
 			input.transition = true
 		end
 		local out = Rules.step(state, input, now)
-		bank(input.world)
+		if active then
+			bank(input.world)
+		end
 		for world, b in banks do
 			if b.ready then
 				for stem, sound in b.sounds do
 					sound.Volume = out.volumes[tostring(world) .. ":" .. stem] or 0
+					local playing = active and world == input.world or sound.Volume > 0
+					if playing and not sound.IsPlaying then
+						sound:Play()
+						sound.TimePosition = now % cfg.loopSeconds
+					elseif not playing and sound.IsPlaying then
+						sound:Stop()
+					end
 				end
 				if now >= syncAt then
 					local target = now % cfg.loopSeconds
 					for _, sound in b.sounds do
 						local delta = math.abs(sound.TimePosition - target)
-						if math.min(delta, cfg.loopSeconds - delta) > cfg.syncTolerance then
+						if
+							sound.IsPlaying
+							and math.min(delta, cfg.loopSeconds - delta) > cfg.syncTolerance
+						then
 							sound.TimePosition = target
 						end
 					end

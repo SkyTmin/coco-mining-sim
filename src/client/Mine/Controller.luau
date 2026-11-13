@@ -63,6 +63,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local rebirthUi: any = nil
 	local feverUntil, combo = 0, false
 	local rush = StreakHud.new(hud, translate)
+	if game:GetService("RunService"):IsStudio() then
+		player:GetAttributeChangedSignal("QaStreakAt"):Connect(function()
+			local gauge = player:GetAttribute("QaStreakGauge") or 0
+			rush.sync({
+				streak = gauge * Config.events.streakWireScale,
+				streakTier = require(Shared.Play.Streak).tier({ gauge = gauge }),
+			}, workspace:GetServerTimeNow())
+		end)
+	end
 	local music = require(Client.Audio.Music).new(player)
 	Quality.start(player)
 	local musicLastHit = -math.huge
@@ -404,6 +413,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				window.layers, window.damage, dirty = win.layers, win.damage, true
 			end
 			return
+		end
+		if damageReset == "reset" or (window and window.plot ~= win.plot) then
+			eventFx.clear()
+			feverUntil, combo = 0, false
+			rush.clear()
 		end
 		if
 			damageReset == true

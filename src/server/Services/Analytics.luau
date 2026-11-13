@@ -4,6 +4,9 @@ local AnalyticsService = game:GetService("AnalyticsService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Shared = game:GetService("ReplicatedStorage").Shared
+local Config = require(Shared.Config)
+local Remotes = require(Shared.Remotes)
+local Telemetry = require(Shared.Play.Telemetry)
 local Upgrade = require(Shared.Play.Upgrade)
 local ProfileService = require(script.Parent.ProfileService)
 local MineService = require(script.Parent.MineService)
@@ -28,6 +31,8 @@ local steps = {
 	"First Transformation",
 	"Slab 3",
 }
+local qualityAt = {}
+local firstSending = {}
 local scheduled: { [Player]: boolean } = {}
 local failed: { [Player]: boolean } = {}
 local Analytics = {}
@@ -198,12 +203,57 @@ function Analytics.purchase(
 	end
 end
 
+function Analytics.firstRebirth(player: Player)
+	local step = Config.rebirth.analytics.firstRebirthStep
+	local key = tostring(step)
+	local pending = ProfileService.Read(player, function(p)
+		return p.rebirths > 0 and not p.funnel[key]
+	end)
+	if not pending or firstSending[player] then
+		return
+	end
+	firstSending[player] = true
+	task.defer(function()
+		local ok = studio
+			or pcall(function()
+				AnalyticsService:LogOnboardingFunnelStepEvent(player, step, "first_rebirth")
+			end)
+		if studio or not ok then
+			ServerLog.analytics("onboarding step=" .. step .. " first_rebirth", not ok)
+		end
+		if ok then
+			ProfileService.Mutate(player, function(p)
+				p.funnel[key] = true
+			end)
+		end
+		firstSending[player] = nil
+	end)
+end
+
 function Analytics.Start()
+	Remotes.event("QualityChanged").OnServerEvent:Connect(function(player, from, to, reason)
+		local now = os.clock()
+		if
+			not Telemetry.quality(from, to, reason)
+			or now - (qualityAt[player] or -math.huge) < Config.rebirth.analytics.qualitySeconds
+		then
+			return
+		end
+		qualityAt[player] = now
+		Analytics.event(player, "quality_change", to, tostring(from), reason)
+	end)
 	ProfileService.OnLoaded(function(player)
+		Analytics.firstRebirth(player)
 		flush(player)
 	end)
 	ProfileService.BeforeRelease(function(player)
 		local session = MineService.get(player)
+		Analytics.event(
+			player,
+			"streak_max",
+			if session then math.max(session.streakMaximum or 0, session.streak.maximum) else 0,
+			""
+		)
 		local coins = ProfileService.Read(player, function(profile)
 			return profile.coins
 		end)
@@ -220,7 +270,8 @@ function Analytics.Start()
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		task.defer(function()
-			scheduled[player], failed[player] = nil, nil
+			scheduled[player], failed[player], qualityAt[player], firstSending[player] =
+				nil, nil, nil, nil
 		end)
 	end)
 end

@@ -4,6 +4,7 @@ local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
+local Remotes = require(Shared.Remotes)
 local Rules = require(Shared.Play.QualityRules)
 local Budget = require(Shared.Play.EffectBudget)
 local Profile = require(script.Parent.Parent.ProfileState)
@@ -24,6 +25,7 @@ local function observed(kind: string): number
 	return total
 end
 local focused, loaded, owner = true, false, nil
+local reported = state.level
 local limits = {}
 local bloom, blur = nil, nil
 local function refresh()
@@ -71,6 +73,10 @@ function Quality.reserve(kind: string, count: number, life: number): number
 	)
 end
 local function changed(reason: string)
+	if owner and reason ~= "loaded" then
+		Remotes.event("QualityChanged"):FireServer(reported, state.level, reason)
+	end
+	reported = state.level
 	refresh()
 	if owner then
 		owner:SetAttribute("MineQuality", state.level)

@@ -10,5 +10,10 @@
   "profileVersion": 4,
   "defaultAutoQuality": 2,
   "qualityLevels": 3,
-  "maxExactInteger": 9007199254740991
+  "maxExactInteger": 9007199254740991,
+  "storage": {
+    "livePrefix": "CMS_L_",
+    "studioPrefix": "CMS_S_",
+    "isolatedPlaces": []
+  }
 }

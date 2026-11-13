@@ -46,7 +46,7 @@ function Service.after(player: Player, s: any, outcome: any, request: any)
 	local e = Service.ensure(s, request.now)
 	if outcome.blast then
 		s.eventDirty = true
-		Analytics.event(player, "bomb_defuse", 1, if request.ability then "ult" else "hand")
+		Analytics.event(player, "bomb_defuse", 1, outcome.blast.source)
 	end
 	append(s, Events.after(e, s.state, request, outcome.coins))
 	attributes(player, e)
@@ -77,7 +77,7 @@ function Service.flush(player: Player, s: any)
 		elseif event.type == 5 then
 			Analytics.event(player, "bomb_spawn", 1, "")
 		elseif event.type == 6 then
-			Analytics.event(player, "bomb_miss", 1, "")
+			Analytics.event(player, "bomb_fizzle", 1, "")
 		elseif event.type == 3 then
 			Analytics.event(player, "fever_start", 1, if event.reason == 1 then "gift" else "vein")
 		end

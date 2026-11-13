@@ -17,6 +17,12 @@ local Analytics = require(script.Parent.Analytics)
 local Service = {}
 local busy, last, hints = {}, {}, {}
 local response = Remotes.event("RebirthResult")
+local function reply(player: Player, ok: boolean, reason: string?, data: any?)
+	response:FireClient(player, ok, reason, data)
+	if not ok and RunService:IsStudio() then
+		warn("[Rebirth] rejected: " .. tostring(reason))
+	end
+end
 local function integer(n: any): boolean
 	return type(n) == "number" and n % 1 == 0 and n >= 0 and n <= Config.game.maxExactInteger
 end
@@ -48,6 +54,7 @@ end
 local function confirm(player: Player, s: any, choice: any): (boolean, string?, any?)
 	local plan, reason, before, oldRank
 	local fromWorld = Worlds.of(s.state.front).index
+	local oldPlate, circleSeconds, profitable
 	local prepared
 	local ok, failure = pcall(function()
 		Profile.Read(player, function(p)
@@ -55,6 +62,18 @@ local function confirm(player: Player, s: any, choice: any): (boolean, string?, 
 			if reason then
 				return
 			end
+			oldPlate = p.circleDeepestPlate
+			circleSeconds = Profile.PlaySeconds(player) - p.circleStartedAt
+			local world = Worlds.of(s.state.front)
+			profitable = Rebirth.quote(
+				p,
+				Pace.eta(
+					s.pace,
+					s.state.front,
+					world.plateDepth,
+					world.index == #Config.worlds and s.state.front >= world.plateDepth
+				)
+			).profitable
 			before = p.cups
 			oldRank = Ranks.of(before)
 			local seed = s.rng:NextInteger(1, Config.rebirth.seedMax)
@@ -98,7 +117,24 @@ local function confirm(player: Player, s: any, choice: any): (boolean, string?, 
 		rank = if rank then rank.id else "",
 		newRank = rank ~= nil and (not oldRank or rank.id ~= oldRank.id),
 	}
-	Analytics.event(player, "rebirth", choice.gain, tostring(choice.start), choice.family)
+	Analytics.event(
+		player,
+		"rebirth",
+		data.serial,
+		string.format("gain=%d;plate=%d;seconds=%d", choice.gain, oldPlate, circleSeconds),
+		string.format(
+			"family=%s;start=%d;profitable=%s",
+			choice.family,
+			choice.start,
+			tostring(profitable)
+		)
+	)
+	if choice.start > 1 then
+		Analytics.event(player, "lift_use", choice.start, choice.family)
+	end
+	if data.serial == 1 then
+		Analytics.firstRebirth(player)
+	end
 	if data.newRank then
 		Remotes.event("Toast"):FireClient(player, "rank_up_" .. data.rank)
 		Analytics.event(player, "rank_up", data.cups, data.rank)
@@ -129,13 +165,13 @@ function Service.handle(player: Player, op: any, serial: any, gain: any, family:
 	end
 	local now = os.clock()
 	if busy[player] or now - (last[player] or -math.huge) < Config.rebirth.requestSeconds then
-		response:FireClient(player, false, "busy")
+		reply(player, false, "busy")
 		return
 	end
 	last[player] = now
 	local s = Mine.get(player)
 	if not s or not Profile.IsReal(player) then
-		response:FireClient(player, false, "unavailable")
+		reply(player, false, "unavailable")
 		return
 	end
 	if
@@ -145,7 +181,7 @@ function Service.handle(player: Player, op: any, serial: any, gain: any, family:
 			or workspace:GetServerTimeNow() < (player:GetAttribute("MineReturnAfter") or 0)
 		)
 	then
-		response:FireClient(player, false, "busy")
+		reply(player, false, "busy")
 		return
 	end
 	busy[player] = true
@@ -155,7 +191,7 @@ function Service.handle(player: Player, op: any, serial: any, gain: any, family:
 		end)
 		if not allowed then
 			busy[player] = nil
-			response:FireClient(player, false, "unavailable")
+			reply(player, false, "unavailable")
 			return
 		end
 		local pick
@@ -165,15 +201,55 @@ function Service.handle(player: Player, op: any, serial: any, gain: any, family:
 		end)
 		busy[player] = nil
 		Pickaxe.refresh(player)
-		response:FireClient(player, true, "claimed", pick)
+		reply(player, true, "claimed", pick)
 		Analytics.event(player, "pick_get", 1, "master", pick.id)
+		Analytics.event(player, "master_epic", 1, serial)
 		return
 	end
 	local ok, reason, data =
 		confirm(player, s, { serial = serial, gain = gain, family = family, start = start })
 	busy[player] = nil
-	response:FireClient(player, ok, reason, data)
+	reply(player, ok, reason, data)
 end
+function Service.Creative(player: Player, op: string, value: any): boolean
+	if player:GetAttribute("CreativeAllowed") ~= true then
+		return false
+	end
+	local s = Mine.get(player)
+	if not s then
+		return false
+	end
+	if op == "rebirth.cups" and integer(value) then
+		Profile.Mutate(player, function(p)
+			p.cups = value
+		end)
+	elseif
+		op == "rebirth.plate"
+		and RunService:IsStudio()
+		and integer(value)
+		and value <= #Config.worlds
+	then
+		Profile.Mutate(player, function(p)
+			p.circleDeepestPlate = value
+		end)
+	elseif op == "rebirth.masterReset" and RunService:IsStudio() then
+		Profile.Mutate(player, function(p)
+			p.rewards.masterEpic = "none"
+		end)
+	elseif op == "streak.tier" and integer(value) and value <= #Config.events.streak.tiers then
+		local now = workspace:GetServerTimeNow()
+		s.streak.gauge = Config.events.streak.tiers[value] or 0
+		s.streak.at, s.streak.lastHit = now, now
+		s.streak.maximum = math.max(s.streak.maximum, value)
+		player:SetAttribute("QaStreakGauge", s.streak.gauge)
+		player:SetAttribute("QaStreakAt", now)
+	else
+		return false
+	end
+	Service.hint(player)
+	return true
+end
+
 function Service.Start()
 	Remotes.event("WorldTime")
 	Remotes.event("RebirthIntent").OnServerEvent:Connect(Service.handle)

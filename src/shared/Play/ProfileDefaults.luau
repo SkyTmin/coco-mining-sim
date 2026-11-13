@@ -9,7 +9,7 @@ function ProfileDefaults.new(now: number): any
 		stats = { blocks = 0, layers = 0, playSeconds = 0 },
 		settings = {
 			camera = "first",
-			music = 0.7,
+			music = Config.music.defaultVolume,
 			sfx = Config.sounds.rules.defaultSfx,
 			ui = 1,
 			reducedMotion = false,

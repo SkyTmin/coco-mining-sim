@@ -176,12 +176,17 @@ function MiningAction.perform(
 		request.marks and MineEvents.hitBomb(request.marks, st, request.serverNow or request.now)
 	then
 		local cell = request.marks.bomb.cell
+		local bombSource = if ability
+			then "ult"
+			elseif request.x == cell.x and request.y == cell.y and request.d == cell.d then "hand"
+			else "perk"
 		blast = Resolve.bomb(st, pick, MineEvents.blastCells(st, cell))
 		coins += Economy.coinsFor(
 			blast.hist,
 			profile.circle.cards.coins,
 			commonMultiplier * Config.events.bomb.coinMultiplier
 		)
+		blast.source = bombSource
 		merge(res, blast, "bomb")
 		local points = {}
 		for _, point in blast.cells do

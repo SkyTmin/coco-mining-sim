@@ -87,6 +87,10 @@
     "flightAlpha": 0.8,
     "changedFlashSeconds": 0.3
   },
+  "analytics": {
+    "firstRebirthStep": 15,
+    "qualitySeconds": 1
+  },
   "profitableRatio": 0.1,
   "profitableEtaSeconds": 900,
   "firstAfterWorld": 3,

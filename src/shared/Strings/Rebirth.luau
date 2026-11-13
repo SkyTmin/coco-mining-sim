@@ -1,5 +1,29 @@
 --!strict
 return {
+	creative_rebirth_cups = {
+		en = "QA trophies",
+		ru = "Кубки для теста",
+		es = "Trofeos de prueba",
+		fr = "Trophées de test",
+	},
+	creative_rebirth_plate = {
+		en = "QA Slab",
+		ru = "Плита для теста",
+		es = "Placa de prueba",
+		fr = "Dalle de test",
+	},
+	creative_streak = {
+		en = "Rush tier",
+		ru = "Ступень Разгона",
+		es = "Nivel de racha",
+		fr = "Palier d’élan",
+	},
+	creative_master_reset = {
+		en = "Reset Master reward",
+		ru = "Сброс награды Мастера",
+		es = "Reiniciar premio Maestro",
+		fr = "Réinitialiser le prix Maître",
+	},
 	settings_quality = { en = "Quality", ru = "Качество", es = "Calidad", fr = "Qualité" },
 	quality_auto = { en = "Auto", ru = "Авто", es = "Auto", fr = "Auto" },
 	quality_high = { en = "Pretty", ru = "Красиво", es = "Bonito", fr = "Soigné" },

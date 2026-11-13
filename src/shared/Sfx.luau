@@ -23,10 +23,18 @@ function Sfx.preload()
 	bus.Name, bus.Volume, bus.Parent = "MineSfx", rules.defaultSfx, SoundService
 	group = bus
 	task.spawn(function()
-		local sound = Instance.new("Sound")
-		sound.SoundId = id
-		pcall(ContentProvider.PreloadAsync, ContentProvider, { sound })
-		sound:Destroy()
+		local sounds = {}
+		for _, asset in { id, config.eventAtlasId } do
+			if asset and asset ~= "" then
+				local sound = Instance.new("Sound")
+				sound.SoundId = asset
+				table.insert(sounds, sound)
+			end
+		end
+		pcall(ContentProvider.PreloadAsync, ContentProvider, sounds)
+		for _, sound in sounds do
+			sound:Destroy()
+		end
 	end)
 end
 

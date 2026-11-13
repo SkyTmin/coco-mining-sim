@@ -7,7 +7,7 @@ local Codec = Loader.load("src/shared/Mine/MineCodec.luau")
 local Copy = Loader.load("src/shared/Persistence.luau")
 local Collection = Loader.load("src/shared/Play/Collection.luau")
 local expect = Test.expect
-local function setup()
+local function setup(studio: boolean?)
 	local now, real, mutations, saved = 10, true, 0, nil
 	local p = D.new(0)
 	p.circleDeepestPlate, p.deepestWorld = 3, 4
@@ -21,7 +21,7 @@ local function setup()
 			attrs[key] = value
 		end,
 	}
-	local responses = {}
+	local responses, analytics = {}, {}
 	local loader
 	local profile = {
 		Read = function(_, fn)
@@ -66,11 +66,23 @@ local function setup()
 		["src/server/Services/ProfileService.luau"] = profile,
 		["src/server/Services/PlotService.luau"] = { depth = function() end },
 		["src/server/Services/PickaxeService.luau"] = { refresh = function() end },
-		["src/server/Services/Analytics.luau"] = { event = function() end },
+		["src/server/Services/Analytics.luau"] = {
+			event = function(_, name, value, first, second)
+				table.insert(analytics, { name, value, first, second })
+			end,
+			firstRebirth = function()
+				table.insert(analytics, { "first_rebirth" })
+			end,
+		},
 	}, {
 		game = {
 			GetService = function(_, name)
-				return { Shared = loader.node("src/shared") }
+				return {
+					Shared = loader.node("src/shared"),
+					IsStudio = function()
+						return studio ~= false
+					end,
+				}
 			end,
 		},
 		os = {
@@ -116,7 +128,11 @@ local function setup()
 		s = s,
 		attrs = attrs,
 		responses = responses,
+		analytics = analytics,
 		service = service,
+		creative = function(op, value)
+			return service.Creative(player, op, value)
+		end,
 		real = function(value)
 			real = value
 		end,
@@ -153,6 +169,13 @@ Test.describe("Authoritative rebirth remote", function()
 			expect(t.s.pace.seconds).toEqual({})
 			expect(t.s.events.giftAt).toBe(20)
 			expect(t.saved().mine).toEqual(t.p.mine)
+			expect(t.analytics[1]).toEqual({
+				"rebirth",
+				1,
+				"gain=1;plate=3;seconds=10",
+				"family=storm;start=1;profitable=true",
+			})
+			expect(t.analytics[2]).toEqual({ "first_rebirth" })
 			local before = Copy.copy(t.p)
 			t.send("Confirm", 0, 1, "storm", 1)
 			expect(t.responses[2][2]).toBe("stale")
@@ -219,5 +242,27 @@ Test.describe("Authoritative rebirth remote", function()
 			expect(t.p.collection.frost_epic.count).toBe(1)
 		end
 	)
+	Test.it("gates Creative by access and keeps profile cheats restricted to Studio", function()
+		local t = setup()
+		expect(t.creative("rebirth.cups", 9)).toBe(false)
+		expect(t.p.cups).toBe(0)
+		t.attrs.CreativeAllowed = true
+		expect(t.creative("rebirth.cups", 9)).toBe(true)
+		expect(t.p.cups).toBe(9)
+		expect(t.creative("rebirth.plate", 4)).toBe(true)
+		expect(t.p.circleDeepestPlate).toBe(4)
+		expect(t.creative("streak.tier", 4)).toBe(true)
+		expect(t.s.streak.gauge).toBe(90)
+		for _, value in { -1, math.huge, 0 / 0, 1.5, "9" } do
+			expect(t.creative("rebirth.cups", value)).toBe(false)
+		end
+		expect(t.creative("rebirth.plate", 11)).toBe(false)
+		expect(t.creative("streak.tier", 5)).toBe(false)
+		local live = setup(false)
+		live.attrs.CreativeAllowed = true
+		expect(live.creative("rebirth.plate", 4)).toBe(false)
+		expect(live.creative("rebirth.masterReset")).toBe(false)
+		expect(live.count()).toBe(0)
+	end)
 end)
 return true

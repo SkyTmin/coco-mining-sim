@@ -6,6 +6,13 @@ local Config = Loader.load("src/shared/Config")
 local State = Loader.load("src/shared/Mine/MineState.luau")
 local Worlds = Loader.load("src/shared/Mine/Worlds.luau")
 local Circle = Loader.load("src/shared/Play/Circle.luau")
+local Defaults = Loader.load("src/shared/Play/ProfileDefaults.luau")
+local Rebirth = Loader.load("src/shared/Play/Rebirth.luau")
+local Income = Loader.load("src/shared/Play/Income.luau")
+local Streak = Loader.load("src/shared/Play/Streak.luau")
+local Pace = Loader.load("src/shared/Play/Pace.luau")
+local Events = Loader.load("src/shared/Play/MineEvents.luau")
+local Hash = Loader.load("src/shared/Mine/Hash.luau")
 local Family = Loader.load("src/shared/Play/Family.luau")
 local Collection = Loader.load("src/shared/Play/Collection.luau")
 local Chest = Loader.load("src/shared/Play/Chest.luau")
@@ -13,7 +20,6 @@ local Perks = Loader.load("src/shared/Play/Perks.luau")
 local Action = Loader.load("src/shared/Play/MiningAction.luau")
 local WallChests = Loader.load("src/shared/Play/WallChests.luau")
 local Upgrade = Loader.load("src/shared/Play/Upgrade.luau")
-local Wave = Loader.load("src/shared/Mine/UltWave.luau")
 local Ride = Loader.load("src/shared/Mine/Ride.luau")
 local Format = Loader.load("src/shared/Format.luau")
 local Strings = Loader.load("src/shared/Strings")
@@ -65,10 +71,36 @@ for _, id in Upgrade.cards do
 	table.insert(purchases, { kind = "card", id = id, count = 1 })
 end
 local seed = 3032026
-local profile: any =
-	{ coins = 0, pickaxe = "starter", stats = { blocks = 0, layers = 0, playSeconds = 0 } }
-Circle.initialize(profile)
+local profile = Defaults.new(0)
 local st, runtime = State.new(seed, profile.width, Config.mine.height), Perks.new()
+local randomIndex = 0
+local function random(): number
+	randomIndex += 1
+	return Hash.unit(seed, randomIndex)
+end
+local streak, pace, marks = Streak.new(0), Pace.new(), Events.new(0, random)
+local frozenUntil = 0
+local counts = { vein = 0, caught = 0, bomb = 0, defused = 0, fizzle = 0, fever = 0 }
+local firstAvailable, firstRebirth = nil, nil
+local function eventResults(results: { any }, at: number)
+	for _, result in results do
+		if result.type == 1 then
+			profile.staged.firstVein = true
+			counts.vein += 1
+			if counts.vein == 1 then
+				event(at, "первая Золотая жила")
+			end
+		elseif result.type == 2 and result.reason == 1 then
+			counts.caught += 1
+		elseif result.type == 3 then
+			counts.fever += 1
+		elseif result.type == 5 then
+			counts.bomb += 1
+		elseif result.type == 6 then
+			counts.fizzle += 1
+		end
+	end
+end
 local function shop(at: number, world: number)
 	while true do
 		local ctx = Circle.context(profile, world)
@@ -102,11 +134,19 @@ local function shop(at: number, world: number)
 		end
 	end
 end
-local function target(): (number, number)
+local function target(): (number, number, number)
+	-- An attentive player prioritizes the current event; no scripted event outcomes.
+	local marked = if marks.bomb
+		then marks.bomb.cell
+		elseif marks.vein then marks.vein.cells[1]
+		else nil
+	if marked and State.isExposed(st, marked.x, marked.y, marked.d) then
+		return marked.x, marked.y, marked.d
+	end
 	for y = 0, st.height - 1 do
 		for x = -(st.width - 1) // 2, (st.width - 1) // 2 do
 			if State.isSolid(st, x, y, st.front) then
-				return x, y
+				return x, y, st.front
 			end
 		end
 	end
@@ -137,33 +177,121 @@ while t < minutes * 60 and st.front <= Config.mine.maxDepth do
 		pickIndex += 1
 	end
 	profile.stats.playSeconds = t
-	WallChests.stage(st, profile, t)
+	eventResults(
+		Events.tick(marks, st, t, t, profile.staged.firstVein == true, t < frozenUntil, random),
+		t
+	)
+	local current = Worlds.of(st.front)
+	local quote = Rebirth.quote(
+		profile,
+		Pace.eta(
+			pace,
+			st.front,
+			current.plateDepth,
+			current.index == #Config.worlds and st.front >= current.plateDepth
+		)
+	)
+	if quote.available and not firstAvailable then
+		firstAvailable = t
+		event(t, "первое перерождение доступно · gain " .. quote.gain)
+	end
+	if quote.profitable then
+		-- Stop digging, wait out the ride and hold the confirmation button.
+		t = math.max(t, frozenUntil) + Config.rebirth.holdSeconds
+		profile.stats.playSeconds = t
+		local choice = {
+			serial = quote.serial,
+			gain = quote.gain,
+			family = quote.family,
+			start = quote.start,
+			playSeconds = t,
+		}
+		local nextSeed = st.seed % Config.rebirth.seedMax + 1
+		local plan, failure = Rebirth.plan(profile, choice, nextSeed, Worlds.at(quote.start).start)
+		assert(plan, failure)
+		Rebirth.commit(profile, plan)
+		st, runtime, streak, pace, marks =
+			plan.state, Perks.new(), Streak.new(t), Pace.new(), Events.new(t, random)
+		charge, frozenUntil = 0, 0
+		marks.giftAt = t + Config.rebirth.giftStartSeconds
+		firstRebirth = firstRebirth or t
+		event(
+			t,
+			string.format(
+				"ПЕРЕРОЖДЕНИЕ №%d · +%d Кубков → %d · старт %d · семья %s",
+				profile.rebirths,
+				quote.gain,
+				profile.cups,
+				quote.start,
+				quote.family
+			)
+		)
+		if profile.rewards.masterEpic == "pending" then
+			Collection.grant(profile, (profile.family or Config.familyRules.order[1]) .. "_epic")
+			profile.rewards.masterEpic = "claimed"
+		end
+		t += Config.rebirth.transitionSeconds
+		continue
+	end
+	WallChests.stage(st, profile, t, marks)
 	local before = Worlds.of(st.front)
 	shop(t, before.index)
 	local pick = Circle.pick(profile.pickaxe, profile.circle, st.front, profile)
 	local ability = charge >= pick.ultCharge
-	local x, y = target()
+	local x, y, d = target()
+	Streak.decay(streak, math.min(t, frozenUntil), true)
+	Streak.decay(streak, t, false)
+	local feverUntil = if marks.giftAt and not ability
+		then t + Config.events.fever.giftSeconds
+		else marks.feverUntil
+	local income = Income.context(
+		profile,
+		Family.effects(profile),
+		{ Streak.multiplier(streak) },
+		t,
+		feverUntil
+	)
 	local cost = 0
 	for wave = 1, 2 do
-		local outcome = assert(
-			Action.perform(
-				st,
-				profile,
-				runtime,
-				{ ability = ability, now = t, x = x, y = y, d = st.front, echo = wave == 2 }
-			)
-		)
+		local outcome = assert(Action.perform(st, profile, runtime, {
+			ability = ability,
+			now = t,
+			serverNow = t,
+			playSeconds = t,
+			x = x,
+			y = y,
+			d = d,
+			echo = wave == 2,
+			marks = marks,
+			income = income,
+		}))
 		actions += 1
+		eventResults(
+			Events.after(marks, st, {
+				now = t,
+				ability = ability,
+				x = x,
+				y = y,
+				d = d,
+				feverActive = income.F == Config.events.fever.multiplier,
+			}, outcome.coins),
+			t
+		)
+		if outcome.blast then
+			counts.defused += 1
+		end
+		if not ability then
+			Streak.add(streak, t, pick.interval, "hand")
+		end
+		Pace.record(pace, t, outcome.delta)
 		for _, cell in outcome.res.cells do
 			if cell.gen == 1 then
 				extra += 1
 			end
 		end
-		if ability then
-			cost += Wave.total(
-				outcome.delta,
-				if outcome.delta > 0 then Ride.timeline(outcome.delta, false).approach else 0
-			)
+		if ability or outcome.delta > 0 then
+			cost += if ability then outcome.duration else Ride.timeline(outcome.delta, false).total
+			frozenUntil = t + cost
 		end
 		if outcome.res.plateBroken then
 			event(
@@ -213,4 +341,24 @@ print(
 	)
 )
 print(string.format("Расчёт: %.3f с", os.clock() - started))
+print(
+	string.format(
+		"Циклы: первое доступно %s · первое выполнено %s · перерождений %d · Кубков %d",
+		if firstAvailable then clock(firstAvailable) else "нет",
+		if firstRebirth then clock(firstRebirth) else "нет",
+		profile.rebirths,
+		profile.cups
+	)
+)
+print(
+	string.format(
+		"События: жил %d / поймано %d · бомб %d / обезврежено %d / пшик %d · Лихорадок %d",
+		counts.vein,
+		counts.caught,
+		counts.bomb,
+		counts.defused,
+		counts.fizzle,
+		counts.fever
+	)
+)
 return true

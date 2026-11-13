@@ -20,5 +20,11 @@ export function validateStage5(d) {
   for (const [key,value] of Object.entries(d.qualityRules ?? {}).filter(([key]) => !key.startsWith('_'))) check(positive(value), `qualityRules.${key} must be positive`);
   check(positive(d.income?.temporaryCap) && d.income.temporaryCap >= 1, 'income.temporaryCap must be >= 1');
   check(positive(d.music?.bpm) && positive(d.music?.loopSeconds) && Array.isArray(d.music?.worlds), 'music requires tempo, loop length and stems');
+  const asset = value => value === '' || typeof value === 'string' && /^rbxassetid:\/\/[1-9][0-9]*$/.test(value);
+  check(Array.isArray(d.music?.worlds) && d.music.worlds.every(world => world && ['base','full','fever'].every(stem => asset(world[stem]))), 'music stems must be empty or Roblox asset IDs');
+  check(asset(d.sounds?.eventAtlasId), 'sounds.eventAtlasId must be empty or a Roblox asset ID');
+  const storage = d.game?.storage;
+  check(storage && ['livePrefix','studioPrefix'].every(key => typeof storage[key] === 'string' && /^[A-Za-z0-9_]+$/.test(storage[key])) && storage.livePrefix !== storage.studioPrefix, 'storage requires separate nonempty Studio/live prefixes');
+  check(Array.isArray(storage?.isolatedPlaces) && storage.isolatedPlaces.every(id => Number.isSafeInteger(id) && id > 0) && new Set(storage.isolatedPlaces).size === storage.isolatedPlaces.length, 'storage.isolatedPlaces requires unique positive integer PlaceIds');
   return errors;
 }

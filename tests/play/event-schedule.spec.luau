@@ -78,6 +78,33 @@ Test.describe("Server event schedule", function()
 			expect(reset.feverUntil).toBe(0)
 		end
 	end)
+	Test.it(
+		"attributes indirect vein hits and excludes the triggering action's Echo from fever totals",
+		function()
+			for _, source in { "hand", "perk", "ult", "bomb" } do
+				local st, e = State.new(1, 5, 3), E.new(0, random)
+				E.start(e, st, "vein", 0, random)
+				local c = e.vein.cells[1]
+				if source ~= "hand" then
+					State.removeCell(st, c.x, c.y, c.d, {})
+				end
+				local hit = E.after(e, st, {
+					now = 1,
+					ability = source == "ult",
+					x = if source == "hand" then c.x else 99,
+					y = c.y,
+					d = c.d,
+					source = if source == "bomb" then source else nil,
+					feverActive = false,
+				}, 10)
+				expect(hit[1].source).toBe(source)
+				E.after(e, st, { now = 1, ability = true, feverActive = false }, 100)
+				expect(e.feverTotal).toBe(0)
+				E.after(e, st, { now = 2, feverActive = true }, 50)
+				expect(e.feverTotal).toBe(50)
+			end
+		end
+	)
 	Test.it("round trips absolute event coordinates and rejects invalid packets", function()
 		for kind = 1, 7 do
 			local event = {

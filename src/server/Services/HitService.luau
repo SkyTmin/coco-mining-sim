@@ -203,14 +203,17 @@ local function onIntent(player: Player, packet: any)
 		s.charge = if ability
 			then (if endless then pick.ultCharge else 0)
 			else math.min(pick.ultCharge, s.charge + 1)
-		EventService.after(
-			player,
-			s,
-			outcome,
-			{ now = serverTime, ability = ability, x = intent.x, y = intent.y, d = d }
-		)
+		EventService.after(player, s, outcome, {
+			now = serverTime,
+			ability = ability,
+			x = intent.x,
+			y = intent.y,
+			d = d,
+			feverActive = actionIncome.F == Config.events.fever.multiplier,
+		})
 		if not ability then
 			Streak.add(s.streak, serverTime, pick.interval, "hand")
+			s.streakMaximum = math.max(s.streakMaximum or 0, s.streak.maximum)
 		end
 		Pace.record(s.pace, serverTime, outcome.delta)
 		local delta = outcome.delta

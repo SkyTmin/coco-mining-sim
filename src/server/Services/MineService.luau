@@ -25,6 +25,7 @@ export type Session = {
 	player: Player,
 	events: any?,
 	eventQueue: { any }?,
+	eventDirty: boolean?,
 	state: State.MineState,
 	plot: number,
 	rng: Random,
@@ -41,6 +42,7 @@ export type Session = {
 	ult: Timing,
 	perks: Perks.Runtime,
 	streak: any,
+	streakMaximum: number?,
 	streakUntil: number,
 	pace: any,
 	perkFamily: string?,
@@ -282,10 +284,11 @@ function MineService.reset(s: Session, depth: number, width: number)
 	s.streak, s.streakUntil, s.pace = Streak.new(workspace:GetServerTimeNow()), 0, Pace.new()
 	s.lastHitAt, s.ultUntil, s.stopAfterUlt = -math.huge, nil, false
 	s.lastTarget = nil
+	s.player:SetAttribute("MineReturnAfter", 0)
 	for _, fn in resetHooks do
 		fn(s.player, s)
 	end
-	MineService.window(s)
+	MineService.window(s, "reset")
 end
 
 function MineService.Start()

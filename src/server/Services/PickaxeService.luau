@@ -2,6 +2,7 @@
 
 local Players = game:GetService("Players")
 local Shared = game:GetService("ReplicatedStorage").Shared
+local Analytics = require(script.Parent.Analytics)
 local SettingsPatch = require(Shared.Play.SettingsPatch)
 local Config = require(Shared.Config)
 local Remotes = require(Shared.Remotes)
@@ -121,12 +122,18 @@ function PickaxeService.Start()
 			if not patch then
 				return
 			end
+			local previousMusic = ProfileService.Read(player, function(p)
+				return p.settings.music
+			end)
 			preferencesAt[player] = now
 			ProfileService.Mutate(player, function(p)
 				for key, value in patch do
 					(p.settings :: any)[key] = value
 				end
 			end)
+			if patch.music ~= nil and patch.music ~= previousMusic then
+				Analytics.event(player, "music_volume", patch.music, "")
+			end
 			return
 		end
 		if mode ~= "first" and mode ~= "third" then

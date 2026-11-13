@@ -217,7 +217,7 @@ function Events.after(e: any, st: any, request: any, coins: number): { any }
 	if not request.ability then
 		e.lastHand = request.now
 	end
-	if request.now < e.feverUntil then
+	if request.now < e.feverUntil and request.feverActive ~= false then
 		e.feverTotal += coins
 	end
 	if e.giftAt and not request.ability then
@@ -225,10 +225,15 @@ function Events.after(e: any, st: any, request: any, coins: number): { any }
 		e.feverTotal = coins
 	elseif Events.hitVein(e, st, request) then
 		emit(out, 2, 0, e.vein.cells, 1)
+		local hand = false
+		for _, cell in e.vein.cells do
+			hand = hand or (request.x == cell.x and request.y == cell.y and request.d == cell.d)
+		end
 		out[#out].source = if request.ability
 			then "ult"
 			elseif request.source then request.source
-			else "hand"
+			elseif hand then "hand"
+			else "perk"
 		for _, event in Events.fever(e, request.now, "vein") do
 			table.insert(out, event)
 		end

@@ -51,8 +51,8 @@ function CreativeWindow.start(
 		return Candy.button(
 			controls,
 			"CreativeControl" .. index,
-			UDim2.new(0.25, -9, 0, 32),
-			UDim2.new(column / 4, 2, 0, row * 37),
+			UDim2.new(0.25, -9, 0, Config.creative.stage5.controlHeight),
+			UDim2.new(column / 4, 2, 0, row * Config.creative.stage5.rowStep),
 			"neutral",
 			14
 		)
@@ -177,6 +177,32 @@ function CreativeWindow.start(
 			table.insert(skills, { control = control, family = family, index = index })
 		end
 	end
+	local stageControls = {}
+	local stageOps = {
+		{ "creative_rebirth_cups", "rebirth.cups", Config.creative.stage5.cups },
+		{ "creative_rebirth_plate", "rebirth.plate", Config.creative.stage5.plates },
+		{ "vein_toast", "events.vein" },
+		{ "bomb_toast", "events.bomb" },
+		{ "fever_label", "events.fever" },
+		{ "creative_streak", "streak.tier" },
+		{ "creative_master_reset", "rebirth.masterReset" },
+	}
+	for i, op in stageOps do
+		local control = slot(Config.creative.stage5.firstSlot + i - 1)
+		local index = 0
+		control.input.Activated:Connect(function()
+			local value = nil
+			if op[3] then
+				index = index % #op[3] + 1
+				value = op[3][index]
+			elseif op[2] == "streak.tier" then
+				index = (index + 1) % (#Config.events.streak.tiers + 1)
+				value = index
+			end
+			creative:FireServer(op[2], value)
+		end)
+		table.insert(stageControls, { control = control, key = op[1] })
+	end
 	local performance =
 		Candy.text(panel, "Performance", UDim2.new(1, -24, 0, 22), UDim2.new(0, 12, 0.75, 0), 14)
 
@@ -224,6 +250,9 @@ function CreativeWindow.start(
 		gui.Visible = player:GetAttribute("CreativeAllowed") == true
 		if not gui.Visible then
 			Candy.show(modal, false)
+		end
+		for _, row in stageControls do
+			row.control.text.Text = translate(row.key)
 		end
 		modal.title.Text = translate("creative_title")
 		open.text.Text = translate("creative_title")
