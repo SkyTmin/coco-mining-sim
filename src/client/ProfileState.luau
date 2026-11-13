@@ -36,6 +36,12 @@ function ProfileState.preference(key: string): any
 	if settings and settings[key] ~= nil then
 		return settings[key]
 	end
+	if key == "effects" then
+		return "auto"
+	end
+	if key == "autoQuality" then
+		return Config.game.defaultAutoQuality
+	end
 	if key == "music" then
 		return Config.music.defaultVolume
 	end

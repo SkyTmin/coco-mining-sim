@@ -3,6 +3,7 @@
 -- classic lightning construction (each pass splits the longest piece and pushes its middle sideways by a share of
 -- its length). The old fixed widths (0.15 core on 5-stud blocks) were invisible [владелец 11.11: «эффект молнии не
 -- вижу»]; widths, colour and life now come from a style, so the wave links stay thin and skill bolts are thick.
+local Quality = require(script.Parent.Quality)
 local Lightning = {}
 local rng = Random.new()
 local BLUE = Color3.fromRGB(139, 225, 255)
@@ -62,7 +63,7 @@ local function free(state: any, now: number): number
 			count += 1
 		end
 	end
-	return count
+	return math.min(count, Quality.available("links"))
 end
 
 local function segment(
@@ -73,6 +74,9 @@ local function segment(
 	style: Style,
 	taper: number
 ): boolean
+	if Quality.reserve("links", 1, style.life or LINK.life) == 0 then
+		return false
+	end
 	local n = #state.segments
 	for step = 0, n - 1 do
 		local i = (state.cursor + step - 1) % n + 1

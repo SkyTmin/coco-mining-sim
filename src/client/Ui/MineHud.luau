@@ -2,6 +2,8 @@
 
 local GuiService = game:GetService("GuiService")
 local Shared = game:GetService("ReplicatedStorage").Shared
+local Config = require(Shared.Config)
+local Quality = require(script.Parent.Parent.Fx.Quality)
 local Format = require(Shared.Format)
 local Worlds = require(Shared.Mine.Worlds)
 local Candy = require(script.Parent.Candy)
@@ -259,7 +261,7 @@ function Hud.new(
 	ultimateGain.TextScaled, ultimateGain.TextSize = false, 34
 	local ultimateStroke = Candy.stroke(ultimateGain, 3, true)
 	local money = {}
-	for i = 1, 10 do
+	for i = 1, Config.fx.quality.numbers[Config.game.qualityLevels] do
 		local anchor = Instance.new("Part")
 		anchor.Size, anchor.Transparency = Vector3.one * 0.1, 1
 		anchor.Anchored, anchor.CanQuery, anchor.CanCollide, anchor.CanTouch =
@@ -394,9 +396,21 @@ function Hud.coin(h: any, position: Vector3, amount: number)
 	if amount <= 0 then
 		return
 	end
-	h.gainIndex = h.gainIndex % #h.money + 1
+	local limit = Quality.budget().numbers
+	local now = os.clock()
+	h.gainIndex = h.gainIndex % limit + 1
+	for i = 1, limit do
+		if now - h.money[i].at >= Config.fx.qualityRuntime.numberSeconds then
+			h.gainIndex = i
+			break
+		end
+	end
 	local item = h.money[h.gainIndex]
-	item.anchor.Position, item.at = position, os.clock()
+	if now - item.at < Config.fx.qualityRuntime.numberSeconds then
+		amount += (item.amount or 0)
+	end
+	item.amount = amount
+	item.anchor.Position, item.at = position, now
 	item.text.Text = h.translate("mine_coin_gain", Format.short(amount))
 	local height = math.clamp(21 + 4 * math.log10(amount), 22, 39)
 	item.badge.Size = offset(145, height)
@@ -619,9 +633,16 @@ function Hud.step(
 		h.band.BackgroundTransparency = 0.2 + 0.8 * fade
 		h.bandEdge.BackgroundTransparency = fade
 	end
+	for index = Quality.budget().numbers + 1, #h.money do
+		local item = h.money[index]
+		if now - item.at < Config.fx.qualityRuntime.numberSeconds then
+			Hud.coin(h, item.anchor.Position, item.amount or 0)
+			item.at = -math.huge
+		end
+	end
 	for _, item in h.money do
 		local t = now - item.at
-		item.badge.Enabled = active and t < 0.7
+		item.badge.Enabled = active and t < Config.fx.qualityRuntime.numberSeconds
 		if item.badge.Enabled then
 			item.badge.StudsOffsetWorldSpace = Vector3.new(0, 0.8 + 2.6 * t / 0.7, 0)
 			item.text.TextTransparency, item.icon.ImageTransparency, item.stroke.Transparency =

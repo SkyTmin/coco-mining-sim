@@ -71,5 +71,15 @@
     "distanceBase": 155,
     "distancePerLog": 100,
     "distanceDeep": 430
+  },
+  "qualityRuntime": {
+    "debrisLeaseSeconds": 5,
+    "bloomIntensity": 0.12,
+    "bloomSize": 12,
+    "bloomThreshold": 2,
+    "blurSize": 8,
+    "lampRange": 24,
+    "lampBrightness": 0.6,
+    "numberSeconds": 0.7
   }
 }

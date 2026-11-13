@@ -40,6 +40,7 @@ local TravelDebris = require(Client.Fx.TravelDebris)
 local Haptics = require(Client.Fx.Haptics)
 local Footsteps = require(Client.Fx.Footsteps)
 local FamilyFx = require(Client.Fx.FamilyFx)
+local Quality = require(Client.Fx.Quality)
 local EventFx = require(Client.Fx.EventFx)
 
 local Controller = {}
@@ -63,6 +64,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local feverUntil, combo = 0, false
 	local rush = StreakHud.new(hud, translate)
 	local music = require(Client.Audio.Music).new(player)
+	Quality.start(player)
 	local musicLastHit = -math.huge
 	local closeSettings = Settings.start(player, guiParent, hud.gear, translate)
 	local vibrate = Haptics.new(world)
@@ -80,15 +82,17 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local parts: { BasePart } = {}
 	local moves: { CFrame } = {}
 	local lastShown: any, lastVisible: number?
-	local seq, quality, maxParts = 0, 2, 0
+	local seq, maxParts = 0, 0
 	local dirty, active = true, false
+	Quality.onChanged(function()
+		dirty = true
+	end)
 	local digging = false
 	local nextHit, lastRequest = -math.huge, -math.huge
 	local abilityQueued, returning = false, false
 	local lastCharge = -1
 	local fpsAt, frames = os.clock(), 0
-	local autoFrames, autoTime = 0, 0
-	local measured, savedView = false, false
+	local savedView = false
 	local jumpButton: GuiObject? = nil
 	local lastPhase = "idle"
 	local hapticsOn = true
@@ -1040,7 +1044,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if not active then
 			closeSettings()
 		end
-		local settings = current and current.settings
 		local reduced = ProfileState.preference("reducedMotion")
 		Sfx.level(ProfileState.preference("sfx"))
 		Footsteps.step(footsteps, player.Character, Worlds.of(window.front).index == 1)
@@ -1049,20 +1052,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			vibrate("off", now, false, reduced)
 		end
 		hapticsOn = hapticsEnabled
-		if active and not measured then
-			autoFrames += 1
-			autoTime += dt
-			if autoTime >= 15 then
-				measured = true
-				if autoFrames / autoTime < 40 then
-					quality, dirty = 1, true
-				end
-			end
-		end
-		local override = if settings and settings.effects == "low"
-			then 1
-			elseif settings and settings.effects == "high" then 3
-			else quality
+		Quality.step(dt, active)
+		local override = Quality.level()
 		if pending and now - pending.at > 0.85 then
 			resync()
 		end
@@ -1134,7 +1125,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				DepthSign.step(sign, now, depth, false, reduced, false)
 			end
 		end
-		local shown, visible, offset = window, #window.layers, currentOffset(now)
+		local shown, visible, offset =
+			window, math.min(#window.layers, Quality.budget().oreLayers), currentOffset(now)
 		local survivor = false
 		local ulting = ride and ride.ability
 		local sweeping = ulting and phase ~= "approach"
@@ -1144,7 +1136,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			local changed
 			shown, changed =
 				WaveRenderer.step(ride.sweep, r, breaking.dissolve, now - ride.at, now, reduced)
-			visible, offset = #shown.layers, 0
+			visible, offset = math.min(#shown.layers, Quality.budget().oreLayers), 0
 			dirty = dirty or changed
 		elseif phase == "approach" then
 			-- [владелец 11.11] the camera never leaves the platform: after the ult wave the new wall rides up to the

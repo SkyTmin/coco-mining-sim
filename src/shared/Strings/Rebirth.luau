@@ -1,5 +1,10 @@
 --!strict
 return {
+	settings_quality = { en = "Quality", ru = "Качество", es = "Calidad", fr = "Qualité" },
+	quality_auto = { en = "Auto", ru = "Авто", es = "Auto", fr = "Auto" },
+	quality_high = { en = "Pretty", ru = "Красиво", es = "Bonito", fr = "Soigné" },
+	quality_normal = { en = "Normal", ru = "Обычно", es = "Normal", fr = "Normal" },
+	quality_low = { en = "Light", ru = "Лёгкий", es = "Ligero", fr = "Léger" },
 	settings_music = {
 		en = "Music {1}%",
 		ru = "Музыка {1}%",

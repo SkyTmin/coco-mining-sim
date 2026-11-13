@@ -12,6 +12,11 @@ function Settings.parse(value: any): any?
 			valid = type(v) == "string" and table.find(Config.game.languages, v) ~= nil
 		elseif key == "sfx" or key == "music" then
 			valid = type(v) == "number" and v >= 0 and v <= 1
+		elseif key == "effects" then
+			valid = type(v) == "string"
+				and table.find({ "auto", "high", "normal", "low" }, v) ~= nil
+		elseif key == "autoQuality" then
+			valid = type(v) == "number" and v % 1 == 0 and v >= 1 and v <= Config.game.qualityLevels
 		elseif key == "haptics" or key == "reducedMotion" then
 			valid = type(v) == "boolean"
 		else

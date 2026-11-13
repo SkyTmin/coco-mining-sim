@@ -49,6 +49,21 @@ function Settings.start(
 			Sfx.play("ui_tap", cfg.dragGain)
 		end)
 	end
+	local qualities = {}
+	for i, mode in { "auto", "high", "normal", "low" } do
+		local control = Candy.button(
+			panel,
+			"Quality_" .. mode,
+			UDim2.new(1 / #Config.game.languages, -cfg.padding, 0, cfg.button),
+			UDim2.new((i - 1) / #Config.game.languages, cfg.padding / 2, 0, cfg.qualityY),
+			"neutral",
+			cfg.font
+		)
+		qualities[mode] = control
+		control.input.Activated:Connect(function()
+			change("effects", mode)
+		end)
+	end
 	local dragging = nil
 	for i, key in { "sfx", "music" } do
 		local row = Candy.frame(
@@ -143,6 +158,13 @@ function Settings.start(
 	refresh = function()
 		modal.title.Text = translate("mine_settings")
 		credits.Text = translate("credits_cracks")
+		for mode, control in qualities do
+			control.text.Text = translate("quality_" .. mode)
+			Candy.paint(
+				control,
+				if mode == Profile.preference("effects") then "purple" else "neutral"
+			)
+		end
 		local language = Strings.localeOf(player)
 		for key, control in languages do
 			control.text.Text = translate("mine_language_" .. key)
