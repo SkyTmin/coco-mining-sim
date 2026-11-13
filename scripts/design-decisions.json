@@ -168,7 +168,9 @@
       "arrowRadius": 0.42,
       "fadeSeconds": 1,
       "ringSegments": 32,
-      "ringRadius": 0.46
+      "ringRadius": 0.46,
+      "feverTickSeconds": 5,
+      "_noteFever": "[решение ТЗ-05 §10.1] кольцо ×5 и тихие доли в последние 5 секунд Лихорадки"
     },
     "hud": {
       "_note": "[решение ТЗ-05 §6.4] функциональная дуга и мягкий шаг",

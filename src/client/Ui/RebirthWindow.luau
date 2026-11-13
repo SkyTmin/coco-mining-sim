@@ -316,8 +316,9 @@ function Window.new(
 		fire.text.Text = translate("rebirth_flame")
 		badge.Visible = hint == 2
 		badge.Text = translate("rebirth_profitable")
-		fire.face.BackgroundColor3 = Candy.purple:Lerp(
-			Candy.white,
+		fire.gradient.Enabled = hint == 2
+		fire.face.BackgroundColor3 = (if hint == 2 then Candy.white else Candy.purple):Lerp(
+			if hint == 2 then Candy.purple else Candy.white,
 			if hint == 2 and not reduced
 				then cfg.pulseGain * (1 + math.sin(now * cfg.pulseSpeed))
 				else 0

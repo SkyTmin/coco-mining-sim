@@ -18,6 +18,7 @@ function Fx.new(
 	local layer = Candy.layer(parent, "MineEvents", cfg.layer)
 	local holders = {}
 	local vein, bomb, feverUntil = nil, nil, 0
+	local feverDuration, feverBeat = Config.events.fever.seconds, nil
 	local fadeAt: number? = nil
 	local overlay = Instance.new("ColorCorrectionEffect")
 	overlay.Name, overlay.Enabled, overlay.Parent = "MineFever", false, Lighting
@@ -33,14 +34,37 @@ function Fx.new(
 		box.Visible = false
 		table.insert(edges, box)
 	end
-	local fever = Candy.text(
+	local feverDial = Candy.frame(
 		layer,
+		"FeverDial",
+		UDim2.fromOffset(cfg.timerSize, cfg.timerSize),
+		UDim2.fromScale(cfg.feverX + cfg.feverWidth / 2, cfg.feverY)
+	)
+	feverDial.AnchorPoint = Vector2.new(0.5, 0)
+	local fever = Candy.text(
+		feverDial,
 		"FeverClock",
-		UDim2.fromScale(cfg.feverWidth, cfg.labelHeight),
-		UDim2.fromScale(cfg.feverX, cfg.feverY),
+		UDim2.fromScale(1, 1),
+		UDim2.fromScale(0, 0),
 		cfg.fontSize,
 		Color3.fromHex(cfg.gold)
 	)
+	local feverTicks = {}
+	for i = 1, cfg.ringSegments do
+		local angle = (i - 1) * math.pi * 2 / cfg.ringSegments
+		local tick = Candy.frame(
+			feverDial,
+			"FeverCountdown",
+			UDim2.fromOffset(cfg.ringWidth, cfg.ringWidth),
+			UDim2.fromScale(
+				0.5 + math.sin(angle) * cfg.ringRadius,
+				0.5 - math.cos(angle) * cfg.ringRadius
+			),
+			Color3.fromHex(cfg.gold)
+		)
+		tick.AnchorPoint = Vector2.new(0.5, 0.5)
+		table.insert(feverTicks, tick)
+	end
 	local arrow = Candy.text(
 		layer,
 		"EventArrow",
@@ -49,7 +73,7 @@ function Fx.new(
 		cfg.fontSize,
 		Color3.fromHex(cfg.gold)
 	)
-	fever.Visible, arrow.Visible = false, false
+	feverDial.Visible, arrow.Visible = false, false
 	local function clearMarkers()
 		for _, holder in holders do
 			holder.part:Destroy()
@@ -120,6 +144,10 @@ function Fx.new(
 	end
 	function api.feverStart(untilTime: number, source: string)
 		feverUntil = untilTime
+		feverDuration = if source == "gift"
+			then Config.events.fever.giftSeconds
+			else Config.events.fever.seconds
+		feverBeat = nil
 		toast(if source == "gift" then "gift_fever" else "fever_label")
 	end
 	function api.feverEnd(total: number)
@@ -247,7 +275,8 @@ function Fx.new(
 		vein, bomb, feverUntil = nil, nil, 0
 		clearMarkers()
 		overlay.Enabled = false
-		fever.Visible = false
+		feverDial.Visible = false
+		feverBeat = nil
 		arrow.Visible = false
 		for _, edge in edges do
 			edge.Visible = false
@@ -289,9 +318,19 @@ function Fx.new(
 			edge.Visible = lit
 			edge.BackgroundTransparency = cfg.edgeTransparency
 		end
-		fever.Visible = lit
+		feverDial.Visible = lit
 		if lit then
-			fever.Text = translate("fever_clock", math.ceil(feverUntil - now))
+			local left = feverUntil - now
+			fever.Text = translate("fever_clock", math.ceil(left))
+			local ratio = math.clamp(left / feverDuration, 0, 1)
+			for i, tick in feverTicks do
+				tick.Visible = i <= math.ceil(ratio * cfg.ringSegments)
+			end
+			local beat = math.floor(now / (Config.music.secondsPerMinute / Config.music.bpm))
+			if left <= cfg.feverTickSeconds and beat ~= feverBeat then
+				Sfx.play("bomb_tick", cfg.gain)
+			end
+			feverBeat = beat
 		end
 		if bomb then
 			local tick = math.ceil(math.max(0, bomb.deadline - now))

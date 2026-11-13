@@ -289,10 +289,10 @@ return {
 		fr = "Fièvre : +{1}",
 	},
 	fever_clock = {
-		en = "×5 · {1}s",
-		ru = "×5 · {1}с",
-		es = "×5 · {1}s",
-		fr = "×5 · {1}s",
+		en = "×5\n{1}s",
+		ru = "×5\n{1}с",
+		es = "×5\n{1}s",
+		fr = "×5\n{1}s",
 	},
 	gift_fever = {
 		en = "Gift: Fever!",

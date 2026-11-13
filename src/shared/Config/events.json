@@ -55,7 +55,8 @@
     "arrowRadius": 0.42,
     "fadeSeconds": 1,
     "ringSegments": 32,
-    "ringRadius": 0.46
+    "ringRadius": 0.46,
+    "feverTickSeconds": 5
   },
   "hud": {
     "ticks": 48,
