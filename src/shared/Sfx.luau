@@ -37,7 +37,15 @@ function Sfx.level(volume: number)
 end
 
 function Sfx.play(name: string, gain: number, pitch: number?): Sound?
-	local id, segments = config.atlasId, config.clips[name]
+	local id = config.atlasId
+	if config.eventFallback and config.eventFallback[name] then
+		if config.eventAtlasId and config.eventAtlasId ~= "" then
+			id = config.eventAtlasId
+		else
+			name = config.eventFallback[name]
+		end
+	end
+	local segments = config.clips[name]
 	local bus = group
 	if not id or not bus or not segments or gain <= 0 or bus.Volume <= 0 then
 		return nil

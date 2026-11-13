@@ -3,6 +3,9 @@
 local rules = require(script.Parent.Config).sounds.rules
 local AudioRules = {}
 local frequent: { [string]: boolean } = {
+	bomb_tick = true,
+	bomb_fizzle = true,
+	streak_step = true,
 	hit_soft = true,
 	break_soft = true,
 	coin = true,

@@ -432,6 +432,7 @@ const sections = [
     name: "sounds",
     validate({ atlasId, clips, rules }) {
       const counts = {
+        vein_chime: 1, bomb_tick: 1, bomb_fizzle: 1, bomb_blast: 1, streak_step: 1, rebirth_sting: 1, combo_sting: 1,
         hit_soft: 5, break_soft: 5, coin: 1, link_note: 1, bolt_soft: 2, ride_stop: 2,
         ult_windup: 1, ult_whump: 1, ult_rumble_away: 1, ult_rumble_near: 1, ult_thud: 1,
         plate_hit: 2, plate_break: 1, ui_tap: 1,

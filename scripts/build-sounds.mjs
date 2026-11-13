@@ -7,9 +7,10 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const decisionsPath = resolve(root, "scripts/design-decisions.json");
 const decisions = readFileSync(decisionsPath, "utf8");
 const rules = JSON.parse(decisions).sounds.rules;
+const event = JSON.parse(decisions).sounds.eventSynthesis;
 const scratch = resolve(root, "build/sound-atlas");
 const output = resolve(root, "assets/sounds/build");
-const report = resolve(root, "docs/reports/stage-03c");
+const report = resolve(root, "docs/reports/stage-05");
 for (const dir of [scratch, output, report]) mkdirSync(dir, { recursive: true });
 
 const RATE = 48000;
@@ -56,7 +57,16 @@ const clips = {
   step_dirt: ["default_dirt_footstep.1", "default_dirt_footstep.2"].map(name => sample(name, 0.46, 4300, 0.25)),
   step_stone: ["default_hard_footstep.1", "default_hard_footstep.2"].map(name => sample(name, 0.46, 4300, 0.26)),
 };
-const frequent = new Set(["hit_soft", "break_soft", "coin", "link_note", "buy_soft", "level_tick",
+Object.assign(clips, {
+ vein_chime: [notes(event.veinNotes,event.noteGap,event.noteDecay,event.veinSeconds)],
+ bomb_tick: [softNote(event.tickHz,event.tickDecay,event.tickSeconds)],
+ bomb_fizzle: [softNote(event.fizzleHz,event.fizzleDecay,event.fizzleSeconds)],
+ bomb_blast: [softNote(event.blastHz,event.blastDecay,event.blastSeconds)],
+ streak_step: [softNote(event.stepHz,event.noteDecay,event.stepSeconds)],
+ rebirth_sting: [notes(event.rebirthNotes,event.rebirthGap,event.rebirthDecay,event.rebirthSeconds)],
+ combo_sting: [notes(event.comboNotes,event.noteGap,event.noteDecay,event.comboSeconds)],
+});
+const frequent = new Set(["bomb_tick", "bomb_fizzle", "streak_step", "hit_soft", "break_soft", "coin", "link_note", "buy_soft", "level_tick",
   "heavy_hit", "crit_soft", "coin_rain", "depth_knock", "locked", "step_dirt", "step_stone"]);
 const master = (target) => "loudnorm=I=" + target + ":TP=-2:LRA=5";
 const format = ["-ar", String(RATE), "-ac", "1"];
@@ -85,6 +95,7 @@ for (const [name, variants] of Object.entries(clips)) {
   metadata[name] = [];
   for (const [index, clip] of variants.entries()) {
     const label = name + "-" + (index + 1);
+    console.log("mastering " + label);
     const raw = resolve(scratch, "raw.wav");
     const target = frequent.has(name) ? rules.frequentLufs : rules.rareLufs;
     const outputName = label + ".wav";
@@ -135,7 +146,7 @@ if (!marker.test(decisions)) throw new Error("Missing sounds.clips in design-dec
 const json = Object.entries(metadata).map(([name, values]) => "      " + JSON.stringify(name) + ": " + JSON.stringify(values)).join(",\n");
 writeFileSync(decisionsPath, decisions.replace(marker, '    "clips": {\n' + json + "\n    },"));
 writeFileSync(resolve(report, "sounds.md"), [
-  "# Громкость атласа этапа 3в",
+  "# Громкость атласа этапа 5",
   "",
   "Сегменты измерены по декодированному atlas.ogg через ffmpeg loudnorm. Интервалы тишины между сегментами исключены.",
   "У всех исходников затухание по 10 мс с обоих концов, у ударов и разломов срез ниже 9 кГц [решение ТЗ-02б].",

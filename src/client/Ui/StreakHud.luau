@@ -42,12 +42,15 @@ function StreakHud.new(hud: any, translate: (string, ...any) -> string): any
 	)
 	container.Visible, pill.Visible = false, false
 	return {
+		tier = function()
+			return Streak.tier(state)
+		end,
 		sync = function(res: any, now: number)
 			state.gauge = res.streak / Config.events.streakWireScale
 			state.at, state.lastHit = now, now
 			if res.streakTier > lastTier then
 				pulseAt = now
-				Sfx.play("level_tick", cfg.gain, 1 + res.streakTier * cfg.pitchStep)
+				Sfx.play("streak_step", cfg.gain, 1 + res.streakTier * cfg.pitchStep)
 			end
 			lastTier = res.streakTier
 			unlocked = unlocked or lastTier > 0

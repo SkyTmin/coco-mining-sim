@@ -407,6 +407,7 @@ end
 -- Show a burst; a burst already on screen finishes first. Repeated bursts within one purchase run are merged to the
 -- latest one so holding «buy ×10» does not stack ten overlays.
 function RewardBurst.show(burst: Burst)
+	game:GetService("Players").LocalPlayer:SetAttribute("MineAudioDuckUntil", os.clock() + DURATION)
 	if playing then
 		if #queue > 0 then
 			queue[#queue] = burst

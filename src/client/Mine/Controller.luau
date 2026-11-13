@@ -62,6 +62,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local rebirthUi: any = nil
 	local feverUntil, combo = 0, false
 	local rush = StreakHud.new(hud, translate)
+	local music = require(Client.Audio.Music).new(player)
+	local musicLastHit = -math.huge
 	local closeSettings = Settings.start(player, guiParent, hud.gear, translate)
 	local vibrate = Haptics.new(world)
 	local footsteps = Footsteps.new()
@@ -247,6 +249,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			closeSettings()
 		end,
 		function(data, done)
+			music.sting("rebirth_sting", Config.events.visual.gain)
 			eventFx.rebirthTransition(data, done)
 		end
 	)
@@ -788,6 +791,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		elseif kind == "result" then
 			local res = Wire.decodeResult(packet)
 			if res and res.accepted then
+				musicLastHit = os.clock()
 				rush.sync(res, workspace:GetServerTimeNow())
 				if res.ability then
 					combo = workspace:GetServerTimeNow() < feverUntil
@@ -839,7 +843,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			Hud.show(hud, ride.delta, ride.blocks, ride.coins, true, now)
 			hud.reward.combo = combo
 			if combo then
-				Sfx.play("level_tick", Config.events.visual.gain)
+				music.sting("combo_sting", Config.events.visual.gain)
 			end
 			Sfx.play("ult_whump", 0.68)
 		elseif phase == "settle" then
@@ -1340,6 +1344,18 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		)
 		eventFx.step(workspace:GetServerTimeNow(), dt, active, reduced)
 		rebirthUi.step(now, dt, active, reduced)
+		music.step({
+			active = active,
+			world = Worlds.of(window.front).index,
+			tier = rush.tier(),
+			lastHit = musicLastHit,
+			fever = workspace:GetServerTimeNow() < (player:GetAttribute("FeverUntil") or 0),
+			volume = ProfileState.preference("music"),
+			transition = player:GetAttribute("MineRebirthTransition") == true,
+			duck = player:GetAttribute("MineRebirthOpen") == true
+				or (ride and ride.ability) == true
+				or now < (player:GetAttribute("MineAudioDuckUntil") or 0),
+		}, now)
 		if tunnel then
 			Tunnel.fever(tunnel, active and workspace:GetServerTimeNow() < feverUntil)
 		end

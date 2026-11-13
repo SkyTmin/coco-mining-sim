@@ -241,6 +241,95 @@
         28,
         0.46
       ]
+    ],
+    "vein_chime": [
+      [
+        28.58,
+        0.7
+      ]
+    ],
+    "bomb_tick": [
+      [
+        29.4,
+        0.44
+      ]
+    ],
+    "bomb_fizzle": [
+      [
+        29.96,
+        0.44
+      ]
+    ],
+    "bomb_blast": [
+      [
+        30.52,
+        0.55
+      ]
+    ],
+    "streak_step": [
+      [
+        31.19,
+        0.44
+      ]
+    ],
+    "rebirth_sting": [
+      [
+        31.75,
+        8
+      ]
+    ],
+    "combo_sting": [
+      [
+        39.87,
+        0.7
+      ]
     ]
+  },
+  "eventAtlasId": "",
+  "eventFallback": {
+    "vein_chime": "level_tick",
+    "bomb_tick": "ui_tap",
+    "bomb_fizzle": "break_soft",
+    "bomb_blast": "ult_whump",
+    "streak_step": "level_tick",
+    "rebirth_sting": "world_enter",
+    "combo_sting": "card_morph"
+  },
+  "eventSynthesis": {
+    "noteDecay": 14,
+    "noteGap": 0.12,
+    "filterHz": 2200,
+    "tickHz": 220,
+    "tickDecay": 28,
+    "tickSeconds": 0.44,
+    "fizzleHz": 110,
+    "fizzleDecay": 18,
+    "fizzleSeconds": 0.44,
+    "blastHz": 82,
+    "blastDecay": 9,
+    "blastSeconds": 0.55,
+    "veinNotes": [
+      523.25,
+      659.25,
+      783.99
+    ],
+    "veinSeconds": 0.7,
+    "stepHz": 587.33,
+    "stepSeconds": 0.44,
+    "rebirthNotes": [
+      261.63,
+      329.63,
+      392,
+      523.25
+    ],
+    "rebirthGap": 2,
+    "rebirthDecay": 1.8,
+    "rebirthSeconds": 8,
+    "comboNotes": [
+      392,
+      523.25,
+      659.25
+    ],
+    "comboSeconds": 0.7
   }
 }

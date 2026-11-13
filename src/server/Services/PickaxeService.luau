@@ -2,6 +2,7 @@
 
 local Players = game:GetService("Players")
 local Shared = game:GetService("ReplicatedStorage").Shared
+local SettingsPatch = require(Shared.Play.SettingsPatch)
 local Config = require(Shared.Config)
 local Remotes = require(Shared.Remotes)
 local PickModel = require(Shared.Models.PickModel)
@@ -116,33 +117,14 @@ function PickaxeService.Start()
 			if now - (preferencesAt[player] or -math.huge) < 0.1 then
 				return
 			end
-			local language, sfx, haptics, reduced =
-				mode.language, mode.sfx, mode.haptics, mode.reducedMotion
-			if
-				language ~= nil
-					and (typeof(language) ~= "string" or not table.find(
-						Config.game.languages,
-						language
-					))
-				or sfx ~= nil and (typeof(sfx) ~= "number" or not (sfx >= 0 and sfx <= 1))
-				or haptics ~= nil and typeof(haptics) ~= "boolean"
-				or reduced ~= nil and typeof(reduced) ~= "boolean"
-			then
-				return
-			end
-			if language == nil and sfx == nil and haptics == nil and reduced == nil then
+			local patch = SettingsPatch.parse(mode)
+			if not patch then
 				return
 			end
 			preferencesAt[player] = now
 			ProfileService.Mutate(player, function(p)
-				local settings = p.settings
-				settings.language = language or settings.language
-				settings.sfx = sfx or settings.sfx
-				if haptics ~= nil then
-					settings.haptics = haptics
-				end
-				if reduced ~= nil then
-					settings.reducedMotion = reduced
+				for key, value in patch do
+					(p.settings :: any)[key] = value
 				end
 			end)
 			return

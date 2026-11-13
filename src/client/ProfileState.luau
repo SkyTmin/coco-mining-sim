@@ -36,6 +36,9 @@ function ProfileState.preference(key: string): any
 	if settings and settings[key] ~= nil then
 		return settings[key]
 	end
+	if key == "music" then
+		return Config.music.defaultVolume
+	end
 	if key == "sfx" then
 		return Config.sounds.rules.defaultSfx
 	end

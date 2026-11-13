@@ -1,5 +1,11 @@
 --!strict
 return {
+	settings_music = {
+		en = "Music {1}%",
+		ru = "Музыка {1}%",
+		es = "Música {1}%",
+		fr = "Musique {1}%",
+	},
 	rebirth_title = {
 		en = "Rebirth",
 		ru = "Перерождение",

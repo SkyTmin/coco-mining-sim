@@ -108,7 +108,7 @@ function Fx.new(
 		bomb = nil
 		markers(cells, cfg.gold)
 		toast("vein_toast")
-		Sfx.play("level_tick", cfg.gain)
+		Sfx.play("vein_chime", cfg.gain)
 	end
 	function api.veinEnd(reason: number)
 		vein = nil
@@ -127,7 +127,7 @@ function Fx.new(
 		toast("fever_total", require(Shared.Format).short(total))
 	end
 	function api.bombStart(cell: any, deadline: number)
-		bomb = { cell = cell, deadline = deadline }
+		bomb = { cell = cell, deadline = deadline, tick = -1 }
 		vein = nil
 		markers({ cell }, cfg.red)
 		toast("bomb_toast")
@@ -148,12 +148,13 @@ function Fx.new(
 				part:Destroy()
 			end)
 		end
-		Sfx.play("break_soft", cfg.gain)
+		Sfx.play("bomb_blast", cfg.gain)
 	end
 	function api.bombFizzle(cells: { any })
 		bomb = nil
 		clearMarkers()
 		toast("rubble_toast")
+		Sfx.play("bomb_fizzle", cfg.gain)
 	end
 	function api.rubble(cells: { any }) end
 	local transition: any = nil
@@ -291,6 +292,15 @@ function Fx.new(
 		fever.Visible = lit
 		if lit then
 			fever.Text = translate("fever_clock", math.ceil(feverUntil - now))
+		end
+		if bomb then
+			local tick = math.ceil(math.max(0, bomb.deadline - now))
+			if tick ~= bomb.tick then
+				bomb.tick = tick
+				if tick > 0 then
+					Sfx.play("bomb_tick", cfg.gain)
+				end
+			end
 		end
 		local event = vein or bomb
 		arrow.Visible = false
