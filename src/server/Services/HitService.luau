@@ -467,7 +467,6 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 			}
 			st.damage[key] = nil
 			MineService.window(s)
-			print(string.format("[QA] chest tier %d at %d,%d,%d", st.chests[key].tier, best.x, best.y, st.front))
 		end
 		return
 	elseif op == "mine.toPlate" then

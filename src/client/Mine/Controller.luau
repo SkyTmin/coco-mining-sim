@@ -359,7 +359,14 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			abilityQueued = false
 		end
 		if not digging then
-			window.damage = {}
+			-- a new dig starts with clean cracks, but a wall chest keeps its crack between taps (the server does too)
+			local kept = {}
+			for _, damage in window.damage do
+				if Wire.chestTier(Wall.ore(window, damage.x, damage.y, damage.dRel) or 0) then
+					table.insert(kept, damage)
+				end
+			end
+			window.damage = kept
 		end
 		digging = true
 		local cell = target or { x = 0, y = 0, dRel = 0 }

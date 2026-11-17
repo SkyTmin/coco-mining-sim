@@ -109,6 +109,7 @@ function ChestPop.new(
 		busyUntil = start + 0.25 + #prizes * 0.12 + HOLD + 0.5
 		task.delay(start - os.clock(), function()
 			local group = Candy.frame(layer, "Chest", offset(1, 1), Candy.point(at))
+			group.BackgroundTransparency = 1
 			local title = Candy.text(
 				group,
 				"Title",

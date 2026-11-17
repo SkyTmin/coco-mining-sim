@@ -199,9 +199,34 @@ function MineService.window(s: Session, damageReset: any)
 	sendTail(s)
 end
 
+-- Stopping resets the cracks, as in Minecraft — except on a wall chest [владелец 13.11: «минимум 2 удара»]: its crack
+-- stays, so two separate taps open it, not only a held button.
 local function clearDamage(s: Session)
-	if next(s.state.damage) ~= nil then
-		table.clear(s.state.damage)
+	local st = s.state
+	if next(st.damage) == nil then
+		return
+	end
+	local keep = {}
+	local radius = (st.width - 1) // 2
+	for dRel = 0, mine.nearWindow - 1 do
+		local d = st.front + dRel
+		for x = -radius, radius do
+			for y = 0, st.height - 1 do
+				local key = State.cellKey(x, y, d)
+				if st.damage[key] and WallChests.at(st, x, y, d) then
+					keep[key] = st.damage[key]
+				end
+			end
+		end
+	end
+	local changed = false
+	for key in st.damage do
+		if not keep[key] then
+			st.damage[key] = nil
+			changed = true
+		end
+	end
+	if changed then
 		MineService.window(s, true)
 	end
 end

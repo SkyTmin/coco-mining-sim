@@ -184,6 +184,10 @@ function Widgets.levelPop(card: GuiObject, icon: GuiObject, color: Color3, label
 	if ProfileState.preference("reducedMotion") then
 		return
 	end
+	local size = card.AbsoluteSize
+	if size.X <= 0 or size.Y <= 0 then
+		return
+	end
 	local flash = Instance.new("Frame")
 	flash.Name, flash.Size, flash.BorderSizePixel = "LevelFlash", scale(1, 1), 0
 	flash.BackgroundColor3, flash.BackgroundTransparency, flash.ZIndex =
@@ -196,55 +200,52 @@ function Widgets.levelPop(card: GuiObject, icon: GuiObject, color: Color3, label
 	task.delay(0.5, function()
 		flash:Destroy()
 	end)
-	local centre = icon.AbsolutePosition + icon.AbsoluteSize / 2 - card.AbsolutePosition
-	local reach = math.max(card.AbsoluteSize.X, 40) * 0.55
+	-- positions as fractions of the card: the canvas UIScale would stretch pixel offsets
+	local middle = (icon.AbsolutePosition + icon.AbsoluteSize / 2 - card.AbsolutePosition) / size
+	local aspect = size.X / size.Y
 	for i = 1, 10 do
 		local spark = Instance.new("Frame")
-		local size = math.random(5, 9) * card.AbsoluteSize.X / 140
+		local side = (5 + math.random() * 4) / 140
 		spark.Name, spark.BorderSizePixel, spark.ZIndex = "Spark", 0, 31
-		spark.AnchorPoint, spark.Size = Vector2.new(0.5, 0.5), offset(size, size)
-		spark.Position = offset(centre.X, centre.Y)
+		spark.AnchorPoint, spark.Size = Vector2.new(0.5, 0.5), scale(side, side * aspect)
+		spark.Position = scale(middle.X, middle.Y)
 		spark.BackgroundColor3 = if i % 3 == 0 then Color3.new(1, 1, 1) else color
 		spark.Rotation = 45
-		Candy.stroke(spark, 1.5)
+		local stroke = Candy.stroke(spark, 1.5)
 		spark.Parent = card
 		local angle = (i / 10 + math.random() * 0.06) * math.pi * 2
-		local distance = reach * (0.6 + math.random() * 0.5)
-		local goal =
-			offset(centre.X + math.cos(angle) * distance, centre.Y + math.sin(angle) * distance)
+		local distance = 0.4 + math.random() * 0.25
+		local goal = scale(
+			middle.X + math.cos(angle) * distance,
+			middle.Y + math.sin(angle) * distance * aspect
+		)
 		local info = TweenInfo.new(0.55, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 		TweenService
 			:Create(spark, info, { Position = goal, Rotation = 225, BackgroundTransparency = 1 })
 			:Play()
-		local stroke = spark:FindFirstChildOfClass("UIStroke")
-		if stroke then
-			TweenService:Create(stroke, info, { Transparency = 1 }):Play()
-		end
+		TweenService:Create(stroke, info, { Transparency = 1 }):Play()
 		task.delay(0.6, function()
 			spark:Destroy()
 		end)
 	end
+	-- «+1 ур.» rises from the icon to the coloured band above it, clear of the name
 	local text = Instance.new("TextLabel")
 	text.Name, text.BackgroundTransparency, text.ZIndex = "LevelUp", 1, 32
-	text.AnchorPoint, text.Size = Vector2.new(0.5, 0.5), scale(1, 0.16)
-	text.Position = offset(centre.X, centre.Y)
+	text.AnchorPoint, text.Size = Vector2.new(0.5, 0.5), scale(0.9, 0.13)
+	text.Position = scale(0.5, middle.Y)
 	text.FontFace, text.TextScaled, text.Text = Candy.font, true, label
-	text.TextColor3 = Candy.panelColor
-	Candy.stroke(text, 2.5, true)
+	text.TextColor3 = Widgets.yellow
+	local textStroke = Candy.stroke(text, 2.5, true)
 	text.Parent = card
-	local textStroke = text:FindFirstChildOfClass("UIStroke")
-	local rise = TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	TweenService
-		:Create(text, rise, { Position = offset(centre.X, centre.Y - card.AbsoluteSize.Y * 0.28) })
+	local rise = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+	TweenService:Create(text, rise, { Position = scale(0.5, math.max(0.08, middle.Y - 0.2)) })
 		:Play()
-	task.delay(0.45, function()
-		local fade = TweenInfo.new(0.45)
+	task.delay(0.6, function()
+		local fade = TweenInfo.new(0.4)
 		TweenService:Create(text, fade, { TextTransparency = 1 }):Play()
-		if textStroke then
-			TweenService:Create(textStroke, fade, { Transparency = 1 }):Play()
-		end
+		TweenService:Create(textStroke, fade, { Transparency = 1 }):Play()
 	end)
-	task.delay(0.95, function()
+	task.delay(1.05, function()
 		text:Destroy()
 	end)
 end
