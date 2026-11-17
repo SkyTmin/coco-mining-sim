@@ -89,8 +89,44 @@ function WallChests.at(st: any, x: number, y: number, d: number, multiplier: num
 	return nil
 end
 
--- Remove the overlaid ore from the tally and return exactly one reward per removed chest.
-function WallChests.tally(st: any, out: { State.Range }, res: any, multiplier: number)
+local MAX_OVERRIDES = 8 -- MineCodec carries at most 8 placed chests
+
+-- [владелец 13.11: «сундуки нельзя сломать навыками, только когда по нему бьют киркой»] a chest removed by anything but a
+-- pickaxe hit on it (ult, skills, bombs, piercing) is not opened: it moves deeper in its own lane, to the first solid
+-- block behind the cut, and waits there. Only when there is no room (the Plate, or too many placed chests) does it open.
+local function relocate(st: any, chest: any, from: number, multiplier: number): boolean
+	local barrier = State.barrier(st)
+	local d = State.nextSolid(st, chest.x, chest.y, from)
+	if d >= barrier or not State.isSolid(st, chest.x, chest.y, d) then
+		return false
+	end
+	if WallChests.at(st, chest.x, chest.y, d, multiplier) then
+		return false
+	end
+	local placed = 0
+	for _ in st.chests or {} do
+		placed += 1
+	end
+	if placed >= MAX_OVERRIDES then
+		return false
+	end
+	st.chests = st.chests or {}
+	local key = State.cellKey(chest.x, chest.y, d)
+	st.chests[key] =
+		{ x = chest.x, y = chest.y, d = d, tier = chest.tier, stage = chest.stage, kind = "chest" }
+	st.damage[key] = nil
+	return true
+end
+
+-- Remove the overlaid ore from the tally and return exactly one reward per opened chest. `opened` lists the cells a
+-- pickaxe hit was aimed at; every other removed chest is moved deeper instead (see relocate).
+function WallChests.tally(
+	st: any,
+	out: { State.Range },
+	res: any,
+	multiplier: number,
+	opened: { [number]: boolean }?
+)
 	if not Config.chests then
 		return
 	end
@@ -109,9 +145,11 @@ function WallChests.tally(st: any, out: { State.Range }, res: any, multiplier: n
 			local histKey = Worlds.of(chest.d).index * 64 + ore
 			res.hist[histKey] = (res.hist[histKey] or 0) - 1
 		end
-		table.insert(res.finds, chest)
 		if override then
 			st.chests[key] = nil
+		end
+		if (opened and opened[key]) or not relocate(st, chest, run.b, multiplier) then
+			table.insert(res.finds, chest)
 		end
 	end
 	for _, run in out do
@@ -126,7 +164,7 @@ function WallChests.tally(st: any, out: { State.Range }, res: any, multiplier: n
 	end
 end
 
-function WallChests.place(st: any, stage: string?): any?
+function WallChests.place(st: any, stage: string?, marks: any?): any?
 	local barrier = State.barrier(st)
 	if st.front >= barrier then
 		return nil
@@ -157,7 +195,22 @@ function WallChests.place(st: any, stage: string?): any?
 		end
 		for y = 0, st.height - 1 do
 			for x = -radius, radius do
-				if State.isExposed(st, x, y, d) and not WallChests.at(st, x, y, d) then
+				local marked = false
+				if marks then
+					marked = marks.rubble[State.cellKey(x, y, d)] == true
+					local cells = if marks.vein
+						then marks.vein.cells
+						elseif marks.bomb then { marks.bomb.cell }
+						else {}
+					for _, cell in cells do
+						marked = marked or (cell.x == x and cell.y == y and cell.d == d)
+					end
+				end
+				if
+					not marked
+					and State.isExposed(st, x, y, d)
+					and not WallChests.at(st, x, y, d)
+				then
 					local chest = { x = x, y = y, d = d, tier = 2, stage = stage, kind = "chest" }
 					st.chests[State.cellKey(x, y, d)] = chest
 					st.damage[State.cellKey(x, y, d)] = nil
@@ -169,10 +222,10 @@ function WallChests.place(st: any, stage: string?): any?
 	return nil
 end
 
-function WallChests.stage(st: any, profile: any, playSeconds: number): boolean
+function WallChests.stage(st: any, profile: any, playSeconds: number, marks: any?): boolean
 	for _, name in { "firstStorm", "firstKey" } do
 		if not profile.staged[name] and playSeconds >= Config.familyRules[name] then
-			if WallChests.place(st, name) then
+			if WallChests.place(st, name, marks) then
 				return true
 			end
 		end
@@ -180,7 +233,14 @@ function WallChests.stage(st: any, profile: any, playSeconds: number): boolean
 	return false
 end
 
-function WallChests.reward(profile: any, chest: any, hand: boolean, seed: number, effects: any): any
+function WallChests.reward(
+	profile: any,
+	chest: any,
+	hand: boolean,
+	seed: number,
+	effects: any,
+	incomeMultiplier: number
+): any
 	local world, mean = Worlds.of(chest.d), 0
 	for ore, weight in world.weights do
 		mean += world.orePrices[ore] * weight
@@ -190,7 +250,7 @@ function WallChests.reward(profile: any, chest: any, hand: boolean, seed: number
 	local coins = Power.coins(
 		mean * tier.blocks,
 		profile.circle.cards.coins or 0,
-		effects.coins
+		incomeMultiplier
 			* effects.chestCoins
 			* (if greedy then Config.progress.cardEffects.chestMultiplier else 1)
 	)

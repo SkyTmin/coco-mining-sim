@@ -2,7 +2,7 @@
   "keyHits": 8000,
   "wall": {
     "perLayers": 40,
-    "hits": 3,
+    "hits": 2,
     "tiers": [
       {
         "name": "Деревянный",

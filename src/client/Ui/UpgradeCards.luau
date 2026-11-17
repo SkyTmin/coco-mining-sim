@@ -116,6 +116,7 @@ function Cards.new(ctx: W.Context, cardsPage: Frame)
 		local card = W.upgradeCard(grid, id, cardColors[id], id)
 		table.insert(boxes, card.box)
 		local view = {
+			box = card.box,
 			icon = card.icon,
 			title = card.name,
 			hint = "",
@@ -188,6 +189,12 @@ function Cards.new(ctx: W.Context, cardsPage: Frame)
 			end
 			if animate and cardsPage.Visible and view.previous and level > view.previous then
 				W.bump(view.icon, ctx, true)
+				W.levelPop(
+					view.box,
+					view.icon,
+					cardColors[id],
+					t("upgrade_level_gain", level - view.previous)
+				)
 			end
 			view.previous = level
 		end

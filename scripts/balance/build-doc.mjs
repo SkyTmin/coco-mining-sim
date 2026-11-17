@@ -199,7 +199,12 @@ ${table(['Товар', 'Шанс появиться в одном месте', '
 
 ## 10. События и множители
 
-${table(['Что', 'Когда', 'Даёт'], D.events.map((e) => [e.name, e.when, e.gives]))}
+${table(['Что', 'Когда', 'Даёт'], D.eventDescriptions.map((e) => [e.name, e.when, e.gives]))}
+
+Параметры этапа 5 [решение ТЗ-05 P12–P21]: пороги Разгона ${D.events.streak.tiers.join(' / ')},
+шкала до ${D.events.streak.cap}, спад ${D.events.streak.decay}/с после ${D.events.streak.grace} с;
+первая жила на ${D.events.vein.firstPlaySeconds} с; ${D.events.vein.cells.join('–')} клеток;
+подарок круга — ${D.events.fever.giftSeconds} с; Завал — ${D.events.bomb.rubbleLayers} слоя, ${D.events.bomb.rubbleHits} удар.
 
 Все временные бонусы монет (бустеры, Разгон, Золотой час, друзья) **складываются** в одно число «×N» с потолком **×${D.tempCap}**; Лихорадка ×5 —
 сверх него. Постоянные (Кубки, карточка Монеты, пасс ×2, VIP) перемножаются.

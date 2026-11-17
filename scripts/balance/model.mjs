@@ -26,7 +26,7 @@ export function simulate(hours = HOURS, o = {}) {
 	function newCircle() {
 		const r = rank();
 		const lift = Math.min(r.lift ?? 1, Math.max(1, perm.record - 1));
-		c = { t0: perm.t, depth: D.worlds[lift - 1].start, coins: 0, size: (r.size ?? 1) - 1, lvl: 1, cards: {}, deepest: lift - 1, plateLeft: 0, lastPlate: perm.t, startWorld: lift };
+		c = { t0: perm.t, depth: D.worlds[lift - 1].start, coins: 0, size: (r.size ?? 1) - 1, lvl: 1, cards: {}, deepest: 0, plateLeft: 0, lastPlate: perm.t, startWorld: lift };
 		for (const k of D.cards) c.cards[k.id] = 0;
 		c.family = FAM === 'none' ? null : FAM === 'rotate' ? FAMS[perm.rebirths % 4] : FAM === 'smart' ? (perm.rebirths === 0 ? 'storm' : perm.lastK >= 2 ? 'frost' : perm.rebirths % 3 === 0 ? 'storm' : 'rift') : FAM;
 		if (c.family) perm.famRuns[c.family] = (perm.famRuns[c.family] ?? 0) + 1;

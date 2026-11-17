@@ -25,7 +25,9 @@ local DepthSign = require(script.Parent.DepthSign)
 local Aim = require(script.Parent.Aim)
 local Camera = require(script.Parent.Camera)
 local Input = require(script.Parent.Input)
+local Gamepad = require(script.Parent.Parent.Gamepad)
 local Hud = require(Client.Ui.MineHud)
+local StreakHud = require(Client.Ui.StreakHud)
 local Settings = require(Client.Ui.MineSettings)
 local Upgrades = require(Client.Ui.Upgrades)
 local Intensity = require(Client.Fx.Intensity)
@@ -39,6 +41,11 @@ local TravelDebris = require(Client.Fx.TravelDebris)
 local Haptics = require(Client.Fx.Haptics)
 local Footsteps = require(Client.Fx.Footsteps)
 local FamilyFx = require(Client.Fx.FamilyFx)
+local Quality = require(Client.Fx.Quality)
+local EventFx = require(Client.Fx.EventFx)
+local ChestPop = require(Client.Fx.ChestPop)
+local RewardBurst = require(Client.Fx.RewardBurst)
+local MenuWidgets = require(Client.Ui.MenuWidgets)
 
 local Controller = {}
 local mine = Config.mine
@@ -56,6 +63,22 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local world = Instance.new("Folder")
 	world.Name, world.Parent = "LocalMine", workspace
 	local hud = Hud.new(guiParent, world, translate)
+	local eventFx: any = nil
+	local rebirthUi: any = nil
+	local feverUntil, combo = 0, false
+	local rush = StreakHud.new(hud, translate)
+	if game:GetService("RunService"):IsStudio() then
+		player:GetAttributeChangedSignal("QaStreakAt"):Connect(function()
+			local gauge = player:GetAttribute("QaStreakGauge") or 0
+			rush.sync({
+				streak = gauge * Config.events.streakWireScale,
+				streakTier = require(Shared.Play.Streak).tier({ gauge = gauge }),
+			}, workspace:GetServerTimeNow())
+		end)
+	end
+	local music = require(Client.Audio.Music).new(player)
+	Quality.start(player)
+	local musicLastHit = -math.huge
 	local closeSettings = Settings.start(player, guiParent, hud.gear, translate)
 	local vibrate = Haptics.new(world)
 	local footsteps = Footsteps.new()
@@ -72,19 +95,22 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local parts: { BasePart } = {}
 	local moves: { CFrame } = {}
 	local lastShown: any, lastVisible: number?
-	local seq, quality, maxParts = 0, 2, 0
+	local seq, maxParts = 0, 0
 	local dirty, active = true, false
+	Quality.onChanged(function()
+		dirty = true
+	end)
 	local digging = false
 	local nextHit, lastRequest = -math.huge, -math.huge
 	local abilityQueued, returning = false, false
 	local lastCharge = -1
 	local fpsAt, frames = os.clock(), 0
-	local autoFrames, autoTime = 0, 0
-	local measured, savedView = false, false
+	local savedView = false
 	local jumpButton: GuiObject? = nil
 	local lastPhase = "idle"
 	local hapticsOn = true
 	local familyToast = require(Client.Toast).create(guiParent, translate)
+	local lastHitPosition: Vector3? = nil
 	local function frozen(points: { any }, front: number)
 		frozenCells = {}
 		for _, cell in points do
@@ -124,7 +150,47 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			)
 		end
 	end
-	local menu = Upgrades.new(guiParent, player, translate, haptic, hud.wallet)
+	local menu = Upgrades.new(guiParent, player, translate, haptic, hud.wallet, function(master)
+		if rebirthUi then
+			rebirthUi.open(master)
+		end
+	end)
+	-- what fell out of a wall chest pops at the spot the pickaxe hit it; a found pickaxe then gets the big level-up
+	-- burst (the screen dims, it cannot be missed) and the menu keeps its «new» dot until the player looks
+	local chestPop = ChestPop.new(guiParent, translate, hud.wallet)
+	Remotes.event("ChestReward").OnClientEvent:Connect(function(reward)
+		local camera = workspace.CurrentCamera
+		local point: Vector2? = nil
+		if camera and lastHitPosition then
+			local screen, visible = camera:WorldToViewportPoint(lastHitPosition)
+			if visible then
+				point = Vector2.new(screen.X, screen.Y)
+			end
+		end
+		chestPop(reward, point)
+		local id = reward.pick
+		if typeof(id) == "string" and Config.pickaxes[id] then
+			task.delay(2.2, function()
+				local p = profile()
+				local family = Config.pickaxes[id].family
+				RewardBurst.show({
+					icon = "pickaxe",
+					palette = RewardBurst.palettes[family] or RewardBurst.palettes.epic,
+					power = 1,
+					kicker = translate("burst_wall_pick"),
+					title = MenuWidgets.pickName(translate, id),
+					subtitle = translate(
+						if p and p.pickaxe == id
+							then "burst_wall_pick_hint"
+							else "burst_wall_pick_menu"
+					),
+					decorate = function(slot: ImageLabel)
+						MenuWidgets.pickIcon(slot, id)
+					end,
+				})
+			end)
+		end
+	end)
 	FamilyFx.configure(
 		function(cell, front)
 			local r = renderer
@@ -155,7 +221,12 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	)
 	Remotes.event("PickaxeResult").OnClientEvent:Connect(FamilyFx.chestOpen)
 	local previousCards: { [string]: number }? = nil
-	ProfileState.changed:Connect(function()
+	ProfileState.changed:Connect(function(full)
+		if full and eventFx then
+			eventFx.clear()
+			feverUntil, combo = 0, false
+			rush.clear()
+		end
 		local p = ProfileState.getProfile()
 		if p then
 			local cards = p.circle.cards
@@ -208,9 +279,31 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local r = renderer
 		return if r then Wall.position(r, point.x, point.y, point.dRel, offset) else Vector3.zero
 	end
+	eventFx = EventFx.new(guiParent, world, function(cell)
+		return targetPosition(
+			{ x = cell.x, y = cell.y, dRel = cell.d - (window and window.front or 0) },
+			currentOffset(os.clock())
+		)
+	end, translate, hud.wallet)
+	rebirthUi = require(Client.Ui.RebirthWindow).new(
+		guiParent,
+		player,
+		translate,
+		familyToast,
+		function()
+			menu.close()
+			closeSettings()
+		end,
+		function(data, done)
+			music.sting("rebirth_sting", Config.events.visual.gain)
+			eventFx.rebirthTransition(data, done)
+		end
+	)
 	local function menuOpen(): boolean
 		return player:GetAttribute("MineMenuOpen") == true
 			or player:GetAttribute("MineSettingsOpen") == true
+			or player:GetAttribute("MineRebirthOpen") == true
+			or player:GetAttribute("MineRebirthTransition") == true
 	end
 	local function canControl(): boolean
 		return active
@@ -266,7 +359,14 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			abilityQueued = false
 		end
 		if not digging then
-			window.damage = {}
+			-- a new dig starts with clean cracks, but a wall chest keeps its crack between taps (the server does too)
+			local kept = {}
+			for _, damage in window.damage do
+				if Wire.chestTier(Wall.ore(window, damage.x, damage.y, damage.dRel) or 0) then
+					table.insert(kept, damage)
+				end
+			end
+			window.damage = kept
 		end
 		digging = true
 		local cell = target or { x = 0, y = 0, dRel = 0 }
@@ -278,6 +378,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local expected =
 			{ seq = seq, at = now, position = position, hitPosition = cell.hitPosition }
 		if not ability then
+			lastHitPosition = position
 			local depth = window.front + cell.dRel
 			local ore = Wall.ore(window, cell.x, cell.y, cell.dRel)
 			local plate = ore == Wire.PLATE
@@ -327,13 +428,37 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		intent:FireServer(Wire.encodeIntent(kind, seq, cell.x, cell.y, cell.dRel))
 	end
 
-	local function onWindow(packet: any, damageReset: boolean?)
+	local function onWindow(packet: any, damageReset: any)
 		local win = Wire.decodeWindow(packet)
 		if
 			not win
 			or (player:GetAttribute("Plot") ~= nil and win.plot ~= player:GetAttribute("Plot"))
 		then
 			return
+		end
+		if damageReset == "events" and window then
+			if
+				pending
+				and pending.result
+				and pending.result.front == win.front
+				and pending.result.delta > 0
+			then
+				pending.result.layers = win.layers
+			end
+			for _, queued in echoes do
+				if queued.res.front == win.front then
+					queued.res.layers = win.layers
+				end
+			end
+			if window.front == win.front then
+				window.layers, window.damage, dirty = win.layers, win.damage, true
+			end
+			return
+		end
+		if damageReset == "reset" or (window and window.plot ~= win.plot) then
+			eventFx.clear()
+			feverUntil, combo = 0, false
+			rush.clear()
 		end
 		if
 			damageReset == true
@@ -545,6 +670,19 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		for i, event in res.events do
 			event.front = oldFront
 			event.result = fxResult
+			if event.kind == 7 then
+				local cells = {}
+				for _, point in event.points do
+					table.insert(cells, {
+						x = point.x,
+						y = point.y,
+						d = oldFront + point.dRel,
+						position = targetPosition(point, oldOffset),
+					})
+				end
+				eventFx.bombDefused(cells)
+				continue
+			end
 			if event.kind >= 3 then
 				-- perks break their blocks before the effect plays: hand the effect world positions, not parts
 				if event.kind ~= 5 then
@@ -682,8 +820,42 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			else
 				applyLayers(part)
 			end
+		elseif kind == "event" then
+			local event = Wire.decodeEvent(packet)
+			if not event or not window or event.plot ~= window.plot then
+				return
+			end
+			if event.type == 1 then
+				eventFx.veinStart(event.points, event.deadline)
+			elseif event.type == 2 then
+				eventFx.veinEnd(event.reason)
+			elseif event.type == 3 then
+				feverUntil = event.deadline
+				if ride and ride.ability then
+					combo = true
+					if hud.reward then
+						hud.reward.combo = true
+					end
+				end
+				eventFx.feverStart(event.deadline, if event.reason == 1 then "gift" else "vein")
+			elseif event.type == 4 then
+				eventFx.feverEnd(event.total)
+			elseif event.type == 5 then
+				eventFx.bombStart(event.points[1], event.deadline)
+			elseif event.type == 6 then
+				eventFx.bombFizzle(event.points)
+			elseif event.type == 7 then
+				eventFx.rubble(event.points)
+			end
 		elseif kind == "result" then
 			local res = Wire.decodeResult(packet)
+			if res and res.accepted then
+				musicLastHit = os.clock()
+				rush.sync(res, workspace:GetServerTimeNow())
+				if res.ability then
+					combo = workspace:GetServerTimeNow() < feverUntil
+				end
+			end
 			if res and res.accepted and res.ability and res.seq == 0 and ride then
 				table.insert(echoes, { res = res, visual = visual, tail = {} })
 				return
@@ -728,6 +900,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local atPlate = ride.barrier and ride.barrier.layers == 0
 		if phase == "wave" then
 			Hud.show(hud, ride.delta, ride.blocks, ride.coins, true, now)
+			hud.reward.combo = combo
+			if combo then
+				music.sting("combo_sting", Config.events.visual.gain)
+			end
 			Sfx.play("ult_whump", 0.68)
 		elseif phase == "settle" then
 			strikePlate(now)
@@ -877,6 +1053,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		ult = function()
 			request("Ability", nil)
 		end,
+		menu = function()
+			menu.open("cards")
+		end,
 		pan = function(delta)
 			if view then
 				Camera.pan(view, delta)
@@ -923,7 +1102,6 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if not active then
 			closeSettings()
 		end
-		local settings = current and current.settings
 		local reduced = ProfileState.preference("reducedMotion")
 		Sfx.level(ProfileState.preference("sfx"))
 		Footsteps.step(footsteps, player.Character, Worlds.of(window.front).index == 1)
@@ -932,20 +1110,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			vibrate("off", now, false, reduced)
 		end
 		hapticsOn = hapticsEnabled
-		if active and not measured then
-			autoFrames += 1
-			autoTime += dt
-			if autoTime >= 15 then
-				measured = true
-				if autoFrames / autoTime < 40 then
-					quality, dirty = 1, true
-				end
-			end
-		end
-		local override = if settings and settings.effects == "low"
-			then 1
-			elseif settings and settings.effects == "high" then 3
-			else quality
+		Quality.step(dt, active)
+		local override = Quality.level()
 		if pending and now - pending.at > 0.85 then
 			resync()
 		end
@@ -1017,7 +1183,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				DepthSign.step(sign, now, depth, false, reduced, false)
 			end
 		end
-		local shown, visible, offset = window, #window.layers, currentOffset(now)
+		local shown, visible, offset =
+			window, math.min(#window.layers, Quality.budget().oreLayers), currentOffset(now)
 		local survivor = false
 		local ulting = ride and ride.ability
 		local sweeping = ulting and phase ~= "approach"
@@ -1027,7 +1194,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			local changed
 			shown, changed =
 				WaveRenderer.step(ride.sweep, r, breaking.dissolve, now - ride.at, now, reduced)
-			visible, offset = #shown.layers, 0
+			visible, offset = math.min(#shown.layers, Quality.budget().oreLayers), 0
 			dirty = dirty or changed
 		elseif phase == "approach" then
 			-- [владелец 11.11] the camera never leaves the platform: after the ult wave the new wall rides up to the
@@ -1218,7 +1385,39 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		if hud.ultimate and ride and ride.ability then
 			hud.ultimate.progress = ultProgress
 		end
-		Hud.step(hud, now, active, v.mode == "first" and canHit(), hint, reduced)
+		rush.step(
+			workspace:GetServerTimeNow(),
+			ride ~= nil
+				or workspace:GetServerTimeNow() < (player:GetAttribute("MineReturnAfter") or 0),
+			active,
+			reduced
+		)
+		eventFx.step(workspace:GetServerTimeNow(), dt, active, reduced)
+		rebirthUi.step(now, dt, active, reduced)
+		music.step({
+			active = active,
+			world = Worlds.of(window.front).index,
+			tier = rush.tier(),
+			lastHit = musicLastHit,
+			fever = workspace:GetServerTimeNow() < (player:GetAttribute("FeverUntil") or 0),
+			volume = ProfileState.preference("music"),
+			transition = player:GetAttribute("MineRebirthTransition") == true,
+			duck = player:GetAttribute("MineRebirthOpen") == true
+				or (ride and ride.ability) == true
+				or now < (player:GetAttribute("MineAudioDuckUntil") or 0),
+		}, now)
+		if tunnel then
+			Tunnel.fever(tunnel, active and workspace:GetServerTimeNow() < feverUntil)
+		end
+		-- a gamepad aims at the screen centre in both views, so it always gets the crosshair
+		Hud.step(
+			hud,
+			now,
+			active,
+			(v.mode == "first" or Gamepad.active()) and canHit(),
+			hint,
+			reduced
+		)
 		if not jumpButton then
 			local touchGui = guiParent:FindFirstChild("TouchGui")
 			local candidate = touchGui and touchGui:FindFirstChild("JumpButton", true)

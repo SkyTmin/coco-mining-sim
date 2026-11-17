@@ -177,6 +177,79 @@ function Widgets.bump(target: GuiObject, ctx: Context, sound: boolean?)
 	rise:Play()
 end
 
+-- a card level bought [владелец 13.11: «когда улучшаешь эффект улучшения такой пустой»]: the card flashes white, ten
+-- sparks in its colour burst out of the icon, and «+N ур.» rises over it; on top of the icon bump and the coin sound
+function Widgets.levelPop(card: GuiObject, icon: GuiObject, color: Color3, label: string)
+	Sfx.play("level_tick", 0.6)
+	if ProfileState.preference("reducedMotion") then
+		return
+	end
+	local size = card.AbsoluteSize
+	if size.X <= 0 or size.Y <= 0 then
+		return
+	end
+	local flash = Instance.new("Frame")
+	flash.Name, flash.Size, flash.BorderSizePixel = "LevelFlash", scale(1, 1), 0
+	flash.BackgroundColor3, flash.BackgroundTransparency, flash.ZIndex =
+		Color3.new(1, 1, 1), 0.15, 30
+	Candy.round(flash, 16)
+	flash.Parent = card
+	TweenService
+		:Create(flash, TweenInfo.new(0.45, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 })
+		:Play()
+	task.delay(0.5, function()
+		flash:Destroy()
+	end)
+	-- positions as fractions of the card: the canvas UIScale would stretch pixel offsets
+	local middle = (icon.AbsolutePosition + icon.AbsoluteSize / 2 - card.AbsolutePosition) / size
+	local aspect = size.X / size.Y
+	for i = 1, 10 do
+		local spark = Instance.new("Frame")
+		local side = (5 + math.random() * 4) / 140
+		spark.Name, spark.BorderSizePixel, spark.ZIndex = "Spark", 0, 31
+		spark.AnchorPoint, spark.Size = Vector2.new(0.5, 0.5), scale(side, side * aspect)
+		spark.Position = scale(middle.X, middle.Y)
+		spark.BackgroundColor3 = if i % 3 == 0 then Color3.new(1, 1, 1) else color
+		spark.Rotation = 45
+		local stroke = Candy.stroke(spark, 1.5)
+		spark.Parent = card
+		local angle = (i / 10 + math.random() * 0.06) * math.pi * 2
+		local distance = 0.4 + math.random() * 0.25
+		local goal = scale(
+			middle.X + math.cos(angle) * distance,
+			middle.Y + math.sin(angle) * distance * aspect
+		)
+		local info = TweenInfo.new(0.55, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+		TweenService
+			:Create(spark, info, { Position = goal, Rotation = 225, BackgroundTransparency = 1 })
+			:Play()
+		TweenService:Create(stroke, info, { Transparency = 1 }):Play()
+		task.delay(0.6, function()
+			spark:Destroy()
+		end)
+	end
+	-- «+1 ур.» rises from the icon to the coloured band above it, clear of the name
+	local text = Instance.new("TextLabel")
+	text.Name, text.BackgroundTransparency, text.ZIndex = "LevelUp", 1, 32
+	text.AnchorPoint, text.Size = Vector2.new(0.5, 0.5), scale(0.9, 0.13)
+	text.Position = scale(0.5, middle.Y)
+	text.FontFace, text.TextScaled, text.Text = Candy.font, true, label
+	text.TextColor3 = Widgets.yellow
+	local textStroke = Candy.stroke(text, 2.5, true)
+	text.Parent = card
+	local rise = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+	TweenService:Create(text, rise, { Position = scale(0.5, math.max(0.08, middle.Y - 0.2)) })
+		:Play()
+	task.delay(0.6, function()
+		local fade = TweenInfo.new(0.4)
+		TweenService:Create(text, fade, { TextTransparency = 1 }):Play()
+		TweenService:Create(textStroke, fade, { Transparency = 1 }):Play()
+	end)
+	task.delay(1.05, function()
+		text:Destroy()
+	end)
+end
+
 function Widgets.scroll(parent: Instance, name: string, size: UDim2, at: UDim2): ScrollingFrame
 	local view = Instance.new("ScrollingFrame")
 	view.Name, view.BackgroundTransparency, view.BorderSizePixel = name, 1, 0

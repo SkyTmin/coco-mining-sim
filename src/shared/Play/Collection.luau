@@ -109,7 +109,12 @@ function Collection.validate(profile: any): boolean
 			if name ~= "staged" and not Config.pickaxes[key] then
 				return false
 			end
-			if name == "staged" and key ~= "firstStorm" and key ~= "firstKey" then
+			if
+				name == "staged"
+				and key ~= "firstStorm"
+				and key ~= "firstKey"
+				and key ~= "firstVein"
+			then
 				return false
 			end
 		end

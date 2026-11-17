@@ -4,6 +4,7 @@ local Config = require(Shared.Config)
 local Rules = require(Shared.Mine.DissolveRules)
 local GrainPool = require(Shared.Mine.GrainPool)
 
+local Quality = require(script.Parent.Quality)
 local Dissolve = {}
 export type Block = {
 	frame: CFrame,
@@ -157,8 +158,11 @@ function Dissolve.block(
 		faces = { faces[1] }
 	end
 	local alive = fx.tail - fx.head + 1
-	local available =
-		math.min(Rules.maxParticles - alive - fx.reserved, Rules.maxEmit - fx.admitted)
+	local available = math.min(
+		Rules.maxParticles - alive - fx.reserved,
+		Rules.maxEmit - fx.admitted,
+		Quality.available("particles") - fx.reserved
+	)
 	local stride = Rules.stride(#faces, available, reduced or ultimate == true)
 	local size = Rules.size
 	if lod then
@@ -213,7 +217,11 @@ function Dissolve.step(fx: Fx, now: number)
 			local event = burst.events[j]
 			if event.at <= now then
 				local index, changed = nil, false
-				if fx.emitted < Rules.maxEmit and alive < Rules.maxParticles then
+				if
+					fx.emitted < Rules.maxEmit
+					and alive < Rules.maxParticles
+					and Quality.available("particles") > 0
+				then
 					index, changed =
 						GrainPool.take(fx.allocator, event.color .. "|" .. event.size, now)
 				end
@@ -227,7 +235,7 @@ function Dissolve.step(fx: Fx, now: number)
 					slot.emitter.Speed = if burst.reduced
 						then NumberRange.new(0)
 						else NumberRange.new(Rules.speedMin, Rules.speedMax)
-					slot.emitter:Emit(1)
+					slot.emitter:Emit(Quality.reserve("particles", 1, Rules.lifeMax))
 					fx.emitted += 1
 					fx.tail += 1
 					fx.living[fx.tail] = now + Rules.lifeMax

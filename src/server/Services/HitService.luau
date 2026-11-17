@@ -14,12 +14,19 @@ local Ride = require(Shared.Mine.Ride)
 local Perks = require(Shared.Play.Perks)
 local MiningAction = require(Shared.Play.MiningAction)
 local Circle = require(Shared.Play.Circle)
+local ProfileDefaults = require(Shared.Play.ProfileDefaults)
+local Streak = require(Shared.Play.Streak)
+local Pace = require(Shared.Play.Pace)
 local Power = require(Shared.Play.Power)
 local MineService = require(script.Parent.MineService)
 local ProfileService = require(script.Parent.ProfileService)
 local PlotService = require(script.Parent.PlotService)
 local Pickaxe = require(script.Parent.PickaxeService)
 local Analytics = require(script.Parent.Analytics)
+local RebirthService = require(script.Parent.RebirthService)
+local EventService = require(script.Parent.EventService)
+-- created at load so the client's WaitForChild never waits for the first chest
+local chestReward = Remotes.event("ChestReward")
 
 type Session = MineService.Session
 type HitResult = Resolve.HitResult
@@ -77,6 +84,8 @@ local function publish(
 		mega = strike and strike.mega,
 		rain = strike and strike.rain,
 		charge = s.charge,
+		streak = math.floor(s.streak.gauge * Config.events.streakWireScale),
+		streakTier = Streak.tier(s.streak),
 		plateDamage = st.plateDamage,
 		damage = MineService.damage(st),
 		blocks = res.blocks,
@@ -158,16 +167,25 @@ local function onIntent(player: Player, packet: any)
 	end
 	local forced = if creative then player:GetAttribute("CreativeUltLayers") else nil
 	local serverTime = workspace:GetServerTimeNow()
+	Streak.decay(s.streak, math.min(serverTime, s.streakUntil), true)
+	Streak.decay(s.streak, serverTime, false)
+	local actionIncome = ProfileService.Read(player, function(p)
+		return EventService.income(s, p, serverTime, ability)
+	end)
 	local duration = 0
 	for wave = 1, 2 do
-		local outcome
+		local outcome, failure
 		ProfileService.Mutate(player, function(profile)
 			if s.perkFamily ~= profile.family then
 				s.perks, s.perkFamily = Perks.new(), profile.family
 			end
-			outcome = MiningAction.perform(st, profile, s.perks, {
+			outcome, failure = MiningAction.perform(st, profile, s.perks, {
 				ability = ability,
 				now = started,
+				income = actionIncome,
+				marks = s.events,
+				serverNow = serverTime,
+				playSeconds = ProfileService.PlaySeconds(player),
 				x = intent.x,
 				y = intent.y,
 				d = d,
@@ -176,6 +194,9 @@ local function onIntent(player: Player, packet: any)
 			})
 		end)
 		if not outcome then
+			if failure == "income" then
+				warn("[Mine] Rejected nonfinite income")
+			end
 			MineService.reject(player, s, intent.seq)
 			return
 		end
@@ -185,12 +206,26 @@ local function onIntent(player: Player, packet: any)
 		s.charge = if ability
 			then (if endless then pick.ultCharge else 0)
 			else math.min(pick.ultCharge, s.charge + 1)
+		EventService.after(player, s, outcome, {
+			now = serverTime,
+			ability = ability,
+			x = intent.x,
+			y = intent.y,
+			d = d,
+			feverActive = actionIncome.F == Config.events.fever.multiplier,
+		})
+		if not ability then
+			Streak.add(s.streak, serverTime, pick.interval, "hand")
+			s.streakMaximum = math.max(s.streakMaximum or 0, s.streak.maximum)
+		end
+		Pace.record(s.pace, serverTime, outcome.delta)
 		local delta = outcome.delta
 		if ability or delta > 0 then
 			duration += if ability then outcome.duration else Ride.timeline(delta, false).total
 			if ability then
 				s.ultUntil = math.max(s.ultUntil or started, started + duration)
 			end
+			s.streakUntil = serverTime + duration
 			player:SetAttribute("MineReturnAfter", serverTime + duration)
 		end
 		publish(
@@ -204,24 +239,37 @@ local function onIntent(player: Player, packet: any)
 			outcome.strike,
 			outcome.visual
 		)
+		EventService.flush(player, s)
 		for _, id in outcome.newCards do
 			Remotes.event("Toast"):FireClient(player, "card_unlocked_" .. id)
 		end
-		if outcome.keys > 0 then
-			Remotes.event("Toast"):FireClient(player, "key_received", { outcome.keys })
+		-- keys from a chest show in its own pop (ChestReward); only the hit counter's key gets the toast
+		if outcome.hitKeys > 0 then
+			Remotes.event("Toast"):FireClient(player, "key_received", { outcome.hitKeys })
 		end
 		if outcome.hitKeys > 0 then
 			Analytics.event(player, "key_get", outcome.hitKeys, "hits")
 		end
 		for _, reward in outcome.rewards do
+			-- [владелец 13.11: «награду с сундука надо сделать понятной, чтобы было видно, что оттуда упало»]
+			chestReward:FireClient(player, {
+				tier = reward.tier,
+				coins = reward.coins,
+				keys = reward.keys,
+				pick = if reward.pick then reward.pick.id else nil,
+			})
 			Analytics.event(player, "wall_chest", reward.tier, tostring(reward.keys > 0))
 			if reward.keys > 0 then
 				Analytics.event(player, "key_get", reward.keys, "wall")
 			end
 			if reward.pick then
-				Remotes.event("Toast"):FireClient(player, "pick_wall_storm")
+				-- the client shows the found pickaxe itself (ChestPop + the level-up burst), no toast
 				Analytics.event(player, "pick_get", 1, "wall", reward.pick.id)
 			end
+		end
+		if outcome.worldTime then
+			RebirthService.hint(player)
+			Remotes.event("WorldTime"):FireClient(player, outcome.worldTime)
 		end
 		Pickaxe.refresh(player)
 		Analytics.mined(
@@ -288,12 +336,32 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 		end
 		return
 	elseif op == "mine.reset" or op == "reset" then
+		-- [владелец 13.11: «пусть сбросить круг сбрасывает всё»] a fresh player: every field back to the defaults
+		-- (pickaxes, collection, Trophies, rank, family, keys, rewards, counters); only the settings and the join
+		-- dates stay. The window asks twice before it sends this.
 		ProfileService.Mutate(player, function(profile)
-			profile.circle = Circle.new()
-			profile.coins = 0
+			local keep = {
+				settings = profile.settings,
+				firstJoin = profile.firstJoin,
+				lastJoin = profile.lastJoin,
+				joins = profile.joins,
+			}
+			local fresh = ProfileDefaults.new(os.time())
+			for key in profile do
+				profile[key] = nil
+			end
+			for key, value in fresh do
+				profile[key] = value
+			end
+			for key, value in keep do
+				profile[key] = value
+			end
 		end)
-		MineService.reset(s, 0, st.width)
+		MineService.reset(s, 0, Config.mine.startWidth)
 		refill(player, s)
+		ProfileService.Replicate(player, true)
+		Pickaxe.refresh(player)
+		RebirthService.hint(player)
 		return
 	elseif op == "mine.charge" then
 		s.charge = mine.ultCharge
@@ -373,6 +441,34 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 		State.removeRange(st, a, b, front, front + c, out)
 	elseif op == "mine.layers" and type(a) == "number" and a % 1 == 0 and a >= 1 and a <= 5000 then
 		State.removeLayers(st, front, front + a, out)
+	elseif op == "mine.qaChest" and RunService:IsStudio() then
+		-- QA (Studio only): a chest of tier `a` (1..4, stage `b`) on the block QAHit would hit first (front layer,
+		-- centre first), so a test can hit it by hand
+		local radius = (st.width - 1) // 2
+		local best, score = nil, math.huge
+		for x = -radius, radius do
+			for y = 0, st.height - 1 do
+				local cost = math.abs(x) * 3 + math.abs(y - 1)
+				if State.isSolid(st, x, y, st.front) and cost < score then
+					best, score = { x = x, y = y }, cost
+				end
+			end
+		end
+		if best then
+			st.chests = st.chests or {}
+			local key = State.cellKey(best.x, best.y, st.front)
+			st.chests[key] = {
+				x = best.x,
+				y = best.y,
+				d = st.front,
+				tier = math.clamp(tonumber(a) or 2, 1, 4),
+				stage = if type(b) == "string" then b else nil,
+				kind = "chest",
+			}
+			st.damage[key] = nil
+			MineService.window(s)
+		end
+		return
 	elseif op == "mine.toPlate" then
 		local barrier = State.barrier(st)
 		if barrier <= mine.maxDepth then

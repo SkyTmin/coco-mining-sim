@@ -6,6 +6,7 @@ local Shared = game:GetService("ReplicatedStorage").Shared
 local Config = require(Shared.Config)
 local Worlds = require(Shared.Mine.Worlds)
 local Wave = require(Shared.Mine.UltWave)
+local Quality = require(script.Parent.Parent.Fx.Quality)
 local BlockArt = require(script.Parent.BlockArt)
 
 local S = Config.mine.blockSize
@@ -357,10 +358,35 @@ function Tunnel.atmosphere(
 				t.atmosphere.Density = t.density
 			end
 		end
+		for _, lamp in t.lamps do
+			if lamp.light then
+				lamp.light.Enabled = false
+			end
+		end
 		t.active, t.ultimate = false, false
 		t.background.Transparency = 1
 		t.mass.Transparency = 0
 		return
+	end
+	local budget = Quality.budget()
+	for i, lamp in t.lamps do
+		if i <= budget.lamps then
+			if not lamp.light then
+				local light = Instance.new("PointLight")
+				light.Shadows, light.Range, light.Brightness, light.Parent =
+					false,
+					Config.fx.qualityRuntime.lampRange,
+					Config.fx.qualityRuntime.lampBrightness,
+					lamp.part
+				lamp.light = light
+			end
+			lamp.light.Enabled = true
+			lamp.light.Color = if t.fever
+				then Color3.fromHex(Config.events.visual.gold)
+				else t.lampColor
+		elseif lamp.light then
+			lamp.light.Enabled = false
+		end
 	end
 	local world = Worlds.of(front)
 	decorations(t, world)
@@ -422,7 +448,11 @@ function Tunnel.atmosphere(
 			end
 		end
 		for _, lamp in t.lamps do
-			paint(lamp.part, "Color", t.lampColor)
+			paint(
+				lamp.part,
+				"Color",
+				if t.fever then Color3.fromHex(Config.events.visual.gold) else t.lampColor
+			)
 		end
 	end
 	Lighting.Ambient = Color3.fromRGB(118, 112, 109)
@@ -447,6 +477,19 @@ function Tunnel.atmosphere(
 		if t.atmosphere then
 			t.atmosphere.Parent = Lighting
 			t.atmosphere.Density = 0
+		end
+	end
+end
+
+function Tunnel.fever(t: any, active: boolean)
+	if t.fever == active then
+		return
+	end
+	t.fever = active
+	for _, lamp in t.lamps do
+		lamp.part.Color = if active then Color3.fromHex(Config.events.visual.gold) else t.lampColor
+		if lamp.light then
+			lamp.light.Color = lamp.part.Color
 		end
 	end
 end

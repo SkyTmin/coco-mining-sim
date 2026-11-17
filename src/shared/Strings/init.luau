@@ -14,6 +14,7 @@ for _, part in
 		script.Progress,
 		script.Families,
 		script.Menu,
+		script.Rebirth,
 	}
 do
 	for key, entry in require(part) :: { [string]: Entry } do

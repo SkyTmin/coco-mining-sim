@@ -42,23 +42,43 @@ Test.describe("Wall chests", function()
 					mean += world.orePrices[i] * weight
 				end
 				for tier, cfg in Config.chests.wall.tiers do
-					local reward =
-						Chests.reward(p, { d = depth, tier = tier }, false, 17, Family.effects(p))
+					local reward = Chests.reward(
+						p,
+						{ d = depth, tier = tier },
+						false,
+						17,
+						Family.effects(p),
+						Family.effects(p).coins
+					)
 					expect(reward.coins).toBe(math.floor(mean * cfg.blocks))
 					expect(reward.keys).toBe(0)
 				end
 			end
 			p.circle.cards.keys, p.wallChestKeyCounter = 10, 19
-			expect(Chests.reward(p, { d = 500, tier = 1 }, true, 17, Family.effects(p)).keys).toBe(
-				1
-			)
+			expect(
+				Chests.reward(
+					p,
+					{ d = 500, tier = 1 },
+					true,
+					17,
+					Family.effects(p),
+					Family.effects(p).coins
+				).keys
+			).toBe(1)
 			p.circle.cards.coins = 25
-			local reward = Chests.reward(p, { d = 0, tier = 1 }, false, 17, Family.effects(p))
+			local reward = Chests.reward(
+				p,
+				{ d = 0, tier = 1 },
+				false,
+				17,
+				Family.effects(p),
+				Family.effects(p).coins
+			)
 			expect(reward.coins).toBe(2400)
 		end
 	)
 	Test.it(
-		"takes exactly three direct hits at any strength and persists staged chests across reloads",
+		"takes exactly two direct pickaxe hits at any strength and persists staged chests across reloads",
 		function()
 			for _, strength in { 0.1, 1, 1000000 } do
 				local st = State.new(1204, 5, 3)
@@ -71,10 +91,10 @@ Test.describe("Wall chests", function()
 				)
 				local pick =
 					{ strength = strength, shape = "single", ultLayers = 10, chestFrequency = 1 }
-				for i = 1, 3 do
+				for i = 1, 2 do
 					local res = assert(Resolve.hit(st, pick, chest.x, chest.y, chest.d))
-					expect(#res.finds).toBe(if i == 3 then 1 else 0)
-					expect(State.isSolid(st, chest.x, chest.y, chest.d)).toBe(i < 3)
+					expect(#res.finds).toBe(if i == 2 then 1 else 0)
+					expect(State.isSolid(st, chest.x, chest.y, chest.d)).toBe(i < 2)
 				end
 			end
 		end
@@ -86,19 +106,30 @@ Test.describe("Wall chests", function()
 			expect(Chests.stage(st, p, 224)).toBe(false)
 			assert(Chests.stage(st, p, 225))
 			local key = next(st.chests)
-			local reward = Chests.reward(p, st.chests[key], true, 9, Family.effects(p))
+			local reward = Chests.reward(
+				p,
+				st.chests[key],
+				true,
+				9,
+				Family.effects(p),
+				Family.effects(p).coins
+			)
 			expect(reward.pick.id).toBe("storm_common")
 			expect(p.family).toBe("storm")
 			st.chests = {}
 			expect(Chests.stage(st, p, 899)).toBe(false)
 			assert(Chests.stage(st, p, 900))
 			local _, keyChest = next(st.chests)
-			expect(Chests.reward(p, keyChest, false, 9, Family.effects(p)).keys).toBe(0)
+			expect(
+				Chests.reward(p, keyChest, false, 9, Family.effects(p), Family.effects(p).coins).keys
+			).toBe(0)
 			expect(p.staged.firstKey).toBe(nil)
 			st.chests = {}
 			assert(Chests.stage(st, p, 901))
 			local _, retry = next(st.chests)
-			expect(Chests.reward(p, retry, true, 9, Family.effects(p)).keys).toBe(1)
+			expect(
+				Chests.reward(p, retry, true, 9, Family.effects(p), Family.effects(p).coins).keys
+			).toBe(1)
 			expect(p.staged.firstKey).toBe(true)
 		end
 	)

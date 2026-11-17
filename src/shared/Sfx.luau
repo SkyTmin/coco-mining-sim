@@ -23,10 +23,18 @@ function Sfx.preload()
 	bus.Name, bus.Volume, bus.Parent = "MineSfx", rules.defaultSfx, SoundService
 	group = bus
 	task.spawn(function()
-		local sound = Instance.new("Sound")
-		sound.SoundId = id
-		pcall(ContentProvider.PreloadAsync, ContentProvider, { sound })
-		sound:Destroy()
+		local sounds = {}
+		for _, asset in { id, config.eventAtlasId } do
+			if asset and asset ~= "" then
+				local sound = Instance.new("Sound")
+				sound.SoundId = asset
+				table.insert(sounds, sound)
+			end
+		end
+		pcall(ContentProvider.PreloadAsync, ContentProvider, sounds)
+		for _, sound in sounds do
+			sound:Destroy()
+		end
 	end)
 end
 
@@ -37,7 +45,15 @@ function Sfx.level(volume: number)
 end
 
 function Sfx.play(name: string, gain: number, pitch: number?): Sound?
-	local id, segments = config.atlasId, config.clips[name]
+	local id = config.atlasId
+	if config.eventFallback and config.eventFallback[name] then
+		if config.eventAtlasId and config.eventAtlasId ~= "" then
+			id = config.eventAtlasId
+		else
+			name = config.eventFallback[name]
+		end
+	end
+	local segments = config.clips[name]
 	local bus = group
 	if not id or not bus or not segments or gain <= 0 or bus.Volume <= 0 then
 		return nil

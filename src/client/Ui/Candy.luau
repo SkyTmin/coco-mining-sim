@@ -4,6 +4,7 @@ local ContextActionService = game:GetService("ContextActionService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
+local Gamepad = require(script.Parent.Parent.Gamepad)
 
 local Candy = {}
 Candy.ink = Color3.fromHex("1E2140")
@@ -20,6 +21,8 @@ Candy.font = Font.fromEnum(Enum.Font.GothamBlack)
 local WIDTH = 667
 local BORDER, CORNER, SHADOW = WIDTH * 0.0055, WIDTH * 0.022, WIDTH * 0.007
 local ATLAS = "rbxassetid://92693559444389"
+-- buttons a gamepad does not land on when a window opens
+local SKIP_SELECT = { Close = true, Backdrop = true }
 local ICON_SIZE, ICON_COLUMNS = 96, 6
 local ICONS = {
 	coin = 0,
@@ -361,6 +364,8 @@ end
 function Candy.pointer(input: InputObject): boolean
 	return input.UserInputType == Enum.UserInputType.Touch
 		or input.UserInputType == Enum.UserInputType.MouseButton1
+		-- the gamepad's A on the selected button counts as a press (hold buttons included)
+		or input.KeyCode == Enum.KeyCode.ButtonA
 end
 
 function Candy.press(button: Control, down: boolean)
@@ -518,6 +523,12 @@ function Candy.show(window: Window, open: boolean)
 		)
 		window.tween = tween
 		tween:Play()
+		-- a gamepad lands on the window's first button; B (below) closes it
+		task.delay(0.05, function()
+			if window.open then
+				Gamepad.select(window.panel, SKIP_SELECT)
+			end
+		end)
 		ContextActionService:BindActionAtPriority(
 			ACTION,
 			function(_, state)
@@ -533,6 +544,7 @@ function Candy.show(window: Window, open: boolean)
 		)
 	else
 		windowOpen = nil
+		Gamepad.release(window.panel)
 		ContextActionService:UnbindAction(ACTION)
 		local tween =
 			TweenService:Create(window.dimmer, TweenInfo.new(0.12), { BackgroundTransparency = 1 })
@@ -562,6 +574,13 @@ function Candy.modal(
 	dimmer.Parent = layer
 	local panel = Candy.panel(layer, "Panel", size, UDim2.fromScale(0.5, 0.55))
 	panel.AnchorPoint, panel.Active = Vector2.new(0.5, 0.5), true
+	-- the gamepad selection stays inside the open window
+	panel.SelectionGroup = true
+	panel.SelectionBehaviorUp, panel.SelectionBehaviorDown =
+		Enum.SelectionBehavior.Stop, Enum.SelectionBehavior.Stop
+	panel.SelectionBehaviorLeft, panel.SelectionBehaviorRight =
+		Enum.SelectionBehavior.Stop, Enum.SelectionBehavior.Stop
+	dimmer.Selectable = false
 	local title, ribbon =
 		Candy.ribbon(panel, "Title", UDim2.fromOffset(154, 36), UDim2.fromOffset(16, -15), color)
 	local close = Candy.button(
@@ -575,6 +594,7 @@ function Candy.modal(
 	)
 	close.box.AnchorPoint = Vector2.new(0.5, 0.5)
 	close.text.Text = "×"
+	Gamepad.tag(close.box, Enum.KeyCode.ButtonB, Vector2.new(0.15, 0.85))
 	-- keep the title ribbon below Roblox's own top-bar buttons [владелец 12.11: на телефоне «Кирки» ушло под меню
 	-- Roblox]: the panel's top (minus the ribbon above it) starts under the inset, its bottom 8 units above the edge
 	local window: Window

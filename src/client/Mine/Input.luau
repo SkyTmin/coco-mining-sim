@@ -10,6 +10,10 @@ function Input.start(callbacks: any)
 	local gesture: Gesture.Gesture?
 	local heldMouse, heldGamepad, rotating = false, false, false
 	local wasActive, wasFirst = false, false
+	-- the right stick looks around [владелец 13.11, Steam Deck]; below the dead zone it is ignored
+	local look = Vector2.zero
+	local DEAD, LOOK_SPEED = 0.18, 520 -- pan units a second at full tilt (Camera.pan: 0.004 rad per unit)
+	local DIG_BUTTONS = { [Enum.KeyCode.ButtonR2] = true, [Enum.KeyCode.ButtonR1] = true }
 	local function stopIfReleased()
 		if not heldMouse and not heldGamepad and not (gesture and gesture.holding) then
 			callbacks.stop()
@@ -79,6 +83,20 @@ function Input.start(callbacks: any)
 		elseif input.KeyCode == Enum.KeyCode.R then
 			callbacks.focus()
 			return
+		elseif input.KeyCode == Enum.KeyCode.ButtonY then
+			callbacks.ult()
+			return
+		elseif input.KeyCode == Enum.KeyCode.ButtonR3 then
+			callbacks.toggle()
+			return
+		elseif input.KeyCode == Enum.KeyCode.ButtonL3 then
+			callbacks.focus()
+			return
+		elseif input.KeyCode == Enum.KeyCode.ButtonX then
+			if callbacks.menu then
+				callbacks.menu()
+			end
+			return
 		end
 		if input.UserInputType == Enum.UserInputType.Touch then
 			beginTouch(input, processed)
@@ -89,13 +107,20 @@ function Input.start(callbacks: any)
 		end
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			heldMouse = strike(mousePoint())
-		elseif input.KeyCode == Enum.KeyCode.ButtonR2 then
-			heldGamepad = strike(center())
+		elseif DIG_BUTTONS[input.KeyCode] then
+			-- held even when the first hit finds nothing: the crosshair may reach a block a moment later
+			strike(center())
+			heldGamepad = true
 		elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
 			rotating = true
 		end
 	end)
 	InputService.InputChanged:Connect(function(input)
+		if input.KeyCode == Enum.KeyCode.Thumbstick2 then
+			local p = Vector2.new(input.Position.X, input.Position.Y)
+			look = if p.Magnitude > DEAD then p else Vector2.zero
+			return
+		end
 		if input == touch then
 			moveTouch(input)
 		elseif
@@ -112,16 +137,29 @@ function Input.start(callbacks: any)
 		elseif input.UserInputType == Enum.UserInputType.MouseButton1 and heldMouse then
 			heldMouse = false
 			stopIfReleased()
-		elseif input.KeyCode == Enum.KeyCode.ButtonR2 and heldGamepad then
-			heldGamepad = false
-			stopIfReleased()
+		elseif DIG_BUTTONS[input.KeyCode] and heldGamepad then
+			if
+				not InputService:IsGamepadButtonDown(input.UserInputType, Enum.KeyCode.ButtonR2)
+				and not InputService:IsGamepadButtonDown(input.UserInputType, Enum.KeyCode.ButtonR1)
+			then
+				heldGamepad = false
+				stopIfReleased()
+			end
+		elseif input.KeyCode == Enum.KeyCode.Thumbstick2 then
+			look = Vector2.zero
 		elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
 			rotating = false
 		end
 	end)
 	InputService.WindowFocusReleased:Connect(cancel)
-	RunService.RenderStepped:Connect(function()
+	RunService.RenderStepped:Connect(function(dt)
 		local active, first = callbacks.active(), callbacks.first()
+		if look ~= Vector2.zero and active then
+			-- stick up looks up: the stick's Y is up-positive, the pan's is down-positive
+			local tilt = (look.Magnitude - DEAD) / (1 - DEAD)
+			local dir = look.Unit * tilt * tilt
+			callbacks.pan(Vector2.new(dir.X, -dir.Y) * LOOK_SPEED * dt)
+		end
 		if (wasActive and not active) or (wasFirst and not first) then
 			cancel()
 		end
