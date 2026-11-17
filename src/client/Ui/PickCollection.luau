@@ -3,7 +3,7 @@
 -- Rethought along common collection-screen rules: on a small screen show the list OR the details, not both; give each
 -- item more room rather than showing more items; keep found and missing items together so the whole set is visible;
 -- one clear main action in the details.
---   list    family tabs on top (Гроза · Динамит · Разлом · Мороз · Дерево); the chosen family's four rarities as four
+--   list    tabs on top (Кремнёвка · Гроза · Динамит · Разлом · Мороз); the chosen family's four rarities as four
 --           big cards, ★ to ★★★★ left to right; each card: the pick on its rarity stage, level, copies, the way to the
 --           golden one (three identical picks merge into one golden), «В руке» ribbon, a lock when missing
 --   pick    tap a card: the whole page — the big pick on the left; name, rarity, level, power, what its perk does
@@ -116,8 +116,11 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 	--          «Слить!» on the stage when three copies wait, a gold rim for a golden copy, «✓ В руке» for the held one
 	--   «Кремнёвка», the starter, is not a family: its tab opens its own screen, with its story
 	local list = Candy.frame(page, "PickList", scale(1, 1), offset(0, 0))
-	local tabKeys = table.clone(families)
-	table.insert(tabKeys, "starter")
+	-- [владелец 13.11: «почему кремнёвка в конце? это же бред»] the first pick comes first, the families after it
+	local tabKeys = { "starter" }
+	for _, family in families do
+		table.insert(tabKeys, family)
+	end
 	local tabs = {}
 	local tabBoxes = {}
 	-- the row stops short of the window's close button in the top-right corner
@@ -152,7 +155,7 @@ function Collection.new(ctx: W.Context, page: Frame, showChest: () -> ())
 		end)
 	end
 	-- «Кремнёвка» is the longest name: its tab gets a little more room so every label keeps one size
-	W.row(tabBoxes, UDim.new(0, 0), UDim.new(1, 0), { 1, 1, 1, 1, 1.3 })
+	W.row(tabBoxes, UDim.new(0, 0), UDim.new(1, 0), { 1.3, 1, 1, 1, 1 })
 
 	local CARD_GAP = W.CARD_GAP
 	local chain = Candy.frame(list, "Chain", UDim2.new(1, 0, 1 - W.BODY, -24), scale(0, W.BODY))

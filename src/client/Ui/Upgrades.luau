@@ -129,7 +129,9 @@ function Upgrades.new(
 		W.pill(wallet, "Keys", offset(68, 27), UDim2.new(0, 10, 1, 8), Candy.panelColor, 15)
 	Candy.round(keyPill, 0)
 	Candy.icon(keyPill, "keys", scale(0.38, 0.88), scale(0.06, 0.06))
-	Candy.fit(keyAmount, scale(0.48, 0.84), scale(0.46, 0.08))
+	Candy.fit(keyAmount, scale(0.48, 0.66), scale(0.46, 0.04))
+	-- [владелец 13.11: «что с ключами? они падают вообще?»] a thin bar under the number: hits towards the next key
+	local keyProgress = Candy.bar(keyPill, scale(0.44, 0.16), scale(0.47, 0.72), W.yellow)
 
 	local refresh: (boolean) -> ()
 	local visibleChanged: (boolean) -> ()
@@ -296,6 +298,8 @@ function Upgrades.new(
 		W.tone(familyButton, familyColor)
 		keys = profile.keys
 		keyAmount.Text = Format.short(keys)
+		keyProgress.Size =
+			UDim2.fromScale(math.clamp((profile.keyHits or 0) / Config.chests.keyHits, 0, 1), 1)
 		chestBadge.Visible, chestCount.Text = keys > 0, Format.short(keys)
 		pulseChest()
 

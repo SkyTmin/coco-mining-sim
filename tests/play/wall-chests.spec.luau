@@ -78,7 +78,7 @@ Test.describe("Wall chests", function()
 		end
 	)
 	Test.it(
-		"takes exactly three direct hits at any strength and persists staged chests across reloads",
+		"takes exactly two direct pickaxe hits at any strength and persists staged chests across reloads",
 		function()
 			for _, strength in { 0.1, 1, 1000000 } do
 				local st = State.new(1204, 5, 3)
@@ -91,10 +91,10 @@ Test.describe("Wall chests", function()
 				)
 				local pick =
 					{ strength = strength, shape = "single", ultLayers = 10, chestFrequency = 1 }
-				for i = 1, 3 do
+				for i = 1, 2 do
 					local res = assert(Resolve.hit(st, pick, chest.x, chest.y, chest.d))
-					expect(#res.finds).toBe(if i == 3 then 1 else 0)
-					expect(State.isSolid(st, chest.x, chest.y, chest.d)).toBe(i < 3)
+					expect(#res.finds).toBe(if i == 2 then 1 else 0)
+					expect(State.isSolid(st, chest.x, chest.y, chest.d)).toBe(i < 2)
 				end
 			end
 		end

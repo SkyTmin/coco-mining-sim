@@ -225,6 +225,7 @@ function MiningAction.perform(
 			)
 			coins += reward.coins
 			keys += reward.keys
+			reward.x, reward.y, reward.d = find.x, find.y, find.d
 			table.insert(rewards, reward)
 		end
 	end

@@ -43,6 +43,9 @@ local Footsteps = require(Client.Fx.Footsteps)
 local FamilyFx = require(Client.Fx.FamilyFx)
 local Quality = require(Client.Fx.Quality)
 local EventFx = require(Client.Fx.EventFx)
+local ChestPop = require(Client.Fx.ChestPop)
+local RewardBurst = require(Client.Fx.RewardBurst)
+local MenuWidgets = require(Client.Ui.MenuWidgets)
 
 local Controller = {}
 local mine = Config.mine
@@ -107,6 +110,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local lastPhase = "idle"
 	local hapticsOn = true
 	local familyToast = require(Client.Toast).create(guiParent, translate)
+	local lastHitPosition: Vector3? = nil
 	local function frozen(points: { any }, front: number)
 		frozenCells = {}
 		for _, cell in points do
@@ -149,6 +153,42 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local menu = Upgrades.new(guiParent, player, translate, haptic, hud.wallet, function(master)
 		if rebirthUi then
 			rebirthUi.open(master)
+		end
+	end)
+	-- what fell out of a wall chest pops at the spot the pickaxe hit it; a found pickaxe then gets the big level-up
+	-- burst (the screen dims, it cannot be missed) and the menu keeps its «new» dot until the player looks
+	local chestPop = ChestPop.new(guiParent, translate, hud.wallet)
+	Remotes.event("ChestReward").OnClientEvent:Connect(function(reward)
+		local camera = workspace.CurrentCamera
+		local point: Vector2? = nil
+		if camera and lastHitPosition then
+			local screen, visible = camera:WorldToViewportPoint(lastHitPosition)
+			if visible then
+				point = Vector2.new(screen.X, screen.Y)
+			end
+		end
+		chestPop(reward, point)
+		local id = reward.pick
+		if typeof(id) == "string" and Config.pickaxes[id] then
+			task.delay(2.2, function()
+				local p = profile()
+				local family = Config.pickaxes[id].family
+				RewardBurst.show({
+					icon = "pickaxe",
+					palette = RewardBurst.palettes[family] or RewardBurst.palettes.epic,
+					power = 1,
+					kicker = translate("burst_wall_pick"),
+					title = MenuWidgets.pickName(translate, id),
+					subtitle = translate(
+						if p and p.pickaxe == id
+							then "burst_wall_pick_hint"
+							else "burst_wall_pick_menu"
+					),
+					decorate = function(slot: ImageLabel)
+						MenuWidgets.pickIcon(slot, id)
+					end,
+				})
+			end)
 		end
 	end)
 	FamilyFx.configure(
@@ -331,6 +371,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local expected =
 			{ seq = seq, at = now, position = position, hitPosition = cell.hitPosition }
 		if not ability then
+			lastHitPosition = position
 			local depth = window.front + cell.dRel
 			local ore = Wall.ore(window, cell.x, cell.y, cell.dRel)
 			local plate = ore == Wire.PLATE

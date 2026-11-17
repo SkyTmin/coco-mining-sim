@@ -191,7 +191,7 @@ export const keysAndChests = {
 	keyPerHits: 8000,
 	firstKey: 'Первый ключ — постановочный, из сундука в стене на ~15-й минуте; первый Сундук кирок гарантированно даёт Редкую',
 	pickaxeChest: { odds: { common: 0.60, rare: 0.30, epic: 0.085, legendary: 0.015 }, family: 'семья — поровну из 4', pityEpic: 10, pityLegendary: 60, priceR: [79, 219, 699], dailyLimit: 30 },
-	wallChests: { perLayers: 40, hits: 3, tiers: [
+	wallChests: { perLayers: 40, hits: 2 /* [владелец 13.11: «минимум 2 удара», только киркой] */, tiers: [
 		{ name: 'Деревянный', share: 0.80, blocks: 50, key: 0.005 },
 		{ name: 'Серебряный', share: 0.15, blocks: 200, key: 0.02 },
 		{ name: 'Золотой', share: 0.045, blocks: 1_000, key: 0.08 },

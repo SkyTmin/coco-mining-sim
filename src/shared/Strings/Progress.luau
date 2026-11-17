@@ -172,6 +172,7 @@ return {
 		fr = "Force {1} → {2} · Ultime {3} → {4}",
 	},
 	upgrade_level = { en = "Level {1}", ru = "Ур. {1}", es = "Niv. {1}", fr = "Niv. {1}" },
+	upgrade_level_gain = { en = "+{1} lvl", ru = "+{1} ур.", es = "+{1} niv.", fr = "+{1} niv." },
 	upgrade_morph_at = {
 		en = "Level {1} · {2}",
 		ru = "Ур. {1} · {2}",

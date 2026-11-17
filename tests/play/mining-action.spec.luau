@@ -87,15 +87,24 @@ Test.describe("Authoritative family mining", function()
 			expect(p.coins).toBe(outcome.coins)
 			expect(p.staged.firstKey).toBe(nil)
 			expect(st.chests[State.cellKey(chest.x, chest.y, chest.d)]).toBe(nil)
-			local retry = assert(Chests.place(st, "firstKey"))
+			-- the ult moved the key chest deeper instead of opening it [владелец 13.11]; two pickaxe hits open it
+			local retry = nil
+			for _, placed in st.chests do
+				if placed.stage == "firstKey" then
+					retry = placed
+				end
+			end
+			assert(retry and retry.d > chest.d)
 			local runtime = Perks.new()
 			local reward
-			for i = 1, 3 do
-				reward = Action.perform(
-					st,
-					p,
-					runtime,
-					{ now = i, x = retry.x, y = retry.y, d = retry.d }
+			for i = 1, 2 do
+				reward = assert(
+					Action.perform(
+						st,
+						p,
+						runtime,
+						{ now = i, x = retry.x, y = retry.y, d = retry.d }
+					)
 				)
 			end
 			expect(p.staged.firstKey).toBe(true)

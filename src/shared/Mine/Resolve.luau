@@ -72,7 +72,13 @@ local function markedHP(pick: Pick, x: number, y: number, d: number): number?
 	return nil
 end
 
-local function tally(st: State, res: HitResult, out: { Range }, pick: Pick?)
+local function tally(
+	st: State,
+	res: HitResult,
+	out: { Range },
+	pick: Pick?,
+	opened: { [number]: boolean }?
+)
 	MineState.compact(st, out)
 	local windowEnd = st.front + mine.window
 	for _, run in out do
@@ -98,7 +104,7 @@ local function tally(st: State, res: HitResult, out: { Range }, pick: Pick?)
 		res.blocks += run.b - run.a
 	end
 	if pick and pick.chestFrequency then
-		WallChests.tally(st, out, res, pick.chestFrequency)
+		WallChests.tally(st, out, res, pick.chestFrequency, opened)
 	end
 end
 
@@ -201,11 +207,16 @@ function Resolve.hit(
 	local overflow: { { x: number, y: number, amount: number } }? = if strike and strike.cracks
 		then {}
 		else nil
+	-- [владелец 13.11] a chest opens only from a pickaxe hit aimed at it, never as a neighbour of a wide hit
+	local opened: { [number]: boolean } = {}
 	for _, cell in shape do
 		local column, row = cell.x, cell.y
-		if MineState.isSolid(st, column, row, d) then
-			local chest = pick.chestFrequency
-				and WallChests.at(st, column, row, d, pick.chestFrequency)
+		local chest = pick.chestFrequency and WallChests.at(st, column, row, d, pick.chestFrequency)
+		local aimed = column == x and row == y
+		if chest and aimed then
+			opened[MineState.cellKey(column, row, d)] = true
+		end
+		if MineState.isSolid(st, column, row, d) and not (chest and not aimed) then
 			local special = markedHP(pick, column, row, d)
 			local amount = if chest or special then 1 else if pick.brittle then hp else strength
 			local excess = damageCell(
@@ -264,7 +275,7 @@ function Resolve.hit(
 			end
 		end
 	end
-	tally(st, res, out, pick)
+	tally(st, res, out, pick, opened)
 	return res
 end
 
@@ -280,8 +291,13 @@ function Resolve.perk(
 		if cell.d >= barrier or not MineState.isExposed(st, cell.x, cell.y, cell.d) then
 			continue
 		end
-		local chest = pick.chestFrequency
-			and WallChests.at(st, cell.x, cell.y, cell.d, pick.chestFrequency)
+		-- skills never touch a chest [владелец 13.11]
+		if
+			pick.chestFrequency and WallChests.at(st, cell.x, cell.y, cell.d, pick.chestFrequency)
+		then
+			continue
+		end
+		local chest = false
 		local hp = Power.blockHP(Worlds.durability(cell.d), pick.strength)
 		local special = markedHP(pick, cell.x, cell.y, cell.d)
 		damageCell(
@@ -303,7 +319,9 @@ function Resolve.bomb(st: State, pick: Pick, cells: { any }): HitResult
 	local res, out = result(), {}
 	local barrier = MineState.barrier(st)
 	for _, cell in cells do
-		if cell.d < barrier then
+		local chest = pick.chestFrequency
+			and WallChests.at(st, cell.x, cell.y, cell.d, pick.chestFrequency)
+		if cell.d < barrier and not chest then
 			MineState.removeCell(st, cell.x, cell.y, cell.d, out)
 		end
 	end

@@ -58,15 +58,16 @@ Test.describe("Bomb and rubble transactions", function()
 		end
 	)
 	Test.it(
-		"an ultimate cannot pay twice for its removed cells, and a blast chest gives no key or x2",
+		"an ultimate cannot pay twice for its removed cells, and a chest in the blast stays shut",
 		function()
 			local st, e, p = mine()
-			local key = S.cellKey(1, 1, st.front + 1)
+			local d0 = st.front + 1
+			local key = S.cellKey(1, 1, d0)
 			st.chests = {
 				[key] = {
 					x = 1,
 					y = 1,
-					d = st.front + 1,
+					d = d0,
 					kind = "chest",
 					tier = 1,
 					stage = "firstKey",
@@ -76,21 +77,15 @@ Test.describe("Bomb and rubble transactions", function()
 				A.perform(st, p, P.new(), { now = 1, marks = e, ability = true, ultLayers = 1 })
 			)
 			assert(out.blast and out.blast.blocks > 0)
+			-- [владелец 13.11] skills never open a chest: no reward, no key, it waits deeper in its lane
 			expect(p.wallChestKeyCounter).toBe(0)
-			expect(#out.rewards).toBe(1)
-			expect(out.rewards[1].keys).toBe(0)
-			local chestFind
+			expect(#out.rewards).toBe(0)
 			for _, find in out.res.finds do
-				if find.kind == "chest" then
-					chestFind = find
-				end
+				assert(find.kind ~= "chest", "a skill opened a chest")
 			end
-			expect(chestFind.source).toBe("bomb")
-			local Chests = Loader.load("src/shared/Play/WallChests.luau")
-			local F = Loader.load("src/shared/Play/Family.luau")
-			expect(out.rewards[1].coins).toBe(
-				Chests.reward(D.new(0), chestFind, false, 17, F.effects(p), 1).coins
-			)
+			-- the blast leaves the chest cell standing: it waits for the pickaxe where it was
+			expect(st.chests[key].stage).toBe("firstKey")
+			expect(S.isSolid(st, 1, 1, d0)).toBe(true)
 			st, e, p = mine()
 			out = assert(
 				A.perform(st, p, P.new(), { now = 1, marks = e, ability = true, ultLayers = 3 })

@@ -89,8 +89,44 @@ function WallChests.at(st: any, x: number, y: number, d: number, multiplier: num
 	return nil
 end
 
--- Remove the overlaid ore from the tally and return exactly one reward per removed chest.
-function WallChests.tally(st: any, out: { State.Range }, res: any, multiplier: number)
+local MAX_OVERRIDES = 8 -- MineCodec carries at most 8 placed chests
+
+-- [владелец 13.11: «сундуки нельзя сломать навыками, только когда по нему бьют киркой»] a chest removed by anything but a
+-- pickaxe hit on it (ult, skills, bombs, piercing) is not opened: it moves deeper in its own lane, to the first solid
+-- block behind the cut, and waits there. Only when there is no room (the Plate, or too many placed chests) does it open.
+local function relocate(st: any, chest: any, from: number, multiplier: number): boolean
+	local barrier = State.barrier(st)
+	local d = State.nextSolid(st, chest.x, chest.y, from)
+	if d >= barrier or not State.isSolid(st, chest.x, chest.y, d) then
+		return false
+	end
+	if WallChests.at(st, chest.x, chest.y, d, multiplier) then
+		return false
+	end
+	local placed = 0
+	for _ in st.chests or {} do
+		placed += 1
+	end
+	if placed >= MAX_OVERRIDES then
+		return false
+	end
+	st.chests = st.chests or {}
+	local key = State.cellKey(chest.x, chest.y, d)
+	st.chests[key] =
+		{ x = chest.x, y = chest.y, d = d, tier = chest.tier, stage = chest.stage, kind = "chest" }
+	st.damage[key] = nil
+	return true
+end
+
+-- Remove the overlaid ore from the tally and return exactly one reward per opened chest. `opened` lists the cells a
+-- pickaxe hit was aimed at; every other removed chest is moved deeper instead (see relocate).
+function WallChests.tally(
+	st: any,
+	out: { State.Range },
+	res: any,
+	multiplier: number,
+	opened: { [number]: boolean }?
+)
 	if not Config.chests then
 		return
 	end
@@ -109,9 +145,11 @@ function WallChests.tally(st: any, out: { State.Range }, res: any, multiplier: n
 			local histKey = Worlds.of(chest.d).index * 64 + ore
 			res.hist[histKey] = (res.hist[histKey] or 0) - 1
 		end
-		table.insert(res.finds, chest)
 		if override then
 			st.chests[key] = nil
+		end
+		if (opened and opened[key]) or not relocate(st, chest, run.b, multiplier) then
+			table.insert(res.finds, chest)
 		end
 	end
 	for _, run in out do

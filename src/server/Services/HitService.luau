@@ -25,6 +25,8 @@ local Pickaxe = require(script.Parent.PickaxeService)
 local Analytics = require(script.Parent.Analytics)
 local RebirthService = require(script.Parent.RebirthService)
 local EventService = require(script.Parent.EventService)
+-- created at load so the client's WaitForChild never waits for the first chest
+local chestReward = Remotes.event("ChestReward")
 
 type Session = MineService.Session
 type HitResult = Resolve.HitResult
@@ -241,19 +243,27 @@ local function onIntent(player: Player, packet: any)
 		for _, id in outcome.newCards do
 			Remotes.event("Toast"):FireClient(player, "card_unlocked_" .. id)
 		end
-		if outcome.keys > 0 then
-			Remotes.event("Toast"):FireClient(player, "key_received", { outcome.keys })
+		-- keys from a chest show in its own pop (ChestReward); only the hit counter's key gets the toast
+		if outcome.hitKeys > 0 then
+			Remotes.event("Toast"):FireClient(player, "key_received", { outcome.hitKeys })
 		end
 		if outcome.hitKeys > 0 then
 			Analytics.event(player, "key_get", outcome.hitKeys, "hits")
 		end
 		for _, reward in outcome.rewards do
+			-- [владелец 13.11: «награду с сундука надо сделать понятной, чтобы было видно, что оттуда упало»]
+			chestReward:FireClient(player, {
+				tier = reward.tier,
+				coins = reward.coins,
+				keys = reward.keys,
+				pick = if reward.pick then reward.pick.id else nil,
+			})
 			Analytics.event(player, "wall_chest", reward.tier, tostring(reward.keys > 0))
 			if reward.keys > 0 then
 				Analytics.event(player, "key_get", reward.keys, "wall")
 			end
 			if reward.pick then
-				Remotes.event("Toast"):FireClient(player, "pick_wall_storm")
+				-- the client shows the found pickaxe itself (ChestPop + the level-up burst), no toast
 				Analytics.event(player, "pick_get", 1, "wall", reward.pick.id)
 			end
 		end
@@ -431,6 +441,35 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 		State.removeRange(st, a, b, front, front + c, out)
 	elseif op == "mine.layers" and type(a) == "number" and a % 1 == 0 and a >= 1 and a <= 5000 then
 		State.removeLayers(st, front, front + a, out)
+	elseif op == "mine.qaChest" and RunService:IsStudio() then
+		-- QA (Studio only): a chest of tier `a` (1..4, stage `b`) on the block QAHit would hit first (front layer,
+		-- centre first), so a test can hit it by hand
+		local radius = (st.width - 1) // 2
+		local best, score = nil, math.huge
+		for x = -radius, radius do
+			for y = 0, st.height - 1 do
+				local cost = math.abs(x) * 3 + math.abs(y - 1)
+				if State.isSolid(st, x, y, st.front) and cost < score then
+					best, score = { x = x, y = y }, cost
+				end
+			end
+		end
+		if best then
+			st.chests = st.chests or {}
+			local key = State.cellKey(best.x, best.y, st.front)
+			st.chests[key] = {
+				x = best.x,
+				y = best.y,
+				d = st.front,
+				tier = math.clamp(tonumber(a) or 2, 1, 4),
+				stage = if type(b) == "string" then b else nil,
+				kind = "chest",
+			}
+			st.damage[key] = nil
+			MineService.window(s)
+			print(string.format("[QA] chest tier %d at %d,%d,%d", st.chests[key].tier, best.x, best.y, st.front))
+		end
+		return
 	elseif op == "mine.toPlate" then
 		local barrier = State.barrier(st)
 		if barrier <= mine.maxDepth then
