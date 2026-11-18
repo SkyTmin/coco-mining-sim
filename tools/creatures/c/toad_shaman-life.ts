@@ -15,6 +15,7 @@ const mushroomPatrol:MotionPlan={
     {seconds:.97,at:bog(99,165),anim:'walk'},
     {seconds:1.50,at:bog(124,164),anim:'tech_tongue',side:0},
     {seconds:2.00,at:bog(124,164),anim:'tech_croak',side:0},
+    {seconds:2.00,at:bog(124,164),anim:'tech_leap',side:0},
     {seconds:2.25,at:bog(124,164),anim:'walk'},
     {seconds:.30,at:bog(171,153),anim:'turn'},
     {seconds:.56,at:bog(171,153),anim:'walk'},

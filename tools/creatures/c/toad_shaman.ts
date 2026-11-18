@@ -1,4 +1,9 @@
 import route from './toad_shaman-life';
+import { groundStep, plantedStep } from './toad_shaman-step';
+import { frogTarget, positionStaff, gripOnCrook, frogArm, frogKnee } from './toad_shaman-articulation';
+import { collisionShell, type Shell } from '../bodies/goals';
+import { primitivesOf } from '../rig/collision';
+import type { JointPose } from '../technique';
 import keys from './toad_shaman-keys';
 import { withTechniques } from '../technique';
 import { strideFoot, attachMotion } from '../motion';
@@ -11,6 +16,8 @@ import { animations, props, effects, pose, presentation } from './toad_shaman-ac
 import type { Creature, Variant } from '../types';
 
 export interface ToadPose {
+  referenced?: number;
+  kick?: number;
   throat?: number;
   jaw?: number;
   tongue?: number;
@@ -46,7 +53,7 @@ export function bodyFrame(
   headSide = side,
 ) {
   // Shorten the off-axis reach of the staff arm on profile and rear drawings.
-  if (A.keyRig && side % 16 !== 0) {
+  if (A.keyRig && !A.referenced && side % 16 !== 0) {
     const sideView = Math.min(1, 3 * Math.abs(Math.sin((side * Math.PI) / 16)));
     A = {
       ...A,
@@ -71,7 +78,9 @@ export function bodyFrame(
       A.staffSide = (A.staffSide ?? 0) * 0.45;
     }
   }
-  const lead = Math.max(-0.62, Math.min(0.62, ((((headSide - side + 24) % 16) - 8) * Math.PI) / 8));
+  const reference = A.referenced ?? 0;
+  const goals = A as JointPose;
+  const lead = (1 - reference) * Math.max(-0.62, Math.min(0.62, ((((headSide - side + 24) % 16) - 8) * Math.PI) / 8));
   const r = new Rig(),
     gold = variant === 'gold',
     l = life(anim, t, 5.26),
@@ -127,12 +136,21 @@ export function bodyFrame(
   const B = F.at(-3 + (A.hip ?? 0), 1.2 * stride + (A.lean ?? 0), 32 - drop + 0.85 * breath)
     .pitch(0.04 + 0.14 * l.sleep + 0.08 * l.tired + (A.pitch ?? 0))
     .turn(A.twist ?? 0);
+  const head = () => B.at(11, 0, 9)
+    .turn(0.38 * l.look + lead * 0.7 + (A.neck ?? 0))
+    .pitch(0.18 * l.sleep - 0.1 * l.look + (A.chin ?? 0));
+  if (reference) {
+    const jawPoint = head().p(21, 0, -3.5 - jaw * 2);
+    B.o = vadd(B.o, vsub(frogTarget(goals, F, 'mouth', jawPoint), jawPoint));
+  }
   r.tag = 'torso';
   r.ell(B, [-3, 0, 0], [22, 31, 19], skin);
   r.ell(B, [-6, 0, 6], [21, 34, 19], moss);
   const sockets: Record<string, V3> = {},
     planted: string[] = [];
   const scale = 1.22;
+  const hips = reference ? collisionShell(r) : [];
+  const posedSoles = new Map<number, F3>();
   // The weight is carried on folded hocks. Webs unite each set of long toes.
   for (const s of [-1, 1]) {
     const cycle =
@@ -140,8 +158,10 @@ export function bodyFrame(
         ? strideFoot(t, s < 0 ? 0.5 : 0, 22 / (1.11 * scale))
         : { forward: 0, lift: 0, planted: true };
     const swing = cycle.lift,
-      hip = B.at(-7, s * 24, -5);
-    if (cycle.planted) planted.push(s < 0 ? 'footL' : 'footR');
+      hip = A.kick ? B.at(-7, 0, -5).turn(-1.18 * A.kick).at(0, s * (24 - 6 * A.kick), 0) : B.at(-7, s * 24, -5);
+    const support = reference ? plantedStep(anim, t, s) : undefined;
+    const onFloor = support?.planted ?? (reference && anim === 'tech_leap' ? !(t > 17/24 && t < 27/24) : cycle.planted);
+    if (onFloor) planted.push(s < 0 ? 'footL' : 'footR');
     r.tag = s < 0 ? 'legL' : 'legR';
     r.ell(hip, [-3, 0, 0], [17, 14, 12], skin);
     const heel = F.at(
@@ -149,8 +169,34 @@ export function bodyFrame(
       s * (32 - (A.tuck ?? 0) * 0.4 + (A.spread ?? 0)),
       6 + swing * 5.8 + (A.tuck ?? 0),
     );
-    r.cap(hip.p(5, s * 3, -2), heel.o, 9, 5.1, skin);
-    const sole = heel.at(9, s * 3, -3);
+    const socket = s < 0 ? 'footL' : 'footR';
+    let sole = heel.at(9, s * 3, -3);
+    if (reference) {
+      const kick = A.kick ?? 0;
+      // Both hind webs point down the trailing leg in flight, then open out for the landing.
+      sole = sole.turn(kick * (s < 0 ? -2.8 : 1.4));
+      const toe = sole.p(6 + 6 * reference, s * 10 * reference, -2);
+      const destination = support ? F.p(...support.target) : frogTarget(goals, F, socket, toe);
+      if (anim === 'tech_leap' && t >= 27/24 && t < 29/24) destination[2] += (29 - t*24) * 1.2;
+      const delta = vsub(destination, toe);
+      sole.o = vadd(sole.o, delta);
+      heel.o = vadd(heel.o, delta);
+      const root = hip.p(5, s * 3, -2);
+      // A frog opens the hock in takeoff. The tarsus follows the trailing toes,
+      // while the nearer and farther hind legs form two separate lines in profile.
+      const span = vsub(heel.o, root), length = vlen(span);
+      const thigh = length * .47 * (1-reference) + 31 * vlen(F.f) * reference;
+      const shin = length * .53 * (1-reference) + 33 * vlen(F.f) * reference;
+      if (length > thigh + shin) {
+        const slide = vmul(span, (thigh + shin - length) / length);
+        heel.o = vadd(heel.o, slide); sole.o = vadd(sole.o, slide);
+      }
+      const pole = vlerp(B.v(-0.6, s, -.25), F.v(-1.8, -.1, s * .25), kick);
+      const knee = frogKnee(hips, root, heel.o, thigh, shin, pole);
+      posedSoles.set(s, sole);
+      r.cap(root, knee, 9, 6.5, skin);
+      r.cap(knee, heel.o, 6.5, 5.1, skin);
+    } else r.cap(hip.p(5, s * 3, -2), heel.o, 9, 5.1, skin);
     r.ell(sole, [0, 0, 0], [10.2, 7.1, 3.2], skin);
     const toes: V3[] = [];
     for (const [i, k] of [-1, 0, 1].entries()) {
@@ -160,9 +206,9 @@ export function bodyFrame(
       r.ell(sole, [11 + (i === 1 ? 4 : 0), s * (5.8 + k * 5.8), -1.2], [2.1, 1.7, 1.1], skin);
     }
     r.poly([sole.o, ...toes], skin, -0.1);
-    const socket = s < 0 ? 'footL' : 'footR';
     // In the landing stance the outer toes break the water ahead of the sole.
-    sockets[socket] = anim === 'tech_leap' ? sole.p(12, s * 10, -2) : sole.p(6, 0, -2);
+    sockets[socket] = reference ? sole.p(6 + 6 * reference, s * 10 * reference, -2) :
+      anim === 'tech_leap' ? sole.p(12, s * 10, -2) : sole.p(6, 0, -2);
     sockets[socket + 'Ground'] = [sockets[socket][0], sockets[socket][1], 0];
   }
   r.tag = 'cloak';
@@ -209,9 +255,7 @@ export function bodyFrame(
       r.line(shellFrame.p(1, s * 2.9, -2), shellFrame.p(-1, s * 3.2, 2.5), shell.T[0], 0, 1.2);
     }
   }
-  const H = B.at(11, 0, 9)
-    .turn(0.38 * l.look + lead * 0.7 + (A.neck ?? 0))
-    .pitch(0.18 * l.sleep - 0.1 * l.look + (A.chin ?? 0));
+  const H = head();
   r.tag = 'head';
   r.ell(H, [0, 0, 0], [17, 27, 13.4], skin);
   r.tag = 'neckWattle';
@@ -290,14 +334,14 @@ export function bodyFrame(
     ? Math.min(1, 2.4 * Math.abs(Math.sin(A.staffAngle ?? 0)))
     : 0;
   const arc = swing * swing * (3 - 2 * swing);
-  const S = F.at(
+  let S = F.at(
     7 + (A.staffReach ?? 0) + arc * 30,
     46 + (A.staffSide ?? 0) + arc * 12,
     (A.keyRig ? 0 : 1) + staffLift,
   )
     .roll(-0.37 + (A.staffAngle ?? 0) + 0.026 * Math.sin(l.q - 0.55))
     .pitch(A.staffPitch ?? 0);
-  if (A.keyRig && side % 16 !== 0) {
+  if (A.keyRig && !A.referenced && side % 16 !== 0) {
     const weight = Math.min(1, 6 * Math.abs(Math.sin((side * Math.PI) / 16)));
     // In profile the long arm brings the stem toward the lens. The frog retains its physical grip.
     const angle = 0.38 * weight,
@@ -318,6 +362,13 @@ export function bodyFrame(
   }
   // Brace the root staff in the same strip of ground as the supporting hind foot.
   if (A.setStaff) S.o[1] += A.setStaff * (sockets.footR[1] - S.o[1]);
+  if (reference) {
+    S = positionStaff(goals, F, S, phase);
+    if (anim === 'tech_staff' && t > 3.5/24 && t < 9.5/24) {
+      // Lead the lift in front of the cheek before rotating the shaft overhead.
+      S.o = vadd(S.o, F.v(17 * Math.sin((t * 24 - 3.5) / 6 * Math.PI) ** 2, 0, 0));
+    }
+  }
   r.tag = 'staff';
   const crook = [S.p(0, 0, 0), S.p(2, -2, 28), S.p(-2, -1, 53), S.p(-5, -2, 62), S.p(-6, -9, 71.3)];
   for (let i = 1; i < crook.length; i++)
@@ -360,12 +411,26 @@ export function bodyFrame(
     r.dot(fungus.p(x, y, z), gill.T[2], 0.4, 1, 0.8);
   sockets.staffTip = fungus.p(0, 0, 7.4 + phase);
   sockets.staffFoot = crook[0];
+  if (reference) sockets.staffGround = [S.o[0], S.o[1], 0];
+  const bodyShell: Shell = reference ? [...collisionShell(r), ...primitivesOf(r).ells.filter(e => (/^leg[LR]$/.test(e.label) && Math.min(...e.radii) > 5) || e.label === 'cloak')] : [];
   for (const s of [-1, 1]) {
     r.tag = s < 0 ? 'armL' : 'armR';
     let shoulder = B.p(4, s * 24, 1);
     let elbow = B.p(8, s * 35, -7);
-    const hand = s > 0 ? S.p(1, -2, 31) : F.p(23, s * 24, 8 - drop * 0.22);
-    if (s > 0) {
+    let hand = s > 0 ? S.p(1, -2, 31) : F.p(23, s * 24, 8 - drop * 0.22);
+    if (reference) {
+      const oldUpper = vlen(vsub(elbow, shoulder)), oldLower = vlen(vsub(hand, elbow));
+      const upper = oldUpper + reference * (21 * vlen(F.f) - oldUpper);
+      const lower = oldLower + reference * (26 * vlen(F.f) - oldLower);
+      const name = s > 0 ? 'handR' : 'handL';
+      const requested = frogTarget(goals, F, name, hand);
+      const gripping = s > 0 || anim === 'tech_staff';
+      hand = gripping ? vlerp(hand, gripOnCrook(requested, crook), reference) : requested;
+      const chain = frogArm(bodyShell, B, shoulder, hand, s, upper, lower, gripping && (s > 0 || reference > .999) ? crook : undefined);
+      hand = chain.hand;
+      shoulder = chain.shoulder; elbow = chain.elbow;
+      if (s > 0) sockets.staffHand = hand;
+    } else if (s > 0) {
       sockets.staffHand = hand;
       // The scapula follows a long reach. The elbow folds outboard while the palm
       // stays on the same crook of the staff, including on the overhead sweep.
@@ -386,11 +451,13 @@ export function bodyFrame(
     sockets['shoulder' + arm] = shoulder;
     sockets['elbow' + arm] = elbow;
     sockets['hand' + arm] = hand;
+    if (reference && s < 0) sockets.handLGround = [hand[0], hand[1], 0];
     r.cap(shoulder, elbow, 5.8, 4.6, skin);
     r.cap(elbow, hand, 4.4, 3.1, skin);
     r.ball(hand, 3.5, skin);
     for (const [i, k] of [-1, 1].entries()) {
-      const end =
+      const end = reference ? vadd(hand, (s > 0 || anim === 'tech_staff')
+        ? (anim === 'tech_leap' ? S.v(-2.6, -1.4, k * 2.3) : S.v(2.5, 1.6, k * 2.3)) : F.v(5 + k * 2, s * (i * 2.5), -1.7)) :
         s > 0 ? S.p(3.5, -0.5, 31 + k * 2) : F.p(29 + k * 2, s * (24 + i * 3), 5 - drop * 0.17);
       r.cap(hand, end, 1.6, 1.2, skin);
     }
@@ -438,6 +505,8 @@ export function bodyFrame(
     r.line(solePoint(s, 8), solePoint(s, 11), skin.T[1], 0, 0.7);
   }
   function solePoint(s: number, x: number) {
+    const posed = posedSoles.get(s);
+    if (posed) return posed.p(x, s * (2 + x * .17), 1);
     return F.p(7 + x, s * (31 + x * 0.17), 3);
   }
   r.tag = 'staff';
@@ -473,7 +542,8 @@ export function bodyFrame(
     'wattle',
   );
   scaleFigure(r, sockets, scale, 1.42);
-  const fr = projectFigure(r, 160, [84, 115], sockets, '#202d37');
+  const pad = reference ? 24 : 0;
+  const fr = projectFigure(r, 160 + pad * 2, [84 + pad, 115 + pad], sockets, '#202d37');
   fr.planted = planted;
   fr.dx = A.travel ?? 0;
   fr.dy = (A.approach ?? 0) - jump - l.pop * 11;
@@ -489,6 +559,8 @@ const creature: Creature = {
     away: { seconds: 1.5 },
     back: { seconds: 1.5 },
     ...animations,
+    tech_staff: { ...animations.tech_staff, groundOffset: (t, side) => groundStep('tech_staff', t, side) },
+    tech_leap: { ...animations.tech_leap, groundOffset: (t, side) => groundStep('tech_leap', t, side) },
   },
   props,
   effects,

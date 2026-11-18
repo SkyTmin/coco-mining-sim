@@ -191,7 +191,17 @@ function fillCrown(pen:Pen,x:number,y:number,direction:number,rim:number,height:
   pen.col('#e1eff0');pen.dot(at(.66),y-height,2,2);pen.dot(at(.98),y-height*.48,2,1);
 }
 function leap(f:FxInput) {
-  const hit=27/24,age=f.t-hit;
+  const palmContact=27/24, handAge=f.t-palmContact;
+  if (f.t>=24/24 && handAge<.06) paintSocketTrail(f,'above','handL',24/24,palmContact,{color:'#c9dfac',width:2});
+  if (handAge >= 0 && handAge < .19) {
+    const palm=f.pointAt(palmContact,'handL');
+    paintImpact(f,'above','handL',palm,(pen,x,y)=>{
+      const size=2+handAge*32;
+      ellFill(pen,[x,y],size,size*.42,'#a5d8c3',1-handAge/.19);
+      pen.col('#e5f4cf',1-handAge/.19);pen.line(x,y,x+size,y-1-handAge*14);
+    });
+  }
+  const hit=29/24,age=f.t-hit;
   if(f.t>=24/24 && age<.05) paintSocketTrail(f,'above','footR',24/24,hit,{color:'#b6c69b',width:2,alpha:.85});
   if(age<0) {
     const a=f.pointAt(hit,'footL'),b=f.pointAt(hit,'footR');

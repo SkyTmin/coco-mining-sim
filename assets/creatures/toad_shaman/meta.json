@@ -60,7 +60,31 @@
       28.758051464573377,
       131.92437498562344
     ],
+    "shoulderL": [
+      115.00396609912768,
+      68.59596557159088
+    ],
+    "elbowL": [
+      130.70407212537904,
+      78.61146675463831
+    ],
+    "handL": [
+      125.22487696206215,
+      115.76091420379532
+    ],
     "staffHand": [
+      46.77693197453008,
+      93.74151203283265
+    ],
+    "shoulderR": [
+      53.96100537941816,
+      81.99847957783318
+    ],
+    "elbowR": [
+      41.68308774246935,
+      98.15679968040833
+    ],
+    "handR": [
       46.77693197453008,
       93.74151203283265
     ]
@@ -96,7 +120,7 @@
           "anim": "walk"
         },
         {
-          "seconds": 1.4166666666666667,
+          "seconds": 1.7083333333333333,
           "at": [
             0.3671875,
             0.7259615384615384
@@ -136,6 +160,15 @@
             0.7884615384615384
           ],
           "anim": "tech_croak",
+          "side": 0
+        },
+        {
+          "seconds": 2,
+          "at": [
+            0.484375,
+            0.7884615384615384
+          ],
+          "anim": "tech_leap",
           "side": 0
         },
         {
@@ -308,20 +341,20 @@
     {
       "name": "tech_staff",
       "start": 82,
-      "frames": 34,
-      "end": 122
+      "frames": 41,
+      "end": 129
     },
     {
       "name": "tech_leap",
-      "start": 122,
-      "frames": 43,
-      "end": 171
+      "start": 129,
+      "frames": 48,
+      "end": 183
     },
     {
       "name": "tech_spores",
-      "start": 171,
+      "start": 183,
       "frames": 48,
-      "end": 225
+      "end": 237
     }
   ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
@@ -436,8 +469,8 @@
       "stop": 0.04
     },
     "tech_staff": {
-      "seconds": 1.4166666666666667,
-      "frames": 34,
+      "seconds": 1.7083333333333333,
+      "frames": 41,
       "loop": false,
       "hit": [
         20
@@ -446,12 +479,13 @@
       "stop": 0.06
     },
     "tech_leap": {
-      "seconds": 1.7916666666666667,
-      "frames": 43,
+      "seconds": 2,
+      "frames": 48,
       "loop": false,
       "hit": [
         27,
-        27
+        29,
+        29
       ],
       "shake": 0.22,
       "stop": 0.06
@@ -479,30 +513,34 @@
       "stop": 0.04
     },
     "life": {
-      "seconds": 14.433333333333334,
-      "frames": 346,
+      "seconds": 16.725,
+      "frames": 401,
       "loop": true,
       "hit": [
         98,
-        181,
-        216
+        188,
+        223,
+        272,
+        274,
+        274
       ],
       "shake": 0,
       "stop": 0
     },
     "showreel": {
-      "seconds": 9.375,
-      "frames": 225,
+      "seconds": 9.875,
+      "frames": 237,
       "loop": true,
       "hit": [
         26,
         67,
         102,
-        149,
-        149,
-        195,
-        201,
-        208
+        156,
+        158,
+        158,
+        207,
+        213,
+        220
       ],
       "shake": 0,
       "stop": 0
