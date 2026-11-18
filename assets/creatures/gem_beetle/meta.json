@@ -1,0 +1,141 @@
+{
+  "id": "gem_beetle",
+  "rarity": "uncommon",
+  "theme": "crystal_grotto",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    160,
+    128
+  ],
+  "thickness": 10,
+  "bodySize": 80,
+  "canvas": [
+    180,
+    148
+  ],
+  "anchor": [
+    37,
+    56
+  ],
+  "eye": null,
+  "primitives": 40,
+  "feet": [
+    87,
+    109
+  ],
+  "points": {
+    "foot": [
+      41.96135470519422,
+      68.39942183228247
+    ],
+    "horn": [
+      65.0733910428482,
+      27.218830775465946
+    ],
+    "leftWing": [
+      41.008368633420574,
+      25.122660274748092
+    ],
+    "rightWing": [
+      34.51043577473748,
+      32.46887311600995
+    ]
+  },
+  "layers": [
+    "bg",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "frame",
+    "over"
+  ],
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise bg/loop/(frame % 72).png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "happy": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tech_horn": {
+      "seconds": 1.6,
+      "frames": 38,
+      "loop": false,
+      "hit": [
+        22
+      ],
+      "shake": 0.15,
+      "stop": 0.04
+    },
+    "tech_prism": {
+      "seconds": 1.4,
+      "frames": 34,
+      "loop": false,
+      "hit": [
+        19
+      ],
+      "shake": 0.07,
+      "stop": 0
+    }
+  }
+}
