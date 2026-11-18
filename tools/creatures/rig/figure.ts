@@ -196,5 +196,7 @@ export function projectFigure(
     points,
     eye: image.eye,
     primitives: rig.size,
+    rig,
+    joints: sockets,
   };
 }

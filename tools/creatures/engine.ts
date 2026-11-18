@@ -85,7 +85,7 @@ export function screenPoint(fr: BodyFrame, p: XY, feet: XY): XY {
   ];
 }
 // Inverse-map each destination pixel once; forward mapping leaves holes in a rotated arm.
-function sprite(
+export function sprite(
   dst: Px,
   p: Px,
   fr: BodyFrame,

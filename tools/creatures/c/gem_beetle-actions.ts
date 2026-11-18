@@ -1,7 +1,7 @@
 import { clamp01, easeIn3, easeOut, hash, lerp, sstep } from '../kit/f11-mobkit';
 import { keyPose, type KeyPose } from '../kit/f14-mobkit';
 import { fillPoly, flare, fly } from '../fx/pen';
-import { paintImpact, paintSocketTrail } from '../technique-fx';
+import { paintMaterial, paintImpact, paintSocketTrail } from '../technique-fx';
 import type { Animation, FxInput, XY } from '../types';
 import { fissure, grit, oval, ripple, shard, springBack } from './strike-brush';
 const normal = {
@@ -97,7 +97,7 @@ function horn(f: FxInput) {
       if (!k) continue;
       const x = feet[0] + 23 + j * 7,
         y = feet[1] + 6 + j * 0.72;
-      shard(under, x, y, 4 + k, 2, 0.07, mid, light, k * 0.7);
+      paintMaterial(f, 'under', 'vein-' + j, [x, y], pen => shard(pen, x, y, 4 + k, 2, 0.07, mid, light, k * 0.7), feet[1] + 6 + j * 0.72);
     }
     if (t > 0.12 && t < 0.64)
       grit(under, points.foot[0] - 3, points.foot[1], (t - 0.12) % 0.32, 5, 232, '#97877f');
@@ -180,21 +180,23 @@ export function props(f:FxInput) {
   const x=at[0],y=at[1],ground=Math.min(f.h-2,Math.max(y+8,f.feet[1]+6));
   const age=Math.max(0,f.t-hit), flight=fly(age,46,210,.16),dx=age>0?24*flight.h:0;
   const dy=age>0?-flight.z+Math.max(0,ground-y-2)*sstep(.16,.44,age):0;
-  const p=f.under,fade=1-sstep(1.28,1.53,f.t);
-  const face=(pairs:XY[],color:string)=>{p.col(color,fade);fillPoly(p,pairs.flatMap(([u,v])=>[x+s*u,v]));};
-  oval(p,x+s*7,ground,11,2,'#3f3c51',fade*.8);
-  const baseH=ground-y;
-  face([[3,ground],[11,ground-baseH*.35],[7,y+2],[13,y-3],[17,y+1],[18,ground-baseH*.50],[25,ground-2],[22,ground+1]],'#4a4057');
-  face([[3,ground],[11,ground-baseH*.35],[7,y+2],[11,y+1],[15,ground-baseH*.37],[9,ground-1]],'#746378');
-  face([[15,ground-baseH*.37],[17,y+3],[18,ground-baseH*.50],[24,ground-2]],'#5f5068');
-  for(let i=1;i<4;i++){
-    const row=ground-baseH*i*.19,edge=9+i*.8;
-    p.lineS(x+edge*s,row,x+(edge+4)*s,row-2,'#897584',fade*.81);
-  }
-  const blade=(pairs:XY[],color:string)=>face(pairs.map(([u,v])=>[dx+u,y+dy+v]),color);
-  blade([[-3,-5],[3,-12],[9,-10],[15,-5],[12,-1],[3,2],[0,0]],'#674c68');
-  blade([[-3,-5],[3,-12],[7,-7],[3,-1],[0,0]],'#c09ab1');
-  blade([[3,-12],[9,-10],[15,-5],[7,-7]],'#95819b');
-  p.lineS(x+s*(dx-2),y+dy-5,x+s*(dx+3),y+dy-11,'#e4cbd5',fade);
-  p.lineS(x+s*dx,y+dy,x+s*(dx+4),y+dy+1,'#c0aab7',fade);
+  const fade=1-sstep(1.28,1.53,f.t);
+  oval(f.under,x+s*7,ground,11,2,'#3f3c51',fade*.8);
+  paintMaterial(f,'under','quartz-outcrop',at,p=>{
+    const face=(pairs:XY[],color:string)=>{p.col(color,fade);fillPoly(p,pairs.flatMap(([u,v])=>[x+s*u,v]));};
+    const baseH=ground-y;
+    face([[3,ground],[11,ground-baseH*.35],[7,y+2],[13,y-3],[17,y+1],[18,ground-baseH*.50],[25,ground-2],[22,ground+1]],'#4a4057');
+    face([[3,ground],[11,ground-baseH*.35],[7,y+2],[11,y+1],[15,ground-baseH*.37],[9,ground-1]],'#746378');
+    face([[15,ground-baseH*.37],[17,y+3],[18,ground-baseH*.50],[24,ground-2]],'#5f5068');
+    for(let i=1;i<4;i++){
+      const row=ground-baseH*i*.19,edge=9+i*.8;
+      p.lineS(x+edge*s,row,x+(edge+4)*s,row-2,'#897584',fade*.81);
+    }
+    const blade=(pairs:XY[],color:string)=>face(pairs.map(([u,v])=>[dx+u,y+dy+v]),color);
+    blade([[-3,-5],[3,-12],[9,-10],[15,-5],[12,-1],[3,2],[0,0]],'#674c68');
+    blade([[-3,-5],[3,-12],[7,-7],[3,-1],[0,0]],'#c09ab1');
+    blade([[3,-12],[9,-10],[15,-5],[7,-7]],'#95819b');
+    p.lineS(x+s*(dx-2),y+dy-5,x+s*(dx+3),y+dy-11,'#e4cbd5',fade);
+    p.lineS(x+s*dx,y+dy,x+s*(dx+4),y+dy+1,'#c0aab7',fade);
+  },ground);
 }

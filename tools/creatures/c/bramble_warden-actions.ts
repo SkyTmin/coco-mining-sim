@@ -1,7 +1,7 @@
 import { clamp01, easeIn3, easeOut, hash, lerp, lin, sstep } from '../kit/f11-mobkit';
 import { keyPose, type KeyPose } from '../kit/f14-mobkit';
 import { chunks, dust, fillPoly, fly } from '../fx/pen';
-import { paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
+import { paintMaterial, paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
 import type { Animation, FxInput, XY } from '../types';
 import { fissure, oval, ripple, shard, springBack } from './strike-brush';
 const neutral = {
@@ -204,10 +204,12 @@ function volley(f: FxInput) {
         const ux=Math.cos(angle),uy=Math.sin(angle);
         // The sampled projectile is the cutting tip. Its shaft and light edge trail behind it.
         const mid:XY=[pt[0]-3.8*ux,pt[1]-3.8*uy];
-        f.above.lineS(pt[0]-9*ux,pt[1]-9*uy,...mid,'#4a2834',.93);
-        shard(f.above,...mid,3.8,2.2,angle,'#563044','#f7d689');
-        f.above.col('#fff2c6');f.above.line(pt[0]-2*ux,pt[1]-2*uy,...pt);
-        f.above.col('#aa4956');f.above.dot(mid[0]-ux,mid[1]-uy,2,2);
+        paintMaterial(f,'above','briar-'+wave+'-'+j,pt,(p)=>{
+          p.lineS(pt[0]-9*ux,pt[1]-9*uy,...mid,'#4a2834',.93);
+          shard(p,...mid,3.8,2.2,angle,'#563044','#f7d689');
+          p.col('#fff2c6');p.line(pt[0]-2*ux,pt[1]-2*uy,...pt);
+          p.col('#aa4956');p.dot(mid[0]-ux,mid[1]-uy,2,2);
+        });
       } else {
         const a=-2.02+springBack(age,28)*.48,fade=1-sstep(.17,.39,age);
         shard(f.above,target[0],target[1]-2,6,1.75,a,'#512d39','#efce87',fade);
@@ -239,16 +241,18 @@ export function props(f:FxInput) {
   if(f.anim!=='tech_ram')return;
   const hit=27/24,at=f.pointAt(hit,'snout'),age=f.t-hit;
   const s=at[0]>=f.pointAt(24/24,'snout')[0]?1:-1;
-  const x=at[0],y=at[1],ground=Math.min(f.h-2,Math.max(y+7,f.feet[1]+4)),p=f.under;
+  const x=at[0],y=at[1],ground=Math.min(f.h-2,Math.max(y+7,f.feet[1]+4));
   const bend=age<=0?0:3*sstep(0,.13,age);
   const contour=(pts:XY[])=>pts.flatMap(([dx,dy])=>[x+dx*s,dy]);
   const fade=1-sstep(1.70,1.94,f.t);
-  oval(p,x+6*s,ground,9,2,'#363b32',fade*.85);
-  p.col('#392e2a',fade);
-  fillPoly(p,contour([[-2,ground+1],[2,ground-3],[4,y+7],[0,y+1],[0,y-2],[4,y-3+bend],[8,y+1+bend],[9,y+6],[8,ground-4],[15,ground-3],[19,ground],[10,ground+1],[7,ground+3],[4,ground]]));
-  p.col('#856a48',fade);
-  fillPoly(p,contour([[1,y-2],[4,y-3+bend],[8,y+1+bend],[6,y+4],[3,y+2]]));
-  p.lineS(x+5*s,y+5,x+4*s,ground-3,'#75644b',fade);
-  p.lineS(x+s,y-1,x+4*s,y+1+bend,'#b79a6c',fade);
-  p.lineS(x+8*s,ground-2,x+13*s,ground-2,'#647451',fade);
+  oval(f.under,x+6*s,ground,9,2,'#363b32',fade*.85);
+  paintMaterial(f,'under','peat-root',at,p=>{
+    p.col('#392e2a',fade);
+    fillPoly(p,contour([[-2,ground+1],[2,ground-3],[4,y+7],[0,y+1],[0,y-2],[4,y-3+bend],[8,y+1+bend],[9,y+6],[8,ground-4],[15,ground-3],[19,ground],[10,ground+1],[7,ground+3],[4,ground]]));
+    p.col('#856a48',fade);
+    fillPoly(p,contour([[1,y-2],[4,y-3+bend],[8,y+1+bend],[6,y+4],[3,y+2]]));
+    p.lineS(x+5*s,y+5,x+4*s,ground-3,'#75644b',fade);
+    p.lineS(x+s,y-1,x+4*s,y+1+bend,'#b79a6c',fade);
+    p.lineS(x+8*s,ground-2,x+13*s,ground-2,'#647451',fade);
+  },ground);
 }

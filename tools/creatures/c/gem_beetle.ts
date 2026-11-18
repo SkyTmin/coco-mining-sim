@@ -163,6 +163,12 @@ export function buildFrame(
             0.7,
           );
       const footName = (s < 0 ? 'left' : 'right') + i;
+      if (i === 0) {
+        const sideName = s < 0 ? 'L' : 'R';
+        sockets['shoulder' + sideName] = hip;
+        sockets['elbow' + sideName] = knee;
+        sockets['hand' + sideName] = toe;
+      }
       sockets[footName] = toe;
       if (anim === 'walk' && gait.planted) planted.push(footName);
       let claw = b.p(
@@ -248,6 +254,7 @@ export function buildFrame(
   for (const s of [-1, 1]) {
     armouredHead(r, h, s, legMetal, steel, core, Boolean(l.blink));
     r.tag = s > 0 ? 'eyeR' : 'eyeL';
+    const eyeStart = r.size;
     const eye = h.p(6, s * 9.9, 3);
     r.line(
       eye,
@@ -256,6 +263,7 @@ export function buildFrame(
       l.blink ? 0 : 0.4,
       1.4,
     );
+    r.markEye(eyeStart, s, !l.blink);
     if (s === 1) r.eye = eye;
     r.tag = s > 0 ? 'wingR' : 'wingL';
     const opening = (a.wing ?? 0) + l.happy * 0.78 + l.pop * 0.7;

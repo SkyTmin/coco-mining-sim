@@ -68,8 +68,10 @@ export function armouredHead(
       z * 9,
     );
   r.tag = s > 0 ? 'eyeR' : 'eyeL';
+  const eyeStart = r.size;
   r.ell(h, [5.6, s * 8.5, 2.4], [3.8, 2.25, 2.25], blink ? night : lens);
   if (!blink) r.dot(h.p(6.8, s * 9.8, 3.3), hx('#fff3c3'), 0, 1.2, 1.2);
+  r.markEye(eyeStart, s, !blink);
   // Mandibular notch and clubbed feeler are placed on opposite sides of the central horn.
   const hinge = h.p(8.5, 6.2 * s, -1.5),
     notch = h.p(12.5, 9 * s, -2.5);

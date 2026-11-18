@@ -4,13 +4,15 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { compose, frameCount, hitFrame } from '../engine';
+import { traceMaterials, withoutMaterial } from '../technique-fx';
+import { allowedContact, ARM_EXTENSION, BIRTH_GAP, birthDistance, extension, rigMaterial, visibleMaterial, type ContactException, type ContactIssue } from './contact-audit';
 import { techniqueContacts } from '../technique';
 import { maskOf, maskIoU, type BodyMask } from '../tech-metrics';
 import type { Creature, Scene, Border, XY } from '../types';
 import type { Px } from '../rig/px';
 import { captureRig } from './capture';
 import { baselineOf, worstClip, type ClipAllow, type ClipBaseline } from './clip';
-import { viewBaseline, worstGone, type ViewBaseline } from './visibility';
+import { visibleEyePixels, visibleOwnedPixels, viewBaseline, worstGone, type ViewBaseline } from './visibility';
 
 export interface Painting {
   c: Creature;
@@ -19,13 +21,14 @@ export interface Painting {
 }
 export interface Finding {
   anim: string;
-  kind: 'clip' | 'thin-clip' | 'jump' | 'hidden-contact' | 'weak-impact' | 'end-pop' | 'foot-slide' | 'part-gone';
+  kind: ContactIssue | 'clip' | 'thin-clip' | 'jump' | 'hidden-contact' | 'weak-impact' | 'end-pop' | 'foot-slide' | 'part-gone';
   /** errors fail the gate; warnings are listed for the author and the critic. */
   level: 'error' | 'warn';
   frames: number[];
   note: string;
 }
 export interface StudioConfig {
+  contactAllow?: ContactException[];
   /** Designed overlaps, matched by tag or label substring: e.g. { a: 'tongue', b: 'head' }. */
   clipAllow?: ClipAllow[];
   /** Legacy strings match a tag substring. New rules apply to an exact part and an inclusive interval. */
@@ -89,6 +92,7 @@ export interface FrameSample {
   gone: string | null;
   contrast: number | null;
   hidden: string | null;
+  contactIssues?: { kind: ContactIssue; note: string }[];
 }
 
 let restCache = new WeakMap<Creature, Map<string, ClipBaseline | null>>();
@@ -151,8 +155,82 @@ export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {
     .map((a) => restView(p, a))
     .filter((b): b is ViewBaseline => !!b);
   const out: FrameSample[] = [];
+  const technique = c.techniques?.[anim];
+  const seen = new Set<string>();
+  // Require a visible item for declared landings even if the author forgets the flight helper entirely.
+  const flights = new Map<string, number>();
+  if (technique)
+    for (const contact of techniqueContacts(technique))
+      if (contact.projectile) flights.set(contact.projectile, contact.frame);
   for (let n = 0; n < count; n++) {
-    const { result: f, rig } = captureRig(() => compose(c, s, b, anim, n / 24));
+    const { result: f, rig } = captureRig(() => traceMaterials(seen, () => compose(c, s, b, anim, n / 24)));
+    const contactIssues: NonNullable<FrameSample['contactIssues']> = [];
+    const births = new Map<string, ReturnType<typeof birthDistance>>();
+    const bodyRig = f.body.rig;
+    if (bodyRig) {
+      const groups = bodyRig.prims.map((q) => {
+        const id = rigMaterial(q.t);
+        return id && !seen.has(id) ? id : undefined;
+      });
+      for (const [id, projected] of visibleOwnedPixels(bodyRig, f, groups)) {
+        if (!projected.length) continue;
+        const field: XY[] = projected.map(([x, y]) => [
+          x - f.feet[0] + f.worldFeet[0],
+          y - f.feet[1] + f.worldFeet[1],
+        ]);
+        births.set(id, birthDistance(field, f.points, f.worldFeet[1]));
+      }
+    }
+    const without = new Map<string, Px>();
+    for (const obj of f.techniqueTrace.materials) {
+      const pixels = visibleMaterial(f, obj, () => {
+        if (!without.has(obj.id))
+          without.set(obj.id, withoutMaterial(obj.id, () => compose(c, s, b, anim, n / 24)).picture);
+        return without.get(obj.id)!;
+      });
+      if (!pixels.length) continue;
+      // Visibility determines the first frame. Distance is physical edge-to-socket on the
+      // actual brush mask: another spore can cover the edge touching the mouth at launch.
+      const from = birthDistance(obj.pixels, f.points, obj.groundY ?? f.worldFeet[1]);
+      // One item can have ink on several layers or several separately painted pieces.
+      if (from.distance < (births.get(obj.id)?.distance ?? Infinity)) births.set(obj.id, from);
+    }
+    for (const [id, from] of births) {
+      seen.add(id);
+      if (from.distance > BIRTH_GAP && !allowedContact(cfg.contactAllow, 'from-nowhere', anim, n, id))
+        contactIssues.push({
+          kind: 'from-nowhere',
+          note:
+            id +
+            ' first visible; nearest ' +
+            from.nearest +
+            ' at ' +
+            from.distance.toFixed(1) +
+            ' px (maximum ' +
+            BIRTH_GAP +
+            ')',
+        });
+    }
+    for (const flight of f.techniqueTrace.projectiles) if (!flights.has(flight.id)) flights.set(flight.id, n);
+    if (technique && hits.has(n)) {
+      const eyes = f.body.rig ? visibleEyePixels(f.body.rig, f) : 0;
+      if (eyes < 1 && !allowedContact(cfg.contactAllow, 'face-at-contact', anim, n))
+        contactIssues.push({ kind: 'face-at-contact', note: '0 visible eye pixels at contact' });
+      const arm = technique.reachHand;
+      if (arm && techniqueContacts(technique).some((c) => c.frame === n && !c.projectile)) {
+        const ratio = extension(f.body.joints, arm);
+        if (ratio === null || !(ratio > ARM_EXTENSION))
+          contactIssues.push({
+            kind: 'reach',
+            note:
+              arm +
+              ' wrist: ' +
+              (ratio === null
+                ? 'missing shoulder, elbow or wrist'
+                : (100 * ratio).toFixed(1) + '% extension (must exceed 80%)'),
+          });
+      }
+    }
     let mask: BodyMask | null = null;
     try {
       mask = maskOf(f.layers.body, [-f.camera[0], -f.camera[1]]);
@@ -173,7 +251,15 @@ export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {
     const strikeWindow = [...hits].some((h) => n >= h - 4 && n <= h + 2);
     if (strikeWindow && rig && views.length && !skipped(cfg, 'part-gone', anim, n)) {
       const g = worstGone(rig, views, (tag) => allowsOcclusion(cfg, tag, anim, n));
-      if (g) gone = g.tag + ' ' + Math.round(g.rest * 100) + '% → ' + Math.round(g.share * 100) + '% visible, hidden by ' + g.by;
+      if (g)
+        gone =
+          g.tag +
+          ' ' +
+          Math.round(g.rest * 100) +
+          '% → ' +
+          Math.round(g.share * 100) +
+          '% visible, hidden by ' +
+          g.by;
     }
     // Impact readability: effect pixels that stay visible against the floor under them.
     let contrast: number | null = null,
@@ -192,9 +278,11 @@ export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {
     }
     if (hits.has(n)) {
       const contacts = c.techniques?.[anim];
-      const sockets = contacts && techniqueContacts(contacts)
-        .filter((contact) => contact.frame === n)
-        .map((contact) => contact.projectile ?? contact.socket);
+      const sockets =
+        contacts &&
+        techniqueContacts(contacts)
+          .filter((contact) => contact.frame === n)
+          .map((contact) => contact.projectile ?? contact.socket);
       // A previous impact may still be painted while a second projectile lands.
       for (const birth of f.techniqueTrace.births) {
         if (sockets?.length && !sockets.includes(birth.socket)) continue;
@@ -202,8 +290,11 @@ export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {
           hidden = 'contact at ' + birth.at.map(Math.round).join(',') + ' under a foreground prop';
       }
     }
-    out.push({ n, mask, clip, thin, gone, contrast, hidden });
+    out.push({ n, mask, clip, thin, gone, contrast, hidden, contactIssues });
   }
+  for (const [id, n] of flights)
+    if (!seen.has(id)) out[Math.min(out.length - 1, n)].contactIssues!.push({ kind: 'from-nowhere',
+      note: id + ' has a flight path but no visible material ink in the animation' });
   return out;
 }
 
@@ -216,6 +307,8 @@ export function findings(p: Painting, anim: string, samples: FrameSample[], cfg:
   const spec = p.c.animations[anim];
   const hits = (spec.hits ?? []).map(hitFrame);
   const out: Finding[] = [];
+  for (const sample of samples) for (const issue of sample.contactIssues ?? [])
+    out.push({ anim, kind: issue.kind, level: 'error', frames: [sample.n], note: sample.n + ': ' + issue.note });
   for (const thin of [false, true]) {
     const hit = samples.filter((s) => s.clip && s.thin === thin && !(thin && skipped(cfg, 'thin-clip', anim, s.n)));
     if (!hit.length) continue;

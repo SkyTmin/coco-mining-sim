@@ -1,4 +1,4 @@
-import { paintImpact, paintSocketTrail } from '../technique-fx';
+import { paintMaterial, paintImpact, paintSocketTrail } from '../technique-fx';
 import { trk,TAU,hash,lerp,sstep } from '../kit/f11-mobkit';
 import { flare,fly,fillPoly,type Pen } from '../fx/pen';
 import { oval,ellFill,progress,settle } from '../fx/field';
@@ -112,7 +112,7 @@ function croak(f:FxInput) {
   for(let i=0;i<12;i++) {
     const a=TAU*i/12, x=floor[0]+Math.cos(a)*53,y=floor[1]+Math.sin(a)*15;
     const size=trk(age,[[0,0],[.15+i*.008,.1],[.34+i*.006,.9],[.52,.83],[.83,0]]);
-    mushroom(f.under,x,y,size*(.56+.4*hash(i,454)),green[i%3]);
+    paintMaterial(f,'under','mushroom-'+i,[x,y],pen=>mushroom(pen,x,y,size*(.56+.4*hash(i,454)),green[i%3]),y);
   }
 }
 function tongue(f:FxInput) {
@@ -250,8 +250,10 @@ function spores(f:FxInput) {
       const y=lerp(source[1],ground-4,fall)+Math.sin(a)*spread*.22;
       const r=2+6*Math.sin(Math.PI*u)*(.5+hash(i,66));
       ellFill(f.under,[x,ground],r+3,r*.38,green[2],alpha*.53);
-      ellFill(f.above,[x,y],r+1,r*.7,green[(i+index)%3+1],alpha*.53);
-      if((Math.floor(u*7)+i)%4<2) { f.above.col(green[0],alpha);f.above.dot(x-1,y-r*.65,1+i%2,1); }
+      paintMaterial(f,'above','spore-'+index+'-'+i,[x,y],(pen,x,y)=>{
+        ellFill(pen,[x,y],r+1,r*.7,green[(i+index)%3+1],alpha*.53);
+        if((Math.floor(u*7)+i)%4<2) { pen.col(green[0],alpha);pen.dot(x-1,y-r*.65,1+i%2,1); }
+      },ground);
     }
   }
 }

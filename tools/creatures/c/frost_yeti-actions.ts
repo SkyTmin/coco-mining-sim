@@ -1,4 +1,4 @@
-import { paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
+import { paintMaterial, paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
 import { trk,lerp,TAU,hash } from '../kit/f11-mobkit';
 import { disc,fillPoly,starBranches,crackOf,drawCrack,flare } from '../fx/pen';
 import { oval,ellFill,progress,scatter,shard,settle } from '../fx/field';
@@ -66,13 +66,15 @@ function snowProp(f:FxInput,source:XY,front:XY,landing:XY) {
   if(f.t>2/24 && f.t<land) {
     const underY=lerp(source[1]+r,landing[1],progress(f.t,hit,land));
     ellFill(f.under,[x,underY],r+1,2.5,'#384861',.73);
-    f.above.col('#516d86');disc(f.above,x,y,r);
-    f.above.col('#a8cbd6');disc(f.above,x,y-1,r*.87);
-    f.above.col('#deedf0');disc(f.above,x-1,y-2,r*.65);
+    paintMaterial(f,'above','snowball',[x,y],pen=>{
+    pen.col('#516d86');disc(pen,x,y,r);
+    pen.col('#a8cbd6');disc(pen,x,y-1,r*.87);
+    pen.col('#deedf0');disc(pen,x-1,y-2,r*.65);
     for(let i=0;i<4;i++) {
       const a=roll*6+i*2.1+Math.max(age,0)*12;
-      f.above.col(i%2?'#859fae':'#f6f6ed');f.above.dot(x+r*.55*Math.cos(a),y+r*.55*Math.sin(a),2,1);
+      pen.col(i%2?'#859fae':'#f6f6ed');pen.dot(x+r*.55*Math.cos(a),y+r*.55*Math.sin(a),2,1);
     }
+    });
   }
  }
 // A dark cobalt edge stays legible against both the fur and the pale sky.
@@ -93,7 +95,7 @@ export function props(f:FxInput) {
     for(let i=0;i<5;i++) {
       const spread=(i-2)*(1-u);
       const x=lerp(belt[0]+i-2,tip[0],u),y=lerp(belt[1],tip[1],u)-Math.sin(Math.PI*u)*(10+i);
-      iceLance(f.above,[x+spread,y],spread*1.6,8+i%2,2.1);
+      paintMaterial(f,'above','icicle-'+i,[x+spread,y],(p,x,y)=>iceLance(p,[x,y],spread*1.6,8+i%2,2.1));
     }
   }
 }
@@ -154,14 +156,14 @@ function icicles(f:FxInput) {
       const x=end[0],y=end[1];
       const vy=dest[1]-impact[1]-4*arc*(1-2*v), speed=Math.hypot(side,vy)||1;
       ellFill(f.under,[x,dest[1]],3,1,'#293b50',.58);
-      iceLance(f.above,[x,y],12*side/speed,12*vy/speed,2.8);
+      paintMaterial(f,'above',id,[x,y],(p,x,y)=>iceLance(p,[x,y],12*side/speed,12*vy/speed,2.8));
     } else if(born<.32) {
       const fade=1-progress(born,.13,.31);
       paintImpact(f,'under',id,dest,(p,x,y)=>{
         ellFill(p,[x,y],2.5,1.2,'#3d526a',fade);p.col('#deeef0',fade);p.line(x,y,x+2+born*12,y+born*4);
       });
       const sunk=progress(born,.07,.28);
-      iceLance(f.above,dest,direction*3,10-6*sunk,2.3,fade);
+      paintMaterial(f,'above',id,dest,(p,x,y)=>iceLance(p,[x,y],direction*3,10-6*sunk,2.3,fade),dest[1]);
       if(born>.045)scatter(f,dest,born-.045,888+i,4,['#81e2ea','#467aab','#efffff'],.20);
     }
   }

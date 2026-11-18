@@ -327,6 +327,10 @@ export function craterTitanFrame(
       hand[2] -= contact[2] * k.knuckle;
     }
     const el = ik(sh, hand, 28, 27, F.v(-0.8, d * 0.75, -0.15));
+    const sideName = d < 0 ? 'L' : 'R';
+    loc['shoulder' + sideName] = sh;
+    loc['elbow' + sideName] = el;
+    loc['hand' + sideName] = hand;
     const armRig = lead ? limb : r;
     armRig.tag = lead ? 'armR' : 'armL';
     armRig.cap(sh, el, 12, 8.2, dark).cap(el, hand, 9, 6.5, rock);
@@ -445,12 +449,15 @@ export function craterTitanFrame(
   for (const d of [-1, 1]) {
     const eye = muzzle.p(12, d * 8.5, 2.5);
     r.ell(muzzle, [9, d * 7, 2], [3.8, 5.3, 2.9], glass);
+    const eyeStart = r.size;
     const blinking = clock > 2.23 && clock < 2.36;
     r.cap(muzzle.p(12.4, d * 4.0, 2), eye, 1.3, blinking ? 0.35 : 2, {
       T: [magma, magma, white, white],
       glow: 0.95,
     });
+    r.markEye(eyeStart, d, !blinking);
     r.cap(muzzle.p(5, d * 4, 4), muzzle.p(7, d * 10, 5), 2.1, 1.5, plane);
+    const pupilStart = r.size;
     r.dot(muzzle.p(12.7, d * 7.3, 2.5), hx('#422a2c'), 0, 1, 1.5);
     r.dot(muzzle.p(13.5, d * 8.1, 3.1), white, 0.73, 1, 2.4);
     r.cap(
@@ -460,6 +467,7 @@ export function craterTitanFrame(
       0.7,
       pocket,
     );
+    r.markEye(pupilStart, d, !blinking);
     r.spike(
       muzzle.p(6, d * 10.2, -2.5),
       muzzle.v(0.5, d * 0.5, -1),

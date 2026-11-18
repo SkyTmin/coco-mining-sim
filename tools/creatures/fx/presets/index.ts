@@ -4,7 +4,7 @@ import { hash, TAU } from '../../kit/f11-mobkit';
 import { flightDelays } from '../../moves';
 import type { CardMove, CreatureCard } from '../../bodies/card-data';
 import { techniqueContacts, type Technique, type TechniqueBook } from '../../technique';
-import { paintImpact, paintSocketTrail, projectileAt } from '../../technique-fx';
+import { paintMaterial, paintImpact, paintSocketTrail, projectileAt } from '../../technique-fx';
 import type { Creature, FxInput, XY } from '../../types';
 import { ellFill, oval, progress, settle } from '../field';
 import { effectPresets, type PresetId } from './materials';
@@ -101,11 +101,13 @@ function missiles(
         if (move.template === 'pillars') {
           const phase = Math.min(1, (f.t - release) * 15);
           f.under.lineS(head[0], head[1], ...at, material.edge, 0.84 * phase);
-          material.mark(f.under, at, 2, angle, 0.88);
+          paintMaterial(f, 'under', id, at, pen => material.mark(pen, at, 2, angle, 0.88), ground[1]);
         } else {
-          if (move.template === 'summon')
-            oval(f.above, at, 4, 4, material.light, 0.66, angle - 1.3, angle + 1.8);
-          material.fragment(f.above, at, move.template === 'volley' ? 4.2 : 3.5, angle, 1);
+          paintMaterial(f, 'above', id, at, pen => {
+            if (move.template === 'summon')
+              oval(pen, at, 4, 4, material.light, 0.66, angle - 1.3, angle + 1.8);
+            material.fragment(pen, at, move.template === 'volley' ? 4.2 : 3.5, angle, 1);
+          });
           ellFill(f.under, [at[0], end[1]], 3, 1, material.edge, 0.46);
         }
       }
@@ -247,14 +249,12 @@ export function buildEffects(
         const point = f.pointAt(hit, stage.spec.weapon);
         const apart = progress(age, 0, 0.22) * 7;
         const roll = wave ? (1 - incoming) * 8 * stage.move.parameters.side : 0;
-        for (const side of [-1, 1])
-          material.fragment(
-            f.under,
-            [point[0] + roll + side * (2 + apart), point[1] + 1 + apart * 0.3],
-            4 - side,
-            side * 0.7,
-            fade,
-          );
+        const ground = f.pointAt(hit, stage.spec.weapon + 'Ground');
+        for (const side of [-1, 1]) {
+          const at: XY = [point[0] + roll + side * (2 + apart), point[1] + 1 + apart * 0.3];
+          paintMaterial(f, 'under', 'clod-' + wave + '-' + side, at,
+            pen => material.fragment(pen, at, 4 - side, side * 0.7, fade), ground[1]);
+        }
       }
     },
     effects(f) {

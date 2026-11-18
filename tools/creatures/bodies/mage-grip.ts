@@ -149,6 +149,8 @@ export function poseMageGrip(rig: Rig, points: Points, basis: F3, pose: JointPos
         q.b = joint.hand;
       } else transformPrimitive(q, wristMap);
     }
+    points['shoulder' + name] = joint.shoulder;
+    points['elbow' + name] = joint.elbow;
     points['hand' + name] = points['fore' + name] = points['arm' + name] = joint.hand;
     if (side > 0) points.staffHand = joint.hand;
   }

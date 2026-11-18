@@ -1,7 +1,7 @@
 import { trk,TAU,lerp,hash } from '../kit/f11-mobkit';
 import { fillPoly,star,flare } from '../fx/pen';
 import { oval,progress,scatter,shard,settle } from '../fx/field';
-import { paintImpact,paintSocketTrail,projectileAt } from '../technique-fx';
+import { paintMaterial, paintImpact,paintSocketTrail,projectileAt } from '../technique-fx';
 import type { Animation,BodyFrame,FxInput,XY } from '../types';
 import type { SilkPose } from './silk_dragon';
 
@@ -220,8 +220,10 @@ function kites(f:FxInput) {
     const pos=projectileAt(f,id,socket,launch,impact,pt,12+i*6);
     if(age<0){
       const u=progress(f.t,launch,impact),a=-.65+u*1.97,dx=5.8*Math.cos(a)*dir,dy=5.8*Math.sin(a);
-      shard(f.above,...pos,dx,dy,4.6,paper[i],paper[(i+1)%4]);
-      f.above.col(wind);f.above.line(pos[0]-dx,pos[1]-dy,pos[0]-dx-4*dir,pos[1]-dy+2);
+      paintMaterial(f,'above',id,pos,(p,x,y)=>{
+        shard(p,x,y,dx,dy,4.6,paper[i],paper[(i+1)%4]);
+        p.col(wind);p.line(x-dx,y-dy,x-dx-4*dir,y-dy+2);
+      });
     } else {
       const fade=1-progress(f.t,impact,Math.min(1.76,impact+.55));
       if(fade>0)paintImpact(f,'under',id,pt,(p,x,y)=>{

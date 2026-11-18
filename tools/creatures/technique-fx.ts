@@ -4,7 +4,18 @@ import { Pen } from './fx/pen';
 import type { FxInput, XY } from './types';
 
 type Layer = 'above' | 'under';
+export interface MaterialInk {
+  id: string;
+  layer: Layer;
+  at: XY;
+  /** Local floor at this depth, when the painter has an independent ground projection. */
+  groundY?: number;
+  pixels: XY[];
+  /** Same-layer RGBA immediately after this object was drawn, one value per pixel. */
+  colors: number[];
+}
 export interface TechniqueTrace {
+  materials: MaterialInk[];
   births: { socket: string; at: XY; pixels: XY[] }[];
   trails: { socket: string; from: number; to: number; pixels: XY[]; path: XY[] }[];
   trailPixels: XY[];
@@ -20,7 +31,7 @@ export interface TechniqueTrace {
   }[];
 }
 export function emptyTechniqueTrace(): TechniqueTrace {
-  return { births: [], trails: [], trailPixels: [], trailPath: [], projectiles: [] };
+  return { materials: [], births: [], trails: [], trailPixels: [], trailPath: [], projectiles: [] };
 }
 
 const scratch = new Map<string, Canvas>();
@@ -48,6 +59,59 @@ function isolatedPen(f: FxInput, layer: Layer, draw: (pen: Pen) => void): XY[] {
       pixels.push([p % f.w, Math.floor(p / f.w)]);
     }
   return pixels;
+}
+// Keep the normal painter (and its compositing/order) untouched. The workshop records
+// only still-unseen items, on the actual FX canvas, including held props before release.
+let observed: ReadonlySet<string> | undefined;
+export function traceMaterials<T>(alreadySeen: ReadonlySet<string>, draw: () => T): T {
+  const outer = observed;
+  observed = alreadySeen;
+  try { return draw(); } finally { observed = outer; }
+}
+let mutedMaterial: string | undefined;
+/** Draw the complete painting without this item, retaining all normal pen state for subsequent strokes. */
+export function withoutMaterial<T>(id: string, draw: () => T): T {
+  const outer = mutedMaterial;
+  mutedMaterial = id;
+  try { return draw(); } finally { mutedMaterial = outer; }
+}
+export function paintMaterial(
+  f: FxInput, layer: Layer, id: string, at: XY,
+  brush: (pen: Pen, x: number, y: number) => void, groundY?: number,
+) {
+  const pen = f[layer];
+  if (mutedMaterial === id) {
+    const before = pen.g.getImageData(0, 0, f.w, f.h);
+    brush(pen, ...at);
+    pen.g.putImageData(before, 0, 0);
+    return;
+  }
+  if (!observed || observed.has(id) || !f.techniqueTrace) {
+    brush(pen, ...at);
+    return;
+  }
+  // Several coins can share one pixel at release. A before/after color delta would
+  // miss a second coin of the same color, then mistake its first flight frame for birth.
+  const key = 'material:' + f.w + 'x' + f.h;
+  let canvas = scratch.get(key);
+  if (!canvas) { canvas = createCanvas(f.w, f.h); scratch.set(key, canvas); }
+  const ctx = canvas.getContext('2d');
+  ctx.reset();
+  ctx.fillStyle = pen.g.fillStyle;
+  ctx.globalAlpha = pen.g.globalAlpha;
+  brush(new Pen(ctx, 0, 0, 0, 0), ...at);
+  brush(pen, ...at);
+  const after = ctx.getImageData(0, 0, f.w, f.h).data;
+  const actual = new Uint32Array(pen.g.getImageData(0, 0, f.w, f.h).data.buffer);
+  const colors: number[] = [], pixels: XY[] = [];
+  for (let i = 0; i < after.length; i += 4) {
+    if (after[i + 3]) {
+      const n = i / 4;
+      pixels.push([n % f.w, Math.floor(n / f.w)]);
+      colors.push(actual[n]);
+    }
+  }
+  if (pixels.length) f.techniqueTrace.materials.push({ id, layer, at, groundY, pixels, colors });
 }
 /** Paint the visible contact mark itself. Evidence comes from ink actually deposited. */
 export function paintImpact(

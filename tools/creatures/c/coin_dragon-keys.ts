@@ -227,6 +227,7 @@ export default {
     ]),
   },
   tech_claw: {
+    reachHand: 'R',
     title: 'Тройной коготь',
     reference: 'puppeteer-cut',
     weapon: 'claw',

@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PNG } from 'pngjs';
 import { loadPainting } from '../render';
+import { playbackKeys } from '../technique';
 import { compose, frameCount, hitFrame } from '../engine';
 import { findings, sampleAnimation, studioConfig } from './checks';
 
@@ -195,7 +196,8 @@ export async function sheetCommand(args: string[]) {
   const count = frameCount(spec.seconds);
   const askedScale = option(args, '--scale');
   const hits = new Set((spec.hits ?? []).map(hitFrame));
-  const keys = new Set((c.techniques?.[anim]?.keys ?? []).map((x) => x.frame));
+  const technique = c.techniques?.[anim];
+  const keys = new Set((technique ? playbackKeys(technique) : []).map((x) => x.frame));
   const marks = new Map<number, Set<keyof typeof COLORS>>();
   const mark = (n: number, m: keyof typeof COLORS) => {
     if (!marks.has(n)) marks.set(n, new Set());

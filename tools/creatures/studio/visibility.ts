@@ -7,6 +7,52 @@
 // Works on parts named with `rig.tag` (a part is many primitives: a furry arm is a dozen overlapping clumps, so a
 // single primitive's visibility means nothing). Creatures without tags are skipped.
 import { Rig, renderRig } from '../rig/f15-rig';
+import { Px } from '../rig/px';
+import { sprite, type Layers } from '../engine';
+import type { BodyFrame, XY } from '../types';
+
+interface EyeFrame {
+  body: BodyFrame;
+  feet: XY;
+  layers: Layers;
+}
+
+/** Winning primitive pixels in the completed painting, grouped without altering the artist's layer order. */
+export function visibleOwnedPixels(rig: Rig, frame: EyeFrame, groups: (string | undefined)[]): Map<string, XY[]> {
+  const names = [...new Set(groups.filter((s): s is string => Boolean(s)))];
+  const visible = new Map<string, XY[]>(names.map(name => [name, []]));
+  if (!names.length) return visible;
+  const { body, feet, layers } = frame;
+  const ids = renderRig(rig, body.px.w, body.px.h, ...body.anchor, { ids: true, outline: null, inner: 0 }).id!;
+  const codes = new Map(names.map((name,i)=>[name,i+1]));
+  const indices = groups.map(name => name && codes.get(name));
+  const mask = new Px(body.px.w, body.px.h);
+  for (let i = 0; i < ids.length; i++) {
+    const code = indices[ids[i]];
+    if (!code || !body.px.data[4*i+3]) continue;
+    mask.data[4*i] = code & 255;
+    mask.data[4*i+1] = code >>> 8;
+    mask.data[4*i+3] = 255;
+  }
+  const projected = new Px(layers.body.w, layers.body.h);
+  sprite(projected, mask, body, feet, [0, 0, projected.w, projected.h]);
+  for (let a = 3; a < projected.data.length; a += 4) {
+    if (!projected.data[a] || !layers.body.data[a]) continue;
+    if ([layers.fxo, layers.bgf, layers.frame, layers.over].some(layer => layer.data[a] === 255)) continue;
+    const code = projected.data[a-3] + projected.data[a-2] * 256;
+    const i = (a-3)/4;
+    visible.get(names[code-1])!.push([i%projected.w, Math.floor(i/projected.w)]);
+  }
+  return visible;
+}
+
+/** Separate eye semantics preserve the skin's original rig tag. A closed lid overrides even a named eye tag. */
+export function visibleEyePixels(rig: Rig, frame?: EyeFrame): number {
+  const eyes = rig.prims.map(q => q.eyePart ?? (/^eye/i.test(q.t ?? '') ? q.t : undefined));
+  if (!eyes.some(Boolean)) return 0;
+  if (!frame) return idsOf(rig).reduce((n, id) => n + (eyes[id] ? 1 : 0), 0);
+  return visibleOwnedPixels(rig, frame, eyes.map(e=>e ? 'eye' : undefined)).get('eye')?.length ?? 0;
+}
 
 const W = 420,
   H = 420,

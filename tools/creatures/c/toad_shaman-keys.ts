@@ -3,6 +3,7 @@ import { sixPoses, type TechniqueBook } from '../technique';
 
 export default {
   tech_staff: {
+    reachHand: 'R',
     interpolate: true,
     title: 'Удар посохом',
     weapon: 'staffFoot',

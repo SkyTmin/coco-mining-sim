@@ -1,7 +1,7 @@
 import { clamp01, easeIn3, easeOut, hash, lerp, sstep, TAU } from '../kit/f11-mobkit';
 import { keyPose, type KeyPose } from '../kit/f14-mobkit';
 import { chunks, dust, fillPoly, flare, type Pen } from '../fx/pen';
-import { paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
+import { paintMaterial, paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
 import type { Animation, FxInput, XY } from '../types';
 import { fissure, grit, oval, projectile, ripple, shard, springBack } from './strike-brush';
 
@@ -207,7 +207,7 @@ function eruption(f: FxInput) {
       const u = clamp01((f.t - born) / (land - born));
       const tail = projectile(f.pointAt(born, 'vent'), target, Math.max(0, u - 0.12), 36 + 8 * i);
       f.above.lineS(...tail, ...pos, '#c4603c', 0.72);
-      bomb(f.above, ...pos, 5 + i, age);
+      paintMaterial(f, 'above', 'bomb-' + i, pos, (pen, x, y) => bomb(pen, x, y, 5 + i, age));
     } else {
       paintImpact(f, 'under', 'bomb-' + i, target, (p, px, py) => pool(p, px, py, 10 + i * 2, age));
       fissure(f.under, 'vent-bomb-' + i, 42 + i, x, y, age, 19, '#7a3b32', '#db7841', 1.05);

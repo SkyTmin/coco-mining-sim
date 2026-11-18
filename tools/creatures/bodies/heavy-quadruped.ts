@@ -203,6 +203,11 @@ export function heavySkeleton(
       legs.push({ name, fore: k, side: s, hip, knee, foot, hoof: F3.yaw(yaw, foot) });
       points[name] = foot;
       points[alias] = foot;
+      if (k === 1) {
+        const sideName = s < 0 ? 'L' : 'R';
+        points['shoulder' + sideName] = hip;
+        points['elbow' + sideName] = knee;
+      }
       if (k === 1 && s === 1) points.paw = foot;
       if (anim === 'walk' && gait.planted) planted.push(name);
     }
@@ -308,9 +313,11 @@ function defaultSkin(r: Rig, s: HeavySkeleton, card: CreatureCard, variant: Vari
   r.ell(s.head, [13.5, 0, -2.5], [7, 5, 4], hoof);
   for (const side of [-1, 1]) {
     r.tag = side > 0 ? 'eyeR' : 'eyeL';
+    const eyeStart = r.size;
     r.ell(s.head, [7, side * 7.4, 1.7], [2.4, 1.1, 1.7], hoof);
     const e = s.head.p(7.5, side * 8.5, 2.2);
     if (!s.life.blink) r.dot(e, hx('#fff3ab'), 0, 1);
+    r.markEye(eyeStart, side, !s.life.blink);
     if (side > 0) r.eye = e;
     r.tag = side > 0 ? 'hornR' : 'hornL';
     const tip = side > 0 ? s.points.hornTip : s.head.p(defaultTip[0], -defaultTip[1], defaultTip[2]);

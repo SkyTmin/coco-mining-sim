@@ -23,8 +23,12 @@ export interface Technique {
   title: string;
   reference: string;
   weapon: string;
+  /** Driving arm of a hand-held sweep, overhead blow or thrust. */
+  reachHand?: 'L' | 'R';
   contactKind: ContactKind;
   keys: readonly PoseKey[];
+  /** Handling a prop before the principal wind-up, e.g. gathering and tossing a ball. */
+  leadInKeys?: readonly PoseKey[];
   /** Extra resets, strikes and recoils after the first follow-through in a multi-strike technique. */
   repeatKeys?: readonly PoseKey[];
   contacts?: readonly TechniqueContact[];
@@ -61,9 +65,12 @@ export function techniqueContacts(spec: Technique): readonly TechniqueContact[] 
     : [];
 }
 
-function playbackKeys(spec: Technique): readonly PoseKey[] {
-  if (!spec.repeatKeys?.length) return spec.keys;
-  return [...spec.keys.slice(0, -1), ...spec.repeatKeys, spec.keys[spec.keys.length - 1]];
+export function playbackKeys(spec: Technique): readonly PoseKey[] {
+  if (!spec.leadInKeys?.length && !spec.repeatKeys?.length) return spec.keys;
+  return [
+    spec.keys[0], ...(spec.leadInKeys ?? []), ...spec.keys.slice(1, -1),
+    ...(spec.repeatKeys ?? []), spec.keys[spec.keys.length - 1],
+  ];
 }
 
 export function techniquePoseAt(spec: Technique, seconds: number): JointPose {

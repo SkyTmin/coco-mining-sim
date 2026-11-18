@@ -4,6 +4,7 @@ import { loadPainting } from '../render';
 import { measureDetail, minimumColours } from '../detail';
 import { measureCreature, readReferences } from '../tech-metrics';
 import { cardRuntimeIssues } from './card';
+import { measureRef, readPoseRefs, refIssues } from './ref';
 import { sizes } from '../types';
 
 export async function gateExtras(ids: string[]) {
@@ -15,7 +16,15 @@ export async function gateExtras(ids: string[]) {
     console.log('  · technique references missing — technique numbers use the temporary limits');
   }
   for (const id of ids) {
-    const { c } = await loadPainting(id);
+    const painting = await loadPainting(id);
+    const { c } = painting;
+    for (const [anim, spec] of Object.entries(readPoseRefs(id))) {
+      const rows = measureRef(painting, anim, spec);
+      const errors = refIssues(rows);
+      console.log(`${errors.length ? "✗" : "✓"} ${id} ${anim} ref: ${rows.length} keys, min IoU ${Math.min(...rows.map(r => r.iou)).toFixed(3)}`);
+      for (const err of errors) console.log('  ! ' + err);
+      if (errors.length) failed++;
+    }
     const cards = cardRuntimeIssues(c);
     if (cards.length) {
       for (const issue of cards) console.log('  ! ' + id + ' card: ' + issue);

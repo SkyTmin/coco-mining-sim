@@ -102,6 +102,14 @@ function bodyPose(
   return pose;
 }
 
+/** Horn rams and tail sweeps have no striking wrist. A staff, fist or claw does. */
+function drivingHand(move: CardMove, body: BodyType): 'L' | 'R' | undefined {
+  if (!['sweep', 'overhead', 'ram', 'thrust'].includes(move.template)) return;
+  if (/^(arm|hand|fore)[LR]$/.test(move.weapon)) return move.weapon.endsWith('L') ? 'L' : 'R';
+  if (move.weapon === 'weaponTip' && ['armed-biped', 'squat-mage', 'giant', 'winged-dragon'].includes(body))
+    return 'R';
+}
+
 export function buildMove(move: CardMove, body: BodyType, overrides: MoveOverrides = {}): Technique {
   const def = templateFor(move.template);
   if (!def) throw Error('Unknown move template ' + move.template);
@@ -157,6 +165,7 @@ export function buildMove(move: CardMove, body: BodyType, overrides: MoveOverrid
   return {
     title: move.title,
     weapon: move.weapon,
+    reachHand: drivingHand(move, body),
     reference: move.reference,
     contactKind: def.kind,
     floorSocket: ground,

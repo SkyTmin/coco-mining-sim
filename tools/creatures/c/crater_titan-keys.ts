@@ -66,6 +66,7 @@ export default {
     ),
   },
   tech_fist: {
+    reachHand: 'R',
     interpolate: true,
     title: 'Кулак-кратер',
     reference: 'guardian-strike',
@@ -133,6 +134,7 @@ export default {
     ),
   },
   tech_sweep: {
+    reachHand: 'R',
     interpolate: true,
     title: 'Размах',
     reference: 'hourlord-hour',

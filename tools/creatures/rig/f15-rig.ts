@@ -177,12 +177,17 @@ interface PLine {
   glow: number;
   bias: number;
 }
-type Prim = PEll | PCap | PPoly | PDot | PLine;
+type Prim = (PEll | PCap | PPoly | PDot | PLine) & { eyePart?: 'eyeL' | 'eyeR' | false };
 
 export class Rig {
   prims: Prim[] = [];
   /** Optional part name stamped on every primitive pushed after it is set (studio checks read it). */
   tag?: string;
+  // Independent of the skin binding tag: moving the head still moves its eyes.
+  markEye(start: number, side: number, open: boolean) {
+    const part = open ? (side < 0 ? 'eyeL' : 'eyeR') : false;
+    for (let i = start; i < this.prims.length; i++) this.prims[i].eyePart = part;
+  }
   /** Точка глаза (мир): движок светит ею в темноте. */
   eye: V3 | null = null;
   /** Эллипсоид по осям рамки: центр (f, s, u) и полуоси по f, s, u. */

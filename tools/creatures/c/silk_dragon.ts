@@ -216,6 +216,7 @@ export function bodyFrame(
     r.cap(whisker, H.p(-4, s * 13, -10), 0.65, 0.2, cane);
     r.tag = 'head';
     r.dot(H.p(5, s * 7.1, 2.8), l.blink ? hx('#63413e') : eye.T[3], l.blink ? 0 : 0.3, 1, 1.4);
+    r.markEye(r.size - 1, s, !l.blink);
   }
   const finSockets: Record<string, V3> = {};
   for (const s of [-1, 1]) {
@@ -255,6 +256,8 @@ export function bodyFrame(
         r.line(tip, flag, brow.T[1], 0, 1);
       }
     }
+    finSockets[s < 0 ? 'shoulderL' : 'shoulderR'] = attachment;
+    finSockets[s < 0 ? 'handL' : 'handR'] = tip;
     finSockets[s < 0 ? 'finL' : 'finR'] = tip;
   }
   r.tag = 'tail';
@@ -270,9 +273,11 @@ export function bodyFrame(
       r.ell(C, [0, 0, 0], [2.7, 1.5, 2.1], j % 2 ? cane : lining);
     }
     r.tag = 'head';
+    const eyeStart = r.size;
     r.ell(H, [6.4, side * 6.9, 3.6], [2.4, 1.8, 2.0], l.blink ? brow : eye);
     r.dot(H.p(7.8, side * 7.6, 4.0), brow.T[0], 0, 1, 1.5);
     if (!l.blink) r.dot(H.p(7.1, side * 7.8, 5.0), paper.T[3], 0.33, 1, 1.6);
+    r.markEye(eyeStart, side, !l.blink);
     r.ell(H, [13.5, side * 2.9, 1.2], [2.0, 1.1, 1.25], brow);
     r.line(H.p(11, side * 4, -2), H.p(16, side * 1.8, -1.8), silk.T[2], 0, 1.1);
     r.ell(H, [2.8, side * 8, 1.4], [1.6, 0.85, 1.3], lining);

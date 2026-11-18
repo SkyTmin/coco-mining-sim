@@ -9,6 +9,7 @@ const guide = (anim: string, key: PoseKey) =>
   aimedBipedKey(anim, key, card.life.yaw, 53 * (card.proportions.weapon ?? 1));
 export default {
   tech_slam: {
+    reachHand: 'R',
     interpolate: true,
     resolveKey: (key) => guide('tech_slam', key),
     title: 'Дубина в наст',

@@ -583,6 +583,7 @@ export function coinDragonFrame(
     frontRig.tag = 'head';
     const eye = head.p(4.6, d * 9.45, 4.0);
     frontRig.ell(head, [3.7, d * 7.8, 3.8], [4.8, 1.75, 3.45], soot);
+    const eyeStart = frontRig.size;
     const blink = clock > 1.75 && clock < 1.91;
     frontRig.ell(
       head,
@@ -600,6 +601,7 @@ export function coinDragonFrame(
       );
       frontRig.dot(head.p(3.45, d * 10.35, 4.87), hx('#fff0bc'), 0.8, 1, 1.4);
     }
+    frontRig.markEye(eyeStart, d, !blink);
     frontRig.cap(
       head.p(-0.5, d * 8.3, 6.6),
       head.p(6.7, d * 7.4, 5.4),
@@ -757,6 +759,10 @@ export function coinDragonFrame(
     );
     if (d === 1) hand[2] += (1.5 - hand[2]) * k.handFloor;
     const elbow = ik(shoulder, hand, 18, 18, F.v(-0.6, d * 0.8, -0.4));
+    const sideName = d < 0 ? 'L' : 'R';
+    loc['shoulder' + sideName] = shoulder;
+    loc['elbow' + sideName] = elbow;
+    loc['hand' + sideName] = hand;
     const arm = d === 1 ? frontRig : r;
     arm.tag = armTag;
     arm.cap(shoulder, elbow, 4.5, 3.2, hide).cap(elbow, hand, 3.7, 2.2, hide);

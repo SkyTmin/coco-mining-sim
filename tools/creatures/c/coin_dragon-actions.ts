@@ -1,7 +1,7 @@
 import { clamp01, easeIn3, easeOut, hash, lerp, sstep, TAU } from '../kit/f11-mobkit';
 import { keyPose, type KeyPose } from '../kit/f14-mobkit';
 import { fillPoly, flare, fly, type Pen } from '../fx/pen';
-import { paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
+import { paintMaterial, paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
 import type { Animation, FxInput, XY } from '../types';
 import { grit, oval, projectile, ripple, shard, springBack } from './strike-brush';
 
@@ -213,6 +213,7 @@ function mintedFlight(
   id: number,
   r = 3.5,
   flight?: { name: string; socket: string; release: number },
+  terrain?: { id: string; floorY: number },
 ) {
   if (age < 0 || age > duration + 0.75) return;
   const { under, above } = f,
@@ -233,7 +234,8 @@ function mintedFlight(
   const shade = lerp(start[1] + 5, to[1], u),
     fade = clamp01((duration + 0.75 - age) / 0.31);
   oval(under, x, shade, 1.9 + 1.7 * u, 0.7 + u * 0.55, '#41342d', fade * 0.7);
-  coin(above, x, y, r, spin, 0.84 * land, fade);
+  paintMaterial(f, 'above', flight?.name ?? terrain?.id ?? 'coin-' + id, [x, y],
+    (pen, x, y) => coin(pen, x, y, r, spin, 0.84 * land, fade), terrain?.floorY);
   if (end >= -1e-8 && end < 0.23) {
     const mark = (pen: Pen, x: number, y: number) => {
       const radius = 2 + Math.max(0, end) * 32;
@@ -310,7 +312,7 @@ function tail(f: FxInput) {
     );
   }
   const tie = projectile(hit, [hit[0] + dir * 22, floor + 3], clamp01(age / 0.33), 14);
-  shard(f.above, ...tie, 6, 1.5, age * 9, '#604337', '#ba865b', clamp01(1 - age / 0.44));
+  paintMaterial(f, 'above', 'purse-tie', tie, (pen, x, y) => shard(pen, x, y, 6, 1.5, age * 9, '#604337', '#ba865b', clamp01(1 - age / 0.44)), floor);
 }
 function chest(f: FxInput) {
   const { t, points, under, above, feet } = f,
@@ -462,6 +464,8 @@ function dive(f: FxInput) {
         5 + (6 - Math.abs(j - 5)) * 2.1,
         j,
         3.2,
+        undefined,
+        { id: 'ridge-' + i + '-' + j, floorY: y },
       );
     }
     ripple(f.under, center[0], y, 5 + age * 38, 0.34, '#cda764', clamp01(1 - age * 2));
@@ -470,8 +474,10 @@ function dive(f: FxInput) {
     const u = sstep(entry, exit, t);
     const x = lerp(burrow[0], emerge[0], u),
       y = lerp(burrow[1], emerge[1], u);
-    for (let j = -3; j <= 3; j++)
-      coin(f.above, x + j * 3.6, y - (4 - Math.abs(j)) * 2, 3.6, j * 0.7 + t * 6, 0.53, 0.87);
+    for (let j = -3; j <= 3; j++) {
+      const pos: XY = [x + j * 3.6, y - (4 - Math.abs(j)) * 2];
+      paintMaterial(f, 'above', 'ridge-wake-' + j, pos, pen => coin(pen, ...pos, 3.6, j * 0.7 + t * 6, 0.53, 0.87), y);
+    }
     f.under.lineS(burrow[0], burrow[1] + 4, x, y + 4, '#91683f', 0.88);
   }
 }
@@ -494,17 +500,17 @@ function hoard(f: FxInput) {
     const taper = clamp01(1 - Math.abs(edge) / 4);
     oval(f.under, x + 1, y + 6, 6.2, 3.4, '#54432f', 0.66);
     for (let row = -2; row <= 2; row++) {
-      const noise = hash(j, row, 743),
-        pen = row < 0 ? f.under : f.above;
-      coin(
+      const noise = hash(j, row, 743);
+      const pos: XY = [x + (Math.abs(row) % 2) * 2.3, y + row * 2.85 + (noise - 0.5) * 1.7];
+      // This standing mound is the ground surface that the later flights displace.
+      paintMaterial(f, row < 0 ? 'under' : 'above', 'coin-bank', pos, pen => coin(
         pen,
-        x + (Math.abs(row) % 2) * 2.3,
-        y + row * 2.85 + (noise - 0.5) * 1.7,
+        ...pos,
         (2.8 + 0.62 * (row + 2) + noise * 0.55) * (0.54 + 0.46 * taper),
         0.4 + noise * 0.97,
         0.56 + 0.11 * row,
         1,
-      );
+      ), ridgeY + Math.abs(edge) * 2.4 + 6);
     }
   }
 }
@@ -550,7 +556,7 @@ function showCoin(f: FxInput) {
   if (t >= slot && t <= caught) {
     const to = f.pointAt(caught, 'mouth'),
       pos = projectileAt(f, 'last-mint', 'slot', slot, caught, to, 25);
-    if (t < caught) coin(above, ...pos, 4.8, 0.38 + (t - slot) * 5, 0.11);
+    if (t < caught) paintMaterial(f, 'above', 'last-mint', pos, (pen, x, y) => coin(pen, x, y, 4.8, 0.38 + (t - slot) * 5, 0.11));
   }
   if (t >= caught && t < caught + 0.14)
     paintImpact(f, 'above', 'mouth', f.points.mouth, (p, x, y) => {
@@ -579,7 +585,7 @@ export function effects(f: FxInput) {
       if (f.t < 0.35 || f.t > 0.91) return;
       const u = sstep(0.35, 0.83, f.t),
         p = projectile(f.pointAt(0.35, 'claw'), f.points.mouth, u, 24);
-      coin(f.above, ...p, 4.2, 5 * f.t, 0.04, clamp01((0.91 - f.t) / 0.08));
+      paintMaterial(f, 'above', 'happy-coin', p, (pen, x, y) => coin(pen, x, y, 4.2, 5 * f.t, 0.04, clamp01((0.91 - f.t) / 0.08)));
       return;
     }
     case 'hatch': {
@@ -603,7 +609,7 @@ export function effects(f: FxInput) {
           if (dt < 0 || dt > 0.24) continue;
           const x = lerp(core[0], tip[0], k),
             y = lerp(core[1], tip[1], k) - Math.sin(k * Math.PI) * 6;
-          coin(f.above, x, y, 2.2 + 1.1 * Math.sin(k * Math.PI), 0.5 + dt * 7, 0.51, clamp01(1 - dt / 0.24));
+          paintMaterial(f, 'above', 'mint-scale-' + i, [x,y], pen => coin(pen, x, y, 2.2 + 1.1 * Math.sin(k * Math.PI), 0.5 + dt * 7, 0.51, clamp01(1 - dt / 0.24)));
         }
         oval(
           f.under,

@@ -191,6 +191,11 @@ export function poseLimbs(body: PilotFamily, rig: Rig, points: Points, basis: F3
       name.endsWith('R') ? 1 : -1,
       vsub(target, vsub(contact, chain.hand)),
     );
+    if (name.startsWith('hand')) {
+      const side = name.slice(-1);
+      points['shoulder' + side] = solved.shoulder;
+      points['elbow' + side] = solved.elbow;
+    }
     const map = retarget(chain, solved);
     transformPart(rig, match, map);
     for (const alias of aliases) points[alias] = vadd(points[alias], vsub(solved.hand, chain.hand));

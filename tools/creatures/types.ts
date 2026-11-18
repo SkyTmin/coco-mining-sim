@@ -1,3 +1,4 @@
+import type { Rig, V3 } from './rig/f15-rig';
 import type { Px } from './rig/px';
 import type { Pen } from './fx/pen';
 import type { JointPose, TechniqueBook } from './technique';
@@ -13,6 +14,8 @@ export type Rarity =
   | 'mythic'
   | 'secret';
 export interface Animation {
+  /** Physical ground displacement in field pixels, sampled independently of flight or camera shake. */
+  groundOffset?: (t: number, side: number) => XY;
   seconds: number;
   hits?: number[]; // contact times in seconds, chronological
   shake?: number; // strength (0..1)
@@ -26,6 +29,9 @@ export interface BodyFrame {
   eye: XY | null;
   points: Record<string, XY>; // named projected sockets, local sprite pixels
   primitives: number;
+  /** Projected figure's actual rig and world-space anatomical sockets for studio diagnostics. */
+  rig?: Rig;
+  joints?: Record<string, V3>;
   planted?: string[]; // sockets on the floor throughout the current stance
   // Post-raster effects, anchored about the feet. Translation is in picture pixels.
   dx?: number;

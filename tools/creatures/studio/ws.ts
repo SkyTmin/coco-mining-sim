@@ -3,6 +3,7 @@
 //   npm run ws -- gate <id|all>                  check + detail bar + technique metrics, exit 1 on failure
 //   npm run ws -- probe <id> <anim> <frame>      numbers for one frame (sockets, feet, bbox, clips) — no picture
 //   npm run ws -- sheet <id> <anim> [--frames 0,12,19] [--against <git-ref>] [--out file.png]
+//   npm run ws -- ref <id> <anim> [sheet.png --grid CxR --frames a,b] [--out file.png]
 //   npm run ws -- render [id...|all] [--jobs N] [--force]   cached, parallel render.ts
 //   npm run ws -- snap <id|all> [anim...] [--check]          golden frame hashes: write, or list changed frames
 // check/gate/snap on several creatures run in parallel child processes (--jobs N, default = cores);
@@ -42,9 +43,10 @@ const studioDir = join(tools, '.studio');
 async function gateKey(id: string) {
   const { inputsOf, inputHash } = await import('./cache');
   const { c } = await loadPainting(id);
-  const studio = ['capture', 'checks', 'clip', 'gate', 'visibility', 'ws'].map((f) => join(tools, 'studio', f + '.ts'));
+  const { poseRefInputs } = await import('./ref');
+  const studio = ['ref', 'capture', 'checks', 'clip', 'contact-audit', 'gate', 'visibility', 'ws'].map((f) => join(tools, 'studio', f + '.ts'));
   const extra = [join(tools, 'studio', 'card.ts'), join(tools, 'studio', 'card.schema.json'), join(tools, 'c', id + '.studio.json'), join(tools, '../../docs/reports/creatures/pilot-3/reference/tech-metrics.json')];
-  return inputHash([...inputsOf(id, c.theme, c.rarity), ...studio, ...extra.filter((f) => existsSync(f))]);
+  return inputHash([...new Set([...inputsOf(id, c.theme, c.rarity), ...studio, ...poseRefInputs(id), ...extra.filter((f) => existsSync(f))])]);
 }
 
 async function check(args: string[], strict: boolean) {
@@ -130,6 +132,11 @@ switch (cmd) {
     await probe(rest[0], rest[1], Number(rest[2] ?? 0));
     break;
   }
+  case 'ref': {
+    const { refCommand } = await import('./ref');
+    await refCommand(rest);
+    break;
+  }
   case 'sheet': {
     const { sheetCommand } = await import('./sheet');
     await sheetCommand(rest);
@@ -146,6 +153,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: npm run ws -- new|check|gate|probe|sheet|render|snap … (see studio/README.md)');
+    console.log('usage: npm run ws -- new|check|gate|probe|sheet|ref|render|snap … (see studio/README.md)');
     process.exitCode = cmd ? 1 : 0;
 }

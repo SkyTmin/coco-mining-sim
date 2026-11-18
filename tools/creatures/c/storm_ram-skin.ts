@@ -169,11 +169,13 @@ export const stormSkin: HeavyAppearance = {
       r.ell(H, [-2, side * 8, 4], [3, 5, 2.2], face);
       r.poly([H.p(-3, side * 10, 5.2), H.p(-1, side * 12, 4.5), H.p(-0.3, side * 8, 4.9)], ear);
       const E = H.at(4.1, -side * 1.6, 0.1);
+      const eyeStart = r.size;
       r.ell(E, [9.1, side * 6.55, 2.2], [2.9, 1.4, 1.86], s.life.blink ? face : eye);
       if (!s.life.blink) {
         r.line(E.p(8.1, side * 7.86, 2.27), E.p(10.5, side * 7.82, 2.35), eye.T[0], 0, 1.1);
         r.dot(E.p(8.5, side * 7.72, 3.13), eye.T[3], 0, 0.95);
       }
+      r.markEye(eyeStart, side, !s.life.blink);
       r.line(E.p(7, side * 6.68, 4.02), E.p(10.8, side * 6, 3.75), keratin.T[3], 0, 1);
       r.dot(H.p(18.2, side * 3.72, -1.6), face.T[0], 0, 1.25);
       r.line(H.p(13.8, side * 4.9, -4.6), H.p(18, side * 3.55, -3.75), face.T[0], 0, 0.83);

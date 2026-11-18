@@ -120,12 +120,14 @@ export function buildFrame(
     r.cap(eye, corner, 1.9, 1.25, {
       T: tn('#342834', '#47293b', '#683c4d', '#754254'),
     });
+    const eyeStart = r.size;
     r.line(eye, corner, hx(shut ? '#4b393b' : '#ffb846'), 0, 2.4);
     if (!shut) {
       r.dot(h.p(8.4, s * 12.0, 1.72), hx('#ffb938'), 0, 3.3, 2.4);
       r.dot(h.p(8.6, s * 12.08, 1.72), hx('#382435'), 0, 1.45, 2.6);
       r.dot(h.p(7.6, s * 12.2, 2.5), hx('#fff2ad'), 0, 1.35, 2.8);
     }
+    r.markEye(eyeStart, s, !shut);
     if (s === 1) r.eye = eye;
   }
   let spine = b.p(-1, 0, 20);

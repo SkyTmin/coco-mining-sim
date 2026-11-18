@@ -235,12 +235,14 @@ export function bodyFrame(
   for (const s of [-1, 1]) {
     r.cap(H.p(11.4, s * 1.9, 7.1), H.p(9.4, s * 7.8, 9.4), 2.4, 2.0, browBlack);
     const E = H.at(12.5, s * 5.3, 5.8);
+    const eyeStart = r.size;
     r.ell(E, [0, 0, 0], [2.7, 2.25, l.blink ? 0.65 : 2.0], l.blink ? browBlack : amber);
     if (!l.blink) {
       r.cap(E.p(1.6, s * 0.7, 0.8), E.p(2.3, s * 0.85, -0.3), 0.65, 0.6, browBlack);
       r.dot(E.p(1.2, s * 1.5, 1.6), bone.T[3], 0.3, 1, 1);
     }
 
+    r.markEye(eyeStart, s, !l.blink);
     r.cap(H.p(12.1, s * 5.7, -4.4 - jaw * 2), H.p(13.4, s * 6.2, -0.8 - jaw * 2), 1.15, 0.15, bone);
     const tuft = H.p(0, s * 9.4, -0.3);
     r.cap(tuft, H.p(1, s * 10, -8), 3.2, 0.4, coat);

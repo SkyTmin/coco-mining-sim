@@ -144,3 +144,26 @@ test('a prop can hide in one chapter without masking a limb or even the same pro
   assert.equal(allowsOcclusion({ partGone: [{ ...rule, reason: '' }] }, 'coffer', 'dive', 33), false);
   assert.ok(allowsOcclusion({ partGone: ['tongue'] }, 'tongueTip', 'idle', 0));
 });
+
+test('the contact eye is an open, visible surface at the final painting scale', async () => {
+  const { visibleEyePixels } = await import('../studio/visibility');
+  const { projectFigure } = await import('../rig/figure');
+  const { Px } = await import('../rig/px');
+  const { layerNames } = await import('../engine');
+  const rig = new Rig();
+  rig.tag = 'head';
+  rig.ball([0, 0, 10], 2.3, fur);
+  rig.markEye(0, 1, false);
+  assert.equal(visibleEyePixels(rig), 0, 'closed eyelid');
+  rig.markEye(0, 1, true);
+  assert.ok(visibleEyePixels(rig) > 0);
+  const body = projectFigure(rig, 64, [32, 40], {});
+  const layers = Object.fromEntries(layerNames.map((name) => [name, new Px(64, 64)])) as import('../engine').Layers;
+  layers.body = body.px;
+  const frame = { body, feet: body.anchor, layers };
+  assert.ok(visibleEyePixels(rig, frame) > 0);
+  layers.bgf = body.px;
+  assert.equal(visibleEyePixels(rig, frame), 0, 'foreground completely covers the iris');
+  rig.ball([0, 0, 10], 6, wood);
+  assert.equal(visibleEyePixels(rig), 0, 'eye inside opaque head geometry');
+});

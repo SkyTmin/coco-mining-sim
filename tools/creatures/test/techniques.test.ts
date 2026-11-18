@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Px } from '../rig/px';
+import { sixPoses, techniquePoseAt, type Technique } from '../technique';
 import {
   maskOf,
   maskMetrics,
@@ -13,6 +14,20 @@ import {
   measureCreature,
   pilotIds,
 } from '../tech-metrics';
+
+test('a handled prop can be gathered and released before the main wind-up', () => {
+  const animation: Technique = {
+    title: 'toss', reference: '', weapon: 'handL', contactKind: 'body',
+    keys: sixPoses([[0, {}], [12, { height: 5 }], [15, {}], [17, {}], [20, {}], [24, {}]]),
+    leadInKeys: [
+      { role: 'prep', frame: 4, pose: { height: 1 } },
+      { role: 'prep', frame: 8, pose: { height: 3 } },
+    ],
+  };
+  assert.equal(techniquePoseAt(animation, 6 / 24).height, 1);
+  assert.equal(techniquePoseAt({ ...animation, interpolate: true }, 6 / 24).height, 2);
+  assert.equal(techniquePoseAt(animation, 12 / 24).height, 5);
+});
 
 test('registered silhouettes cancel camera translation and retain body motion', () => {
   const a = new Px(16, 15),

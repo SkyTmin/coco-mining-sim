@@ -2,7 +2,7 @@ import { effectPresets } from '../fx/presets';
 import { ellFill, oval, progress, settle } from '../fx/field';
 import type { Pen } from '../fx/pen';
 import { hash, TAU } from '../kit/f11-mobkit';
-import { paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
+import { paintMaterial, paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
 import type { Creature, FxInput, XY } from '../types';
 import book from './storm_ram-keys';
 
@@ -122,10 +122,12 @@ function lightningBalls(f: FxInput, release: number) {
         dy = end[1] - origin[1] - 4 * h * (1 - 2 * u);
       const len = Math.hypot(dx, dy) || 1;
       const tail: XY = [pt[0] - (dx / len) * (4 + i * 0.45), pt[1] - (dy / len) * (4 + i * 0.45)];
-      arc(f.above, tail, pt, 91 + i, 0.9);
-      ellFill(f.above, pt, 2.9, 2.5, violet, 1);
-      oval(f.above, pt, 3.4, 2.15, cold, 0.95, -2.9, 1.8);
-      ellFill(f.above, [pt[0] + 0.35, pt[1] - 0.3], 1.4, 1.2, light, 1);
+      paintMaterial(f, 'above', id, pt, (p, x, y) => {
+        arc(p, tail, pt, 91 + i, 0.9);
+        ellFill(p, pt, 2.9, 2.5, violet, 1);
+        oval(p, pt, 3.4, 2.15, cold, 0.95, -2.9, 1.8);
+        ellFill(p, [x + 0.35, y - 0.3], 1.4, 1.2, light, 1);
+      });
       const floorY = origin[1] + (end[1] - origin[1]) * u;
       ellFill(f.under, [pt[0], Math.max(floor[1], floorY)], 2.3, 1, '#353349', 0.55);
     } else scorch(f, id, end, age, 30 + i, 9 + i);

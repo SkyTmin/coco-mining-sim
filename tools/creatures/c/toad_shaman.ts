@@ -228,6 +228,7 @@ export function bodyFrame(
   for (const s of [-1, 1]) {
     const E = H.at(6, s * 17, 7.7);
     r.ell(E, [0, 0, 0], [7.9, 6.4, 7.5], skin);
+    const eyeStart = r.size;
     r.ell(E, [5.2, s * 1.6, 2], [5.8, 5.2, 4.7], {
       T:
         phase > 0.55
@@ -242,6 +243,7 @@ export function bodyFrame(
       },
     });
 
+    r.markEye(eyeStart, s, !l.blink);
     if (l.blink) r.ell(E, [4.5, s * 1.4, 1.5], [5, 4.8, 4.3], skin);
     r.cap(E.p(3, s * 4.7, 5.3), E.p(7, -s * 0.5, 7.2 - l.look * (s + 1)), 2.4, 1.6, moss);
     const seam = [H.p(15, s * 19, -2.4), H.p(12, s * 22.2, -1.4), H.p(4, s * 25, -0.3)];
@@ -380,6 +382,10 @@ export function bodyFrame(
         elbow = vlerp(elbow, joint, weight);
       }
     }
+    const arm = s < 0 ? 'L' : 'R';
+    sockets['shoulder' + arm] = shoulder;
+    sockets['elbow' + arm] = elbow;
+    sockets['hand' + arm] = hand;
     r.cap(shoulder, elbow, 5.8, 4.6, skin);
     r.cap(elbow, hand, 4.4, 3.1, skin);
     r.ball(hand, 3.5, skin);
