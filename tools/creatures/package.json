@@ -5,7 +5,8 @@
   "scripts": {
     "test": "node --import tsx --test test/*.test.ts",
     "render": "tsx render.ts",
-    "verify": "tsx verify.ts"
+    "verify": "tsx verify.ts",
+    "gallery": "tsx gallery.ts"
   },
   "dependencies": {
     "@napi-rs/canvas": "0.1.90",

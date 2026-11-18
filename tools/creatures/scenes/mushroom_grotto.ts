@@ -48,6 +48,14 @@ function paint(p:Px){
       }
     }
   }
+  // The wet stone directly under the shaman reflects the dark vault. Keep
+  // joints here low in contrast so a pale ripple crosses them continuously.
+  const damp=hx('#494d44');
+  for(let y=66;y<p.h;y++)for(let x=0;x<p.w;x++){
+    const dx=(x-p.w*.48)/(p.w*.56),dy=(y-p.h*.72)/(p.h*.50);
+    const wet=Math.max(0,1-dx*dx-dy*dy)*.68;
+    if(wet)p.set(x,y,mixc(p.get(x,y),damp,wet));
+  }
   // An inlet snakes past the near bank. Thin reflected cap gills break its surface.
   face(p,[[0,114],[16,117],[20,120],[30,122],[28,125],[40,129],[21,131],[13,128],[0,130]],water);
   p.line(0,114,16,117,hx('#71796a'));p.line(28,125,39,129,hx('#59675d'));
