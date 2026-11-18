@@ -1,0 +1,450 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CreatureCard",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "body": {
+      "$ref": "#/definitions/body"
+    },
+    "theme": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary",
+        "mythic",
+        "secret"
+      ]
+    },
+    "proportions": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "parts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "materials": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/material"
+      },
+      "minItems": 1
+    },
+    "details": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      },
+      "uniqueItems": true,
+      "minItems": 25
+    },
+    "effects": {
+      "$ref": "#/definitions/effects"
+    },
+    "moves": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/move"
+      },
+      "minItems": 2
+    },
+    "life": {
+      "$ref": "#/definitions/life"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "body",
+    "theme",
+    "rarity",
+    "proportions",
+    "parts",
+    "materials",
+    "details",
+    "effects",
+    "moves",
+    "life"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "body": {
+      "type": "string",
+      "enum": [
+        "heavy-quadruped",
+        "hexapod",
+        "long-flier",
+        "armed-biped",
+        "squat-mage",
+        "giant",
+        "winged-dragon"
+      ]
+    },
+    "template": {
+      "type": "string",
+      "enum": [
+        "overhead",
+        "ram",
+        "sweep",
+        "volley",
+        "breath",
+        "leap",
+        "pillars",
+        "roar",
+        "summon",
+        "dive"
+      ]
+    },
+    "effects": {
+      "type": "string",
+      "enum": [
+        "ice",
+        "lava",
+        "crystal",
+        "spores",
+        "coins",
+        "silk-wind",
+        "thorns"
+      ]
+    },
+    "material": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "tones": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "minItems": 5,
+          "maxItems": 7,
+          "uniqueItems": true
+        },
+        "texture": {
+          "type": "string",
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "name",
+        "tones",
+        "texture"
+      ],
+      "additionalProperties": false
+    },
+    "move": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^tech_[a-z][a-z0-9_]*$"
+        },
+        "title": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "template": {
+          "$ref": "#/definitions/template"
+        },
+        "weapon": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+        },
+        "reference": {
+          "type": "string",
+          "enum": [
+            "mammoth-stomp",
+            "mammoth-tusks",
+            "guardian-strike",
+            "hourlord-hour",
+            "puppeteer-cut"
+          ]
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "strength": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "amplitude": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "side": {
+              "enum": [
+                -1,
+                1
+              ]
+            },
+            "repeats": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "strength",
+            "amplitude",
+            "side",
+            "repeats"
+          ],
+          "additionalProperties": false
+        },
+        "logic": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "minItems": 5,
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "template",
+        "weapon",
+        "reference",
+        "parameters",
+        "logic"
+      ],
+      "additionalProperties": false
+    },
+    "life": {
+      "type": "object",
+      "properties": {
+        "stride": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "yaw": {
+          "type": "number"
+        },
+        "fly": {
+          "type": "boolean"
+        },
+        "beats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/beat"
+          },
+          "minItems": 2
+        }
+      },
+      "required": [
+        "stride",
+        "yaw",
+        "beats"
+      ],
+      "additionalProperties": false
+    },
+    "beat": {
+      "type": "object",
+      "properties": {
+        "seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "at": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "anim": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$"
+        },
+        "side": {
+          "type": "number"
+        },
+        "lift": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "seconds",
+        "at",
+        "anim"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "rarity": {
+            "const": "common"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "minItems": 25
+          },
+          "moves": {
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rarity": {
+            "const": "uncommon"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "minItems": 25
+          },
+          "moves": {
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rarity": {
+            "const": "rare"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "minItems": 35
+          },
+          "moves": {
+            "minItems": 3,
+            "maxItems": 3
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rarity": {
+            "const": "epic"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "minItems": 35
+          },
+          "moves": {
+            "minItems": 4,
+            "maxItems": 4
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rarity": {
+            "const": "legendary"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "minItems": 50
+          },
+          "moves": {
+            "minItems": 5,
+            "maxItems": 5
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rarity": {
+            "const": "mythic"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "minItems": 50
+          },
+          "moves": {
+            "minItems": 5,
+            "maxItems": 6
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rarity": {
+            "const": "secret"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "minItems": 50
+          },
+          "moves": {
+            "minItems": 5,
+            "maxItems": 6
+          }
+        }
+      }
+    }
+  ]
+}

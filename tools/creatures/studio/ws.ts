@@ -43,12 +43,12 @@ async function gateKey(id: string) {
   const { inputsOf, inputHash } = await import('./cache');
   const { c } = await loadPainting(id);
   const studio = ['capture', 'checks', 'clip', 'gate', 'visibility', 'ws'].map((f) => join(tools, 'studio', f + '.ts'));
-  const extra = [join(tools, 'c', id + '.studio.json'), join(tools, '../../docs/reports/creatures/pilot-3/reference/tech-metrics.json')];
+  const extra = [join(tools, 'studio', 'card.ts'), join(tools, 'studio', 'card.schema.json'), join(tools, 'c', id + '.studio.json'), join(tools, '../../docs/reports/creatures/pilot-3/reference/tech-metrics.json')];
   return inputHash([...inputsOf(id, c.theme, c.rarity), ...studio, ...extra.filter((f) => existsSync(f))]);
 }
 
 async function check(args: string[], strict: boolean) {
-  const list = await ids(args[0]);
+  let list = await ids(args[0]);
   const animFilter = args.slice(1).filter((a, i, all) => !a.startsWith('--') && all[i - 1] !== '--jobs');
   const jobs = jobsOf(args);
   if (list.length > 1 && jobs > 1) {
@@ -59,6 +59,17 @@ async function check(args: string[], strict: boolean) {
     console.log(`${strict ? 'gate' : 'check'}: ${list.length - bad}/${list.length} green in ${((Date.now() - t0) / 1000).toFixed(0)} s with ${Math.min(jobs, list.length)} jobs`);
     if (bad) process.exitCode = 1;
     return;
+  }
+  if (strict) {
+    const { checkCardFile } = await import('./card');
+    list = list.filter(id => {
+      const errors = checkCardFile(id);
+      if (!errors.length) return true;
+      console.log('✗ ' + id + ' card: ' + errors.join('; '));
+      process.exitCode = 1;
+      return false;
+    });
+    if (!list.length) return;
   }
   // A green gate is remembered: an unchanged creature is not checked again (the slowest step of a batch).
   const cacheable = strict && list.length === 1 && !animFilter.length && !args.includes('--force');
@@ -103,6 +114,11 @@ async function check(args: string[], strict: boolean) {
 
 const [cmd, ...rest] = process.argv.slice(2);
 switch (cmd) {
+  case 'new': {
+    const { newCommand } = await import('./new');
+    await newCommand(rest);
+    break;
+  }
   case 'check':
     await check(rest, false);
     break;
@@ -130,6 +146,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: npm run ws -- check|gate|probe|sheet|render|snap … (see studio/README.md)');
+    console.log('usage: npm run ws -- new|check|gate|probe|sheet|render|snap … (see studio/README.md)');
     process.exitCode = cmd ? 1 : 0;
 }

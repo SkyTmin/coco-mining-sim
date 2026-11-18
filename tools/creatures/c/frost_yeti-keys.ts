@@ -1,9 +1,16 @@
 // Joint angles are radians. Stance, shoulder translation, club lift and foot rolls use rig units.
-import { sixPoses, type TechniqueBook } from '../technique';
+import { readCreatureCard } from '../bodies/card-data';
+import { aim } from '../bodies/goals';
+import { aimedBipedKey } from '../bodies/armed-keys';
+import { sixPoses, type PoseKey, type TechniqueBook } from '../technique';
 
+const card = readCreatureCard('frost_yeti');
+const guide = (anim: string, key: PoseKey) =>
+  aimedBipedKey(anim, key, card.life.yaw, 53 * (card.proportions.weapon ?? 1));
 export default {
   tech_slam: {
     interpolate: true,
+    resolveKey: (key) => guide('tech_slam', key),
     title: 'Дубина в наст',
     reference: 'mammoth-stomp',
     weapon: 'clubTip',
@@ -12,19 +19,17 @@ export default {
     stop: 0.08,
     seconds: 31 / 24,
     keys: sixPoses([
-      [0, {}],
+      [0, { ...aim('weaponTip', [30.179147575, -31.949240808, 61.751980753]) }],
       [
         14,
         {
+          ...aim('weaponTip', [-17.915435436, 47.734509014, 81.104451097]),
           crouch: 5,
           hip: -10,
           lean: 12,
           pitch: -0.52,
           twist: 0.42,
           stride: 7,
-          clubLift: 26,
-          clubForward: -9,
-          clubSide: 7,
           clubAngle: 1.8,
           clubYaw: 0.2,
         },
@@ -32,15 +37,13 @@ export default {
       [
         16,
         {
+          ...aim('weaponTip', [-0.435230278, 27.028272375, 104.451594279]),
           crouch: 1,
           hip: 1,
           lean: 7,
           pitch: -0.2,
           twist: 0.16,
           stride: 9,
-          clubLift: 29,
-          clubForward: -5,
-          clubSide: 5,
           clubAngle: 1.24,
           clubYaw: 0.16,
         },
@@ -48,6 +51,7 @@ export default {
       [
         19,
         {
+          ...aim('weaponTip', [37.571743319, -44.355455113, 0], 19),
           crouch: 22,
           hip: 12,
           lean: -9,
@@ -55,16 +59,16 @@ export default {
           twist: -0.42,
           stride: 13,
           heel: 7,
-          clubForward: 12,
-          clubSide: -1,
           clubAngle: -1.08,
           clubYaw: 0.42,
           plant: 1,
+          approachDepth: 9.979393706,
         },
       ],
       [
         23,
         {
+          ...aim('weaponTip', [46.107824232, -47.239305484, -0.942894841]),
           crouch: 20,
           hip: 16,
           lean: -12,
@@ -72,18 +76,17 @@ export default {
           twist: -0.56,
           stride: 13,
           heel: 8,
-          clubForward: 22,
-          clubSide: -4,
           clubAngle: -1.13,
           clubYaw: 0.41,
           plant: 0.83,
         },
       ],
-      [30, {}],
+      [30, { ...aim('weaponTip', [30.179147575, -31.949240808, 61.751980753]) }],
     ]),
   },
   tech_snowball: {
     interpolate: true,
+    resolveKey: (key) => guide('tech_snowball', key),
     title: 'Ком',
     reference: 'hourlord-hour',
     weapon: 'clubTip',
@@ -95,10 +98,11 @@ export default {
       { frame: 47, socket: 'clubTip', kind: 'projectile', projectile: 'snowball' },
     ],
     keys: sixPoses([
-      [0, {}],
+      [0, { ...aim('weaponTip', [30.179147575, -31.949240808, 61.751980753]) }],
       [
         25,
         {
+          ...aim('weaponTip', [14.20457011, 75.466438106, 43.139923072]),
           hip: -8,
           lean: 15,
           crouch: 13,
@@ -107,14 +111,12 @@ export default {
           stride: 10,
           clubYaw: 2.61,
           clubAngle: -0.44,
-          clubSide: 20,
-          clubForward: -8,
-          clubLift: 9,
         },
       ],
       [
         29,
         {
+          ...aim('weaponTip', [49.230434816, 46.143944483, 45.357541449]),
           hip: -2,
           lean: 11,
           crouch: 9,
@@ -122,14 +124,12 @@ export default {
           stride: 11,
           clubYaw: 1.91,
           clubAngle: -0.46,
-          clubSide: 7,
-          clubForward: -4,
-          clubLift: 10,
         },
       ],
       [
         32,
         {
+          ...aim('weaponTip', [14.840504683, -51.747059057, 12.320830229], 32),
           hip: 14,
           lean: -14,
           crouch: 7,
@@ -139,13 +139,12 @@ export default {
           heel: 8,
           clubYaw: -0.47,
           clubAngle: -0.92,
-          clubForward: 4,
-          clubSide: -5,
         },
       ],
       [
         42,
         {
+          ...aim('weaponTip', [-8.655304904, -43.843093949, 18.777944272]),
           hip: 11,
           lean: -11,
           crouch: 2,
@@ -154,11 +153,9 @@ export default {
           heel: 6,
           clubYaw: -0.9,
           clubAngle: -0.85,
-          clubForward: 2,
-          clubSide: -3,
         },
       ],
-      [57, {}],
+      [57, { ...aim('weaponTip', [30.179147575, -31.949240808, 61.751980753]) }],
     ]),
   },
   tech_icicles: {

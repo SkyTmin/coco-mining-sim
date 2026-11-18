@@ -1,34 +1,20 @@
 // The pale thorns grow out of three braided vines. All markings turn with the hide.
-import { F3, Rig, type Mat, type V3 } from '../rig/f15-rig';
-import { hx, tn, TAU } from '../kit/f11-mobkit';
-import { everyday, life, projectFigure, scaleFigure } from '../rig/figure';
+import { Rig, type Mat, type V3 } from '../rig/f15-rig';
+import { hx, tn } from '../kit/f11-mobkit';
+import { everyday, projectFigure, scaleFigure } from '../rig/figure';
 import plan from './bramble_warden-life';
 import { withTechniques } from '../technique';
 import keys from './bramble_warden-keys';
-import { strideFoot } from '../motion';
+import { heavySkeleton, type HeavyPose } from '../bodies/heavy-quadruped';
+import { readCreatureCard } from '../bodies/card-data';
 import { forestMaterials, addBriar, visorGrain } from './bramble-bark';
 import { ramp } from './engraving';
 import { animations, pose, effects, props } from './bramble_warden-actions';
 import type { Creature, Variant } from '../types';
 
-export interface BramblePose {
-  dx?: number;
-  dy?: number;
-  sx?: number;
-  sy?: number;
-  pitch?: number;
-  roll?: number;
-  yaw?: number;
-  lift?: number;
-  head?: number;
-  coil?: number;
-  flare?: number;
-  reach?: number;
-  squint?: number;
-  glow?: number;
-  ghost?: number;
-  spineAim?: number;
-}
+const card = readCreatureCard('bramble_warden');
+
+export type BramblePose = HeavyPose;
 export function buildFrame(
   anim: string,
   t: number,
@@ -37,9 +23,7 @@ export function buildFrame(
   a: BramblePose = {},
   headLead = 0,
 ) {
-  const r = new Rig(),
-    gold = variant === 'gold',
-    l = life(anim, t, 0);
+  const r = new Rig(), gold = variant === 'gold';
   const materials = forestMaterials(gold);
   const { bark, ivy: vine, thorn: horn, armour, cambium, soil } = materials;
   const mask: Mat = {
@@ -63,72 +47,41 @@ export function buildFrame(
     if (recoil) a = {...a, spineAim:(a.spineAim ?? 0) - recoil * .26,
       pitch:(a.pitch ?? 0) - recoil * .092, lift:(a.lift ?? 0) - recoil * 2.5};
   }
-  const coil = Math.max(a.coil ?? 0, l.hatch * 0.95),
-    flare = (a.flare ?? 0) + 0.5 * l.happy;
-  const breath = Math.sin(l.q) * 0.85;
-  const root = F3.yaw(0.49 + (TAU * side) / 16 + (a.yaw ?? 0));
-  const b = root
-    .at(
-      -1,
-      0,
-      20 + breath - 4 * l.sleep - 3 * l.tired + (a.lift ?? 0) + 4 * l.pop,
-    )
-    .pitch((a.pitch ?? 0) - 0.04 * l.happy)
-    .roll(a.roll ?? 0);
-  const ground: Record<string, V3> = {},
-    planted: string[] = [];
-  const scale = 1.19;
-  for (const k of [-1, 1])
-    for (const s of [-1, 1]) {
-      const name = (k === 1 ? 'fore' : 'hind') + (s === 1 ? 'R' : 'L');
-      r.tag = name;
-      const gait = strideFoot(t, k === s ? 0 : 0.5, plan.stride / scale);
-      const scrape =
-        anim === 'idle' && k === 1 && s === 1
-          ? Math.max(0, Math.sin(l.q * 2 - 1)) ** 6
-          : 0;
-      const foot =
-        anim === 'walk'
-          ? root.p(k * 14 - 1 + gait.forward, s * 9.8, 2.4 + 4.3 * gait.lift)
-          : b.p(
-              k * (14 - 4 * coil) - 3 * scrape,
-              s * (9.8 - 2 * coil),
-              -17 + 8 * coil + scrape * 2 + 3 * l.sleep,
-            );
-      const F = F3.yaw(0.49 + (TAU * side) / 16, foot);
-      r.cap(b.p(k * 12, s * 8, -5), foot, 5.2, 3.2, {
-        ...cambium,
-        pat: ([u, x, y], l) =>
-          ramp(
-            cambium,
-            l,
-            (1 - u) * 0.6 * Math.sin(u * 21 + x * 3) +
-              0.43 * Math.cos(y * 6) +
-              0.75 * x,
-            u * 16,
-            x * 5,
-          ),
-      });
-      // Split hoof toes share one planted pivot; both move with the lower leg.
-      for (const toe of [-1, 1])
-        r.ell(F, [2.0, toe * 2.12, -1.55], [4.1, 1.82, 2.25], soil);
-      r.line(F.p(3.1, 0, -0.55), F.p(5.7, 0, -1.95), soil.T[0], 0, 1.5);
-      r.tag = name + 'Vine';
-      r.cap(F.p(-1.6, -s * 2, 4), F.p(2.0, s * 2.8, 3), 1.05, 0.8, vine);
-      r.tag = name;
-      if (k === 1)
-        r.line(
-          F.p(-1.2, s * 3, 5.1),
-          F.p(1.8, s * 2.8, 6.5),
-          cambium.T[3],
-          0,
-          0.82,
-        );
-      else r.ell(F, [-1, s * 2.1, 0.7], [1.8, 1.2, 1.7], vine);
-      ground[name] = foot;
-      if (k === 1 && s === 1) ground.paw = foot;
-      if (anim === 'walk' && gait.planted) planted.push(name);
-    }
+  const sk = heavySkeleton(anim, t, side, a, headLead, plan, card.proportions);
+  const { body: b, head: h, points: ground, planted, life: l, scale } = sk;
+  const flare = (a.flare ?? 0) + 0.5 * l.happy;
+  for (const { fore: k, side: s, name, hip, foot, hoof: F } of sk.legs) {
+    r.tag = name;
+    r.cap(hip, foot, 5.2, 3.2, {
+      ...cambium,
+      pat: ([u, x, y], l) =>
+        ramp(
+          cambium,
+          l,
+          (1 - u) * 0.6 * Math.sin(u * 21 + x * 3) +
+            0.43 * Math.cos(y * 6) +
+            0.75 * x,
+          u * 16,
+          x * 5,
+        ),
+    });
+    // Split hoof toes share one planted pivot; both move with the lower leg.
+    for (const toe of [-1, 1])
+      r.ell(F, [2.0, toe * 2.12, -1.55], [4.1, 1.82, 2.25], soil);
+    r.line(F.p(3.1, 0, -0.55), F.p(5.7, 0, -1.95), soil.T[0], 0, 1.5);
+    r.tag = name + 'Vine';
+    r.cap(F.p(-1.6, -s * 2, 4), F.p(2.0, s * 2.8, 3), 1.05, 0.8, vine);
+    r.tag = name;
+    if (k === 1)
+      r.line(
+        F.p(-1.2, s * 3, 5.1),
+        F.p(1.8, s * 2.8, 6.5),
+        cambium.T[3],
+        0,
+        0.82,
+      );
+    else r.ell(F, [-1, s * 2.1, 0.7], [1.8, 1.2, 1.7], vine);
+  }
   r.tag = 'torso';
   r.ell(b, [-4, 0, 0], [24, 15.5, 16], armour);
   r.tag = 'belly';
@@ -137,16 +90,6 @@ export function buildFrame(
     pat: ([x, y, z], l) =>
       ramp(soil, l - 0.24, 0.7 * Math.cos(x * 13 + z * 4), x * 24, z * 10),
   });
-  const h = b
-    .at(14 - 9 * coil + (a.reach ?? 0), 0, -2 - 3 * coil)
-    .turn(0.86 * l.look + headLead)
-    .pitch(
-      (a.head ?? 0) +
-        0.24 * l.sleep +
-        0.26 * l.tired -
-        0.1 * l.happy -
-        0.13 * Math.max(0, Math.sin(l.q - 1.3)) ** 7,
-    );
   r.tag = 'head';
   r.ell(h, [4, 0, 0], [11.8, 10.7, 9.4], mask);
   r.ell(h, [12.9, 0, -6.2], [6.8, 6.5, 2.45], soil);
@@ -218,7 +161,12 @@ export function buildFrame(
       }
     }
   addBriar(r, b, h, materials, l.q);
-  const points = { ...ground, snout: h.p(20, 0, -2), spine };
+  // The working point of this skin is the nose; its rear sprig is its short tail.
+  const tailTip = b.p(-26, 11, 13);
+  const points = {
+    ...ground, weaponTip: ground.snout, weaponTipGround: ground.snoutGround, tailTip,
+    tailTipGround: [tailTip[0], tailTip[1], 0] as V3, spine,
+  };
   scaleFigure(r, points, scale, 1.36);
   const frame = projectFigure(r, 96, [46, 72], points, '#28242e');
   return {
@@ -232,9 +180,9 @@ export function buildFrame(
   };
 }
 const creature: Creature = {
-  id: 'bramble_warden',
-  rarity: 'common',
-  theme: 'root_edge',
+  id: card.id,
+  rarity: card.rarity,
+  theme: card.theme,
   animations: { ...everyday, ...animations },
   effects,
   props,

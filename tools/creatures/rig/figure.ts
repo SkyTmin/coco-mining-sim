@@ -100,6 +100,26 @@ export function scaleFigure(
   for (const [key, value] of Object.entries(sockets))
     sockets[key] = point(value);
 }
+export type FigureSetup = (
+  rig: Rig,
+  sockets: Record<string, V3>,
+  size: number,
+  anchor: XY,
+) => { size: number; anchor: XY } | void;
+let activeSetup: FigureSetup | undefined;
+
+/** Configure a borrowed, articulated rig once it has all of its sockets, before rasterization.
+ * Frame builds are synchronous. Nested builds restore their caller's setup even on errors. */
+export function withFigureSetup<T>(setup: FigureSetup, build: () => T): T {
+  const previous = activeSetup;
+  activeSetup = setup;
+  try {
+    return build();
+  } finally {
+    activeSetup = previous;
+  }
+}
+
 // Moving the local origin together with the socket projections preserves every
 // world-space pixel, including the floor position and independently sampled FX.
 export function projectFigure(
@@ -110,6 +130,8 @@ export function projectFigure(
   ink?: string,
   inner = 3.8,
 ): BodyFrame {
+  const canvas = activeSetup?.(rig, sockets, size, anchor);
+  if (canvas) ({ size, anchor } = canvas);
   const paint = { outline: ink ? hx(ink) : undefined, inner };
   let image: RigOut = renderRig(rig, size, size, ...anchor, paint);
   if (touchesEdge(image.p)) {

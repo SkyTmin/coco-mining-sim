@@ -1,7 +1,8 @@
 // Sweep the shaft outside the front of the coat. Distances are in the same
 // ellipsoid coordinates that the studio uses to inspect a posed capsule.
-import { primitivesOf } from '../studio/clip';
+import { primitivesOf } from '../rig/collision';
 import { F3, Rig, vadd, vcross, vdot, vmul, vnorm, vsub, type V3 } from '../rig/f15-rig';
+import { segmentClearance } from './goals';
 import { ik } from '../kit/f11-mobkit';
 
 export function bodyShell(rig: Rig) {
@@ -30,26 +31,13 @@ export function moveGrip(shell: Shell, at: V3, shaft: V3, forward: V3) {
       const along = vdot(d, n),
         perp = Math.sqrt(Math.max(0, vdot(d, d) - along * along)) / padding;
       const front =
-        perp > 0.9
-          ? Math.sqrt(0.19) - (0.9 / Math.sqrt(0.19)) * (perp - 0.9)
-          : Math.sqrt(1 - perp * perp);
+        perp > 0.9 ? Math.sqrt(0.19) - (0.9 / Math.sqrt(0.19)) * (perp - 0.9) : Math.sqrt(1 - perp * perp);
       shift = Math.max(shift, (front * padding - along) / speed);
     }
   }
   return vadd(at, vmul(forward, shift));
 }
-function segmentClearance(shell: Shell, a: V3, b: V3) {
-  let clearance = 2;
-  for (const e of shell) {
-    const p = normalized(e.inv, vsub(a, e.c)),
-      d = normalized(e.inv, vsub(b, a));
-    const u = Math.max(0, Math.min(1, -vdot(p, d) / (vdot(d, d) || 1)));
-    clearance = Math.min(clearance, Math.hypot(...vadd(p, vmul(d, u))));
-  }
-  return clearance;
-}
-
-export function swingingElbow(shell: Shell, root: V3, hand: V3, basis: F3, side: number) {
+export function swingingElbow(shell: Shell, root: V3, hand: V3, basis: F3, side: number, length = 24) {
   const axis = vnorm(vsub(hand, root));
   const restPole = basis.v(0, side * 0.88, -0.48);
   // Parallel transport the bend plane from the arm's forward reference. This stays
@@ -62,7 +50,7 @@ export function swingingElbow(shell: Shell, root: V3, hand: V3, basis: F3, side:
   );
   const around = vcross(axis, pole);
   const elbowFor = (angle: number) =>
-    ik(root, hand, 24, 24, vadd(vmul(pole, Math.cos(angle)), vmul(around, Math.sin(angle))));
+    ik(root, hand, length, length, vadd(vmul(pole, Math.cos(angle)), vmul(around, Math.sin(angle))));
   // Interpolate the swivel in angular space, then solve the two bones once at
   // that angle. Equal-cost candidates cannot flip the elbow to the other side.
   let moment = 0,
@@ -70,10 +58,7 @@ export function swingingElbow(shell: Shell, root: V3, hand: V3, basis: F3, side:
   for (let i = -5; i <= 5; i++) {
     const angle = i * 0.3;
     const elbow = elbowFor(angle);
-    const clearance = Math.min(
-      segmentClearance(shell, root, elbow),
-      segmentClearance(shell, elbow, hand),
-    );
+    const clearance = Math.min(segmentClearance(shell, root, elbow), segmentClearance(shell, elbow, hand));
     const overlap = Math.max(0, 1.05 - clearance);
     const weight = Math.exp(-3 * overlap * overlap - 1.4 * angle * angle);
     moment += angle * weight;

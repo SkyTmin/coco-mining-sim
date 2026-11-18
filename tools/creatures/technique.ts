@@ -25,6 +25,8 @@ export interface Technique {
   weapon: string;
   contactKind: ContactKind;
   keys: readonly PoseKey[];
+  /** Extra resets, strikes and recoils after the first follow-through in a multi-strike technique. */
+  repeatKeys?: readonly PoseKey[];
   contacts?: readonly TechniqueContact[];
   floorSocket?: string;
   seconds?: number;
@@ -32,6 +34,8 @@ export interface Technique {
   shake?: number;
   /** The director switches this on after the critic has seen the held keys. */
   interpolate?: boolean;
+  /** Convert an authored Cartesian key into this skeleton's interpolation coordinates. */
+  resolveKey?: (key: PoseKey) => JointPose;
 }
 export type TechniqueBook = Record<string, Technique>;
 
@@ -57,16 +61,22 @@ export function techniqueContacts(spec: Technique): readonly TechniqueContact[] 
     : [];
 }
 
+function playbackKeys(spec: Technique): readonly PoseKey[] {
+  if (!spec.repeatKeys?.length) return spec.keys;
+  return [...spec.keys.slice(0, -1), ...spec.repeatKeys, spec.keys[spec.keys.length - 1]];
+}
+
 export function techniquePoseAt(spec: Technique, seconds: number): JointPose {
   const position = seconds * 24;
-  const keys = spec.keys;
-  if (position <= keys[0].frame) return keys[0].pose;
+  const keys = playbackKeys(spec);
+  const resolved = (key: PoseKey) => (spec.resolveKey ? spec.resolveKey(key) : key.pose);
+  if (position <= keys[0].frame) return resolved(keys[0]);
   const next = keys.findIndex((key) => key.frame >= position - 1e-8);
-  if (next < 0) return keys[keys.length - 1].pose;
+  if (next < 0) return resolved(keys[keys.length - 1]);
   const b = keys[next];
-  if (Math.abs(position - b.frame) < 1e-8) return b.pose;
+  if (Math.abs(position - b.frame) < 1e-8) return resolved(b);
   const a = keys[next - 1];
-  if (!spec.interpolate) return a.pose;
+  if (!spec.interpolate) return resolved(a);
   const u = (position - a.frame) / (b.frame - a.frame);
   const ease = b.ease ?? (b.role === 'hit' ? 'in' : b.role === 'follow' ? 'out' : 'smooth');
   const amount =
@@ -77,10 +87,11 @@ export function techniquePoseAt(spec: Technique, seconds: number): JointPose {
         : ease === 'out'
           ? 1 - (1 - u) * (1 - u)
           : u * u * (3 - 2 * u);
+  const fromPose = resolved(a), toPose = resolved(b);
   const values: JointPose = {};
-  for (const name of new Set([...Object.keys(a.pose), ...Object.keys(b.pose)])) {
-    const from = a.pose[name] ?? 0;
-    values[name] = from + ((b.pose[name] ?? 0) - from) * amount;
+  for (const name of new Set([...Object.keys(fromPose), ...Object.keys(toPose)])) {
+    const from = fromPose[name] ?? 0;
+    values[name] = from + ((toPose[name] ?? 0) - from) * amount;
   }
   return values;
 }
@@ -101,11 +112,11 @@ export function withTechniques(c: Creature, book: TechniqueBook): Creature {
       throw Error(c.id + '/' + name + ' must span frames 0–' + (n - 1) + ' in 4–6 keys');
     }
     let previous = -1;
-    for (const key of spec.keys) {
+    for (const key of playbackKeys(spec)) {
       if (
         !Number.isInteger(key.frame) ||
         key.frame <= previous ||
-        Object.values(key.pose).some((v) => !Number.isFinite(v))
+        Object.entries(key.pose).some(([name,v]) => !Number.isFinite(v) || (name.endsWith('.contactFrame') && v !== key.frame))
       ) {
         throw Error(c.id + '/' + name + ' invalid pose at ' + key.frame);
       }

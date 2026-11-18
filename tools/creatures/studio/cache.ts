@@ -3,6 +3,8 @@
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
+import { bodySources } from '../bodies/sources';
+import type { CreatureCard } from './card';
 import { cpus } from 'node:os';
 import { join, relative } from 'node:path';
 
@@ -29,7 +31,10 @@ export function creatureIds() {
 }
 
 export function inputsOf(id: string, theme: string, rarity: string) {
-  const others = creatureIds().filter((x) => x !== id);
+  const cardFile = join(tools, 'c', id + '.card.json');
+  const card = existsSync(cardFile) ? JSON.parse(readFileSync(cardFile, 'utf8')) as CreatureCard : undefined;
+  const parent = card && bodySources[card.body];
+  const others = creatureIds().filter((x) => x !== id && x !== parent);
   const own = readdirSync(join(tools, 'c'))
     .filter((f) => !others.some((o) => f === o + '.ts' || f.startsWith(o + '-') || f.startsWith(o + '.')))
     .map((f) => join(tools, 'c', f));

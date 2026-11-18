@@ -51,14 +51,9 @@ export function reelChapters(c: Creature) {
     });
 }
 
-export function attachMotion(c: Creature, plan: MotionPlan): Creature {
-  if (
-    !Number.isFinite(plan.stride) ||
-    plan.stride <= 0 ||
-    !Number.isFinite(plan.yaw)
-  )
-    throw Error(c.id + ' invalid gait');
-  plan = {
+/** Play the complete authored technique on the 24 Hz clock when it occurs in life. */
+export function resolveTechniqueBeats(c: Creature, plan: MotionPlan): MotionPlan {
+  return {
     ...plan,
     beats: plan.beats.map((beat) =>
       beat.anim.startsWith('tech_') && c.animations[beat.anim]
@@ -69,6 +64,16 @@ export function attachMotion(c: Creature, plan: MotionPlan): Creature {
         : beat,
     ),
   };
+}
+
+export function attachMotion(c: Creature, plan: MotionPlan): Creature {
+  if (
+    !Number.isFinite(plan.stride) ||
+    plan.stride <= 0 ||
+    !Number.isFinite(plan.yaw)
+  )
+    throw Error(c.id + ' invalid gait');
+  plan = resolveTechniqueBeats(c, plan);
   const chapters = reelChapters(c);
   const seconds = lifeDuration(plan);
   let start = 0;

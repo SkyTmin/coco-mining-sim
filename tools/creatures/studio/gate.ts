@@ -3,6 +3,7 @@
 import { loadPainting } from '../render';
 import { measureDetail, minimumColours } from '../detail';
 import { measureCreature, readReferences } from '../tech-metrics';
+import { cardRuntimeIssues } from './card';
 import { sizes } from '../types';
 
 export async function gateExtras(ids: string[]) {
@@ -15,6 +16,11 @@ export async function gateExtras(ids: string[]) {
   }
   for (const id of ids) {
     const { c } = await loadPainting(id);
+    const cards = cardRuntimeIssues(c);
+    if (cards.length) {
+      for (const issue of cards) console.log('  ! ' + id + ' card: ' + issue);
+      failed++;
+    }
     const [, fieldHeight, canvas] = sizes[c.rarity];
     const m = measureDetail(c.frame('idle', 0, 0, 'normal').px);
     const extent = Math.max(m.width, m.height);

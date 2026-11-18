@@ -2,29 +2,34 @@
 import { type F3, type Mat, type Rig, type V3 } from '../rig/f15-rig';
 import { tn, hx } from '../kit/f11-mobkit';
 import { ramp, localPoint } from './engraving';
+import card from './bramble_warden.card.json';
+
+const natural = Object.fromEntries(card.materials.map(({name,tones}) => [
+  name, tn(tones[0],tones[2],tones[4],tones[6]),
+]));
 export function forestMaterials(gold: boolean) {
   const bark: Mat = {
     T: gold
       ? tn('#47323c', '#936344', '#bd9054', '#ffe1a0')
-      : tn('#352b36', '#685044', '#a57750', '#dcc293'),
+      : natural.bark,
   };
   const cambium: Mat = {
     T: gold
       ? tn('#54404a', '#966a44', '#d2a054', '#f8dd86')
-      : tn('#473435', '#745242', '#bf9562', '#ecd6a4'),
+      : natural.cambium,
   };
   const ivy: Mat = {
     T: gold
       ? tn('#473b3b', '#89653e', '#bda14e', '#f5dd8f')
-      : tn('#2a3437', '#475641', '#809060', '#c1c186'),
+      : natural.ivy,
   };
   const thorn: Mat = {
     T: gold
       ? tn('#5b434a', '#ad744a', '#e3b65e', '#fff1b0')
-      : tn('#4d454c', '#8d7865', '#ccb189', '#f6e3b7'),
+      : natural.thorn,
   };
-  const plum: Mat = { T: tn('#241c33', '#50314e', '#934f72', '#e99ca1') };
-  const soil: Mat = { T: tn('#302b34', '#4b423a', '#786446', '#ab9568') };
+  const plum: Mat = { T: natural.plum };
+  const soil: Mat = { T: natural.soil };
   const barkTexture = (x: number, y: number, z: number, l: number) => {
     const u = 24 * x,
       v = 13 * Math.atan2(z, y);
@@ -84,7 +89,7 @@ export function addBriar(
   q: number,
 ) {
   const { ivy, thorn, plum, cambium, bark } = m;
-  const lichen: Mat = { T: tn('#354349', '#52645c', '#829181', '#c2c2a1') };
+  const lichen: Mat = { T: natural.lichen };
   lichen.pat = ([x, y, z], l) =>
     ramp(
       lichen,

@@ -1,0 +1,217 @@
+// Target coordinates are in the native rig's forward, right and up axes. Columns describe
+// anticipation, the start of the strike, contact and follow-through. Rest and return belong to the body.
+import type { BodyType } from '../bodies/card-data';
+import type { V3 } from '../rig/f15-rig';
+import type { ContactKind } from '../technique';
+
+export type Track = readonly [number, number, number, number];
+export type TargetPath = readonly [V3, V3, V3, V3];
+interface MoveTemplate {
+  source: readonly [string, string];
+  reference: string;
+  weapon: string;
+  kind: Exclude<ContactKind, 'projectile'>;
+  frames: readonly [number, number, number, number, number, number];
+  stop: number;
+  target: TargetPath;
+  advance: Track;
+  pitch: Track;
+  twist: Track;
+  crouch: Track;
+  lift?: Track;
+}
+
+export const defaultMoveParameters = { strength: 1, amplitude: 1, side: 1, repeats: 1 };
+
+export const moveTemplates = {
+  overhead: {
+    source: ['frost_yeti', 'tech_slam'],
+    reference: 'mammoth-stomp',
+    weapon: 'weaponTip',
+    kind: 'floor',
+    frames: [0, 14, 16, 19, 23, 30],
+    stop: 0.08,
+    target: [
+      [-13, 14, 56],
+      [10, 16, 54],
+      [32, 10, 0],
+      [37, 9, 1],
+    ],
+    advance: [-12, -9, 12, 17],
+    pitch: [-0.48, -0.28, 0.63, 0.74],
+    twist: [0.37, 0.21, -0.33, -0.48],
+    crouch: [-4, -2, 9, 13],
+  },
+  ram: {
+    source: ['gem_beetle', 'tech_horn'],
+    reference: 'mammoth-tusks',
+    weapon: 'weaponTip',
+    kind: 'body',
+    frames: [0, 16, 18, 21, 26, 37],
+    stop: 0.04,
+    target: [
+      [19, -7, 31],
+      [24, -6, 27],
+      [36, 1, 14],
+      [38, 1, 12],
+    ],
+    advance: [-18, -12, 18, 23],
+    pitch: [-0.25, -0.19, 0.24, 0.32],
+    twist: [-0.22, -0.18, 0.16, 0.23],
+    crouch: [5, 4, 0, -1],
+  },
+  sweep: {
+    source: ['coin_dragon', 'tech_claw'],
+    reference: 'puppeteer-cut',
+    weapon: 'weaponTip',
+    kind: 'floor',
+    frames: [0, 9, 10, 13, 16, 21],
+    stop: 0.04,
+    target: [
+      [-2, 25, 33],
+      [13, 29, 24],
+      [31, -8, 0],
+      [25, -20, 2],
+    ],
+    advance: [-14, -10, 14, 19],
+    pitch: [-0.22, -0.1, 0.31, 0.45],
+    twist: [0.82, 0.57, -0.64, -0.94],
+    crouch: [-2, -1, 5, 8],
+  },
+  volley: {
+    source: ['frost_yeti', 'tech_icicles'],
+    reference: 'puppeteer-cut',
+    weapon: 'weaponTip',
+    kind: 'body',
+    frames: [0, 19, 21, 24, 33, 47],
+    stop: 0.04,
+    target: [
+      [25, -7, 13],
+      [27, -2, 17],
+      [31, 6, 35],
+      [33, 7, 37],
+    ],
+    advance: [-17, -12, 17, 23],
+    pitch: [0.46, 0.26, -0.35, -0.5],
+    twist: [0.47, 0.29, -0.34, -0.43],
+    crouch: [9, 6, -3, -4],
+  },
+  breath: {
+    source: ['coin_dragon', 'tech_breath'],
+    reference: 'guardian-strike',
+    weapon: 'mouth',
+    kind: 'air',
+    frames: [0, 17, 20, 23, 31, 42],
+    stop: 0.04,
+    target: [
+      [14, 9, 35],
+      [18, 7, 30],
+      [37, -4, 19],
+      [40, -6, 17],
+    ],
+    advance: [-25, -19, 23, 30],
+    pitch: [-0.4, -0.22, 0.34, 0.46],
+    twist: [0.45, 0.25, -0.34, -0.55],
+    crouch: [6, 3, -3, -4],
+  },
+  leap: {
+    source: ['toad_shaman', 'tech_leap'],
+    reference: 'mammoth-stomp',
+    weapon: 'footL',
+    kind: 'floor',
+    frames: [0, 17, 24, 27, 33, 42],
+    stop: 0.06,
+    target: [
+      [-10, -11, 2],
+      [-7, -9, 29],
+      [1, -13, 0],
+      [4, -15, 0],
+    ],
+    advance: [-15, -6, 15, 21],
+    pitch: [0.3, -0.32, 0.24, 0.35],
+    twist: [0.21, -0.2, -0.3, -0.35],
+    crouch: [9, -1, 6, 9],
+    lift: [0, 23, 0, 0],
+  },
+  pillars: {
+    source: ['crater_titan', 'tech_pillar'],
+    reference: 'guardian-strike',
+    weapon: 'weaponTip',
+    kind: 'floor',
+    frames: [0, 18, 20, 23, 34, 42],
+    stop: 0.04,
+    target: [
+      [-7, 13, 43],
+      [9, 15, 39],
+      [27, 9, 0],
+      [33, 11, 1],
+    ],
+    advance: [-22, -16, 20, 25],
+    pitch: [-0.49, -0.32, 0.59, 0.68],
+    twist: [0.43, 0.24, -0.38, -0.47],
+    crouch: [-1, -2, 9, 12],
+  },
+  roar: {
+    source: ['frost_yeti', 'tech_roar'],
+    reference: 'mammoth-stomp',
+    weapon: 'mouth',
+    kind: 'air',
+    frames: [0, 16, 19, 22, 28, 37],
+    stop: 0.04,
+    target: [
+      [19, 5, 17],
+      [21, 3, 20],
+      [30, -3, 37],
+      [33, -4, 40],
+    ],
+    advance: [-14, -11, 12, 18],
+    pitch: [0.52, 0.28, -0.47, -0.61],
+    twist: [0.3, 0.21, -0.29, -0.37],
+    crouch: [9, 6, -4, -5],
+  },
+  summon: {
+    source: ['silk_dragon', 'tech_kites'],
+    reference: 'puppeteer-cut',
+    weapon: 'handR',
+    kind: 'air',
+    frames: [0, 17, 18, 21, 31, 42],
+    stop: 0.04,
+    target: [
+      [9, 14, 14],
+      [16, 16, 18],
+      [27, 20, 33],
+      [30, 20, 36],
+    ],
+    advance: [-15, -10, 15, 19],
+    pitch: [0.24, 0.17, -0.29, -0.35],
+    twist: [-0.61, -0.48, 0.4, 0.66],
+    crouch: [7, 5, -2, -3],
+  },
+  dive: {
+    source: ['coin_dragon', 'tech_dive'],
+    reference: 'mammoth-tusks',
+    weapon: 'mouth',
+    kind: 'body',
+    frames: [0, 18, 19, 22, 34, 47],
+    stop: 0.04,
+    target: [
+      [17, 4, 40],
+      [23, 2, 34],
+      [37, -1, 3],
+      [40, -3, 24],
+    ],
+    advance: [-16, -11, 13, 27],
+    pitch: [-0.49, -0.21, 0.77, -0.3],
+    twist: [0.25, 0.14, -0.15, -0.26],
+    crouch: [-3, -1, 9, -4],
+  },
+} satisfies Record<string, MoveTemplate>;
+export type MoveId = keyof typeof moveTemplates;
+export function templateFor(id: MoveId): MoveTemplate {
+  return moveTemplates[id];
+}
+
+export function weaponFor(body: BodyType, id: MoveId) {
+  // A long flier lands its whip-like tail while the belly and fins remain airborne.
+  return body === 'long-flier' && id === 'leap' ? 'tailTip' : templateFor(id).weapon;
+}
