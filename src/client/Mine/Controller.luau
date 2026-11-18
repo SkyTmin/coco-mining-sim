@@ -317,7 +317,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			or player:GetAttribute("MineRebirthTransition") == true
 	end
 	local function canControl(): boolean
-		return active
+		return (active or (visiting and player:GetAttribute("GuestPlot") == visiting.plot))
 			and not returning
 			and not menuOpen()
 			and player:GetAttribute("MineUpgradesOpen") ~= true
@@ -327,6 +327,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		return canControl() and window ~= nil and not (ride and ride.ability) and #echoes == 0
 	end
 	local function aim(screen: Vector2): any?
+		if visiting and player:GetAttribute("GuestPlot") == visiting.plot then
+			return visiting:aim(screen)
+		end
 		local r = renderer
 		return if r and canHit() then Aim.at(r, window, screen) else nil
 	end
@@ -353,6 +356,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		local v = view
 		local now = os.clock()
 		if not v or not canHit() then
+			return
+		end
+		if visiting and player:GetAttribute("GuestPlot") == visiting.plot then
+			if kind == "Hit" and target and now >= nextHit then
+				seq = seq % 65535 + 1
+				nextHit = now + Config.progress.hitSizes[1].interval
+				intent:FireServer(Wire.encodeIntent("Hit", seq, target.x, target.y, target.dRel))
+				Sfx.hit(now)
+			end
 			return
 		end
 		local settings = pick()
@@ -831,6 +843,22 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			end
 		elseif kind == "result" then
 			local res = packet
+			if visual == "helper" then
+				if pending and pending.result then
+					local queued = pending
+					applyResult(queued.result)
+					for _, batch in queued.tail do
+						applyLayers(batch)
+					end
+				end
+				if window and window.front + res.delta == res.front then
+					MineView.apply(window, res)
+					dirty = true
+				else
+					resync()
+				end
+				return
+			end
 			if res and res.accepted then
 				musicLastHit = os.clock()
 				rush.sync(res, workspace:GetServerTimeNow())

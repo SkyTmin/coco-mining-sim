@@ -20,6 +20,7 @@ for _, service in
 		services.HologramService,
 		services.VisitService,
 		services.SocialService,
+		services.GuestService,
 		services.EventService,
 		services.RebirthService,
 		services.HitService,

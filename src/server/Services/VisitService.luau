@@ -122,6 +122,16 @@ local function update(player: Player)
 	local current = assignments[player]
 	if current then
 		if
+			current.role == "guest"
+			and require(script.Parent.ProfileService).Read(current.owner, function(p)
+					return p.settings.guests
+				end)
+				== "none"
+		then
+			Visit.leave(player)
+			return
+		end
+		if
 			Plots.owner(current.plot) == current.owner
 			and Plots.inZone(
 				player,

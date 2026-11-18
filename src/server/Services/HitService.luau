@@ -47,7 +47,7 @@ local function publish(
 	coins: number,
 	ability: boolean,
 	strike: Power.Strike?,
-	visual: Codec.SavedMine?
+	visual: any?
 )
 	local st = s.state
 	local delta = st.front - oldFront
@@ -108,6 +108,96 @@ local function record(timing: MineService.Timing, elapsed: number)
 	timing.max = math.max(timing.max, elapsed)
 end
 
+local Visit = require(script.Parent.VisitService)
+local CampRules = require(Shared.Play.CampRules)
+local function guestHit(player: Player, visit: any, intent: any, now: number)
+	local s = MineService.get(visit.owner)
+	local personal = MineService.get(player)
+	if
+		not s
+		or not personal
+		or PlotService.owner(visit.plot) ~= visit.owner
+		or visit.owner:GetAttribute("InDuel")
+	then
+		return
+	end
+	local function reject()
+		if player.Parent == game:GetService("Players") then
+			MineService.reject(player, s, intent.seq)
+		end
+	end
+	if intent.op ~= "Hit" or not PlotService.inZone(player, visit.plot, "guest", 0) then
+		reject()
+		return
+	end
+	local host = s.player
+	local serverNow = workspace:GetServerTimeNow()
+	local d = Validate.target(s.state, true, intent.x, intent.y, intent.dRel)
+	local pick = ProfileService.Read(host, function(p)
+		return Circle.pick(p.pickaxe, p.circle, s.state.front, p)
+	end)
+	if not d or not pick or not Validate.take(personal.bucket, now, pick.interval) then
+		reject()
+		return
+	end
+	local outcome = nil
+	ProfileService.Mutate(host, function(p)
+		if p.settings.guests == "none" then
+			return
+		end
+		local ctx = EventService.income(s, p, serverNow, false)
+		outcome = MiningAction.perform(s.state, p, s.perks, {
+			guest = true,
+			x = intent.x,
+			y = intent.y,
+			d = d,
+			now = now,
+			serverNow = serverNow,
+			income = ctx,
+			marks = s.events,
+			playSeconds = ProfileService.PlaySeconds(host),
+		})
+	end)
+	if not outcome then
+		reject()
+		return
+	end
+	ProfileService.Mutate(player, function(p)
+		CampRules.payGuest(p, outcome.coins, s.state.seed)
+	end)
+	s.lastHitAt, s.hitInterval = now, pick.interval
+	EventService.after(
+		host,
+		s,
+		outcome,
+		{ now = serverNow, ability = false, x = intent.x, y = intent.y, d = d }
+	)
+	publish(
+		s,
+		0,
+		outcome.oldFront,
+		outcome.res,
+		outcome.events,
+		outcome.coins,
+		false,
+		outcome.strike,
+		"helper"
+	)
+	EventService.flush(host, s)
+	if host.Parent == game:GetService("Players") then
+		for _, v in outcome.rewards do
+			chestReward:FireClient(
+				host,
+				{ tier = v.tier, coins = v.coins, keys = v.keys, pick = v.pick and v.pick.id }
+			)
+		end
+		if outcome.worldTime then
+			RebirthService.hint(host)
+			Remotes.event("WorldTime"):FireClient(host, outcome.worldTime)
+		end
+	end
+end
+
 local function onIntent(player: Player, packet: any)
 	local intent = Wire.decodeIntent(packet)
 	local s = MineService.get(player)
@@ -118,10 +208,21 @@ local function onIntent(player: Player, packet: any)
 	if intent.op == "Resync" then
 		if started - s.resyncAt >= 0.5 then
 			s.resyncAt = started
-			MineService.window(s)
+			MineService.window(s, nil, player)
+			local watching = Visit.get(player)
+			local target = watching and MineService.get(watching.owner)
+			if target then
+				MineService.subscribe(player, target)
+			end
 		end
 		return
-	elseif intent.op == "DigStop" then
+	end
+	local visiting = Visit.get(player)
+	if visiting and visiting.role == "guest" then
+		guestHit(player, visiting, intent, started)
+		return
+	end
+	if intent.op == "DigStop" then
 		MineService.stopDigging(s, started)
 		return
 	end

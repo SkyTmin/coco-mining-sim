@@ -344,7 +344,68 @@ function Social.start(parent: Instance, tr: any)
 			render()
 		end
 	end)
-	Remotes.event("CampSignal").OnClientEvent:Connect(function(kind, id, value)
+	local offer = modal("CampOffer", UDim2.fromScale(0.72, 0.42), Candy.purple)
+	local invitation = Candy.text(
+		offer.panel,
+		"Invitation",
+		UDim2.fromScale(0.9, 0.4),
+		UDim2.fromScale(0.05, 0.14),
+		20
+	)
+	local token = nil
+	for i, yes in { true, false } do
+		local b = Candy.button(
+			offer.panel,
+			if yes then "Yes" else "No",
+			UDim2.fromScale(0.38, 0.25),
+			UDim2.fromScale(0.08 + (i - 1) * 0.46, 0.63),
+			if yes then "confirm" else "neutral",
+			16
+		)
+		b.text.Text = tr(if yes then "camp_affirm" else "camp_decline")
+		b.input.Activated:Connect(function()
+			action:FireServer("answer", nil, { id = token, yes = yes })
+			Candy.show(offer, false)
+		end)
+	end
+	local helping =
+		Candy.panel(controls, "Helper", UDim2.fromOffset(228, 40), UDim2.new(0.5, -114, 0, 38))
+	local helpText =
+		Candy.text(helping, "Host", UDim2.fromScale(0.64, 1), UDim2.fromScale(0, 0), 15)
+	local leave = Candy.button(
+		helping,
+		"Leave",
+		UDim2.fromScale(0.32, 0.78),
+		UDim2.fromScale(0.66, 0.09),
+		"close",
+		15
+	)
+	leave.text.Text = tr("camp_leave")
+	leave.input.Activated:Connect(function()
+		action:FireServer("leave")
+	end)
+	local function role()
+		local index = me:GetAttribute("GuestPlot")
+		local plot = index and plots:FindFirstChild("Plot_" .. index)
+		local raw = plot and plot:GetAttribute("CampCard")
+		helping.Visible = index ~= nil
+		helpText.Text = if raw then tr("camp_helping", Http:JSONDecode(raw).name) else ""
+	end
+	me:GetAttributeChangedSignal("GuestPlot"):Connect(role)
+	role()
+	Remotes.event("CampSignal").OnClientEvent:Connect(function(kind, id, value, seq)
+		if kind == "offer" then
+			token = seq
+			offer.title.Text = tr(if id == "duel" then "camp_duel" else "camp_help")
+			invitation.Text = tr(if id == "duel" then "camp_duel_ask" else "camp_guest_ask", value)
+			Candy.show(offer, true)
+			task.delay(Config.social.askSeconds, function()
+				if token == seq then
+					Candy.show(offer, false)
+				end
+			end)
+			return
+		end
 		if kind == "reaction" and (id == me.UserId or not Profile.preference("hideReactions")) then
 			local other = Players:GetPlayerByUserId(id)
 			if other and other.Character then

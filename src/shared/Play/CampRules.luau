@@ -35,4 +35,9 @@ function Rules.like(profile: any, from: number, to: number, day: number): boolea
 	profile.likesGiven.ids[key] = true
 	return true
 end
+local Keys = require(script.Parent.Keys)
+function Rules.payGuest(profile: any, coins: number, seed: number)
+	profile.coins += coins * Config.social.guestCoins
+	Keys.credit(profile, Config.social.guestKeyHits, seed)
+end
 return Rules

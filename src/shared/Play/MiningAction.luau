@@ -74,6 +74,13 @@ function MiningAction.perform(
 	local front = st.front
 	local pick = Circle.pick(profile.pickaxe, profile.circle, front, profile)
 	pick.marks = request.marks
+	local guest = request.guest == true
+	if guest and request.ability then
+		return nil, "guest"
+	end
+	if guest then
+		pick.family, pick.storm, pick.plateMultiplier = nil, nil, 1
+	end
 	local effects = Family.effects(profile)
 	local income = request.income or Income.context(profile, effects)
 	if not Income.safeAction(profile, effects, income) then
@@ -101,17 +108,17 @@ function MiningAction.perform(
 		local counter = profile.hitCounter + 1
 		strike =
 			Power.strike(st.seed, counter, profile.critCounter, pick.strength, profile.circle.cards)
-		pick.forcedPierce = if runtime.nextPierce > 0
+		pick.forcedPierce = if not guest and runtime.nextPierce > 0
 			then runtime.nextPierce
 			else Power.pierce(Worlds.durability(request.d), strike.strength, strike)
-		if runtime.nextPierce > 0 then
+		if not guest and runtime.nextPierce > 0 then
 			procFlags = bit32.bor(procFlags, FxFlags.ultPierce)
 		end
-		if Hash.unit(st.seed, counter, 505) < effects.pierce then
+		if not guest and Hash.unit(st.seed, counter, 505) < effects.pierce then
 			pick.forcedPierce += 1
 			procFlags = bit32.bor(procFlags, FxFlags.pierce)
 		end
-		pick.brittle = Hash.unit(st.seed, counter, 507) < effects.brittle
+		pick.brittle = not guest and Hash.unit(st.seed, counter, 507) < effects.brittle
 		if pick.brittle then
 			procFlags = bit32.bor(procFlags, FxFlags.brittle)
 		end
@@ -129,7 +136,9 @@ function MiningAction.perform(
 				table.insert(pierced, cell)
 			end
 		end
-		runtime.nextPierce = 0
+		if not guest then
+			runtime.nextPierce = 0
+		end
 		profile.hitCounter, profile.critCounter =
 			counter, profile.critCounter + (if strike.crit then 1 else 0)
 	end
@@ -205,7 +214,10 @@ function MiningAction.perform(
 				* (Config.events.bomb.maxSeconds - Config.events.bomb.minSeconds)
 	end
 	profile.coins += coins
-	local keys = if ability then 0 else Keys.hit(profile, effects.keys, st.seed)
+	local keys = if ability
+		then 0
+		elseif guest then Keys.credit(profile, Config.social.guestKeyHits, st.seed)
+		else Keys.hit(profile, effects.keys, st.seed)
 	local hitKeys = keys
 	if hitKeys > 0 then
 		procFlags = bit32.bor(procFlags, FxFlags.key)
