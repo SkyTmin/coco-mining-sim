@@ -21,4 +21,18 @@ function Rules.token(front: number, slot: number): (number, number)
 	return (i - 1 + f) * Config.camp.scaleHeight / #Config.worlds,
 		(slot - 1) * 2 * math.pi / Config.plots.count
 end
+function Rules.like(profile: any, from: number, to: number, day: number): boolean
+	if from == to then
+		return false
+	end
+	if profile.likesGiven.day ~= day then
+		profile.likesGiven = { day = day, ids = {} }
+	end
+	local key = tostring(to)
+	if profile.likesGiven.ids[key] then
+		return false
+	end
+	profile.likesGiven.ids[key] = true
+	return true
+end
 return Rules

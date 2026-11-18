@@ -310,7 +310,8 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 	)
 	local function menuOpen(): boolean
-		return player:GetAttribute("MineMenuOpen") == true
+		return player:GetAttribute("CampWindow") == true
+			or player:GetAttribute("MineMenuOpen") == true
 			or player:GetAttribute("MineSettingsOpen") == true
 			or player:GetAttribute("MineRebirthOpen") == true
 			or player:GetAttribute("MineRebirthTransition") == true

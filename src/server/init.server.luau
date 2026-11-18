@@ -19,6 +19,7 @@ for _, service in
 		services.LeaderboardService,
 		services.HologramService,
 		services.VisitService,
+		services.SocialService,
 		services.EventService,
 		services.RebirthService,
 		services.HitService,

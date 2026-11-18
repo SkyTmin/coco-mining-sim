@@ -38,6 +38,19 @@ function Camp.hologram(plot: number, data: any?)
 	holograms[plot] = data
 end
 
+local function rootSettings(owner: Player, model: Model)
+	model:SetAttribute(
+		"CampGuests",
+		Profiles.Read(owner, function(p)
+			return p.settings.guests
+		end)
+	)
+	model:SetAttribute("AtWall", Plots.onOwnPlatform(owner))
+	model:SetAttribute(
+		"Busy",
+		owner:GetAttribute("InDuel") == true or owner:GetAttribute("GuestPlot") ~= nil
+	)
+end
 local function update(i: number)
 	local entry = Builder.get(i)
 	if not entry then
@@ -53,6 +66,9 @@ local function update(i: number)
 		else holo and holo.card
 	local depth = if session then session.state.front else card and card.bestDepth or 0
 	local world = Worlds.of(depth)
+	if owner then
+		rootSettings(owner, entry.model)
+	end
 	local id = if owner then owner.UserId else holo and holo.userId
 	local root = entry.model
 	if owner then
@@ -68,6 +84,7 @@ local function update(i: number)
 	root:SetAttribute("CampUser", id)
 	root:SetAttribute("CampRank", card and card.rank)
 	root:SetAttribute("Hologram", holo ~= nil)
+	root:SetAttribute("WeekPlace", holo and holo.place)
 	root:SetAttribute("CampCard", if card then Http:JSONEncode(card) else nil)
 	entry.setLook(if card then card.rank else "none", owner ~= nil)
 	entry.setLight(

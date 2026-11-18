@@ -252,7 +252,17 @@ function CampLook.reaction(character: Model, id: string)
 	label.Size, label.BackgroundTransparency, label.TextScaled = UDim2.fromScale(1, 1), 1, true
 	label.Text, label.Parent = EMOJI[id] or "👍", gui
 	gui.Parent = character
-	Debris:AddItem(gui, 3)
+	gui.Name = "react_" .. id
+	label.Font = Enum.Font.GothamBold
+	label.Rotation = -8
+	game:GetService("TweenService")
+		:Create(
+			gui,
+			TweenInfo.new(0.3, Enum.EasingStyle.Back),
+			{ StudsOffset = Vector3.new(0, 5.6, 0) }
+		)
+		:Play()
+	Debris:AddItem(gui, Config.social.reactionSeconds)
 end
 
 -- A moment everyone sees [ТЗ-06 §12.2]. Codex decides who sees it (hideOthersFx), this only draws and plays it.

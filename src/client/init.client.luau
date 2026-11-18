@@ -47,6 +47,7 @@ local function translate(key: string, ...: any): string
 end
 
 local playerGui = player:WaitForChild("PlayerGui")
+task.spawn(require(script.Ui.CampSocial).start, playerGui, translate)
 task.spawn(require(script.Ui.CampBoard).start, playerGui, translate)
 local showToast = require(script.Toast).create(playerGui, translate)
 Remotes.event("Toast").OnClientEvent:Connect(showToast)

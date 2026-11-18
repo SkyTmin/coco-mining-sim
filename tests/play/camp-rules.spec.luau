@@ -19,4 +19,9 @@ Test.it("gives every world one band and spreads equal depths around the pillar",
 	assert(y == 2.5 and yy == y and a ~= b)
 	assert(Rules.token(Worlds.at(10).start, 1) == 22.5)
 end)
+Test.it("limits likes by target and UTC day", function()
+	local p = { likesGiven = { day = 1, ids = {} } }
+	assert(not Rules.like(p, 5, 5, 1) and Rules.like(p, 5, 6, 1) and not Rules.like(p, 5, 6, 1))
+	assert(Rules.like(p, 5, 7, 1) and Rules.like(p, 5, 6, 2) and not p.likesGiven.ids["7"])
+end)
 return true

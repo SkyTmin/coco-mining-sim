@@ -373,7 +373,8 @@ function Camera.step(
 		root.CFrame = CFrame.lookAt(pos, pos + facing)
 	end
 	local first = view.mode == "first"
-	local opened = view.player:GetAttribute("MineMenuOpen") == true
+	local opened = view.player:GetAttribute("CampWindow") == true
+		or view.player:GetAttribute("MineMenuOpen") == true
 		or view.player:GetAttribute("MineSettingsOpen") == true
 		or view.player:GetAttribute("MineUpgradesOpen") == true
 	local mouseLock = first
