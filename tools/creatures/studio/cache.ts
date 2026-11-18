@@ -8,7 +8,7 @@ import { join, relative } from 'node:path';
 
 const tools = join(import.meta.dirname, '..');
 const assets = join(tools, '../../assets/creatures');
-const sharedSkip = new Set(['test', 'studio', 'review', 'node_modules', 'c', 'scenes', 'frames']);
+const sharedSkip = new Set(['test', 'studio', 'review', 'node_modules', 'c', 'scenes', 'frames', '.studio', 'golden']);
 
 function walk(dir: string, out: string[] = []) {
   for (const name of readdirSync(dir)) {

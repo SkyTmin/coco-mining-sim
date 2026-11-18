@@ -65,3 +65,23 @@ test('render cache inputs: own files and helpers in, other creatures out', async
   assert.ok(!files.some((f) => f.startsWith('c/toad_shaman')));
   assert.ok(!files.some((f) => f.startsWith('test/') || f.startsWith('studio/')));
 });
+
+test('golden comparison names the changed frames and nothing else', async () => {
+  const { compareGolden } = await import('../studio/snap');
+  const old = { idle: ['a', 'b', 'c', 'd'], tech_x: ['e', 'f'] };
+  assert.deepEqual(compareGolden(old, { idle: ['a', 'b', 'c', 'd'], tech_x: ['e', 'f'] }), []);
+  assert.deepEqual(compareGolden(old, { idle: ['a', 'X', 'Y', 'd'], tech_x: ['e', 'f'] }), ['idle: 2/4 frames changed: 1–2']);
+  assert.deepEqual(compareGolden(old, { idle: ['a', 'b', 'c', 'd'] }), ['tech_x: animation removed']);
+});
+
+test('foot sockets are recognised and the pilot walks keep planted feet still', async () => {
+  const { FOOT_SOCKET, footSlide, slides } = await import('../studio/checks');
+  // footL planted on y = 50 for frames 0–3 but drags 2 px at frame 2; footR swings in the air.
+  const walk = [0, 1, 2, 3].map((n) => ({ footL: [10 + (n >= 2 ? 2 : 0), 50] as [number, number], footR: [n * 5, 40 - n] as [number, number] }));
+  assert.deepEqual(slides(walk).frames, [2]);
+  assert.equal(slides(walk).worstName, 'footL');
+  for (const k of ['footL', 'footR', 'hindL', 'foreR', 'legL2']) assert.ok(FOOT_SOCKET.test(k), k);
+  for (const k of ['footFloor', 'foot', 'fist', 'clubTip']) assert.ok(!FOOT_SOCKET.test(k), k);
+  const p = await loadPainting('bramble_warden');
+  assert.deepEqual(footSlide(p, {}, ['walk_e']), []);
+});

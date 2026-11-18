@@ -17,7 +17,7 @@ export interface Painting {
 }
 export interface Finding {
   anim: string;
-  kind: 'clip' | 'thin-clip' | 'jump' | 'hidden-contact' | 'weak-impact' | 'end-pop';
+  kind: 'clip' | 'thin-clip' | 'jump' | 'hidden-contact' | 'weak-impact' | 'end-pop' | 'foot-slide';
   /** errors fail the gate; warnings are listed for the author and the critic. */
   level: 'error' | 'warn';
   frames: number[];
@@ -82,7 +82,8 @@ function restPose(p: Painting, anim: string) {
   let m = restCache.get(p.c);
   if (!m) restCache.set(p.c, (m = new Map()));
   if (!m.has(anim)) {
-    const { rig } = captureRig(() => p.c.frame(anim, 0, 0, 'normal'));
+    // The same path as the samples (compose), so frame 0 of an animation is its own baseline exactly.
+    const { rig } = captureRig(() => compose(p.c, p.s, p.b, anim, 0));
     m.set(anim, rig ? baselineOf(rig) : null);
   }
   return m.get(anim) ?? null;
@@ -201,9 +202,52 @@ export function findings(p: Painting, anim: string, samples: FrameSample[], cfg:
   return out;
 }
 
-export function checkCreature(p: Painting, anims = defaultAnims(p.c), cfg = studioConfig(p.c.id)) {
+/** Foot sockets: footL, hindR, foreL, legL2… (not helpers such as footFloor). */
+export const FOOT_SOCKET = /^(foot|hind|fore|leg)[A-Za-z]*?[LR]\d*$/;
+export const SLIDE_PX = 1;
+/**
+ * A planted foot must not move on the field (it drags or "moonwalks" otherwise). Side walks only: there the
+ * lowest screen point of a foot is its ground contact. The accepted pilots slide 0 px; library gaits keep that.
+ */
+/** Frames where a planted foot moves more than SLIDE_PX, from per-frame socket positions. */
+export function slides(pts: Record<string, XY>[], skip: (n: number) => boolean = () => false) {
+  const frames = new Set<number>();
+  let worst = 0,
+    worstName = '';
+  for (const k of Object.keys(pts[0] ?? {}).filter((x) => FOOT_SOCKET.test(x))) {
+    const tr = pts.map((q) => q[k]);
+    if (tr.some((q) => !q)) continue;
+    const ground = Math.max(...tr.map((q) => q[1]));
+    for (let i = 1; i < tr.length; i++) {
+      if (tr[i][1] < ground - 0.5 || tr[i - 1][1] < ground - 0.5) continue;
+      const d = Math.hypot(tr[i][0] - tr[i - 1][0], tr[i][1] - tr[i - 1][1]);
+      if (d <= SLIDE_PX || skip(i)) continue;
+      frames.add(i);
+      if (d > worst) (worst = d), (worstName = k);
+    }
+  }
+  return { frames: [...frames].sort((a, b) => a - b), worst, worstName };
+}
+
+export function footSlide(p: Painting, cfg: StudioConfig = {}, anims = ['walk_e', 'walk_w']): Finding[] {
+  const out: Finding[] = [];
+  for (const anim of anims) {
+    const spec = p.c.animations[anim];
+    if (!spec) continue;
+    const pts: Record<string, XY>[] = [];
+    for (let i = 0; i < frameCount(spec.seconds); i++)
+      pts.push((compose(p.c, p.s, p.b, anim, i / 24).points ?? {}) as Record<string, XY>);
+    const r = slides(pts, (n) => skipped(cfg, 'foot-slide', anim, n));
+    if (r.frames.length)
+      out.push({ anim, kind: 'foot-slide', level: 'error', frames: r.frames, note: ranges(r.frames) + ' — planted ' + r.worstName + ' slides ' + r.worst.toFixed(1) + ' px in a frame' });
+  }
+  return out;
+}
+
+export function checkCreature(p: Painting, anims = defaultAnims(p.c), cfg = studioConfig(p.c.id), walks = true) {
   restCache = new WeakMap();
   const all: Finding[] = [];
   for (const a of anims) all.push(...findings(p, a, sampleAnimation(p, a, cfg), cfg));
+  if (walks) all.push(...footSlide(p, cfg));
   return all;
 }
