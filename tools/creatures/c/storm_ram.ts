@@ -12,9 +12,11 @@ ram.effects = stormEffects;
 const frame = ram.frame;
 ram.frame = (anim, t, side, variant, steer) => {
   if (anim === 'look') {
-    const turn = Math.sin(Math.PI * t / ram.animations.look.seconds) ** 2;
+    const turn = Math.sin((Math.PI * t) / ram.animations.look.seconds) ** 2;
     return frame(anim, t, side, variant, {
-      headSide: side, gaitPhase: 0, ...steer,
+      headSide: side,
+      gaitPhase: 0,
+      ...steer,
       techniquePose: { ...steer?.techniquePose, 'head.yaw': -0.62 * turn, twist: 0.24 * turn },
     });
   }

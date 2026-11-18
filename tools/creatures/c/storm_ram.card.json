@@ -156,7 +156,7 @@
     "stride": 23,
     "beats": [
       {
-        "seconds": 1,
+        "seconds": 0.9,
         "at": [
           0.3875,
           0.6875
@@ -173,21 +173,30 @@
         "anim": "walk"
       },
       {
-        "seconds": 1.1,
+        "seconds": 1.25,
         "at": [
           0.54375,
           0.7734375
         ],
         "anim": "look",
-        "side": 2
+        "side": 0
       },
       {
-        "seconds": 1.6,
+        "seconds": 1.5833333333333333,
         "at": [
           0.54375,
           0.7734375
         ],
         "anim": "tech_ram",
+        "side": 0
+      },
+      {
+        "seconds": 0.95,
+        "at": [
+          0.54375,
+          0.7734375
+        ],
+        "anim": "turn",
         "side": 0
       },
       {
@@ -199,12 +208,13 @@
         "anim": "walk"
       },
       {
-        "seconds": 0.55,
+        "seconds": 1.35,
         "at": [
           0.675,
           0.7265625
         ],
-        "anim": "turn"
+        "anim": "turn",
+        "side": 0
       },
       {
         "seconds": 1.55,
@@ -215,24 +225,42 @@
         "anim": "walk"
       },
       {
-        "seconds": 2,
+        "seconds": 1.15,
         "at": [
           0.6,
-          0.8203125
+          0.7890625
+        ],
+        "anim": "turn",
+        "side": 0
+      },
+      {
+        "seconds": 2.0,
+        "at": [
+          0.6,
+          0.7890625
         ],
         "anim": "tech_volley",
         "side": 0
       },
       {
-        "seconds": 2.2,
+        "seconds": 1.65,
         "at": [
           0.6,
-          0.8203125
+          0.7890625
+        ],
+        "anim": "turn",
+        "side": 0
+      },
+      {
+        "seconds": 2.1,
+        "at": [
+          0.6,
+          0.7890625
         ],
         "anim": "walk"
       },
       {
-        "seconds": 0.8,
+        "seconds": 1.25,
         "at": [
           0.3875,
           0.6875
