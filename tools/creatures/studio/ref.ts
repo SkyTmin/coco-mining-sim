@@ -17,7 +17,7 @@ type Painting = Awaited<ReturnType<typeof loadPainting>>;
 type Frame = ReturnType<typeof compose>;
 type Distance = { name: string; target: XY; actual?: XY; error?: number };
 type Bounds = [number, number, number, number]; // left, top, exclusive right and bottom
-export const refLimits = { minIoU: 0.50, maxPointError: 18 };
+export const refLimits = { minIoU: 0.60, maxPointError: 18 };
 
 const finite = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 const int = (x: unknown): x is number => finite(x) && Number.isSafeInteger(x);

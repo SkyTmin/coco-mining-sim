@@ -11,16 +11,30 @@ ASSETS = ROOT / "assets" / "creatures"
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("output", type=Path)
-    output = parser.parse_args().output.resolve()
+    parser.add_argument("--ids", nargs="+", metavar="ID", help="Export just these approved creatures and their frames")
+    args = parser.parse_args()
+    output = args.output.resolve()
     if output.is_relative_to(ASSETS):
         parser.error("The archive must be outside its input tree")
     metas = sorted(ASSETS.glob("*/meta.json"))
     golden = {p.stem for p in (ROOT / "tools/creatures/golden").glob("*.json")}
     exported = {p.parent.name for p in metas}
-    if not golden or exported != golden:
+    if args.ids:
+        selected = set(args.ids)
+        missing = selected - (exported & golden)
+        if missing:
+            parser.error("Creatures missing from approved exports: " + ", ".join(sorted(missing)))
+        metas = [p for p in metas if p.parent.name in selected]
+    elif not golden or exported != golden:
         raise ValueError(f"Exported creatures differ from the approved inventory: {exported ^ golden}")
+    inputs = []
     for path in metas:
         meta = json.loads(path.read_text())
+        inputs.append(path.parent)
+        frame_set = ASSETS / "frames" / meta["rarity"]
+        if not frame_set.is_dir() or not any(frame_set.glob("*.png")):
+            raise ValueError(f"Missing frames for {meta['rarity']}")
+        inputs.append(frame_set)
         if not {"life", "showreel"}.issubset(meta["animations"]):
             raise ValueError(f"{path.parent.name} needs a fresh export")
         expected = {f"painting-{a}.gif" for a in meta["animations"]}
@@ -30,7 +44,8 @@ def main():
         if actual != expected:
             raise ValueError(f"{path.parent.name} unexpected or missing GIF files: {actual ^ expected}")
     # The workshop cache contains local timestamps. Only the delivered art enters the archive.
-    files = sorted(p for p in ASSETS.rglob("*") if p.is_file() and p.name != ".ws-render.json")
+    roots = set(inputs) if args.ids else {ASSETS}
+    files = sorted(p for root in roots for p in root.rglob("*") if p.is_file() and p.name != ".ws-render.json")
     output.parent.mkdir(parents=True, exist_ok=True)
     temp = output.with_suffix(".partial")
     with zipfile.ZipFile(temp, "w", allowZip64=True) as archive:
