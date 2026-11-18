@@ -5,3 +5,10 @@ build/
 node_modules/
 sim-out/
 __pycache__/
+
+# Rebuild full-resolution paintings and layer frames for the creature release.
+/assets/creatures/**
+!/assets/creatures/*/
+!/assets/creatures/*/meta.json
+/docs/reports/creatures/pilot/paintings.gif
+/docs/reports/creatures/pilot/lineup.gif
