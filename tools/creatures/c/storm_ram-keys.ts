@@ -10,11 +10,16 @@ const book = buildMoveBook(card.moves, card.body, {
     crouch: [4, 4, 2, 3],
   },
   tech_volley: {
-    targets: [[22, 10, 10], [22, 9, 14], [20, 10, 39], [17, 12, 42]],
-    advance: [-4, -5, 4, 7],
+    targets: [[23, 13, 10], [24, 13, 10], [18, 6, 43], [16, 5, 46]],
+    advance: [-4, -5, 4, 9],
     pitch: [0.21, 0.15, -0.56, -0.64],
     crouch: [7, 6, -3, -4],
   },
 });
-for (const move of Object.values(book)) move.interpolate = false;
+
+book.tech_ram.contactKind = 'floor';
+book.tech_ram.floorSocket = 'hornTipGround';
+book.tech_ram.contacts = book.tech_ram.contacts?.map(contact => ({
+  ...contact, kind: 'floor', floorSocket: 'hornTipGround',
+}));
 export default book;

@@ -14,17 +14,18 @@ import { sizes } from './types';
 import type { RGBA } from './rig/f15-rig';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const techniques = process.argv.includes('--techniques');
-const output = join(
-  here,
-  '../../docs/reports/creatures',
-  techniques ? 'pilot-3' : 'pilot-2',
-);
+const library = process.argv.includes('--b2');
+const techniques = library || process.argv.includes('--techniques');
+const output = library
+  ? join(here, '.studio/b2-gallery')
+  : join(here, '../../docs/reports/creatures', techniques ? 'pilot-3' : 'pilot-2');
+const libraryReels = ['frost_yeti', 'toad_shaman', 'storm_ram'];
 const ids = [
   'bramble_warden',
   'gem_beetle',
   'silk_dragon',
   'frost_yeti',
+  ...(library ? ['storm_ram'] : []),
   'toad_shaman',
   'crater_titan',
   'coin_dragon',
@@ -135,7 +136,7 @@ async function main() {
   if (reelArg !== -1) {
     const id = process.argv[reelArg + 1];
     if (!techniques || !ids.includes(id))
-      throw Error('Usage: gallery.ts --techniques --reel ID');
+      throw Error('Usage: gallery.ts --techniques|--b2 --reel ID');
     writeReel(await loadPainting(id));
     return;
   }
@@ -153,9 +154,10 @@ async function main() {
     return w + 2 * b;
   });
   const sum = (a: number[]) => a.reduce((s, n) => s + n, 0);
-  const wallWidth =
-    2 * margin +
-    Math.max(sum(widths.slice(0, 4)) + 3 * gap, sum(widths.slice(4)) + 2 * gap);
+  const rowWidths = [widths.slice(0, 4), widths.slice(4)].map(
+    (row) => sum(row) + (row.length - 1) * gap,
+  );
+  const wallWidth = 2 * margin + Math.max(...rowWidths);
   const wallHeight = 508;
   const wallFrames = Math.max(...durations);
   for (let n = 0; n < wallFrames; n++) {
@@ -212,7 +214,9 @@ async function main() {
   }
   wallGif.write(join(output, 'paintings.gif'));
   if (techniques) {
-    for (const subject of subjects) writeReel(subject);
+    for (const subject of subjects) {
+      if (!library || libraryReels.includes(subject.c.id)) writeReel(subject);
+    }
     return;
   }
   singles.forEach((gif, i) => {
