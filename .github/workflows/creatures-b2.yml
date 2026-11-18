@@ -1,0 +1,133 @@
+name: Attach the reviewed B2 paintings
+'on':
+  push:
+    branches: [bosses-art]
+    paths: [.github/workflows/creatures-b2.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  attach:
+    if: >-
+      github.event.head_commit.message == 'ci(creatures): приложить проверенные картины Б2'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: aedeb3af1bc55dcba5b225c04eb82a1c93731de6
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Render the reviewed paintings and all animation layers
+        working-directory: tools/creatures
+        run: |
+          set -euo pipefail
+          npm ci
+          for id in bramble_warden coin_dragon crater_titan frost_yeti gem_beetle silk_dragon toad_shaman storm_ram; do
+            node --import tsx render.ts --id "$id"
+          done
+          npm run gallery:b2
+      - name: Verify ZIP entries and all five reviewed files
+        id: verify_files
+        run: |
+          set -euo pipefail
+          python3 tools/creatures/release.py "$RUNNER_TEMP/creatures-b2.zip"
+          cp "tools/creatures/.studio/b2-gallery/paintings.gif" "$RUNNER_TEMP/paintings.gif"
+          cp "tools/creatures/.studio/b2-gallery/frost_yeti/painting-showreel.gif" "$RUNNER_TEMP/frost_yeti-showreel.gif"
+          cp "tools/creatures/.studio/b2-gallery/toad_shaman/painting-showreel.gif" "$RUNNER_TEMP/toad_shaman-showreel.gif"
+          cp "tools/creatures/.studio/b2-gallery/storm_ram/painting-showreel.gif" "$RUNNER_TEMP/storm_ram-showreel.gif"
+          python3 - <<'PY'
+          import hashlib, json, os, zipfile
+          from pathlib import Path
+          def aggregate(path):
+              digest = hashlib.sha256()
+              with zipfile.ZipFile(path) as archive:
+                  for entry in sorted(archive.infolist(), key=lambda e: e.filename):
+                      with archive.open(entry) as stream:
+                          content = hashlib.file_digest(stream, 'sha256').digest()
+                      digest.update(entry.filename.encode() + bytes([0]) + content)
+              return digest.hexdigest()
+          root = Path(os.environ['RUNNER_TEMP'])
+          manifest = {
+            "creatures-b2.zip": {
+              "size": 296596711,
+              "sha256": "915336d5945eb937d1d5c2d288135d632a828c548b5e7fdd81cd5b662b70d1a2"
+            },
+            "paintings.gif": {
+              "size": 13320101,
+              "sha256": "2cf003d45f801d05ff04ec4f6021393fedca416390e9b98edf969b05a63dfdc8"
+            },
+            "frost_yeti-showreel.gif": {
+              "size": 1270155,
+              "sha256": "c408f834f381db3d611c555595a444667f04deebffee76e84b4a038ce53386d6"
+            },
+            "toad_shaman-showreel.gif": {
+              "size": 1654589,
+              "sha256": "6b1d6c352c0680731de3b70ad3bbf9cdf98cdc5ad9ab9b2abf77f0f1276c77c5"
+            },
+            "storm_ram-showreel.gif": {
+              "size": 383867,
+              "sha256": "286ea4727647d74b9045acd0a77abc2302a990f60183084a857bcaff392671fd"
+            }
+          }
+          for name, expected in manifest.items():
+              path = root / name
+              with path.open('rb') as stream:
+                  actual = hashlib.file_digest(stream, 'sha256').hexdigest()
+              if actual != expected['sha256'] or path.stat().st_size != expected['size']:
+                  raise SystemExit(f'File differs from reviewed export: {name}: got {actual}, {path.stat().st_size} bytes; expected {expected}')
+          if aggregate(root / 'creatures-b2.zip') != 'bebf723f0f286938ba46f74903cc3b3a09182e5ab7fd36ea1969dea9cbd93bf4':
+              raise SystemExit('ZIP entry contents differ from reviewed export')
+          (root / 'creatures-b2-manifest.json').write_text(json.dumps(manifest))
+          PY
+      - name: Attach the five verified assets to the existing draft
+        id: upload_draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRAFT_ID: '449924882'
+          EXPECTED_SHA: 'aedeb3af1bc55dcba5b225c04eb82a1c93731de6'
+        run: |
+          set -euo pipefail
+          endpoint="repos/$GITHUB_REPOSITORY/releases/$DRAFT_ID"
+          url="https://uploads.github.com/$endpoint/assets"
+          manifest="$RUNNER_TEMP/creatures-b2-manifest.json"
+          check_draft() {
+            gh api "$endpoint" | jq -e --arg url "$url" --arg sha "$EXPECTED_SHA" --argjson id "$DRAFT_ID" '
+              .id == $id and .draft == true and .tag_name == "creatures-b2" and
+              .target_commitish == $sha and (.upload_url | split("{")[0]) == $url' >/dev/null
+          }
+          check_assets() {
+            gh api --paginate "$endpoint/assets?per_page=100" --slurp |
+              jq -e --slurpfile expected "$manifest" '
+                flatten | . as $assets |
+                if ((map(.name) | unique | length) == length and
+                    all(.[]; . as $a | $expected[0][$a.name] as $e |
+                      $e != null and $a.state == "uploaded" and
+                      $a.size == $e.size and $a.digest == ("sha256:" + $e.sha256)))
+                then map(.name) else error("unexpected or mismatched release asset") end'
+          }
+          check_draft
+          existing=$(check_assets)
+          for name in $(jq -r 'keys[]' "$manifest"); do
+            if jq -e --arg name "$name" 'index($name) != null' <<< "$existing" >/dev/null; then
+              continue
+            fi
+            check_draft
+            case "$name" in
+              *.gif) mime=image/gif ;;
+              *.zip) mime=application/zip ;;
+            esac
+            curl --silent --show-error --fail --request POST \
+              --header "Authorization: Bearer $GH_TOKEN" --header "Content-Type: $mime" \
+              --data-binary "@$RUNNER_TEMP/$name" "$url?name=$name" |
+              jq -e --arg name "$name" --slurpfile expected "$manifest" '
+                $expected[0][$name] as $e | .name == $name and .state == "uploaded" and
+                .size == $e.size and .digest == ("sha256:" + $e.sha256)' >/dev/null
+          done
+          check_draft
+          check_assets | jq -e --slurpfile expected "$manifest" 'sort == ($expected[0] | keys)'
