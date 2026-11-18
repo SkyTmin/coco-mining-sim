@@ -100,10 +100,14 @@ function croak(f:FxInput) {
     oval(pen,[x+age*45,y],1+age*25,1+age*49,'#a9cf9e',1-age/.17);
   });
   for(let i=0;i<3;i++) {
-    const u=progress(age,i*.10,.71+i*.07);
+    const wave=progress(age,i*.10,.71+i*.07),u=1-(1-wave)**2;
     if(u<=0||u>=1) continue;
     oval(f.above,[origin[0]+u*24,origin[1]],3+u*17,5+u*25,green[0],(1-u)*.88,-1.26,4.80);
-    oval(f.under,floor,7+u*66,2+u*17,water[1],(1-u)*.91);
+    // A reflected crest gives each sound pulse two ripples on the dark water.
+    const rx=7+u*66,ry=2+u*17,alpha=1-progress(u,.73,1);
+    oval(f.under,floor,rx,ry,'#608b87',alpha);
+    oval(f.under,[floor[0],floor[1]+1],rx,ry,'#dce5af',alpha);
+    oval(f.under,[floor[0],floor[1]+2],rx-1,ry,'#a3d7b4',alpha,.05,2.94);
   }
   for(let i=0;i<12;i++) {
     const a=TAU*i/12, x=floor[0]+Math.cos(a)*53,y=floor[1]+Math.sin(a)*15;
@@ -120,7 +124,14 @@ function tongue(f:FxInput) {
     const a=i*TAU/8, r=(2+8*Math.sin(u*Math.PI*.7))*(.72+.45*hash(i,75));
     ellFill(f.under,[pt[0]+Math.cos(a)*r,pt[1]+Math.sin(a)*r*.39],3+i%3,1+i%2,'#789578',fade);
   }
-  oval(f.under,pt,5+4*u,2+u,'#d0cda0',fade*.83,-2.6,-.36);
+  // The tongue parts the skin of the pool; a crescent of foam runs ahead of the tip.
+  const foam=1-progress(age,.28,.34);
+  oval(f.under,pt,5+21*u,2+6*u,'#7ba99e',foam);
+  for(const offset of [-1,0,1]) {
+    oval(f.under,[pt[0],pt[1]+offset],7+27*u,2+7*u,'#d0e0b3',foam,-1.3,2.96);
+  }
+  oval(f.under,[pt[0],pt[1]+1],5+21*u,2+6*u,'#e2e3b3',foam,-1.22,2.95);
+  oval(f.under,[pt[0],pt[1]+2],4+18*u,2+5*u,'#c3d8a8',foam,-.72,2.69);
   if(age<.16) paintImpact(f,'above','tongueTip',pt,(p,x,y)=>{
     ellFill(p,[x,y],2+age*14,1.3,'#e8d3a9',1-age/.16);
   });

@@ -113,3 +113,34 @@ test('a fist tucked behind the torso is "gone"; the same fist held in front, or 
   assert.equal(worstGone(pose(20, true), rest), null, 'covered by the other arm is normal');
   assert.equal(worstGone(pose(-20), rest, (t) => t === 'fistR'), null, 'studio.json can allow it');
 });
+
+test('foreground contact uses the painted field offset, including nonzero camera shake', async () => {
+  const { coveredByForeground } = await import('../studio/checks');
+  const { compose } = await import('../engine');
+  const { c, s, b } = await loadPainting('frost_yeti');
+  const f = compose(c, s, b, 'tech_slam', 19 / 24);
+  assert.notDeepEqual(f.camera, [0, 0]);
+  const [x, y] = [35, 56];
+  const px = Math.round(x + f.feet[0] - f.worldFeet[0]);
+  const py = Math.round(y + f.feet[1] - f.worldFeet[1]);
+  const layer = f.layers.bgf;
+  layer.data.fill(0);
+  layer.rect(x - 2, y - 2, x + 2, y + 2, [255, 255, 255, 255]);
+  assert.equal(coveredByForeground(f, [x, y]), false);
+  layer.rect(px - 2, py - 2, px + 2, py + 2, [255, 255, 255, 255]);
+  assert.equal(coveredByForeground(f, [x, y]), true);
+});
+
+
+test('a prop can hide in one chapter without masking a limb or even the same prop elsewhere', async () => {
+  const { allowsOcclusion } = await import('../studio/checks');
+  const rule = { part: 'coffer', anim: 'dive', frames: [30, 36] as [number, number], reason: 'nose emerges first' };
+  const cfg = { partGone: [rule] };
+  assert.ok(allowsOcclusion(cfg, 'coffer', 'dive', 30));
+  assert.ok(allowsOcclusion(cfg, 'coffer', 'dive', 36));
+  for (const frame of [29, 37]) assert.equal(allowsOcclusion(cfg, 'coffer', 'dive', frame), false);
+  for (const tag of ['armR', 'cofferLatch']) assert.equal(allowsOcclusion(cfg, tag, 'dive', 33), false);
+  assert.equal(allowsOcclusion(cfg, 'coffer', 'strike', 33), false);
+  assert.equal(allowsOcclusion({ partGone: [{ ...rule, reason: '' }] }, 'coffer', 'dive', 33), false);
+  assert.ok(allowsOcclusion({ partGone: ['tongue'] }, 'tongueTip', 'idle', 0));
+});

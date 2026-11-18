@@ -370,6 +370,7 @@ export function coinDragonFrame(
   const planted: string[] = [];
   // Splayed hind feet carry the full weight. Their toes stay on the floor during the supporting half-step.
   for (const d of [-1, 1]) {
+    r.tag = d === 1 ? 'legR' : 'legL';
     const step = strideFoot(t, d === 1 ? 0 : 0.5, route.stride / scale);
     if (walking && step.planted) planted.push(d === 1 ? 'footR' : 'footL');
     const toe = F.p(
@@ -399,6 +400,7 @@ export function coinDragonFrame(
         silver,
       );
   }
+  r.tag = 'tail';
   const tailWave = Math.sin(cycle - 0.8);
   const tailSwing = k.tail < 0 ? k.tail * 0.48 : k.tail;
   const tail = [
@@ -417,6 +419,7 @@ export function coinDragonFrame(
   tail[5][2] += (6.7 - tail[5][2]) * k.bagLand;
   for (let i = 0; i < tail.length - 1; i++)
     r.cap(tail[i], tail[i + 1], 9.4 - i * 1.65, 7.7 - i * 1.5, hide);
+  r.tag = 'purse';
   const bag = F3.yaw(0.48 + (side * TAU) / 16, tail[5]).roll(
     0.13 * tailWave + 0.3 * k.tail,
   );
@@ -427,6 +430,7 @@ export function coinDragonFrame(
   r.ell(bag, [0.1, 4.2, 3.9], [1.5, 2.4, 1.3], iron);
   r.cap(bag.p(-0.9, 2.7, 4.7), bag.p(-4.3, 3.2, 8), 1, 0.3, bronze);
   // Interlocking bands grow smaller toward the tether. The final coin shows its other die.
+  r.tag = 'tail';
   for (let i = 1; i < tail.length - 1; i++) {
     const ring = F3.yaw(0.48 + (side * TAU) / 16, tail[i]);
     r.ell(
@@ -438,6 +442,7 @@ export function coinDragonFrame(
   }
   loc.tail = bag.p(0, 0, -3 - 3.7 * k.bagLand);
   loc.tailFloor = [loc.tail[0], loc.tail[1], 0];
+  r.tag = 'torso';
   r.ell(root, [0, 0, 0], [25, 17, 18], hide).ell(
     root,
     [-9, 0, 1],
@@ -475,6 +480,7 @@ export function coinDragonFrame(
       r.ell(coinFrame, [0, 0.2, 0], [6.4 - row * 0.33, 1.5, 4.75], coin);
     }
   }
+  r.tag = 'coinSlot';
   const slot = root.at(-2, 0, 18.5);
   r.ell(slot, [0, 0, 0], [9.6, 3.3, 1.5], bronze);
   r.ell(slot, [0, 0, 1.3], [7.8, 1.2, 0.5], phase > 0.3 ? glint : iron);
@@ -517,6 +523,7 @@ export function coinDragonFrame(
   const head = neckAxis
     .turn(headLead + k.headTurn + 0.23 * g + 0.32 * tuck)
     .pitch(0.11 + 0.22 * tuck + 0.1 * g);
+  frontRig.tag = 'neck';
   frontRig
     .cap(base, bend, 9, 7.3, hide)
     .cap(bend, upper, 7.8, 5.6, hide)
@@ -546,10 +553,12 @@ export function coinDragonFrame(
         medal(gold, false, false),
       );
   }
+  frontRig.tag = 'head';
   frontRig.ell(head, [1, 0, 1], [10.4, 8.2, 7.4], hide);
   const nose = head.at(9, 0, 0.8).pitch(0.07);
   frontRig.ell(nose, [1.9, 0, 0], [9.3, 5.6, 3.7], hide);
   for (const d of [-1, 1]) {
+    frontRig.tag = d === 1 ? 'hornR' : 'hornL';
     const temple = head.p(-3, d * 5.5, 5.4),
       horn = head.p(-7, d * 8.8, 13.8);
     frontRig
@@ -571,6 +580,7 @@ export function coinDragonFrame(
       plumb,
     );
     frontRig.line(head.p(-5, d * 8.5, 8.2), horn, ink, 0, 0.8);
+    frontRig.tag = 'head';
     const eye = head.p(4.6, d * 9.45, 4.0);
     frontRig.ell(head, [3.7, d * 7.8, 3.8], [4.8, 1.75, 3.45], soot);
     const blink = clock > 1.75 && clock < 1.91;
@@ -627,6 +637,7 @@ export function coinDragonFrame(
   loc.mouth = nose.p(9.1, 1, -2.55);
   if (anim === 'show' && tick >= 104) {
     // A milled silver face below the lower lip stays readable against the bronze jaw.
+    frontRig.tag = 'caughtCoin';
     const die = F3.yaw(0.04, nose.p(12.6, 3.8, -5.35)).pitch(-0.16);
     frontRig.ell(die, [0, 0, 0], [5.8, 1.25, 5.8], iron);
     frontRig.ell(die, [0, 0.78, 0.2], [5.1, 1.05, 5.1], silver);
@@ -639,6 +650,7 @@ export function coinDragonFrame(
       0.62,
       0.85,
     );
+    frontRig.tag = 'fang';
     frontRig.cap(
       nose.p(8.5, 4.4, -0.5),
       nose.p(10.8, 4.6, -4),
@@ -649,6 +661,7 @@ export function coinDragonFrame(
   }
   if (anim === 'peek' && t >= 0.74 && t <= 1.26) {
     // A rim coin clamped between the front fangs follows the jaw beyond the frame.
+    frontRig.tag = 'caughtCoin';
     const bite = nose.at(9.4, 1, -3).pitch(-0.3).turn(0.32);
     frontRig.ell(bite, [0, 0, -0.6], [3.6, 0.7, 2.8], silver);
     frontRig.line(
@@ -661,6 +674,7 @@ export function coinDragonFrame(
   r.eye = loc.eye;
   // Two bat wings form scalloped awnings over the vault. Ribs sit on top of each membrane panel.
   for (const d of [-1, 1]) {
+    r.tag = d === 1 ? 'wingR' : 'wingL';
     const fold = (asleep ? 0.6 : 0) - k.wings;
     const wing = root.at(-4, d * 10, 9).roll(d * fold * 0.42);
     const elbow = wing.p(-5, d * 9, 18 + 5 * k.wings),
@@ -689,6 +703,7 @@ export function coinDragonFrame(
     for (const i of [0, 2, 4, 6]) r.cap(tip, corners[i], 1.25, 0.5, bronze);
     r.cap(tip, wing.p(-15, d * 18, 37 - 6 * fold), 1.2, 0.2, silver);
   }
+  r.tag = 'shoulderMedal';
   const shoulderMedal = root.at(12, 15, 10);
   r.ell(shoulderMedal, [0, 0, 0], [6.8, 2.1, 6.2], iron);
   r.ell(shoulderMedal, [0, 1.2, 0], [6.0, 1.45, 5.6], bronze);
@@ -716,6 +731,7 @@ export function coinDragonFrame(
     .scale(1.11)
     .pitch(-0.14 - 0.24 * k.chest)
     .roll(0.06 * gait);
+  r.tag = 'coffer';
   chestBox(r, coffer, Math.max(0, k.lid), wood, bronze, glint);
   loc.chest = coffer
     .at(-7, 0, 3)
@@ -723,6 +739,8 @@ export function coinDragonFrame(
     .p(15, 0, 0.6);
   loc.chestLatch = coffer.p(8, 0, 3.6);
   for (const d of [-1, 1]) {
+    const armTag = d === 1 ? 'armR' : 'armL';
+    r.tag = armTag;
     const collar = root.p(12, d * 11, 4);
     const lift = d === 1 ? k.handLift : 0;
     const shoulder = root.p(
@@ -740,6 +758,7 @@ export function coinDragonFrame(
     if (d === 1) hand[2] += (1.5 - hand[2]) * k.handFloor;
     const elbow = ik(shoulder, hand, 18, 18, F.v(-0.6, d * 0.8, -0.4));
     const arm = d === 1 ? frontRig : r;
+    arm.tag = armTag;
     arm.cap(shoulder, elbow, 4.5, 3.2, hide).cap(elbow, hand, 3.7, 2.2, hide);
     if (lift > 0) {
       const elbowBand = F3.yaw(0.48 + (side * TAU) / 16, elbow);
@@ -773,6 +792,7 @@ export function coinDragonFrame(
   if (anim === 'show' && tick <= 54) {
     // The viewer can see the actual mint die pivoting on its edge before the shell opens.
     r.prims.length = 0;
+    r.tag = 'mintDie';
     const rad = 8 + 17 * k.tokenSize;
     const die = F.at(0, 0, rad)
       .turn(0.9 + k.tokenTilt)

@@ -140,6 +140,8 @@ export function bodyFrame(
       [4 + 23 * Math.cos(angle), 3 * Math.sin(angle * 1.4), 47 - 23 * Math.sin(angle)],
       loop,
     );
+    // The last hoops wrap beside the cheek, giving the tassel a lane past the paper mask.
+    if (anim === 'tech_loop') pos[1] -= 16 * loop * u ** 4;
     // In the backward sweep the mask bows after the terminal tassel; the contact stays on the floor.
     if (A.brushDown) {
       const backArc = Math.max(0, -Math.sin(0.36 + (side * TAU) / 16 + (A.skew ?? 0)));
@@ -172,6 +174,7 @@ export function bodyFrame(
       );
     }
   }
+  r.tag = 'torso';
   for (let i = 0; i < count; i++) {
     for (let f = 0; f < 6; f++) {
       const faces = [ring(i, f), ring(i, f + 1), ring(i + 1, f + 1), ring(i + 1, f)];
@@ -179,8 +182,10 @@ export function bodyFrame(
       r.poly(faces, woven(panel, cane, faces[0], faces[1], faces[3]));
     }
   }
+  r.tag = 'crest';
   const crest = ribs[2];
   r.poly([crest.p(4, 0, 10), crest.p(-4, 0, 21), crest.p(-9, 0, 9)], cane);
+  r.tag = 'head';
   const H = ribs[0]
     .turn(0.17 + 0.77 * l.look + lead * 0.82)
     .pitch(-0.07 + 0.35 * l.tired - 0.18 * l.happy);
@@ -188,6 +193,7 @@ export function bodyFrame(
   r.ell(H, [10, 0, -1], [7, 5.5, 3.8], paper);
   r.ell(H, [10, 0, -4], [5.8, 5, 1.6], lining);
   for (const s of [-1, 1]) {
+    r.tag = 'head';
     const pts: V3[] = [
       [4, s * 7, 2],
       [12, s * 4, 5],
@@ -199,16 +205,21 @@ export function bodyFrame(
       paper,
       0.3,
     );
+    r.tag = s < 0 ? 'hornL' : 'hornR';
     r.cap(H.p(2, 5 * s, 6), H.p(-3, 8 * s, 14), 2.4, 1.6, cane);
     r.cap(H.p(-3, s * 8, 14), H.p(-9, s * 11, 20), 1.6, 0.3, brow);
+    r.tag = 'head';
     r.cap(H.p(2, s * 7, 4), H.p(7, s * 6.5, 3), 1.4, 0.7, brow);
+    r.tag = s < 0 ? 'whiskerL' : 'whiskerR';
     const whisker = H.p(3, s * 12, -5);
     r.cap(H.p(11, s * 4, -2), whisker, 0.85, 0.65, cane);
     r.cap(whisker, H.p(-4, s * 13, -10), 0.65, 0.2, cane);
+    r.tag = 'head';
     r.dot(H.p(5, s * 7.1, 2.8), l.blink ? hx('#63413e') : eye.T[3], l.blink ? 0 : 0.3, 1, 1.4);
   }
   const finSockets: Record<string, V3> = {};
   for (const s of [-1, 1]) {
+    r.tag = s < 0 ? 'finL' : 'finR';
     const F = ribs[s < 0 ? 2 : 1],
       spread = Math.max(0.08, 1 + fins * 0.72);
     const tipFull = F.p(
@@ -246,22 +257,26 @@ export function bodyFrame(
     }
     finSockets[s < 0 ? 'finL' : 'finR'] = tip;
   }
+  r.tag = 'tail';
   const tail = ribs[count],
     tip = tail.p(-5, 2, -7);
   r.poly([tail.p(1, -3, 2), tail.p(-11, -6, 4), tail.p(-8, -5, 1), tip, tail.p(2, 2, 1)], silk);
   r.poly([tail.p(0, 0, 0), tail.p(-7, 5, 1), tail.p(-12, 6, -2), tail.p(-5, 0, -3)], cane);
   // A ceremonial collar with separate overlapping scales; the bamboo hoop stands proud of the cheek.
   for (const side of [-1, 1]) {
+    r.tag = 'neck';
     for (let j = 0; j < 3; j++) {
       const C = H.at(-3.5 - j * 1.6, side * (5 + j * 0.6), j * 1.3 - 1);
       r.ell(C, [0, 0, 0], [2.7, 1.5, 2.1], j % 2 ? cane : lining);
     }
+    r.tag = 'head';
     r.ell(H, [6.4, side * 6.9, 3.6], [2.4, 1.8, 2.0], l.blink ? brow : eye);
     r.dot(H.p(7.8, side * 7.6, 4.0), brow.T[0], 0, 1, 1.5);
     if (!l.blink) r.dot(H.p(7.1, side * 7.8, 5.0), paper.T[3], 0.33, 1, 1.6);
     r.ell(H, [13.5, side * 2.9, 1.2], [2.0, 1.1, 1.25], brow);
     r.line(H.p(11, side * 4, -2), H.p(16, side * 1.8, -1.8), silk.T[2], 0, 1.1);
     r.ell(H, [2.8, side * 8, 1.4], [1.6, 0.85, 1.3], lining);
+    r.tag = side < 0 ? 'finL' : 'finR';
     const fin = ribs[side < 0 ? 2 : 1];
     r.ell(fin, [-2, side * 6, 2], [2, 2, 2], cane);
     r.dot(fin.p(-2, side * 7.9, 3), brow.T[0]);
@@ -272,15 +287,18 @@ export function bodyFrame(
         cane.T[2],
       );
   }
+  r.tag = 'torso';
   for (let j = 1; j < count; j++) {
     const F = ribs[j],
       zw = 8 + Math.sin((j / count) * Math.PI) * 5 - (4 * j) / count;
     r.ell(F, [0, 0, zw], [1.8, 1.5, 1.7], cane);
     r.dot(F.p(0.3, 0.3, zw + 1.4), brow.T[1]);
   }
+  r.tag = 'tailKnot';
   const knot = tail.at(-8.4, 0, -3);
   r.ell(knot, [0, 0, 0], [3.4, 4.1, 3.3], lining);
   r.ell(knot, [-2.8, 0, -1.5], [1.7, 3.55, 2.7], cane);
+  r.tag = 'tassel';
   const lag = Math.sin(l.q - 0.92);
   let brushTip: V3 = tip;
   for (let j = 0; j < 3; j++) {

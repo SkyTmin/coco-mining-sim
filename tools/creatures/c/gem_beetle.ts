@@ -110,6 +110,7 @@ export function buildFrame(
   const fold = Math.max(l.sleep * 0.46, l.hatch * 0.95, a.coil ?? 0);
   for (const s of [-1, 1])
     for (let i = 0; i < 3; i++) {
+      r.tag = (s < 0 ? 'legL' : 'legR') + i;
       const f = 11 - 12 * i,
         phase = l.q + ((s > 0 ? i : i + 1) % 2) * Math.PI;
       const gait = strideFoot(
@@ -186,7 +187,9 @@ export function buildFrame(
       x * 25,
       z * 11,
     );
+  r.tag = 'thorax';
   r.ell(b, [-5, 0, 0], [21, 13, 9], steel);
+  r.tag = 'abdomen';
   for (let i = 0; i < 4; i++)
     r.ell(b, [-17 + i * 6, 0, -1.8], [3.85, 13.1, 5.4], {
       ...plate,
@@ -223,11 +226,13 @@ export function buildFrame(
             z * 9,
           ),
   };
+  r.tag = 'head';
   r.ell(h, [3, 0, 0], [10, 9.7, 7.4], helmet);
   const reach = a.reach ?? 0;
   const root = h.p(8.7, 0, 1),
     bend = h.p(20 + reach, 0, 4),
     tip = h.p(17.8 + reach, 0, 20.6);
+  r.tag = 'horn';
   r.cap(root, bend, 4.8, 3.7, gem);
   r.cap(bend, tip, 4.2, 0.35, core);
   r.cap(h.p(19.7 + reach, 0, 10.5), h.p(24.1 + reach, 0, 15.3), 2.9, 0.3, core);
@@ -242,6 +247,7 @@ export function buildFrame(
   );
   for (const s of [-1, 1]) {
     armouredHead(r, h, s, legMetal, steel, core, Boolean(l.blink));
+    r.tag = s > 0 ? 'eyeR' : 'eyeL';
     const eye = h.p(6, s * 9.9, 3);
     r.line(
       eye,
@@ -251,6 +257,7 @@ export function buildFrame(
       1.4,
     );
     if (s === 1) r.eye = eye;
+    r.tag = s > 0 ? 'wingR' : 'wingL';
     const opening = (a.wing ?? 0) + l.happy * 0.78 + l.pop * 0.7;
     // Open from the shoulder hinge: the trailing tips fan apart and expose the steel abdomen.
     const w = b

@@ -4,8 +4,8 @@ import { withTechniques } from '../technique';
 import { strideFoot, attachMotion } from '../motion';
 import { finishSurfaces } from './surface-work';
 // A splayed marsh elder, bearing a ribbed lantern cap on a crooked root staff.
-import { F3, Rig, vlerp, type Mat, type V3 } from '../rig/f15-rig';
-import { hx, tn, TAU } from '../kit/f11-mobkit';
+import { F3, Rig, vadd, vlen, vlerp, vmul, vnorm, vsub, type Mat, type V3 } from '../rig/f15-rig';
+import { ik, tn, TAU } from '../kit/f11-mobkit';
 import { everyday, life, projectFigure, scaleFigure } from '../rig/figure';
 import { animations, props, effects, pose, presentation } from './toad_shaman-actions';
 import type { Creature, Variant } from '../types';
@@ -59,6 +59,8 @@ export function bodyFrame(
       tongueReach: (A.tongueReach ?? 0) * (1 - 0.77 * sideView),
       staffSide: (A.staffSide ?? 0) * (1 - 0.38 * sideView),
     };
+    // The off-side hand steadies the lantern during the breath intake.
+    if (anim === 'tech_croak') A.staffAngle = (A.staffAngle ?? 0) * (1 - 0.55 * sideView);
     if (anim === 'tech_staff') {
       // Seen from the back the palm lifts and jabs the staff, without the full frontal windmill.
       // Turning the cap toward the lens leaves a distinct interval between the hand and the toe.
@@ -125,6 +127,7 @@ export function bodyFrame(
   const B = F.at(-3 + (A.hip ?? 0), 1.2 * stride + (A.lean ?? 0), 32 - drop + 0.85 * breath)
     .pitch(0.04 + 0.14 * l.sleep + 0.08 * l.tired + (A.pitch ?? 0))
     .turn(A.twist ?? 0);
+  r.tag = 'torso';
   r.ell(B, [-3, 0, 0], [22, 31, 19], skin);
   r.ell(B, [-6, 0, 6], [21, 34, 19], moss);
   const sockets: Record<string, V3> = {},
@@ -139,6 +142,7 @@ export function bodyFrame(
     const swing = cycle.lift,
       hip = B.at(-7, s * 24, -5);
     if (cycle.planted) planted.push(s < 0 ? 'footL' : 'footR');
+    r.tag = s < 0 ? 'legL' : 'legR';
     r.ell(hip, [-3, 0, 0], [17, 14, 12], skin);
     const heel = F.at(
       -6 + cycle.forward - s * (A.step ?? 0),
@@ -161,6 +165,7 @@ export function bodyFrame(
     sockets[socket] = anim === 'tech_leap' ? sole.p(12, s * 10, -2) : sole.p(6, 0, -2);
     sockets[socket + 'Ground'] = [sockets[socket][0], sockets[socket][1], 0];
   }
+  r.tag = 'cloak';
   // Overlapping panels hang away from the hindquarters. Shells stitched along the hem.
   for (let i = 0; i < 6; i++) {
     const a = 0.68 + (i * (TAU - 1.36)) / 5,
@@ -207,7 +212,9 @@ export function bodyFrame(
   const H = B.at(11, 0, 9)
     .turn(0.38 * l.look + lead * 0.7 + (A.neck ?? 0))
     .pitch(0.18 * l.sleep - 0.1 * l.look + (A.chin ?? 0));
+  r.tag = 'head';
   r.ell(H, [0, 0, 0], [17, 27, 13.4], skin);
+  r.tag = 'neckWattle';
   const throat = (A.throat ?? 0) + 0.18 * (1 + Math.sin(l.q));
   r.ell(
     H,
@@ -215,6 +222,7 @@ export function bodyFrame(
     [9 + 5 * throat, 16.4 + 7 * throat, 6.2 + 9 * throat],
     gold ? shell : { T: tn('#53635b', '#839070', '#b4b784', '#d3c48f') },
   );
+  r.tag = 'head';
   r.ell(H, [9, 0, -2.9 - jaw * 2], [11, 24, 5.2 + jaw * 1.8], mouth);
   r.ell(H, [7.2, 0, 1.5], [15.5, 25.8, 8.2], skin);
   for (const s of [-1, 1]) {
@@ -241,6 +249,7 @@ export function bodyFrame(
     r.line(seam[1], seam[2], mouth.T[1], 0, 0.8);
     r.dot(H.p(18, s * 7, 6.6), skin.T[0], 0, 1, 1);
   }
+  r.tag = 'neckBeads';
   // A necklace of cowries on the stretched wattle, each showing its incised opening.
   for (const [y, z] of [
     [-13, -13],
@@ -263,6 +272,7 @@ export function bodyFrame(
   );
   if (A.keyRig) tongueTarget[1] = sockets.footL[1];
   const tip = vlerp(sockets.mouth, tongueTarget, Math.min(1, tongue));
+  r.tag = 'tongue';
   if (tongue > 0.025) {
     const joint = vlerp(sockets.mouth, tip, 0.52);
     joint[2] += 12 * Math.sin(Math.min(1, tongue) * Math.PI * 0.72);
@@ -273,7 +283,16 @@ export function bodyFrame(
   sockets.tongueTip = tip;
   // Root staff is planted outside the haunch. Fork, gills and the cap share its pivot.
   const staffLift = (A.staffLift ?? 0) + 12 * l.happy - 3 * l.tired + 2.6 * Math.max(0, l.walk);
-  const S = F.at(7 + (A.staffReach ?? 0), 46 + (A.staffSide ?? 0), (A.keyRig ? 0 : 1) + staffLift)
+  // Swing the root around the outside of the cheek. Its heel and wrist share a single pivot.
+  const swing = anim === 'tech_staff' && side % 16 === 0
+    ? Math.min(1, 2.4 * Math.abs(Math.sin(A.staffAngle ?? 0)))
+    : 0;
+  const arc = swing * swing * (3 - 2 * swing);
+  const S = F.at(
+    7 + (A.staffReach ?? 0) + arc * 30,
+    46 + (A.staffSide ?? 0) + arc * 12,
+    (A.keyRig ? 0 : 1) + staffLift,
+  )
     .roll(-0.37 + (A.staffAngle ?? 0) + 0.026 * Math.sin(l.q - 0.55))
     .pitch(A.staffPitch ?? 0);
   if (A.keyRig && side % 16 !== 0) {
@@ -297,6 +316,7 @@ export function bodyFrame(
   }
   // Brace the root staff in the same strip of ground as the supporting hind foot.
   if (A.setStaff) S.o[1] += A.setStaff * (sockets.footR[1] - S.o[1]);
+  r.tag = 'staff';
   const crook = [S.p(0, 0, 0), S.p(2, -2, 28), S.p(-2, -1, 53), S.p(-5, -2, 62), S.p(-6, -9, 71.3)];
   for (let i = 1; i < crook.length; i++)
     r.cap(crook[i - 1], crook[i], 2.5 - i * 0.22, 2.5 - i * 0.24, twig);
@@ -339,10 +359,27 @@ export function bodyFrame(
   sockets.staffTip = fungus.p(0, 0, 7.4 + phase);
   sockets.staffFoot = crook[0];
   for (const s of [-1, 1]) {
-    const shoulder = B.p(4, s * 24, 1),
-      elbow = B.p(8, s * 35, -7);
+    r.tag = s < 0 ? 'armL' : 'armR';
+    let shoulder = B.p(4, s * 24, 1);
+    let elbow = B.p(8, s * 35, -7);
     const hand = s > 0 ? S.p(1, -2, 31) : F.p(23, s * 24, 8 - drop * 0.22);
-    if (s > 0) sockets.staffHand = hand;
+    if (s > 0) {
+      sockets.staffHand = hand;
+      // The scapula follows a long reach. The elbow folds outboard while the palm
+      // stays on the same crook of the staff, including on the overhead sweep.
+      if (A.keyRig) {
+        const weight = Math.min(1, (Math.abs(A.hip ?? 0) + Math.abs(A.crouch ?? 0)) / 10);
+        const reach = vsub(hand, shoulder);
+        const length = vlen(reach);
+        const glide = Math.min(9, Math.max(0, (length - 34) * 0.28)) * weight;
+        shoulder = vadd(shoulder, vmul(vnorm(reach), glide));
+        const span = vlen(vsub(hand, shoulder));
+        const joint = ik(
+          shoulder, hand, Math.max(17, 0.48 * span), Math.max(18, 0.59 * span), B.v(0, 1, -0.45),
+        );
+        elbow = vlerp(elbow, joint, weight);
+      }
+    }
     r.cap(shoulder, elbow, 5.8, 4.6, skin);
     r.cap(elbow, hand, 4.4, 3.1, skin);
     r.ball(hand, 3.5, skin);
@@ -352,6 +389,7 @@ export function bodyFrame(
       r.cap(hand, end, 1.6, 1.2, skin);
     }
   }
+  r.tag = 'backMushrooms';
   if (phase > 0.025)
     for (const [x, y, h] of [
       [-12, -17, 19],
@@ -365,16 +403,20 @@ export function bodyFrame(
       r.ell(M, [0, 0, 10], [4.6, 4.4, 2.5], gill, (q) => q[2] < -0.24);
     }
   // The cloak carries cowries, knots and a stitched repair on its outer shoulder.
+  r.tag = 'cloak';
   const patch = B.at(-4, 26, 7).turn(-0.22);
   r.poly([patch.p(-5, -2, 2), patch.p(4, -2, 3), patch.p(4, 1, -5), patch.p(-4, 1, -6)], moss);
   for (let j = 0; j < 4; j++)
     r.line(patch.p(-4 + j * 2, 1, -3), patch.p(-3 + j * 2, 1, -5), shell.T[1], 0, 0.7);
   for (const s of [-1, 1]) {
+    r.tag = 'head';
     r.ell(H, [0, s * 23, 1.5], [3.6, 2.8, 2.1], moss);
     for (let j = 0; j < 3; j++)
       r.ball(H.p(2 + j * 2.4, s * (24 - j * 0.25), 2.6 + j * 0.3), 1.2 - j * 0.18, skin);
     r.line(H.p(15, s * 17, -2), H.p(19, s * 11, -2.8), shell.T[1], 0, 0.95);
+    r.tag = 'throatFold';
     r.cap(H.p(13, s * 8, -13), H.p(15, s * 2, -15), 1.1, 0.5, skin);
+    r.tag = 'cloak';
     const lichen = B.at(-10, s * 18, 14);
     for (let j = 0; j < 3; j++) {
       r.cap(
@@ -386,11 +428,13 @@ export function bodyFrame(
       );
       r.dot(lichen.p(-2 + j * 1.5, s * (1 + j), 4 + 0.7 * j), cap.T[2]);
     }
+    r.tag = s < 0 ? 'legL' : 'legR';
     r.line(solePoint(s, 8), solePoint(s, 11), skin.T[1], 0, 0.7);
   }
   function solePoint(s: number, x: number) {
     return F.p(7 + x, s * (31 + x * 0.17), 3);
   }
+  r.tag = 'staff';
   for (let j = 0; j < 4; j++)
     r.cap(S.p(1, -2, 26 + j * 2), S.p(2, -1, 26 + j * 2), 2.8, 2.5, j === 3 ? shell : twig);
   r.line(S.p(1, 1, 49), S.p(-1, 1, 60), twig.T[0], 0, 0.8);

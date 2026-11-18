@@ -1,11 +1,12 @@
+import { bodyShell, moveGrip, swingingElbow } from './frost_yeti-grip';
 import route from './frost_yeti-life';
 import keys from './frost_yeti-keys';
 import { withTechniques } from '../technique';
 import { strideFoot, attachMotion } from '../motion';
 import { finishSurfaces } from './surface-work';
 // Broad-backed ice quarryman. The hands and both wrists are solved from the same club shaft.
-import { F3, Rig, vadd, vmul, vlerp, type Mat, type V3 } from '../rig/f15-rig';
-import { ik, tn, TAU } from '../kit/f11-mobkit';
+import { F3, Rig, vadd, vmul, vlerp, vsub, vnorm, vcross, type Mat, type V3 } from '../rig/f15-rig';
+import { tn, TAU } from '../kit/f11-mobkit';
 import { everyday, life, projectFigure, scaleFigure } from '../rig/figure';
 import { animations, props, effects, pose, presentation } from './frost_yeti-actions';
 import type { Creature, Variant } from '../types';
@@ -45,8 +46,8 @@ export function bodyFrame(
     A = {
       ...A,
       clubAngle: (A.clubAngle ?? 0) * (anim === 'tech_roar' ? 1 - 0.55 * sideView : 1),
-      clubLift: (A.clubLift ?? 0) * (1 - 0.55 * sideView),
-      clubForward: (A.clubForward ?? 0) * (1 - 0.22 * sideView),
+      clubLift: (A.clubLift ?? 0) * (1 - (anim === 'tech_icicles' ? 0.83 : 0.55) * sideView),
+      clubForward: (A.clubForward ?? 0) * (1 - (anim === 'tech_icicles' ? 0.65 : 0.22) * sideView),
       hip: (A.hip ?? 0) * (1 - 0.3 * sideView),
       lean: (A.lean ?? 0) * (1 - 0.28 * sideView),
       crouch:
@@ -91,10 +92,13 @@ export function bodyFrame(
   const torso = F.at(-2 + (A.hip ?? 0), 1.5 * l.walk + (A.lean ?? 0), 47 + bounce - drop)
     .pitch(0.06 + 0.12 * l.tired + 0.14 * l.sleep + (A.pitch ?? 0))
     .turn(A.twist ?? 0);
+  r.tag = 'torso';
   r.ell(torso, [-2, 0, 0], [16, 22, 23], coat);
   r.ell(torso, [-4, 0, 10], [15, 26, 13], coat);
   const hips = F.at(-5 + (A.hip ?? 0) * 0.65, (A.lean ?? 0) * 0.7, 25 - drop * 0.37);
+  r.tag = 'hips';
   r.ell(hips, [0, 0, 0], [13, 15, 13], coat);
+  r.tag = 'belt';
   r.ell(hips, [2, 0, 2], [13.7, 15.3, 3.4], leather);
   const sockets: Record<string, V3> = {},
     planted: string[] = [];
@@ -116,6 +120,7 @@ export function bodyFrame(
       s * 11 + (A.lean ?? 0) * 0.65,
       14 - drop * 0.28,
     );
+    r.tag = s < 0 ? 'legL' : 'legR';
     r.cap(hips.p(0, s * 8, 1), knee, 7, 6.4, slate);
     r.cap(knee, step.p(-2, 0, 4), 6.6, 5.7, coat);
     r.ell(step, [2, 0, 3], [9.5, 6.3, 3.3], slate);
@@ -131,6 +136,7 @@ export function bodyFrame(
   const amber: Mat = { T: tn('#614a41', '#ba793c', '#efb244', '#ffe49a'), glow: 0.36 };
   // Four overlapping curls sweep from the crown to the outer mantle. Their overlapping dark edges
   // are visible as separate tapered forms even in the two oblique rear views.
+  r.tag = 'torso';
   for (const side of [-1, 1])
     for (const [x, lat, z] of [
       [-9, 9, 21],
@@ -147,6 +153,7 @@ export function bodyFrame(
     .at(14, 0, 14)
     .turn(0.45 * l.look + (A.headTurn ?? 0) + lead * 0.62)
     .pitch(0.15 * l.sleep + 0.13 * l.tired - 0.22 * (A.jaw ?? 0));
+  r.tag = 'head';
   r.ell(H, [0, 0, 0], [9.5, 11.3, 10.2], coat);
   // A bare brow mask breaks the shag. The eyes lie on its forward, upward-facing plane.
   const face: Mat = {
@@ -191,6 +198,7 @@ export function bodyFrame(
   r.eye = H.p(12.9, 5.7, 5.5);
   // The right shoulder is a calved serac: blocks of translucent ice, an asymmetric high ridge.
   for (const s of [-1, 1]) {
+    r.tag = 'torso';
     const base = torso.at(-2, s * 21, 10);
     r.poly(
       [
@@ -202,9 +210,11 @@ export function bodyFrame(
       ],
       coat,
     );
+    r.tag = 'head';
     r.cap(H.p(-1, s * 8, 4), H.p(-3, s * 12, -3), 3.4, 0.3, coat);
   }
   const S = torso.at(-3, 23, 13).roll(0.27);
+  r.tag = 'serac';
   r.ell(S, [0, 0, -1], [9, 9, 6.8], slate);
   for (const [x, y, z, h, w] of [
     [-6, 1, 1, 18, 5.5],
@@ -216,7 +226,9 @@ export function bodyFrame(
     r.poly([S.p(x + w, y - 3, z), S.p(x + w, y + 2, z), high], bright);
     r.poly([S.p(x + w, y + 2, z), S.p(x - 3, y + 1, z), high], ice);
   }
-  const belt = hips.at(9, 6, 3);
+  r.tag = 'belt';
+  const tuck = A.keyRig ? Math.max(0, (A.crouch ?? 0) - 8) : 0;
+  const belt = hips.at(9 + tuck * 0.35, 6, 3 - tuck * 0.52);
   sockets.belt = belt.o;
   for (const [s, len] of [
     [-3, 7],
@@ -231,18 +243,44 @@ export function bodyFrame(
     5 + (A.clubSide ?? 0),
     27 - drop * 0.56 + (A.clubLift ?? 0) + 1.4 * Math.sin(l.q),
   ).turn(A.clubYaw ?? 0);
-  const dir = G.v(0.38 * Math.cos(angle), -0.925 * Math.cos(angle), Math.sin(angle));
+  let dir = G.v(0.38 * Math.cos(angle), -0.925 * Math.cos(angle), Math.sin(angle));
   // At full plant the same club (and both grips) is lowered until the head touches the ground.
   if (A.plant) {
     G.o[2] -= A.plant * (G.o[2] + 53 * dir[2]);
     G.o[1] -= A.plant * (G.o[1] + 53 * dir[1] - sockets.footL[1]);
   }
+  const active = anim.startsWith('tech_') || anim === 'happy' || anim === 'hatch';
+  const swing = anim === 'hatch' ? Math.max(0, A.clubAngle ?? 0) : Math.abs(A.clubAngle ?? 0);
+  const adjustment = active
+    ? Math.min(
+        1,
+        swing +
+          Math.abs(A.clubYaw ?? 0) +
+          Math.abs(A.chestBeat ?? 0) +
+          0.13 * Math.abs(A.clubLift ?? 0),
+      )
+    : 0;
+  const shell = adjustment > 0 ? bodyShell(r) : [];
+  if (adjustment > 0) {
+    // Keep the tip target (including its floor plane), and pivot the rear handle
+    // towards clear space in front of the chest. Both hands follow the same rigid shaft.
+    const tip = vadd(G.o, vmul(dir, 53));
+    const desired = moveGrip(shell, G.o, dir, F.f);
+    const tryDir = vnorm(vsub(tip, desired));
+    dir = vnorm(vlerp(dir, tryDir, adjustment));
+    G.o = vsub(tip, vmul(dir, 53));
+  }
   const shaft = (n: number) => vadd(G.o, vmul(dir, n));
+  r.tag = 'club';
   r.cap(shaft(-11), shaft(29), 2.5, 2.3, leather);
   for (const n of [0, 4, 8]) r.cap(shaft(n), shaft(n + 1.4), 2.7, 2.65, slate);
   // Club has parallel planes and a chipped flat end, unlike a spherical hammer.
-  const across = G.v(0.925, 0.38, 0),
-    up = G.v(-0.38 * Math.sin(angle), 0.925 * Math.sin(angle), Math.cos(angle));
+  const originalAcross = G.v(0.925, 0.38, 0);
+  const up =
+    adjustment > 0
+      ? vnorm(vcross(dir, originalAcross))
+      : G.v(-0.38 * Math.sin(angle), 0.925 * Math.sin(angle), Math.cos(angle));
+  const across = adjustment > 0 ? vnorm(vcross(up, dir)) : originalAcross;
   function edge(n: number, a: number, b: number) {
     return vadd(shaft(n), vadd(vmul(across, a), vmul(up, b)));
   }
@@ -264,12 +302,22 @@ export function bodyFrame(
   sockets.clubGrip = G.o;
   sockets.clubTip = shaft(53);
   for (const s of [-1, 1]) {
-    const shoulder = torso.p(1, s * 22, 6),
+    r.tag = s < 0 ? 'armL' : 'armR';
+    const socketShoulder = torso.p(1, s * 22, 6),
       grip = shaft(s > 0 ? -5 : 7);
-    const elbow = vlerp(shoulder, grip, 0.48);
-    const bend = F.v(-4, s * 13, -8);
-    const E = A.keyRig ? ik(shoulder, grip, 24, 24, F.v(-0.4, s, 0.42)) : vadd(elbow, bend);
-    const hand = s > 0 ? vlerp(grip, torso.p(10, 4, 9), Math.max(A.chestBeat ?? 0, l.happy)) : grip;
+    const hand =
+      s > 0 ? vlerp(grip, torso.p(17, 17, 0), Math.max(A.chestBeat ?? 0, l.happy)) : grip;
+    // Protract the shoulder as the arm approaches full extension. The reserved
+    // bend keeps the elbow from snapping straight at the two-link reach limit.
+    const gap = vsub(hand, socketShoulder);
+    const distance = Math.hypot(...gap);
+    const extend = (adjustment * Math.max(0, distance - 40)) / (distance || 1);
+    const shoulder = vadd(socketShoulder, vmul(gap, extend));
+    const restElbow = vadd(vlerp(shoulder, grip, 0.48), F.v(-4, s * 13, -8));
+    const E =
+      adjustment > 0
+        ? vlerp(restElbow, swingingElbow(shell, shoulder, hand, F, s), adjustment)
+        : restElbow;
     sockets[s > 0 ? 'clubGripR' : 'clubGripL'] = grip;
     sockets[s > 0 ? 'handR' : 'handL'] = hand;
     r.cap(shoulder, E, 10, 8.5, coat);
@@ -284,6 +332,7 @@ export function bodyFrame(
     r.ball(hand, 4.7, slate);
     r.cap(vadd(hand, F.v(1, -s * 2, 2)), vadd(hand, F.v(4, s, 1)), 1.8, 1.3, slate);
   }
+  r.tag = 'head';
   // A bruised blue nose, cream tusks and rime at the visible ends of the long facial locks.
   for (const s of [-1, 1]) {
     r.ell(H, [15.4, s * 2, 0.8], [1.2, 1.2, 0.88], slate);
@@ -300,6 +349,7 @@ export function bodyFrame(
       );
     }
   }
+  r.tag = 'serac';
   // Seminatural striations in the serac, three ice-screws and the belt's square buckle.
   for (const [x, y, z, h] of [
     [-5, 2, 4, 10],
@@ -309,6 +359,7 @@ export function bodyFrame(
     r.line(S.p(x - 1, y + 1, z), S.p(x - 2.2, y + 2, z + h), bright.T[2], 0.28, 0.75);
     r.line(S.p(x - 1.3, y + 1, z + 2), S.p(x - 2.8, y + 2.7, z + h * 0.7), ice.T[0], 0, 0.6);
   }
+  r.tag = 'belt';
   const buckle = hips.at(11, 8, 3);
   r.ell(buckle, [0, 0, 0], [3.2, 4.4, 2.7], bone);
   r.ell(buckle, [2.3, 0.2, 0.2], [1.6, 2.5, 1.5], leather);
@@ -316,6 +367,7 @@ export function bodyFrame(
   for (const s of [-1, 0, 1]) r.ball(hips.p(12, 4 + s * 3.2, 3), 1.3, bone);
   r.ell(belt, [0.8, 0, 2], [2.6, 3.4, 1.3], leather);
   r.dot(belt.p(2, 1, 2.4), bright.T[2], 0.1);
+  r.tag = 'club';
   for (let j = 0; j < 3; j++) {
     const end = shaft(-8 + j * 4);
     r.cap(end, vadd(end, F.v(-0.6, 0, -1.3)), 2.7, 2.3, bone);

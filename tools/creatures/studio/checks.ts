@@ -4,6 +4,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { compose, frameCount, hitFrame } from '../engine';
+import { techniqueContacts } from '../technique';
 import { maskOf, maskIoU, type BodyMask } from '../tech-metrics';
 import type { Creature, Scene, Border, XY } from '../types';
 import type { Px } from '../rig/px';
@@ -27,8 +28,8 @@ export interface Finding {
 export interface StudioConfig {
   /** Designed overlaps, matched by tag or label substring: e.g. { a: 'tongue', b: 'head' }. */
   clipAllow?: ClipAllow[];
-  /** Named parts allowed to disappear into the body around a strike (tag substring), e.g. ['tongue']. */
-  partGone?: string[];
+  /** Legacy strings match a tag substring. New rules apply to an exact part and an inclusive interval. */
+  partGone?: (string | { part: string; anim: string; frames: [number, number]; reason: string })[];
   /** Animations or frames to skip for a check, e.g. { jump: ['show:74-77'] }. */
   skip?: Partial<Record<Finding['kind'], string[]>>;
 }
@@ -37,6 +38,14 @@ const tools = join(import.meta.dirname, '..');
 export function studioConfig(id: string): StudioConfig {
   const f = join(tools, 'c', id + '.studio.json');
   return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : {};
+}
+
+export function allowsOcclusion(cfg: StudioConfig, tag: string, anim: string, n: number) {
+  return (cfg.partGone ?? []).some((rule) => {
+    if (typeof rule === 'string') return tag.includes(rule);
+    return rule.part === tag && rule.anim === anim && rule.frames[0] <= n && n <= rule.frames[1]
+      && typeof rule.reason === 'string' && rule.reason.trim().length > 0;
+  });
 }
 
 export const defaultAnims = (c: Creature) =>
@@ -114,6 +123,23 @@ function restBaselines(p: Painting, anim: string) {
   return names.map((a) => restPose(p, a)).filter((b): b is ClipBaseline => !!b);
 }
 
+/** Births use field coordinates. Foreground pixels include the frame and camera shake. */
+export function coveredByForeground(
+  f: Pick<ReturnType<typeof compose>, 'layers' | 'feet' | 'worldFeet'>, at: XY,
+): boolean {
+  const layer = f.layers.bgf;
+  const x = Math.round(at[0] + f.feet[0] - f.worldFeet[0]);
+  const y = Math.round(at[1] + f.feet[1] - f.worldFeet[1]);
+  let covered = 0, total = 0;
+  for (let row = Math.max(0, y - 2); row <= Math.min(layer.h - 1, y + 2); row++) {
+    for (let col = Math.max(0, x - 2); col <= Math.min(layer.w - 1, x + 2); col++) {
+      total++;
+      if (layer.data[4 * (row * layer.w + col) + 3]) covered++;
+    }
+  }
+  return total > 0 && covered / total > 0.5;
+}
+
 /** Samples every frame of `anim` once. */
 export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {}): FrameSample[] {
   const { c, s, b } = p;
@@ -124,7 +150,6 @@ export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {
   const views = restNames(p, anim)
     .map((a) => restView(p, a))
     .filter((b): b is ViewBaseline => !!b);
-  const allowed = (label: string) => (cfg.partGone ?? []).some((x) => label.includes(x));
   const out: FrameSample[] = [];
   for (let n = 0; n < count; n++) {
     const { result: f, rig } = captureRig(() => compose(c, s, b, anim, n / 24));
@@ -147,7 +172,7 @@ export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {
     // Only around a strike: elsewhere parts hide by design (blinks, sleep, the egg in hatch).
     const strikeWindow = [...hits].some((h) => n >= h - 4 && n <= h + 2);
     if (strikeWindow && rig && views.length && !skipped(cfg, 'part-gone', anim, n)) {
-      const g = worstGone(rig, views, allowed);
+      const g = worstGone(rig, views, (tag) => allowsOcclusion(cfg, tag, anim, n));
       if (g) gone = g.tag + ' ' + Math.round(g.rest * 100) + '% → ' + Math.round(g.share * 100) + '% visible, hidden by ' + g.by;
     }
     // Impact readability: effect pixels that stay visible against the floor under them.
@@ -166,20 +191,15 @@ export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {
       if (deltas.length > 12) contrast = median(deltas);
     }
     if (hits.has(n)) {
-      const births = f.techniqueTrace?.births ?? [];
-      const at: XY[] = births.length ? births.map((x) => x.at) : [];
-      for (const [x, y] of at) {
-        let cover = 0,
-          total = 0;
-        for (let dy = -2; dy <= 2; dy++)
-          for (let dx = -2; dx <= 2; dx++) {
-            const X = Math.round(x) + dx,
-              Y = Math.round(y) + dy;
-            if (X < 0 || Y < 0 || X >= f.picture.w || Y >= f.picture.h) continue;
-            total++;
-            if (f.layers.bgf.data[4 * (Y * f.picture.w + X) + 3] > 0) cover++;
-          }
-        if (total && cover / total > 0.5) hidden = 'contact at ' + Math.round(x) + ',' + Math.round(y) + ' under a foreground prop';
+      const contacts = c.techniques?.[anim];
+      const sockets = contacts && techniqueContacts(contacts)
+        .filter((contact) => contact.frame === n)
+        .map((contact) => contact.projectile ?? contact.socket);
+      // A previous impact may still be painted while a second projectile lands.
+      for (const birth of f.techniqueTrace.births) {
+        if (sockets?.length && !sockets.includes(birth.socket)) continue;
+        if (coveredByForeground(f, birth.at))
+          hidden = 'contact at ' + birth.at.map(Math.round).join(',') + ' under a foreground prop';
       }
     }
     out.push({ n, mask, clip, thin, gone, contrast, hidden });
@@ -197,7 +217,7 @@ export function findings(p: Painting, anim: string, samples: FrameSample[], cfg:
   const hits = (spec.hits ?? []).map(hitFrame);
   const out: Finding[] = [];
   for (const thin of [false, true]) {
-    const hit = samples.filter((s) => s.clip && s.thin === thin);
+    const hit = samples.filter((s) => s.clip && s.thin === thin && !(thin && skipped(cfg, 'thin-clip', anim, s.n)));
     if (!hit.length) continue;
     const worst = [...hit].sort((a, b) => parseFloat(a.clip!.split('@')[1]) - parseFloat(b.clip!.split('@')[1]))[0];
     const frames = hit.map((s) => s.n);

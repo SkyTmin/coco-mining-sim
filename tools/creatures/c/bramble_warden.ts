@@ -80,6 +80,8 @@ export function buildFrame(
   const scale = 1.19;
   for (const k of [-1, 1])
     for (const s of [-1, 1]) {
+      const name = (k === 1 ? 'fore' : 'hind') + (s === 1 ? 'R' : 'L');
+      r.tag = name;
       const gait = strideFoot(t, k === s ? 0 : 0.5, plan.stride / scale);
       const scrape =
         anim === 'idle' && k === 1 && s === 1
@@ -111,7 +113,9 @@ export function buildFrame(
       for (const toe of [-1, 1])
         r.ell(F, [2.0, toe * 2.12, -1.55], [4.1, 1.82, 2.25], soil);
       r.line(F.p(3.1, 0, -0.55), F.p(5.7, 0, -1.95), soil.T[0], 0, 1.5);
+      r.tag = name + 'Vine';
       r.cap(F.p(-1.6, -s * 2, 4), F.p(2.0, s * 2.8, 3), 1.05, 0.8, vine);
+      r.tag = name;
       if (k === 1)
         r.line(
           F.p(-1.2, s * 3, 5.1),
@@ -121,12 +125,13 @@ export function buildFrame(
           0.82,
         );
       else r.ell(F, [-1, s * 2.1, 0.7], [1.8, 1.2, 1.7], vine);
-      const name = (k === 1 ? 'fore' : 'hind') + (s === 1 ? 'R' : 'L');
       ground[name] = foot;
       if (k === 1 && s === 1) ground.paw = foot;
       if (anim === 'walk' && gait.planted) planted.push(name);
     }
+  r.tag = 'torso';
   r.ell(b, [-4, 0, 0], [24, 15.5, 16], armour);
+  r.tag = 'belly';
   r.ell(b, [-1, 0, -8.4], [17.5, 13.8, 7.6], {
     ...soil,
     pat: ([x, y, z], l) =>
@@ -142,6 +147,7 @@ export function buildFrame(
         0.1 * l.happy -
         0.13 * Math.max(0, Math.sin(l.q - 1.3)) ** 7,
     );
+  r.tag = 'head';
   r.ell(h, [4, 0, 0], [11.8, 10.7, 9.4], mask);
   r.ell(h, [12.9, 0, -6.2], [6.8, 6.5, 2.45], soil);
   r.line(h.p(9, 7.4, -4.2), h.p(17, 5.4, -3.5), soil.T[0], 0, 1);
@@ -150,6 +156,7 @@ export function buildFrame(
     T: tn('#282331', '#47323b', '#6d514a', '#ab8970'),
   });
   for (const s of [-1, 1]) {
+    r.tag = 'headVisor';
     const visor: V3[] = [
       [-2, s * 9, 6],
       [4, s * 8, 8.5],
@@ -163,6 +170,7 @@ export function buildFrame(
       visorGrain(h, horn),
       0.55,
     );
+    r.tag = s > 0 ? 'eyeR' : 'eyeL';
     const eye = h.p(7.3, s * 11.8, 1.55);
     const shut = l.blink || (a.squint ?? 0) > 0.8;
     const corner = h.p(12, s * 8.5, 1.65);
@@ -180,6 +188,7 @@ export function buildFrame(
   let spine = b.p(-1, 0, 20);
   for (const s of [-1, 1])
     for (let i = 0; i < 4; i++) {
+      r.tag = (s > 0 ? 'spineR' : 'spineL') + i;
       const x = -23 + i * 9.6,
         sideBand = i % 2 ? 8 : 5.6,
         z =

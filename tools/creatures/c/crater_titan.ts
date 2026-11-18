@@ -209,6 +209,7 @@ export function craterTitanFrame(
   const loc: Record<string, V3> = {};
   const planted: string[] = [];
   for (const d of [-1, 1]) {
+    r.tag = d === 1 ? 'legR' : 'legL';
     const step = strideFoot(t, d === 1 ? 0 : 0.5, route.stride / scale);
     const stride = walk ? step.forward : 0;
     if (walk && step.planted) planted.push(d === 1 ? 'footR' : 'footL');
@@ -241,10 +242,12 @@ export function craterTitanFrame(
       loc.footFloor = [loc.foot[0], loc.foot[1], 0];
     }
   }
+  r.tag = 'torso';
   // Asymmetric stepped shield across a deep, narrower belly.
   r.ell(torso, [0, 0, -3], [20, 22, 21], dark);
   ledge(r, torso, -1, 1, 7, 22, 30, 18, rock);
   ledge(r, torso, -3, -1, 19, 25, 33, 13, plane);
+  r.tag = 'chest';
   const sternum = torso.at(20, 0, 8).pitch(-0.11);
   r.ell(sternum, [0, 0, 0], [3.8, 10, 12], dark);
   loc.chest = sternum.p(4, 0.5, 1);
@@ -264,6 +267,7 @@ export function craterTitanFrame(
     }
     loc.chest = sternum.p(7, 0, 3);
   }
+  r.tag = 'belly';
   // Ventral belt, layered around the waist. A chipped hanging plate breaks the belly outline.
   for (const d of [-1, 1]) {
     r.ell(torso, [9, d * 14, -10], [8, 8, 4.2], rock);
@@ -276,6 +280,7 @@ export function craterTitanFrame(
       3,
     );
   }
+  r.tag = 'chest';
   // Chunky iron oxide heart at the front, with a quartz rim and a fork through the glass.
   const keel = torso.at(21.5, 0, 9).pitch(-0.09);
   r.ell(keel, [0.4, 0, -0.4], [3.4, 9.6, 10], ore);
@@ -285,6 +290,7 @@ export function craterTitanFrame(
     r.line(keel.p(4.2, 0, 5.8), lip, magma, 0.78, 1.5);
     r.line(lip, keel.p(4.9, d * 5.5, -2.7), white, 0.65, 1.5);
   }
+  r.tag = 'torso';
   // The back continues the channel from the vent down through the notched saddle.
   const rear = torso.at(-20, 0, 11);
   r.cap(rear.p(-1, 0, 7), rear.p(1.1, 3, -7), 1.8, 1, glass);
@@ -322,6 +328,7 @@ export function craterTitanFrame(
     }
     const el = ik(sh, hand, 28, 27, F.v(-0.8, d * 0.75, -0.15));
     const armRig = lead ? limb : r;
+    armRig.tag = lead ? 'armR' : 'armL';
     armRig.cap(sh, el, 12, 8.2, dark).cap(el, hand, 9, 6.5, rock);
     ledge(armRig, F3.yaw(heading, sh), 0, 0, 1, 14, lead ? 16 : 13, 10, plane);
     const shoulder = F3.yaw(heading, sh);
@@ -410,6 +417,7 @@ export function craterTitanFrame(
     }
   }
   r.prims.push(...limb.prims);
+  r.tag = 'torso';
   // Jagged backing spurs, lower on the nearer shoulder, keep both sides legible in profile.
   for (const [x, y, h, w] of [
     [-12, -20, 21, 5],
@@ -431,6 +439,7 @@ export function craterTitanFrame(
         r.line(seam[i - 1], seam[i], magma, 0.84, 1.1);
     }
   }
+  r.tag = 'head';
   const muzzle = head.at(17.5, 0, -4);
   ledge(r, muzzle, 0, 0, -1, 12, 14, 9, dark);
   for (const d of [-1, 1]) {
@@ -508,6 +517,7 @@ export function craterTitanFrame(
   for (let j = 0; j < 3; j++)
     r.ell(head, [8 + 0.85 * j, 8 - j * 0.7, 5.3 - j], [1.2, 1, 0.75], ash);
   if (k.throat > 0) {
+    r.tag = 'neck';
     const collar = torso.at(2, 0, 28);
     r.cap(collar.o, head.o, 11, 9, dark);
     for (let j = 1; j <= 2; j++) {
@@ -516,6 +526,7 @@ export function craterTitanFrame(
     }
   }
   loc.vent = head.p(-1, 0, 12);
+  r.tag = 'steam';
   for (let i = 0; i < 3; i++) {
     const u = (clock / 1.5 + i / 3) % 1;
     const a = Math.round(60 * Math.sin(Math.PI * u) ** 0.65);
@@ -546,6 +557,7 @@ export function craterTitanFrame(
   );
   // The final three frames of the break uncover the moving rig between the two halves.
   if (anim === 'show' && k.shell > 0 && k.shell < 1) {
+    r.tag = 'shell';
     const opening = 1 - k.shell;
     scaleFigure(r, loc, 0.46 + 0.54 * opening, 0.29 + 0.71 * opening);
     for (const d of [-1, 1]) {
@@ -566,6 +578,7 @@ export function craterTitanFrame(
     }
   }
   if (anim === 'show' && k.shell >= 1) {
+    r.tag = 'shell';
     const shell = F.at(0, 0, 8).roll(k.crack * 0.12);
     const size = 1 + k.crack * 0.36 + k.split * 0.64;
     r.prims.length = 0;
@@ -596,6 +609,7 @@ export function craterTitanFrame(
     loc.eye = loc.vent;
   }
   if (anim === 'show' && k.shellSide > 0) {
+    r.tag = 'shell';
     // The near half remains wedged under the actual knuckles as the dome breaks.
     const n = k.shellSide,
       h = F3.yaw(heading, loc.fist).at(2, n * 4, -2);

@@ -127,6 +127,35 @@ function actionBox(frames: { layers: Record<string, Img> }[], W: number, H: numb
   return [x0, y0, x1 - x0 + 1, y1 - y0 + 1];
 }
 
+/** A limb or effect in the old pose can extend beyond the new pose's crop. */
+function comparisonBox(tiles: Tile[], box: number[], margin = 8) {
+  let [left, top, w, h] = box;
+  let right = left + w, bottom = top + h;
+  for (const { pics } of tiles) {
+    if (pics.length !== 2) continue;
+    const [old, now] = pics;
+    if (old.w !== now.w || old.h !== now.h) {
+      left = top = 0;
+      right = Math.max(right, old.w, now.w);
+      bottom = Math.max(bottom, old.h, now.h);
+      continue;
+    }
+    const a = old.data, b = now.data;
+    for (let y = 0; y < old.h; y++) {
+      for (let x = 0; x < old.w; x++) {
+        const i = (y * old.w + x) * 4;
+        if (a[i] === b[i] && a[i + 1] === b[i + 1] && a[i + 2] === b[i + 2] && a[i + 3] === b[i + 3])
+          continue;
+        left = Math.min(left, Math.max(0, x - margin));
+        top = Math.min(top, Math.max(0, y - margin));
+        right = Math.max(right, Math.min(old.w, x + margin + 1));
+        bottom = Math.max(bottom, Math.min(old.h, y + margin + 1));
+      }
+    }
+  }
+  return [left, top, right - left, bottom - top];
+}
+
 function option(args: string[], name: string) {
   const i = args.indexOf(name);
   return i < 0 ? undefined : args[i + 1];
@@ -208,9 +237,7 @@ export async function sheetCommand(args: string[]) {
   }
   const now = new Map(chosen.map((n) => [n, compose(c, s, b, anim, n / 24)]));
   const any = now.values().next().value!;
-  const box = actionBox([...now.values()] as never, any.picture.w, any.picture.h);
-  // ×2 for small crops, ×1 when the action spans most of the painting: the sheet stays near 1 MP
-  const k = Number(askedScale ?? (box[2] * box[3] <= 180 * 150 ? 2 : 1));
+  let box = actionBox([...now.values()] as never, any.picture.w, any.picture.h);
   let tiles: Tile[];
   const against = option(args, '--against');
   if (against) {
@@ -226,7 +253,10 @@ export async function sheetCommand(args: string[]) {
       console.log(`${id} ${anim}: no visible change against ${against} in ${chosen.length} sampled frames`);
       return;
     }
+    box = comparisonBox(tiles, box);
   } else tiles = chosen.map((n) => ({ n, pics: [now.get(n)!.picture], marks: [...(marks.get(n) ?? [])] }));
+  // ×2 for small crops, ×1 when the action spans most of the painting: the sheet stays near 1 MP
+  const k = Number(askedScale ?? (box[2] * box[3] <= 180 * 150 ? 2 : 1));
   const png = layout(tiles, box, k);
   const out = option(args, '--out') ?? join(tools, '.studio', `${id}-${anim}${against ? '-diff' : ''}.png`);
   mkdirSync(join(out, '..'), { recursive: true });

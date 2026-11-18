@@ -67,18 +67,22 @@ export function armouredHead(
       x * 11,
       z * 9,
     );
+  r.tag = s > 0 ? 'eyeR' : 'eyeL';
   r.ell(h, [5.6, s * 8.5, 2.4], [3.8, 2.25, 2.25], blink ? night : lens);
   if (!blink) r.dot(h.p(6.8, s * 9.8, 3.3), hx('#fff3c3'), 0, 1.2, 1.2);
   // Mandibular notch and clubbed feeler are placed on opposite sides of the central horn.
   const hinge = h.p(8.5, 6.2 * s, -1.5),
     notch = h.p(12.5, 9 * s, -2.5);
+  r.tag = s > 0 ? 'mandibleR' : 'mandibleL';
   r.cap(hinge, notch, 2.05, 1.28, metal);
   r.cap(notch, h.p(14.8, 7.5 * s, -1.2), 1.25, 0.33, jewel);
   const elbow = h.p(8.5, s * 11, 6.2),
     tip = h.p(12, s * 13, 8.6);
+  r.tag = s > 0 ? 'feelerR' : 'feelerL';
   r.cap(h.p(4.5, s * 7.2, 4.8), elbow, 0.8, 0.65, night);
   r.cap(elbow, tip, 0.6, 0.45, metal);
   r.ball(tip, 1.4, night);
+  r.tag = 'head';
   r.line(h.p(-1, s * 8, 5.5), h.p(5, s * 5.5, 7.0), metal.T[2], 0, 0.9);
 }
 export function etchedMetal(m: Mat): Mat {

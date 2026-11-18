@@ -95,6 +95,7 @@ export function addBriar(
     );
   // A woody knot and lichens sit on the near shoulder, with a dry split towards the belly.
   for (const s of [-1, 1]) {
+    r.tag = 'torsoBark';
     const k = b.at(3, s * 14, 4);
     r.ell(k, [0, 0, 0], [4.5, 1.7, 3.5], {
       ...cambium,
@@ -103,12 +104,15 @@ export function addBriar(
         return ramp(cambium, l, 1.8 * Math.cos(ring * 15), x * 8, z * 7);
       },
     });
+    r.tag = 'torsoLichen';
     const patch = b.at(-16, s * 10.8, 9);
     r.ell(patch, [0, 0.5 * s, 0.8], [4.1, 2.2, 1.8], lichen);
     r.ell(b, [2, s * 15.1, 10], [2.8, 1.2, 1.9], lichen);
+    r.tag = s > 0 ? 'shoulderSprigR' : 'shoulderSprigL';
     const sh = b.p(11, 9 * s, 8);
     r.cap(sh, b.p(7, 12 * s, 14), 1.5, 0.15, cambium);
     // A cluster of three individually lobed drupelets, with a seed and a spent flower.
+    r.tag = s > 0 ? 'berriesR' : 'berriesL';
     for (const [x, y, z, rad] of [
       [-12, 13, 6, 2.7],
       [-8.4, 14.2, 5.3, 3],
@@ -122,6 +126,7 @@ export function addBriar(
     r.ball(b.p(-7.6, s * 13.2, 9), 1.65, ivy);
     r.line(b.p(-10, s * 13, 8), b.p(-9, s * 14, 11), cambium.T[1], 0, 1);
     // Folded leaf with a pale midrib. Its silhouette and reverse carry different planes.
+    r.tag = s > 0 ? 'leafR' : 'leafL';
     const leaf = b
       .at(-14, s * 12, 14)
       .roll(s * (0.18 + 0.08 * Math.sin(q - 0.8)));
@@ -131,15 +136,19 @@ export function addBriar(
     r.poly([start, tip, leaf.p(-3, -s * 0.5, -1.3)], bark);
     r.line(start, tip, ivy.T[2], 0, 1.1);
     // The broken cheek plate exposes a lighter splinter, and each nostril is inset.
+    r.tag = 'head';
     r.line(h.p(5, s * 10.1, 0.1), h.p(3, s * 10.8, -3), cambium.T[3], 0, 1.5);
     r.dot(h.p(19.9, s * 3.7, -1.7), hx('#231e2b'), 0, 1.4, 1.4);
   }
+  r.tag = 'rearSprig';
   const fork = b.p(-18, 5, 13),
     elbow = b.p(-24, 10, 16);
   r.cap(fork, elbow, 1.2, 0.8, ivy);
   r.cap(elbow, b.p(-26, 11, 13), 0.7, 0.18, cambium);
+  r.tag = 'crownSprout';
   const sprout = b.at(7, -1, 16);
   r.cap(sprout.o, sprout.p(-1, -1, 6.4), 1.7, 0.25, ivy);
+  r.tag = 'belly';
   r.dot(b.p(7, 12.3, -6), thorn.T[2], 0, 1, 0.8);
 }
 export function visorGrain(h: F3, mat: Mat): Mat {

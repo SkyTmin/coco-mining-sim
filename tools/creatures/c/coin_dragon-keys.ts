@@ -340,7 +340,7 @@ export default {
           bodyYaw: 1.38,
           rear: 0.48,
           squat: 13,
-          handReach: -14,
+          handReach: -8,
           claw: -0.23,
           lid: 1.2,
           chest: -0.29,
