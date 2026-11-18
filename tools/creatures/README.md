@@ -1,5 +1,7 @@
 # Живые картины
 
+Быстрый цикл — **Мастерская**: `npm run ws -- check|gate|probe|sheet|render` ([studio/README.md](studio/README.md)).
+
 Требуется Node.js 22 или новее. Команды запускаются в `tools/creatures`.
 
 ```sh

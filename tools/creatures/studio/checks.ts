@@ -1,0 +1,209 @@
+// One pass over an animation that finds what critics used to find by eye:
+// limbs inside the body, pops between neighbouring frames, contact hidden by the foreground,
+// impact effects that melt into the background. Output is frame numbers, not pictures.
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { compose, frameCount, hitFrame } from '../engine';
+import { maskOf, maskIoU, type BodyMask } from '../tech-metrics';
+import type { Creature, Scene, Border, XY } from '../types';
+import type { Px } from '../rig/px';
+import { captureRig } from './capture';
+import { baselineOf, worstClip, type ClipAllow, type ClipBaseline } from './clip';
+
+export interface Painting {
+  c: Creature;
+  s: Scene;
+  b: Border;
+}
+export interface Finding {
+  anim: string;
+  kind: 'clip' | 'thin-clip' | 'jump' | 'hidden-contact' | 'weak-impact' | 'end-pop';
+  /** errors fail the gate; warnings are listed for the author and the critic. */
+  level: 'error' | 'warn';
+  frames: number[];
+  note: string;
+}
+export interface StudioConfig {
+  /** Designed overlaps, matched by tag or label substring: e.g. { a: 'tongue', b: 'head' }. */
+  clipAllow?: ClipAllow[];
+  /** Animations or frames to skip for a check, e.g. { jump: ['show:74-77'] }. */
+  skip?: Partial<Record<Finding['kind'], string[]>>;
+}
+
+const tools = join(import.meta.dirname, '..');
+export function studioConfig(id: string): StudioConfig {
+  const f = join(tools, 'c', id + '.studio.json');
+  return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : {};
+}
+
+export const defaultAnims = (c: Creature) =>
+  Object.keys(c.animations).filter(
+    (a) => !a.startsWith('walk') && a !== 'life' && a !== 'showreel' && a !== 'turn',
+  );
+
+const luma = (p: Px, i: number) => 0.299 * p.data[i] + 0.587 * p.data[i + 1] + 0.114 * p.data[i + 2];
+const median = (v: number[]) => {
+  if (!v.length) return NaN;
+  const s = [...v].sort((a, b) => a - b);
+  return s[s.length >> 1];
+};
+function ranges(frames: number[]) {
+  const out: string[] = [];
+  for (let i = 0; i < frames.length; i++) {
+    let j = i;
+    while (j + 1 < frames.length && frames[j + 1] === frames[j] + 1) j++;
+    out.push(i === j ? String(frames[i]) : frames[i] + '–' + frames[j]);
+    i = j;
+  }
+  return out.join(', ');
+}
+function skipped(cfg: StudioConfig, kind: Finding['kind'], anim: string, frame: number) {
+  return (cfg.skip?.[kind] ?? []).some((rule) => {
+    const [a, span] = rule.split(':');
+    if (a !== anim) return false;
+    if (!span) return true;
+    const [lo, hi] = span.split('-').map(Number);
+    return frame >= lo && frame <= (hi ?? lo);
+  });
+}
+
+export interface FrameSample {
+  n: number;
+  mask: BodyMask | null;
+  clip: string | null;
+  /** The clipping part is a thin rod (whisker, chain, string): reported as a warning. */
+  thin: boolean;
+  contrast: number | null;
+  hidden: string | null;
+}
+
+let restCache = new WeakMap<Creature, Map<string, ClipBaseline | null>>();
+function restPose(p: Painting, anim: string) {
+  let m = restCache.get(p.c);
+  if (!m) restCache.set(p.c, (m = new Map()));
+  if (!m.has(anim)) {
+    const { rig } = captureRig(() => p.c.frame(anim, 0, 0, 'normal'));
+    m.set(anim, rig ? baselineOf(rig) : null);
+  }
+  return m.get(anim) ?? null;
+}
+function restBaselines(p: Painting, anim: string) {
+  const names = ['idle', anim];
+  if (p.c.animations['idle-f2'] && (anim === 'phase' || anim === 'idle-f2' || anim === 'show')) names.push('idle-f2');
+  return names.map((a) => restPose(p, a)).filter((b): b is ClipBaseline => !!b);
+}
+
+/** Samples every frame of `anim` once. */
+export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {}): FrameSample[] {
+  const { c, s, b } = p;
+  const spec = c.animations[anim];
+  const count = frameCount(spec.seconds);
+  const hits = new Set((spec.hits ?? []).map(hitFrame));
+  const base = restBaselines(p, anim);
+  const out: FrameSample[] = [];
+  for (let n = 0; n < count; n++) {
+    const { result: f, rig } = captureRig(() => compose(c, s, b, anim, n / 24));
+    let mask: BodyMask | null = null;
+    try {
+      mask = maskOf(f.layers.body, [-f.camera[0], -f.camera[1]]);
+    } catch {
+      mask = null;
+    }
+    let clip: string | null = null,
+      thin = false;
+    if (rig && base.length && !skipped(cfg, 'clip', anim, n)) {
+      const w = worstClip(rig, base, cfg.clipAllow);
+      if (w) {
+        clip = w.capLabel + ' in ' + w.ellLabel + ' @' + w.depth.toFixed(2);
+        thin = w.radius < THIN_ROD;
+      }
+    }
+    // Impact readability: effect pixels that stay visible against the floor under them.
+    let contrast: number | null = null,
+      hidden: string | null = null;
+    const nearHit = [...hits].some((h) => n >= h && n <= h + 8);
+    if (nearHit) {
+      const L = f.layers,
+        pic = f.picture;
+      const deltas: number[] = [];
+      for (let i = 0; i < pic.data.length; i += 4) {
+        const fx = Math.max(L.fxu.data[i + 3], L.fxo.data[i + 3]);
+        if (fx < 128 || L.bgf.data[i + 3] > 0 || L.body.data[i + 3] > 200) continue;
+        deltas.push(Math.abs(luma(pic, i) - luma(L.bg, i)));
+      }
+      if (deltas.length > 12) contrast = median(deltas);
+    }
+    if (hits.has(n)) {
+      const births = f.techniqueTrace?.births ?? [];
+      const at: XY[] = births.length ? births.map((x) => x.at) : [];
+      for (const [x, y] of at) {
+        let cover = 0,
+          total = 0;
+        for (let dy = -2; dy <= 2; dy++)
+          for (let dx = -2; dx <= 2; dx++) {
+            const X = Math.round(x) + dx,
+              Y = Math.round(y) + dy;
+            if (X < 0 || Y < 0 || X >= f.picture.w || Y >= f.picture.h) continue;
+            total++;
+            if (f.layers.bgf.data[4 * (Y * f.picture.w + X) + 3] > 0) cover++;
+          }
+        if (total && cover / total > 0.5) hidden = 'contact at ' + Math.round(x) + ',' + Math.round(y) + ' under a foreground prop';
+      }
+    }
+    out.push({ n, mask, clip, thin, contrast, hidden });
+  }
+  return out;
+}
+
+export const JUMP_MIN = 0.3; // share of the silhouette replaced between two neighbouring frames
+export const JUMP_MEDIAN = 5;
+export const WEAK_IMPACT = 12;
+export const THIN_ROD = 1.5; // rig units // median luma difference of impact pixels against the floor
+
+export function findings(p: Painting, anim: string, samples: FrameSample[], cfg: StudioConfig = {}): Finding[] {
+  const spec = p.c.animations[anim];
+  const hits = (spec.hits ?? []).map(hitFrame);
+  const out: Finding[] = [];
+  for (const thin of [false, true]) {
+    const hit = samples.filter((s) => s.clip && s.thin === thin);
+    if (!hit.length) continue;
+    const worst = [...hit].sort((a, b) => parseFloat(a.clip!.split('@')[1]) - parseFloat(b.clip!.split('@')[1]))[0];
+    const frames = hit.map((s) => s.n);
+    out.push({ anim, kind: thin ? 'thin-clip' : 'clip', level: thin ? 'warn' : 'error', frames, note: ranges(frames) + ' — worst ' + worst.n + ': ' + worst.clip });
+  }
+  const d: number[] = [];
+  for (let i = 1; i < samples.length; i++) {
+    const a = samples[i - 1].mask,
+      b = samples[i].mask;
+    d.push(a && b ? 1 - maskIoU(a, b) : 0);
+  }
+  const typical = median(d.filter((v) => v > 0));
+  const limit = Math.max(JUMP_MIN, JUMP_MEDIAN * (typical || 0));
+  const strike = (n: number) => hits.some((h) => n >= h - 4 && n <= h + 1);
+  const jumps: number[] = [];
+  d.forEach((v, i) => {
+    const n = i + 1;
+    if (v > limit && !strike(n) && !skipped(cfg, 'jump', anim, n)) jumps.push(n);
+  });
+  const last = samples.length - 1;
+  const endPop = !spec.loop && jumps.includes(last);
+  if (endPop) out.push({ anim, kind: 'end-pop', level: 'error', frames: [last], note: 'last frame snaps to rest (' + (d[last - 1] * 100).toFixed(0) + '% of silhouette changes)' });
+  const mid = jumps.filter((n) => !(endPop && n === last));
+  if (mid.length) out.push({ anim, kind: 'jump', level: 'warn', frames: mid, note: ranges(mid) + ' — silhouette change > ' + (limit * 100).toFixed(0) + '% between neighbours' });
+  const hidden = samples.filter((s) => s.hidden && !skipped(cfg, 'hidden-contact', anim, s.n));
+  if (hidden.length) out.push({ anim, kind: 'hidden-contact', level: 'error', frames: hidden.map((s) => s.n), note: hidden.map((s) => s.n + ': ' + s.hidden).join('; ') });
+  for (const h of hits) {
+    const window = samples.filter((s) => s.n >= h && s.n <= h + 8 && s.contrast !== null).map((s) => s.contrast!);
+    const m = median(window);
+    if (window.length && m < WEAK_IMPACT && !skipped(cfg, 'weak-impact', anim, h))
+      out.push({ anim, kind: 'weak-impact', level: 'warn', frames: [h], note: 'impact ' + h + '–' + (h + 8) + ' median contrast ' + m.toFixed(1) + ' < ' + WEAK_IMPACT });
+  }
+  return out;
+}
+
+export function checkCreature(p: Painting, anims = defaultAnims(p.c), cfg = studioConfig(p.c.id)) {
+  restCache = new WeakMap();
+  const all: Finding[] = [];
+  for (const a of anims) all.push(...findings(p, a, sampleAnimation(p, a, cfg), cfg));
+  return all;
+}

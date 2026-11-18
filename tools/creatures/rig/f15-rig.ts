@@ -136,6 +136,7 @@ export interface Mat {
 }
 
 interface PEll {
+  t?: string;
   k: 0;
   c: V3;
   a: [V3, V3, V3];
@@ -143,6 +144,7 @@ interface PEll {
   cut?: (q: V3) => boolean;
 }
 interface PCap {
+  t?: string;
   k: 1;
   a: V3;
   b: V3;
@@ -151,12 +153,14 @@ interface PCap {
   m: Mat;
 }
 interface PPoly {
+  t?: string;
   k: 2;
   pts: V3[];
   m: Mat;
   bias: number;
 }
 interface PDot {
+  t?: string;
   k: 3;
   p: V3;
   c: RGBA;
@@ -165,6 +169,7 @@ interface PDot {
   bias: number;
 }
 interface PLine {
+  t?: string;
   k: 4;
   a: V3;
   b: V3;
@@ -176,11 +181,13 @@ type Prim = PEll | PCap | PPoly | PDot | PLine;
 
 export class Rig {
   prims: Prim[] = [];
+  /** Optional part name stamped on every primitive pushed after it is set (studio checks read it). */
+  tag?: string;
   /** Точка глаза (мир): движок светит ею в темноте. */
   eye: V3 | null = null;
   /** Эллипсоид по осям рамки: центр (f, s, u) и полуоси по f, s, u. */
   ell(F: F3, c: V3, r: V3, m: Mat, cut?: (q: V3) => boolean): this {
-    this.prims.push({
+    this.prims.push({ t: this.tag,
       k: 0,
       c: F.p(c[0], c[1], c[2]),
       a: [vmul(F.f, r[0]), vmul(F.s, r[1]), vmul(F.u, r[2])],
@@ -191,7 +198,7 @@ export class Rig {
   }
   /** Шар в мировой точке. */
   ball(c: V3, r: number, m: Mat): this {
-    this.prims.push({
+    this.prims.push({ t: this.tag,
       k: 0,
       c,
       a: [
@@ -205,12 +212,12 @@ export class Rig {
   }
   /** Сужающаяся капсула (конечность, шея, хвост) между мировыми точками. */
   cap(a: V3, b: V3, r0: number, r1: number, m: Mat): this {
-    this.prims.push({ k: 1, a, b, r0, r1, m });
+    this.prims.push({ t: this.tag, k: 1, a, b, r0, r1, m });
     return this;
   }
   /** Плоская грань по мировым вершинам (видна с обеих сторон). */
   poly(pts: V3[], m: Mat, bias = 0): this {
-    if (pts.length >= 3) this.prims.push({ k: 2, pts, m, bias });
+    if (pts.length >= 3) this.prims.push({ t: this.tag, k: 2, pts, m, bias });
     return this;
   }
   /**
@@ -232,11 +239,11 @@ export class Rig {
     return this;
   }
   dot(p: V3, c: RGBA, glow = 0, s = 1, bias = 0.6): this {
-    this.prims.push({ k: 3, p, c, glow, s, bias });
+    this.prims.push({ t: this.tag, k: 3, p, c, glow, s, bias });
     return this;
   }
   line(a: V3, b: V3, c: RGBA, glow = 0, bias = 0.3): this {
-    this.prims.push({ k: 4, a, b, c, glow, bias });
+    this.prims.push({ t: this.tag, k: 4, a, b, c, glow, bias });
     return this;
   }
   /** Сколько примитивов уже добавлено — метка для `explode(…, from)`. */
