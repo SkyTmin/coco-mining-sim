@@ -103,37 +103,71 @@ function vault(w: number, h: number) {
   }
   p.rect(0, floor - 3, w - 1, floor + 1, hx('#333538'));
   p.rect(0, floor + 2, w - 1, h - 1, joint);
-  for (let row = 0, y = floor + 2; y < h; row++, y += 12) {
-    for (let x = -32 + (row % 2) * 16; x < w; x += 32) {
-      const seed = hash(x, row, 16),
-        tone = mixc(hx('#414144'), hx('#59534e'), seed * 0.7);
-      face(
-        p,
-        [
-          [x + 2, y],
-          [x + 29, y],
-          [x + 31, y + 2],
-          [x + 31, y + 9],
-          [x + 28, y + 11],
-          [x + 1, y + 11],
-          [x, y + 8],
-          [x, y + 2],
-        ],
-        tone,
+  // A cosmatesque marble carpet: dark green lozenges, light breccia and a
+  // central worn medallion. The light from the narrow clerestory lies obliquely.
+  const jade = [hx('#353b3b'), hx('#384240'), hx('#404845'), hx('#444944')];
+  const marble = [hx('#535052'), hx('#5a5655'), hx('#625b56'), hx('#685e57')],
+    grout = hx('#353635');
+  const metal = hx('#807059'),
+    inlay = hx('#655b4f');
+  for (let y = floor + 2; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const u = (x + (y - floor) * 1.43) / 29,
+        v = (x - (y - floor) * 1.43) / 29,
+        i = Math.floor(u),
+        j = Math.floor(v);
+      const a = u - i,
+        b = v - j,
+        d = Math.min(a, b, 1 - a, 1 - b);
+      const darkTile = ((i + j) & 1) === 1,
+        noise = hash(i, j, 31);
+      const ribbon = Math.sin(
+        x * 0.066 - y * 0.18 + 2.1 * Math.sin(y * 0.071 + x * 0.031 + noise * 5) + noise * 3,
       );
-      p.line(x + 1, y + 10, x + 27, y + 10, mixc(tone, joint, 0.5));
-      p.line(x + 2, y + 1, x + 25, y + 1, mixc(tone, lip, 0.65));
-      p.set(x + 1, y + 2, lip);
-      if (seed > 0.68) {
-        p.line(x + 30, y + 7, x + 26, y + 6, joint);
-        p.set(x + 25, y + 5, joint);
+      const tones = darkTile ? jade : marble;
+      let tone = tones[Math.floor(noise * 3 + 0.5)];
+      if (ribbon > 0.69) tone = tones[ribbon > 0.88 ? 1 : 2];
+      if (ribbon < -0.94 && (x + y) % 11 < 7) tone = tones[darkTile ? 3 : 0];
+      if (d < 0.026) tone = grout;
+      else if (d < 0.053) tone = darkTile ? inlay : marble[1];
+      const X = x - w * 0.47,
+        Y = (y - h * 0.785) * 1.7,
+        R = Math.hypot(X, Y);
+      if (R < 39) {
+        const theta = Math.atan2(Y, X),
+          ray = (Math.cos(theta * 8) + 1) * 0.5;
+        if (R > 36 || (R < 31 && R > 29)) tone = inlay;
+        else if (R > 31) tone = Math.floor((theta + Math.PI) * 14) % 2 ? jade[2] : marble[1];
+        else if (R < 8 + 20 * ray ** 4) tone = mixc(marble[2], metal, 0.3);
+        else tone = jade[Math.floor((ribbon + 1) * 1.48)];
       }
-      if (seed < 0.34) p.line(x + 9, y + 8, x + 15, y + 8, mixc(tone, lip, 0.4));
-      if (seed > 0.82) {
-        p.line(x + 10, y + 4, x + 13, y + 3, mixc(tone, brass, 0.27));
-        p.set(x + 15, y + 3, mixc(tone, brass, 0.24));
-      }
+      const shaft = x + 0.51 * y;
+      if (shaft > 85 && shaft < 106)
+        tone = mixc(tone, hx('#a19176'), (1 - Math.abs(95.5 - shaft) / 11) * 0.17);
+      p.set(x, y, tone);
     }
+  for (const [x, y] of [
+    [53, 16],
+    [59, 14],
+    [65, 16],
+  ]) {
+    p.line(x, y, x, y + 12, hx('#7c7665'));
+    p.set(x + 1, y, hx('#645f55'));
+  }
+  // Dropped coin rolls form small directional trails on the marble.
+  for (const [x, y] of [
+    [42, 86],
+    [36, 89],
+    [30, 88],
+    [197, 102],
+    [203, 104],
+    [205, 107],
+    [225, 157],
+    [226, 162],
+    [234, 165],
+  ]) {
+    p.ell(x, y, 2.7, 1.6, copper);
+    p.line(x - 1, y - 1, x + 1, y - 1, brass);
   }
   // A worn inlaid threshold disappears beneath the coin piles.
   for (const y of [floor + 4, floor + 9]) p.line(0, y, w - 1, y, mixc(lip, copper, 0.28));
@@ -185,4 +219,107 @@ const treasury: Scene = (p, t) => {
       );
   }
 };
+treasury.front = [
+  {
+    id: 'open-casket-and-coins',
+    depth: 179,
+    paint(p) {
+      const x = Math.round(0.765 * p.w),
+        y = Math.round(0.86 * p.h);
+      p.ell(x + 6, y + 2, 33, 6, dark);
+      const ec = hx('#312d30'),
+        wood = hx('#73574a'),
+        gold = hx('#947858'),
+        glint = hx('#ad9270');
+      face(
+        p,
+        [
+          [x - 16, y - 16],
+          [x + 4, y - 12],
+          [x + 19, y - 17],
+          [x + 19, y - 3],
+          [x + 4, y + 2],
+          [x - 16, y - 3],
+        ],
+        ec,
+      );
+      face(
+        p,
+        [
+          [x - 14, y - 14],
+          [x + 3, y - 11],
+          [x + 3, y],
+          [x - 14, y - 4],
+        ],
+        wood,
+      );
+      face(
+        p,
+        [
+          [x + 5, y - 11],
+          [x + 17, y - 15],
+          [x + 17, y - 4],
+          [x + 5, y],
+        ],
+        oak,
+      );
+      face(
+        p,
+        [
+          [x - 17, y - 17],
+          [x - 15, y - 32],
+          [x - 10, y - 35],
+          [x + 10, y - 30],
+          [x + 9, y - 18],
+          [x + 3, y - 14],
+        ],
+        ec,
+      );
+      face(
+        p,
+        [
+          [x - 15, y - 17],
+          [x - 13, y - 30],
+          [x - 10, y - 32],
+          [x + 7, y - 28],
+          [x + 6, y - 19],
+          [x + 2, y - 16],
+        ],
+        oak,
+      );
+      p.line(x - 12, y - 29, x + 5, y - 26, gold);
+      p.line(x - 12, y - 27, x + 4, y - 23, wood);
+      face(
+        p,
+        [
+          [x - 15, y - 16],
+          [x - 3, y - 20],
+          [x + 17, y - 17],
+          [x + 4, y - 12],
+        ],
+        brass,
+      );
+      for (const z of [-12, 0]) {
+        p.line(x + z, y - 14, x + z, y - 4, gold);
+        p.set(x + z, y - 5, glint);
+      }
+      p.rect(x - 5, y - 13, x - 2, y - 9, gold);
+      p.set(x - 4, y - 11, ec);
+      for (const [cx, cy, rx, ry] of [
+        [x + 20, y, 14, 5],
+        [x - 17, y + 2, 13, 4],
+      ]) {
+        p.ell(cx, cy + 1, rx, ry, oak);
+        for (let row = 0; row < 4; row++)
+          for (let j = 0; j < 9; j++) {
+            const xx = cx + (j - 4) * (rx / 4) - (row % 2),
+              yy = cy - ry + 2 * row;
+            if ((xx - cx) ** 2 / rx ** 2 + (yy - cy) ** 2 / ry ** 2 > 1) continue;
+            p.ell(xx, yy, 2.6, 1.6, copper);
+            p.line(xx - 1, yy - 1, xx + 1, yy - 1, (j + row) % 3 ? brass : gold);
+          }
+      }
+    },
+  },
+];
 export default treasury;
