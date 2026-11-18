@@ -1,0 +1,216 @@
+{
+  "id": "toad_shaman",
+  "rarity": "legendary",
+  "theme": "mushroom_grotto",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    256,
+    208
+  ],
+  "thickness": 16,
+  "bodySize": 144,
+  "canvas": [
+    288,
+    240
+  ],
+  "anchor": [
+    76,
+    107
+  ],
+  "eye": [
+    64,
+    83
+  ],
+  "primitives": 97,
+  "feet": [
+    139,
+    176
+  ],
+  "points": {
+    "footL": [
+      112.78983014215059,
+      104.41718339628889
+    ],
+    "footR": [
+      46.07621186924402,
+      119.06473968726408
+    ],
+    "mouth": [
+      87.13608875315137,
+      93.74398576468974
+    ],
+    "tongueTip": [
+      87.13608875315137,
+      93.74398576468974
+    ],
+    "staffTip": [
+      36.74118617475317,
+      52.957797392447134
+    ],
+    "staffFoot": [
+      30.71971431522408,
+      121.0180122832979
+    ]
+  },
+  "layers": [
+    "bg",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "frame",
+    "over"
+  ],
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise bg/loop/(frame % 72).png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "happy": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "idle-f2": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "away": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "back": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tech_croak": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        26
+      ],
+      "shake": 0.2,
+      "stop": 0.04
+    },
+    "tech_tongue": {
+      "seconds": 0.9,
+      "frames": 22,
+      "loop": false,
+      "hit": [
+        11
+      ],
+      "shake": 0.08,
+      "stop": 0
+    },
+    "tech_staff": {
+      "seconds": 1.4,
+      "frames": 34,
+      "loop": false,
+      "hit": [
+        20
+      ],
+      "shake": 0.12,
+      "stop": 0
+    },
+    "tech_leap": {
+      "seconds": 1.8,
+      "frames": 43,
+      "loop": false,
+      "hit": [
+        29
+      ],
+      "shake": 0.22,
+      "stop": 0.05
+    },
+    "tech_spores": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        24,
+        31,
+        38
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "phase": {
+      "seconds": 2.2,
+      "frames": 53,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    }
+  }
+}
