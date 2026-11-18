@@ -16,7 +16,16 @@ import {
   type Variant,
   type XY,
 } from './types';
-import { compose, frameCount, hitFrame, layerNames, blit } from './engine';
+import {
+  compose,
+  frameCount,
+  hitFrame,
+  layerNames,
+  blit,
+  foregroundObjects,
+  ground,
+} from './engine';
+import { attachMotion, directions, directionVector } from './motion';
 import { GifWriter, savePNG } from './render-io';
 import { frameImage } from './frame-kit';
 import { Px } from './rig/px';
@@ -35,6 +44,11 @@ export async function loadPainting(id: string) {
     .default;
   const b: Border = (await import('./frames/' + safeID(c.rarity) + '.ts'))
     .default;
+  const lifeFile = join(tools, 'c', id + '-life.ts');
+  if (existsSync(lifeFile)) {
+    const plan = (await import('./c/' + id + '-life.ts')).default;
+    return { c: attachMotion(c, plan), s, b };
+  }
   return { c, s, b };
 }
 // Reframing a long limb can move the local crop but must not move the floor
@@ -83,17 +97,32 @@ function writePainting(
   const spec = c.animations[name],
     frames = frameCount(spec.seconds),
     suffix = name + (variant === 'gold' ? '-gold' : '');
-  const gif = new GifWriter(scale),
+  const gif = new GifWriter(scale, true),
     turn =
-      name === 'turn' && variant === 'normal' ? new GifWriter(scale) : null;
+      name === 'turn' && variant === 'normal'
+        ? new GifWriter(scale, true)
+        : null;
   const [, , size] = sizes[c.rarity];
   const pivots = turn ? turnPivots(c, size, frames) : [];
   const dir = join(output, 'frames', suffix),
     movedFrames = new Set<string>();
+  const track = [];
   for (let f = 0; f < frames; f++) {
     const t = f / 24,
       r = compose(c, s, b, name, t, 0, variant);
     gif.add(r.picture, f);
+    track.push({
+      feet: r.worldFeet,
+      camera: r.camera,
+      backgroundFrame: r.backgroundFrame,
+      side: r.motion.side,
+      headSide: r.motion.headSide,
+      pose: r.motion.anim,
+      poseTime: r.motion.t,
+      lift: r.motion.lift,
+      planted: r.body.planted ?? [],
+      contacts: r.contact,
+    });
     const file = String(f).padStart(3, '0') + '.png';
     for (const layer of [
       'fxu',
@@ -107,7 +136,7 @@ function writePainting(
         r.layers[layer as keyof typeof r.layers],
       );
     }
-    if (spec.shake && r.camera.some(Boolean)) {
+    if (r.camera.some(Boolean)) {
       savePNG(join(dir, 'bg', file), r.layers.bg);
       movedFrames.add(file);
     }
@@ -135,6 +164,7 @@ function writePainting(
         unlinkSync(join(dir, layer.name, file));
     }
   }
+  writeFileSync(join(dir, 'motion.json'), JSON.stringify(track));
   gif.write(join(output, 'gif', 'painting-' + suffix + '.gif'));
   turn?.write(join(output, 'gif', 'turn.gif'));
 }
@@ -145,6 +175,23 @@ export function writePaintingMaterials(
   output: string,
 ) {
   const [w, h, , thickness] = sizes[c.rarity];
+  const objects = foregroundObjects(s, w, h),
+    front = new Px(w + 2 * thickness, h + 2 * thickness);
+  for (const obj of objects) {
+    const framed = new Px(front.w, front.h);
+    blit(framed, obj.pixels, thickness, thickness);
+    savePNG(join(output, 'bg', 'front', safeID(obj.id) + '.png'), framed);
+    blit(front, framed);
+  }
+  savePNG(join(output, 'bg', 'front.png'), front);
+  writeFileSync(
+    join(output, 'bg', 'front-depth.json'),
+    JSON.stringify(
+      objects.map((x) => ({ id: x.id, depth: x.depth })),
+      null,
+      2,
+    ) + '\n',
+  );
   for (let f = 0; f < 72; f++) {
     const t = f / 24,
       file = String(f).padStart(3, '0') + '.png';
@@ -204,7 +251,30 @@ export async function render(
     primitives: idle.primitives,
     feet: [Math.round(w * 0.48) + thickness, Math.round(h * 0.77) + thickness],
     points: idle.points,
+    motion: c.motion
+      ? {
+          life: c.motion,
+          track: 'frames/<anim>/motion.json',
+          directions: Object.fromEntries(
+            directions.map((d) => {
+              const v = directionVector(d, c.motion!.stride);
+              const start = ground(w, h);
+              return [
+                'walk_' + d,
+                {
+                  velocity: v,
+                  pixelsPerSecond: Math.hypot(...v),
+                  worldStride: c.motion!.stride,
+                  feet: [start[0] - v[0] / 2, start[1] - v[1] / 2],
+                },
+              ];
+            }),
+          ),
+        }
+      : undefined,
     layers: layerNames,
+    foreground:
+      'Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.',
     background:
       'use frames/<anim>/bg/NNN.png when present, otherwise bg/loop/(frame % 72).png',
     animations: Object.fromEntries(

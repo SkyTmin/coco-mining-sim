@@ -223,3 +223,22 @@ test('the actual final exported pose of a one-shot returns to idle and releases 
     assert.deepEqual(bytes(r.layers[key]), bytes(idle.layers[key]), key);
   assert.deepEqual(r.body.points, idle.body.points);
 });
+
+test('opaque GIF deltas retain earlier RGB and a moving edge under local palettes', () => {
+  const gif = new GifWriter(1, true),
+    frames: Px[] = [];
+  for (let n = 0; n < 9; n++) {
+    const p = new Px(22, 17);
+    p.rect(0, 0, 21, 16, [36, 32, 47, 255]);
+    p.rect(n, 2, n + 5, 6, [80 + n * 7, 117, 48 + n, 255]);
+    frames.push(p);
+    gif.add(p, n);
+  }
+  const reader = new omggif.GifReader(gif.bytes()),
+    decoded = new Uint8Array(22 * 17 * 4);
+  for (let n = 0; n < frames.length; n++) {
+    reader.decodeAndBlitFrameRGBA(n, decoded);
+    assert.deepEqual(Buffer.from(decoded), bytes(frames[n]));
+  }
+  assert.equal(reader.frameInfo(1).transparent_index, 0);
+});

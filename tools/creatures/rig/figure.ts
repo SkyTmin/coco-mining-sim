@@ -15,9 +15,14 @@ export const everyday: Record<string, Animation> = {
   hatch: { seconds: 1.5 },
 };
 export function life(anim: string, t: number, offset: number) {
-  const loop = anim === 'idle' || anim === 'idle-f2' || anim === 'sleep' || anim === 'walk';
+  const loop =
+    anim === 'idle' ||
+    anim === 'idle-f2' ||
+    anim === 'sleep' ||
+    anim === 'walk';
   const q = (loop ? t / (anim === 'walk' ? 1 : 3) : 0) * TAU + offset;
-  const g = (len: number) => Math.pow(Math.sin(Math.PI * Math.max(0, Math.min(1, t / len))), 2);
+  const g = (len: number) =>
+    Math.pow(Math.sin(Math.PI * Math.max(0, Math.min(1, t / len))), 2);
   return {
     q,
     walk: anim === 'walk' ? Math.sin(t * TAU) : 0,
@@ -31,8 +36,10 @@ export function life(anim: string, t: number, offset: number) {
   };
 }
 function touchesEdge(p: Px) {
-  for (let i = 0; i < p.w; i++) if (p.solid(i, 0) || p.solid(i, p.h - 1)) return true;
-  for (let i = 1; i < p.h - 1; i++) if (p.solid(0, i) || p.solid(p.w - 1, i)) return true;
+  for (let i = 0; i < p.w; i++)
+    if (p.solid(i, 0) || p.solid(i, p.h - 1)) return true;
+  for (let i = 1; i < p.h - 1; i++)
+    if (p.solid(0, i) || p.solid(p.w - 1, i)) return true;
   return false;
 }
 
@@ -45,6 +52,54 @@ function cut(p: Px, x: number, y: number, size: number): Px {
   return frame;
 }
 
+// Scale the articulated geometry before rasterisation, including sockets and eye.
+// A separate vertical factor lets a low, wide animal fill a taller portrait.
+export function scaleFigure(
+  rig: Rig,
+  sockets: Record<string, V3>,
+  scale: number,
+  vertical = scale,
+) {
+  if (scale <= 0 || vertical <= 0)
+    throw new Error('Figure scale must be positive');
+  const point = ([x, y, z]: V3): V3 => [x * scale, y * scale, z * vertical];
+  for (const p of rig.prims) {
+    if (p.k === 0) {
+      p.c = point(p.c);
+      p.a = [point(p.a[0]), point(p.a[1]), point(p.a[2])];
+    } else if (p.k === 1) {
+      p.a = point(p.a);
+      p.b = point(p.b);
+      p.r0 *= scale;
+      p.r1 *= scale;
+    } else if (p.k === 2) {
+      p.pts = p.pts.map(point);
+      const mat = p.m,
+        pat = mat.pat,
+        gpat = mat.gpat;
+      const inverse = ([x, y, z]: V3): V3 => [
+        x / scale,
+        y / scale,
+        z / vertical,
+      ];
+      if (pat || gpat)
+        p.m = {
+          ...mat,
+          pat: pat ? (q, l) => pat(inverse(q), l) : undefined,
+          gpat: gpat ? (q) => gpat(inverse(q)) : undefined,
+        };
+    } else if (p.k === 3) {
+      p.p = point(p.p);
+      p.s *= scale;
+    } else {
+      p.a = point(p.a);
+      p.b = point(p.b);
+    }
+  }
+  if (rig.eye) rig.eye = point(rig.eye);
+  for (const [key, value] of Object.entries(sockets))
+    sockets[key] = point(value);
+}
 // Moving the local origin together with the socket projections preserves every
 // world-space pixel, including the floor position and independently sampled FX.
 export function projectFigure(
@@ -60,7 +115,14 @@ export function projectFigure(
   if (touchesEdge(image.p)) {
     const pad = Math.ceil(size / 2),
       big = size + 2 * pad;
-    const full = renderRig(rig, big, big, anchor[0] + pad, anchor[1] + pad, paint);
+    const full = renderRig(
+      rig,
+      big,
+      big,
+      anchor[0] + pad,
+      anchor[1] + pad,
+      paint,
+    );
     let left = big,
       top = big,
       right = -1,
@@ -76,14 +138,19 @@ export function projectFigure(
     const width = right - left + 1,
       height = bottom - top + 1;
     if (width > size || height > size || touchesEdge(full.p)) {
-      throw Error(`Rig silhouette ${width}×${height} exceeds ${size}×${size} body frame`);
+      throw Error(
+        `Rig silhouette ${width}×${height} exceeds ${size}×${size} body frame`,
+      );
     }
     function cropOrigin(lo: number, hi: number) {
       const spare = size - (hi - lo + 1),
         margin = Math.min(2, Math.floor(spare / 2));
       return Math.max(
         0,
-        Math.min(big - size, Math.max(hi - size + 1 + margin, Math.min(pad, lo - margin))),
+        Math.min(
+          big - size,
+          Math.max(hi - size + 1 + margin, Math.min(pad, lo - margin)),
+        ),
       );
     }
     const x = cropOrigin(left, right),
@@ -100,5 +167,12 @@ export function projectFigure(
     const [x, y] = proj(P, ...anchor);
     points[key] = [x, y];
   }
-  return { px: image.p, lit: image.lit, anchor, points, eye: image.eye, primitives: rig.size };
+  return {
+    px: image.p,
+    lit: image.lit,
+    anchor,
+    points,
+    eye: image.eye,
+    primitives: rig.size,
+  };
 }

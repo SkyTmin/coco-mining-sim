@@ -24,6 +24,7 @@ export interface BodyFrame {
   eye: XY | null;
   points: Record<string, XY>; // named projected sockets, local sprite pixels
   primitives: number;
+  planted?: string[]; // sockets on the floor throughout the current stance
   // Post-raster effects, anchored about the feet. Translation is in picture pixels.
   dx?: number;
   dy?: number;
@@ -54,10 +55,35 @@ export interface Creature {
   rarity: Rarity;
   theme: string;
   animations: Record<string, Animation>;
-  frame: (anim: string, t: number, side: number, variant: Variant) => BodyFrame; // side 0..15; default 0 = artist's 3/4
+  frame: (
+    anim: string,
+    t: number,
+    side: number,
+    variant: Variant,
+    motion?: { headSide: number; gaitPhase: number },
+  ) => BodyFrame; // side 0..15; default 0 = artist's 3/4
   effects?: (input: FxInput) => void;
+  motion?: MotionPlan;
 }
-export type Scene = (p: Px, t: number) => void; // opaque field bitmap; 3 s loop
+export interface MotionBeat {
+  seconds: number;
+  at: XY;
+  anim: string;
+  side?: number;
+  lift?: number;
+}
+export interface MotionPlan {
+  stride: number;
+  yaw: number;
+  fly?: boolean;
+  beats: MotionBeat[];
+}
+export interface ForegroundProp {
+  id: string;
+  depth: number;
+  paint: (p: Px) => void;
+}
+export type Scene = ((p: Px, t: number) => void) & { front?: ForegroundProp[] }; // opaque field bitmap; 3 s loop
 export interface Border {
   wood: [string, string, string, string]; // profile, dark to light; hex strings
   accent: string;
@@ -65,11 +91,11 @@ export interface Border {
   decorate?: (p: Px, b: number, t: number) => void;
 }
 export const sizes: Record<Rarity, [number, number, number, number]> = {
-  common: [160, 128, 80, 8],
-  uncommon: [160, 128, 80, 10],
-  rare: [208, 160, 112, 12],
-  epic: [208, 160, 112, 14],
-  legendary: [256, 208, 144, 16],
-  mythic: [256, 208, 144, 18],
-  secret: [256, 208, 144, 18],
+  common: [160, 128, 96, 8],
+  uncommon: [160, 128, 96, 10],
+  rare: [208, 160, 128, 12],
+  epic: [208, 160, 128, 14],
+  legendary: [256, 208, 160, 16],
+  mythic: [256, 208, 160, 18],
+  secret: [256, 208, 160, 18],
 };

@@ -1,5 +1,6 @@
 import { createCanvas, type Canvas } from '@napi-rs/canvas';
 import { Px } from './rig/px';
+import { placement } from './motion';
 import { Pen } from './fx/pen';
 import { frameImage } from './frame-kit';
 import {
@@ -22,10 +23,12 @@ export const ground = (w: number, h: number): XY => [
 ];
 export const layerNames = [
   'bg',
+  'bgfBack',
   'fxu',
   'body',
   'lit',
   'fxo',
+  'bgf',
   'frame',
   'over',
 ] as const;
@@ -159,6 +162,42 @@ function clipFloor(p: Px, b: number, w: number, h: number) {
     p.data.fill(0, y * stride + (b + w) * 4, (y + 1) * stride);
   }
 }
+export function foregroundObjects(scene: Scene, w: number, h: number) {
+  return (scene.front ?? [])
+    .map((prop) => ({
+      id: prop.id,
+      depth: prop.depth,
+      pixels: cached(prop, w + '-' + h, () => {
+        const pixels = new Px(w, h);
+        prop.paint(pixels);
+        return pixels;
+      }),
+    }))
+    .sort((a, b) => a.depth - b.depth);
+}
+export function splitForeground(
+  objects: ReturnType<typeof foregroundObjects>,
+  layers: Pick<Layers, 'bgf' | 'bgfBack'>,
+  footY: number,
+  b: number,
+  dx: number,
+  dy: number,
+) {
+  const w = layers.bgf.w - 2 * b,
+    h = layers.bgf.h - 2 * b;
+  for (const obj of objects)
+    blit(
+      obj.depth > footY ? layers.bgf : layers.bgfBack,
+      obj.pixels,
+      b + dx,
+      b + dy,
+      [b, b, b + w, b + h],
+    );
+}
+export function loopSample(t: number, anim: string, seconds: number) {
+  const u = anim === 'life' ? (t * 3 * Math.round(seconds / 3)) / seconds : t;
+  return ((Math.round(u * fps) % 72) + 72) % 72;
+}
 export function compose(
   c: Creature,
   scene: Scene,
@@ -168,13 +207,20 @@ export function compose(
   side = 0,
   variant: Variant = 'normal',
 ) {
-  const spec = c.animations[anim];
-  if (!spec) throw new Error('Unknown animation ' + c.id + '/' + anim);
+  const requested = anim,
+    clock = t,
+    outer = c.animations[anim];
+  if (!outer) throw new Error('Unknown animation ' + c.id + '/' + anim);
   const [w, h, , b] = sizes[c.rarity],
     W = w + b * 2,
     H = h + b * 2;
-  const feet = ground(w, h),
-    loopFrame = ((Math.round(t * fps) % 72) + 72) % 72;
+  const at = placement(c, requested, t, side, ground(w, h));
+  anim = at.anim;
+  t = at.t;
+  const spec = c.animations[anim] ?? outer,
+    feet = at.feet,
+    loopFrame = loopSample(clock, requested, outer.seconds);
+
   const bg = cached(scene, w + '-' + h + '-' + loopFrame, () => {
     const p = new Px(w, h);
     scene(p, loopFrame / fps);
@@ -185,17 +231,22 @@ export function compose(
   );
   const n = Math.round(t * fps);
   const hits = spec.hits ?? [];
-  const last = hits
-    .map(hitFrame)
-    .filter((f) => f <= n)
-    .at(-1);
-  const since = last === undefined ? Infinity : (n - last) / fps;
+  const beat =
+    requested === 'life' && c.motion ? c.motion.beats[at.beat] : undefined;
+  const actionBeat =
+    beat && beat.anim === anim && anim.startsWith('tech_') ? beat : undefined;
+  const timeToWorld = (local: number) =>
+    actionBeat ? at.start + (local * actionBeat.seconds) / spec.seconds : local;
+  const contactFrames = hits.map((h) => hitFrame(timeToWorld(h)));
+  const onTimeline = actionBeat
+    ? hitFrame(((clock % outer.seconds) + outer.seconds) % outer.seconds)
+    : n;
+  const last = contactFrames.findLastIndex((f) => f <= onTimeline);
+  const since = last < 0 ? Infinity : (onTimeline - contactFrames[last]) / fps;
   const hold = spec.stop ?? 0;
-  const sample =
-    last !== undefined && since <= hold
-      ? hits[hits.map(hitFrame).lastIndexOf(last)]
-      : t;
-  const dir = anim === 'turn' ? Math.floor(t * 4) % 16 : side;
+  const sample = last >= 0 && since <= hold ? hits[last] : t;
+  const contact = hits.filter((h, i) => contactFrames[i] === onTimeline);
+  const dir = anim === 'turn' ? Math.floor(t * 4) % 16 : at.side;
   const finalFrame = !spec.loop && n >= frameCount(spec.seconds) - 1;
   const poseAnim =
     finalFrame && anim !== 'away'
@@ -204,7 +255,19 @@ export function compose(
         : 'idle'
       : anim;
   const poseTime = finalFrame ? (anim === 'away' ? spec.seconds : 0) : sample;
-  const body = c.frame(poseAnim, poseTime, dir, variant);
+  const projected = (time: number, position = at): BodyFrame => {
+    const body = c.frame(
+      poseAnim,
+      time,
+      position === at ? dir : position.side,
+      variant,
+      { headSide: position.headSide, gaitPhase: position.t },
+    );
+    return position.lift
+      ? { ...body, dy: (body.dy ?? 0) - position.lift }
+      : body;
+  };
+  const body = projected(poseTime);
   const env = finalFrame
     ? 0
     : Math.max(0, 1 - since / 0.24) * (spec.shake ?? 0);
@@ -218,6 +281,7 @@ export function compose(
   // Edge-clamp the backdrop during shake so the field never reveals a transparent seam.
   blit(layers.bg, bg, b, b);
   if (dx || dy) blit(layers.bg, bg, b + dx, b + dy, clip);
+  splitForeground(foregroundObjects(scene, w, h), layers, feet[1], b, dx, dy);
   const origin = screenPoint(body, body.anchor, feet);
   const floorXY: XY = [origin[0] + b + dx, feet[1] + b + dy];
   const scaleX = Math.abs(body.sx ?? 1),
@@ -227,7 +291,7 @@ export function compose(
     scaleY > 0 &&
     body.px.data.some((v, i) => i % 4 === 3 && v !== 0);
   if (visible) {
-    const r = body.px.w * 0.26 * scaleX;
+    const r = (body.px.w * 0.26 * scaleX) / (1 + at.lift * 0.025);
     layers.fxu.ell(floorXY[0], floorXY[1] + 1, r, r * 0.21, [18, 13, 21, 72]);
     layers.fxu.ell(
       floorXY[0],
@@ -269,7 +333,7 @@ export function compose(
     const historical = new Map<number, BodyFrame>([[poseTime, body]]);
     c.effects({
       anim: poseAnim,
-      t: finalFrame ? 0 : (hits.find((hit) => hitFrame(hit) === n) ?? t),
+      t: finalFrame ? 0 : (contact[0] ?? t),
       duration: c.animations[poseAnim]?.seconds ?? spec.seconds,
       hits: finalFrame ? [] : hits,
       variant,
@@ -280,14 +344,18 @@ export function compose(
       under: new Pen(under.getContext('2d'), 0, 0, 0, 0),
       above: new Pen(above.getContext('2d'), 0, 0, 0, 0),
       pointAt: (when, name) => {
+        const source =
+          actionBeat && when !== poseTime
+            ? placement(c, requested, timeToWorld(when), side, ground(w, h))
+            : at;
         let fr = historical.get(when);
         if (!fr) {
-          fr = c.frame(poseAnim, when, dir, variant);
+          fr = projected(when, source);
           historical.set(when, fr);
         }
         if (!fr.points[name])
           throw new Error(c.id + '/' + anim + ' missing socket ' + name);
-        return screenPoint(fr, fr.points[name], feet);
+        return screenPoint(fr, fr.points[name], source.feet);
       },
     });
     blit(layers.fxu, asPx(under), b + dx, b + dy, clip);
@@ -336,6 +404,10 @@ export function compose(
     picture: stack(layers),
     body,
     feet: fullFeet,
+    worldFeet: feet,
+    contact,
+    motion: at,
+    backgroundFrame: loopFrame,
     points,
     camera: [dx, dy] as XY,
   };

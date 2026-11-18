@@ -138,13 +138,51 @@ export function indexed(p: Px) {
 }
 export class GifWriter {
   private encoder = GIFEncoder();
-  constructor(private scale = 3) {
+  private previous?: Uint32Array;
+  constructor(
+    private scale = 3,
+    private opaque = false,
+  ) {
     if (!Number.isInteger(scale) || scale < 1 || scale > 12)
       throw new Error('GIF scale must be 1..12');
   }
   add(p: Px, frame: number) {
     const { scale } = this;
-    const { indices, palette, transparent, transparentIndex } = indexed(p);
+    let { indices, palette, transparent, transparentIndex } = indexed(p);
+    if (this.opaque) {
+      if (transparent)
+        throw new Error('Opaque GIF has transparent scene pixels');
+      const colors = Uint32Array.from(
+        palette,
+        (c) => (c[0] << 16) | (c[1] << 8) | c[2],
+      );
+      const current = Uint32Array.from(indices, (i) => colors[i]);
+      if (this.previous) {
+        // A transparent delta means "keep the previous RGB", even when consecutive
+        // frames have different local colour tables. Compare resolved RGB, never indices.
+        const remap = new Uint16Array(256),
+          delta = new Uint8Array(indices.length),
+          used = [[0, 0, 0]];
+        let changed = 0;
+        for (let i = 0; i < indices.length && used.length <= 256; i++) {
+          if (current[i] === this.previous[i]) continue;
+          const shade = indices[i];
+          if (!remap[shade]) {
+            remap[shade] = used.length;
+            used.push(palette[shade]);
+          }
+          delta[i] = remap[shade];
+          changed++;
+        }
+        if (used.length <= 256 && changed < indices.length * 0.8) {
+          indices = delta;
+          palette = used;
+          transparent = true;
+          transparentIndex = 0;
+        }
+      }
+      this.previous = current;
+    }
     let enlarged = indices;
     if (scale !== 1) {
       const rowWidth = p.w * scale;
@@ -169,7 +207,7 @@ export class GifWriter {
       palette,
       delay,
       repeat: 0,
-      dispose: 2,
+      dispose: this.opaque ? 1 : 2,
       transparent,
       transparentIndex,
     });

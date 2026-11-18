@@ -7,6 +7,8 @@ import omggif from 'omggif';
 import { PNG } from 'pngjs';
 import {
   compose,
+  blit,
+  splitForeground,
   frameCount,
   hitFrame,
   layerNames,
@@ -47,6 +49,15 @@ export async function verifyRelease(
   assert.equal(meta.fps, 24);
   const frameLoop = join(assetRoot, 'frames', c.rarity, 'loop'),
     bgLoop = join(output, 'bg', 'loop');
+  const thickness = meta.thickness;
+  const objects: { id: string; depth: number; pixels: Px }[] = JSON.parse(
+    readFileSync(join(output, 'bg', 'front-depth.json'), 'utf8'),
+  ).map((item: { id: string; depth: number }) => {
+    const framed = pixels(join(output, 'bg', 'front', item.id + '.png'), w, h);
+    const field = new Px(w - 2 * thickness, h - 2 * thickness);
+    blit(field, framed, -thickness, -thickness);
+    return { ...item, pixels: field };
+  });
   imageFiles(frameLoop, 72);
   imageFiles(bgLoop, 72);
   const main = Object.keys(c.animations).find((name) =>
@@ -68,6 +79,8 @@ export async function verifyRelease(
       : [anim]) {
       const dir = join(output, 'frames', suffix),
         gif = join(output, 'gif', 'painting-' + suffix + '.gif');
+      const track = JSON.parse(readFileSync(join(dir, 'motion.json'), 'utf8'));
+      assert.equal(track.length, count, dir + ' motion');
       const reader = new omggif.GifReader(readFileSync(gif));
       gifCount++;
       assert.equal(reader.numFrames(), count, gif);
@@ -99,13 +112,25 @@ export async function verifyRelease(
       const raw = new Uint8Array(reader.width * reader.height * 4);
       const frames = allFrames
         ? Array.from({ length: count }, (_, i) => i)
-        : sample;
+        : Array.from(sample).sort((a, b) => a - b);
+      let decoded = -1;
       for (const n of frames) {
         const file = frameName(n),
-          loopFile = frameName(n % 72),
+          loopFile = frameName(track[n].backgroundFrame),
           layers = {} as Layers;
         const moved = join(dir, 'bg', file);
+        layers.bgf = new Px(w, h);
+        layers.bgfBack = new Px(w, h);
+        splitForeground(
+          objects,
+          layers,
+          track[n].feet[1],
+          thickness,
+          track[n].camera[0],
+          track[n].camera[1],
+        );
         for (const key of layerNames) {
+          if (key === 'bgf' || key === 'bgfBack') continue;
           if (key === 'over' && !hasOver) {
             layers.over = new Px(w, h);
             continue;
@@ -148,8 +173,11 @@ export async function verifyRelease(
         }
         const p = stack(layers),
           table = indexed(p);
-        raw.fill(0);
-        reader.decodeAndBlitFrameRGBA(n, raw);
+        while (decoded < n) {
+          if (decoded >= 0 && reader.frameInfo(decoded).disposal === 2)
+            raw.fill(0);
+          reader.decodeAndBlitFrameRGBA(++decoded, raw);
+        }
         for (let y = 0; y < h; y++)
           for (let x = 0; x < w; x++) {
             const i = y * w + x,

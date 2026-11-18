@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { loadPainting } from '../render';
-import { compose, frameCount, ground, hitFrame, screenPoint } from '../engine';
+import { compose, frameCount, hitFrame } from '../engine';
 import { sizes, type BodyFrame } from '../types';
 
 const pilot = [
@@ -24,9 +24,9 @@ function fingerprint(body: BodyFrame) {
   );
   return hash.update(sockets).digest('hex');
 }
-for (const [id, techniques, foot] of pilot) {
+for (const [id, techniques] of pilot) {
   test(
-    id + ' has its pilot moves, a closed idle and a planted stance',
+    id + ' has its pilot techniques, closed idle and framed presentations',
     async () => {
       const { c, s, b } = await loadPainting(id);
       const [w, h, size] = sizes[c.rarity];
@@ -92,26 +92,6 @@ for (const [id, techniques, foot] of pilot) {
           }
         }
         assert.ok(overlapsRail, id + ' must extend over its rail in peek');
-      }
-      if (foot) {
-        // Across the cyclic walk, a supporting foot must stay on its mark for at least a third of the cycle.
-        const prints = Array.from({ length: 24 }, (_, n) => {
-          const f = c.frame('walk', n / 24, 0, 'normal');
-          assert.ok(f.points[foot], id + '/' + foot);
-          return screenPoint(f, f.points[foot], ground(w, h));
-        });
-        let planted = 0;
-        for (let start = 0; start < prints.length; start++) {
-          const origin = prints[start];
-          let count = 1;
-          while (count < prints.length) {
-            const p = prints[(start + count) % prints.length];
-            if (Math.hypot(p[0] - origin[0], p[1] - origin[1]) > 0.05) break;
-            count++;
-          }
-          planted = Math.max(planted, count);
-        }
-        assert.ok(planted >= 8, id + ' planted for ' + planted + ' frames');
       }
     },
   );
