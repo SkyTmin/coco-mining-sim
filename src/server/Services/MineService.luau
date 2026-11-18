@@ -142,7 +142,11 @@ function MineService.damage(st: State.MineState): { any }
 	return out
 end
 
-local function send(kind: string, plot: number, packet: buffer, visual: any?)
+local function send(kind: string, plot: number, packet: buffer, visual: any?, only: Player?)
+	if only then
+		windowRemote:FireClient(only, kind, packet, visual)
+		return
+	end
 	for player in subscribers[plot] or {} do
 		if player.Parent == Players then
 			windowRemote:FireClient(player, kind, packet, visual)
@@ -150,7 +154,7 @@ local function send(kind: string, plot: number, packet: buffer, visual: any?)
 	end
 end
 
-local function sendTail(s: Session)
+local function sendTail(s: Session, only: Player?)
 	local st = s.state
 	for offset = mine.nearWindow, mine.window - 1, mine.layerBatch do
 		send(
@@ -163,7 +167,9 @@ local function sendTail(s: Session)
 				height = st.height,
 				offset = offset,
 				layers = layers(s, offset, math.min(offset + mine.layerBatch, mine.window)),
-			})
+			}),
+			nil,
+			only
 		)
 	end
 end
@@ -172,7 +178,7 @@ function MineService.event(s: Session, event: any)
 	send("event", s.plot, Wire.encodeEvent(event))
 end
 
-function MineService.window(s: Session, damageReset: any)
+function MineService.window(s: Session, damageReset: any, only: Player?)
 	local st = s.state
 	PlotService.depth(s.plot, st.front)
 	local frozen = {}
@@ -195,9 +201,24 @@ function MineService.window(s: Session, damageReset: any)
 			frozen = frozen,
 			layers = layers(s, 0, mine.nearWindow),
 		}),
-		damageReset
+		damageReset,
+		only
 	)
-	sendTail(s)
+	sendTail(s, only)
+end
+
+function MineService.subscribe(player: Player, s: Session)
+	subscribers[s.plot][player] = true
+	windowRemote:FireClient(player, "watch", s.plot, PlotService.frame(s.plot))
+	MineService.window(s, nil, player)
+end
+function MineService.unsubscribe(player: Player, plot: number)
+	if subscribers[plot] then
+		subscribers[plot][player] = nil
+	end
+	if player.Parent == Players then
+		windowRemote:FireClient(player, "unwatch", plot)
+	end
 end
 
 -- Stopping resets the cracks, as in Minecraft — except on a wall chest [владелец 13.11: «минимум 2 удара»]: its crack

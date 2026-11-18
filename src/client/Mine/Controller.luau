@@ -65,6 +65,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local world = Instance.new("Folder")
 	world.Name, world.Parent = "LocalMine", workspace
 	local hud = Hud.new(guiParent, world, translate)
+	require(Client.Ui.CampHud).start(hud.wallet, player)
 	local eventFx: any = nil
 	local rebirthUi: any = nil
 	local feverUntil, combo = 0, false

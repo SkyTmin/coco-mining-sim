@@ -49,6 +49,27 @@ function PlotService.depth(plot: number, front: number)
 	end
 end
 
+function PlotService.inZone(
+	player: Player,
+	index: number,
+	role: string,
+	marginBlocks: number
+): boolean
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if not root or not root:IsA("BasePart") or not slots[index] then
+		return false
+	end
+	local p = slots[index].frame:PointToObjectSpace(root.Position)
+	local margin = marginBlocks * S
+	local near, far =
+		if role == "viewer" then DEPTH else 0,
+		if role == "viewer" then DEPTH + SPECTATORS else DEPTH
+	return math.abs(p.X) <= WIDTH / 2 + margin
+		and p.Z >= near - margin
+		and p.Z <= far + margin
+		and p.Y >= -1
+		and p.Y <= HEIGHT + 6
+end
 function PlotService.onOwnPlatform(player: Player): boolean
 	local index = assignments[player]
 	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
