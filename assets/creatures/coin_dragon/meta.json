@@ -1,0 +1,253 @@
+{
+  "id": "coin_dragon",
+  "rarity": "secret",
+  "theme": "treasury",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    256,
+    208
+  ],
+  "thickness": 18,
+  "bodySize": 144,
+  "canvas": [
+    292,
+    244
+  ],
+  "anchor": [
+    71,
+    112
+  ],
+  "eye": [
+    103,
+    43
+  ],
+  "primitives": 190,
+  "feet": [
+    141,
+    178
+  ],
+  "points": {
+    "footL": [
+      82.39161771531448,
+      100.22008860660458
+    ],
+    "footR": [
+      63.440200351092024,
+      121.25251221554696
+    ],
+    "tail": [
+      19.142347947874356,
+      96.11736658727496
+    ],
+    "slot": [
+      69.08409096679675,
+      59.20128359326565
+    ],
+    "eye": [
+      102.8301928625622,
+      43.177141167428346
+    ],
+    "mouth": [
+      118.50660473301214,
+      49.778923562061976
+    ],
+    "chest": [
+      103.43398357899298,
+      94.4775053364937
+    ],
+    "claw": [
+      103.42630984399057,
+      106.1915629672441
+    ]
+  },
+  "layers": [
+    "bg",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "frame",
+    "over"
+  ],
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise bg/loop/(frame % 72).png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "idle-f2": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tech_breath": {
+      "seconds": 1.8,
+      "frames": 43,
+      "loop": false,
+      "hit": [
+        24
+      ],
+      "shake": 0.13,
+      "stop": 0
+    },
+    "tech_tail": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [
+        14
+      ],
+      "shake": 0.19,
+      "stop": 0.035
+    },
+    "tech_chest": {
+      "seconds": 1.6,
+      "frames": 38,
+      "loop": false,
+      "hit": [
+        23
+      ],
+      "shake": 0.16,
+      "stop": 0.04
+    },
+    "tech_claw": {
+      "seconds": 0.9,
+      "frames": 22,
+      "loop": false,
+      "hit": [
+        12
+      ],
+      "shake": 0.18,
+      "stop": 0
+    },
+    "tech_rain": {
+      "seconds": 2.2,
+      "frames": 53,
+      "loop": false,
+      "hit": [
+        32,
+        37,
+        42
+      ],
+      "shake": 0.09,
+      "stop": 0
+    },
+    "tech_dive": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        20,
+        34
+      ],
+      "shake": 0.17,
+      "stop": 0
+    },
+    "happy": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "phase": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "show": {
+      "seconds": 5,
+      "frames": 120,
+      "loop": false,
+      "hit": [
+        60
+      ],
+      "shake": 0.2,
+      "stop": 0
+    },
+    "away": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "back": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "peek": {
+      "seconds": 1.8,
+      "frames": 43,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    }
+  }
+}
