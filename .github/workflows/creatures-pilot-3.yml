@@ -1,0 +1,63 @@
+name: Attach the reviewed creature pilot
+on:
+  push:
+    branches: [bosses-art]
+    paths: [.github/workflows/creatures-pilot-3.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  attach:
+    if: >-
+      github.event.head_commit.message == 'ci(creatures): приложить проверенный архив к третьему пилоту'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: b0a571632ba41331f7e638996afe73a0c996a5ec
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Render the reviewed paintings and all animation layers
+        working-directory: tools/creatures
+        run: |
+          set -euo pipefail
+          npm ci
+          for id in bramble_warden coin_dragon crater_titan frost_yeti gem_beetle silk_dragon toad_shaman; do
+            node --import tsx render.ts --id "$id"
+          done
+      - name: Verify the ZIP and the contents of every file against the reviewed export
+        run: |
+          set -euo pipefail
+          python3 tools/creatures/release.py "$RUNNER_TEMP/creatures-pilot-3.zip"
+          python3 - "$RUNNER_TEMP/creatures-pilot-3.zip" <<'PY'
+          import hashlib, sys, zipfile
+          with open(sys.argv[1], 'rb') as output:
+              if hashlib.file_digest(output, 'sha256').hexdigest() != 'c74fd0be90ab174719704f435cbfbac4695b4ec527450b932d473e18289dc1d9':
+                  sys.exit('The ZIP itself differs from the reviewed archive.')
+          digest = hashlib.sha256()
+          with zipfile.ZipFile(sys.argv[1]) as archive:
+              for name in sorted(archive.namelist()):
+                  digest.update(name.encode() + b'\0' + hashlib.sha256(archive.read(name)).digest())
+          if digest.hexdigest() != 'de57583c5498f4387ce8fd45b02b6ea76202d97f9ba5bc1d30584abd04c36c18':
+              sys.exit('The generated contents differ from the reviewed export.')
+          PY
+      - name: Attach the verified ZIP to the existing draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          draft_id=449691352
+          endpoint="repos/$GITHUB_REPOSITORY/releases/$draft_id"
+          upload_url=$(gh api "$endpoint" --jq 'select(.draft and .tag_name == "creatures-pilot-3" and .target_commitish == "b0a571632ba41331f7e638996afe73a0c996a5ec").upload_url | split("{")[0]')
+          test "$upload_url" = "https://uploads.github.com/$endpoint/assets"
+          curl --silent --show-error --fail-with-body --request POST \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Content-Type: application/zip" \
+            --data-binary "@$RUNNER_TEMP/creatures-pilot-3.zip" \
+            "$upload_url?name=creatures-pilot-3.zip" | jq -e '{id, state, size, digest} | select(.state == "uploaded")'
