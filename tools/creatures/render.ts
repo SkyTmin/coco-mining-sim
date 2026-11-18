@@ -2,6 +2,8 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   existsSync,
+  copyFileSync,
+  readFileSync,
   mkdirSync,
   readdirSync,
   unlinkSync,
@@ -25,7 +27,7 @@ import {
   foregroundObjects,
   ground,
 } from './engine';
-import { reelChapters, attachMotion, directions, directionVector } from './motion';
+import { reelChapters, attachMotion, attachPetBehavior, directions, directionVector } from './motion';
 import { GifWriter, savePNG } from './render-io';
 import { frameImage } from './frame-kit';
 import { Px } from './rig/px';
@@ -47,6 +49,11 @@ export async function loadPainting(id: string) {
   const lifeFile = join(tools, 'c', id + '-life.ts');
   if (existsSync(lifeFile)) {
     const plan = (await import('./c/' + id + '-life.ts')).default;
+    const behaviorFile = join(root, id, 'behavior.json');
+    if (existsSync(behaviorFile)) {
+      const behavior = JSON.parse(readFileSync(behaviorFile, 'utf8'));
+      return { c: attachPetBehavior(c, plan, behavior), s, b };
+    }
     return { c: attachMotion(c, plan), s, b };
   }
   return { c, s, b };
@@ -219,6 +226,8 @@ export async function render(
   const { c, s, b } = await loadPainting(id);
   const output = join(assetRoot, c.id);
   mkdirSync(output, { recursive: true });
+  if (c.behavior && resolve(assetRoot) !== root)
+    copyFileSync(join(root, id, 'behavior.json'), join(output, 'behavior.json'));
   const names = name ? [name] : Object.keys(c.animations);
   const main = Object.keys(c.animations).find((a) => a.startsWith('tech_'));
   if (
@@ -231,6 +240,8 @@ export async function render(
   for (const anim of names) {
     if (!c.animations[anim]) throw new Error('Unknown animation ' + anim);
     writePainting(c, s, b, anim, 'normal', scale, output);
+    if (anim === 'life' && c.behavior)
+      copyFileSync(join(output, 'gif', 'painting-life.gif'), join(output, 'gif', 'paintings.gif'));
     if (anim === 'idle' || anim === main)
       writePainting(c, s, b, anim, 'gold', scale, output);
   }
@@ -253,7 +264,7 @@ export async function render(
     points: idle.points,
     motion: c.motion
       ? {
-          life: c.motion,
+          life: c.behavior ? { behavior: 'behavior.json', seed: c.behavior.seed, seconds: c.behavior.previewSeconds } : c.motion,
           track: 'frames/<anim>/motion.json',
           directions: Object.fromEntries(
             directions.map((d) => {
@@ -288,6 +299,8 @@ export async function render(
           hit: v.hits?.map(hitFrame) ?? [],
           shake: v.shake ?? 0,
           stop: v.stop ?? 0,
+          interrupt: v.interrupt,
+          bearings: v.bearings,
         },
       ]),
     ),

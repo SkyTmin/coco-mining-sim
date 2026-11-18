@@ -40,6 +40,8 @@ def main():
         expected = {f"painting-{a}.gif" for a in meta["animations"]}
         main_move = next(a for a in meta["animations"] if a.startswith("tech_"))
         expected.update({"turn.gif", "painting-idle-gold.gif", f"painting-{main_move}-gold.gif"})
+        if (path.parent / "behavior.json").is_file():
+            expected.add("paintings.gif")
         actual = {f.name for f in (path.parent / "gif").glob("*.gif")}
         if actual != expected:
             raise ValueError(f"{path.parent.name} unexpected or missing GIF files: {actual ^ expected}")

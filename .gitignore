@@ -10,6 +10,7 @@ __pycache__/
 /assets/creatures/**
 !/assets/creatures/*/
 !/assets/creatures/*/meta.json
+!/assets/creatures/*/behavior.json
 /docs/reports/creatures/pilot/paintings.gif
 /docs/reports/creatures/pilot/lineup.gif
 

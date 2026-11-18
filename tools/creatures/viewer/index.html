@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eee9dd">
+  <title>Живые картины · Галерея существ</title>
+  <link rel="stylesheet" href="./gallery.css">
+  <script type="module" src="./viewer.mjs"></script>
+</head>
+<body>
+  <header class="masthead">
+    <a href="#ispolin" class="wordmark"><span class="mark" aria-hidden="true">◈</span> Галерея существ</a>
+    <nav aria-label="Разделы галереи"><a href="#ispolin">Исполин</a><a href="#collection">Коллекция</a></nav>
+  </header>
+  <main>
+    <header class="title"><h1>Живые картины</h1></header>
+    <section id="ispolin" class="feature" aria-labelledby="feature-title">
+      <div class="wall">
+        <button type="button" class="painting feature-painting" data-id="meadow_colossus"
+                aria-label="Поиграть с Луговым исполином" aria-describedby="gestures"
+                aria-busy="true"><canvas width="180" height="148">Луговой исполин</canvas></button>
+      </div>
+      <div class="feature-text">
+        <span class="rarity">Необычная картина</span>
+        <h2 id="feature-title">Луговой исполин</h2>
+        <p class="live"><span aria-hidden="true"></span><output id="mood">Загрузка картины…</output></p>
+        <p id="gestures">Одно касание — радость, два — трюк. <span class="keyboard-hint">С клавиатуры используйте Enter и клавишу 2.</span></p>
+        <div class="actions">
+          <button type="button" id="leave" disabled>Уйти</button>
+          <button type="button" id="skill" disabled>Показать приём</button>
+        </div>
+        <p id="presence" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+    <section id="collection" aria-labelledby="collection-title">
+      <div class="section-title"><h2 id="collection-title">Коллекция</h2><span>8 картин</span></div>
+      <div id="paintings" class="collection"></div>
+    </section>
+  </main>
+  <noscript>Для анимации картин включите JavaScript.</noscript>
+</body>
+</html>

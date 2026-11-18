@@ -5,6 +5,7 @@ import { measureDetail, minimumColours } from '../detail';
 import { measureCreature, readReferences } from '../tech-metrics';
 import { cardRuntimeIssues } from './card';
 import { measureRef, readPoseRefs, refIssues } from './ref';
+import { petGate } from './pet-gate';
 import { sizes } from '../types';
 
 export async function gateExtras(ids: string[]) {
@@ -18,7 +19,11 @@ export async function gateExtras(ids: string[]) {
   for (const id of ids) {
     const painting = await loadPainting(id);
     const { c } = painting;
-    for (const [anim, spec] of Object.entries(readPoseRefs(id))) {
+    const registered = readPoseRefs(id);
+    const petIssues = petGate(painting, Object.keys(registered));
+    for (const issue of petIssues) console.log('  ! ' + id + ' pet: ' + issue);
+    if (petIssues.length) failed++;
+    for (const [anim, spec] of Object.entries(registered)) {
       const rows = measureRef(painting, anim, spec);
       const errors = refIssues(rows);
       console.log(`${errors.length ? "✗" : "✓"} ${id} ${anim} ref: ${rows.length} keys, min IoU ${Math.min(...rows.map(r => r.iou)).toFixed(3)}`);

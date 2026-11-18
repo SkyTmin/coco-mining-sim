@@ -234,7 +234,9 @@ export function compose(
   const n = Math.round(t * fps);
   const hits = spec.hits ?? [];
   const beat =
-    requested === 'life' && c.motion ? c.motion.beats[at.beat] : undefined;
+    requested === 'life' && c.behavior && anim.startsWith('tech_')
+      ? { anim, seconds: spec.seconds }
+      : requested === 'life' && c.motion ? c.motion.beats[at.beat] : undefined;
   const actionBeat =
     beat && beat.anim === anim && anim.startsWith('tech_') ? beat : undefined;
   const timeToWorld = (local: number) =>
@@ -248,8 +250,10 @@ export function compose(
   const hold = spec.stop ?? 0;
   const sample = last >= 0 && onTimeline - contactFrames[last] <= Math.round(hold * fps) ? hits[last] : t;
   const contact = hits.filter((h, i) => contactFrames[i] === onTimeline);
-  const dir = anim === 'turn' ? Math.floor(t * 4) % 16 : at.side;
-  const finalFrame = !spec.loop && n >= frameCount(spec.seconds) - 1;
+  const dir = anim === 'turn' && !c.behavior ? Math.floor(t * 4) % 16 : at.side;
+  // The pilot one-shots share a generic exit pose. A pet owns its final key,
+  // including the shut eyes and withdrawn head leading from sleep_in to sleep.
+  const finalFrame = !c.behavior && !spec.loop && n >= frameCount(spec.seconds) - 1;
   const poseAnim =
     finalFrame && anim !== 'away'
       ? anim === 'phase' && c.animations['idle-f2']

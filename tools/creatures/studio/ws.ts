@@ -44,8 +44,8 @@ async function gateKey(id: string) {
   const { inputsOf, inputHash } = await import('./cache');
   const { c } = await loadPainting(id);
   const { poseRefInputs } = await import('./ref');
-  const studio = ['ref', 'capture', 'checks', 'clip', 'contact-audit', 'gate', 'visibility', 'ws'].map((f) => join(tools, 'studio', f + '.ts'));
-  const extra = [join(tools, 'studio', 'card.ts'), join(tools, 'studio', 'card.schema.json'), join(tools, 'c', id + '.studio.json'), join(tools, '../../docs/reports/creatures/pilot-3/reference/tech-metrics.json')];
+  const studio = ['ref', 'capture', 'checks', 'clip', 'contact-audit', 'gate', 'pet-gate', 'visibility', 'ws'].map((f) => join(tools, 'studio', f + '.ts'));
+  const extra = [join(tools, '../../assets/creatures', id, 'meta.json'), join(tools, 'studio', 'card.ts'), join(tools, 'studio', 'card.schema.json'), join(tools, 'c', id + '.studio.json'), join(tools, '../../docs/reports/creatures/pilot-3/reference/tech-metrics.json')];
   return inputHash([...new Set([...inputsOf(id, c.theme, c.rarity), ...studio, ...poseRefInputs(id), ...extra.filter((f) => existsSync(f))])]);
 }
 
@@ -116,6 +116,21 @@ async function check(args: string[], strict: boolean) {
 
 const [cmd, ...rest] = process.argv.slice(2);
 switch (cmd) {
+  case 'export-ref': {
+    const { exportRefCommand } = await import('./art-sheet');
+    await exportRefCommand(rest);
+    break;
+  }
+  case 'label': {
+    const { labelCommand } = await import('./art-sheet');
+    labelCommand(rest);
+    break;
+  }
+  case 'sheet-lint': {
+    const { lintCommand } = await import('./sheet-lint');
+    lintCommand(rest);
+    break;
+  }
   case 'new': {
     const { newCommand } = await import('./new');
     await newCommand(rest);
@@ -153,6 +168,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: npm run ws -- new|check|gate|probe|sheet|ref|render|snap … (see studio/README.md)');
+    console.log('usage: npm run ws -- new|check|gate|probe|sheet|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
     process.exitCode = cmd ? 1 : 0;
 }

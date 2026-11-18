@@ -1,0 +1,176 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pet painting behavior",
+  "type": "object",
+  "required": [
+    "seed",
+    "previewSeconds",
+    "field",
+    "stride",
+    "depthScale",
+    "stops",
+    "walkShare",
+    "attackInterval",
+    "attacks",
+    "weights",
+    "events",
+    "yaw"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "previewSeconds": {
+      "const": 30
+    },
+    "field": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "stride": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "depthScale": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "stops": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "walkShare": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number",
+        "minimum": 0.35,
+        "maximum": 0.5
+      }
+    },
+    "attackInterval": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number",
+        "minimum": 30,
+        "maximum": 45
+      }
+    },
+    "attacks": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^tech_[a-z0-9_]+$"
+      }
+    },
+    "weights": {
+      "type": "object",
+      "required": [
+        "idle",
+        "fidget_a",
+        "fidget_b",
+        "look",
+        "trick"
+      ],
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "events": {
+      "type": "object",
+      "required": [
+        "tap",
+        "tap_asleep",
+        "like",
+        "idle_owner",
+        "owner_back",
+        "skill_ready"
+      ],
+      "properties": {
+        "tap": {
+          "const": [
+            "happy"
+          ]
+        },
+        "tap_asleep": {
+          "const": [
+            "wake_startled",
+            "happy"
+          ]
+        },
+        "like": {
+          "const": [
+            "trick"
+          ]
+        },
+        "double_tap": {
+          "const": [
+            "trick"
+          ]
+        },
+        "rare_find": {
+          "const": [
+            "happy"
+          ]
+        },
+        "approach": {
+          "const": [
+            "look"
+          ]
+        },
+        "idle_owner": {
+          "const": [
+            "sleep_in",
+            "sleep"
+          ]
+        },
+        "owner_back": {
+          "const": [
+            "sleep_out"
+          ]
+        },
+        "skill_ready": {
+          "const": [
+            "attack"
+          ]
+        }
+      },
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "yaw": {
+      "type": "number"
+    }
+  }
+}

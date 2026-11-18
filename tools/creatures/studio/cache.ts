@@ -10,7 +10,7 @@ import { join, relative } from 'node:path';
 
 const tools = join(import.meta.dirname, '..');
 const assets = join(tools, '../../assets/creatures');
-const sharedSkip = new Set(['test', 'studio', 'review', 'node_modules', 'c', 'scenes', 'frames', '.studio', 'golden']);
+const sharedSkip = new Set(['test', 'studio', 'review', 'node_modules', 'c', 'scenes', 'frames', '.studio', 'golden', 'viewer']);
 
 function walk(dir: string, out: string[] = []) {
   for (const name of readdirSync(dir)) {
@@ -41,6 +41,8 @@ export function inputsOf(id: string, theme: string, rarity: string) {
   const files = [
     ...walk(tools),
     ...own,
+    join(tools, 'viewer/behavior.mjs'),
+    join(assets, id, 'behavior.json'),
     join(tools, 'scenes', theme + '.ts'),
     join(tools, 'frames', rarity + '.ts'),
     join(tools, 'frame-kit.ts'),

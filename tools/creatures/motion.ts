@@ -1,3 +1,5 @@
+import { createPetBehavior, interruptFrames, validateBehavior,
+  type BehaviorConfig, type PetSample } from './viewer/behavior.mjs';
 import { SE } from './rig/f15-rig';
 import { sizes, type Creature, type MotionPlan, type XY } from './types';
 
@@ -41,14 +43,16 @@ export const lifeDuration = (p: MotionPlan) =>
 // Frame indices keep short attacks and the six-frame rests exactly on a GIF tick.
 export function reelChapters(c: Creature) {
   let cursor = 0;
-  return Object.entries(c.animations)
-    .filter(([name]) => name.startsWith('tech_'))
-    .map(([name, action]) => {
-      const frames = Math.round(action.seconds * 24);
-      const start = cursor;
-      cursor += frames + 6;
-      return { name, start, frames, end: cursor };
-    });
+  const names = c.behavior
+    ? ['hatch','turn','idle','fidget_a','fidget_b', ...directions.map(d => 'walk_' + d),
+       'look','happy','trick', ...c.behavior.attacks,'tired','sleep_in','sleep','wake_startled','sleep_out']
+    : Object.keys(c.animations).filter(name => name.startsWith('tech_'));
+  return names.map(name => {
+    const frames = Math.round(c.animations[name].seconds * 24);
+    const start = cursor;
+    cursor += frames + 6;
+    return { name, start, frames, end: cursor };
+  });
 }
 
 /** Play the complete authored technique on the 24 Hz clock when it occurs in life. */
@@ -125,6 +129,47 @@ export function attachMotion(c: Creature, plan: MotionPlan): Creature {
     },
   };
 }
+// The viewer uses this same clock for its live events; baking only caches the
+// first fixed-seed excursion so a render may seek backwards or sample in parallel.
+const previews = new WeakMap<Creature, PetSample[]>();
+function petPreview(c: Creature) {
+  let rows = previews.get(c);
+  if (!rows) {
+    const machine = createPetBehavior(c.behavior!, c.animations);
+    rows = Array.from({ length: c.behavior!.previewSeconds * 24 }, (_, i) =>
+      i ? machine.advance(1 / 24) : machine.sample());
+    previews.set(c, rows);
+  }
+  return rows;
+}
+
+export function attachPetBehavior(raw: Creature, plan: MotionPlan, behavior: BehaviorConfig): Creature {
+  const c = { ...raw, behavior, motion: plan, animations: { ...raw.animations } };
+  for (const d of directions) c.animations['walk_' + d] ??= { seconds: 1, loop: true };
+  for (const [name, spec] of Object.entries(c.animations))
+    c.animations[name] = { ...spec, interrupt: interruptFrames(Math.round(spec.seconds * 24), name) };
+  const problems = validateBehavior(behavior, c.animations);
+  if (problems.length) throw Error(c.id + ' behavior: ' + problems.join(', '));
+  const [width, height] = sizes[c.rarity];
+  if (behavior.field[0] !== width || behavior.field[1] !== height ||
+      behavior.depthScale !== SE || behavior.stride !== plan.stride || behavior.yaw !== plan.yaw)
+    throw Error(c.id + ' behavior coordinate system differs from the card');
+  if (behavior.stops.some(p => !plan.beats.some(b => b.at[0] === p[0] && b.at[1] === p[1])))
+    throw Error(c.id + ' behavior stop is missing from card beats');
+  const preview = petPreview(c);
+  const chapters = reelChapters(c);
+  const reelTicks = chapters.at(-1)!.end;
+  c.animations.life = {
+    seconds: behavior.previewSeconds, loop: true, interrupt: interruptFrames(preview.length),
+    hits: preview.flatMap(({anim, frame}, i) =>
+      (c.animations[anim].hits ?? []).filter(t => Math.round(24 * t) === frame).map(() => i / 24)),
+  };
+  c.animations.showreel = {
+    seconds: reelTicks / 24, loop: true, interrupt: interruptFrames(reelTicks),
+    hits: chapters.flatMap(({name,start}) => (c.animations[name].hits ?? []).map(t => (start + Math.round(t * 24)) / 24)),
+  };
+  return c;
+}
 export interface Placement {
   feet: XY;
   side: number;
@@ -136,6 +181,12 @@ export interface Placement {
   duration: number;
   beat: number;
 }
+function turnSide(c: Creature, t: number) {
+  const bearings = c.animations.turn?.bearings;
+  if (!bearings?.length || !c.motion) return wrap(Math.floor(t * 4), 16);
+  const frame = wrap(Math.round(t * 24), bearings.length);
+  return wrap((bearings[frame] - c.motion.yaw) * 8 / Math.PI, 16);
+}
 function routePlacement(
   c: Creature,
   anim: string,
@@ -145,7 +196,7 @@ function routePlacement(
 ): Placement {
   const [w, h] = sizes[c.rarity],
     plan = c.motion;
-  const facing = anim === 'turn' ? wrap(Math.floor(t * 4), 16) : side;
+  const facing = anim === 'turn' ? turnSide(c,t) : side;
   const fixed = {
     feet: origin,
     anim,
@@ -157,11 +208,23 @@ function routePlacement(
     duration: c.animations[anim]?.seconds ?? 1,
     beat: -1,
   };
+  if (anim === 'life' && c.behavior && plan) {
+    const rows = petPreview(c), i = wrap(Math.round(t * 24), rows.length);
+    const state = rows[i];
+    const stride = directionVector(state.direction, plan.stride);
+    const walking = state.anim.startsWith('walk_');
+    const side = walking ? heading(stride, plan.yaw) : state.anim === 'turn' ? turnSide(c,state.elapsed) : 0;
+    return { ...fixed, feet: [state.at[0] * w, state.at[1] * h],
+      anim: walking ? 'walk' : state.anim, side, headSide: side, t: state.elapsed,
+      start: (i - state.frame) / 24, duration: c.animations[state.anim].seconds };
+  }
   if (anim === 'showreel') {
     const chapters = reelChapters(c);
     const tick = wrap(t * 24, chapters.at(-1)!.end);
     const chapter = chapters.find(({ end }) => tick < end)!;
     const age = tick - chapter.start;
+    if (c.behavior && age < chapter.frames)
+      return { ...routePlacement(c, chapter.name, age / 24, side, origin), start: chapter.start / 24 };
     return age < chapter.frames
       ? {
           ...fixed,

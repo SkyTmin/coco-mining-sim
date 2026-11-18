@@ -1,0 +1,24 @@
+REFERENCE SHEET — Meadow Colossus, animation "tech_forefall". Double forefoot fall, a great mass rising on its haunches then dropping its forefeet on the floor.
+
+LAYOUT
+One wide 1536×1024 image divided invisibly into three columns and two rows of six equal 512×512 cells. Read top left to bottom right. Six drawings only. Fill all background with perfectly flat solid #FF00FF. No cast shadows, ground, scenery, vignette, grids, strokes across gutters, text, digits, labels, arrows, logos, or captions. Separate six fully contained, horizontally centred figures, at least 8% clear margin on EVERY side per cell. Standing creature takes 66% cell height; invisible baseline under its near feet at 84%, camera remains tripod-fixed across all cells.
+
+CHARACTER LOCK
+Use ONLY the LEFT three-quarter model in the attached identity reference: one ancient wide, low tortoise, one domed shell, ochre angular scute rim, olive grassy meadow growing on top, three stones in the same order (two angular bedrocks next to the one crooked tree, one smaller rounded loose pebble at the FRONT lip). One tree with three rounded crowns; its visible roots cling to the shell. Four short stocky column legs, three blunt ochre claws per foot including near hind, two amber eyes (far eye partly occluded), one cream hooked beak without teeth, one pointed short tail projecting behind the shell. Keep leg identities and overlap consistent. Total standing height 100 units, shell body before tree 58, head height 22, legs 24. Locked colours olive moss #86982c, rim ochre #d49c4f, shadowed earth #715432, granite #988b6b, near-black brown outline #30291d, eyes #e5a03b. Light upper left. Simplify texture into readable hard-edged pixel clusters while preserving the character. No extra stones, feet, tree or animals.
+
+CAMERA AND STYLE
+Static front-right 3/4 view at ~35° elevation, turtle facing screen right; see its near cheek continuously, far forefoot at extreme right and near forefoot lower and more central. Pixel-art cel shading: dark single-pixel contours, four discrete light values, absolutely crisp transitions to magenta. It is ONE image with SIX different acting beats, never two turnarounds. No motion blur, FX, debris or ground lines. The animation will add effects from physical contacts later.
+
+AVOID
+Extra limbs, fingers, claws, trees, rocks, stray particles, heads hidden by props, floating feet on contacts, fused front and hind feet, generic brown turtles without the meadow, fake shadows, outlines around cells, cropping, anti-alias fringing, copying the right-hand lateral view from the identity reference.
+
+PROP: three rocks remain attached. Tree and meadow move WITH the same shell, lean a little from inertia, never separate.
+POSES
+1 REST. All four feet on the floor; nose gently forward, three-quarter cheek and amber eye visible. Belly a little above knees; tree upright.
+2 LOAD. Hind feet stay at the same two ground points. Shell shifts back and rises about 28 degrees around them. Both forefeet draw in and rise to shoulder height; visible magenta crescent below both. Neck extends and looks at clear floor ahead.
+3 RELEASE. Maximum rear-up, front rim nearly a head higher, shell incline 36 degrees. BOTH forelegs now unbend aggressively downward, enough ground gap under both claws (10% of standing height); back feet anchor weight. Beak and eyes look down at landing aims. No fully airborne turtle.
+4 CONTACT. Shell pitches steeply forward, head reaches out and lower, both forefeet visibly TOUCH the same implicit ground plane ahead of their original footprints at full downward extension with visible separated bottoms. Three-quarter depth offset means the farther forefoot is slightly higher onscreen. Hind feet still anchored. Shell now lowest at its front edge and tree bent forward. No dust.
+5 ABSORB. The front column knees yield; chest drops between shoulders while the two foot soles stay precisely where they landed. Shoulders rounded, nose a little raised, hill rebounds slightly, trunk hangs forward.
+6 RECOVER. Four feet back at regular stance; shell level again; neck eases to neutral and tree has a very slight opposite lean. Same size and floor as opening.
+
+LOCAL REVISION TO CELL 3 ONLY — in the upper right cell reduce the inclination of the shell slightly and bend the crooked treetop back toward the tail like a flexible spring so the top foliage is at most 108% of the first cell's measured standing height above the same rear-foot baseline, without shrinking the turtle, changing the front-foot gap or altering the other five drawings in any way.

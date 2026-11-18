@@ -14,6 +14,8 @@ export type Rarity =
   | 'mythic'
   | 'secret';
 export interface Animation {
+  bearings?: number[]; // world bearing in radians of each authored turntable frame
+  interrupt?: number[]; // interruptible 24 Hz local frame indices
   /** Physical ground displacement in field pixels, sampled independently of flight or camera shake. */
   groundOffset?: (t: number, side: number) => XY;
   seconds: number;
@@ -74,6 +76,7 @@ export interface Creature {
   props?: (input: FxInput) => void; // physical targets shown during both held keys and playback
   effects?: (input: FxInput) => void;
   motion?: MotionPlan;
+  behavior?: import('./viewer/behavior.mjs').BehaviorConfig;
   techniques?: TechniqueBook;
 }
 export interface MotionBeat {

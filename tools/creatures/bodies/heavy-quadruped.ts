@@ -49,6 +49,8 @@ export interface HeavySkeleton {
   scale: number;
 }
 export interface HeavyAppearance {
+  /** Allow an extended pose to exceed the portrait tile while preserving its ground anchor. */
+  expandForAction?: boolean;
   /** In the moving head frame; draw the working horn through this endpoint. */
   hornTip?: V3;
   draw(rig: Rig, skeleton: HeavySkeleton, card: CreatureCard, variant: Variant): void;
@@ -353,7 +355,9 @@ export function heavyFrame(
       size,
       [Math.round(size * 0.48), Math.round(size * 0.75)],
       s.points,
-      '#272835'
+      '#272835',
+      undefined,
+      appearance?.expandForAction ?? false
     );
     return { ...frame, planted: s.planted, dx: pose.dx, dy: pose.dy, sx: pose.sx, sy: pose.sy };
   };

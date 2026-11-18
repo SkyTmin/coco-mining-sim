@@ -85,7 +85,9 @@ export function cardRuntimeIssues(c: Creature): string[] {
     if (!move || move.reference !== m.reference || move.weapon !== m.weapon)
       errors.push(m.id + ': сокет или эталон отличаются от карточки');
   }
-  if (!c.motion || !sameRoute(resolveTechniqueBeats(c, data.life), c.motion))
+  // Pet routes take the authored floor stops directly. Older paintings stretch action beats to their attack timing.
+  const expectedRoute = c.behavior ? data.life : resolveTechniqueBeats(c, data.life);
+  if (!c.motion || !sameRoute(expectedRoute, c.motion))
     errors.push('Сценарий life отличается от карточки');
   return errors;
 }
