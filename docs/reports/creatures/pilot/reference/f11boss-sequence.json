@@ -1,0 +1,13 @@
+{
+  "kind": "f11boss",
+  "width": 176,
+  "height": 176,
+  "anchor": [
+    88,
+    145
+  ],
+  "frames": 72,
+  "fps": 24,
+  "mode": "idle",
+  "columns": 12
+}

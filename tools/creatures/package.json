@@ -1,0 +1,19 @@
+{
+  "name": "coco-creature-paintings",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --import tsx --test test/*.test.ts",
+    "render": "tsx render.ts",
+    "verify": "tsx verify.ts"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "0.1.90",
+    "gifenc": "1.0.3",
+    "pngjs": "7.0.0",
+    "tsx": "4.20.6"
+  },
+  "devDependencies": {
+    "omggif": "1.0.10"
+  }
+}
