@@ -52,7 +52,11 @@ function CreativeService.Start()
 	local creative = Remotes.event("Creative")
 	local toast = Remotes.event("Toast")
 	creative.OnServerEvent:Connect(function(player: Player, op: any, delta: any, b: any, c: any)
-		if player:GetAttribute("CreativeAllowed") ~= true or not withinRate(player) then
+		if
+			player:GetAttribute("InDuel")
+			or player:GetAttribute("CreativeAllowed") ~= true
+			or not withinRate(player)
+		then
 			return
 		end
 		if op == "toggle" then

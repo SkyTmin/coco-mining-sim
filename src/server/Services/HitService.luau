@@ -204,6 +204,11 @@ local function onIntent(player: Player, packet: any)
 	if not intent or not s then
 		return
 	end
+	if
+		player:GetAttribute("InDuel") and require(script.Parent.DuelService).intent(player, intent)
+	then
+		return
+	end
 	local started = os.clock()
 	if intent.op == "Resync" then
 		if started - s.resyncAt >= 0.5 then

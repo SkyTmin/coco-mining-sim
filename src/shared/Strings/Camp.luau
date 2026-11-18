@@ -1,5 +1,20 @@
 --!strict
 return {
+	camp_win = { en = "Victory!", ru = "Победа!", es = "¡Victoria!", fr = "Victoire !" },
+	camp_loss = { en = "So close!", ru = "Почти!", es = "¡Por poco!", fr = "De justesse !" },
+	camp_draw = { en = "Draw", ru = "Ничья", es = "Empate", fr = "Égalité" },
+	camp_abort = {
+		en = "Duel interrupted",
+		ru = "Дуэль прервана",
+		es = "Duelo interrumpido",
+		fr = "Duel interrompu",
+	},
+	camp_again_at = {
+		en = "Challenge is cooling down",
+		ru = "Вызов восстанавливается",
+		es = "Espera antes de otro desafío",
+		fr = "Patiente avant le prochain défi",
+	},
 	camp_setting_guests = {
 		en = "Who can help",
 		ru = "Кто может помогать",

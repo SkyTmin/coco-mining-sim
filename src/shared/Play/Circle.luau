@@ -242,6 +242,25 @@ function Circle.pick(id: string, circle: Types.Circle, depth: number, profile: P
 	}
 end
 
+-- Expected hand income of the live circle, using its current rock mix and hit interval.
+function Circle.coinsPerMinute(profile: Profile, front: number): number
+	local pick = Circle.pick(profile.pickaxe, profile.circle, front, profile)
+	local world = Worlds.of(front)
+	local value = 0
+	for i, share in world.weights do
+		value += share * Power.coins(world.orePrices[i], profile.circle.cards.coins or 0)
+	end
+	local effects = Family.effects(profile)
+	local shape =
+		Config.progress.hitSizes[if Upgrade.hitSizeEnabled then profile.circle.hitSize else 1]
+	return value
+		* (1 + profile.cups)
+		* effects.coins
+		* shape.blocks
+		* 60
+		/ (pick.interval * Power.hits(Worlds.durability(front), pick.strength))
+end
+
 function Circle.context(profile: Profile, world: number): Upgrade.Context
 	return {
 		coins = profile.coins,

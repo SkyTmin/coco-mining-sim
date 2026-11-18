@@ -7,6 +7,7 @@ local Worlds = require(script.Parent.Worlds)
 
 export type Range = { x: number, y: number, a: number, b: number }
 export type MineState = {
+	duel: boolean?,
 	v: number,
 	seed: number,
 	width: number,
@@ -133,6 +134,9 @@ function MineState.isExposed(st: MineState, x: number, y: number, d: number): bo
 end
 
 function MineState.barrier(st: MineState): number
+	if st.duel then
+		return DEPTH_END
+	end
 	local world = Worlds.of(st.front)
 	return if st.front < world.finish then world.plateDepth else DEPTH_END
 end

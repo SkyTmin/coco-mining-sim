@@ -129,6 +129,12 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local defaultCircle = Circle.new()
 	local function pick(): Circle.Pick
 		local p = profile()
+		if player:GetAttribute("InDuel") then
+			local basic = Circle.pick("starter", defaultCircle, 0)
+			basic.shape, basic.strength =
+				"square3", Worlds.durability(if window then window.front else 0)
+			return basic
+		end
 		local id = player:GetAttribute("MinePickaxe") or (p and p.pickaxe) or "starter"
 		return Circle.pick(
 			id,

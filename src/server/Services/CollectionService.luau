@@ -48,6 +48,9 @@ function CollectionService.Start()
 	Remotes.event("PickaxeResult")
 	Remotes.event("PickaxeIntent").OnServerEvent
 		:Connect(function(player: Player, op: any, a: any, b: any)
+			if player:GetAttribute("InDuel") then
+				return
+			end
 			local now = os.clock()
 			if now - (lastAt[player] or -math.huge) < 0.1 - 1e-9 then
 				return

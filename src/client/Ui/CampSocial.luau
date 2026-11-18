@@ -129,6 +129,9 @@ function Social.start(parent: Instance, tr: any)
 				not (current:GetAttribute("AtWall") and me:GetAttribute("OnMinePlatform"))
 			then "camp_wall_required"
 			else nil
+		if (me:GetAttribute("DuelReadyAt") or 0) > workspace:GetServerTimeNow() then
+			reasons.duel = "camp_again_at"
+		end
 		reasons.watch = if me:GetAttribute("GuestPlot") or me:GetAttribute("InDuel")
 			then "camp_busy"
 			else nil

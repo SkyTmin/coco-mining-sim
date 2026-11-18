@@ -147,6 +147,9 @@ local function confirm(player: Player, s: any, choice: any): (boolean, string?, 
 	return true, nil, data
 end
 function Service.handle(player: Player, op: any, serial: any, gain: any, family: any, start: any)
+	if player:GetAttribute("InDuel") then
+		return
+	end
 	if op == "Confirm" then
 		if
 			not integer(serial)

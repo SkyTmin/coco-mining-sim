@@ -255,8 +255,11 @@ local function drawHeld(
 		end
 		return
 	end
-	local id = view.player:GetAttribute("MinePickaxe") or "starter"
-	local golden = view.player:GetAttribute("MinePickaxeGolden") == true
+	local id = if view.player:GetAttribute("InDuel")
+		then "starter"
+		else view.player:GetAttribute("MinePickaxe") or "starter"
+	local golden = not view.player:GetAttribute("InDuel")
+		and view.player:GetAttribute("MinePickaxeGolden") == true
 	if view.firstItem and view.firstId ~= id then
 		view.firstItem:Destroy()
 		view.firstItem, view.firstRoot = nil, nil

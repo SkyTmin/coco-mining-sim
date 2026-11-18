@@ -23,6 +23,7 @@ local PlotService = require(script.Parent.PlotService)
 export type Timing = { count: number, total: number, max: number }
 export type Session = {
 	player: Player,
+	duel: boolean?,
 	events: any?,
 	eventQueue: { any }?,
 	eventDirty: boolean?,
@@ -55,6 +56,13 @@ local DIG_SWEEP_INTERVAL = 0.1
 local DIG_STOP_INTERVAL = 0.5
 local MineService = {}
 local sessions: { [Player]: Session } = {}
+local duels: { [Player]: any } = {}
+function MineService.duelView(p: Player, wall: any?)
+	duels[p] = wall
+end
+function MineService.display(p: Player): any
+	return duels[p] or sessions[p]
+end
 local resetHooks: { (Player, Session) -> () } = {}
 function MineService.OnReset(fn: (Player, Session) -> ())
 	table.insert(resetHooks, fn)
@@ -82,7 +90,9 @@ local function layers(s: Session, offset: number, limit: number): { { number } }
 			for y = 0, st.height - 1 do
 				local ore = 0
 				if State.isSolid(st, x, y, d) then
-					if d == world.plateDepth then
+					if s.duel then
+						ore = Gen.cellAt(st.seed, x, y, d % Config.worlds[1].length)
+					elseif d == world.plateDepth then
 						ore = Wire.PLATE
 					else
 						local index, kind = Gen.cellAt(st.seed, x, y, d)
@@ -180,9 +190,14 @@ end
 
 function MineService.window(s: Session, damageReset: any, only: Player?)
 	local st = s.state
-	PlotService.depth(s.plot, st.front)
+	if duels[s.player] and not s.duel then
+		return
+	end
+	if not s.duel then
+		PlotService.depth(s.plot, st.front)
+	end
 	local frozen = {}
-	for _, cell in Perks.frozen(s.perks, st) do
+	for _, cell in (if s.duel then {} else Perks.frozen(s.perks, st)) do
 		if #frozen < 200 then
 			table.insert(frozen, { x = cell.x, y = cell.y, dRel = cell.d - st.front })
 		end
@@ -208,6 +223,7 @@ function MineService.window(s: Session, damageReset: any, only: Player?)
 end
 
 function MineService.subscribe(player: Player, s: Session)
+	s = duels[s.player] or s
 	subscribers[s.plot][player] = true
 	windowRemote:FireClient(player, "watch", s.plot, PlotService.frame(s.plot))
 	MineService.window(s, nil, player)
@@ -284,12 +300,14 @@ local function expireDamage(s: Session, now: number)
 end
 
 function MineService.result(s: Session, res: any)
-	if res.delta > 0 then
+	if not s.duel and res.delta > 0 then
 		ProfileService.Mutate(s.player, function(p)
 			Camp.advance(p, s.state.front, Camp.week(os.time()))
 		end)
 	end
-	PlotService.depth(s.plot, s.state.front)
+	if not s.duel then
+		PlotService.depth(s.plot, s.state.front)
+	end
 	if res.delta > 0 then
 		res.layers = layers(s, 0, mine.nearWindow)
 	end
@@ -401,7 +419,7 @@ function MineService.Start()
 		end
 		sweptAt = now
 		for _, session in sessions do
-			if next(session.state.damage) ~= nil then
+			if not duels[session.player] and next(session.state.damage) ~= nil then
 				expireDamage(session, now)
 			end
 		end
@@ -410,6 +428,9 @@ function MineService.Start()
 		while true do
 			task.wait(1)
 			for player, session in sessions do
+				if duels[player] then
+					continue
+				end
 				if workspace:GetServerTimeNow() < (player:GetAttribute("MineReturnAfter") or 0) then
 					continue
 				end

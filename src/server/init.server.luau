@@ -21,6 +21,7 @@ for _, service in
 		services.VisitService,
 		services.SocialService,
 		services.GuestService,
+		services.DuelService,
 		services.EventService,
 		services.RebirthService,
 		services.HitService,

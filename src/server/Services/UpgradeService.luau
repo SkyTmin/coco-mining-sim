@@ -37,6 +37,9 @@ end
 function UpgradeService.Start()
 	Remotes.event("UpgradeIntent").OnServerEvent
 		:Connect(function(player: Player, op: any, a: any, b: any)
+			if player:GetAttribute("InDuel") then
+				return
+			end
 			local at = Upgrade.nextRequest(lastAt[player] or -math.huge, os.clock())
 			if not at then
 				return
