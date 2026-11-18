@@ -1,3 +1,4 @@
+import { battingGround } from './frost_yeti-footwork';
 import { paintMaterial, paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
 import { trk,lerp,TAU,hash } from '../kit/f11-mobkit';
 import { disc,fillPoly,starBranches,crackOf,drawCrack,flare } from '../fx/pen';
@@ -6,7 +7,10 @@ import type { Animation,BodyFrame,FxInput,XY } from '../types';
 import type { FrostPose } from './frost_yeti';
 
 export const animations:Record<string,Animation>={
-  tech_snowball:{seconds:2.4,hits:[1.70],stop:.07,shake:.25},
+  tech_snowball: {
+    seconds: 58 / 24, hits: [32 / 24], stop: .06, shake: .25,
+    groundOffset: battingGround,
+  },
   tech_slam:{seconds:1.3,hits:[.80],stop:.06,shake:.35},
   tech_icicles:{seconds:2,hits:[1.2,1.3,1.4,1.5,1.6],shake:.08},tech_roar:{seconds:1.6,hits:[1.18]}
 };
@@ -58,25 +62,40 @@ function breath(f:FxInput,born:number,life=.48,distance=25,size=1) {
     ellFill(f.above,[x,y],(2+u*(4+i))*size,(1.5+u*(3+i*.5))*size,ice[i],.52*(1-u));
   }
 }
-function snowProp(f:FxInput,source:XY,front:XY,landing:XY) {
-  const hit=32/24,land=47/24,age=f.t-hit;
-  const roll=progress(f.t,2/24,23/24),r=2+6*roll;
-  const x=f.t<hit?source[0]+r-(1-roll)*20:front[0]+r*(1-progress(f.t,hit,land));
-  const y=f.t<hit?source[1]:front[1]-r*progress(f.t,hit,land);
-  if(f.t>2/24 && f.t<land) {
-    const underY=lerp(source[1]+r,landing[1],progress(f.t,hit,land));
-    ellFill(f.under,[x,underY],r+1,2.5,'#384861',.73);
-    paintMaterial(f,'above','snowball',[x,y],pen=>{
-    pen.col('#516d86');disc(pen,x,y,r);
-    pen.col('#a8cbd6');disc(pen,x,y-1,r*.87);
-    pen.col('#deedf0');disc(pen,x-1,y-2,r*.65);
-    for(let i=0;i<4;i++) {
-      const a=roll*6+i*2.1+Math.max(age,0)*12;
-      pen.col(i%2?'#859fae':'#f6f6ed');pen.dot(x+r*.55*Math.cos(a),y+r*.55*Math.sin(a),2,1);
-    }
-    });
+const gatherFrame = 8, tossFrame = 14, swingFrame = 32, exitFrame = 54;
+const sec = (n: number) => n / 24;
+
+function paintSnowball(f: FxInput, centre: XY, radius: number, floor: number) {
+  ellFill(f.under, [centre[0], floor], radius + 1, 1.8, '#384861', .49);
+  paintMaterial(f, 'above', 'snowball', centre, (p, x, y) => {
+    p.col('#456882'); disc(p, x, y, radius);
+    p.col('#a3cddc'); disc(p, x, y - 1, radius * .82);
+    p.col('#f3f9ef'); disc(p, x - .8, y - 1.4, radius * .56);
+    p.col('#78a1b1'); p.dot(x + radius * .45, y + radius * .3, 1, 1);
+  }, floor);
+}
+
+function gatherAndToss(f: FxInput) {
+  if (f.t < sec(gatherFrame) || f.t >= sec(swingFrame)) return;
+  if (f.t < sec(tossFrame)) {
+    const hand = f.pointAt(f.t, 'handL');
+    const ground = f.pointAt(f.t, 'handLGround')[1];
+    const u = progress(f.t, sec(gatherFrame), sec(tossFrame));
+    paintSnowball(f, [hand[0], hand[1] + 3 * (1 - u)], 1.8 + 2.7 * u, ground);
+    return;
   }
- }
+  // One soft self-toss. Its apex is at the bat; the second flight starts there.
+  const contact = f.pointAt(sec(swingFrame), 'clubTip');
+  const release = f.pointAt(sec(tossFrame), 'handL');
+  const height = Math.max(0, (release[1] - contact[1]) / 4);
+  const u = progress(f.t, sec(tossFrame), sec(swingFrame));
+  const centre: XY = [
+    lerp(release[0], contact[0], u),
+    lerp(release[1], contact[1], u) - 4 * height * u * (1 - u),
+  ];
+  paintSnowball(f, centre, 4.5, f.pointAt(sec(tossFrame), 'handLGround')[1]);
+}
+
 // A dark cobalt edge stays legible against both the fur and the pale sky.
 function iceLance(p:FxInput['above'],tip:XY,dx:number,dy:number,width:number,alpha=1) {
   const len=Math.hypot(dx,dy), nx=-dy/len,ny=dx/len;
@@ -87,10 +106,8 @@ function iceLance(p:FxInput['above'],tip:XY,dx:number,dy:number,width:number,alp
   p.col('#b5f9fa',alpha);p.line(root[0]+dx*.13,root[1]+dy*.13,tip[0]-.27*dx,tip[1]-.27*dy);
 }
 export function props(f:FxInput) {
-  if(f.anim==='tech_snowball' && f.t<32/24) {
-    const src=f.pointAt(32/24,'clubTip');
-    snowProp(f,src,src,src);
-  } else if(f.anim==='tech_icicles' && f.t>=14/24 && f.t<24/24) {
+  if(f.anim==='tech_snowball') gatherAndToss(f);
+  else if(f.anim==='tech_icicles' && f.t>=14/24 && f.t<24/24) {
     const belt=f.pointAt(14/24,'belt'),tip=f.pointAt(24/24,'clubTip'),u=progress(f.t,14/24,24/24);
     for(let i=0;i<5;i++) {
       const spread=(i-2)*(1-u);
@@ -100,31 +117,26 @@ export function props(f:FxInput) {
   }
 }
 function snowball(f:FxInput) {
-  const hit=32/24,land=47/24,age=f.t-hit,source=f.pointAt(hit,'clubTip');
-  const landing:XY=[Math.min(f.w-8,source[0]+48), f.feet[1]+9];
-  const front=projectileAt(f,'snowball','clubTip',hit,land,landing,19);
-  if(f.t>=hit && f.t<land) snowProp(f,source,front,landing);
+  const hit = sec(swingFrame), age = f.t - hit, source = f.pointAt(hit, 'clubTip');
+  const exit: XY = [source[0] + 70, source[1] - 13];
+  if (f.t >= hit) {
+    const centre = projectileAt(f, 'snowball', 'clubTip', hit, sec(exitFrame), exit, 0);
+    if (f.t < sec(exitFrame)) paintSnowball(f, centre, 4.5, f.pointAt(hit, 'clubTipGround')[1]);
+  }
   if(f.t>=29/24 && age<=.075) paintSocketTrail(f,'above','clubTip',29/24,hit,{color:'#def5f7',width:2});
   if(age>=0 && age<.17)
     paintImpact(f,'above','clubTip',source,(p,x,y)=>{
       ellFill(p,[x,y],1+age*28,1.5,'#fbfcf3',1-age/.17);
       p.col('#c7e5ed',1-age/.17);p.line(x,y,x+4+age*35,y-2-age*13);
     });
-  const arrival=f.t-land;
-  if(arrival>=0 && arrival<.42) {
-    paintImpact(f,'under','snowball',landing,(p,x,y)=>{
-      ellFill(p,[x,y],2+arrival*24,1+arrival*8,'#52687e',1-arrival/.45);
-      p.col('#e5f3ef',1-arrival/.45);p.line(x,y,x+6+arrival*31,y+2);
-    });
-    fracture(f,landing,arrival,20,435,.41);scatter(f,landing,arrival,424,19,ice,.42);
-  }
+
 }
 function slam(f:FxInput) {
   const hit=19/24,age=f.t-hit,pt=f.pointAt(hit,'clubTip');
   const shadow=progress(f.t,.13,.57)*(1-progress(f.t,hit,1.29));
   if(shadow>0) ellFill(f.under,[pt[0]-1,pt[1]+1],10,2,'#607a91',shadow*.39);
   breath(f,.24,.33,12,.69);
-  if(f.t>=16/24&&age<.07) paintSocketTrail(f,'above','clubTip',16/24,hit,{color:'#d8f2f5',width:3});
+  if(f.t>=16/24&&age<.07) paintSocketTrail(f,'above','clubTip',16/24,hit,{color:'#d8f2f5',width:2});
   if(age<0||age>.48)return;
   paintImpact(f,'under','clubTip',pt,(p,x,y)=>{
     ellFill(p,[x,y],2+8*progress(age,0,.12),2+age*3,'#3b4f68',1-progress(age,.28,.48));

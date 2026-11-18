@@ -1,5 +1,6 @@
 // Measurements are in the native field grid: retain body translation, subtract camera shake.
 import type { Px } from './rig/px';
+import { placement } from './motion';
 
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -9,7 +10,7 @@ import { loadPainting } from './render';
 import { sizes, type Creature, type XY } from './types';
 
 import {
-  techniqueContacts,
+  playbackKeys, techniqueContacts,
   type ContactKind,
   type PoseRole as KeyRole,
   type Technique as MeasurableTechnique,
@@ -144,8 +145,9 @@ function socketSampler(c: Creature, anim: string) {
     let projected = cache.get(t);
     if (!projected) {
       const body = c.frame(anim, t, 0, 'normal', { headSide: 0, gaitPhase: t });
+      const at = placement(c, anim, t, 0, feet);
       projected = Object.fromEntries(
-        Object.entries(body.points).map(([k, p]) => [k, screenPoint(body, p, feet)]),
+        Object.entries(body.points).map(([k, p]) => [k, screenPoint(body, p, at.feet)]),
       );
       cache.set(t, projected);
     }
@@ -170,6 +172,44 @@ function overshoot(path: XY[], continuation: XY[]) {
     dy = (end[1] - previous[1]) / d;
   return Math.max(0, ...continuation.map((p) => (p[0] - end[0]) * dx + (p[1] - end[1]) * dy));
 }
+export interface RecoverySample {
+  /** Physical height of the impact socket above the floor, in native picture units. */
+  height: number;
+  centreY: number;
+  supports: XY[];
+}
+
+/** Samples start at contact and include its recovery. Only the receiving limbs must stay planted. */
+export function floorRecovery(
+  kind: NonNullable<MeasurableTechnique['recovery']>,
+  bodyHeight: number,
+  approach: RecoverySample,
+  after: readonly RecoverySample[],
+  followIndex: number,
+) {
+  const hit = after[0];
+  const load = after.slice(0, followIndex + 1);
+  const issues: string[] = [];
+  if (kind === 'rebound') {
+    const descent = approach.height - hit.height;
+    const rebound = Math.max(...load.map((p) => p.height)) - hit.height;
+    if (descent < Math.max(4, bodyHeight * 0.10)) issues.push('weapon did not descend into the impact');
+    if (rebound < Math.max(3, bodyHeight * 0.06)) issues.push('weapon did not rebound from the floor');
+    return { descent, rebound, issues };
+  }
+  if (hit.supports.length === 0) issues.push('landing has no receiving limb');
+  const lowest = load.reduce((at, p, i) => p.centreY > load[at].centreY ? i : at, 0);
+  const compression = load[lowest].centreY - hit.centreY;
+  const rise = load[lowest].centreY - Math.min(...after.slice(lowest).map((p) => p.centreY));
+  const slip = Math.max(0, ...load.slice(0, lowest + 1).flatMap((p) =>
+    p.supports.map((pt, i) => distance(pt, hit.supports[i]))));
+  const bodyTravel = Math.max(1, 0.02 * bodyHeight);
+  if (compression < bodyTravel) issues.push('body did not compress after landing');
+  if (rise < bodyTravel) issues.push('body did not rise after absorbing its landing');
+  if (slip > 2) issues.push('receiving limb slid ' + rounded(slip) + ' px during landing');
+  return { compression, rise, slip, issues };
+}
+
 function keyFrame(spec: MeasurableTechnique, role: KeyRole) {
   const key = spec.keys.find((k) => k.role === role);
   if (!key) throw new Error(spec.title + ' missing ' + role + ' key');
@@ -306,9 +346,34 @@ function measureAction(
   if (attackFrames < 2 || attackFrames > 4) issues.push('strike ' + attackFrames + ' frames');
   if (prepFraction < 0.35 - 1e-8 || prepFraction > 0.5 + 1e-8)
     issues.push('preparation ' + rounded(prepFraction) + ' of duration');
-  if (followPx <= 1e-6) issues.push('no forward follow-through');
-  const declared = techniqueContacts(spec),
-    contacts: MeasuredContact[] = [];
+  const declared = techniqueContacts(spec);
+  const recoveries = [];
+  if (spec.recovery) {
+    const keys = playbackKeys(spec);
+    for (const [i, key] of keys.entries()) {
+      if (key.role !== 'hit') continue;
+      const recoveryKey = keys[i + 1];
+      const supports = declared.filter((c) => c.kind === 'floor' && c.frame === key.frame).map((c) => c.socket);
+      const sampleRecovery = (frame: Composite): RecoverySample => ({
+        height: frame.body.joints?.[spec.weapon]?.[2] ??
+          ((frame.points[spec.floorSocket ?? spec.weapon + 'Ground']?.[1] ?? frame.worldFeet[1]) -
+            frame.points[spec.weapon][1]),
+        centreY: registeredMask(frame).centre[1],
+        supports: supports.map((socket) => frame.points[socket]),
+      });
+      const end = spec.recovery === 'rebound' ? recoveryKey.frame :
+        (keys.find((k) => k.role === 'strike' && k.frame > recoveryKey.frame)?.frame ?? count - 1);
+      const after = Array.from({ length: end - key.frame + 1 }, (_, n) =>
+        sampleRecovery(key.frame + n === hit ? atHit : render(key.frame + n)));
+      const recovery = floorRecovery(spec.recovery, bodyHeight, sampleRecovery(render(keys[i - 1].frame)),
+        after, recoveryKey.frame - key.frame);
+      recoveries.push({ frame: key.frame, kind: spec.recovery, ...recovery });
+      issues.push(...recovery.issues.map((issue) => 'frame ' + key.frame + ': ' + issue));
+    }
+  } else if (followPx <= 1e-6) {
+    issues.push('no forward follow-through');
+  }
+  const contacts: MeasuredContact[] = [];
   const stop = animation.stop ?? 0;
   let heldFrames = 0;
   if (new Set(animation.hits).size === 1) {
@@ -409,6 +474,7 @@ function measureAction(
       heldFrames,
       attackFrames,
       followPx,
+      ...(recoveries.length && { recovery: recoveries[0], repeatedRecovery: recoveries.slice(1) }),
       stop: animation.stop ?? 0,
       contacts,
       projectiles: [...flights.values()],

@@ -19,7 +19,7 @@ test('a handled prop can be gathered and released before the main wind-up', () =
   const animation: Technique = {
     title: 'toss', reference: '', weapon: 'handL', contactKind: 'body',
     keys: sixPoses([[0, {}], [12, { height: 5 }], [15, {}], [17, {}], [20, {}], [24, {}]]),
-    leadInKeys: [
+    pathKeys: [
       { role: 'prep', frame: 4, pose: { height: 1 } },
       { role: 'prep', frame: 8, pose: { height: 3 } },
     ],

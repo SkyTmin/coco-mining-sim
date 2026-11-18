@@ -26,9 +26,11 @@ export interface Technique {
   /** Driving arm of a hand-held sweep, overhead blow or thrust. */
   reachHand?: 'L' | 'R';
   contactKind: ContactKind;
+  /** A rigid ground impact rebounds; a landing arrests the body on planted limbs. */
+  recovery?: 'rebound' | 'absorb';
   keys: readonly PoseKey[];
-  /** Handling a prop before the principal wind-up, e.g. gathering and tossing a ball. */
-  leadInKeys?: readonly PoseKey[];
+  /** Intermediate guides for handling a prop or moving it around the body between dramatic keys. */
+  pathKeys?: readonly PoseKey[];
   /** Extra resets, strikes and recoils after the first follow-through in a multi-strike technique. */
   repeatKeys?: readonly PoseKey[];
   contacts?: readonly TechniqueContact[];
@@ -66,11 +68,11 @@ export function techniqueContacts(spec: Technique): readonly TechniqueContact[] 
 }
 
 export function playbackKeys(spec: Technique): readonly PoseKey[] {
-  if (!spec.leadInKeys?.length && !spec.repeatKeys?.length) return spec.keys;
-  return [
-    spec.keys[0], ...(spec.leadInKeys ?? []), ...spec.keys.slice(1, -1),
-    ...(spec.repeatKeys ?? []), spec.keys[spec.keys.length - 1],
-  ];
+  const main = spec.repeatKeys?.length
+    ? [...spec.keys.slice(0, -1), ...spec.repeatKeys, spec.keys[spec.keys.length - 1]]
+    : spec.keys;
+  if (!spec.pathKeys?.length) return main;
+  return [...main, ...spec.pathKeys].sort((a, b) => a.frame - b.frame);
 }
 
 export function techniquePoseAt(spec: Technique, seconds: number): JointPose {

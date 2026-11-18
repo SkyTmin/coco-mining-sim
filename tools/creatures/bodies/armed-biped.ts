@@ -75,7 +75,7 @@ export function bodyFrame(
     };
   }
   // In profile the shoulder lifts the grip less: the serac and the long club stay distinct.
-  if (A.keyRig && side % 16 !== 0) {
+  if (A.keyRig && !A.solveGrips && side % 16 !== 0) {
     const sideView = Math.min(1, 3 * Math.abs(Math.sin((side * Math.PI) / 16)));
     A = {
       ...A,
@@ -178,7 +178,8 @@ export function bodyFrame(
     const footName = s < 0 ? 'footL' : 'footR';
     const footGoal = direct(footName, step.p(6, 0, 0));
     if (footGoal) step.o = vadd(step.o, vsub(footGoal, step.p(6, 0, 0)));
-    if (stride.planted) planted.push(s < 0 ? 'footL' : 'footR');
+    if (stride.planted && (!A.solveGrips || step.p(6, 0, 0)[2] < .25))
+      planted.push(s < 0 ? 'footL' : 'footR');
     const knee = F.p(
       3 + move * 2 + (A.hip ?? 0) * 0.65 - s * (A.stride ?? 0) * 0.5,
       s * 11 + (A.lean ?? 0) * 0.65,
@@ -210,7 +211,7 @@ export function bodyFrame(
       r.line(base.p(-2, side * 5, -5), base.p(0.2, side * 7, -10), coat.T[0], 0, 0.6);
     }
   let H = torso
-    .at(14, 0, 14)
+    .at(14 + (A.neckForward ?? 0), 0, 14 + (A.neckLift ?? 0))
     .turn(0.45 * l.look + (A.headTurn ?? 0) + lead * 0.62)
     .pitch(0.15 * l.sleep + 0.13 * l.tired - 0.22 * (A.jaw ?? 0) + (A['head.pitch'] ?? 0));
   H = H.scale(dimensions.head ?? 1);
@@ -332,10 +333,11 @@ export function bodyFrame(
     const desired = moveGrip(shell, G.o, dir, F.f);
     const tryDir = vnorm(vsub(tip, desired));
     dir = vnorm(vlerp(dir, tryDir, directedTip ? 1 : adjustment));
-    if (directedTip) {
+    if (directedTip || A.solveGrips) {
       const solveGrips = (direction: V3) => {
         solvedHands.clear();
         for (const side of [-1, 1]) {
+          const wrist = side < 0 ? 'handL' : 'handR';
           const grip = vsub(tip, vmul(direction, (side > 0 ? 58 : 46) * gear));
           const shoulder = torso.p(1, side * 22, 6);
           try {
@@ -343,7 +345,7 @@ export function bodyFrame(
               side,
               solveReach({
                 shoulder,
-                target: grip,
+                  target: A.solveGrips ? direct(wrist, grip) ?? grip : grip,
                 upper: 24 * arm,
                 lower: 24 * arm,
                 basis: F,
@@ -416,9 +418,9 @@ export function bodyFrame(
       adjustment > 0
         ? vlerp(restElbow, swingingElbow(shell, shoulder, hand, F, s, 24 * arm), adjustment)
         : restElbow;
-    if (handGoal || directedTip) {
+    if (handGoal || directedTip || A.solveGrips) {
       const joint =
-        (!handGoal && solvedHands.get(s)) ||
+        ((!handGoal || A.solveGrips) && solvedHands.get(s)) ||
         solveReach({
           shoulder: socketShoulder,
           target: hand,
@@ -442,8 +444,21 @@ export function bodyFrame(
       [-0.5, 7],
       [0.5, 5],
     ]) {
-      const lock = vadd(E, F.v(a * 8, s * 7.7, 3));
-      r.cap(lock, vadd(lock, F.v(-2, s * 3.6, -b * 1.5)), 3.4, 0.35, lockLight);
+      // A lock on the outside of a bent elbow turns with the elbow when the hands cross the chest.
+      let lock = vadd(E, F.v(a * 8, s * 7.7, 3));
+      let tip = vadd(lock, F.v(-2, s * 3.6, -b * 1.5));
+      if (A.solveGrips) {
+        const bend = Math.max(0, Math.min(1, (1.05 - segmentClearance(shell, lock, tip)) * 2.8));
+        const pole = vnorm(vsub(E, vlerp(shoulder, hand, .5)));
+        const turned = vadd(E, vadd(F.v(a * 8, 0, 3), vmul(pole, 7.7)));
+        lock = vlerp(lock, turned, bend);
+        tip = vlerp(tip, vadd(turned, vadd(F.v(-2, 0, -b * 1.5), vmul(pole, 3.6))), bend);
+        // The remaining flex is toward the elbow when a lock brushes the head.
+        const fold = Math.max(0, Math.min(1, (0.85 - segmentClearance(shell, lock, tip)) / .33));
+        lock = vlerp(lock, E, .8 * fold);
+        tip = vlerp(tip, vadd(E, vmul(pole, 2)), .86 * fold);
+      }
+      r.cap(lock, tip, 3.4, 0.35, lockLight);
     }
     r.ball(hand, 4.7, slate);
     r.cap(vadd(hand, F.v(1, -s * 2, 2)), vadd(hand, F.v(4, s, 1)), 1.8, 1.3, slate);
@@ -509,7 +524,8 @@ export function bodyFrame(
     shrink = size / 128;
   const drawScale = card ? (dimensions.scale ?? 0.84) : 1;
   scaleFigure(r, sockets, scale * shrink * drawScale, 1.275 * shrink * drawScale);
-  const fr = projectFigure(r, size, [Math.round(63 * shrink), Math.round(100 * shrink)], sockets, '#272a3b');
+  const fr = projectFigure(r, size, [Math.round(63 * shrink), Math.round(100 * shrink)], sockets,
+    '#272a3b', 3.8, Boolean(A.solveGrips && side % 16 !== 0));
   fr.planted = planted;
   fr.dx = A.travel ?? A.dx ?? 0;
   fr.dy = -(A.lift ?? 0) - l.pop * 7;

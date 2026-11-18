@@ -136,7 +136,7 @@ export interface Placement {
   duration: number;
   beat: number;
 }
-export function placement(
+function routePlacement(
   c: Creature,
   anim: string,
   t: number,
@@ -314,4 +314,11 @@ export function placement(
     duration,
     beat: i,
   };
+}
+
+/** Apply the action's own ground trajectory after resolving a life beat or showreel chapter. */
+export function placement(c: Creature, anim: string, t: number, side: number, origin: XY): Placement {
+  const at = routePlacement(c, anim, t, side, origin);
+  const delta = c.animations[at.anim]?.groundOffset?.(at.t, at.side);
+  return delta ? { ...at, feet: [at.feet[0] + delta[0], at.feet[1] + delta[1]] } : at;
 }

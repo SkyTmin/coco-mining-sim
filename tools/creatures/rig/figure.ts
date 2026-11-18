@@ -129,13 +129,14 @@ export function projectFigure(
   sockets: Record<string, V3>,
   ink?: string,
   inner = 3.8,
+  expandForAction = false,
 ): BodyFrame {
   const canvas = activeSetup?.(rig, sockets, size, anchor);
   if (canvas) ({ size, anchor } = canvas);
   const paint = { outline: ink ? hx(ink) : undefined, inner };
   let image: RigOut = renderRig(rig, size, size, ...anchor, paint);
   if (touchesEdge(image.p)) {
-    const pad = Math.ceil(size / 2),
+    const pad = expandForAction ? size : Math.ceil(size / 2),
       big = size + 2 * pad;
     const full = renderRig(
       rig,
@@ -159,6 +160,10 @@ export function projectFigure(
         }
     const width = right - left + 1,
       height = bottom - top + 1;
+    // Some action profiles extend a rigid weapon beyond the standing portrait.
+    // Preserve the world pixels and pivot, enlarging only their local backing image.
+    if (expandForAction && (width > size || height > size))
+      size = Math.min(big, Math.max(width, height) + 4);
     if (width > size || height > size || touchesEdge(full.p)) {
       throw Error(
         `Rig silhouette ${width}×${height} exceeds ${size}×${size} body frame`,

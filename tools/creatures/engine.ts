@@ -349,8 +349,8 @@ export function compose(
       above: new Pen(above.getContext('2d'), 0, 0, 0, 0),
       pointAt: (when, name) => {
         const source =
-          actionBeat && when !== poseTime
-            ? placement(c, requested, timeToWorld(when), side, ground(w, h))
+          (actionBeat || spec.groundOffset) && when !== poseTime
+            ? placement(c, requested, timeToWorld(when) + (requested === 'showreel' ? at.start : 0), side, ground(w, h))
             : at;
         let fr = historical.get(when);
         if (!fr) {
