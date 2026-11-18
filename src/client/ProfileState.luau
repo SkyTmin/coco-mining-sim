@@ -36,6 +36,9 @@ function ProfileState.preference(key: string): any
 	if settings and settings[key] ~= nil then
 		return settings[key]
 	end
+	if key == "guests" then
+		return "friends"
+	end
 	if key == "effects" then
 		return "auto"
 	end

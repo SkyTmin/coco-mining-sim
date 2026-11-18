@@ -8,6 +8,7 @@ local catalog: { [string]: Entry } = {}
 for _, part in
 	{
 		script.Core,
+		script.Camp,
 		script.Mine,
 		script.MineSlice,
 		script.MineFeel,

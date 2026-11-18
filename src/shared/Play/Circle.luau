@@ -22,6 +22,8 @@ export type Pick = Config.PickaxeConfig & {
 	plateMultiplier: number,
 }
 
+local Camp = require(script.Parent.CampProfile)
+local Income = require(script.Parent.Income)
 local Circle = {}
 Circle.profileVersion = Config.game.profileVersion
 
@@ -52,6 +54,7 @@ function Circle.initialize(profile: any)
 	profile.funnel = {}
 	Collection.initialize(profile)
 	initializeRebirth(profile)
+	Camp.initialize(profile, os.time())
 end
 
 local function integer(value: any, min: number, max: number): boolean
@@ -82,9 +85,17 @@ function Circle.migrate(profile: any): boolean
 		initializeRebirth(profile)
 		profile.circleDeepestPlate = profile.deepestWorld - 1
 		profile.circleWorldAt = if profile.stats then profile.stats.playSeconds or 0 else 0
-		profile.v = Circle.profileVersion
+		profile.v = 4
 	end
-	if profile.v ~= Circle.profileVersion or not Collection.validate(profile) then
+	if profile.v == 4 and type(profile.settings) == "table" then
+		Camp.initialize(profile, os.time())
+		profile.v = 5
+	end
+	if
+		not Camp.valid(profile)
+		or profile.v ~= Circle.profileVersion
+		or not Collection.validate(profile)
+	then
 		return false
 	end
 	if
@@ -230,6 +241,24 @@ function Circle.pick(id: string, circle: Types.Circle, depth: number, profile: P
 		chestFrequency = effects.chestFrequency,
 		plateMultiplier = effects.plateDamage,
 	}
+end
+
+-- Expected hand income of the live circle, using its current rock mix and hit interval.
+function Circle.coinsPerMinute(profile: Profile, front: number): number
+	local pick = Circle.pick(profile.pickaxe, profile.circle, front, profile)
+	local world = Worlds.of(front)
+	local value = 0
+	for i, share in world.weights do
+		value += share * Power.coins(world.orePrices[i], profile.circle.cards.coins or 0)
+	end
+	local effects = Family.effects(profile)
+	local shape =
+		Config.progress.hitSizes[if Upgrade.hitSizeEnabled then profile.circle.hitSize else 1]
+	return value
+		* Income.permanent(profile, effects)
+		* shape.blocks
+		* 60
+		/ (pick.interval * Power.hits(Worlds.durability(front), pick.strength))
 end
 
 function Circle.context(profile: Profile, world: number): Upgrade.Context

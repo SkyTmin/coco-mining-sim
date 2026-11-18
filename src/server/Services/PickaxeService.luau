@@ -14,13 +14,9 @@ local PickaxeService = {}
 local cameraAt: { [Player]: number } = {}
 local preferencesAt: { [Player]: number } = {}
 
-local function attach(character: Model, id: string)
-	local hand = character:WaitForChild("RightHand", 5)
-	if not hand or not hand:IsA("BasePart") or not character.Parent then
-		return
-	end
-	local owner = Players:GetPlayerFromCharacter(character)
-	if not owner or owner:GetAttribute("MinePickaxe") ~= id then
+function PickaxeService.attachDisplay(character: Model, id: string, golden: boolean)
+	local hand = character:FindFirstChild("RightHand")
+	if not hand or not hand:IsA("BasePart") then
 		return
 	end
 	local old = character:FindFirstChild("MinePickaxe")
@@ -29,17 +25,20 @@ local function attach(character: Model, id: string)
 	end
 	local grip = CFrame.new(0, -hand.Size.Y * 0.17, -0.10)
 		* CFrame.Angles(math.rad(-77), 0, math.rad(-13))
-	local model, handle = PickModel.forPick(id, hand.CFrame * grip, false)
-	local player = Players:GetPlayerFromCharacter(character)
-	PickModel.appearance(
-		model,
-		id,
-		player ~= nil and player:GetAttribute("MinePickaxeGolden") == true
-	)
+	local model, handle = PickModel.forPick(id, hand.CFrame * grip, false, nil, true)
+	PickModel.appearance(model, id, golden)
 	local motor = Instance.new("Motor6D")
 	motor.Name, motor.Part0, motor.Part1, motor.C0 = "PickaxeGrip", hand, handle, grip
 	motor.Parent = handle
 	model.Parent = character
+end
+
+local function attach(character: Model, id: string)
+	local hand = character:WaitForChild("RightHand", 5)
+	local owner = Players:GetPlayerFromCharacter(character)
+	if hand and owner and owner:GetAttribute("MinePickaxe") == id then
+		PickaxeService.attachDisplay(character, id, owner:GetAttribute("MinePickaxeGolden") == true)
+	end
 end
 
 function PickaxeService.refresh(player: Player)

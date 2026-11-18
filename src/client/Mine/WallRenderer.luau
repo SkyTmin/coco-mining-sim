@@ -66,7 +66,7 @@ function WallRenderer.exposed(win: any, x: number, y: number, relative: number):
 		or layerValue(win, x, y - 1, relative) == 0
 end
 
-function WallRenderer.new(parent: Instance, frame: CFrame): Renderer
+function WallRenderer.new(parent: Instance, frame: CFrame, limit: number?): Renderer
 	local model = Instance.new("Model")
 	model.Name, model.Parent = "MineOre", parent
 	local limits = Instance.new("Model")
@@ -101,7 +101,7 @@ function WallRenderer.new(parent: Instance, frame: CFrame): Renderer
 		sparkles = {},
 		model = model,
 		frame = frame,
-		pool = BlockPool.new(model),
+		pool = BlockPool.new(model, limit),
 		cells = {},
 		lookup = {},
 		plateModel = plateModel,
@@ -237,7 +237,7 @@ local function addCell(
 	cell.ore = ore
 	local part = cell.part
 	part.Size = Vector3.one * S
-	local art = Config.art.worlds[Worlds.of(d).id]
+	local art = Config.art.worlds[(if win.duel then Worlds.at(1) else Worlds.of(d)).id]
 	local eventCell = ore == Wire.VEIN or ore == Wire.BOMB or ore == Wire.RUBBLE
 	local tile = art.slots[if eventCell then 1 else ore]
 	local texture = if tile then BlockArt.select(tile, x, y, d) else art.lining

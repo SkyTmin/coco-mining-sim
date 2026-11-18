@@ -187,6 +187,8 @@ local progress = require(script:WaitForChild("progress")) :: ProgressConfig
 return {
 	game = require(script:WaitForChild("game")) :: GameConfig,
 	creative = require(script:WaitForChild("creative")) :: CreativeConfig,
+	camp = require(script:WaitForChild("camp")),
+	social = require(script:WaitForChild("social")),
 	mine = mine,
 	plots = require(script:WaitForChild("plots")) :: PlotConfig,
 	pickaxes = require(script:WaitForChild("pickaxes")) :: { [string]: PickaxeConfig },

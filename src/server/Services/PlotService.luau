@@ -3,6 +3,7 @@
 local Players = game:GetService("Players")
 local Remotes = require(game:GetService("ReplicatedStorage").Shared.Remotes)
 local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
+local CampBuilder = require(script.Parent.Parent.Camp.CampBuilder)
 local plots, mine = Config.plots, Config.mine
 local S = mine.blockSize
 local WIDTH = plots.frameWidth * S
@@ -29,6 +30,14 @@ local function part(
 	return p
 end
 
+function PlotService.owner(index: number): Player?
+	local slot = slots[index]
+	return slot and slot.owner
+end
+function PlotService.frame(index: number): CFrame?
+	local slot = slots[index]
+	return slot and slot.frame
+end
 function PlotService.get(player: Player): number?
 	return assignments[player]
 end
@@ -40,6 +49,27 @@ function PlotService.depth(plot: number, front: number)
 	end
 end
 
+function PlotService.inZone(
+	player: Player,
+	index: number,
+	role: string,
+	marginBlocks: number
+): boolean
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if not root or not root:IsA("BasePart") or not slots[index] then
+		return false
+	end
+	local p = slots[index].frame:PointToObjectSpace(root.Position)
+	local margin = marginBlocks * S
+	local near, far =
+		if role == "viewer" then DEPTH else 0,
+		if role == "viewer" then DEPTH + SPECTATORS else DEPTH
+	return math.abs(p.X) <= WIDTH / 2 + margin
+		and p.Z >= near - margin
+		and p.Z <= far + margin
+		and p.Y >= -1
+		and p.Y <= HEIGHT + 6
+end
 function PlotService.onOwnPlatform(player: Player): boolean
 	local index = assignments[player]
 	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
@@ -59,6 +89,10 @@ function PlotService.digFrame(player: Player): CFrame?
 	return if i then slots[i].frame * CFrame.new(0, 3.5, DEPTH * 0.72) else nil
 end
 
+local assignedHooks: { (number) -> () } = {}
+function PlotService.onAssigned(fn: (number) -> ())
+	table.insert(assignedHooks, fn)
+end
 function PlotService.assign(player: Player): number?
 	local current = assignments[player]
 	if current then
@@ -69,7 +103,13 @@ function PlotService.assign(player: Player): number?
 			continue
 		end
 		slot.owner, assignments[player] = player, i
+		for _, fn in assignedHooks do
+			fn(i)
+		end
 		player:SetAttribute("Plot", i)
+		if player:GetAttribute("CampBot") then
+			return i
+		end
 		local function spawnAt(character: Model)
 			local pivot = character:WaitForChild("HumanoidRootPart", 8)
 			if not pivot or player.Character ~= character or assignments[player] ~= i then
@@ -83,23 +123,26 @@ function PlotService.assign(player: Player): number?
 		end
 		return i
 	end
+	if PlotService.evictBot and not player:GetAttribute("CampBot") and PlotService.evictBot() then
+		return PlotService.assign(player)
+	end
 	return nil
 end
 
+function PlotService.release(player: Player)
+	local i = assignments[player]
+	if i then
+		slots[i].owner, assignments[player] = nil, nil
+		slots[i].origin:SetAttribute("MineFront", nil)
+	end
+end
 function PlotService.Start()
 	local root = Instance.new("Folder")
 	root.Name = "Plots"
 	root.Parent = workspace
 	local gray, trim = Color3.fromRGB(87, 94, 103), Color3.fromRGB(112, 120, 132)
 	local radius = plots.entranceRadius
-	local floor = part(
-		root,
-		"CommonFloor",
-		Vector3.new(1, radius * 2, radius * 2),
-		CFrame.new(0, -0.5, 0) * CFrame.Angles(0, 0, math.pi / 2),
-		gray
-	)
-	floor.Shape = Enum.PartType.Cylinder
+	CampBuilder.build()
 	for i = 1, plots.count do
 		local angle = (i - 1) * math.pi * 2 / plots.count
 		local outward = Vector3.new(math.sin(angle), 0, -math.cos(angle))
@@ -111,6 +154,7 @@ function PlotService.Start()
 		local origin = part(model, "Origin", Vector3.one, frame, gray)
 		origin.Transparency, origin.CanCollide, origin.CanQuery = 1, false, false
 		slots[i] = { frame = frame, origin = origin }
+		CampBuilder.entrance(i, model, frame)
 		part(
 			model,
 			"Platform",
@@ -189,11 +233,7 @@ function PlotService.Start()
 	Players.PlayerAdded:Connect(PlotService.assign)
 	Players.PlayerRemoving:Connect(function(player)
 		returned[player] = nil
-		local i = assignments[player]
-		if i then
-			slots[i].owner, assignments[player] = nil, nil
-			slots[i].origin:SetAttribute("MineFront", nil)
-		end
+		PlotService.release(player)
 	end)
 	for _, player in Players:GetPlayers() do
 		PlotService.assign(player)

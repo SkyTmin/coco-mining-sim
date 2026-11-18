@@ -329,7 +329,7 @@
       "fr"
     ],
     "autosaveSeconds": 120,
-    "profileVersion": 4,
+    "profileVersion": 5,
     "defaultAutoQuality": 2,
     "qualityLevels": 3,
     "maxExactInteger": 9007199254740991,
@@ -1466,5 +1466,76 @@
         "fire_ruby"
       ]
     }
-  ]
+  ],
+  "camp": {
+    "_note": "[решение] ТЗ-06 §4–7, §12.5. Размеры в studs, время в секундах.",
+    "rimMin": 60,
+    "rimMax": 90,
+    "rockMin": 5,
+    "rockMax": 20,
+    "centreRadius": 18,
+    "pathWidth": 6,
+    "archWidth": 50,
+    "archHeight": 24,
+    "lampRadius": 40,
+    "lampCount": 16,
+    "lampColor": "FFC98A",
+    "clockTime": 18.4,
+    "blendSeconds": 1,
+    "walkSpeed": 20,
+    "ambience": 0.15,
+    "scaleHeight": 25,
+    "scaleRadius": 2.5,
+    "scaleSeconds": 2,
+    "nameDistance": 120,
+    "partBudget": 2500,
+    "lightBudget": 16,
+    "tentCount": 3,
+    "rockColors": [
+      "625346",
+      "796859",
+      "8A7765",
+      "4D4642"
+    ],
+    "rankColors": [
+      "9D7756",
+      "AAA199",
+      "C99158",
+      "8FA5B6",
+      "D7E6EF",
+      "FFC555",
+      "76E6FE",
+      "805E98",
+      "FF784C"
+    ]
+  },
+  "social": {
+    "_note": "[вики] 19 §4 и ТЗ-06 §3, §8–12. Интервалы в секундах.",
+    "viewers": 4,
+    "guests": 2,
+    "positionSeconds": 0.5,
+    "spectatorExitBlocks": 2,
+    "guestExitBlocks": 3,
+    "reactionSeconds": 3,
+    "askSeconds": 10,
+    "challengeCooldown": 30,
+    "countdown": 3,
+    "scoreSeconds": 0.25,
+    "boardSeconds": 120,
+    "writeSeconds": 60,
+    "cardSeconds": 300,
+    "boardSize": 100,
+    "holoMin": 6,
+    "holoMax": 10,
+    "botSeconds": 0.6,
+    "botAcceptSeconds": 1,
+    "reactions": [
+      "like",
+      "fire",
+      "bolt",
+      "wow",
+      "party",
+      "gem"
+    ]
+  }
 }

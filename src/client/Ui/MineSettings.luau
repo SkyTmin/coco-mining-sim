@@ -27,7 +27,12 @@ function Settings.start(
 			end
 		end
 	)
-	local panel = modal.panel
+	local panel = Instance.new("ScrollingFrame")
+	panel.Name, panel.Position, panel.Size =
+		"Options", UDim2.fromScale(0.015, 0.07), UDim2.fromScale(0.97, 0.9)
+	panel.BackgroundTransparency, panel.BorderSizePixel, panel.ScrollBarThickness = 1, 0, 4
+	panel.AutomaticCanvasSize, panel.CanvasSize, panel.Parent =
+		Enum.AutomaticSize.Y, UDim2.fromOffset(0, 0), modal.panel
 	local languages, volumes, toggles = {}, {}, {}
 	local function change(key: string, value: any)
 		Profile.setPreference(key, value)
@@ -148,15 +153,53 @@ function Settings.start(
 			Sfx.play("ui_tap", cfg.dragGain)
 		end)
 	end
+	local social = {}
+	for i, key in { "guests", "hideOthersFx", "hideReactions" } do
+		local label = Candy.text(
+			panel,
+			key .. "Label",
+			UDim2.new(0.62, -cfg.padding, 0, cfg.button),
+			UDim2.fromOffset(cfg.padding, cfg.creditsY + (i - 1) * cfg.button),
+			cfg.font
+		)
+		local b = Candy.button(
+			panel,
+			key,
+			UDim2.new(0.34, 0, 0, cfg.button - 4),
+			UDim2.new(0.64, 0, 0, cfg.creditsY + (i - 1) * cfg.button),
+			"neutral",
+			cfg.font
+		)
+		social[key] = { label = label, b = b }
+		b.input.Activated:Connect(function()
+			if key == "guests" then
+				local modes = { "none", "friends", "all" }
+				change(key, modes[(table.find(modes, Profile.preference(key)) or 2) % 3 + 1])
+			else
+				change(key, not Profile.preference(key))
+			end
+		end)
+	end
 	local credits = Candy.text(
 		panel,
 		"Credits",
 		UDim2.new(1, -cfg.padding * 2, 0, cfg.creditsHeight),
-		UDim2.fromOffset(cfg.padding, cfg.creditsY),
+		UDim2.fromOffset(cfg.padding, cfg.creditsY + 3 * cfg.button),
 		cfg.smallFont
 	)
 	refresh = function()
 		modal.title.Text = translate("mine_settings")
+		for key, row in social do
+			row.label.Text = translate("camp_setting_" .. key)
+			local v = Profile.preference(key)
+			row.b.text.Text = translate(
+				if key == "guests"
+					then "camp_mode_" .. v
+					elseif v then "mine_settings_on"
+					else "mine_settings_off"
+			)
+			Candy.paint(row.b, if v == true then "confirm" else "neutral")
+		end
 		credits.Text = translate("credits_cracks")
 		for mode, control in qualities do
 			control.text.Text = translate("quality_" .. mode)
@@ -187,6 +230,9 @@ function Settings.start(
 			Candy.paint(control, if enabled then "confirm" else "neutral")
 		end
 	end
+	player:GetAttributeChangedSignal("OpenCampSettings"):Connect(function()
+		Candy.show(modal, true)
+	end)
 	gear.Activated:Connect(function()
 		if
 			player:GetAttribute("MineRebirthOpen") or player:GetAttribute("MineRebirthTransition")

@@ -25,6 +25,7 @@ type Session = {
 	canSave: boolean,
 	dirty: boolean,
 	saving: boolean,
+	releasing: boolean?,
 	replicateDue: boolean,
 	replicatedAt: number,
 	sent: { [string]: any }?,
@@ -54,7 +55,7 @@ local closingWrites = 0
 local shuttingDown = false
 local loadedHooks: { (Player) -> () } = {}
 local saveHooks: { (Player) -> () } = {}
-local releaseHooks: { (Player) -> () } = {}
+local releaseHooks: { (Player) -> (() -> ())? } = {}
 local store: DataStore? = nil
 
 function ProfileService.DefaultProfile(): Profile
@@ -203,13 +204,25 @@ local function releaseUnusedLock(dataStore: DataStore, player: Player, token: st
 	end
 end
 
+local botProfiles: { [any]: any } = {}
+function ProfileService.bot(actor: any, profile: any?)
+	if RunService:IsStudio() and actor:GetAttribute("CampBot") and actor.UserId < 0 then
+		botProfiles[actor] = profile
+	end
+end
 function ProfileService.Get(player: Player): Profile?
+	if botProfiles[player] then
+		return Persistence.copy(botProfiles[player])
+	end
 	local session = sessions[player]
 	return if session then Persistence.copy(session.profile) else nil
 end
 
 -- The callback must neither yield nor mutate its borrowed profile.
 function ProfileService.Read<T>(player: Player, fn: (Profile) -> T): T?
+	if botProfiles[player] then
+		return fn(botProfiles[player])
+	end
 	local session = sessions[player]
 	return if session then fn(session.profile) else nil
 end
@@ -232,7 +245,7 @@ function ProfileService.BeforeSave(fn: (Player) -> ())
 	table.insert(saveHooks, fn)
 end
 
-function ProfileService.BeforeRelease(fn: (Player) -> ())
+function ProfileService.BeforeRelease(fn: (Player) -> (() -> ())?)
 	table.insert(releaseHooks, fn)
 end
 
@@ -289,6 +302,10 @@ end
 
 -- Mutators run synchronously on the session profile.
 function ProfileService.Mutate(player: Player, fn: (Profile) -> ())
+	if botProfiles[player] then
+		fn(botProfiles[player])
+		return
+	end
 	local session = sessions[player]
 	if session then
 		fn(session.profile)
@@ -487,24 +504,37 @@ end
 
 local function beginRelease(player: Player)
 	local session = sessions[player]
-	if not session then
+	if not session or session.releasing then
 		return
 	end
+	session.releasing = true
+	closingWrites += 1
 	recordPlayTime(player, session, os.clock())
+	local prepared = session.canSave and prepareSave(player)
 	for _, hook in releaseHooks do
-		local ok = pcall(hook, player)
+		local ok, write = pcall(hook, player)
 		if not ok then
 			warn("[ProfileService] release hook failed")
+		elseif write then
+			-- Secondary stores have a captured snapshot and no longer hold up the primary lease.
+			closingWrites += 1
+			task.spawn(function()
+				local saved, problem = pcall(write)
+				if not saved then
+					warn("[ProfileService] secondary write: " .. tostring(problem))
+				end
+				closingWrites -= 1
+			end)
 		end
 	end
-	local prepared = session.canSave and prepareSave(player)
+
 	sessions[player] = nil
 	if not session.canSave then
+		closingWrites -= 1
 		return
 	end
 
 	-- Register before yielding so shutdown also awaits already-detached writes.
-	closingWrites += 1
 	task.spawn(function()
 		while session.saving do
 			task.wait()
@@ -542,7 +572,7 @@ function ProfileService.Start()
 		shuttingDown = true
 		local deadline = os.clock() + CLOSE_SECONDS
 		for player in sessions do
-			beginRelease(player)
+			task.spawn(beginRelease, player)
 		end
 		while (closingWrites > 0 or next(loading) ~= nil) and os.clock() < deadline do
 			task.wait(0.1)
@@ -580,7 +610,7 @@ function ProfileService.Start()
 		while not shuttingDown do
 			task.wait(Config.game.autosaveSeconds)
 			for player, session in sessions do
-				if not session.saving then
+				if not session.saving and not session.releasing then
 					task.spawn(save, player, session, false)
 				end
 			end

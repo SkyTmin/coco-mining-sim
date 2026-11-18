@@ -15,11 +15,17 @@ function Keys.add(profile: any, amount: number, seed: number): number
 	return awarded
 end
 
-function Keys.hit(profile: any, multiplier: number, seed: number): number
-	profile.keyHits += (1 + (profile.circle.cards.keys or 0) * Config.progress.cards.keys.per) * multiplier
+function Keys.credit(profile: any, hits: number, seed: number): number
+	profile.keyHits += hits
 	local count = math.floor((profile.keyHits + 1e-9) / Config.chests.keyHits)
 	profile.keyHits = math.max(0, profile.keyHits - count * Config.chests.keyHits)
 	return Keys.add(profile, count, seed)
 end
-
+function Keys.hit(profile: any, multiplier: number, seed: number): number
+	return Keys.credit(
+		profile,
+		(1 + (profile.circle.cards.keys or 0) * Config.progress.cards.keys.per) * multiplier,
+		seed
+	)
+end
 return Keys

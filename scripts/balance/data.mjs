@@ -299,3 +299,9 @@ export const donate = {
 	platform: ['региональные цены включены на все пассы и товары', 'подбор цен Roblox (Price Optimization) — после ≈ 1 000 игроков в день', 'Creator Rewards: сессии 10+ минут и причина зайти первой игрой дня (календарь, Золотой час); ссылки ютуберов приводят новых игроков — 35 % их покупок два месяца'],
 	never: 'Кубки, глубина, пропуск мира, места в топе, уровни карточек; фальшивые таймеры и скрытые шансы',
 };
+
+export const socialBalance = {
+  _note: '[вики] 18 §11 и 19 §4: одинаковая стена, доли гостя и дневные награды.',
+  guestCoins: 0.5, guestKeyHits: 0.5, duelSeconds: 60, duelWidth: 5, duelHeight: 3,
+  winMinutes: 5, loseMinutes: 1, keyChance: 0.1, rewardLimit: 10,
+};

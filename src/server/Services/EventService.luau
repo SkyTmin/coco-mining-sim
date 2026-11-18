@@ -130,7 +130,7 @@ function Service.Start()
 		local now = workspace:GetServerTimeNow()
 		for _, player in Players:GetPlayers() do
 			local s = Mine.get(player)
-			if not s then
+			if not s or player:GetAttribute("InDuel") then
 				continue
 			end
 			local e = Service.ensure(s, now)

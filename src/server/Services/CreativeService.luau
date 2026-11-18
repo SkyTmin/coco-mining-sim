@@ -52,10 +52,21 @@ function CreativeService.Start()
 	local creative = Remotes.event("Creative")
 	local toast = Remotes.event("Toast")
 	creative.OnServerEvent:Connect(function(player: Player, op: any, delta: any, b: any, c: any)
-		if player:GetAttribute("CreativeAllowed") ~= true or not withinRate(player) then
+		if
+			player:GetAttribute("InDuel")
+			or player:GetAttribute("CreativeAllowed") ~= true
+			or not withinRate(player)
+		then
 			return
 		end
-		if op == "toggle" then
+		if op == "camp.bots" and studio then
+			require(script.Parent.CampBotService).set(
+				delta,
+				require(Shared.Strings).localeOf(player)
+			)
+		elseif op == "camp.helper" and studio then
+			require(script.Parent.CampBotService).helper(player)
+		elseif op == "toggle" then
 			local enabled = player:GetAttribute("Creative") ~= true
 			player:SetAttribute("Creative", enabled)
 			toast:FireClient(player, if enabled then "creative_on" else "creative_off")

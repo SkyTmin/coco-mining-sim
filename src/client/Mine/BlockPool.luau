@@ -5,19 +5,30 @@ local capacity = Config.mine.window * Config.plots.frameWidth * Config.mine.heig
 local BlockPool = {}
 export type Pool = { take: () -> Part?, release: (Part) -> (), used: () -> number }
 
-function BlockPool.new(parent: Instance): Pool
+function BlockPool.new(parent: Instance, limit: number?): Pool
 	local free: { Part } = {}
-	for i = 1, capacity do
+	local maximum = limit or capacity
+	local allocated = 0
+	local function make()
 		local part = Instance.new("Part")
 		part.Name = "Ore"
 		part.Anchored, part.CanCollide, part.CanTouch, part.CastShadow = true, false, false, false
 		part.CanQuery = true
 		part.Material = Enum.Material.SmoothPlastic
-		free[i] = part
+		allocated += 1
+		return part
+	end
+	if not limit then
+		for i = 1, maximum do
+			free[i] = make()
+		end
 	end
 	return {
 		take = function()
 			local part = table.remove(free)
+			if not part and allocated < maximum then
+				part = make()
+			end
 			if part then
 				part.Parent = parent
 			end
@@ -28,7 +39,7 @@ function BlockPool.new(parent: Instance): Pool
 			table.insert(free, part)
 		end,
 		used = function()
-			return capacity - #free
+			return allocated - #free
 		end,
 	}
 end

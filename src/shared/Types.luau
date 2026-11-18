@@ -10,6 +10,9 @@ export type Settings = {
 	haptics: boolean,
 	effects: string,
 	autoQuality: number,
+	guests: string,
+	hideOthersFx: boolean,
+	hideReactions: boolean,
 }
 
 export type Circle = {
@@ -19,6 +22,12 @@ export type Circle = {
 }
 
 export type Profile = {
+	bestDepth: number,
+	likes: number,
+	duelWins: number,
+	weekBest: { week: string, depth: number },
+	likesGiven: { day: number, ids: { [string]: boolean } },
+	duelRewardsToday: { day: number, count: number },
 	cups: number,
 	rebirths: number,
 	circleDeepestPlate: number,
