@@ -112,6 +112,8 @@ local function startMine(depth: number, prepare: ((any) -> ())?)
 			end,
 		},
 		os = {
+			time = os.time,
+			date = os.date,
 			clock = function()
 				return now
 			end,

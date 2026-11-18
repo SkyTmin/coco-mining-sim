@@ -17,7 +17,14 @@ function Settings.parse(value: any): any?
 				and table.find({ "auto", "high", "normal", "low" }, v) ~= nil
 		elseif key == "autoQuality" then
 			valid = type(v) == "number" and v % 1 == 0 and v >= 1 and v <= Config.game.qualityLevels
-		elseif key == "haptics" or key == "reducedMotion" then
+		elseif key == "guests" then
+			valid = table.find({ "none", "friends", "all" }, v) ~= nil
+		elseif
+			key == "haptics"
+			or key == "reducedMotion"
+			or key == "hideOthersFx"
+			or key == "hideReactions"
+		then
 			valid = type(v) == "boolean"
 		else
 			return nil

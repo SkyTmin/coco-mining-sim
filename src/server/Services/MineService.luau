@@ -48,6 +48,7 @@ export type Session = {
 	perkFamily: string?,
 }
 
+local Camp = require(Shared.Play.CampProfile)
 local mine = Config.mine
 local DIG_GRACE = 0.3
 local DIG_SWEEP_INTERVAL = 0.1
@@ -262,6 +263,11 @@ local function expireDamage(s: Session, now: number)
 end
 
 function MineService.result(s: Session, res: any)
+	if res.delta > 0 then
+		ProfileService.Mutate(s.player, function(p)
+			Camp.advance(p, s.state.front, Camp.week(os.time()))
+		end)
+	end
 	PlotService.depth(s.plot, s.state.front)
 	if res.delta > 0 then
 		res.layers = layers(s, 0, mine.nearWindow)

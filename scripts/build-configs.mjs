@@ -7,7 +7,7 @@ import { validateStage5 } from "./stage5-config.mjs";
 import { familyConfig, familyArt, validateFamilies } from "./family-config.mjs";
 import {
   mine as balanceMine, worlds as balanceWorlds, oreSlots, hitSizes, rarities,
-  pickLevel, gold, cards, cardGrowth, cardEffects, rebirth, events, income,
+  pickLevel, gold, cards, cardGrowth, cardEffects, rebirth, events, income, socialBalance,
 } from "./balance/data.mjs";
 
 const whatIf = ["G", "V", "HARD", "CUPS", "ULT"].filter((name) => process.env[name]);
@@ -332,7 +332,7 @@ function withBalance(input) {
       })),
     }])),
   };
-  return { ...input, ...family, mine, worlds, pickaxes, progress, art,
+  return { ...input, ...family, social: { ...input.social, ...socialBalance }, mine, worlds, pickaxes, progress, art,
     rebirth: { ...input.rebirth, ...rebirth }, events: { ...input.events, ...events }, income };
 }
 
@@ -347,6 +347,7 @@ function duplicateBalance(input) {
   check(input, ["progress", "families", "familyRules", "chests"], "config");
   check(input.rebirth, Object.keys(rebirth).filter(k => !k.startsWith("_")), "rebirth");
   check(input.events, Object.keys(events).filter(k => !k.startsWith("_")), "events");
+  check(input.social, Object.keys(socialBalance).filter(k => !k.startsWith("_")), "social");
   check(input, ["income"], "config");
   check(input.mine, ["startWidth", "height", "maxHitsPerBlock", "passThrough", "plate", "ultCharge"], "mine");
   for (const [index, world] of (Array.isArray(input.worlds) ? input.worlds : []).entries()) {
@@ -366,7 +367,11 @@ function withoutNotes(value) {
     .map(([key, child]) => [key, withoutNotes(child)]));
 }
 
+import { validateCamp, validateSocial } from "./camp-config.mjs";
+
 const sections = [
+  { name: "camp", validate: validateCamp, emit: withoutNotes },
+  { name: "social", validate: validateSocial, emit: withoutNotes },
   {
     name: "game",
     validate(data) {
