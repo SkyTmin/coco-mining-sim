@@ -1,0 +1,153 @@
+{
+  "id": "silk_dragon",
+  "rarity": "rare",
+  "theme": "sky_islands",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    208,
+    160
+  ],
+  "thickness": 12,
+  "bodySize": 112,
+  "canvas": [
+    232,
+    184
+  ],
+  "anchor": [
+    53,
+    88
+  ],
+  "eye": null,
+  "primitives": 55,
+  "feet": [
+    112,
+    135
+  ],
+  "points": {
+    "head": [
+      94.07552355928307,
+      53.115368186250485
+    ],
+    "tail": [
+      7.1958428505312355,
+      37.30072755083995
+    ],
+    "finL": [
+      58.439298938976876,
+      38.52411600477879
+    ],
+    "finR": [
+      42.769698405523684,
+      58.77226276500031
+    ]
+  },
+  "layers": [
+    "bg",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "frame",
+    "over"
+  ],
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise bg/loop/(frame % 72).png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "happy": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tech_loop": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        31
+      ],
+      "shake": 0.15,
+      "stop": 0.04
+    },
+    "tech_lash": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [
+        15
+      ],
+      "shake": 0.09,
+      "stop": 0
+    },
+    "tech_kites": {
+      "seconds": 1.8,
+      "frames": 43,
+      "loop": false,
+      "hit": [
+        25,
+        29,
+        32
+      ],
+      "shake": 0.06,
+      "stop": 0
+    }
+  }
+}
