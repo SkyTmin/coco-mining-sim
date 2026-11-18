@@ -48,7 +48,20 @@ export async function verifyRelease(
   assert.equal(meta.id, id);
   assert.equal(meta.fps, 24);
   if (c.motion) {
-    assert.equal(meta.motion.life.stride, c.motion.stride);
+    if (c.behavior) {
+      assert.deepEqual(meta.motion.life, {
+        behavior: 'behavior.json',
+        seed: c.behavior.seed,
+        seconds: c.behavior.previewSeconds,
+      });
+      assert.deepEqual(
+        JSON.parse(readFileSync(join(output, 'behavior.json'), 'utf8')),
+        c.behavior,
+        id + ' exported behavior',
+      );
+    } else {
+      assert.equal(meta.motion.life.stride, c.motion.stride);
+    }
     assert.equal(Object.keys(meta.motion.directions).length, 8);
     assert.ok(c.animations.life);
   }
@@ -243,6 +256,14 @@ export async function verifyRelease(
         checkedFrames++;
       }
     }
+  }
+  if (c.behavior) {
+    const life = readFileSync(join(output, 'gif', 'painting-life.gif'));
+    assert.ok(
+      life.equals(readFileSync(join(output, 'gif', 'paintings.gif'))),
+      id + ' seeded preview',
+    );
+    gifCount++;
   }
   const turn = new omggif.GifReader(
     readFileSync(join(output, 'gif', 'turn.gif')),
