@@ -1,3 +1,5 @@
+import { withTechniques } from '../technique';
+import keys from './crater_titan-keys';
 import { textureFigure } from './relief-material';
 import { strideFoot } from '../motion';
 import route from './crater_titan-life';
@@ -10,6 +12,26 @@ import type { BodyFrame, Creature, Variant, XY } from '../types';
 const anchor: XY = [80, 119];
 const scale = 1.14;
 const controls = {
+  yaw: 0,
+  hipSide: 0,
+  hipForward: 0,
+  incline: 0,
+  bank: 0,
+  neckTilt: 0,
+  reach: 0,
+  spread: 0,
+  backSpread: 0,
+  knuckle: 0,
+  stand: 0,
+  advance: 0,
+  split: 0,
+  shellSide: 0,
+  emerge: 0,
+  shell: 0,
+  crack: 0,
+  heart: 0,
+  expand: 0,
+  compact: 0,
   vent: 0,
   arm: 0,
   tip: 0,
@@ -49,9 +71,7 @@ function strataRock(F: F3, golden: boolean, lighter = false, phase = 0): Mat {
       // Thin sediment bands and isolated quartz inclusions stay embedded in the turning rock.
       const course = Math.floor((z + 0.1 * x) / 5.8);
       const seamX =
-        x * 0.35 +
-        y * 0.9 +
-        4 * Math.sin(Math.floor(z / 3) * 0.7 + course * 0.3);
+        x * 0.35 + y * 0.9 + 4 * Math.sin(Math.floor(z / 3) * 0.7 + course * 0.3);
       const hotVein = Math.abs(Math.sin(seamX * 0.16 + course * 1.07));
       if (phase > 0.03 && z < phase * 103) {
         const transverse = Math.abs(
@@ -151,19 +171,20 @@ export function craterTitanFrame(
     anim === 'look' ? Math.sin(Math.PI * Math.min(1, t / 1.5)) ** 2 : 0;
   const phase = anim === 'idle-f2' ? 1 : k.phase;
   const golden = variant === 'gold';
-  const F = F3.yaw(0.77 + (TAU * side) / 16);
+  const heading = 0.77 + (TAU * side) / 16 + k.yaw;
+  const F = F3.yaw(heading);
   const torso = F.at(
-    -2,
-    gait * 2,
+    -2 + k.hipForward,
+    gait * 2 + k.hipSide,
     42 + 1.6 * breath - (sleeping ? 13 : 0) - 13 * k.crouch,
   )
     .turn(0.24 * k.twist + 0.18 * k.sweep + 0.045 * gait)
-    .pitch(0.12 + 0.13 * k.crouch)
-    .roll(0.025 * gait);
+    .pitch(0.12 + 0.13 * k.crouch + k.incline)
+    .roll(0.025 * gait + k.bank);
   const head = torso
     .at(2, 0, 30)
     .turn(headLead + 0.33 * look + 0.21 * k.glance)
-    .pitch(-0.13 - 0.12 * look);
+    .pitch(-0.13 - 0.12 * look + k.neckTilt);
   const rock = strataRock(F, golden, false, phase),
     plane = strataRock(F, golden, true, phase);
   const dark: Mat = { T: golden ? copper : lip };
@@ -191,11 +212,11 @@ export function craterTitanFrame(
     if (walk && step.planted) planted.push(d === 1 ? 'footR' : 'footL');
     const lift =
       (walk ? step.lift * 8 : 0) + (d === 1 ? Math.max(0, k.foot) * 26 : 0);
-    const toe = F.p(5 + stride, d * 19, 5 + lift),
+    const toe = F.p(5 + stride + d * k.advance, d * (19 + k.stand), 5 + lift),
       hip = torso.p(-1, d * 12, -8);
     const knee = ik(hip, toe, 21, 20, F.v(0.8, d * 0.25, 0.05));
     r.cap(hip, knee, 8, 9, dark).cap(knee, toe, 8, 6.5, rock);
-    const boot = F.at(7 + stride, d * 20, 6 + lift);
+    const boot = F.at(7 + stride + d * k.advance, d * (20 + k.stand), 6 + lift);
     ledge(r, boot, 0, 0, 0, 13, 8.8, 7, plane);
     r.ell(boot, [6, -3, -2], [8.5, 5, 3.3], dark).ell(
       boot,
@@ -203,14 +224,12 @@ export function craterTitanFrame(
       [8.4, 4.9, 3.2],
       dark,
     );
-    r.ell(
-      F3.yaw(0.77 + (TAU * side) / 16, knee),
-      [0, 0, 0],
-      [10, 8.8, 7],
-      plane,
-    );
+    r.ell(F3.yaw(heading, knee), [0, 0, 0], [10, 8.8, 7], plane);
     loc[d === 1 ? 'footR' : 'footL'] = boot.p(13, 1, -4);
-    if (d === 1) loc.foot = loc.footR;
+    if (d === 1) {
+      loc.foot = boot.p(11, 1, -6);
+      loc.footFloor = [loc.foot[0], loc.foot[1], 0];
+    }
   }
   // Asymmetric stepped shield across a deep, narrower belly.
   r.ell(torso, [0, 0, -3], [20, 22, 21], dark);
@@ -225,8 +244,15 @@ export function craterTitanFrame(
       b = sternum.p(3.7, d * 6, 1),
       c = sternum.p(2, d * 4, -z);
     r.line(a, b, magma, 0.78).line(b, c, magma, 0.8);
-    if (phase > 0.14 && d === 1)
-      r.line(b, sternum.p(2.2, d * 9, 3), white, 0.7);
+    if (phase > 0.14 && d === 1) r.line(b, sternum.p(2.2, d * 9, 3), white, 0.7);
+  }
+  if (k.heart > 0) {
+    for (const d of [-1, 1]) {
+      const half = sternum.at(6, d * (3 + 5 * k.heart), 3);
+      ledge(r, half, 0, 0, 0, 3.4, 4.8, 9, plane);
+      r.line(half.p(3, -d * 3, -6), half.p(3, -d * 3, 7), white, 0.85, 1.7);
+    }
+    loc.chest = sternum.p(7, 0, 3);
   }
   // Ventral belt, layered around the waist. A chipped hanging plate breaks the belly outline.
   for (const d of [-1, 1]) {
@@ -257,32 +283,38 @@ export function craterTitanFrame(
   const limb = new Rig();
   for (const d of [-1, 1]) {
     const lead = d === 1;
-    const raise = lead ? k.arm : k.tip;
+    const lifted = lead ? k.arm : k.tip;
+    // Turn the high back-swing around the shoulder when throwing away from the viewer.
+    // The far fist travels forward in depth instead of stacking above the front toes.
+    const view = (side * TAU) / 16;
+    const farSwing =
+      anim === 'tech_fist'
+        ? (1 - Math.cos(view)) * 0.5
+        : anim === 'tech_pillar'
+          ? Math.max(0, Math.sin(view))
+          : 0;
+    const foldedArm = Math.max(0, lifted - 1) * farSwing;
+    const raise = lifted - foldedArm * 0.79;
     const sh = torso.p(-1, d * (lead ? 29 : 24), 19);
     const hand = F.p(
-      8 + raise * 17 + (lead ? 27 * k.sweep : 0),
-      d * (lead ? 46 : 40) - (lead ? 23 * k.sweep : 0),
+      8 + raise * 17 + (lead ? 27 * k.sweep + k.reach : 0) + foldedArm * 5,
+      d * (lead ? 46 + k.spread : 40 + k.backSpread) - (lead ? 23 * k.sweep : 0),
       11 +
         48 * raise +
         (sleeping ? -3 : 0) +
         (lead ? 1.4 : 1.0) * Math.sin(loop - 0.38 * d) +
         gait * d * 3,
     );
+    const wristRoll = d * (-0.14 - 0.27 * raise);
+    if (lead && k.knuckle) {
+      const contact = F3.yaw(heading, hand).roll(wristRoll).p(8, 0, -6);
+      hand[2] -= contact[2] * k.knuckle;
+    }
     const el = ik(sh, hand, 28, 27, F.v(-0.8, d * 0.75, -0.15));
     const armRig = lead ? limb : r;
     armRig.cap(sh, el, 12, 8.2, dark).cap(el, hand, 9, 6.5, rock);
-    ledge(
-      armRig,
-      F3.yaw(0.77 + (TAU * side) / 16, sh),
-      0,
-      0,
-      1,
-      14,
-      lead ? 16 : 13,
-      10,
-      plane,
-    );
-    const shoulder = F3.yaw(0.77 + (TAU * side) / 16, sh);
+    ledge(armRig, F3.yaw(heading, sh), 0, 0, 1, 14, lead ? 16 : 13, 10, plane);
+    const shoulder = F3.yaw(heading, sh);
     armRig.ell(shoulder, [-1, -d * 3, 8], [5.0, 3.6, 1.55], glass);
     armRig.poly(
       [
@@ -329,14 +361,12 @@ export function craterTitanFrame(
       1,
     );
     armRig.dot(orebed.p(-0.4, -0.7, 1.5), hx('#f1ddae'), 0, 1, 1.4);
-    const fore = F3.yaw(0.77 + (TAU * side) / 16, vlerp(el, hand, 0.55));
+    const fore = F3.yaw(heading, vlerp(el, hand, 0.55));
     armRig.ell(fore, [0, 0, 1], [11, 10, 7], dark, (q) => q[2] > 0.65);
     armRig.ell(fore, [0, d * 5, 2.4], [6.3, 4.8, 2], plane);
     armRig.cap(fore.p(3, d * 6, 4), fore.p(-4, d * 8, 3.3), 0.67, 0.95, ore);
     armRig.spike(el, F.v(-0.73, d * 0.45, 0.52), 6, 2.6, glass, 3);
-    const palm = F3.yaw(0.77 + (TAU * side) / 16, hand).roll(
-      d * (-0.14 - 0.27 * raise),
-    );
+    const palm = F3.yaw(heading, hand).roll(d * (-0.14 - 0.27 * raise));
     ledge(armRig, palm, 0, 0, 1, 9.5, lead ? 12 : 9, 8, plane);
     for (let j = -1; j <= 1; j++) {
       const curl = 0.5 + 0.5 * Math.sin(loop - 0.5 * d - j * 0.35);
@@ -364,7 +394,10 @@ export function craterTitanFrame(
         ash,
       );
     }
-    if (lead) loc.fist = palm.p(8, 0, -4);
+    if (lead) {
+      loc.fist = palm.p(8, 0, -6);
+      loc.fistFloor = [loc.fist[0], loc.fist[1], 0];
+    }
   }
   r.prims.push(...limb.prims);
   // Jagged backing spurs, lower on the nearer shoulder, keep both sides legible in profile.
@@ -493,9 +526,107 @@ export function craterTitanFrame(
                 ? 'pumice'
                 : undefined,
   );
+  // The final three frames of the break uncover the moving rig between the two halves.
+  if (anim === 'show' && k.shell > 0 && k.shell < 1) {
+    const opening = 1 - k.shell;
+    scaleFigure(r, loc, 0.46 + 0.54 * opening, 0.29 + 0.71 * opening);
+    for (const d of [-1, 1]) {
+      const shell = F.at(-1, d * (7 + 13 * opening), 8).roll(d * opening * 0.67);
+      ledge(r, shell, 0, 0, 0, 20 - 7 * opening, 8, 12 - 5 * opening, rock);
+      const lip = shell.at(0, -d * 6, 4);
+      r.poly(
+        [
+          lip.p(-14, 0, 5),
+          lip.p(-5, 0, 8),
+          lip.p(1, 0, 4),
+          lip.p(9, 0, 6),
+          lip.p(13, 0, -2),
+          lip.p(-11, 0, -3),
+        ],
+        hot,
+      );
+    }
+  }
+  if (anim === 'show' && k.shell >= 1) {
+    const shell = F.at(0, 0, 8).roll(k.crack * 0.12);
+    const size = 1 + k.crack * 0.36 + k.split * 0.64;
+    r.prims.length = 0;
+    ledge(r, shell, 0, 0, 0, 16 * size, 11 * size, 11 * size, rock);
+    ledge(r, shell, -2, 0, 5, 10 * size, 9 * size, 5 * size, plane);
+    if (k.crack > 0) {
+      const a = shell.p(-4, -3, 10 * size),
+        b = shell.p(3, -2, 8 * size),
+        c = shell.p(9, 1, 2 * size);
+      r.line(a, b, magma, 0.8, 1.5).line(b, c, magma, 0.8, 1.5);
+      if (k.crack > 0.45) r.line(b, shell.p(6, 7, 3), white, 0.8, 1.4);
+    }
+    loc.vent = shell.p(3, -2, 8 * size);
+    if (k.split > 0) {
+      const flake = shell.at(-3, 6 * size, 7 * size).roll(-k.split * 0.62);
+      ledge(r, flake, 1, 0, 0, 12 * size, 5 * size, 5 * size, plane);
+      r.poly(
+        [
+          shell.p(-10, 0, 8 * size),
+          shell.p(8, 1, 7 * size),
+          shell.p(4, 6, 8 * size),
+          shell.p(-8, 5, 10 * size),
+        ],
+        hot,
+      );
+    }
+    loc.fist = shell.p(9, 1, 2 * size);
+    loc.eye = loc.vent;
+  }
+  if (anim === 'show' && k.shellSide > 0) {
+    // The near half remains wedged under the actual knuckles as the dome breaks.
+    const n = k.shellSide,
+      h = F3.yaw(heading, loc.fist).at(2, n * 4, -2);
+    const floor = F.at(8, 35, 0);
+    const footA = floor.p(-10, -4, 1),
+      footB = floor.p(12, 4, 1);
+    const corner = h.p(-10, 2, 4),
+      edge = h.p(4, 3, -1),
+      chipped = h.p(-4, 6, -3);
+    r.poly([footA, footB, edge, chipped, corner], rock);
+    r.poly([corner, chipped, edge, h.p(1, -1, -3), h.p(-9, -2, 0)], hot);
+    const far = F.at(-15, -26, 7).roll(-n * 0.7);
+    ledge(r, far, 0, 0, 0, 19 * n + 4, 8 * n + 2, 14 * n + 1, plane);
+    r.spike(far.p(-8, -2, 4), far.v(-0.5, 0.2, 1), 16 * n, 5 * n, rock, 4);
+    const crown = F3.yaw(heading, loc.vent).at(-9, -6, -3);
+    if (n > 0.5)
+      r.poly(
+        [
+          crown.p(-10, -3, 2),
+          crown.p(-3, 0, 9 * n),
+          crown.p(2, 0, 4),
+          crown.p(5, 2, -4),
+          crown.p(-10, 0, -4),
+        ],
+        plane,
+      );
+  }
   r.eye = loc.eye;
-  scaleFigure(r, loc, scale, 1.28);
+  scaleFigure(
+    r,
+    loc,
+    scale * (1 - 0.36 * k.emerge),
+    1.28 * (1 - 0.44 * k.emerge),
+  );
   const body = projectFigure(r, 160, anchor, loc, undefined, 3.8);
+  if (anim === 'tech_pillar') {
+    // Fixed holes in the field move with the stage origin and stay put under the articulated body.
+    const holes: XY[] = [
+      [-39, 14],
+      [16, -15],
+      [79, -28],
+    ];
+    holes.forEach(([x, y], i) => {
+      body.points['pillar' + i] = [
+        body.anchor[0] + x - k.dx,
+        body.anchor[1] + y - k.dy,
+      ];
+    });
+  }
   if (phase > 0.03 && body.lit) {
     // The colour pass has already depth-tested the veins. Only exposed lava emits light.
     const pixels = body.px.data,
@@ -527,8 +658,8 @@ export function craterTitanFrame(
     over,
     dx: k.dx,
     dy: k.dy,
-    sx: k.sx,
-    sy: k.sy,
+    sx: k.sx + k.expand,
+    sy: k.sy + k.compact,
     rot: k.rot,
     flash: k.flash || undefined,
     ghost:
@@ -545,13 +676,22 @@ const base = {
   turn: { seconds: 4, loop: true },
   look: { seconds: 1.5 },
 };
-export default {
+const creature: Creature = {
   id: 'crater_titan',
   rarity: 'mythic',
   theme: 'volcano',
   animations: { ...base, ...actions },
   effects,
   frame(anim, t, side, variant, motion) {
+    if (motion?.techniquePose)
+      return craterTitanFrame(
+        anim,
+        t,
+        side,
+        variant,
+        motion.techniquePose,
+        motion.headSide,
+      );
     const last = actions[anim]?.seconds;
     if (last && anim !== 'away' && t * 24 >= Math.round(last * 24) - 1)
       return craterTitanFrame(
@@ -569,4 +709,5 @@ export default {
       motion?.headSide,
     );
   },
-} satisfies Creature;
+};
+export default withTechniques(creature, keys);

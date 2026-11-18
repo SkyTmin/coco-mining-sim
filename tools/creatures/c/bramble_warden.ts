@@ -3,10 +3,12 @@ import { F3, Rig, type Mat, type V3 } from '../rig/f15-rig';
 import { hx, tn, TAU } from '../kit/f11-mobkit';
 import { everyday, life, projectFigure, scaleFigure } from '../rig/figure';
 import plan from './bramble_warden-life';
+import { withTechniques } from '../technique';
+import keys from './bramble_warden-keys';
 import { strideFoot } from '../motion';
 import { forestMaterials, addBriar, visorGrain } from './bramble-bark';
 import { ramp } from './engraving';
-import { animations, pose, effects } from './bramble_warden-actions';
+import { animations, pose, effects, props } from './bramble_warden-actions';
 import type { Creature, Variant } from '../types';
 
 export interface BramblePose {
@@ -25,6 +27,7 @@ export interface BramblePose {
   squint?: number;
   glow?: number;
   ghost?: number;
+  spineAim?: number;
 }
 export function buildFrame(
   anim: string,
@@ -50,6 +53,16 @@ export function buildFrame(
         z * 11,
       ),
   };
+  if (anim === 'tech_volley' && keys.tech_volley.interpolate) {
+    // The second and third volleys kick back through the open launch thorn and shoulder.
+    const tick = t * 24;
+    const recoil = [22, 26].reduce((total, pulse) => {
+      const d = tick - pulse;
+      return total + (d > -2 && d < 2 ? Math.cos(d * Math.PI / 4) ** 2 : 0);
+    }, 0);
+    if (recoil) a = {...a, spineAim:(a.spineAim ?? 0) - recoil * .26,
+      pitch:(a.pitch ?? 0) - recoil * .092, lift:(a.lift ?? 0) - recoil * 2.5};
+  }
   const coil = Math.max(a.coil ?? 0, l.hatch * 0.95),
     flare = (a.flare ?? 0) + 0.5 * l.happy;
   const breath = Math.sin(l.q) * 0.85;
@@ -150,7 +163,7 @@ export function buildFrame(
       visorGrain(h, horn),
       0.55,
     );
-    const eye = h.p(7.3, s * 10.7, 1.55);
+    const eye = h.p(7.3, s * 11.8, 1.55);
     const shut = l.blink || (a.squint ?? 0) > 0.8;
     const corner = h.p(12, s * 8.5, 1.65);
     r.cap(eye, corner, 1.9, 1.25, {
@@ -158,9 +171,9 @@ export function buildFrame(
     });
     r.line(eye, corner, hx(shut ? '#4b393b' : '#ffb846'), 0, 2.4);
     if (!shut) {
-      r.dot(h.p(8.4, s * 10.65, 1.72), hx('#e99835'), 0, 2.5, 2.4);
-      r.dot(h.p(8.6, s * 10.68, 1.72), hx('#422a35'), 0, 1.25, 2.6);
-      r.dot(h.p(7.8, s * 10.83, 2.2), hx('#fff3ae'), 0, 1, 2.8);
+      r.dot(h.p(8.4, s * 12.0, 1.72), hx('#ffb938'), 0, 3.3, 2.4);
+      r.dot(h.p(8.6, s * 12.08, 1.72), hx('#382435'), 0, 1.45, 2.6);
+      r.dot(h.p(7.6, s * 12.2, 2.5), hx('#fff2ad'), 0, 1.35, 2.8);
     }
     if (s === 1) r.eye = eye;
   }
@@ -177,10 +190,12 @@ export function buildFrame(
             );
       const wave = 1.5 * Math.sin(l.q - i * 0.8) + 4.2 * flare;
       const base = b.p(x, s * sideBand, z - 2);
+      const shot = anim === 'tech_volley' && i === 3 && s === -1;
+      const aim = shot ? (a.spineAim ?? 0) : 0;
       const tip = b.p(
-        x - 7.4 + 2.5 * flare,
+        x - 7.4 + 2.5 * flare + 18 * aim,
         s * (sideBand + 3.6),
-        z + 7.1 + wave,
+        z + 7.1 + wave + 7 * Math.abs(aim),
       );
       r.ball(base, 3.45, soil);
       if (i === 1 && s === 1) {
@@ -188,7 +203,10 @@ export function buildFrame(
         r.cap(base, blunt, 3, 1.6, horn);
         r.dot(blunt, cambium.T[3], 0, 1.45, 0.9);
       } else r.cap(base, tip, 3, 0.25, horn);
-      if (i === 2 && s === 1) spine = tip;
+      if (anim === 'tech_volley' ? shot : i === 2 && s === 1) {
+        spine = tip;
+        if (shot) ground.spineBase = base;
+      }
     }
   addBriar(r, b, h, materials, l.q);
   const points = { ...ground, snout: h.p(20, 0, -2), spine };
@@ -210,14 +228,15 @@ const creature: Creature = {
   theme: 'root_edge',
   animations: { ...everyday, ...animations },
   effects,
+  props,
   frame: (anim, t, side, variant, steer) =>
     buildFrame(
       anim,
       t,
       side,
       variant,
-      pose(anim, t),
+      steer?.techniquePose ?? pose(anim, t),
       steer ? ((((steer.headSide - side + 24) % 16) - 8) * Math.PI) / 8 : 0,
     ),
 };
-export default creature;
+export default withTechniques(creature, keys);

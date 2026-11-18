@@ -33,8 +33,12 @@
       41.70958533632586
     ],
     "tail": [
-      12.744305118400924,
-      35.422067967068955
+      3.8741649494257757,
+      39.20612158020197
+    ],
+    "tailFloor": [
+      3.8741649494257757,
+      98.04139225661402
     ],
     "finL": [
       62.922968320939475,
@@ -98,7 +102,7 @@
           "lift": 2
         },
         {
-          "seconds": 1.8,
+          "seconds": 1.7916666666666667,
           "at": [
             0.5096153846153846,
             0.875
@@ -144,7 +148,7 @@
           "lift": 4
         },
         {
-          "seconds": 1.1,
+          "seconds": 1.0833333333333333,
           "at": [
             0.6057692307692307,
             0.9625
@@ -294,6 +298,26 @@
     "frame",
     "over"
   ],
+  "showreel": [
+    {
+      "name": "tech_loop",
+      "start": 0,
+      "frames": 48,
+      "end": 54
+    },
+    {
+      "name": "tech_lash",
+      "start": 54,
+      "frames": 26,
+      "end": 86
+    },
+    {
+      "name": "tech_kites",
+      "start": 86,
+      "frames": 43,
+      "end": 135
+    }
+  ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
   "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
   "animations": {
@@ -366,10 +390,10 @@
       "frames": 48,
       "loop": false,
       "hit": [
-        31
+        26
       ],
       "shake": 0.15,
-      "stop": 0.04
+      "stop": 0.06
     },
     "tech_lash": {
       "seconds": 1.1,
@@ -379,25 +403,50 @@
         15
       ],
       "shake": 0.09,
-      "stop": 0
+      "stop": 0.04
     },
     "tech_kites": {
       "seconds": 1.8,
       "frames": 43,
       "loop": false,
       "hit": [
+        21,
+        21,
         25,
         29,
-        32
+        33
       ],
       "shake": 0.06,
-      "stop": 0
+      "stop": 0.04
     },
     "life": {
-      "seconds": 15,
-      "frames": 360,
+      "seconds": 14.975000000000001,
+      "frames": 359,
       "loop": true,
-      "hit": [],
+      "hit": [
+        141,
+        141,
+        145,
+        149,
+        153,
+        279
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "showreel": {
+      "seconds": 5.625,
+      "frames": 135,
+      "loop": true,
+      "hit": [
+        26,
+        69,
+        107,
+        107,
+        111,
+        115,
+        119
+      ],
       "shake": 0,
       "stop": 0
     },

@@ -32,9 +32,17 @@
       132.69877781840557,
       110.83370661808232
     ],
+    "footLGround": [
+      132.69877781840557,
+      112.09466661808231
+    ],
     "footR": [
       43.67779343549587,
       130.37903954385231
+    ],
+    "footRGround": [
+      43.67779343549587,
+      131.63999954385233
     ],
     "mouth": [
       97.58602827884467,
@@ -51,6 +59,10 @@
     "staffFoot": [
       28.758051464573377,
       131.92437498562344
+    ],
+    "staffHand": [
+      46.77693197453008,
+      93.74151203283265
     ]
   },
   "motion": {
@@ -84,10 +96,10 @@
           "anim": "walk"
         },
         {
-          "seconds": 1.4,
+          "seconds": 1.4166666666666667,
           "at": [
-            0.2890625,
-            0.7932692307692307
+            0.3671875,
+            0.7259615384615384
           ],
           "anim": "tech_staff",
           "side": 0
@@ -95,8 +107,8 @@
         {
           "seconds": 1.38,
           "at": [
-            0.2890625,
-            0.7932692307692307
+            0.3671875,
+            0.7259615384615384
           ],
           "anim": "walk"
         },
@@ -109,13 +121,13 @@
           "anim": "walk"
         },
         {
-          "seconds": 1.5,
+          "seconds": 0.9166666666666666,
           "at": [
             0.484375,
             0.7884615384615384
           ],
-          "anim": "look",
-          "side": 1
+          "anim": "tech_tongue",
+          "side": 0
         },
         {
           "seconds": 2,
@@ -280,6 +292,38 @@
     "frame",
     "over"
   ],
+  "showreel": [
+    {
+      "name": "tech_croak",
+      "start": 0,
+      "frames": 48,
+      "end": 54
+    },
+    {
+      "name": "tech_tongue",
+      "start": 54,
+      "frames": 22,
+      "end": 82
+    },
+    {
+      "name": "tech_staff",
+      "start": 82,
+      "frames": 34,
+      "end": 122
+    },
+    {
+      "name": "tech_leap",
+      "start": 122,
+      "frames": 43,
+      "end": 171
+    },
+    {
+      "name": "tech_spores",
+      "start": 171,
+      "frames": 48,
+      "end": 225
+    }
+  ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
   "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
   "animations": {
@@ -382,34 +426,35 @@
       "stop": 0.04
     },
     "tech_tongue": {
-      "seconds": 0.9,
+      "seconds": 0.9166666666666666,
       "frames": 22,
       "loop": false,
       "hit": [
-        11
+        13
       ],
       "shake": 0.08,
-      "stop": 0
+      "stop": 0.04
     },
     "tech_staff": {
-      "seconds": 1.4,
+      "seconds": 1.4166666666666667,
       "frames": 34,
       "loop": false,
       "hit": [
         20
       ],
       "shake": 0.12,
-      "stop": 0
+      "stop": 0.06
     },
     "tech_leap": {
-      "seconds": 1.8,
+      "seconds": 1.7916666666666667,
       "frames": 43,
       "loop": false,
       "hit": [
-        29
+        27,
+        27
       ],
       "shake": 0.22,
-      "stop": 0.05
+      "stop": 0.06
     },
     "tech_spores": {
       "seconds": 2,
@@ -417,25 +462,48 @@
       "loop": false,
       "hit": [
         24,
-        31,
-        38
+        30,
+        37
+      ],
+      "shake": 0,
+      "stop": 0.04
+    },
+    "phase": {
+      "seconds": 2.2083333333333335,
+      "frames": 53,
+      "loop": false,
+      "hit": [
+        27
+      ],
+      "shake": 0,
+      "stop": 0.04
+    },
+    "life": {
+      "seconds": 14.433333333333334,
+      "frames": 346,
+      "loop": true,
+      "hit": [
+        98,
+        181,
+        216
       ],
       "shake": 0,
       "stop": 0
     },
-    "phase": {
-      "seconds": 2.2,
-      "frames": 53,
-      "loop": false,
-      "hit": [],
-      "shake": 0,
-      "stop": 0
-    },
-    "life": {
-      "seconds": 15,
-      "frames": 360,
+    "showreel": {
+      "seconds": 9.375,
+      "frames": 225,
       "loop": true,
-      "hit": [],
+      "hit": [
+        26,
+        67,
+        102,
+        149,
+        149,
+        195,
+        201,
+        208
+      ],
       "shake": 0,
       "stop": 0
     },

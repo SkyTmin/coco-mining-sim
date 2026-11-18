@@ -3,6 +3,8 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PNG } from 'pngjs';
+import { createCanvas } from '@napi-rs/canvas';
+import { reelChapters } from './motion';
 import { Px } from './rig/px';
 import { compose } from './engine';
 import { indexed } from './render-io';
@@ -12,7 +14,12 @@ import { sizes } from './types';
 import type { RGBA } from './rig/f15-rig';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const output = join(here, '../../docs/reports/creatures/pilot-2');
+const techniques = process.argv.includes('--techniques');
+const output = join(
+  here,
+  '../../docs/reports/creatures',
+  techniques ? 'pilot-3' : 'pilot-2',
+);
 const ids = [
   'bramble_warden',
   'gem_beetle',
@@ -82,7 +89,56 @@ class PreviewGif {
     writeFileSync(path, this.encoder.bytesView());
   }
 }
+function reelCaption(
+  width: number,
+  title: string,
+  number: number,
+  total: number,
+) {
+  const canvas = createCanvas(width, 20);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#25222a';
+  ctx.fillRect(0, 0, width, 20);
+  ctx.fillStyle = '#e3bc78';
+  ctx.font = 'bold 11px DejaVu Sans';
+  ctx.fillText(number + ' / ' + total, 5, 14);
+  ctx.fillStyle = '#f3edde';
+  ctx.font = '11px DejaVu Sans';
+  ctx.fillText(title, 43, 14, width - 47);
+  const p = new Px(width, 20);
+  p.data.set(ctx.getImageData(0, 0, width, 20).data);
+  return p;
+}
+function writeReel({ c, s, b }: Awaited<ReturnType<typeof loadPainting>>) {
+  const [w, , , border] = sizes[c.rarity];
+  const width = w + 2 * border;
+  const dir = join(output, c.id);
+  mkdirSync(dir, { recursive: true });
+  const reel = new PreviewGif();
+  const chapters = reelChapters(c);
+  const captions = chapters.map(({ name }, j) =>
+    reelCaption(width, c.techniques![name].title, j + 1, chapters.length),
+  );
+  let chapter = 0;
+  for (let n = 0; n < Math.round(c.animations.showreel.seconds * 24); n++) {
+    if (n >= chapters[chapter].end) chapter++;
+    const picture = compose(c, s, b, 'showreel', n / 24).picture;
+    const sheet = new Px(picture.w, picture.h + captions[chapter].h);
+    copy(sheet, picture, 0, 0);
+    copy(sheet, captions[chapter], 0, picture.h);
+    reel.add(sheet, n);
+  }
+  reel.write(join(dir, 'painting-showreel.gif'));
+}
 async function main() {
+  const reelArg = process.argv.indexOf('--reel');
+  if (reelArg !== -1) {
+    const id = process.argv[reelArg + 1];
+    if (!techniques || !ids.includes(id))
+      throw Error('Usage: gallery.ts --techniques --reel ID');
+    writeReel(await loadPainting(id));
+    return;
+  }
   const subjects = await Promise.all(ids.map(loadPainting));
   const durations = subjects.map(({ c }) =>
     Math.round(c.animations.life.seconds * 24),
@@ -108,7 +164,7 @@ async function main() {
       // original frame timing in each individual preview and the release master.
       const wallFrame = Math.floor((n * durations[i]) / wallFrames);
       const result = compose(c, s, b, 'life', wallFrame / 24, 0, 'normal');
-      if (n < durations[i]) {
+      if (!techniques && n < durations[i]) {
         const individual =
           wallFrame === n
             ? result
@@ -137,7 +193,7 @@ async function main() {
       });
     }
     wallGif.add(wall, n);
-    if (n === 0) {
+    if (!techniques && n === 0) {
       const row = images.map((x) => x.layers.frame),
         frameSheet = matte(sum(widths) + 12 * 8, 278, paper);
       const positions = centered(row, 12, frameSheet.w);
@@ -155,6 +211,10 @@ async function main() {
     }
   }
   wallGif.write(join(output, 'paintings.gif'));
+  if (techniques) {
+    for (const subject of subjects) writeReel(subject);
+    return;
+  }
   singles.forEach((gif, i) => {
     const dir = join(output, ids[i]);
     mkdirSync(dir, { recursive: true });

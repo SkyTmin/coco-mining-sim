@@ -37,16 +37,24 @@
       136.78719892271383
     ],
     "foot": [
-      79.70288565439058,
-      136.78719892271383
+      78.06604932767763,
+      137.88288591627162
+    ],
+    "footFloor": [
+      78.06604932767763,
+      137.88288591627162
     ],
     "chest": [
       98.28250916862329,
       79.34819341434007
     ],
     "fist": [
-      56.14639628996781,
-      141.78128287092616
+      55.9249150849092,
+      143.94629077468505
+    ],
+    "fistFloor": [
+      55.9249150849092,
+      149.61798199072274
     ],
     "eye": [
       100.3363225263819,
@@ -70,6 +78,15 @@
           ],
           "anim": "idle",
           "side": 0.45
+        },
+        {
+          "seconds": 2,
+          "at": [
+            0.47,
+            0.76
+          ],
+          "anim": "tech_ash",
+          "side": 0
         },
         {
           "seconds": 2.07,
@@ -112,10 +129,10 @@
           "anim": "walk"
         },
         {
-          "seconds": 1.6,
+          "seconds": 1.5833333333333333,
           "at": [
             0.52,
-            0.59
+            0.612
           ],
           "anim": "tech_quake",
           "side": 0.4
@@ -124,15 +141,15 @@
           "seconds": 2.5,
           "at": [
             0.52,
-            0.59
+            0.612
           ],
           "anim": "walk"
         },
         {
-          "seconds": 1.2,
+          "seconds": 1.2083333333333333,
           "at": [
-            0.67,
-            0.8
+            0.645,
+            0.755
           ],
           "anim": "tech_fist",
           "side": 0
@@ -140,16 +157,16 @@
         {
           "seconds": 0.3,
           "at": [
-            0.67,
-            0.8
+            0.645,
+            0.755
           ],
           "anim": "turn"
         },
         {
           "seconds": 2.04,
           "at": [
-            0.67,
-            0.8
+            0.645,
+            0.755
           ],
           "anim": "walk"
         },
@@ -275,6 +292,44 @@
     "frame",
     "over"
   ],
+  "showreel": [
+    {
+      "name": "tech_eruption",
+      "start": 0,
+      "frames": 58,
+      "end": 64
+    },
+    {
+      "name": "tech_fist",
+      "start": 64,
+      "frames": 29,
+      "end": 99
+    },
+    {
+      "name": "tech_sweep",
+      "start": 99,
+      "frames": 34,
+      "end": 139
+    },
+    {
+      "name": "tech_quake",
+      "start": 139,
+      "frames": 38,
+      "end": 183
+    },
+    {
+      "name": "tech_ash",
+      "start": 183,
+      "frames": 48,
+      "end": 237
+    },
+    {
+      "name": "tech_pillar",
+      "start": 237,
+      "frames": 43,
+      "end": 286
+    }
+  ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
   "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
   "animations": {
@@ -331,12 +386,13 @@
       "frames": 58,
       "loop": false,
       "hit": [
-        34,
-        40,
+        30,
+        36,
+        41,
         46
       ],
       "shake": 0.22,
-      "stop": 0
+      "stop": 0.06
     },
     "tech_fist": {
       "seconds": 1.2,
@@ -356,39 +412,40 @@
         17
       ],
       "shake": 0.19,
-      "stop": 0
+      "stop": 0.04
     },
     "tech_quake": {
       "seconds": 1.6,
       "frames": 38,
       "loop": false,
       "hit": [
-        24
+        23
       ],
       "shake": 0.33,
-      "stop": 0.045
+      "stop": 0.06
     },
     "tech_ash": {
       "seconds": 2,
       "frames": 48,
       "loop": false,
       "hit": [
-        22
+        23
       ],
       "shake": 0.07,
-      "stop": 0
+      "stop": 0.04
     },
     "tech_pillar": {
       "seconds": 1.8,
       "frames": 43,
       "loop": false,
       "hit": [
-        29,
+        23,
+        28,
         32,
-        35
+        36
       ],
       "shake": 0.19,
-      "stop": 0
+      "stop": 0.04
     },
     "happy": {
       "seconds": 1.1,
@@ -418,19 +475,21 @@
       "seconds": 2,
       "frames": 48,
       "loop": false,
-      "hit": [],
+      "hit": [
+        25
+      ],
       "shake": 0,
-      "stop": 0
+      "stop": 0.06
     },
     "show": {
       "seconds": 5,
       "frames": 120,
       "loop": false,
       "hit": [
-        79
+        77
       ],
       "shake": 0.25,
-      "stop": 0
+      "stop": 0.08
     },
     "away": {
       "seconds": 1.5,
@@ -457,10 +516,35 @@
       "stop": 0
     },
     "life": {
-      "seconds": 15,
-      "frames": 360,
+      "seconds": 16.991666666666667,
+      "frames": 408,
       "loop": true,
-      "hit": [],
+      "hit": [
+        36,
+        236,
+        330
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "showreel": {
+      "seconds": 11.916666666666666,
+      "frames": 286,
+      "loop": true,
+      "hit": [
+        30,
+        36,
+        41,
+        46,
+        82,
+        116,
+        162,
+        206,
+        260,
+        265,
+        269,
+        273
+      ],
       "shake": 0,
       "stop": 0
     },

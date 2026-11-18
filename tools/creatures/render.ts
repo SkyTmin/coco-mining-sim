@@ -25,7 +25,7 @@ import {
   foregroundObjects,
   ground,
 } from './engine';
-import { attachMotion, directions, directionVector } from './motion';
+import { reelChapters, attachMotion, directions, directionVector } from './motion';
 import { GifWriter, savePNG } from './render-io';
 import { frameImage } from './frame-kit';
 import { Px } from './rig/px';
@@ -273,6 +273,7 @@ export async function render(
         }
       : undefined,
     layers: layerNames,
+    showreel: c.animations.showreel ? reelChapters(c) : undefined,
     foreground:
       'Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.',
     background:

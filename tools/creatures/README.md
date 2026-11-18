@@ -24,7 +24,7 @@ npm run verify -- --all-frames bramble_warden
 
 Ключ `--all-frames` сверяет каждый кадр каждой картины со всеми PNG-слоями и заново отрисованными исходниками, включая золотые варианты.
 
-Команда `npm run gallery` пересобирает стену, линейку и ряд рам из семи моделей и эталонных последовательностей в `docs/reports/creatures/pilot-2/`.
+Для точного повторения второго пилота используйте тег `creatures-pilot-2`. В нём команда `npm run gallery` собирает стену, линейку и ряд рам.
 
 ## Повторный пилот
 
@@ -42,4 +42,24 @@ do
 done
 npm run gallery
 python3 release.py /tmp/creatures-pilot-2.zip
+```
+
+## Третий пилот. Приёмы
+
+В книге `c/<id>-keys.ts` записаны позы приёма, имя физической точки для эффекта и номера кадров при 24 к/с. Автор готовит 4–6 поз, и критик сверяет их на листе до включения интерполяции. Скрипт измерений берёт силуэт из слоя тела, а точки рождения эффектов и пиксели следа из рисовальщика. Порог зависит от выбранного движения «Каторги». [Снятие эталонов](test/fixtures/tech-references/README.md)
+
+Команды выполняются из `tools/creatures` после `npm ci`. В `meta.json` поле `showreel` перечисляет главы, начало и длина которых заданы в кадрах с нуля. Между главами шесть кадров покоя. В отчётной копии под картиной видны номер и название приёма. Полный GIF ×3 в архиве сохраняет размер рамы.
+
+```sh
+npm test
+for id in bramble_warden gem_beetle silk_dragon frost_yeti toad_shaman crater_titan coin_dragon
+do
+  npm run render -- --id "$id"
+  npm run verify -- --all-frames "$id"
+  node --import tsx tech-sheets.ts --keys "$id"
+  node --import tsx tech-sheets.ts --final "$id"
+done
+node --import tsx tech-metrics.ts
+npm run gallery:techniques
+python3 release.py /tmp/creatures-pilot-3.zip
 ```

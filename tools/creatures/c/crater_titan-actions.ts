@@ -1,8 +1,9 @@
 import { clamp01, easeIn3, easeOut, hash, lerp, sstep, TAU } from '../kit/f11-mobkit';
 import { keyPose, type KeyPose } from '../kit/f14-mobkit';
-import { chunks, dust, flare, type Pen } from '../fx/pen';
+import { chunks, dust, fillPoly, flare, type Pen } from '../fx/pen';
+import { paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
 import type { Animation, FxInput, XY } from '../types';
-import { fissure, grit, oval, projectile, ripple, shard, springBack, strokeTrail } from './strike-brush';
+import { fissure, grit, oval, projectile, ripple, shard, springBack } from './strike-brush';
 
 const base = {
   dx: 0,
@@ -162,14 +163,7 @@ function pool(p: Pen, x: number, y: number, r: number, age: number) {
     rx = r * grow;
   oval(p, x, y, rx + 2, rx * 0.39 + 1, '#2d222d', fade);
   oval(p, x, y - 1, rx, rx * 0.34, embers[Math.min(5, Math.floor(age * 5.5))], fade);
-  p.lineS(
-    x - rx * 0.54,
-    y,
-    x - rx * 0.07,
-    y - 2,
-    embers[Math.min(5, Math.floor(age * 5.2))],
-    0.72 * fade,
-  );
+  p.lineS(x - rx * 0.54, y, x - rx * 0.07, y - 2, embers[Math.min(5, Math.floor(age * 5.2))], 0.72 * fade);
 }
 function bomb(p: Pen, x: number, y: number, r: number, age: number) {
   const a = age * 8;
@@ -182,28 +176,40 @@ const targets = (f: FxInput): XY[] => [
   [f.w * 0.78, f.h * 0.86],
   [f.w * 0.89, f.h * 0.62],
 ];
-function eruption(f: FxInput, reveal = false) {
-  const hits = reveal ? [3.63, 3.86, 4.12] : animations.tech_eruption.hits!;
-  const originTime = reveal ? 3.27 : 1;
+function heatedStroke(f: FxInput, socket: string, hit: number, color: string, width = 2) {
+  const start = hit - 4 / 24,
+    end = hit + 2 / 24;
+  if (f.t <= start || f.t > end + 2 / 24) return;
+  paintSocketTrail(f, 'above', socket, Math.max(start, f.t - 4 / 24), Math.min(f.t, end), {
+    color,
+    width,
+    alpha: 0.86 * (1 - sstep(end, end + 2 / 24, f.t)),
+  });
+}
+function eruption(f: FxInput) {
+  const [release, ...landings] = f.hits;
+  heatedStroke(f, 'vent', release, '#e9a455', 1);
   for (const [i, target] of targets(f).entries()) {
-    const release = originTime + [0, 0.09, 0.15][i],
-      hit = hits[i],
-      t = f.t,
-      age = t - hit;
-    if (t < release - 0.45 || age > 1.32) continue;
-    const [x, y] = target;
-    if (t < hit) {
-      const u = clamp01((t - release) / (hit - release));
-      ripple(f.under, x, y, 9, 0.36, '#e07c4a', 0.68, clamp01((t - release + 0.45) / 0.45));
+    const born = release + i / 24,
+      land = landings[i];
+    if (land === undefined || f.t < born - 0.3 || f.t > land + 1.33) continue;
+    const age = f.t - land,
+      [x, y] = target;
+    if (f.t < land) {
+      const u = clamp01((f.t - born) / (land - born));
+      ripple(f.under, x, y, 9, 0.36, '#e07c4a', 0.68, sstep(born - 0.3, born, f.t));
       oval(f.under, x, y, 2 + 7 * u, 1 + 2 * u, '#33252c', 0.65);
-      if (t < release) continue;
-      const from = f.pointAt(release, 'vent'),
-        pos = projectile(from, target, u, 36 + 8 * i);
-      const tail = projectile(from, target, Math.max(0, u - 0.1), 36 + 8 * i);
+    }
+    if (f.t < born) continue;
+    const pos = projectileAt(f, 'bomb-' + i, 'vent', born, land, target, 36 + 8 * i);
+    if (f.t === born) paintImpact(f, 'above', 'vent', f.points.vent, (p, bx, by) => bomb(p, bx, by, 4, 0));
+    if (age < 0) {
+      const u = clamp01((f.t - born) / (land - born));
+      const tail = projectile(f.pointAt(born, 'vent'), target, Math.max(0, u - 0.12), 36 + 8 * i);
       f.above.lineS(...tail, ...pos, '#c4603c', 0.72);
       bomb(f.above, ...pos, 5 + i, age);
     } else {
-      pool(f.under, x, y, 10 + i * 2, age);
+      paintImpact(f, 'under', 'bomb-' + i, target, (p, px, py) => pool(p, px, py, 10 + i * 2, age));
       fissure(f.under, 'vent-bomb-' + i, 42 + i, x, y, age, 19, '#7a3b32', '#db7841', 1.05);
       grit(f.above, x, y, age, 11, 10 + i, '#ffd07b');
       dust(f.above, 91 + i, age, x, y, 4, 0, 3.14, 5, 19, 1.2, 4, 6, 0.44, 1, 0.63);
@@ -212,10 +218,10 @@ function eruption(f: FxInput, reveal = false) {
 }
 function fist(f: FxInput) {
   const { t, feet, points, under, above } = f,
-    hit = 0.75,
+    hit = f.hits[0],
     age = t - hit;
   if (t > 0.27 && age < 0.09) flare(above, ...points.fist, 2 + 6 * sstep(0.3, 0.71, t), '#ff9b4e', 0.86);
-  if (t > 0.6 && t < 0.84) strokeTrail(f, 'fist', '#df792f', '#ffd176', 5);
+  heatedStroke(f, 'fist', hit, '#ffd176');
   const pt = age >= 0 ? f.pointAt(hit, 'fist') : points.fist;
   const x = pt[0],
     y = age >= 0 ? pt[1] : feet[1] + 4;
@@ -223,144 +229,291 @@ function fist(f: FxInput) {
     ripple(under, x, y, 10, 0.34, '#a15c41', 0.52, sstep(0.2, 0.7, t));
     return;
   }
-  pool(under, x, y, 13, age);
+  paintImpact(f, 'under', 'fist', pt, (pen, x, y) => pool(pen, x, y, 13, age));
   fissure(under, 'basalt-fist', 58, x, y, age, 53, age < 0.24 ? '#ffbe68' : '#b7633c', '#5a3930', 1.1);
   chunks(above, 429, age, x, y, 16, 0, 3.14, 20, 39, 32, 50, [0.38, 0.74], 0.46, 1);
 }
 function sweep(f: FxInput) {
-  const { t, feet, under, above } = f;
-  if (t > 0.48 && t < 0.92) strokeTrail(f, 'fist', '#80635e', '#d4ad85', 7);
-  const offsets = [0.48, 0.55, 0.63, 0.7, 0.77, 0.85];
-  for (let j = 1; j < offsets.length; j++) {
-    if (t < offsets[j]) break;
-    const a = f.pointAt(offsets[j - 1], 'fist'),
-      b = f.pointAt(offsets[j], 'fist'),
-      ag = t - offsets[j];
-    const ay = lerp(a[1], feet[1] + 4, 0.35),
-      by = lerp(b[1], feet[1] + 4, 0.35);
-    under.lineS(a[0], ay, b[0], by, '#322932', clamp01(1 - ag));
-    under.lineS(a[0], ay + 1, b[0], by + 1, '#a47c64', 0.7 * clamp01(1 - ag));
-    dust(above, 700 + j, ag, b[0], by, 3, 0, 2.8, 10, 18, 2, 6, 8, 0.48, 2, 0.68);
+  const hit = f.hits[0],
+    age = f.t - hit;
+  heatedStroke(f, 'fist', hit, '#d5a87a', 2);
+  if (age < 0) return;
+  const start = f.pointAt(hit, 'fist');
+  paintImpact(f, 'under', 'fist', start, (p, x, y) =>
+    oval(p, x, y, 3 + Math.min(4, age * 24), 2, '#543f39', clamp01(1 - age)),
+  );
+  const stop = hit + 5 / 24;
+  for (let k = 1; k <= 10; k++) {
+    const when = hit + k / 48;
+    if (f.t < when) break;
+    const prev = f.pointAt(when - 1 / 48, 'fist'),
+      next = f.pointAt(when, 'fist');
+    const alpha = clamp01(1 - (f.t - stop));
+    f.under.lineS(...prev, ...next, '#322932', alpha);
+    f.under.lineS(prev[0], prev[1] + 1, next[0], next[1] + 1, '#b28362', alpha * 0.72);
+    dust(f.above, 700 + k, f.t - when, next[0], next[1], 3, 0, 2.8, 10, 18, 2, 6, 8, 0.48, 2, 0.68);
   }
 }
 function quake(f: FxInput) {
-  const age = f.t - 1;
-  const at = age >= 0 ? f.pointAt(1, 'foot') : f.points.foot,
-    x = at[0],
-    y = age >= 0 ? at[1] : f.feet[1];
+  const hit = f.hits[0],
+    age = f.t - hit;
+  heatedStroke(f, 'foot', hit, '#ab7964', 2);
   if (age < 0) {
-    oval(f.under, x, y, 8 + 6 * sstep(0.3, 0.84, f.t), 3, '#24232d', 0.58);
+    oval(f.under, ...f.points.foot, 8 + 6 * sstep(0.3, 0.84, f.t), 3, '#24232d', 0.58);
     return;
   }
-  fissure(f.under, 'basalt-quake', 372, x, y, age, 107, '#f3a95b', '#6c4840', 1.2);
-  for (const [j, dir] of [-1, 0.45, 0.94].entries()) {
-    const d = age - 0.06 - j * 0.045;
-    if (d >= 0)
-      dust(
-        f.above,
-        613 + j,
-        d,
-        x + dir * (26 + 9 * j),
-        y + (j - 1) * 8,
-        5,
-        -Math.PI / 2,
-        0.28,
-        4,
-        7,
-        2,
-        5,
-        21,
-        0.53,
-        3,
-        0.64,
-        (i) => i * 0.028,
-      );
+  const at = f.pointAt(hit, 'foot'),
+    [x, y] = at;
+  paintImpact(f, 'under', 'foot', at, (p, px, py) =>
+    oval(
+      p,
+      px,
+      py,
+      5 + 12 * sstep(0, 0.09, age),
+      2 + 3 * sstep(0, 0.09, age),
+      '#b77748',
+      clamp01((0.58 - age) * 4),
+    ),
+  );
+  // Steam emerges only after the travelling front passes the corresponding rock seam.
+  for (const [j, dir] of [-1, 1].entries()) {
+    let prev: XY = at;
+    for (let k = 1; k <= 10; k++) {
+      const when = 0.016 * k;
+      if (age < when) break;
+      const next: XY = [x + dir * k * 9, y + Math.sin(k * 1.1 + j) * 3 + (j === 0 ? 1 : -1) * k * 0.74];
+      f.under.lineS(...prev, ...next, age < when + 0.13 ? '#ffc673' : '#7a4940', clamp01(1.2 - age));
+      if (k === 3 || k === 7)
+        dust(
+          f.above,
+          613 + j * 11 + k,
+          age - when,
+          ...next,
+          5,
+          -Math.PI / 2,
+          0.28,
+          4,
+          7,
+          2,
+          5,
+          21,
+          0.53,
+          3,
+          0.64,
+          (i) => i * 0.028,
+        );
+      prev = next;
+    }
   }
 }
 function ash(f: FxInput) {
-  const age = f.t - 22 / 24;
+  const hit = f.hits[0],
+    age = f.t - hit;
+  heatedStroke(f, 'vent', hit, '#b79b8f', 1);
   if (age < 0) {
-    if (f.t > 0.32) flare(f.above, ...f.points.vent, 2 + 4 * sstep(0.34, 0.9, f.t), '#f68e40', 0.65);
+    if (f.t > 0.32) flare(f.above, ...f.points.vent, 2 + 4 * sstep(0.34, 0.9, f.t), '#efac73', 0.75);
     return;
   }
-  const [x, y] = f.pointAt(22 / 24, 'vent'),
-    gain = Math.sin(Math.PI * clamp01(age / 1.07));
-  f.under.col('#302731', 0.31 * gain);
-  f.under.rect(0, 0, f.w, f.h);
-  for (let i = 0; i < 4; i++) {
-    const d = age - 0.072 * i;
-    if (d < 0) continue;
-    const xx = x + (i - 1.5) * 12,
-      yy = lerp(y, f.feet[1], 0.19 * i);
-    dust(
-      f.above,
-      187 + i,
-      d,
-      xx,
-      yy,
-      9,
-      Math.PI * 0.5,
-      2.25,
-      40,
-      85,
-      3,
-      15,
-      -13,
-      1,
-      1,
-      0.77,
-      (j) => 0.014 * j,
-      undefined,
-      [-19, 12],
-    );
+  const source = f.pointAt(hit, 'vent'),
+    wind = source[0] > f.w / 2 ? -1 : 1;
+  const landing: XY = [Math.max(42, Math.min(f.w - 42, source[0] + wind * 101)), f.feet[1] + 8];
+  const travel = 0.4,
+    releaseDuration = 0.46;
+  // A bent jet first rises above the rim, then loses buoyancy. Its last lobe is
+  // the origin of the ground surge. There is no second emitter under the actor.
+  const streamline = (u: number): XY => {
+    const v = 1 - u;
+    return [
+      source[0] * v * v * v +
+        3 * (source[0] + wind * 35) * v * v * u +
+        3 * (landing[0] - wind * 29) * v * u * u +
+        landing[0] * u * u * u,
+      source[1] * v * v * v +
+        3 * (source[1] - 43) * v * v * u +
+        3 * (landing[1] - 27) * v * u * u +
+        landing[1] * u * u * u,
+    ];
+  };
+  if (age < releaseDuration + 0.11)
+    paintImpact(f, 'above', 'vent', source, (p, x, y) => {
+      const fade = clamp01((releaseDuration + 0.11 - age) * 8);
+      oval(p, x, y, 4.5, 2.3, '#794d46', fade);
+      p.lineS(x - wind * 2, y + 1, x + wind * 3, y - 2, '#ffe0aa', fade);
+    });
+  const front = clamp01(age / travel),
+    back = clamp01((age - releaseDuration) / travel);
+  if (back < 1) {
+    const steps = Math.max(1, Math.ceil((front - back) * 28));
+    const lobes = [];
+    const opacity = clamp01((travel + releaseDuration + 0.09 - age) * 8);
+    for (let i = 0; i <= steps; i++) {
+      const u = lerp(back, front, i / steps),
+        [cx, cy] = streamline(u);
+      const eddy = Math.sin(u * 19 - age * 9) + 0.37 * Math.sin(u * 37 + age * 6);
+      const r = 2.7 + u * (11.5 + 3.3 * eddy);
+      lobes.push({ u, x: cx + eddy * r * 0.26, y: cy + Math.cos(u * 22 - age * 11) * r * 0.29, r });
+    }
+    // Build the complete shadow first; overlapping puffs share their interior.
+    // Local curls appear only intermittently in the otherwise continuous surface.
+    for (const { x, y, r } of lobes) oval(f.above, x, y, r * 1.35, r * 0.88, '#5c525d', opacity);
+    for (const { x, y, r, u } of lobes) {
+      const relief = 0.64 + 0.11 * Math.sin(19 * u - age * 9);
+      oval(f.above, x + wind * r * 0.26, y - r * 0.24, r * 1.12, r * relief, '#84787b', opacity * 0.98);
+    }
+    for (let i = 0; i < lobes.length; i++) {
+      const { x, y, r, u } = lobes[i],
+        a = Math.sin(u * 18 - age * 8);
+      if (a > 0.05)
+        oval(
+          f.above,
+          x + wind * r * 0.65,
+          y - r * 0.46,
+          r * (0.66 + 0.23 * a),
+          r * (0.32 + 0.17 * a),
+          '#aa9f99',
+          opacity * 0.86,
+        );
+      if (a > 0.78)
+        f.above.lineS(
+          x + wind * r * 0.54,
+          y - r * 0.74,
+          x + wind * r * 0.95,
+          y - r * 0.61,
+          '#cbbfae',
+          opacity * 0.84,
+        );
+      if (u < 0.42 && i % 5 === 0) f.above.lineS(x, y + 1, x + wind * 2, y, '#df9a62', opacity * 0.88);
+    }
   }
-  // The heavy ash spills down, then mushrooms sideways across the plates.
-  const spread = sstep(0.05, 0.62, age),
-    melt = clamp01((1.09 - age) / 0.32);
-  if (spread > 0) {
-    const floorY = f.feet[1] + 4,
-      width = spread * 96;
-    oval(f.under, f.feet[0], floorY, width, 7 + 5 * spread, '#322d37', melt * 0.76);
-    for (let j = -6; j <= 6; j++) {
-      const front = Math.abs(j) / 6,
-        xx = f.feet[0] + (j * width) / 6;
-      const yy = floorY + 6 * Math.cos(j * 0.87) - front * 4;
-      const r = (5 + 5 * spread + 3 * Math.cos(j * 2.1)) * Math.min(1, spread * 4);
-      oval(f.above, xx, yy, r * 1.7, r * 0.66, '#423e48', melt * 0.87);
-      oval(f.above, xx - 2, yy - 2, r * 1.38, r * 0.58, '#655b62', melt * 0.78);
-      if (j % 3 === 0 && age > 0.27) {
-        f.above.lineS(xx - r * 0.9, yy + 1, xx - r * 0.25, yy - 1, '#d98750', melt * 0.87);
-        f.above.lineS(xx - r * 0.25, yy - 1, xx, yy, '#a3664a', melt * 0.83);
+  if (age >= travel) {
+    const down = age - travel,
+      fade = clamp01((1.04 - age) * 5);
+    for (let i = 0; i < 15; i++) {
+      const arrived = down - i * 0.024;
+      if (arrived < 0) break;
+      const x = landing[0] + wind * i * 3.9,
+        y = landing[1] + Math.sin(i * 0.8) * 1.8;
+      const size = 3 + 4 * sstep(0, 0.1, arrived),
+        r = size * (1 - 0.022 * i);
+      oval(f.under, x, y + 1, r * 1.48, r * 0.42, '#514852', fade);
+      oval(f.under, x + wind, y, r * 1.29, r * 0.27, '#92817c', fade * 0.86);
+      if (arrived < 0.28) {
+        const lift = Math.sin(Math.PI * clamp01(arrived / 0.28)) * r * 0.56;
+        oval(f.above, x + wind * 1.2, y - lift, r * 1.06, r * 0.61, '#72676d', fade * 0.93);
+        oval(f.above, x + wind * r * 0.42, y - lift - r * 0.38, r * 0.62, r * 0.33, '#b0a296', fade * 0.82);
       }
     }
   }
-  grit(f.above, x, y + 26, age - 0.15, 18, 78, '#e7a768');
+}
+function lavaTongue(
+  p: Pen,
+  x: number,
+  y: number,
+  h: number,
+  width: number,
+  lean: number,
+  hot: string,
+  alpha: number,
+) {
+  const midX = x + lean * 0.39,
+    tipX = x + lean;
+  p.col('#9b4739', alpha);
+  fillPoly(p, [
+    x - width,
+    y,
+    x - width * 0.93,
+    y - h * 0.23,
+    midX - width * 0.74,
+    y - h * 0.61,
+    tipX - width * 0.2,
+    y - h * 0.89,
+    tipX,
+    y - h,
+    tipX + width * 0.39,
+    y - h * 0.81,
+    midX + width * 0.57,
+    y - h * 0.5,
+    x + width,
+    y - h * 0.13,
+    x + width * 0.72,
+    y,
+  ]);
+  p.col(hot, alpha);
+  fillPoly(p, [
+    x - width * 0.49,
+    y,
+    x - width * 0.35,
+    y - h * 0.24,
+    midX - width * 0.22,
+    y - h * 0.59,
+    tipX,
+    y - h * 0.94,
+    midX + width * 0.25,
+    y - h * 0.46,
+    x + width * 0.32,
+    y - h * 0.18,
+    x + width * 0.49,
+    y,
+  ]);
+  p.lineS(x - 1, y - 1, midX, y - h * 0.48, '#ffe7a0', alpha * 0.91);
 }
 function pillars(f: FxInput) {
-  const hits = animations.tech_pillar.hits!;
-  for (const [i, [x, y]] of targets(f).entries()) {
-    const age = f.t - hits[i];
+  const primary = f.hits[0],
+    born = f.pointAt(primary, 'fist');
+  heatedStroke(f, 'fist', primary, '#ef9950', 2);
+  if (f.t >= primary) paintImpact(f, 'under', 'fist', born, (p, x, y) => pool(p, x, y, 6, f.t - primary));
+  for (let i = 0; i < 3; i++) {
+    const socket = 'pillar' + i,
+      hit = f.hits[i + 1];
+    if (hit === undefined) continue;
+    const target = f.pointAt(hit, socket),
+      [x, y] = target,
+      age = f.t - hit;
+    if (f.t >= primary) {
+      let prev = born;
+      const reach = clamp01((f.t - primary) / (hit - primary));
+      for (let k = 1; k <= 12 && (k - 1) / 12 < reach; k++) {
+        const u = Math.min(k / 12, reach),
+          next: XY = [
+            lerp(born[0], x, u),
+            lerp(born[1], y, u) + Math.sin(u * 6 * Math.PI) * 3 * Math.sin(u * Math.PI),
+          ];
+        f.under.lineS(...prev, ...next, '#da7547', clamp01(1.4 - (f.t - primary)));
+        prev = next;
+      }
+    }
     if (age < 0) {
-      ripple(f.under, x, y, 10 + i, 0.35, '#f1a64d', 0.77, sstep(0.28 + i * 0.08, hits[i] - 0.04, f.t));
+      ripple(f.under, x, y, 10 + i, 0.35, '#f1a64d', 0.77, sstep(primary, hit - 0.04, f.t));
       continue;
     }
-    pool(f.under, x, y, 12 + i, age);
-    const h = (36 + i * 9) * Math.sin(Math.PI * clamp01(age / 0.43)) ** 0.56;
-    for (let j = -2; j <= 2; j++) {
-      const xx = x + j * 2.6,
-        v = h * (1 - 0.14 * Math.abs(j));
-      shard(
-        f.above,
-        xx,
-        y - v * 0.29,
-        v * 0.71,
-        4,
-        -Math.PI / 2 + Math.sin(age * 14 + j) * 0.07,
-        '#bd4b2c',
-        j === -1 ? '#ffe491' : '#ed8b3f',
-      );
+    paintImpact(f, 'under', socket, target, (p, x, y) => pool(p, x, y, 12 + i, age));
+    // The first basin fans sideways, the second forks and the last rises in a
+    // thin white spire. Each silhouette jumps above its own lip on its birth frame.
+    const duration = [0.64, 0.53, 0.41][i],
+      fade = clamp01((duration - age) / 0.16);
+    if (fade <= 0) continue;
+    const pressure = Math.sin(Math.PI * clamp01((age + 0.037) / duration)) ** 0.6;
+    const h = [30, 50, 72][i] * pressure,
+      lean = [-12, 6, -3][i];
+    if (i === 0) {
+      lavaTongue(f.above, x - 2, y, h, 5.9, lean, '#ee944a', fade);
+      lavaTongue(f.above, x + 2, y, h * 0.65, 3.7, 6, '#e57c42', fade);
+    } else if (i === 1) {
+      lavaTongue(f.above, x - 1, y, h * 0.86, 4.2, -8, '#ef9149', fade);
+      lavaTongue(f.above, x + 1, y, h, 5, lean, '#ffc263', fade);
+    } else {
+      lavaTongue(f.above, x, y, h, 5, lean, '#ffd47a', fade);
+      lavaTongue(f.above, x - 2, y, h * 0.51, 2.5, -8, '#f28e45', fade);
+      oval(f.above, x + lean, y - h - 2, 2, 3.2, '#ffe8a3', fade);
     }
-    grit(f.above, x, y - h * 0.74, age, 11, 90 + i, '#ffce73');
+    f.above.lineS(x - 4, y, x + 2, y - 1, '#ffd379', fade);
+    for (let k = 0; k < 3; k++) {
+      const t = age - k * 0.042;
+      if (t < 0 || t > 0.32) continue;
+      const xx = x + lean + (k - 1) * 23 * t,
+        yy = y - h * 0.76 - t * (38 + 9 * k) + 110 * t * t;
+      f.above.lineS(xx, yy + 1, xx + 1, yy - 1, '#f2ac5e', fade * 0.9);
+    }
   }
 }
 export function effects(f: FxInput) {
@@ -379,28 +532,68 @@ export function effects(f: FxInput) {
     case 'tech_pillar':
       return pillars(f);
     case 'show': {
-      const a = clamp01((1.78 - t) / 0.33);
-      if (a > 0) {
-        oval(under, feet[0], feet[1] + 1, 9, 2, '#24202b', a);
-        shard(above, feet[0], feet[1] - 3, 8, 6, -0.22, '#38333e', '#756777', a);
-        if (t > 0.77)
-          above.lineS(
-            feet[0] - 2,
-            feet[1] - 5,
-            feet[0] + 2,
-            feet[1] - 2,
-            '#ffa555',
-            a * sstep(0.77, 1.37, t),
-          );
+      if (t < 77 / 24) oval(under, feet[0], feet[1] + 1, 8 + 5 * sstep(0.6, 2.7, t), 2.1, '#24202b', 0.55);
+      if (t > 1.02) fissure(under, 'titan-awakens', 80, ...feet, t - 1.02, 36, '#e79750', '#5b3b36', 1.63);
+      const hatch = 77 / 24;
+      if (t >= hatch) {
+        const age = t - hatch,
+          edge = f.pointAt(hatch, 'fist'),
+          opening = f.pointAt(hatch, 'vent'),
+          fade = clamp01(1 - age / 0.75);
+        // One half is held by the rig; heat escapes the opened vent as small pieces skid out of the other side.
+        paintImpact(f, 'above', 'vent', opening, (p, x, y) => {
+          oval(p, x, y, 3 + 2 * sstep(0, 0.12, age), 1.8, '#ffb76d', fade);
+        });
+        paintImpact(f, 'above', 'fist', edge, (p, x, y) =>
+          shard(p, x + age * 7, y + age * 3, 4.5, 2, age * 2, '#553d41', '#c77d57', fade),
+        );
+        dust(
+          above,
+          465,
+          age,
+          ...opening,
+          9,
+          -Math.PI / 2,
+          0.48,
+          7,
+          16,
+          2,
+          6,
+          -8,
+          0.74,
+          3,
+          0.61,
+          (i) => i * 0.026,
+        );
+        chunks(under, 333, age, ...edge, 11, 0, 3.14, 12, 29, 20, 27, [0.4, 0.75], 0.34, 1);
       }
-      if (t > 1.02)
-        fissure(under, 'titan-awakens', 80, ...feet, t - 1.02, 36, '#e79750', '#5b3b36', 1.63);
-      if (t > 2.8) eruption(f, true);
       return;
     }
-    case 'phase':
-      fissure(under, 'titan-molts', 145, ...feet, t - 0.24, 44, '#eaa358', '#754336', 1.42);
+    case 'phase': {
+      const hit = 25 / 24,
+        heat = sstep(0.2, hit, t),
+        sole = f.points.foot,
+        core = f.points.chest;
+      if (heat > 0) {
+        const mid: XY = [lerp(sole[0], core[0], 0.45) - 4, lerp(sole[1], core[1], 0.45)];
+        const tip: XY = [lerp(mid[0], core[0], heat), lerp(mid[1], core[1], heat)];
+        above.lineS(...sole, ...mid, '#a25a41', 0.63 * heat);
+        above.lineS(...mid, ...tip, '#ed9951', 0.78 * heat);
+      }
+      if (t >= hit)
+        paintImpact(f, 'above', 'chest', core, (p, x, y) => {
+          flare(
+            p,
+            x,
+            y,
+            3 + 4 * Math.sin(sstep(hit, hit + 0.35, t) * Math.PI),
+            '#ffc575',
+            clamp01(1.55 - t * 0.55),
+          );
+        });
+      fissure(under, 'titan-molts', 145, ...sole, t - 0.24, 44, '#eaa358', '#754336', 1.42);
       return;
+    }
     case 'happy':
       if (t > 0.42) {
         const at = f.pointAt(0.42, 'vent'),
@@ -417,8 +610,7 @@ export function effects(f: FxInput) {
       }
       return;
     case 'hatch':
-      if (t > 0.48)
-        chunks(under, 834, t - 0.48, ...feet, 7, 0, 3.14, 11, 18, 19, 24, [0.5, 0.9], 0.25, 1);
+      if (t > 0.48) chunks(under, 834, t - 0.48, ...feet, 7, 0, 3.14, 11, 18, 19, 24, [0.5, 0.9], 0.25, 1);
       return;
     case 'peek':
       if (t > 0.8 && t < 1.54)

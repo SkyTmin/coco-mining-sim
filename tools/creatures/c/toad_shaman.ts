@@ -1,11 +1,13 @@
 import route from './toad_shaman-life';
+import keys from './toad_shaman-keys';
+import { withTechniques } from '../technique';
 import { strideFoot, attachMotion } from '../motion';
 import { finishSurfaces } from './surface-work';
 // A splayed marsh elder, bearing a ribbed lantern cap on a crooked root staff.
 import { F3, Rig, vlerp, type Mat, type V3 } from '../rig/f15-rig';
 import { hx, tn, TAU } from '../kit/f11-mobkit';
 import { everyday, life, projectFigure, scaleFigure } from '../rig/figure';
-import { animations, effects, pose, presentation } from './toad_shaman-actions';
+import { animations, props, effects, pose, presentation } from './toad_shaman-actions';
 import type { Creature, Variant } from '../types';
 
 export interface ToadPose {
@@ -16,6 +18,21 @@ export interface ToadPose {
   staffAngle?: number;
   crouch?: number;
   lift?: number;
+  hip?: number;
+  lean?: number;
+  pitch?: number;
+  twist?: number;
+  neck?: number;
+  chin?: number;
+  step?: number;
+  tuck?: number;
+  staffReach?: number;
+  staffSide?: number;
+  staffPitch?: number;
+  tongueReach?: number;
+  keyRig?: number;
+  setStaff?: number;
+  travel?: number;
   phase?: number;
 }
 export function bodyFrame(
@@ -26,6 +43,30 @@ export function bodyFrame(
   A: ToadPose = {},
   headSide = side,
 ) {
+  // Shorten the off-axis reach of the staff arm on profile and rear drawings.
+  if (A.keyRig && side % 16 !== 0) {
+    const sideView = Math.min(1, 3 * Math.abs(Math.sin((side * Math.PI) / 16)));
+    A = {
+      ...A,
+      hip: (A.hip ?? 0) * (1 - 0.38 * sideView),
+      lean: (A.lean ?? 0) * (1 - 0.38 * sideView),
+      step: (A.step ?? 0) * (1 - 0.22 * sideView),
+      pitch: (A.pitch ?? 0) * (1 - 0.3 * sideView),
+      staffLift: (A.staffLift ?? 0) * (1 - 0.47 * sideView),
+      staffReach: (A.staffReach ?? 0) * (1 - 0.32 * sideView),
+      tongueReach: (A.tongueReach ?? 0) * (1 - 0.77 * sideView),
+      staffSide: (A.staffSide ?? 0) * (1 - 0.38 * sideView),
+    };
+    if (anim === 'tech_staff') {
+      // Seen from the back the palm lifts and jabs the staff, without the full frontal windmill.
+      // Turning the cap toward the lens leaves a distinct interval between the hand and the toe.
+      const raise = Math.min(1, Math.max(0, (A.staffLift ?? 0) / 32));
+      A.staffAngle = -0.68 * raise + 0.16 * Math.sin(A.staffAngle ?? 0);
+      A.staffPitch = -0.62 * raise;
+      A.staffLift = 18 * raise;
+      A.staffSide = (A.staffSide ?? 0) * 0.45;
+    }
+  }
   const lead = Math.max(-0.62, Math.min(0.62, ((((headSide - side + 24) % 16) - 8) * Math.PI) / 8));
   const r = new Rig(),
     gold = variant === 'gold',
@@ -79,9 +120,9 @@ export function bodyFrame(
   const drop = (A.crouch ?? 0) + 8 * l.sleep + 10 * l.tired + 14 * l.hatch,
     jaw = A.jaw ?? 0;
   const jump = A.lift ?? 0;
-  const B = F.at(-3, 1.2 * stride, 32 - drop + 0.85 * breath).pitch(
-    0.04 + 0.14 * l.sleep + 0.08 * l.tired,
-  );
+  const B = F.at(-3 + (A.hip ?? 0), 1.2 * stride + (A.lean ?? 0), 32 - drop + 0.85 * breath)
+    .pitch(0.04 + 0.14 * l.sleep + 0.08 * l.tired + (A.pitch ?? 0))
+    .turn(A.twist ?? 0);
   r.ell(B, [-3, 0, 0], [22, 31, 19], skin);
   r.ell(B, [-6, 0, 6], [21, 34, 19], moss);
   const sockets: Record<string, V3> = {},
@@ -97,7 +138,11 @@ export function bodyFrame(
       hip = B.at(-7, s * 24, -5);
     if (cycle.planted) planted.push(s < 0 ? 'footL' : 'footR');
     r.ell(hip, [-3, 0, 0], [17, 14, 12], skin);
-    const heel = F.at(-6 + cycle.forward, s * 32, 6 + swing * 5.8);
+    const heel = F.at(
+      -6 + cycle.forward - s * (A.step ?? 0),
+      s * (32 - (A.tuck ?? 0) * 0.4),
+      6 + swing * 5.8 + (A.tuck ?? 0),
+    );
     r.cap(hip.p(5, s * 3, -2), heel.o, 9, 5.1, skin);
     const sole = heel.at(9, s * 3, -3);
     r.ell(sole, [0, 0, 0], [10.2, 7.1, 3.2], skin);
@@ -109,7 +154,9 @@ export function bodyFrame(
       r.ell(sole, [11 + (i === 1 ? 4 : 0), s * (5.8 + k * 5.8), -1.2], [2.1, 1.7, 1.1], skin);
     }
     r.poly([sole.o, ...toes], skin, -0.1);
-    sockets[s < 0 ? 'footL' : 'footR'] = sole.p(6, 0, -2);
+    const socket = s < 0 ? 'footL' : 'footR';
+    sockets[socket] = sole.p(6, 0, -2);
+    sockets[socket + 'Ground'] = [sockets[socket][0], sockets[socket][1], 0];
   }
   // Overlapping panels hang away from the hindquarters. Shells stitched along the hem.
   for (let i = 0; i < 6; i++) {
@@ -155,8 +202,8 @@ export function bodyFrame(
     }
   }
   const H = B.at(11, 0, 9)
-    .turn(0.38 * l.look + lead * 0.7)
-    .pitch(0.18 * l.sleep - 0.1 * l.look);
+    .turn(0.38 * l.look + lead * 0.7 + (A.neck ?? 0))
+    .pitch(0.18 * l.sleep - 0.1 * l.look + (A.chin ?? 0));
   r.ell(H, [0, 0, 0], [17, 27, 13.4], skin);
   const throat = (A.throat ?? 0) + 0.18 * (1 + Math.sin(l.q));
   r.ell(
@@ -206,7 +253,13 @@ export function bodyFrame(
   r.eye = H.p(16.5, 20.1, 9.7);
   sockets.mouth = H.p(21, 0, -3.5 - jaw * 2);
   const tongue = A.tongue ?? 0;
-  const tip = vlerp(sockets.mouth, F.p(45, -22, 1), Math.min(1, tongue));
+  const tongueTarget = F.p(
+    45 + (A.tongueReach ?? 0),
+    -22 - (A.tongueReach ?? 0) * 0.6,
+    A.keyRig ? 0 : 1,
+  );
+  if (A.keyRig) tongueTarget[1] = sockets.footL[1];
+  const tip = vlerp(sockets.mouth, tongueTarget, Math.min(1, tongue));
   if (tongue > 0.025) {
     const joint = vlerp(sockets.mouth, tip, 0.52);
     joint[2] += 12 * Math.sin(Math.min(1, tongue) * Math.PI * 0.72);
@@ -217,9 +270,30 @@ export function bodyFrame(
   sockets.tongueTip = tip;
   // Root staff is planted outside the haunch. Fork, gills and the cap share its pivot.
   const staffLift = (A.staffLift ?? 0) + 12 * l.happy - 3 * l.tired + 2.6 * Math.max(0, l.walk);
-  const S = F.at(7, 46, 1 + staffLift).roll(
-    -0.37 + (A.staffAngle ?? 0) + 0.026 * Math.sin(l.q - 0.55),
-  );
+  const S = F.at(7 + (A.staffReach ?? 0), 46 + (A.staffSide ?? 0), (A.keyRig ? 0 : 1) + staffLift)
+    .roll(-0.37 + (A.staffAngle ?? 0) + 0.026 * Math.sin(l.q - 0.55))
+    .pitch(A.staffPitch ?? 0);
+  if (A.keyRig && side % 16 !== 0) {
+    const weight = Math.min(1, 6 * Math.abs(Math.sin((side * Math.PI) / 16)));
+    // In profile the long arm brings the stem toward the lens. The frog retains its physical grip.
+    const angle = 0.38 * weight,
+      cos = Math.cos(angle),
+      sin = Math.sin(angle);
+    const tilt = ([x, y, z]: V3): V3 => [x, cos * y + sin * z, cos * z - sin * y];
+    S.f = tilt(S.f);
+    S.s = tilt(S.s);
+    S.u = tilt(S.u);
+    const wrist = S.p(1, -2, 31),
+      shoulder = B.p(4, 24, 1);
+    const dx = wrist[0] - shoulder[0],
+      dy = wrist[1] - shoulder[1];
+    const reach = Math.hypot(dx, dy),
+      pull = weight * Math.max(0, 1 - (anim === 'tech_staff' ? 15 : 27) / (reach || 1));
+    S.o[0] -= dx * pull;
+    S.o[1] -= dy * pull;
+  }
+  // Brace the root staff in the same strip of ground as the supporting hind foot.
+  if (A.setStaff) S.o[1] += A.setStaff * (sockets.footR[1] - S.o[1]);
   const crook = [S.p(0, 0, 0), S.p(2, -2, 28), S.p(-2, -1, 53), S.p(-5, -2, 62), S.p(-6, -9, 71.3)];
   for (let i = 1; i < crook.length; i++)
     r.cap(crook[i - 1], crook[i], 2.5 - i * 0.22, 2.5 - i * 0.24, twig);
@@ -265,6 +339,7 @@ export function bodyFrame(
     const shoulder = B.p(4, s * 24, 1),
       elbow = B.p(8, s * 35, -7);
     const hand = s > 0 ? S.p(1, -2, 31) : F.p(23, s * 24, 8 - drop * 0.22);
+    if (s > 0) sockets.staffHand = hand;
     r.cap(shoulder, elbow, 5.8, 4.6, skin);
     r.cap(elbow, hand, 4.4, 3.1, skin);
     r.ball(hand, 3.5, skin);
@@ -347,6 +422,7 @@ export function bodyFrame(
   scaleFigure(r, sockets, scale, 1.42);
   const fr = projectFigure(r, 160, [84, 115], sockets, '#202d37');
   fr.planted = planted;
+  fr.dx = A.travel ?? 0;
   fr.dy = -jump - l.pop * 11;
   return fr;
 }
@@ -361,11 +437,14 @@ const creature: Creature = {
     back: { seconds: 1.5 },
     ...animations,
   },
+  props,
   effects,
   frame: (anim, t, side, variant, motion) =>
-    Object.assign(
-      bodyFrame(anim, t, side, variant, pose(anim, t), motion?.headSide),
-      presentation(anim, t),
-    ),
+    motion?.techniquePose
+      ? bodyFrame(anim, t, side, variant, { ...motion.techniquePose, keyRig: 1 }, motion.headSide)
+      : Object.assign(
+          bodyFrame(anim, t, side, variant, pose(anim, t), motion?.headSide),
+          presentation(anim, t),
+        ),
 };
-export default attachMotion(creature, route);
+export default attachMotion(withTechniques(creature, keys), route);

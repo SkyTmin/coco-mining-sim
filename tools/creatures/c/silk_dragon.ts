@@ -1,3 +1,5 @@
+import { withTechniques } from '../technique';
+import keys from './silk_dragon-keys';
 import { attachMotion } from '../motion';
 import route from './silk_dragon-life';
 import { finishSurfaces } from './surface-work';
@@ -41,6 +43,12 @@ function woven(ink: Mat, trim: Mat, a: V3, b: V3, d: V3): Mat {
 }
 
 export interface SilkPose {
+  notch?: number;
+  dx?: number;
+  dy?: number;
+  skew?: number;
+  coilBack?: number;
+  brushDown?: number;
   curl?: number;
   lunge?: number;
   tailSwing?: number;
@@ -86,7 +94,7 @@ export function bodyFrame(
   const curl = A.curl ?? 0,
     swing = A.tailSwing ?? 0,
     fins = A.fins ?? 0;
-  const root = F3.yaw(0.36 + (side * TAU) / 16)
+  const root = F3.yaw(0.36 + (side * TAU) / 16 + (A.skew ?? 0))
     .at(-1, 0, (A.lift ?? 0) + 5 * l.happy + 7 * l.pop)
     .pitch(A.tilt ?? 0);
   const count = 5,
@@ -104,7 +112,8 @@ export function bodyFrame(
       8 * Math.sin(u * TAU + 0.3) +
       3 * Math.sin(delay) * u +
       fold * 10 * Math.sin(u * TAU + 0.6) +
-      swing * 16 * u * u;
+      swing * 16 * u * u +
+      (A.coilBack ?? 0) * 13 * Math.sin(u * TAU);
     const z =
       42 +
       14 * Math.cos(u * TAU + 0.05) +
@@ -117,7 +126,9 @@ export function bodyFrame(
       15 * l.sleep -
       23 * l.hatch -
       10 * l.tired +
-      4 * l.happy * Math.cos(u * TAU);
+      4 * l.happy * Math.cos(u * TAU) -
+      (A.brushDown ?? 0) * 57 * u ** 3.7 +
+      (A.coilBack ?? 0) * 8 * Math.sin(u * Math.PI);
     const loop = sstep(0.38, 0.8, curl),
       angle = 0.22 + u * 5.63;
     const pos = vlerp(
@@ -125,6 +136,11 @@ export function bodyFrame(
       [4 + 23 * Math.cos(angle), 3 * Math.sin(angle * 1.4), 47 - 23 * Math.sin(angle)],
       loop,
     );
+    // In the backward sweep the mask bows after the terminal tassel; the contact stays on the floor.
+    if (A.brushDown) {
+      const backArc = (1 - Math.cos((side * TAU) / 16)) * 0.5;
+      pos[2] -= A.brushDown * backArc * 31 * (1 - u) ** 1.4;
+    }
     const tangent = -Math.atan((14 * TAU * Math.sin(u * TAU + 0.05)) / 73);
     return root
       .at(...pos)
@@ -140,6 +156,18 @@ export function bodyFrame(
     return F.p(0, ry * Math.cos(theta), rz * Math.sin(theta));
   };
   for (let i = 0; i <= count; i++) ribs.push(station(i));
+  if (A.brushDown) {
+    const end = ribs[count].p(-16.9, -5, -14.8 + 1.7 * Math.sin(l.q - 0.92));
+    for (let i = 1; i <= count; i++) {
+      const f = ribs[i];
+      ribs[i] = new F3(
+        [f.o[0], f.o[1], f.o[2] - end[2] * A.brushDown * (i / count) ** 3],
+        f.f,
+        f.s,
+        f.u,
+      );
+    }
+  }
   for (let i = 0; i < count; i++) {
     for (let f = 0; f < 6; f++) {
       const faces = [ring(i, f), ring(i, f + 1), ring(i + 1, f + 1), ring(i + 1, f)];
@@ -181,7 +209,7 @@ export function bodyFrame(
       spread = Math.max(0.08, 1 + fins * 0.72);
     const tipFull = F.p(
       s < 0 ? -4 : -13,
-      s * (18 + 9 * spread),
+      s * (18 + 9 * spread + (anim === 'tech_kites' ? 7 * Math.max(0, fins) : 0)),
       9 + 7 * Math.sin(l.q - 0.7 + s * 0.2) + fins * 8 - l.tired * 8,
     );
     const trailFull = F.p(
@@ -195,8 +223,22 @@ export function bodyFrame(
       trail = vlerp(attachment, trailFull, length);
     if (length > 0.05) {
       r.poly([F.p(3, s * 4, 3), tip, F.p(-9, s * 7, -2)], paper);
-      r.poly([F.p(-9, s * 7, -2), tip, trail], silk);
+      const inner = F.p(-9, s * 7, -2);
+      if (A.notch) {
+        const outer = vlerp(tip, trail, 0.63),
+          cut = vlerp(tip, inner, 0.48 * A.notch);
+        r.poly([inner, tip, cut], silk).poly([inner, cut, outer, trail], silk);
+        r.line(cut, outer, cane.T[2], 0, 1.2);
+      } else r.poly([inner, tip, trail], silk);
       if (s > 0) r.line(tip, trail, cane.T[2], 0, 0.7);
+      if (anim === 'tech_kites' && fins > 0.15 && !A.notch) {
+        const fold = vlerp(tip, attachment, 0.2),
+          heel = vlerp(tip, trail, 0.34);
+        const flag = F.p(s < 0 ? 3 : -6, s * (28 + 11 * spread), 8 + 11 * fins);
+        r.poly([fold, flag, tip, heel], paper);
+        r.poly([tip, flag, heel], cane);
+        r.line(tip, flag, brow.T[1], 0, 1);
+      }
     }
     finSockets[s < 0 ? 'finL' : 'finR'] = tip;
   }
@@ -236,15 +278,22 @@ export function bodyFrame(
   r.ell(knot, [0, 0, 0], [3.4, 4.1, 3.3], lining);
   r.ell(knot, [-2.8, 0, -1.5], [1.7, 3.55, 2.7], cane);
   const lag = Math.sin(l.q - 0.92);
+  let brushTip: V3 = tip;
   for (let j = 0; j < 3; j++) {
     const start = knot.p(-2.5, (j - 1) * 1.55, -2.9),
       bend = knot.p(-5 + (j - 1) * 1.2, (j - 1) * 3, -6.2 + lag);
     const end = knot.p(-4.5 + (j - 1) * 4, (j - 1) * 5, -11.8 + j * 0.6 + lag * 1.7);
+    if (j === 0) brushTip = end;
     r.cap(start, bend, 1.25, 1.05, j === 1 ? paper : silk);
     r.cap(bend, end, 1.05, 0.28, j === 1 ? paper : cane);
   }
   r.eye = H.p(7.2, 7.8, 4);
-  const sockets = { head: H.p(16, 0, -1), tail: tip, ...finSockets };
+  const sockets = {
+    head: H.p(16, 0, -1),
+    tail: brushTip,
+    tailFloor: [brushTip[0], brushTip[1], 0] as V3,
+    ...finSockets,
+  };
   finishSurfaces(
     r,
     root,
@@ -260,7 +309,10 @@ export function bodyFrame(
     'lacquer',
   );
   scaleFigure(r, sockets, 1.06 * (1 - 0.22 * l.hatch), 1.66 * (1 - 0.42 * l.hatch));
-  return projectFigure(r, 128, [61, 96], sockets, '#2a1c30');
+  const frame = projectFigure(r, 128, [61, 96], sockets, '#2a1c30');
+  frame.dx = A.dx;
+  frame.dy = A.dy;
+  return frame;
 }
 const creature: Creature = {
   id: 'silk_dragon',
@@ -270,8 +322,8 @@ const creature: Creature = {
   effects,
   frame: (anim, t, side, variant, motion) =>
     Object.assign(
-      bodyFrame(anim, t, side, variant, pose(anim, t), motion?.headSide),
-      presentation(anim, t),
+      bodyFrame(anim, t, side, variant, motion?.techniquePose ?? pose(anim, t), motion?.headSide),
+      motion?.techniquePose ? {} : presentation(anim, t),
     ),
 };
-export default attachMotion(creature, route);
+export default withTechniques(attachMotion(creature, route), keys);

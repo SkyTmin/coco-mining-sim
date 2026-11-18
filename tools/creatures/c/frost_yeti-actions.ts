@@ -1,6 +1,7 @@
+import { paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
 import { trk,lerp,TAU,hash } from '../kit/f11-mobkit';
 import { disc,fillPoly,starBranches,crackOf,drawCrack,flare } from '../fx/pen';
-import { oval,ellFill,pathSmear,progress,scatter,shard,settle } from '../fx/field';
+import { oval,ellFill,progress,scatter,shard,settle } from '../fx/field';
 import type { Animation,BodyFrame,FxInput,XY } from '../types';
 import type { FrostPose } from './frost_yeti';
 
@@ -57,74 +58,106 @@ function breath(f:FxInput,born:number,life=.48,distance=25,size=1) {
     ellFill(f.above,[x,y],(2+u*(4+i))*size,(1.5+u*(3+i*.5))*size,ice[i],.52*(1-u));
   }
 }
-function snowball(f:FxInput) {
-  const {t,under,above,feet}=f,contact=1.7,end=2.08;
-  const rolling:XY=[feet[0]+35+11*progress(t,0,.99),feet[1]+4];
-  const tip=t>=contact?f.pointAt(contact,'clubTip'):f.points.clubTip;
-  const launch:XY=[tip[0]+4,Math.min(feet[1]-4,tip[1])];
-  const target:XY=[Math.min(f.w-10,feet[0]+83),feet[1]+17];
-  const airborne=progress(t,contact,end),x=t<contact?rolling[0]:lerp(launch[0],target[0],airborne);
-  const r=2+8*progress(t,.08,.91),y=t<contact?rolling[1]-r:lerp(launch[1],target[1]-4,airborne)-Math.sin(Math.PI*airborne)*17;
-  const groove=progress(t,.08,.85)*(1-progress(t,1.84,2.35));
-  oval(under,[feet[0]+39,feet[1]+5],10,2,'#769bb2',groove,0,3.7);
-  if(t>.09&&t<end) {
-    ellFill(under,[x,lerp(rolling[1]+1,target[1]+1,airborne)],r*.92,2.5,'#29394c',.6);
-    above.col('#466481');disc(above,x,y,r+1);
-    above.col('#a9ceda');disc(above,x,y-1,r);
-    above.col('#dcecef');disc(above,x-1.5,y-2,r*.78);
-    for(let i=0;i<6;i++) {
-      const a=t*5+i*2.1;
-      above.col(i%2?'#8fb2c3':'#f2fafa');above.dot(x+.52*r*Math.cos(a),y+.52*r*Math.sin(a),2,1);
+function snowProp(f:FxInput,source:XY,front:XY,landing:XY) {
+  const hit=32/24,land=47/24,age=f.t-hit;
+  const roll=progress(f.t,2/24,23/24),r=2+6*roll;
+  const x=f.t<hit?source[0]+r-(1-roll)*20:front[0]+r*(1-progress(f.t,hit,land));
+  const y=f.t<hit?source[1]:front[1]-r*progress(f.t,hit,land);
+  if(f.t>2/24 && f.t<land) {
+    const underY=lerp(source[1]+r,landing[1],progress(f.t,hit,land));
+    ellFill(f.under,[x,underY],r+1,2.5,'#384861',.73);
+    f.above.col('#516d86');disc(f.above,x,y,r);
+    f.above.col('#a8cbd6');disc(f.above,x,y-1,r*.87);
+    f.above.col('#deedf0');disc(f.above,x-1,y-2,r*.65);
+    for(let i=0;i<4;i++) {
+      const a=roll*6+i*2.1+Math.max(age,0)*12;
+      f.above.col(i%2?'#859fae':'#f6f6ed');f.above.dot(x+r*.55*Math.cos(a),y+r*.55*Math.sin(a),2,1);
     }
   }
-  pathSmear(f,'clubTip',1.49,1.75,6,'#496787','#94c6d7','#f5faff');
-  if(t>=contact&&t<contact+.17) flare(above,...launch,9*(1-(t-contact)/.17),'#e1f8ff',1);
-  if(t>=end) {
-    fracture(f,target,t-end,20,435,.31);scatter(f,target,t-end,424,21,ice,.31);
-    const u=progress(t,end,2.36);
-    for(let i=0;i<6;i++) ellFill(above,[target[0]+Math.sin(i)*u*20,target[1]-u*(5+i)],2+5*u,2+4*u,ice[i%4],.6*(1-u));
+ }
+export function props(f:FxInput) {
+  if(f.anim==='tech_snowball' && f.t<32/24) {
+    const src=f.pointAt(32/24,'clubTip');
+    snowProp(f,src,src,src);
+  } else if(f.anim==='tech_icicles' && f.t>=14/24 && f.t<24/24) {
+    const belt=f.pointAt(14/24,'belt'),tip=f.pointAt(24/24,'clubTip'),u=progress(f.t,14/24,24/24);
+    for(let i=0;i<5;i++) {
+      const x=lerp(belt[0]+i-2,tip[0],u),y=lerp(belt[1],tip[1],u)-Math.sin(Math.PI*u)*(10+i);
+      shard(f.above,x-1,y-5,1,5,1.7,ice[i%3],ice[2]);
+    }
+  }
+}
+function snowball(f:FxInput) {
+  const hit=32/24,land=47/24,age=f.t-hit,source=f.pointAt(hit,'clubTip');
+  const landing:XY=[Math.min(f.w-8,source[0]+48), f.feet[1]+9];
+  const front=projectileAt(f,'snowball','clubTip',hit,land,landing,19);
+  if(f.t>=hit && f.t<land) snowProp(f,source,front,landing);
+  if(f.t>=29/24 && age<=.075) paintSocketTrail(f,'above','clubTip',29/24,hit,{color:'#def5f7',width:2});
+  if(age>=0 && age<.17)
+    paintImpact(f,'above','clubTip',source,(p,x,y)=>{
+      ellFill(p,[x,y],1+age*28,1.5,'#fbfcf3',1-age/.17);
+      p.col('#c7e5ed',1-age/.17);p.line(x,y,x+4+age*35,y-2-age*13);
+    });
+  const arrival=f.t-land;
+  if(arrival>=0 && arrival<.42) {
+    paintImpact(f,'under','snowball',landing,(p,x,y)=>{
+      ellFill(p,[x,y],2+arrival*24,1+arrival*8,'#52687e',1-arrival/.45);
+      p.col('#e5f3ef',1-arrival/.45);p.line(x,y,x+6+arrival*31,y+2);
+    });
+    fracture(f,landing,arrival,20,435,.41);scatter(f,landing,arrival,424,19,ice,.42);
   }
 }
 function slam(f:FxInput) {
-  const hit=.80,age=f.t-hit,tip=f.t>=hit?f.pointAt(hit,'clubTip'):null;
-  const mark:XY=[f.feet[0]+41,f.feet[1]+8];
-  const charge=progress(f.t,.08,.63),fade=1-progress(f.t,.88,1.29);
-  if(charge>0) {
-    const x=lerp(f.feet[0]+10,mark[0],charge),y=lerp(f.feet[1]+2,mark[1],charge);
-    f.under.col('#c9e0e6',charge*fade*.50);fillPoly(f.under,[f.feet[0],f.feet[1]+3,x,y-5*charge,x+5*charge,y,x,y+4*charge]);
-  }
-  breath(f,.30,.38,12,.75);
-  pathSmear(f,'clubTip',.62,.83,9,'#40516a','#79a8c3','#effffd');
-  if(age<0||!tip) return;
-  fracture(f,tip,age,35,612,.48);scatter(f,tip,age,613,20,ice,.48);
-  const u=progress(age,0,.47);oval(f.under,tip,5+37*u,1.5+9*u,'#e2f2eb',(1-u)*.91);
-  if(age<.084) flare(f.above,...tip,14*(1-age/.085),'#ffffff',1);
+  const hit=19/24,age=f.t-hit,pt=f.pointAt(hit,'clubTip');
+  const shadow=progress(f.t,.13,.57)*(1-progress(f.t,hit,1.29));
+  if(shadow>0) ellFill(f.under,[pt[0]-1,pt[1]+1],10,2,'#607a91',shadow*.39);
+  breath(f,.24,.33,12,.69);
+  if(f.t>=16/24&&age<.07) paintSocketTrail(f,'above','clubTip',16/24,hit,{color:'#d8f2f5',width:3});
+  if(age<0||age>.48)return;
+  paintImpact(f,'under','clubTip',pt,(p,x,y)=>{
+    ellFill(p,[x,y],2+8*progress(age,0,.12),2+age*3,'#3b4f68',1-progress(age,.28,.48));
+    p.col('#e6f3ef',1-progress(age,.18,.45));p.line(x,y,x-3-age*23,y-1-age*5);
+  });
+  fracture(f,pt,age,38,612,.49);scatter(f,pt,age,613,21,ice,.48);
+  const u=progress(age,0,.47);oval(f.under,pt,2+36*u,1.5+8*u,'#dce9e4',(1-u)*.89);
 }
 function icicles(f:FxInput) {
-  const lift=.43,bat=.90;
-  if(f.t<lift) return;
-  const belt=f.pointAt(lift,'belt'), impact=f.pointAt(bat,'clubTip');
-  const targets:XY[]=Array.from({length:5},(_,i)=>[f.feet[0]+26+i*12,f.feet[1]+[13,-2,21,4,16][i]]);
-  animations.tech_icicles.hits!.forEach((hit,i)=>{
-    const dest=targets[i], age=f.t-hit;
-    if(age<0) {
-      const a=progress(f.t,lift,bat),b=progress(f.t,bat,hit);
-      const x=f.t<bat?lerp(belt[0],impact[0]+(i-2)*2,a):lerp(impact[0]+(i-2)*2,dest[0],b);
-      const y=f.t<bat?lerp(belt[1],impact[1],a)-Math.sin(Math.PI*a)*(17+i):lerp(impact[1],dest[1],b)-Math.sin(Math.PI*b)*(20+i*3);
-      const spin=f.t<bat?1-a*3+i*.21:-.5+b*2+i*.12;
-      ellFill(f.under,[x,lerp(f.feet[1],dest[1],b)],3,1,'#25354c',.57);
-      shard(f.above,x,y,6*Math.cos(spin),6*Math.sin(spin),2.3,ice[i%3],ice[2]);
-    } else {
-      const fade=1-progress(age,.12,.34);
-      oval(f.under,dest,4,2,'#2d4258',fade);
-      if(age<.1) shard(f.above,dest[0],dest[1]-3,2,-5,2,ice[0],ice[2]);
-      else scatter(f,dest,age-.10,888+i,5,ice,.26);
-    }
+  const toss=14/24,bat=24/24,age=f.t-bat;
+  if(f.t<toss)return;
+  const belt=f.pointAt(toss,'belt'),impact=f.pointAt(bat,'clubTip');
+  if(f.t>=21/24&&age<.06) paintSocketTrail(f,'above','clubTip',21/24,bat,{color:'#d7edf1',width:2});
+  if(age>=0 && age<.12) paintImpact(f,'above','clubTip',impact,(p,x,y)=>{
+    p.col('#fff9e9',1-age/.12);p.line(x-2,y+2,x+2+age*40,y-2-age*14);p.dot(x,y,2,1);
   });
-  pathSmear(f,'clubTip',.78,.94,5,'#476b84','#a8ccda','#eef9ff');
+  for(let i=0;i<5;i++) {
+    const land=(30+i*2)/24,born=f.t-land,id='icicle-'+i;
+    const dest:XY=[Math.min(f.w-7,Math.max(7,impact[0]-26+i*13)),f.feet[1]+[6,-3,11,0,7][i]];
+    const end=projectileAt(f,id,'clubTip',bat,land,dest,12+i*3);
+    if(age<0) continue;
+    if(born<0) {
+      const v=progress(f.t,bat,land);
+      const x=end[0],y=end[1];
+      const dx=2*(i-2)*(1-v),dy=3+5*v;
+      ellFill(f.under,[x,dest[1]],3,1,'#293b50',.48);
+      // shard() puts its leading vertex at centre + vector. Anchor this vertex at the measured point.
+      shard(f.above,x-dx,y-dy,dx,dy,1.7,ice[i%3],ice[2]);
+    } else if(born<.32) {
+      const fade=1-progress(born,.13,.31);
+      paintImpact(f,'under',id,dest,(p,x,y)=>{
+        ellFill(p,[x,y],2.5,1.2,'#3d526a',fade);p.col('#deeef0',fade);p.line(x,y,x+2+born*12,y+born*4);
+      });
+      if(born<.12)shard(f.above,dest[0]-1,dest[1]-5,1,5,1.6,ice[0],ice[2]);
+      else scatter(f,dest,born-.1,888+i,4,ice,.21);
+    }
+  }
 }
 function roar(f:FxInput) {
-  for(const born of [.35,.75,1.18]) {
+  const hit=22/24;
+  if(f.t>=19/24&&f.t<hit+.08)paintSocketTrail(f,'above','mouth',19/24,hit,{color:'#c3d5df',width:2,alpha:.76});
+  if(f.t>=hit && f.t<hit+.17) paintImpact(f,'above','mouth',f.pointAt(hit,'mouth'),(p,x,y)=>{
+    const u=(f.t-hit)/.17;ellFill(p,[x,y],2+u*4,1.2+u*3,'#dde9e7',1-u);
+  });
+  for(const born of [7/24,13/24,hit]) {
     const age=f.t-born;
     if(age>=0 && age<.42) {
       const neck=f.pointAt(born,'mouth');
@@ -139,7 +172,7 @@ function roar(f:FxInput) {
   }
   // Each pulse leaves the jaws once. The bright edges travel past the club
   // head, and the dark underside separates the vapour from the snowy floor.
-  for(const born of [1.14,1.24,1.34]) {
+  for(const born of [hit,hit+.12,hit+.24]) {
     const age=f.t-born;
     if(age<0||age>.44) continue;
     const pt=f.pointAt(born,'mouth'),u=age/.44,center:XY=[pt[0]+u*59,pt[1]-u*9];
@@ -154,8 +187,8 @@ function roar(f:FxInput) {
     }
     oval(f.under,[center[0],f.feet[1]+4],3+u*6,1+u*2,ice[1],.35*alpha);
   }
-  breath(f,1.16,.38,37,1.45);
-  breath(f,1.29,.29,30,1.16);
+  breath(f,hit,.38,37,1.45);
+  breath(f,hit+.12,.29,30,1.16);
 }
 export function effects(f:FxInput) {
   if(f.anim==='tech_snowball') snowball(f);

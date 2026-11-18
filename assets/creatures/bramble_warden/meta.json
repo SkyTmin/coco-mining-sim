@@ -96,7 +96,7 @@
         {
           "seconds": 2,
           "at": [
-            0.3125,
+            0.45,
             0.765625
           ],
           "anim": "tech_ram",
@@ -105,7 +105,7 @@
         {
           "seconds": 2,
           "at": [
-            0.3125,
+            0.45,
             0.765625
           ],
           "anim": "walk"
@@ -264,6 +264,20 @@
     "frame",
     "over"
   ],
+  "showreel": [
+    {
+      "name": "tech_ram",
+      "start": 0,
+      "frames": 48,
+      "end": 54
+    },
+    {
+      "name": "tech_volley",
+      "start": 54,
+      "frames": 38,
+      "end": 98
+    }
+  ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
   "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
   "animations": {
@@ -336,7 +350,7 @@
       "frames": 48,
       "loop": false,
       "hit": [
-        29
+        27
       ],
       "shake": 0.2,
       "stop": 0.06
@@ -346,18 +360,33 @@
       "frames": 38,
       "loop": false,
       "hit": [
-        13,
-        17,
-        20
+        18,
+        22,
+        26
       ],
       "shake": 0.08,
-      "stop": 0
+      "stop": 0.04
     },
     "life": {
       "seconds": 15,
       "frames": 360,
       "loop": true,
-      "hit": [],
+      "hit": [
+        200
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "showreel": {
+      "seconds": 4.083333333333333,
+      "frames": 98,
+      "loop": true,
+      "hit": [
+        27,
+        72,
+        76,
+        80
+      ],
       "shake": 0,
       "stop": 0
     },

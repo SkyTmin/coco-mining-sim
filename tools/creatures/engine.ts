@@ -2,10 +2,12 @@ import { createCanvas, type Canvas } from '@napi-rs/canvas';
 import { Px } from './rig/px';
 import { placement } from './motion';
 import { Pen } from './fx/pen';
+import { emptyTechniqueTrace } from './technique-fx';
 import { frameImage } from './frame-kit';
 import {
   sizes,
   type Creature,
+  type FxInput,
   type Scene,
   type Border,
   type BodyFrame,
@@ -195,7 +197,7 @@ export function splitForeground(
     );
 }
 export function loopSample(t: number, anim: string, seconds: number) {
-  const u = anim === 'life' ? (t * 3 * Math.round(seconds / 3)) / seconds : t;
+  const u = (anim === 'life' || anim === 'showreel') ? (t * 3 * Math.round(seconds / 3)) / seconds : t;
   return ((Math.round(u * fps) % 72) + 72) % 72;
 }
 export function compose(
@@ -244,7 +246,7 @@ export function compose(
   const last = contactFrames.findLastIndex((f) => f <= onTimeline);
   const since = last < 0 ? Infinity : (onTimeline - contactFrames[last]) / fps;
   const hold = spec.stop ?? 0;
-  const sample = last >= 0 && since <= hold ? hits[last] : t;
+  const sample = last >= 0 && onTimeline - contactFrames[last] <= Math.round(hold * fps) ? hits[last] : t;
   const contact = hits.filter((h, i) => contactFrames[i] === onTimeline);
   const dir = anim === 'turn' ? Math.floor(t * 4) % 16 : at.side;
   const finalFrame = !spec.loop && n >= frameCount(spec.seconds) - 1;
@@ -328,10 +330,11 @@ export function compose(
       screenPoint(body, p, feet),
     ]),
   );
-  if (c.effects && !(finalFrame && anim === 'away')) {
+  const techniqueTrace = emptyTechniqueTrace();
+  if ((c.props || c.effects) && !(finalFrame && anim === 'away')) {
     const [under, above] = getFxCanvases(w, h);
     const historical = new Map<number, BodyFrame>([[poseTime, body]]);
-    c.effects({
+    const fx: FxInput = {
       anim: poseAnim,
       t: finalFrame ? 0 : (contact[0] ?? t),
       duration: c.animations[poseAnim]?.seconds ?? spec.seconds,
@@ -339,6 +342,7 @@ export function compose(
       variant,
       feet,
       points,
+      techniqueTrace,
       w,
       h,
       under: new Pen(under.getContext('2d'), 0, 0, 0, 0),
@@ -357,7 +361,9 @@ export function compose(
           throw new Error(c.id + '/' + anim + ' missing socket ' + name);
         return screenPoint(fr, fr.points[name], source.feet);
       },
-    });
+    };
+    c.props?.(fx);
+    c.effects?.(fx);
     blit(layers.fxu, asPx(under), b + dx, b + dy, clip);
     blit(layers.fxo, asPx(above), b + dx, b + dy, clip);
   }
@@ -405,6 +411,7 @@ export function compose(
     body,
     feet: fullFeet,
     worldFeet: feet,
+    techniqueTrace,
     contact,
     motion: at,
     backgroundFrame: loopFrame,

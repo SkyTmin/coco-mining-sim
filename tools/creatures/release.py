@@ -19,7 +19,7 @@ def main():
         raise ValueError("Expected the seven pilot creatures")
     for path in metas:
         meta = json.loads(path.read_text())
-        if "life" not in meta["animations"]:
+        if not {"life", "showreel"}.issubset(meta["animations"]):
             raise ValueError(f"{path.parent.name} needs a fresh export")
         expected = {f"painting-{a}.gif" for a in meta["animations"]}
         main_move = next(a for a in meta["animations"] if a.startswith("tech_"))

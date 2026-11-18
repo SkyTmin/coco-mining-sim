@@ -1,12 +1,13 @@
 import { trk,TAU,lerp,hash } from '../kit/f11-mobkit';
 import { fillPoly,star,flare } from '../fx/pen';
-import { oval,pathSmear,progress,scatter,shard,settle } from '../fx/field';
+import { oval,progress,scatter,shard,settle } from '../fx/field';
+import { paintImpact,paintSocketTrail,projectileAt } from '../technique-fx';
 import type { Animation,BodyFrame,FxInput,XY } from '../types';
 import type { SilkPose } from './silk_dragon';
 
 export const animations:Record<string,Animation>={
-  tech_loop:{seconds:2,hits:[1.30],shake:.15,stop:.04},
-  tech_lash:{seconds:1.1,hits:[.62],shake:.09},tech_kites:{seconds:1.8,hits:[1.05,1.20,1.35],shake:.06}
+  tech_loop:{seconds:2,hits:[26/24],shake:.15,stop:.04},
+  tech_lash:{seconds:1.1,hits:[15/24],shake:.09},tech_kites:{seconds:1.8,hits:[21/24,25/24,29/24,33/24],shake:.06}
 };
 export function pose(anim:string,t:number):SilkPose {
   if(anim.startsWith('tech_') && t>=(Math.round(animations[anim].seconds*24)-1)/24) return {};
@@ -35,55 +36,82 @@ export function presentation(anim:string,t:number):Partial<BodyFrame> {
 const paper=['#f6deb0','#d25d52','#f5b05f','#8d4c53'], wind='#e7d9bb', deep='#7a666b';
 function loop(f:FxInput) {
   const {t,under,above,points}=f;
-  if(t<1.30) {
-    const u=progress(t,.10,1.22), head=points.head;
-    for(let i=0;i<5;i++) {
-      const a=t*4+i*TAU/5,r=38-21*u;
-      oval(above,head,r,r*.51,wind,.65*u,a,a+.34+.38*u);
+  const hitTime=26/24;
+  if(t>=23/24 && t<=27/24) paintSocketTrail(f,'above','head',Math.max(23/24,t-3/24),hitTime,{color:'#ffe3b1',width:2,alpha:.91});
+  if(t<hitTime) {
+    const u=progress(t,.10,.92), head=points.head;
+    for(let i=0;i<5;i++){
+      const a=t*4+i*TAU/5,r=38-24*u;
+      oval(above,head,r,r*.51,wind,.82*u,a,a+.42+.55*u);
     }
     oval(under,[head[0],f.feet[1]+1],18+10*u,3+4*u,deep,.55*u);
     return;
   }
-  const hit=f.pointAt(1.30,'head'), age=t-1.30, u=progress(t,1.30,1.97), floor:XY=[hit[0]+6,f.feet[1]];
-  for(let i=0;i<4;i++) {
-    const a=.3+i*TAU/4+u*.75;
-    oval(under,floor,9+45*u,3+14*u,wind,(1-u)*.9,a,a+1);
-    oval(above,[hit[0]+u*23,hit[1]+u*9],6+22*u,3+12*u,wind,(1-u)*.9,a+.5,a+1.35);
+  const hit=f.pointAt(hitTime,'head'),age=t-hitTime,u=progress(t,hitTime,1.92),floor:XY=[hit[0]+6,f.feet[1]];
+  if(age<.26)paintImpact(f,'above','head',hit,(p,x,y)=>{
+    const fade=1-age/.26;
+    p.col('#985849',fade);star(p,x,y,8*fade,4,.43);
+    flare(p,x,y,5*fade,'#fff3c8',fade);
+  });
+  const descend=progress(age,0,.23);
+  const wake:XY=[lerp(hit[0],floor[0],descend),lerp(hit[1],floor[1],descend)];
+  for(let i=0;i<4;i++){
+    const a=.3+i*TAU/4+u*1.35;
+    oval(above,wake,4+30*u,3+12*u,wind,(1-u)*.95,a+.5,a+1.40);
+    if(descend>.52)oval(under,floor,9+45*u,3+14*u,wind,(1-u)*.85,a,a+1.05);
   }
-  for(let i=0;i<7;i++) {
-    const a=i*TAU/7, pt:XY=[floor[0]+Math.cos(a)*(12+30*u),floor[1]+Math.sin(a)*(3+8*u)];
-    oval(above,pt,2+4*u,1+2*u,'#cfb799',.54*(1-u),.2,4.1);
-  }
-  scatter(f,floor,age,174,15,paper,.67,true);
+  if(age>=.16)scatter(f,floor,age-.16,174,16,paper,.66,true);
 }
 function lash(f:FxInput) {
-  pathSmear(f,'tail',.43,.66,7,'#513648','#da8465','#ffe1ab');
-  if(f.t<.62) return;
-  const hit=f.pointAt(.62,'tail'), age=f.t-.62, u=progress(f.t,.62,1.07), end:XY=[hit[0]+26,f.feet[1]+8];
-  f.under.col(deep,.87*(1-u));f.under.line(hit[0]-14,f.feet[1]+2,...end);
-  f.under.col(wind,.9*(1-u));f.under.line(hit[0]-13,f.feet[1]+1,end[0],end[1]-1);
-  if(age<.17) {f.above.col('#a94f47',1-age/.17);star(f.above,...hit,10-age*33,6,.31);flare(f.above,...hit,8-age*32,'#fff3c9',1-age/.17);}
-  scatter(f,end,age,213,8,['#fff2c8','#d4a75f','#a56845'],.45,true);
+  const hitTime=15/24;
+  if(f.t>=12/24 && f.t<=16/24)paintSocketTrail(f,'above','tail',Math.max(12/24,f.t-3/24),hitTime,{color:'#f5bd8a',width:1,alpha:.97});
+  if(f.t<hitTime)return;
+  const hit=f.pointAt(hitTime,'tail'),before=f.pointAt(14/24,'tail'),age=f.t-hitTime,u=progress(f.t,hitTime,1.03);
+  const dx=hit[0]-before[0],dy=hit[1]-before[1],len=Math.hypot(dx,dy)||1;
+  const end:XY=[hit[0]+dx/len*22,hit[1]+dy/len*6];
+  f.under.col(deep,.87*(1-u));f.under.line(...hit,...end);
+  f.under.col(wind,.89*(1-u));f.under.line(hit[0],hit[1]-1,end[0],end[1]-1);
+  if(age<.18)paintImpact(f,'above','tail',hit,(p,x,y)=>{
+    const a=1-age/.18;
+    p.col('#9e514e',a);star(p,x,y,9*a,6,.28);flare(p,x,y,7*a,'#fff2be',a);
+  });
+  scatter(f,end,age,213,8,['#fff2c8','#d4a75f','#a56845'],.39,true);
 }
 function kites(f:FxInput) {
-  const launch=.74,hits=animations.tech_kites.hits!;
-  hits.forEach((impact,i)=>{
-    const pt:XY=[f.feet[0]+[32,59,77][i],f.feet[1]+[15,0,19][i]], age=f.t-impact;
-    if(age<0) {
-      const charge=progress(f.t,.24+.10*i,impact);
-      oval(f.under,pt,9,3,'#6b555b',charge*.8);
-      oval(f.under,pt,9,3,wind,charge,-Math.PI/2,-Math.PI/2+charge*TAU);
-      if(f.t<launch) return;
-      const u=progress(f.t,launch,impact), src=f.pointAt(launch,i===1?'finL':'finR');
-      const x=lerp(src[0],pt[0],u), y=lerp(src[1],pt[1],u)-Math.sin(u*Math.PI)*(19+7*i);
-      const a=(-.6+u*1.65),dx=5*Math.cos(a),dy=5*Math.sin(a);
-      shard(f.above,x,y,dx,dy,4,paper[i],paper[(i+1)%4]);
-      f.above.col(wind);f.above.line(x-dx,y-dy,x-dx-4,y-dy+2);
+  const launch=21/24;
+  if(f.t>=18/24 && f.t<=22/24)for(const socket of ['finL','finR'])
+    paintSocketTrail(f,'above',socket,Math.max(18/24,f.t-3/24),launch,{color:'#ebbd85',width:2,alpha:.88});
+  if(f.t>=launch && f.t<launch+.13)for(const socket of ['finL','finR']){
+    const src=f.pointAt(launch,socket);
+    paintImpact(f,'above',socket,src,(p,x,y)=>{
+      const fade=1-progress(f.t,launch,launch+.13);
+      p.col('#ffdfa3',fade);p.line(x-2,y+1,x+2,y-1);
+      flare(p,x,y,4*fade,'#fff2c6',fade);
+    });
+  }
+  [25,29,33].forEach((frame,i)=>{
+    const impact=frame/24,age=f.t-impact,id='kite-'+i,socket=i===1?'finL':'finR';
+    const src=f.pointAt(launch,socket),dir=src[0]<f.w*.65?1:-1;
+    const pt:XY=[Math.max(8,Math.min(f.w-9,src[0]+dir*[29,42,57][i])),Math.min(f.h-6,f.feet[1]+[8,-7,14][i])];
+    if(f.t<launch){
+      const charge=progress(f.t,.24+.10*i,launch);
+      oval(f.under,pt,8,3,'#6b555b',charge*.76);
+      oval(f.under,pt,8,3,wind,charge*.82,-Math.PI/2,-Math.PI/2+charge*TAU);
       return;
     }
-    const fade=1-progress(f.t,impact,Math.min(1.79,impact+.8));
-    f.under.col('#f1ba83',fade*.83);fillPoly(f.under,[pt[0]-8,pt[1],pt[0],pt[1]-3,pt[0]+8,pt[1],pt[0],pt[1]+3]);
-    scatter(f,pt,age,221+i,12,paper,.45,true);
+    const pos=projectileAt(f,id,socket,launch,impact,pt,12+i*6);
+    if(age<0){
+      const u=progress(f.t,launch,impact),a=-.65+u*1.97,dx=5.8*Math.cos(a)*dir,dy=5.8*Math.sin(a);
+      shard(f.above,...pos,dx,dy,4.6,paper[i],paper[(i+1)%4]);
+      f.above.col(wind);f.above.line(pos[0]-dx,pos[1]-dy,pos[0]-dx-4*dir,pos[1]-dy+2);
+    } else {
+      const fade=1-progress(f.t,impact,Math.min(1.76,impact+.55));
+      if(fade>0)paintImpact(f,'under',id,pt,(p,x,y)=>{
+        p.col('#f1ba83',fade*.85);fillPoly(p,[x-8,y,x,y-3,x+8,y,x,y+3]);
+        p.lineS(x-4,y,x,y-1,'#fff2bd',fade*.87);
+      });
+      scatter(f,pt,age,221+i,12,paper,.39,true);
+    }
   });
 }
 export function effects(f:FxInput) {

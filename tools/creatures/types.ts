@@ -1,5 +1,7 @@
 import type { Px } from './rig/px';
 import type { Pen } from './fx/pen';
+import type { JointPose, TechniqueBook } from './technique';
+import type { TechniqueTrace } from './technique-fx';
 export type XY = [number, number];
 export type Variant = 'normal' | 'gold';
 export type Rarity =
@@ -49,6 +51,7 @@ export interface FxInput {
   // Historical transformed socket in field coordinates for arcs and released missiles.
   pointAt: (time: number, name: string) => XY;
   variant: Variant;
+  techniqueTrace?: TechniqueTrace;
 }
 export interface Creature {
   id: string;
@@ -60,10 +63,12 @@ export interface Creature {
     t: number,
     side: number,
     variant: Variant,
-    motion?: { headSide: number; gaitPhase: number },
+    motion?: { headSide: number; gaitPhase: number; techniquePose?: JointPose },
   ) => BodyFrame; // side 0..15; default 0 = artist's 3/4
+  props?: (input: FxInput) => void; // physical targets shown during both held keys and playback
   effects?: (input: FxInput) => void;
   motion?: MotionPlan;
+  techniques?: TechniqueBook;
 }
 export interface MotionBeat {
   seconds: number;

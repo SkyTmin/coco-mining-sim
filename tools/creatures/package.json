@@ -6,7 +6,8 @@
     "test": "node --import tsx --test test/*.test.ts",
     "render": "tsx render.ts",
     "verify": "tsx verify.ts",
-    "gallery": "tsx gallery.ts && tsx comparison.ts"
+    "gallery": "tsx gallery.ts && tsx comparison.ts",
+    "gallery:techniques": "tsx gallery.ts --techniques"
   },
   "dependencies": {
     "@napi-rs/canvas": "0.1.90",

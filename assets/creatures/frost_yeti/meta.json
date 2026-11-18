@@ -48,6 +48,22 @@
     "clubTip": [
       113.62461285527712,
       42.98398008720794
+    ],
+    "clubGripL": [
+      71.29259457984088,
+      76.9101919904661
+    ],
+    "handL": [
+      71.29259457984088,
+      76.9101919904661
+    ],
+    "clubGripR": [
+      60.24945937755317,
+      85.76050813914215
+    ],
+    "handR": [
+      60.24945937755317,
+      85.76050813914215
     ]
   },
   "motion": {
@@ -76,16 +92,16 @@
           "seconds": 1.5,
           "at": [
             0.5288461538461539,
-            0.85625
+            0.75625
           ],
           "anim": "look",
           "side": 1
         },
         {
-          "seconds": 1.3,
+          "seconds": 1.2916666666666667,
           "at": [
             0.5288461538461539,
-            0.85625
+            0.75625
           ],
           "anim": "tech_slam",
           "side": 0
@@ -94,7 +110,7 @@
           "seconds": 1.3,
           "at": [
             0.5288461538461539,
-            0.85625
+            0.75625
           ],
           "anim": "walk"
         },
@@ -115,9 +131,9 @@
           "anim": "walk"
         },
         {
-          "seconds": 1.6,
+          "seconds": 1.5833333333333333,
           "at": [
-            0.7067307692307693,
+            0.6923076923076923,
             0.7375
           ],
           "anim": "tech_roar",
@@ -126,7 +142,7 @@
         {
           "seconds": 1.4,
           "at": [
-            0.7067307692307693,
+            0.6923076923076923,
             0.7375
           ],
           "anim": "walk"
@@ -261,6 +277,32 @@
     "frame",
     "over"
   ],
+  "showreel": [
+    {
+      "name": "tech_snowball",
+      "start": 0,
+      "frames": 58,
+      "end": 64
+    },
+    {
+      "name": "tech_slam",
+      "start": 64,
+      "frames": 31,
+      "end": 101
+    },
+    {
+      "name": "tech_icicles",
+      "start": 101,
+      "frames": 48,
+      "end": 155
+    },
+    {
+      "name": "tech_roar",
+      "start": 155,
+      "frames": 38,
+      "end": 199
+    }
+  ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
   "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
   "animations": {
@@ -329,54 +371,78 @@
       "stop": 0
     },
     "tech_snowball": {
-      "seconds": 2.4,
+      "seconds": 2.4166666666666665,
       "frames": 58,
       "loop": false,
       "hit": [
-        41
+        32,
+        47
       ],
       "shake": 0.25,
-      "stop": 0.07
+      "stop": 0.06
     },
     "tech_slam": {
-      "seconds": 1.3,
+      "seconds": 1.2916666666666667,
       "frames": 31,
       "loop": false,
       "hit": [
         19
       ],
       "shake": 0.35,
-      "stop": 0.06
+      "stop": 0.08
     },
     "tech_icicles": {
       "seconds": 2,
       "frames": 48,
       "loop": false,
       "hit": [
-        29,
-        31,
+        24,
+        30,
+        32,
         34,
         36,
         38
       ],
       "shake": 0.08,
-      "stop": 0
+      "stop": 0.04
     },
     "tech_roar": {
-      "seconds": 1.6,
+      "seconds": 1.5833333333333333,
       "frames": 38,
       "loop": false,
       "hit": [
-        28
+        22
+      ],
+      "shake": 0,
+      "stop": 0.04
+    },
+    "life": {
+      "seconds": 14.975000000000001,
+      "frames": 359,
+      "loop": true,
+      "hit": [
+        133,
+        226
       ],
       "shake": 0,
       "stop": 0
     },
-    "life": {
-      "seconds": 15,
-      "frames": 360,
+    "showreel": {
+      "seconds": 8.291666666666666,
+      "frames": 199,
       "loop": true,
-      "hit": [],
+      "hit": [
+        32,
+        47,
+        83,
+        125,
+        131,
+        133,
+        135,
+        137,
+        139,
+        177
+      ],
       "shake": 0,
       "stop": 0
     },

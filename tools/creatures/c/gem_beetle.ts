@@ -3,10 +3,12 @@ import { F3, Rig, type Mat, type V3 } from '../rig/f15-rig';
 import { hx, tn, TAU, ik } from '../kit/f11-mobkit';
 import { everyday, life, projectFigure, scaleFigure } from '../rig/figure';
 import plan from './gem_beetle-life';
+import { withTechniques } from '../technique';
+import keys from './gem_beetle-keys';
 import { strideFoot } from '../motion';
 import { ramp, localPoint } from './engraving';
 import { facet, armouredHead, etchedMetal, hingeClips } from './beetle-cut';
-import { animations, pose, effects } from './gem_beetle-actions';
+import { animations, pose, effects, props } from './gem_beetle-actions';
 import type { Creature, Variant } from '../types';
 
 export interface BeetlePose {
@@ -284,7 +286,7 @@ export function buildFrame(
     r.poly([p(7, 1, 3), p(-23, 1, 0.5), p(-11, 10, 1)], membrane, -0.3);
     hingeClips(r, w, s, legMetal, plate);
     r.line(back, shoulder, glint > 0.3 ? core.T[3] : light.T[2], 0.13, 0.8);
-    sockets[s === 1 ? 'rightWing' : 'leftWing'] = shoulder;
+    sockets[s === 1 ? 'rightWing' : 'leftWing'] = anim === 'tech_prism' ? outer : shoulder;
   }
   scaleFigure(r, sockets, scale, 1.56);
   const frame = projectFigure(r, 96, [46, 72], sockets, '#1e2437');
@@ -304,14 +306,15 @@ const creature: Creature = {
   rarity: 'uncommon',
   animations: { ...everyday, ...animations },
   effects,
+  props,
   frame: (anim, t, side, variant, steer) =>
     buildFrame(
       anim,
       t,
       side,
       variant,
-      pose(anim, t),
+      steer?.techniquePose ?? pose(anim, t),
       steer ? ((((steer.headSide - side + 24) % 16) - 8) * Math.PI) / 8 : 0,
     ),
 };
-export default creature;
+export default withTechniques(creature, keys);

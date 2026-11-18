@@ -38,6 +38,19 @@ const turn = (a: number, b: number, u: number) =>
   wrap(a + (wrap(b - a + 8, 16) - 8) * u, 16);
 export const lifeDuration = (p: MotionPlan) =>
   p.beats.reduce((n, b) => n + b.seconds, 0);
+// Frame indices keep short attacks and the six-frame rests exactly on a GIF tick.
+export function reelChapters(c: Creature) {
+  let cursor = 0;
+  return Object.entries(c.animations)
+    .filter(([name]) => name.startsWith('tech_'))
+    .map(([name, action]) => {
+      const frames = Math.round(action.seconds * 24);
+      const start = cursor;
+      cursor += frames + 6;
+      return { name, start, frames, end: cursor };
+    });
+}
+
 export function attachMotion(c: Creature, plan: MotionPlan): Creature {
   if (
     !Number.isFinite(plan.stride) ||
@@ -45,9 +58,31 @@ export function attachMotion(c: Creature, plan: MotionPlan): Creature {
     !Number.isFinite(plan.yaw)
   )
     throw Error(c.id + ' invalid gait');
+  plan = {
+    ...plan,
+    beats: plan.beats.map((beat) =>
+      beat.anim.startsWith('tech_') && c.animations[beat.anim]
+        ? {
+            ...beat,
+            seconds: Math.round(c.animations[beat.anim].seconds * 24) / 24,
+          }
+        : beat,
+    ),
+  };
+  const chapters = reelChapters(c);
   const seconds = lifeDuration(plan);
-  if (seconds < 12 - 1e-8 || seconds > 16 + 1e-8)
-    throw Error(c.id + ' life must last 12–16 seconds');
+  let start = 0;
+  const lifeHits = plan.beats.flatMap((beat) => {
+    const action = c.animations[beat.anim];
+    const times = (action?.hits ?? []).map(
+      (hit) =>
+        Math.round((start + (hit * beat.seconds) / action.seconds) * 24) / 24,
+    );
+    start += beat.seconds;
+    return times;
+  });
+  if (seconds < 12 - 1e-8 || seconds > 20 + 1e-8)
+    throw Error(c.id + ' life must last 12–20 seconds');
   for (const beat of plan.beats) {
     if (
       !(beat.seconds > 0) ||
@@ -65,7 +100,20 @@ export function attachMotion(c: Creature, plan: MotionPlan): Creature {
     motion: plan,
     animations: {
       ...c.animations,
-      life: { seconds, loop: true },
+      life: { seconds, loop: true, hits: lifeHits },
+      ...(chapters.length
+        ? {
+            showreel: {
+              seconds: chapters.at(-1)!.end / 24,
+              loop: true,
+              hits: chapters.flatMap(({ name, start }) =>
+                (c.animations[name].hits ?? []).map(
+                  (t) => (start + Math.round(t * 24)) / 24,
+                ),
+              ),
+            },
+          }
+        : {}),
       ...Object.fromEntries(
         directions.map((d) => ['walk_' + d, { seconds: 1, loop: true }]),
       ),
@@ -104,6 +152,27 @@ export function placement(
     duration: c.animations[anim]?.seconds ?? 1,
     beat: -1,
   };
+  if (anim === 'showreel') {
+    const chapters = reelChapters(c);
+    const tick = wrap(t * 24, chapters.at(-1)!.end);
+    const chapter = chapters.find(({ end }) => tick < end)!;
+    const age = tick - chapter.start;
+    return age < chapter.frames
+      ? {
+          ...fixed,
+          anim: chapter.name,
+          t: age / 24,
+          start: chapter.start / 24,
+          duration: c.animations[chapter.name].seconds,
+        }
+      : {
+          ...fixed,
+          anim: 'idle',
+          t: (age - chapter.frames) / 24,
+          start: (chapter.start + chapter.frames) / 24,
+          duration: 6 / 24,
+        };
+  }
   if (!plan) return fixed;
   const dir =
     anim === 'walk'

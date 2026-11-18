@@ -1,6 +1,7 @@
+import { paintImpact, paintSocketTrail } from '../technique-fx';
 import { trk,TAU,hash,lerp,sstep } from '../kit/f11-mobkit';
 import { flare,fly,type Pen } from '../fx/pen';
-import { oval,ellFill,pathSmear,progress,settle } from '../fx/field';
+import { oval,ellFill,progress,settle } from '../fx/field';
 import type { Animation,BodyFrame,FxInput,XY } from '../types';
 import type { ToadPose } from './toad_shaman';
 
@@ -68,12 +69,36 @@ function drops(f:FxInput,ground:XY,age:number,seed:number,count:number,life:numb
     } else oval(f.under,[x,y],2.2,1.1,water[1],fade*.8);
   }
 }
+export function props(f:FxInput) {
+  if (f.anim==='tech_tongue'){
+    const hit=13/24,age=f.t-hit;
+  const contact=f.pointAt(hit,'tongueTip');
+  if(f.t>.09 && age<.37) {
+    ellFill(f.under,[contact[0],contact[1]+2],7,2.8,'#435b57',.96);
+    oval(f.under,[contact[0],contact[1]+2],6.5,2.4,'#91a999',.88,-2.9,-.15);
+    f.under.col('#a6bcaa',.68);f.under.line(contact[0]-3,contact[1]+1,contact[0],contact[1]);
+  }
+  } else if(f.anim==='tech_staff') {
+    const hit=20/24,age=f.t-hit,foot=f.pointAt(hit,'staffFoot');
+  // Wet peat rises slightly above the floor. Its crest is the receiver of the heel.
+  if(f.t>.10 && age<.42) {
+    const sink=age<0?0:2*Math.min(1,age*12);
+    ellFill(f.under,[foot[0],foot[1]+3+sink],8,3,'#394b40',.88);
+    oval(f.under,[foot[0],foot[1]+3+sink],7,3,'#88965b',.82,-3.12,-.1);
+  }
+  }
+}
 function croak(f:FxInput) {
-  const hit=1.1,age=f.t-hit;
+  const hit=26/24,age=f.t-hit;
+  if (f.t>=23/24 && f.t<=hit+1/24) paintSocketTrail(f,'above','mouth',23/24,hit,{color:'#a9ca93',width:2,alpha:.72});
   const charge=progress(f.t,.15,.99), glow=charge*(1-progress(f.t,1.10,1.38));
   if(glow>0) {const lamp=f.points.staffTip;flare(f.above,...lamp,2+glow*5,green[0],glow);}
   if(age<0)return;
   const origin=f.pointAt(hit,'mouth'),floor:XY=[origin[0],f.feet[1]+4];
+  if(age<.17) paintImpact(f,'above','mouth',origin,(pen,x,y)=>{
+    ellFill(pen,[x,y],1+age*18,1+age*25,'#e6eeb0',1-age/.17);
+    oval(pen,[x+age*45,y],1+age*25,1+age*49,'#a9cf9e',1-age/.17);
+  });
   for(let i=0;i<3;i++) {
     const u=progress(age,i*.10,.71+i*.07);
     if(u<=0||u>=1) continue;
@@ -87,8 +112,8 @@ function croak(f:FxInput) {
   }
 }
 function tongue(f:FxInput) {
-  const hit=.45,age=f.t-hit;
-  pathSmear(f,'tongueTip',.31,.48,6,'#66415a','#c77a85','#ebadb1');
+  const hit=13/24,age=f.t-hit;
+  if(f.t>=10/24 && age<.06) paintSocketTrail(f,'under','tongueTip',10/24,hit,{color:'#e9a3a0',width:2});
   if(age<0)return;
   const pt=f.pointAt(hit,'tongueTip'),u=progress(age,0,.40),fade=1-progress(age,.18,.42);
   for(let i=0;i<8;i++) {
@@ -96,40 +121,61 @@ function tongue(f:FxInput) {
     ellFill(f.under,[pt[0]+Math.cos(a)*r,pt[1]+Math.sin(a)*r*.39],3+i%3,1+i%2,'#789578',fade);
   }
   oval(f.under,pt,5+4*u,2+u,'#d0cda0',fade*.83,-2.6,-.36);
+  if(age<.16) paintImpact(f,'above','tongueTip',pt,(p,x,y)=>{
+    ellFill(p,[x,y],2+age*14,1.3,'#e8d3a9',1-age/.16);
+  });
   drops(f,pt,age,341,14,.42);
 }
 function staff(f:FxInput) {
-  const hit=.85,age=f.t-hit,pt=f.points.staffTip;
-  const charge=progress(f.t,.12,.58)*(1-progress(f.t,.85,1.21));
-  if(charge>0) {
-    const base=f.points.staffFoot,core:XY=[pt[0]+1,pt[1]+6];
-    ellFill(f.above,core,5+4*charge,2+2*charge,'#dbc96b',.79*charge);
-    for(let i=-3;i<=3;i++){
-      const brightness=progress(f.t,.17+.043*Math.abs(i),.59+.035*Math.abs(i))*(1-progress(f.t,.85,1.15));
-      const x=core[0]+i*2.85, y=core[1]+2-Math.abs(i)*.75;
-      f.above.col('#ffe798',brightness);f.above.line(core[0],core[1]+4,x,y);
-      f.above.col('#fff4c1',brightness);f.above.dot(x,y,2,1);
+  const hit=20/24, age=f.t-hit;
+  const foot=f.pointAt(hit,'staffFoot');
+  const glow=progress(f.t,.08,.54)*(1-progress(f.t,.64,hit));
+  if(glow>0) ellFill(f.above,f.points.staffTip,3.2,1.6,'#ffe499',.66*glow);
+  if(f.t>=17/24 && age<.075)
+    paintSocketTrail(f,'above','staffFoot',17/24,hit,{color:'#c7d099',width:2});
+  if(age<0 || age>.52)return;
+  const u=progress(age,0,.52),fade=1-progress(age,.30,.52);
+  paintImpact(f,'under','staffFoot',foot,(p,x,y)=>{
+    ellFill(p,[x,y],2+u*6,1+u*1.4,'#363e34',fade);
+    p.col('#dbe29b',fade);p.line(x,y,x-1-u*6,y-u);
+    for(let i=0;i<9;i++){
+      const a=TAU*i/9+.32,ray=(7+2*Math.cos(i*3))*Math.min(1,u*3.7);
+      const mid:XY=[x+ray*Math.cos(a),y+ray*.42*Math.sin(a)];
+      p.col(i%2?'#8dba86':'#d1d797',fade);
+      p.line(x,y,...mid);
+      if(u>.11) {
+        const end=(u-.11)*29;
+        p.line(...mid,mid[0]+end*Math.cos(a+.47),mid[1]+end*.38*Math.sin(a+.47));
+      }
     }
-    flare(f.above,core[0],core[1]+1,3+5*charge,'#fff3be',charge);
-    const hand:XY=[lerp(base[0],core[0],.42),lerp(base[1],core[1],.42)];
-    const glint=progress(f.t,.50,.67)*(1-progress(f.t,.76,.89));
-    flare(f.above,...hand,1+4*glint,'#ffe6a2',glint);
+  });
+  // The near rim covers the submerged end. The light tuft starts at the divot,
+  // splits above it and leaves two dark crumbs beside the pale roots.
+  if(age<.23) paintImpact(f,'above','staffFoot',foot,(p,x,y)=>{
+    const v=age/.23,alpha=1-v*v;
+    const rise=3+8*Math.sin(Math.PI*v);
+    p.col('#493e39',alpha);p.line(x-4,y+1,x+5,y+1);
+    p.col('#f2df91',alpha);p.line(x-3,y,x+3,y);p.dot(x-1,y-1,3,1);
+    for(const side of [-1,1]) {
+      const dx=side*(2+8*v),dy=rise*(side<0?.8:1);
+      p.col(side<0?'#b3cd88':'#f0df9a',alpha);
+      p.line(x+side,y-1,x+dx,y-dy);
+      p.col('#ffffc5',alpha);p.dot(x+dx,y-dy,2,1);
+      p.col('#725240',alpha);p.dot(x+side*(4+7*v),y+1-v*3,2,2);
+    }
+  });
+  // Spores and peat issue from the floor divot, even after the staff rebounds.
+  for(let i=0;i<19;i++){
+    const theta=TAU*hash(i,32),spread=u*(11+17*hash(i,231));
+    const x=foot[0]+Math.cos(theta)*spread, y=foot[1]+Math.sin(theta)*spread*.34
+      -Math.sin(u*Math.PI)*(6+14*hash(i,83));
+    f.above.col(green[i%3],fade);f.above.dot(x,y,i%4===0?2:1,1);
   }
-  if(age<0)return;
-  const foot=f.pointAt(hit,'staffFoot'),head=f.pointAt(hit,'staffTip');
-  const u=progress(age,0,.53),fade=1-progress(age,.33,.53);
-  const reflection:XY=[foot[0]-8,foot[1]+4];
-  oval(f.under,reflection,8+u*11,2+u*3,'#d8d486',.88*(1-u),-2.94,2.32);
-  for(let i=0;i<28;i++) {
-    const a=TAU*i/28, rx=6+u*32,ry=2+u*11,x=foot[0]+Math.cos(a)*rx,y=foot[1]+Math.sin(a)*ry;
-    f.under.col(green[2+i%2],fade*.92);f.under.line(x,y,x+3*Math.cos(a+.6),y+2*Math.sin(a+.6));
-    f.under.col(green[1],fade*.8);f.under.dot(x-1,y-1);
-    const spread=7+u*(11+17*hash(i,231)),sx=head[0]+Math.cos(a)*spread,sy=head[1]+Math.sin(a)*spread*.4-15*Math.sin(u*Math.PI);
-    f.above.col(green[i%3],fade*(.76+.19*Math.sin(i+u*4)));f.above.dot(sx,sy,i%4===0?2:1,1);
-  }
+
 }
 function leap(f:FxInput) {
-  const hit=1.2,age=f.t-hit;
+  const hit=27/24,age=f.t-hit;
+  if(f.t>=24/24 && age<.05) paintSocketTrail(f,'above','footR',24/24,hit,{color:'#b6c69b',width:2,alpha:.85});
   if(age<0) {
     const target:XY=[f.feet[0]+12,f.feet[1]+4],u=progress(f.t,.44,1.18);
     if(u>0) {ellFill(f.under,target,13+u*17,2.6+u*4,'#243a40',.18+u*.22);oval(f.under,target,13+u*17,3+u*4,water[1],u*.45);}
@@ -137,6 +183,10 @@ function leap(f:FxInput) {
   }
   const left=f.pointAt(hit,'footL'), right=f.pointAt(hit,'footR'),center:XY=[(left[0]+right[0])/2,(left[1]+right[1])/2],u=progress(age,0,.56);
   for(const [i,pt] of [left,right].entries()) {
+    if(age<.19) paintImpact(f,'above',i?'footR':'footL',pt,(pen,x,y)=>{
+      const v=age/.19;ellFill(pen,[x,y],2+v*7,1+v*1.7,water[0],1-v);
+      pen.col(water[1],1-v);pen.line(x,y,x+(i?1:-1)*(2+v*9),y-v*10);
+    });
     drops(f,pt,age,561+i,17,.54);
     oval(f.under,pt,5+u*26,1.5+u*7,water[0],(1-u)*.9);
   }
@@ -147,10 +197,15 @@ function leap(f:FxInput) {
   }
 }
 function spores(f:FxInput) {
-  for(const [index,born] of animations.tech_spores.hits!.entries()) {
+  const first=24/24;
+  if(f.t>=21/24&&f.t<=first+1/24) paintSocketTrail(f,'above','mouth',21/24,first,{color:'#c5d28b',alpha:.74});
+  for(const [index,born] of f.hits.entries()) {
     const age=f.t-born;
     if(age<0||age>=.66) continue;
     const source=f.pointAt(born,'mouth'),u=age/.66,fall=progress(u,.08,.62);
+    if(age<.14) paintImpact(f,'above','mouth',source,(pen,x,y)=>{
+      ellFill(pen,[x,y],1.5+age*18,1+age*10,green[index%3],1-age/.14);
+    });
     const alpha=(1-progress(u,.52,1))*(1-progress(f.t,1.79,1.98));
     for(let i=0;i<12;i++) {
       const a=TAU*hash(i,63+index),spread=6+u*25;
@@ -171,6 +226,11 @@ export function effects(f:FxInput) {
   else if(f.anim==='tech_leap') leap(f);
   else if(f.anim==='tech_spores') spores(f);
   else if(f.anim==='phase') {
+    const age=f.t-27/24;
+    if(age>=0 && age<.42) paintImpact(f,'under','staffFoot',f.pointAt(27/24,'staffFoot'),(p,x,y)=>{
+      ellFill(p,[x,y],2+age*8,1+age*3,'#cbd87d',1-age/.42);
+      oval(p,[x,y],2+age*24,1+age*8,'#a9c77d',1-age/.42);
+    });
     const u=progress(f.t,.51,1.95);
     if(u>0&&u<1) {
       ellFill(f.under,f.feet,20+u*21,4+u*4,green[2],Math.sin(Math.PI*u)*.62);

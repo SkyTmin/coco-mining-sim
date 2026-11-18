@@ -7,6 +7,7 @@ import {
   placement,
   strideFoot,
   attachMotion,
+  reelChapters,
 } from '../motion';
 import { Px } from '../rig/px';
 import { loadPainting } from '../render';
@@ -112,7 +113,7 @@ for (const id of ids) {
       const { c, s, b } = await loadPainting(id);
       assert.ok(c.motion, id + ' missing life route');
       const spec = c.animations.life;
-      assert.ok(spec.seconds >= 12 && spec.seconds <= 16);
+      assert.ok(spec.seconds >= 12 && spec.seconds <= 20);
       const [w, h] = sizes[c.rarity],
         origin = ground(w, h);
       const route: Array<XY> = [];
@@ -129,9 +130,46 @@ for (const id of ids) {
         );
         if (f.anim.startsWith('tech_')) skills.add(f.anim);
       }
+      const minimum = ['legendary', 'mythic', 'secret'].includes(c.rarity)
+        ? 3
+        : ['rare', 'epic'].includes(c.rarity)
+          ? 2
+          : 1;
       assert.ok(
-        skills.size >= 1 && skills.size <= 2,
+        skills.size >= minimum && skills.size <= minimum + 1,
         id + ' life techniques ' + [...skills].join(','),
+      );
+      const chapters = reelChapters(c);
+      assert.deepEqual(
+        chapters.map((x) => x.name),
+        Object.keys(c.animations).filter((x) => x.startsWith('tech_')),
+      );
+      for (const chapter of chapters) {
+        const hits = c.animations[chapter.name].hits!;
+        for (const time of hits) {
+          const tick = Math.round(time * 24);
+          const direct = compose(c, s, b, chapter.name, tick / 24);
+          const inReel = compose(
+            c,
+            s,
+            b,
+            'showreel',
+            (chapter.start + tick) / 24,
+          );
+          assert.equal(inReel.motion.anim, chapter.name);
+          assert.deepEqual(inReel.contact, direct.contact);
+          assert.deepEqual(inReel.layers.body.data, direct.layers.body.data);
+          assert.deepEqual(inReel.layers.fxo.data, direct.layers.fxo.data);
+        }
+        assert.equal(
+          placement(c, 'showreel', (chapter.end - 1) / 24, 0, origin).anim,
+          'idle',
+        );
+      }
+      const reelEnd = c.animations.showreel.seconds;
+      assert.deepEqual(
+        compose(c, s, b, 'showreel', reelEnd).picture.data,
+        compose(c, s, b, 'showreel', 0).picture.data,
       );
       const xs = route.map((p) => p[0]),
         ys = route.map((p) => p[1]);

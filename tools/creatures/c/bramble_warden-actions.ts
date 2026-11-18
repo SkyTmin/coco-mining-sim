@@ -1,8 +1,9 @@
 import { clamp01, easeIn3, easeOut, hash, lerp, lin, sstep } from '../kit/f11-mobkit';
 import { keyPose, type KeyPose } from '../kit/f14-mobkit';
 import { chunks, dust, fillPoly, fly } from '../fx/pen';
+import { paintImpact, paintSocketTrail, projectileAt } from '../technique-fx';
 import type { Animation, FxInput, XY } from '../types';
-import { fissure, oval, projectile, ripple, shard, springBack, strokeTrail } from './strike-brush';
+import { fissure, oval, ripple, shard, springBack } from './strike-brush';
 const neutral = {
   dx: 0,
   dy: 0,
@@ -20,8 +21,8 @@ const neutral = {
   ghost: 0,
 };
 export const animations: Record<string, Animation> = {
-  tech_ram: { seconds: 2, hits: [1.2], shake: 0.2, stop: 0.06 },
-  tech_volley: { seconds: 1.6, hits: [0.55, 0.7, 0.85], shake: 0.08 },
+  tech_ram: { seconds: 2, hits: [27/24], shake: 0.2, stop: 0.06 },
+  tech_volley: { seconds: 1.6, hits: [18/24,22/24,26/24], shake: 0.08 },
   happy: { seconds: 1.1 },
   tired: { seconds: 1.5 },
   hatch: { seconds: 1.5 },
@@ -109,7 +110,7 @@ function leaves(f: FxInput, age: number, origin: XY, count: number) {
 }
 function ram(f: FxInput) {
   const { under, above, t, feet, points } = f,
-    age = t - 1.2;
+    hit=27/24,age=t-hit;
   if (t < 1.22) {
     const growth = sstep(0.1, 0.65, t);
     for (let i = -1; i <= 1; i++) {
@@ -130,12 +131,18 @@ function ram(f: FxInput) {
       x = feet[0] - 10 + 41 * u;
     under.lineS(feet[0] - 9, feet[1] + 7, x, feet[1] + 8, '#44312e', clamp01(1.7 - t));
     leaves(f, t - 0.75, [feet[0] + 3, feet[1] + 7], 6);
-    if (t < 1.24) strokeTrail(f, 'spine', '#765c48', '#c2ab77', 3);
+    if(t>=24/24 && t<=28/24) paintSocketTrail(f,'above','snout',Math.max(24/24,t-3/24),hit,{color:'#c9a46d',width:2,alpha:.82});
   }
   if (age < 0) return;
-  const at = f.pointAt(1.2, 'snout'),
+  const at = f.pointAt(hit, 'snout'),
     x = at[0],
     y = Math.max(feet[1], at[1]);
+  if(age<.24)paintImpact(f,'above','snout',at,(pen,cx,cy)=>{
+    const fade=1-sstep(.03,.24,age);
+    shard(pen,cx,cy,3.5,1.5,.31,'#744528','#ecbd7d',fade);
+    pen.lineS(cx,cy,cx+4+age*22,cy-2-age*9,'#d9ae77',fade);
+    pen.lineS(cx+1,cy,cx+3+age*15,cy+2+age*4,'#a67550',fade);
+  });
   oval(under, x, y, 9, 3, '#3b292b', clamp01((0.85 - age) / 0.3));
   fissure(under, 'briar-furrow', 910, x, y, age, 24, '#42332e', '#a78b64', 0.85);
   chunks(above, 26, age, x, y, 14, 0, 2.8, 20, 48, 30, 48, [0.48, 0.8], 0.37, 1);
@@ -162,47 +169,59 @@ function ram(f: FxInput) {
   leaves(f, age, [x, y], 8);
 }
 function volley(f: FxInput) {
-  for (const [wave, hit] of animations.tech_volley.hits!.entries()) {
-    const release = hit - 0.17,
-      age = f.t - hit;
-    if (f.t < release - 0.26 || age > 0.78) continue;
-    for (let j = -1; j <= 1; j++) {
-      const target: XY = [f.feet[0] + 31 + wave * 10 + j * 4, f.feet[1] + j * 13 + wave * 3];
-      if (f.t < release) {
-        const u = sstep(release - 0.24, release, f.t);
-        f.under.lineS(target[0] - 6 * u, target[1] - 2 * j, target[0], target[1], '#9b8863', 0.5 * u);
+  for(const [wave,born] of [18,22,26].entries()){
+    const launch=born/24,land=(born+5)/24;
+    const socket='spine',age=f.t-land,jet=wave===0?15:born-2;
+    if(f.t<launch-.24 || age>.40)continue;
+    if(f.t>=jet/24 && f.t<=launch+1/24)
+      paintSocketTrail(f,'above',socket,Math.max(jet/24,f.t-3/24),launch,{color:'#c6a275',width:2,alpha:.9});
+    const source=f.pointAt(launch,socket),base=f.pointAt(launch,'spineBase');
+    const axisX=source[0]-base[0],axisY=source[1]-base[1];
+    const dir=axisX>=0?1:-1;
+    const edgeRoom=Math.max(2,dir>0?f.w-4-source[0]:source[0]-4);
+    if(f.t>=launch && f.t<launch+.115)paintImpact(f,'above',socket,source,(pen,x,y)=>{
+      const u=sstep(launch,launch+.115,f.t),alpha=1-u;
+      shard(pen,x+dir*u*6,y-u*2,3.4,1.35,dir>0?-.32:3.4,'#796044','#efd5a7',alpha);
+      pen.lineS(x,y,x-dir*(1+u*4),y+u*1.5,'#746540',alpha);
+    });
+    for(let j=-1;j<=1;j++){
+      const reach=Math.min(29+wave*6,edgeRoom);
+      const target:XY=[source[0]+dir*reach*(.79+j*.18),
+        Math.max(7,Math.min(f.h-7,f.feet[1]+1+j*10+wave*2))];
+      if(f.t<launch){
+        const u=sstep(launch-.24,launch,f.t);
+        f.under.lineS(target[0]-dir*5*u,target[1]-j*2,target[0],target[1],'#b69a6b',.62*u);
         continue;
       }
-      if (age < 0) {
-        const src = f.pointAt(release, 'spine'),
-          u = clamp01((f.t - release) / 0.17);
-        const p = projectile(src, target, u, 5 + 2 * wave),
-          delayed = projectile(src, target, Math.max(0, u - 0.14), 5 + 2 * wave);
-        const angle = Math.atan2(p[1] - delayed[1], p[0] - delayed[0]);
-        f.above.lineS(...delayed, ...p, '#b49976', 0.67);
-        shard(f.above, ...p, 4, 1.6, angle, '#665142', '#dfc8a2');
-      } else if (age < 0.5) {
-        const a = -2.02 + springBack(age, 28) * 0.68;
-        shard(f.above, target[0], target[1] - 2, 7, 1.5, a, '#6b534a', '#e0c598');
-        f.under.lineS(target[0] - 2, target[1] + 1, target[0] + 3, target[1], '#493a34', 0.78);
-        ripple(f.under, ...target, 2 + age * 14, 0.41, '#bda07c', clamp01(1 - age * 4));
-      } else
-        chunks(
-          f.above,
-          wave * 10 + j + 420,
-          age - 0.5,
-          ...target,
-          3,
-          0,
-          3,
-          7,
-          9,
-          13,
-          22,
-          [0.09, 0.25],
-          0.1,
-          1,
-        );
+      // For the parabolic path y'(0) = landingY - sourceY - 4h. Match
+      // that tangent to the live thorn axis with three small fan offsets.
+      const launchSlope=axisY/Math.max(4,Math.abs(axisX)) + .21*j;
+      const height=Math.max(2,Math.min(30,(target[1]-source[1]-Math.abs(target[0]-source[0])*launchSlope)/4));
+      const pt=projectileAt(f,'briar-'+wave+'-'+j,socket,launch,land,target,height);
+      if(f.t<land){
+        const u=clamp01((f.t-launch)/(land-launch));
+        const angle=Math.atan2(target[1]-source[1]-4*height*(1-2*u),target[0]-source[0]);
+        const ux=Math.cos(angle),uy=Math.sin(angle);
+        // The sampled projectile is the cutting tip. Its shaft and light edge trail behind it.
+        const mid:XY=[pt[0]-3.8*ux,pt[1]-3.8*uy];
+        f.above.lineS(pt[0]-9*ux,pt[1]-9*uy,...mid,'#4a2834',.93);
+        shard(f.above,...mid,3.8,2.2,angle,'#563044','#f7d689');
+        f.above.col('#fff2c6');f.above.line(pt[0]-2*ux,pt[1]-2*uy,...pt);
+        f.above.col('#aa4956');f.above.dot(mid[0]-ux,mid[1]-uy,2,2);
+      } else {
+        const a=-2.02+springBack(age,28)*.48,fade=1-sstep(.17,.39,age);
+        shard(f.above,target[0],target[1]-2,6,1.75,a,'#512d39','#efce87',fade);
+        if(age<4/24) {
+          const v=age*6;
+          paintImpact(f,'above','briar-'+wave+'-'+j,target,(pen,x,y)=>{
+            pen.col('#643742',1-v);pen.line(x-3,y,x+3,y);
+            pen.col('#fff0b6',1-v);pen.line(x,y,x-dir*(2+4*v),y-2-3*v);
+            pen.dot(x+dir*(2+5*v),y-1-3*v,2,1);
+          });
+        }
+        f.under.lineS(target[0]-2,target[1]+1,target[0]+3,target[1],'#493a34',fade*.83);
+        ripple(f.under,...target,2+age*15,.41,'#bda07c',clamp01(1-age*4));
+      }
     }
   }
 }
@@ -212,4 +231,24 @@ export function effects(f: FxInput) {
   if (f.anim === 'happy') leaves(f, f.t - 0.41, [f.points.spine[0], f.feet[1] - 3], 5);
   if (f.anim === 'hatch' && f.t > 0.64)
     dust(f.under, 34, f.t - 0.64, ...f.feet, 5, 0, 3, 8, 12, 1, 3, 5, 0.52, 6, 0.66);
+}
+
+// A root rises out of the peat at the actual snout height. The pale cut edge
+// faces the incoming wheel. After impact the crown splits; its base stays put.
+export function props(f:FxInput) {
+  if(f.anim!=='tech_ram')return;
+  const hit=27/24,at=f.pointAt(hit,'snout'),age=f.t-hit;
+  const s=at[0]>=f.pointAt(24/24,'snout')[0]?1:-1;
+  const x=at[0],y=at[1],ground=Math.min(f.h-2,Math.max(y+7,f.feet[1]+4)),p=f.under;
+  const bend=age<=0?0:3*sstep(0,.13,age);
+  const contour=(pts:XY[])=>pts.flatMap(([dx,dy])=>[x+dx*s,dy]);
+  const fade=1-sstep(1.70,1.94,f.t);
+  oval(p,x+6*s,ground,9,2,'#363b32',fade*.85);
+  p.col('#392e2a',fade);
+  fillPoly(p,contour([[-2,ground+1],[2,ground-3],[4,y+7],[0,y+1],[0,y-2],[4,y-3+bend],[8,y+1+bend],[9,y+6],[8,ground-4],[15,ground-3],[19,ground],[10,ground+1],[7,ground+3],[4,ground]]));
+  p.col('#856a48',fade);
+  fillPoly(p,contour([[1,y-2],[4,y-3+bend],[8,y+1+bend],[6,y+4],[3,y+2]]));
+  p.lineS(x+5*s,y+5,x+4*s,ground-3,'#75644b',fade);
+  p.lineS(x+s,y-1,x+4*s,y+1+bend,'#b79a6c',fade);
+  p.lineS(x+8*s,ground-2,x+13*s,ground-2,'#647451',fade);
 }

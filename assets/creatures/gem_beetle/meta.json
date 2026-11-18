@@ -105,9 +105,9 @@
           "anim": "walk"
         },
         {
-          "seconds": 1.4,
+          "seconds": 1.4166666666666667,
           "at": [
-            0.30625,
+            0.5,
             0.7890625
           ],
           "anim": "tech_prism",
@@ -116,7 +116,7 @@
         {
           "seconds": 0.35,
           "at": [
-            0.30625,
+            0.5,
             0.7890625
           ],
           "anim": "turn"
@@ -124,7 +124,7 @@
         {
           "seconds": 2.05,
           "at": [
-            0.30625,
+            0.5,
             0.7890625
           ],
           "anim": "walk"
@@ -284,6 +284,20 @@
     "frame",
     "over"
   ],
+  "showreel": [
+    {
+      "name": "tech_horn",
+      "start": 0,
+      "frames": 38,
+      "end": 44
+    },
+    {
+      "name": "tech_prism",
+      "start": 44,
+      "frames": 34,
+      "end": 84
+    }
+  ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
   "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
   "animations": {
@@ -356,7 +370,7 @@
       "frames": 38,
       "loop": false,
       "hit": [
-        22
+        21
       ],
       "shake": 0.15,
       "stop": 0.04
@@ -369,13 +383,26 @@
         19
       ],
       "shake": 0.07,
-      "stop": 0
+      "stop": 0.04
     },
     "life": {
-      "seconds": 14,
+      "seconds": 14.016666666666666,
       "frames": 336,
       "loop": true,
-      "hit": [],
+      "hit": [
+        139
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "showreel": {
+      "seconds": 3.5,
+      "frames": 84,
+      "loop": true,
+      "hit": [
+        21,
+        63
+      ],
       "shake": 0,
       "stop": 0
     },

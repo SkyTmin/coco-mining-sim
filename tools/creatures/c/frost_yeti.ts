@@ -1,11 +1,13 @@
 import route from './frost_yeti-life';
+import keys from './frost_yeti-keys';
+import { withTechniques } from '../technique';
 import { strideFoot, attachMotion } from '../motion';
 import { finishSurfaces } from './surface-work';
 // Broad-backed ice quarryman. The hands and both wrists are solved from the same club shaft.
 import { F3, Rig, vadd, vmul, vlerp, type Mat, type V3 } from '../rig/f15-rig';
-import { tn, TAU } from '../kit/f11-mobkit';
+import { ik, tn, TAU } from '../kit/f11-mobkit';
 import { everyday, life, projectFigure, scaleFigure } from '../rig/figure';
-import { animations, effects, pose, presentation } from './frost_yeti-actions';
+import { animations, props, effects, pose, presentation } from './frost_yeti-actions';
 import type { Creature, Variant } from '../types';
 
 export interface FrostPose {
@@ -17,6 +19,17 @@ export interface FrostPose {
   chestBeat?: number;
   headTurn?: number;
   lift?: number;
+  stride?: number;
+  heel?: number;
+  hip?: number;
+  lean?: number;
+  pitch?: number;
+  twist?: number;
+  clubYaw?: number;
+  clubSide?: number;
+  plant?: number;
+  keyRig?: number;
+  travel?: number;
 }
 export function bodyFrame(
   anim: string,
@@ -26,6 +39,23 @@ export function bodyFrame(
   A: FrostPose = {},
   headSide = side,
 ) {
+  // In profile the shoulder lifts the grip less: the serac and the long club stay distinct.
+  if (A.keyRig && side % 16 !== 0) {
+    const sideView = Math.min(1, 3 * Math.abs(Math.sin((side * Math.PI) / 16)));
+    A = {
+      ...A,
+      clubAngle: (A.clubAngle ?? 0) * (anim === 'tech_roar' ? 1 - 0.55 * sideView : 1),
+      clubLift: (A.clubLift ?? 0) * (1 - 0.55 * sideView),
+      clubForward: (A.clubForward ?? 0) * (1 - 0.22 * sideView),
+      hip: (A.hip ?? 0) * (1 - 0.3 * sideView),
+      lean: (A.lean ?? 0) * (1 - 0.28 * sideView),
+      crouch:
+        Math.max(0, A.crouch ?? 0) +
+        Math.min(0, A.crouch ?? 0) * (1 - 0.8 * sideView) +
+        (anim === 'tech_slam' ? 0.14 * Math.max(0, A.clubLift ?? 0) * sideView : 0),
+      pitch: (A.pitch ?? 0) * (1 - 0.2 * sideView),
+    };
+  }
   const lead = Math.max(-0.62, Math.min(0.62, ((((headSide - side + 24) % 16) - 8) * Math.PI) / 8));
   const gold = variant === 'gold',
     r = new Rig(),
@@ -58,12 +88,12 @@ export function bodyFrame(
   const F = F3.yaw(1.06 + (side * TAU) / 16).at(-3, 0, 0);
   const bounce = 0.75 * Math.sin(l.q) + 1.8 * Math.abs(l.walk);
   const drop = (A.crouch ?? 0) + 11 * l.sleep + 11 * l.tired + 25 * l.hatch;
-  const torso = F.at(-2, 1.5 * l.walk, 47 + bounce - drop).pitch(
-    0.06 + 0.12 * l.tired + 0.14 * l.sleep,
-  );
+  const torso = F.at(-2 + (A.hip ?? 0), 1.5 * l.walk + (A.lean ?? 0), 47 + bounce - drop)
+    .pitch(0.06 + 0.12 * l.tired + 0.14 * l.sleep + (A.pitch ?? 0))
+    .turn(A.twist ?? 0);
   r.ell(torso, [-2, 0, 0], [16, 22, 23], coat);
   r.ell(torso, [-4, 0, 10], [15, 26, 13], coat);
-  const hips = F.at(-5, 0, 25 - drop * 0.37);
+  const hips = F.at(-5 + (A.hip ?? 0) * 0.65, (A.lean ?? 0) * 0.7, 25 - drop * 0.37);
   r.ell(hips, [0, 0, 0], [13, 15, 13], coat);
   r.ell(hips, [2, 0, 2], [13.7, 15.3, 3.4], leather);
   const sockets: Record<string, V3> = {},
@@ -75,9 +105,17 @@ export function bodyFrame(
         ? strideFoot(t, s < 0 ? 0 : 0.5, 26 / scale)
         : { forward: 0, lift: 0, planted: true };
     const move = stride.lift,
-      step = F.at(1 + stride.forward, s * 13, move * 6);
+      step = F.at(
+        1 + stride.forward - s * (A.stride ?? 0),
+        s * 13,
+        move * 6 + (s > 0 ? (A.heel ?? 0) : 0),
+      );
     if (stride.planted) planted.push(s < 0 ? 'footL' : 'footR');
-    const knee = F.p(3 + move * 2, s * 11, 14 - drop * 0.28);
+    const knee = F.p(
+      3 + move * 2 + (A.hip ?? 0) * 0.65 - s * (A.stride ?? 0) * 0.5,
+      s * 11 + (A.lean ?? 0) * 0.65,
+      14 - drop * 0.28,
+    );
     r.cap(hips.p(0, s * 8, 1), knee, 7, 6.4, slate);
     r.cap(knee, step.p(-2, 0, 4), 6.6, 5.7, coat);
     r.ell(step, [2, 0, 3], [9.5, 6.3, 3.3], slate);
@@ -190,10 +228,15 @@ export function bodyFrame(
     0.68 + (A.clubAngle ?? 0) + 0.055 * Math.sin(l.q - 0.8) + 0.34 * l.sleep - 0.66 * l.tired;
   const G = F.at(
     15 + (A.clubForward ?? 0),
-    5,
+    5 + (A.clubSide ?? 0),
     27 - drop * 0.56 + (A.clubLift ?? 0) + 1.4 * Math.sin(l.q),
-  );
+  ).turn(A.clubYaw ?? 0);
   const dir = G.v(0.38 * Math.cos(angle), -0.925 * Math.cos(angle), Math.sin(angle));
+  // At full plant the same club (and both grips) is lowered until the head touches the ground.
+  if (A.plant) {
+    G.o[2] -= A.plant * (G.o[2] + 53 * dir[2]);
+    G.o[1] -= A.plant * (G.o[1] + 53 * dir[1] - sockets.footL[1]);
+  }
   const shaft = (n: number) => vadd(G.o, vmul(dir, n));
   r.cap(shaft(-11), shaft(29), 2.5, 2.3, leather);
   for (const n of [0, 4, 8]) r.cap(shaft(n), shaft(n + 1.4), 2.7, 2.65, slate);
@@ -225,8 +268,10 @@ export function bodyFrame(
       grip = shaft(s > 0 ? -5 : 7);
     const elbow = vlerp(shoulder, grip, 0.48);
     const bend = F.v(-4, s * 13, -8);
-    const E = vadd(elbow, bend);
+    const E = A.keyRig ? ik(shoulder, grip, 24, 24, F.v(-0.4, s, 0.42)) : vadd(elbow, bend);
     const hand = s > 0 ? vlerp(grip, torso.p(10, 4, 9), Math.max(A.chestBeat ?? 0, l.happy)) : grip;
+    sockets[s > 0 ? 'clubGripR' : 'clubGripL'] = grip;
+    sockets[s > 0 ? 'handR' : 'handL'] = hand;
     r.cap(shoulder, E, 10, 8.5, coat);
     r.cap(E, hand, 8.5, 5, coat);
     for (const [a, b] of [
@@ -246,7 +291,13 @@ export function bodyFrame(
     r.line(H.p(10.4, s * 3, 7.55), H.p(7.9, s * 6.7, 8.7), coat.T[3]);
     for (let j = 0; j < 3; j++) {
       const tuft = H.p(-3 + j * 2.8, s * (8.4 + j * 0.2), 1 + j * 0.22);
-      r.cap(tuft, H.p(-3 + j * 2.8, s * (10.7 + j * 0.25), -6 - j * 0.8), 1.8 - j * 0.18, 0.25, coat);
+      r.cap(
+        tuft,
+        H.p(-3 + j * 2.8, s * (10.7 + j * 0.25), -6 - j * 0.8),
+        1.8 - j * 0.18,
+        0.25,
+        coat,
+      );
     }
   }
   // Seminatural striations in the serac, three ice-screws and the belt's square buckle.
@@ -293,6 +344,7 @@ export function bodyFrame(
   scaleFigure(r, sockets, scale, 1.275);
   const fr = projectFigure(r, 128, [63, 100], sockets, '#272a3b');
   fr.planted = planted;
+  fr.dx = A.travel ?? 0;
   fr.dy = -(A.lift ?? 0) - l.pop * 7;
   return fr;
 }
@@ -301,11 +353,14 @@ const creature: Creature = {
   rarity: 'epic',
   theme: 'polar_night',
   animations: { ...everyday, ...animations },
+  props,
   effects,
   frame: (anim, t, side, variant, motion) =>
-    Object.assign(
-      bodyFrame(anim, t, side, variant, pose(anim, t), motion?.headSide),
-      presentation(anim, t),
-    ),
+    motion?.techniquePose
+      ? bodyFrame(anim, t, side, variant, { ...motion.techniquePose, keyRig: 1 }, motion.headSide)
+      : Object.assign(
+          bodyFrame(anim, t, side, variant, pose(anim, t), motion?.headSide),
+          presentation(anim, t),
+        ),
 };
-export default attachMotion(creature, route);
+export default attachMotion(withTechniques(creature, keys), route);
