@@ -1,0 +1,470 @@
+{
+  "tech_staff": {
+    "sheet": "../../../docs/reports/creatures/b2b/references/toad_shaman/tech_staff.png",
+    "grid": [
+      3,
+      2
+    ],
+    "frames": [
+      0,
+      15,
+      17,
+      20,
+      25,
+      33
+    ],
+    "idleHeight": 227,
+    "captionHeight": 28,
+    "keys": [
+      {
+        "ground": [
+          147,
+          238
+        ],
+        "points": {
+          "mouth": [
+            153,
+            205
+          ],
+          "handR": [
+            74,
+            157
+          ],
+          "staffTip": [
+            80,
+            43
+          ],
+          "staffFoot": [
+            59,
+            261
+          ],
+          "footL": [
+            259,
+            237
+          ],
+          "footR": [
+            28,
+            233
+          ],
+          "handL": [
+            74,
+            205
+          ]
+        }
+      },
+      {
+        "ground": [
+          146,
+          237
+        ],
+        "points": {
+          "mouth": [
+            162,
+            149
+          ],
+          "handR": [
+            102,
+            34
+          ],
+          "staffTip": [
+            32,
+            23
+          ],
+          "staffFoot": [
+            241,
+            21
+          ],
+          "footL": [
+            251,
+            237
+          ],
+          "footR": [
+            35,
+            238
+          ],
+          "handL": [
+            187,
+            25
+          ]
+        }
+      },
+      {
+        "ground": [
+          143,
+          236
+        ],
+        "points": {
+          "mouth": [
+            167,
+            208
+          ],
+          "handR": [
+            176,
+            157
+          ],
+          "staffTip": [
+            111,
+            86
+          ],
+          "staffFoot": [
+            286,
+            246
+          ],
+          "footL": [
+            230,
+            234
+          ],
+          "footR": [
+            39,
+            236
+          ],
+          "handL": [
+            225,
+            195
+          ]
+        }
+      },
+      {
+        "ground": [
+          135,
+          235
+        ],
+        "points": {
+          "mouth": [
+            176,
+            197
+          ],
+          "handR": [
+            177,
+            205
+          ],
+          "staffTip": [
+            95,
+            132
+          ],
+          "staffFoot": [
+            278,
+            261
+          ],
+          "footL": [
+            241,
+            228
+          ],
+          "footR": [
+            37,
+            239
+          ],
+          "handL": [
+            218,
+            222
+          ]
+        }
+      },
+      {
+        "ground": [
+          147,
+          239
+        ],
+        "points": {
+          "mouth": [
+            157,
+            172
+          ],
+          "handR": [
+            177,
+            181
+          ],
+          "staffTip": [
+            65,
+            144
+          ],
+          "staffFoot": [
+            284,
+            134
+          ],
+          "footL": [
+            248,
+            230
+          ],
+          "footR": [
+            35,
+            245
+          ],
+          "handL": [
+            229,
+            161
+          ]
+        }
+      },
+      {
+        "ground": [
+          149,
+          237
+        ],
+        "points": {
+          "mouth": [
+            168,
+            199
+          ],
+          "handR": [
+            76,
+            147
+          ],
+          "staffTip": [
+            77,
+            40
+          ],
+          "staffFoot": [
+            71,
+            260
+          ],
+          "footL": [
+            256,
+            234
+          ],
+          "footR": [
+            43,
+            237
+          ],
+          "handL": [
+            81,
+            196
+          ]
+        }
+      }
+    ],
+    "study": "../../../docs/reports/creatures/b2b/references/toad_shaman/observations.md#tech_staff"
+  },
+  "tech_leap": {
+    "sheet": "../../../docs/reports/creatures/b2b/references/toad_shaman/tech_leap.png",
+    "grid": [
+      3,
+      2
+    ],
+    "frames": [
+      0,
+      17,
+      24,
+      27,
+      33,
+      42
+    ],
+    "idleHeight": 202,
+    "captionHeight": 28,
+    "keys": [
+      {
+        "ground": [
+          150,
+          244
+        ],
+        "points": {
+          "mouth": [
+            149,
+            216
+          ],
+          "handR": [
+            54,
+            205
+          ],
+          "staffTip": [
+            85,
+            66
+          ],
+          "staffFoot": [
+            29,
+            260
+          ],
+          "footL": [
+            268,
+            238
+          ],
+          "footR": [
+            43,
+            235
+          ],
+          "handL": [
+            218,
+            250
+          ]
+        }
+      },
+      {
+        "ground": [
+          147,
+          249
+        ],
+        "points": {
+          "mouth": [
+            146,
+            255
+          ],
+          "handR": [
+            48,
+            223
+          ],
+          "staffTip": [
+            88,
+            95
+          ],
+          "staffFoot": [
+            28,
+            261
+          ],
+          "footL": [
+            248,
+            244
+          ],
+          "footR": [
+            47,
+            249
+          ],
+          "handL": [
+            215,
+            256
+          ]
+        }
+      },
+      {
+        "ground": [
+          152,
+          251
+        ],
+        "points": {
+          "mouth": [
+            178,
+            151
+          ],
+          "handR": [
+            85,
+            142
+          ],
+          "staffTip": [
+            116,
+            23
+          ],
+          "staffFoot": [
+            60,
+            201
+          ],
+          "footL": [
+            11,
+            158
+          ],
+          "footR": [
+            11,
+            214
+          ]
+        }
+      },
+      {
+        "ground": [
+          142,
+          235
+        ],
+        "points": {
+          "mouth": [
+            150,
+            208
+          ],
+          "handR": [
+            51,
+            201
+          ],
+          "staffTip": [
+            85,
+            61
+          ],
+          "staffFoot": [
+            29,
+            258
+          ],
+          "footL": [
+            266,
+            237
+          ],
+          "footR": [
+            24,
+            239
+          ],
+          "handL": [
+            222,
+            249
+          ]
+        }
+      },
+      {
+        "ground": [
+          146,
+          248
+        ],
+        "points": {
+          "mouth": [
+            152,
+            245
+          ],
+          "handR": [
+            46,
+            212
+          ],
+          "staffTip": [
+            87,
+            94
+          ],
+          "staffFoot": [
+            18,
+            258
+          ],
+          "footL": [
+            267,
+            240
+          ],
+          "footR": [
+            16,
+            242
+          ],
+          "handL": [
+            229,
+            253
+          ]
+        }
+      },
+      {
+        "ground": [
+          150,
+          238
+        ],
+        "points": {
+          "mouth": [
+            153,
+            215
+          ],
+          "handR": [
+            61,
+            200
+          ],
+          "staffTip": [
+            91,
+            63
+          ],
+          "staffFoot": [
+            37,
+            257
+          ],
+          "footL": [
+            274,
+            238
+          ],
+          "footR": [
+            48,
+            235
+          ],
+          "handL": [
+            226,
+            248
+          ]
+        }
+      }
+    ],
+    "study": "../../../docs/reports/creatures/b2b/references/toad_shaman/observations.md#tech_leap"
+  }
+}
