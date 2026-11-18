@@ -17,6 +17,7 @@ for _, service in
 		services.PickaxeService,
 		services.CampService,
 		services.LeaderboardService,
+		services.HologramService,
 		services.VisitService,
 		services.EventService,
 		services.RebirthService,

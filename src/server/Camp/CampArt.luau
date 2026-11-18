@@ -656,10 +656,34 @@ end
 function CampArt.hologram(rig: Model)
 	for _, d in rig:GetDescendants() do
 		if d:IsA("BasePart") then
-			d.Material, d.Color, d.Transparency =
-				Enum.Material.ForceField, Color3.fromRGB(120, 200, 255), 0.3
+			d.CanCollide, d.CanTouch, d.CastShadow = false, false, false
+			if d.Name ~= "HumanoidRootPart" then
+				d.Material, d.Color, d.Transparency = Enum.Material.ForceField, hex("89CCFF"), 0.32
+			end
+		elseif d:IsA("Script") then
+			d:Destroy()
 		end
 	end
+	local glow = Instance.new("Highlight")
+	glow.DepthMode, glow.FillColor, glow.OutlineColor =
+		Enum.HighlightDepthMode.Occluded, hex("68B6EF"), hex("B4F4FF")
+	glow.FillTransparency, glow.OutlineTransparency, glow.Parent = 0.82, 0.38, rig
+	game:GetService("TweenService")
+		:Create(
+			glow,
+			TweenInfo.new(2.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+			{ FillTransparency = 0.96, OutlineTransparency = 0.68 }
+		)
+		:Play()
 end
-
+function CampArt.arrival(position: Vector3)
+	local flash =
+		block(workspace.Camp, "Arrival", F(position), V(2, 4, 2), hex("A4EFFF"), Enum.Material.Neon)
+	flash.Shape, flash.CanCollide, flash.CanQuery, flash.Transparency =
+		Enum.PartType.Ball, false, false, 0.55
+	game:GetService("TweenService")
+		:Create(flash, TweenInfo.new(0.32), { Size = V(5, 6, 5), Transparency = 1 })
+		:Play()
+	game:GetService("Debris"):AddItem(flash, 0.35)
+end
 return CampArt

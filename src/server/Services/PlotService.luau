@@ -89,6 +89,10 @@ function PlotService.digFrame(player: Player): CFrame?
 	return if i then slots[i].frame * CFrame.new(0, 3.5, DEPTH * 0.72) else nil
 end
 
+local assignedHooks: { (number) -> () } = {}
+function PlotService.onAssigned(fn: (number) -> ())
+	table.insert(assignedHooks, fn)
+end
 function PlotService.assign(player: Player): number?
 	local current = assignments[player]
 	if current then
@@ -99,6 +103,9 @@ function PlotService.assign(player: Player): number?
 			continue
 		end
 		slot.owner, assignments[player] = player, i
+		for _, fn in assignedHooks do
+			fn(i)
+		end
 		player:SetAttribute("Plot", i)
 		local function spawnAt(character: Model)
 			local pivot = character:WaitForChild("HumanoidRootPart", 8)

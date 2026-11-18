@@ -25,6 +25,7 @@ type Session = {
 	canSave: boolean,
 	dirty: boolean,
 	saving: boolean,
+	releasing: boolean?,
 	replicateDue: boolean,
 	replicatedAt: number,
 	sent: { [string]: any }?,
@@ -487,24 +488,27 @@ end
 
 local function beginRelease(player: Player)
 	local session = sessions[player]
-	if not session then
+	if not session or session.releasing then
 		return
 	end
+	session.releasing = true
+	closingWrites += 1
 	recordPlayTime(player, session, os.clock())
+	local prepared = session.canSave and prepareSave(player)
 	for _, hook in releaseHooks do
 		local ok = pcall(hook, player)
 		if not ok then
 			warn("[ProfileService] release hook failed")
 		end
 	end
-	local prepared = session.canSave and prepareSave(player)
+
 	sessions[player] = nil
 	if not session.canSave then
+		closingWrites -= 1
 		return
 	end
 
 	-- Register before yielding so shutdown also awaits already-detached writes.
-	closingWrites += 1
 	task.spawn(function()
 		while session.saving do
 			task.wait()
@@ -580,7 +584,7 @@ function ProfileService.Start()
 		while not shuttingDown do
 			task.wait(Config.game.autosaveSeconds)
 			for player, session in sessions do
-				if not session.saving then
+				if not session.saving and not session.releasing then
 					task.spawn(save, player, session, false)
 				end
 			end
