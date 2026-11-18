@@ -67,17 +67,91 @@ function CampLook.blend(alpha: number)
 end
 
 -- The line over a player's head (rank badge, name, depth). Returns the updater; destroy with the character.
+local Format = require(game:GetService("ReplicatedStorage").Shared.Format)
+local rankBadges = { "◇", "◆", "⚒", "✦", "✧", "★", "❖", "♜", "♛" }
+local function rankIndex(id: string?): number
+	for i, rank in Config.rebirth.ranks do
+		if rank.id == id then
+			return i + 1
+		end
+	end
+	return 1
+end
+
 function CampLook.nameplate(character: Model): (NameplateData) -> ()
-	local head = character:FindFirstChild("Head") :: BasePart?
 	local gui = Instance.new("BillboardGui")
 	gui.Name, gui.Size, gui.StudsOffset, gui.AlwaysOnTop =
-		"CampNameplate", UDim2.fromOffset(220, 36), Vector3.new(0, 3, 0), false
-	gui.MaxDistance, gui.Adornee, gui.Parent = 120, head, character
-	local label = Instance.new("TextLabel")
-	label.Size, label.BackgroundTransparency, label.TextScaled, label.Parent =
-		UDim2.fromScale(1, 1), 1, true, gui
-	return function(data: NameplateData)
-		label.Text = string.format("%s %s ⛏ %d", data.rank or "", data.name, data.depth)
+		"CampNameplate", UDim2.fromOffset(204, 26), Vector3.new(0, 2.25, 0), false
+	gui.MaxDistance, gui.Adornee, gui.Parent =
+		camp.nameDistance, character:FindFirstChild("Head"), character
+	local pill = Instance.new("TextLabel")
+	pill.Name, pill.Size, pill.BackgroundColor3, pill.BackgroundTransparency =
+		"Tag", UDim2.fromScale(1, 1), Color3.fromHex("292338"), 0.19
+	pill.Font, pill.TextSize, pill.TextColor3, pill.Parent =
+		Enum.Font.GothamBold, 15, Color3.fromHex("FFF3D7"), gui
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius, corner.Parent = UDim.new(1, 0), pill
+	local rim = Instance.new("UIStroke")
+	rim.Thickness, rim.Parent = 1.3, pill
+	return function(data)
+		local index = rankIndex(data.rank)
+		rim.Color = Color3.fromHex(camp.rankColors[index])
+		pill.Text =
+			string.format("%s  %s   ⛏ %s", rankBadges[index], data.name, Format.short(data.depth))
+	end
+end
+
+function CampLook.names()
+	local players = game:GetService("Players")
+	local self = players.LocalPlayer
+	local function bind(actor: Instance, character: Model, name: string)
+		local head = character:WaitForChild("Head", 8)
+		if actor == self or not head or not character.Parent then
+			return
+		end
+		local update = CampLook.nameplate(character)
+		local gui = character:FindFirstChild("CampNameplate") :: BillboardGui
+		local function refresh()
+			update({
+				name = name,
+				rank = actor:GetAttribute("CampRank"),
+				depth = actor:GetAttribute("CampBest") or 0,
+			})
+			gui.Enabled = self:GetAttribute("OnMinePlatform") ~= true
+		end
+		local connections = {
+			actor:GetAttributeChangedSignal("CampRank"):Connect(refresh),
+			actor:GetAttributeChangedSignal("CampBest"):Connect(refresh),
+			self:GetAttributeChangedSignal("OnMinePlatform"):Connect(refresh),
+		}
+		character.Destroying:Once(function()
+			for _, c in connections do
+				c:Disconnect()
+			end
+		end)
+		refresh()
+	end
+	local function playerAdded(player: Player)
+		player.CharacterAdded:Connect(function(c)
+			bind(player, c, player.DisplayName)
+		end)
+		if player.Character then
+			task.spawn(bind, player, player.Character, player.DisplayName)
+		end
+	end
+	players.PlayerAdded:Connect(playerAdded)
+	for _, player in players:GetPlayers() do
+		playerAdded(player)
+	end
+	local tags = game:GetService("CollectionService")
+	local function bot(m: Instance)
+		if m:IsA("Model") then
+			task.spawn(bind, m, m, m:GetAttribute("CampName") or m.Name)
+		end
+	end
+	tags:GetInstanceAddedSignal("CampBot"):Connect(bot)
+	for _, m in tags:GetTagged("CampBot") do
+		bot(m)
 	end
 end
 

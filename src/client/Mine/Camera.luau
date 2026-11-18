@@ -27,6 +27,8 @@ export type View = {
 	firstId: string?,
 	firstGold: boolean?,
 	bob: number,
+	zoomMin: number,
+	transition: { from: CFrame, at: number }?,
 	held: { frame: CFrame, focus: CFrame, humanoid: Humanoid?, speed: number? }?,
 	hidden: Model?,
 	hideNew: RBXScriptConnection?,
@@ -95,6 +97,7 @@ function Camera.new(player: Player, frame: CFrame): View
 		swingAt = -math.huge,
 		swingDuration = 0.35,
 		bob = 0,
+		zoomMin = player.CameraMinZoomDistance,
 		body = {},
 	}
 	RunService.PreSimulation:Connect(function()
@@ -309,7 +312,22 @@ function Camera.step(
 	then
 		return
 	end
+	local function blend()
+		local change = view.transition
+		if not change then
+			return
+		end
+		local t = if reduced then 1 else math.clamp((os.clock() - change.at) / 0.35, 0, 1)
+		camera.CFrame = change.from:Lerp(camera.CFrame, t * t * (3 - 2 * t))
+		if t == 1 then
+			view.transition = nil
+		end
+	end
+	if active ~= view.active then
+		view.transition = { from = camera.CFrame, at = os.clock() }
+	end
 	if not active then
+		view.player.CameraMinZoomDistance = math.max(6, view.zoomMin)
 		if view.active then
 			local previous, focus = camera.CFrame, camera.Focus
 			camera.CameraType = Enum.CameraType.Custom
@@ -325,12 +343,14 @@ function Camera.step(
 			drawHeld(view, camera, humanoid, false, dt, reduced)
 		end
 		view.active = false
+		blend()
 		return
 	end
 	if not view.active and not view.recenter then
 		Camera.adopt(view, camera.CFrame.LookVector)
 	end
 	view.active = true
+	view.player.CameraMinZoomDistance = view.zoomMin
 	local recenter = view.recenter
 	if recenter then
 		local t = math.clamp((os.clock() - recenter.at) / 0.15, 0, 1)
@@ -380,6 +400,7 @@ function Camera.step(
 		camera.CFrame = CFrame.lookAt(eye + shake, eye + shake + direction)
 		camera.Focus = CFrame.new(eye + direction * 24)
 	end
+	blend()
 	drawHeld(view, camera, humanoid, first, dt, reduced)
 end
 

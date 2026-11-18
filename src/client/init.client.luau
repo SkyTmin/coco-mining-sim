@@ -39,6 +39,7 @@ end)
 
 require(script.Fx.CelPicks).start()
 task.spawn(require(script.Art.CampLook).showcases)
+task.spawn(require(script.Art.CampLook).names)
 local Strings = require(Shared:WaitForChild("Strings"))
 local function translate(key: string, ...: any): string
 	return Strings.t(key, Strings.localeOf(player), ...)

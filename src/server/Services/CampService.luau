@@ -10,6 +10,27 @@ local Profiles = require(script.Parent.ProfileService)
 local Mines = require(script.Parent.MineService)
 local Plots = require(script.Parent.PlotService)
 local Camp = {}
+local walkSpeeds: { [Humanoid]: number } = setmetatable({}, { __mode = "k" })
+local function movement(player: Player)
+	local char = player.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if not hum then
+		return
+	end
+	hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+	local outside = not Plots.onOwnPlatform(player) and not player:GetAttribute("GuestPlot")
+	if outside then
+		if walkSpeeds[hum] == nil and hum.WalkSpeed > 0 then
+			walkSpeeds[hum] = hum.WalkSpeed
+			hum.WalkSpeed = Config.camp.walkSpeed
+		end
+	elseif walkSpeeds[hum] then
+		if hum.WalkSpeed == Config.camp.walkSpeed then
+			hum.WalkSpeed = walkSpeeds[hum]
+		end
+		walkSpeeds[hum] = nil
+	end
+end
 local previous: { [number]: any } = {}
 local holograms: { [number]: any } = {}
 
@@ -72,6 +93,9 @@ function Camp.Start()
 		while true do
 			for i = 1, Config.plots.count do
 				update(i)
+			end
+			for _, player in game:GetService("Players"):GetPlayers() do
+				movement(player)
 			end
 			task.wait(Config.social.positionSeconds)
 		end

@@ -1101,9 +1101,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			Config.plots.platformDepth * S,
 			mine.height * S
 		)
-		if not active then
-			closeSettings()
-		end
+		player:SetAttribute("OnMinePlatform", active)
 		local reduced = ProfileState.preference("reducedMotion")
 		Sfx.level(ProfileState.preference("sfx"))
 		Footsteps.step(footsteps, player.Character, Worlds.of(window.front).index == 1)
