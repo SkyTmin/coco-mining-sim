@@ -1,11 +1,5 @@
 --!strict
--- The look of the camp: everything a player sees in the world around the eight entrances. OWNED BY CLAUDE (art).
--- Codex calls these functions from the camp logic and never edits this file [ТЗ-06 §16]; until Claude's version lands it
--- builds plain grey placeholders with the right sizes and attachment points, so the logic can be written and tested.
---
--- Coordinates: `frame` is a plot frame exactly as PlotService makes it — at the mining wall, LookVector pointing out of
--- the camp, +Z (object space) towards the camp centre. The entrance line (arch) is at Z = platform + spectator depth.
-
+-- Runtime scenery in plot-local coordinates (+Z faces the camp).
 local Config = game:GetService("ReplicatedStorage").Shared.Config
 local Cfg = require(Config)
 
@@ -83,20 +77,227 @@ local function part(
 	return p
 end
 
--- The crater around the floor (rock rim, paths, lanterns, tents, crates). The floor disc itself stays in PlotService.
-function CampArt.crater(root: Folder)
-	local radius = Cfg.plots.entranceRadius
-	for i = 1, Cfg.plots.count do
-		local angle = (i - 0.5) * math.pi * 2 / Cfg.plots.count
-		local outward = Vector3.new(math.sin(angle), 0, -math.cos(angle))
-		local at = outward * (radius + 40)
-		part(
-			root,
-			"RimPlaceholder",
-			Vector3.new(30, 60, 30),
-			CFrame.lookAt(at + Vector3.new(0, 30, 0), Vector3.new(0, 30, 0))
+local camp = Cfg.camp
+local hex = Color3.fromHex
+local stone, wood, iron = hex("AD9780"), hex("76503B"), hex("38424F")
+local amber = hex(camp.lampColor)
+local V, F, A = Vector3.new, CFrame.new, CFrame.Angles
+local function group(parent: Instance, name: string): Model
+	local m = Instance.new("Model")
+	m.Name = name
+	if workspace.StreamingEnabled then
+		m.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+	end
+	m.Parent = parent
+	return m
+end
+
+local function block(
+	parent: Instance,
+	name: string,
+	frame: CFrame,
+	size: Vector3,
+	color: Color3,
+	material: Enum.Material
+): Part
+	local p = part(parent, name, size, frame, color)
+	p.Material = material
+	return p
+end
+
+local function disc(
+	parent: Instance,
+	name: string,
+	frame: CFrame,
+	radius: number,
+	height: number,
+	color: Color3,
+	material: Enum.Material
+): Part
+	local p = block(
+		parent,
+		name,
+		frame * A(0, 0, math.pi / 2),
+		V(height, 2 * radius, 2 * radius),
+		color,
+		material
+	)
+	p.Shape = Enum.PartType.Cylinder
+	return p
+end
+
+local function lantern(root: Instance, frame: CFrame, lit: boolean): Part
+	local m = group(root, "Lantern")
+	disc(m, "Foot", frame * F(0, 0.35, 0), 1.25, 0.7, stone, Enum.Material.Slate)
+	block(m, "Post", frame * F(0, 3.6, 0), V(0.75, 7, 0.75), wood, Enum.Material.Wood)
+	block(m, "Crossarm", frame * F(0.7, 7.25, 0), V(2.3, 0.45, 0.5), iron, Enum.Material.Metal)
+	block(
+		m,
+		"Brace",
+		frame * F(0.5, 6.6, 0) * A(0, 0, -0.72),
+		V(0.28, 1.7, 0.35),
+		wood,
+		Enum.Material.Wood
+	)
+	local bulb =
+		block(m, "Opal", frame * F(1.45, 6.2, 0), V(0.94, 1.4, 0.94), amber, Enum.Material.Neon)
+	for _, y in { 5.43, 6.98 } do
+		disc(m, "Cap", frame * F(1.45, y, 0), 0.84, 0.18, iron, Enum.Material.Metal)
+	end
+	for _, x in { -0.5, 0.5 } do
+		block(
+			m,
+			"Cage",
+			frame * F(1.45 + x, 6.2, 0.48),
+			V(0.11, 1.5, 0.11),
+			iron,
+			Enum.Material.Metal
 		)
 	end
+	if lit then
+		local light = Instance.new("PointLight")
+		light.Color, light.Range, light.Brightness, light.Shadows, light.Parent =
+			amber, 22, 1.4, false, bulb
+	end
+	return bulb
+end
+
+local function supplies(root: Instance, f: CFrame, tent: boolean, index: number)
+	local m = group(root, "Supplies")
+	local function box(
+		name: string,
+		x: number,
+		y: number,
+		z: number,
+		w: number,
+		h: number,
+		d: number,
+		color: Color3
+	)
+		return block(m, name, f * F(x, y, z), V(w, h, d), color, Enum.Material.WoodPlanks)
+	end
+	for i = 1, 2 do
+		local x, z = i * 3.8 - 4, i % 2 * 2
+		box("Crate", x, 1.65, z, 3.5, 3.3, 3.3, wood)
+		for _, dx in { -1.36, 1.36 } do
+			box("Batten", x + dx, 1.65, z + 1.7, 0.35, 3.35, 0.24, stone)
+		end
+		block(
+			m,
+			"Diagonal",
+			f * F(x, 1.65, z + 1.85) * A(0, 0, -0.8),
+			V(0.38, 4, 0.2),
+			stone,
+			Enum.Material.Wood
+		)
+	end
+	local barrel = f * F(-4.8, 1.55, 2.1)
+	disc(m, "Cask", barrel, 1.25, 3.1, wood, Enum.Material.WoodPlanks)
+	for _, y in { -0.95, 0.95 } do
+		disc(m, "Hoop", barrel * F(0, y, 0), 1.28, 0.22, iron, Enum.Material.Metal)
+	end
+	if tent then
+		local canopy = if index % 2 == 0 then hex("C29951") else hex("4E6959")
+		for _, s in { -1, 1 } do
+			block(
+				m,
+				"Canvas",
+				f * F(s * 2.2, 2.7, -6) * A(0, 0, s * 0.83),
+				V(0.22, 6.5, 8.5),
+				canopy,
+				Enum.Material.Fabric
+			)
+			block(
+				m,
+				"TentPole",
+				f * F(0, 2.45, -6 + s * 4.4),
+				V(0.3, 4.9, 0.3),
+				wood,
+				Enum.Material.Wood
+			)
+		end
+		box("Ridge", 0, 4.93, -6, 0.4, 0.45, 9, wood)
+	elseif index % 2 == 0 then
+		local reel = f * F(-1, 2, -5) * A(0, 0, math.pi / 2)
+		disc(m, "Cable", reel, 1.55, 2.8, iron, Enum.Material.Metal)
+		for _, s in { -1, 1 } do
+			disc(m, "Reel", reel * F(0, s * 1.48, 0), 2, 0.3, wood, Enum.Material.Wood)
+		end
+	else
+		for _, x in { -1.4, 1.4 } do
+			block(m, "Rail", f * F(x, 0.35, -6), V(0.24, 0.35, 8), iron, Enum.Material.Metal)
+		end
+		for j = -1, 1 do
+			box("Sleeper", 0, 0.13, -6 + j * 2.8, 4.2, 0.26, 0.64, wood)
+		end
+	end
+end
+
+function CampArt.crater(root: Folder)
+	local rng = Random.new(706)
+	local radius = Cfg.plots.entranceRadius
+	disc(root, "CommonFloor", F(0, -0.55, 0), radius + 2, 1.1, hex("886D52"), Enum.Material.Ground)
+	disc(
+		root,
+		"FlagstoneCourt",
+		F(0, 0.05, 0),
+		camp.centreRadius,
+		0.2,
+		stone,
+		Enum.Material.Cobblestone
+	)
+	local segments = Cfg.plots.count
+	for i = 1, segments do
+		local f = A(0, (i - 1) * math.pi * 2 / segments, 0)
+		local sector = group(root, "Rim_" .. i)
+		-- The keystones span the roof; the corridor below remains open down its entire axis.
+		for col = -3, 3 do
+			local x = col * 8.8
+			local floor = if math.abs(x) < OPENING_W / 2 + 5 then camp.archHeight + 4 else 0
+			local top = rng:NextInteger(camp.rimMin, camp.rimMax)
+			local y = floor
+			while y < top do
+				local h = math.min(top - y, rng:NextNumber(camp.rockMin, camp.rockMax))
+				block(
+					sector,
+					"Stratum",
+					f
+						* F(x, y + h / 2, -radius - 10 - rng:NextNumber(0, 3))
+						* A(0, rng:NextNumber(-0.09, 0.09), rng:NextNumber(-0.08, 0.08)),
+					V(rng:NextNumber(11, 15), h + 1.5, rng:NextNumber(11, 18)),
+					hex(camp.rockColors[rng:NextInteger(1, #camp.rockColors)]),
+					Enum.Material.Rock
+				)
+				y += h
+			end
+		end
+		local length = radius - camp.centreRadius
+		block(
+			sector,
+			"Path",
+			f * F(0, 0.04, -camp.centreRadius - length / 2),
+			V(camp.pathWidth, 0.18, length + 2),
+			stone,
+			Enum.Material.Cobblestone
+		)
+		for _, side in { -1, 1 } do
+			block(
+				sector,
+				"Kerb",
+				f * F(side * (camp.pathWidth / 2 + 0.12), 0.13, -camp.centreRadius - length / 2),
+				V(0.26, 0.22, length),
+				hex("CEB695"),
+				Enum.Material.Slate
+			)
+		end
+		local between = f * A(0, math.pi / segments, 0)
+		supplies(sector, between * F(0, 0, -radius * 0.77), i <= camp.tentCount, i)
+	end
+	for i = 1, camp.lampCount do
+		local angle = (i - 0.5) * math.pi * 2 / camp.lampCount
+		lantern(root, A(0, angle, 0) * F(0, 0, -camp.lampRadius), true)
+	end
+	disc(root, "TradingPad", F(22, 0.09, 22), 5, 0.24, hex("967E66"), Enum.Material.Cobblestone)
 end
 
 function CampArt.entrance(model: Model, frame: CFrame): Entrance

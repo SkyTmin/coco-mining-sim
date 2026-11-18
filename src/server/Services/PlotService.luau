@@ -3,6 +3,7 @@
 local Players = game:GetService("Players")
 local Remotes = require(game:GetService("ReplicatedStorage").Shared.Remotes)
 local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
+local CampBuilder = require(script.Parent.Parent.Camp.CampBuilder)
 local plots, mine = Config.plots, Config.mine
 local S = mine.blockSize
 local WIDTH = plots.frameWidth * S
@@ -92,14 +93,7 @@ function PlotService.Start()
 	root.Parent = workspace
 	local gray, trim = Color3.fromRGB(87, 94, 103), Color3.fromRGB(112, 120, 132)
 	local radius = plots.entranceRadius
-	local floor = part(
-		root,
-		"CommonFloor",
-		Vector3.new(1, radius * 2, radius * 2),
-		CFrame.new(0, -0.5, 0) * CFrame.Angles(0, 0, math.pi / 2),
-		gray
-	)
-	floor.Shape = Enum.PartType.Cylinder
+	CampBuilder.build()
 	for i = 1, plots.count do
 		local angle = (i - 1) * math.pi * 2 / plots.count
 		local outward = Vector3.new(math.sin(angle), 0, -math.cos(angle))

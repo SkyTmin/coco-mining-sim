@@ -1,7 +1,4 @@
 --!strict
--- Client-side look of the camp and of other people. OWNED BY CLAUDE (art); Codex calls it and never edits it
--- [ТЗ-06 §16]. Until Claude's version lands these are plain placeholders with the final signatures.
-
 local Lighting = game:GetService("Lighting")
 local Debris = game:GetService("Debris")
 
@@ -17,11 +14,55 @@ export type MomentData = {
 	rarity: string?,
 }
 
--- 0 = in the tunnel (world light from TunnelDecor), 1 = in the camp (evening). Codex computes it from the position
--- (smooth over the platform line, ТЗ-06 §4.2) and calls this every frame it changes.
+local Config = require(game:GetService("ReplicatedStorage").Shared.Config)
+local Sfx = require(game:GetService("ReplicatedStorage").Shared.Sfx)
+local SoundService = game:GetService("SoundService")
+local camp = Config.camp
+local initialClock = Lighting.ClockTime
+local grade: ColorCorrectionEffect? = nil
+local wind: Sound? = nil
+local knockAt = 0
+local skyReady = false
+
 function CampLook.blend(alpha: number)
-	if alpha >= 0.5 then
-		Lighting.ClockTime = 18.4
+	if alpha == 0 and not grade then
+		return
+	end
+	if not grade then
+		grade = Instance.new("ColorCorrectionEffect")
+		grade.Name, grade.Parent = "CampDusk", Lighting
+	end
+	if not skyReady then
+		local sky = Lighting:FindFirstChildOfClass("Sky") or Instance.new("Sky")
+		sky.StarCount, sky.CelestialBodiesShown, sky.Parent = 2800, true, Lighting
+		skyReady = true
+	end
+	Lighting.ClockTime = initialClock + (camp.clockTime - initialClock) * alpha
+	grade.TintColor = Color3.new(1, 1, 1):Lerp(Color3.fromRGB(255, 224, 203), alpha)
+	grade.Saturation, grade.Contrast = 0.08 * alpha, 0.055 * alpha
+	local bus = SoundService:FindFirstChild("MineSfx")
+	if not wind and alpha > 0 and bus and bus:IsA("SoundGroup") then
+		local clip = Config.sounds.clips.ult_rumble_away[1]
+		local sound = Instance.new("Sound")
+		sound.Name, sound.SoundId, sound.SoundGroup = "CraterWind", Config.sounds.atlasId, bus
+		local region = NumberRange.new(clip[1], clip[1] + clip[2])
+		sound.PlaybackRegionsEnabled, sound.PlaybackRegion, sound.LoopRegion = true, region, region
+		sound.PlaybackSpeed, sound.Looped, sound.Volume, sound.Parent = 0.68, true, 0, SoundService
+		local eq = Instance.new("EqualizerSoundEffect")
+		eq.LowGain, eq.MidGain, eq.HighGain, eq.Parent = -12, -4, -18, sound
+		wind = sound
+	end
+	if wind then
+		wind.Volume = camp.ambience * 0.48 * alpha
+		if alpha > 0 and not wind.IsPlaying then
+			wind:Play()
+		elseif alpha == 0 and wind.IsPlaying then
+			wind:Stop()
+		end
+	end
+	if alpha > 0.8 and os.clock() >= knockAt then
+		knockAt = os.clock() + math.random(5, 11)
+		Sfx.play("depth_knock", camp.ambience, 0.82)
 	end
 end
 

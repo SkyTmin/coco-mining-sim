@@ -47,6 +47,7 @@ local ChestPop = require(Client.Fx.ChestPop)
 local RewardBurst = require(Client.Fx.RewardBurst)
 local MenuWidgets = require(Client.Ui.MenuWidgets)
 
+local CampLook = require(Client.Art.CampLook)
 local Controller = {}
 local mine = Config.mine
 local S = mine.blockSize
@@ -108,6 +109,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 	local savedView = false
 	local jumpButton: GuiObject? = nil
 	local lastPhase = "idle"
+	local campAlpha = 0
 	local hapticsOn = true
 	local familyToast = require(Client.Toast).create(guiParent, translate)
 	local lastHitPosition: Vector3? = nil
@@ -1218,6 +1220,17 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			override,
 			ulting == true
 		)
+
+		local lightTarget = math.clamp((p.Z - Config.plots.platformDepth * S + S * 0.5) / S, 0, 1)
+		if math.abs(p.X) > Config.plots.frameWidth * S / 2 then
+			lightTarget = 1
+		end
+		campAlpha += math.clamp(
+			lightTarget - campAlpha,
+			-dt / Config.camp.blendSeconds,
+			dt / Config.camp.blendSeconds
+		)
+		CampLook.blend(campAlpha)
 
 		local layout = dirty or shown ~= lastShown or visible ~= lastVisible
 		if layout then
