@@ -1,0 +1,250 @@
+{
+  "id": "crater_titan",
+  "rarity": "mythic",
+  "theme": "volcano",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    256,
+    208
+  ],
+  "thickness": 18,
+  "bodySize": 144,
+  "canvas": [
+    292,
+    244
+  ],
+  "anchor": [
+    72,
+    109
+  ],
+  "eye": [
+    90,
+    62
+  ],
+  "primitives": 134,
+  "feet": [
+    141,
+    178
+  ],
+  "points": {
+    "footL": [
+      104.27419602358222,
+      107.3757468176639
+    ],
+    "footR": [
+      71.69506685582192,
+      124.43330432761991
+    ],
+    "foot": [
+      71.69506685582192,
+      124.43330432761991
+    ],
+    "chest": [
+      90.76362783095549,
+      74.23155631355377
+    ],
+    "fist": [
+      47.518669876545914,
+      128.73309003543403
+    ],
+    "eye": [
+      90.29484854055644,
+      62.27110827190424
+    ],
+    "vent": [
+      74.06380043280086,
+      34.21329609950003
+    ]
+  },
+  "layers": [
+    "bg",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "frame",
+    "over"
+  ],
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise bg/loop/(frame % 72).png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "idle-f2": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tech_eruption": {
+      "seconds": 2.4,
+      "frames": 58,
+      "loop": false,
+      "hit": [
+        34,
+        40,
+        46
+      ],
+      "shake": 0.22,
+      "stop": 0
+    },
+    "tech_fist": {
+      "seconds": 1.2,
+      "frames": 29,
+      "loop": false,
+      "hit": [
+        18
+      ],
+      "shake": 0.4,
+      "stop": 0.08
+    },
+    "tech_sweep": {
+      "seconds": 1.4,
+      "frames": 34,
+      "loop": false,
+      "hit": [
+        17
+      ],
+      "shake": 0.19,
+      "stop": 0
+    },
+    "tech_quake": {
+      "seconds": 1.6,
+      "frames": 38,
+      "loop": false,
+      "hit": [
+        24
+      ],
+      "shake": 0.33,
+      "stop": 0.045
+    },
+    "tech_ash": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        22
+      ],
+      "shake": 0.07,
+      "stop": 0
+    },
+    "tech_pillar": {
+      "seconds": 1.8,
+      "frames": 43,
+      "loop": false,
+      "hit": [
+        29,
+        32,
+        35
+      ],
+      "shake": 0.19,
+      "stop": 0
+    },
+    "happy": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "phase": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "show": {
+      "seconds": 5,
+      "frames": 120,
+      "loop": false,
+      "hit": [
+        79
+      ],
+      "shake": 0.25,
+      "stop": 0
+    },
+    "away": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "back": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "peek": {
+      "seconds": 1.8,
+      "frames": 43,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    }
+  }
+}
