@@ -5,7 +5,14 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import omggif from 'omggif';
 import { PNG } from 'pngjs';
-import { frameCount, hitFrame, layerNames, stack, type Layers } from './engine';
+import {
+  compose,
+  frameCount,
+  hitFrame,
+  layerNames,
+  stack,
+  type Layers,
+} from './engine';
 import { indexed } from './render-io';
 import { loadPainting } from './render';
 import { Px } from './rig/px';
@@ -27,8 +34,12 @@ function imageFiles(dir: string, count: number) {
   for (let n = 0; n < count; n++)
     assert.ok(files.has(frameName(n)), join(dir, frameName(n)));
 }
-export async function verifyRelease(id: string, assetRoot = root) {
-  const { c } = await loadPainting(id);
+export async function verifyRelease(
+  id: string,
+  assetRoot = root,
+  allFrames = false,
+) {
+  const { c, s, b } = await loadPainting(id);
   const output = join(assetRoot, id),
     meta = JSON.parse(readFileSync(join(output, 'meta.json'), 'utf8'));
   const [w, h] = meta.canvas;
@@ -86,7 +97,10 @@ export async function verifyRelease(id: string, assetRoot = root) {
         ...contacts.map((n) => Math.min(count - 1, n + 1)),
       ]);
       const raw = new Uint8Array(reader.width * reader.height * 4);
-      for (const n of sample) {
+      const frames = allFrames
+        ? Array.from({ length: count }, (_, i) => i)
+        : sample;
+      for (const n of frames) {
         const file = frameName(n),
           loopFile = frameName(n % 72),
           layers = {} as Layers;
@@ -105,6 +119,32 @@ export async function verifyRelease(id: string, assetRoot = root) {
                 ? join(frameLoop, loopFile)
                 : join(dir, key, file);
           layers[key] = pixels(source, w, h);
+        }
+        if (allFrames) {
+          const current = compose(
+            c,
+            s,
+            b,
+            anim,
+            n / 24,
+            0,
+            suffix === anim ? 'normal' : 'gold',
+          );
+          for (const key of layerNames) {
+            const actual = Buffer.from(layers[key].data.buffer);
+            const expected = Buffer.from(current.layers[key].data.buffer);
+            if (!actual.equals(expected))
+              assert.fail(
+                id +
+                  '/' +
+                  suffix +
+                  ' ' +
+                  key +
+                  ' frame ' +
+                  n +
+                  ' differs from current sources',
+              );
+          }
         }
         const p = stack(layers),
           table = indexed(p);
@@ -157,7 +197,9 @@ if (
   process.argv[1] &&
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
-  const ids = process.argv.slice(2);
-  if (!ids.length) throw new Error('Usage: npm run verify -- <id> [id ...]');
-  for (const id of ids) console.log(await verifyRelease(id));
+  const allFrames = process.argv.includes('--all-frames');
+  const ids = process.argv.slice(2).filter((id) => id !== '--all-frames');
+  if (!ids.length)
+    throw new Error('Usage: npm run verify -- [--all-frames] <id> [id ...]');
+  for (const id of ids) console.log(await verifyRelease(id, root, allFrames));
 }

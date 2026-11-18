@@ -1,9 +1,41 @@
 // The silk body is stretched between bamboo ribs. Each side keeps its dark lining on a turn.
-import { F3, Rig, vlerp, type V3, type Mat } from '../rig/f15-rig';
+import { F3, Rig, vdot, vsub, vlerp, type V3, type Mat } from '../rig/f15-rig';
 import { hx, tn, TAU, sstep } from '../kit/f11-mobkit';
 import { everyday, life, projectFigure } from '../rig/figure';
 import { animations, effects, pose, presentation } from './silk_dragon-actions';
 import type { Creature, Variant } from '../types';
+
+// Warp and weft follow the four corners of each individual kite panel.
+function woven(ink: Mat, trim: Mat, a: V3, b: V3, d: V3): Mat {
+  const u = vsub(d, a),
+    v = vsub(b, a),
+    uu = vdot(u, u),
+    vv = vdot(v, v),
+    uv = vdot(u, v);
+  const det = uu * vv - uv * uv;
+  if (det < 0.001) return ink;
+  const warp: V3 = [0, 0, 0],
+    weft: V3 = [0, 0, 0];
+  for (let j = 0; j < 3; j++) {
+    warp[j] = (u[j] * vv - v[j] * uv) / det;
+    weft[j] = (v[j] * uu - u[j] * uv) / det;
+  }
+  const offU = vdot(a, warp),
+    offV = vdot(a, weft);
+  return {
+    T: ink.T,
+    pat(P, L) {
+      const x = vdot(P, warp) - offU,
+        y = vdot(P, weft) - offV;
+      if (x > 0 && x < 0.085) return trim.T[L > 0.4 ? 2 : 1];
+      if (y > 0.085 && y < 0.15) return trim.T[L > 0.4 ? 2 : 1];
+      const lozenge = Math.abs(x - 0.52) * 1.5 + Math.abs(y - 0.55) * 1.7;
+      if (lozenge > 0.28 && lozenge < 0.43) return trim.T[L > 0.45 ? 2 : 1];
+      if (lozenge < 0.12) return trim.T[L > 0.55 ? 3 : 2];
+      return null;
+    },
+  };
+}
 
 export interface SilkPose {
   curl?: number;
@@ -27,6 +59,11 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
       ? tn('#543149', '#9c593f', '#d49b52', '#ffd985')
       : tn('#482744', '#88394b', '#c95649', '#ed8a64'),
   };
+  const ridge: Mat = {
+    T: g
+      ? tn('#947242', '#cda45b', '#f3cf78', '#fff1ad')
+      : tn('#a25147', '#c96c51', '#e98d68', '#ffb681'),
+  };
   const lining: Mat = { T: tn('#35263e', '#64314c', '#943d51', '#ad615b') };
   const cane: Mat = {
     T: g
@@ -48,7 +85,7 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
       delay = l.q - 1.8 * u,
       fold = l.sleep * 0.67 + l.hatch * 0.94 + curl * 0.76;
     const x =
-      (31 - 73 * u) * (1 - Math.max(-0.06, fold) * 0.63) +
+      (31 - 73 * u) * (1 - Math.max(0, fold) * 0.63 + Math.min(0, curl) * 0.27) +
       (A.lunge ?? 0) * (1 - u) ** 2 +
       18 * fold * Math.sin(u * TAU + 0.2) +
       26 * swing * u * u;
@@ -75,29 +112,30 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
       [4 + 23 * Math.cos(angle), 3 * Math.sin(angle * 1.4), 47 - 23 * Math.sin(angle)],
       loop,
     );
-    return root.at(...pos).pitch(-Math.atan2(Math.cos(angle), Math.sin(angle)) * loop);
+    const tangent = -Math.atan((14 * TAU * Math.sin(u * TAU + 0.05)) / 73);
+    return root
+      .at(...pos)
+      .pitch(0.7 * tangent * (1 - loop) - Math.atan2(Math.cos(angle), Math.sin(angle)) * loop);
   }
   const ring = (j: number, s: number): V3 => {
     const F = ribs[j],
       u = j / count;
-    const ry = (13 - 7 * u) * (1 - 0.18 * l.hatch),
-      rz = 12 - 7.1 * u;
-    const theta = (s * Math.PI) / 2;
+    const mid = Math.sin(Math.PI * u);
+    const ry = (11.4 + 6.7 * mid - 7 * u) * (1 - 0.18 * l.hatch),
+      rz = 10.5 + 7 * mid - 6.8 * u;
+    const theta = (s * Math.PI) / 3;
     return F.p(0, ry * Math.cos(theta), rz * Math.sin(theta));
   };
   for (let i = 0; i <= count; i++) ribs.push(station(i));
   for (let i = 0; i < count; i++) {
-    for (let f = 0; f < 4; f++) {
-      r.poly([ring(i, f), ring(i, f + 1), ring(i + 1, f + 1), ring(i + 1, f)], f < 2 ? silk : lining);
+    for (let f = 0; f < 6; f++) {
+      const faces = [ring(i, f), ring(i, f + 1), ring(i + 1, f + 1), ring(i + 1, f)];
+      const panel = f === 1 ? ridge : f < 3 ? silk : lining;
+      r.poly(faces, woven(panel, cane, faces[0], faces[1], faces[3]));
     }
-    r.cap(ring(i, 0), ring(i, 1), 0.78, 0.82, cane);
-    r.cap(ring(i, 1), ring(i, 2), 0.82, 0.78, cane);
   }
-  for (let i = 2; i < 4; i++) {
-    const F = ribs[i],
-      size = 8.6 - i * 0.65;
-    r.poly([F.p(3, 0, size - 1), F.p(-4, 0, size + 7), F.p(-7, 0, size - 3)], cane);
-  }
+  const crest = ribs[2];
+  r.poly([crest.p(4, 0, 10), crest.p(-4, 0, 21), crest.p(-9, 0, 9)], cane);
   const H = ribs[0].turn(0.17 + 0.77 * l.look).pitch(-0.07 + 0.35 * l.tired - 0.18 * l.happy);
   r.ell(H, [2, 0, 1], [10, 8, 7], paper);
   r.ell(H, [10, 0, -1], [7, 5.5, 3.8], paper);
@@ -149,7 +187,8 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
   }
   const tail = ribs[count],
     tip = tail.p(-5, 2, -7);
-  r.poly([tail.p(1, -3, 2), tail.p(-8, -5, 2), tip, tail.p(2, 2, 1)], silk);
+  r.poly([tail.p(1, -3, 2), tail.p(-11, -6, 4), tail.p(-8, -5, 1), tip, tail.p(2, 2, 1)], silk);
+  r.poly([tail.p(0, 0, 0), tail.p(-7, 5, 1), tail.p(-12, 6, -2), tail.p(-5, 0, -3)], cane);
   r.eye = H.p(5, 7.1, 2.8);
   return projectFigure(
     r,

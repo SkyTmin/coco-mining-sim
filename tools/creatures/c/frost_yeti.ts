@@ -77,21 +77,41 @@ export function bodyFrame(
     .turn(0.45 * l.look + (A.headTurn ?? 0))
     .pitch(0.15 * l.sleep + 0.13 * l.tired - 0.22 * (A.jaw ?? 0));
   r.ell(H, [0, 0, 0], [9.5, 11.3, 10.2], coat);
-  r.ell(H, [6.7, 0, -1], [5.8, 9, 6.4], slate);
+  // A bare brow mask breaks the shag. The eyes lie on its forward, upward-facing plane.
+  const face: Mat = {
+    T: gold
+      ? tn('#42343c', '#735344', '#ae8264', '#c9ab81')
+      : tn('#333a51', '#495268', '#718295', '#99a4ac'),
+    pat(q) {
+      if (
+        q[0] > 0.49 &&
+        q[2] > 0.28 &&
+        q[2] < 0.66 &&
+        Math.abs(q[1]) > 0.29 &&
+        Math.abs(q[1]) < 0.82
+      ) {
+        return !l.blink && q[2] > 0.39 && q[2] < 0.54 && Math.abs(q[1]) < 0.64
+          ? ice.T[3]
+          : slate.T[0];
+      }
+      return null;
+    },
+  };
+  r.ell(H, [7.7, 0, 1.3], [6.8, 10, 7.7], face);
   const jaw = A.jaw ?? 0;
-  r.ell(H, [8.8, 0, -4.2 - jaw * 2.4], [4.4, 7, 2.9 + jaw], {
+  r.ell(H, [10.9, 0, -3.9 - jaw * 2.4], [4.7, 7.4, 2.9 + jaw], {
     T: tn('#292835', '#393346', '#6f4c56', '#995f63'),
   });
-  r.ell(H, [10, 0, -1.5], [3.5, 5.4, 2.4], slate);
+  r.ell(H, [13.2, 0, 0.3], [3.5, 5.1, 2.6], slate);
   for (const s of [-1, 1]) {
-    r.cap(H.p(9, s * 3, 2), H.p(5, s * 8, 4.5), 2.4, 1.9, coat);
-    r.dot(H.p(9.2, s * 6.2, 1.7), l.blink ? slate.T[0] : hx('#beeaf1'), 0.15, 1, 1.6);
-    r.cap(H.p(9, s * 5.7, -4.8 - jaw * 2), H.p(10, s * 6.2, -1.6 - jaw * 2), 1.15, 0.15, bone);
+    r.cap(H.p(10.4, s * 2.1, 7.3), H.p(8, s * 7.5, 8.7), 2.0, 1.7, coat);
+    r.dot(H.p(12.9, s * 5.7, 5.5), l.blink ? slate.T[0] : hx('#beeaf1'), 0.15, 1, 1.6);
+    r.cap(H.p(12.1, s * 5.7, -4.4 - jaw * 2), H.p(13.4, s * 6.2, -0.8 - jaw * 2), 1.15, 0.15, bone);
     const tuft = H.p(0, s * 9.4, -0.3);
     r.cap(tuft, H.p(1, s * 10, -8), 3.2, 0.4, coat);
   }
-  sockets.mouth = H.p(12.3, 0, -4.6 - jaw);
-  r.eye = H.p(9.2, 6.2, 1.7);
+  sockets.mouth = H.p(15.3, 0, -4.6 - jaw);
+  r.eye = H.p(12.9, 5.7, 5.5);
   // The right shoulder is a calved serac: blocks of translucent ice, an asymmetric high ridge.
   for (const s of [-1, 1]) {
     const base = torso.at(-2, s * 21, 10);
@@ -114,8 +134,7 @@ export function bodyFrame(
     [1, 1, 2, 23, 5],
     [6, -2, 2, 13, 4.2],
   ]) {
-    const P = S.p(x, y, z),
-      high = S.p(x - 3, y + 3, z + h);
+    const high = S.p(x - 3, y + 3, z + h);
     r.poly([S.p(x - 3, y - 3, z), S.p(x + w, y - 3, z), high], ice);
     r.poly([S.p(x + w, y - 3, z), S.p(x + w, y + 2, z), high], bright);
     r.poly([S.p(x + w, y + 2, z), S.p(x - 3, y + 1, z), high], ice);

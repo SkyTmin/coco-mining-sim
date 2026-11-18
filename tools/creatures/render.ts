@@ -14,6 +14,7 @@ import {
   type Border,
   type Scene,
   type Variant,
+  type XY,
 } from './types';
 import { compose, frameCount, hitFrame, layerNames, blit } from './engine';
 import { GifWriter, savePNG } from './render-io';
@@ -36,6 +37,40 @@ export async function loadPainting(id: string) {
     .default;
   return { c, s, b };
 }
+// Reframing a long limb can move the local crop but must not move the floor
+// in the isolated turntable. Find one feasible pivot for all 16 directions.
+function turnPivots(c: Creature, size: number, frames: number) {
+  const limits: number[][] = [];
+  for (let n = 0; n < frames; n++) {
+    const body = c.frame('turn', n / 24, Math.floor(n / 6) % 16, 'normal');
+    const [ax, ay] = body.anchor,
+      p = body.px;
+    let x0 = p.w,
+      y0 = p.h,
+      x1 = -1,
+      y1 = -1;
+    for (let y = 0; y < p.h; y++)
+      for (let x = 0; x < p.w; x++) {
+        if (!p.solid(x, y) && !body.lit?.solid(x, y)) continue;
+        x0 = Math.min(x0, x);
+        x1 = Math.max(x1, x);
+        y0 = Math.min(y0, y);
+        y1 = Math.max(y1, y);
+      }
+    limits.push([ax - x0, size - 1 - x1 + ax, ay - y0, size - 1 - y1 + ay]);
+  }
+  const base = c.frame('idle', 0, 0, 'normal').anchor;
+  const clamp = (p: number, lo: number, hi: number) =>
+    Math.min(hi, Math.max(lo, p));
+  const pivot = (k: number) => {
+    const lo = Math.max(...limits.map((r) => r[k])),
+      hi = Math.min(...limits.map((r) => r[k + 1]));
+    return lo <= hi ? clamp(base[k / 2], lo, hi) : Math.round((lo + hi) / 2);
+  };
+  const x = pivot(0),
+    y = pivot(2);
+  return limits.map((r) => [clamp(x, r[0], r[1]), clamp(y, r[2], r[3])] as XY);
+}
 function writePainting(
   c: Creature,
   s: Scene,
@@ -52,6 +87,7 @@ function writePainting(
     turn =
       name === 'turn' && variant === 'normal' ? new GifWriter(scale) : null;
   const [, , size] = sizes[c.rarity];
+  const pivots = turn ? turnPivots(c, size, frames) : [];
   const dir = join(output, 'frames', suffix),
     movedFrames = new Set<string>();
   for (let f = 0; f < frames; f++) {
@@ -79,10 +115,8 @@ function writePainting(
       const p = new Px(size, size);
       p.rect(0, 0, size - 1, size - 1, hx('#1e1c24'));
       const body = r.body;
-      const x =
-        body.px.w === size ? 0 : Math.round(size * 0.5 - body.anchor[0]);
-      const y =
-        body.px.h === size ? 0 : Math.round(size * 0.8 - body.anchor[1]);
+      const x = Math.round(pivots[f][0] - body.anchor[0]),
+        y = Math.round(pivots[f][1] - body.anchor[1]);
       blit(p, body.px, x, y);
       if (body.lit) blit(p, body.lit, x, y);
       turn.add(p, f);

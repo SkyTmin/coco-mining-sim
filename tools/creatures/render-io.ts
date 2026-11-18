@@ -5,7 +5,7 @@ import { mkdirSync, writeFileSync, renameSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { Px } from './rig/px';
 
-const { GIFEncoder, quantize, applyPalette } = gifenc;
+const { GIFEncoder } = gifenc;
 // Idle holds, empty effects and rigid frame loops share many exact RGBA buffers.
 const pngCache = new Map<string, Buffer>();
 export function savePNG(path: string, p: Px) {
@@ -29,49 +29,112 @@ export function savePNG(path: string, p: Px) {
   }
   writeFileSync(path, encode);
 }
-// Preserve the original RGB triplets exactly whenever a frame fits a GIF table.
-// Wide contact flashes can exceed 256. Quantize them at native resolution before upscaling.
+interface Color {
+  id: number;
+  rgb: number[];
+  count: number;
+}
+
+// Keep three quarters of the opaque table for recurring exact colours, including
+// neighbouring values in dark scenery. Spend the rest on the greatest remaining
+// colour errors, so small, isolated highlights can also claim their original RGB.
+function reducePalette(colors: Color[], transparentId: number) {
+  const transparent = transparentId >= 0;
+  const palette: number[][] = transparent ? [[0, 0, 0]] : [];
+  const opaque = colors
+    .filter((c) => c.id !== transparentId)
+    .sort(
+      (a, b) =>
+        b.count - a.count ||
+        a.rgb[0] - b.rgb[0] ||
+        a.rgb[1] - b.rgb[1] ||
+        a.rgb[2] - b.rgb[2],
+    );
+  const keep = Math.floor((256 - palette.length) * 0.75);
+  const remaining = opaque.slice(keep);
+  const remap = new Uint8Array(colors.length);
+  const distance = new Float64Array(remaining.length).fill(Infinity);
+  const weights = remaining.map((c) => 1 + 0.25 * Math.log2(c.count));
+
+  function add(color: Color) {
+    const index = palette.length;
+    palette.push(color.rgb);
+    remap[color.id] = index;
+    const [r, g, b] = color.rgb;
+    for (let i = 0; i < remaining.length; i++) {
+      if (distance[i] === 0) continue;
+      const candidate = remaining[i];
+      const dr = candidate.rgb[0] - r,
+        dg = candidate.rgb[1] - g,
+        db = candidate.rgb[2] - b;
+      const error = 2 * dr * dr + 3 * dg * dg + db * db;
+      if (error < distance[i]) {
+        distance[i] = error;
+        remap[candidate.id] = index;
+      }
+    }
+  }
+
+  for (let i = 0; i < keep; i++) add(opaque[i]);
+  while (palette.length < 256) {
+    let worst = 0,
+      worstScore = -1;
+    for (let i = 0; i < remaining.length; i++) {
+      const score = distance[i] * weights[i];
+      if (score > worstScore) {
+        worst = i;
+        worstScore = score;
+      }
+    }
+    add(remaining[worst]);
+  }
+  return { palette, remap };
+}
+
 export function indexed(p: Px) {
-  const palette: number[][] = [],
-    colors = new Map<number, number>(),
-    indices = new Uint8Array(p.w * p.h);
-  let transparent = false;
+  const colors: Color[] = [];
+  const ids = new Map<number, number>();
+  const indices = new Uint8Array(p.w * p.h);
+  let wideIds: Uint32Array | undefined;
+  const pixels = p.data;
   for (let k = 0; k < indices.length; k++) {
     const i = k * 4;
+    // Transparent pixels have one dedicated identity, even when opaque black is present.
     const key =
-      p.data[i + 3] < 128
+      pixels[i + 3] < 128
         ? -1
-        : (p.data[i] << 16) | (p.data[i + 1] << 8) | p.data[i + 2];
-    let j = colors.get(key);
-    if (j === undefined) {
-      if (palette.length === 256) {
-        const palette = quantize(p.data, 256, {
-          format: 'rgba4444',
-          oneBitAlpha: true,
-          clearAlpha: true,
-        });
-        const transparentIndex = palette.findIndex((c: number[]) => c[3] === 0);
-        return {
-          indices: applyPalette(p.data, palette, 'rgba4444'),
-          palette,
-          transparent: transparentIndex >= 0,
-          transparentIndex: Math.max(0, transparentIndex),
-        };
+        : (pixels[i] << 16) | (pixels[i + 1] << 8) | pixels[i + 2];
+    let id = ids.get(key);
+    if (id === undefined) {
+      id = colors.length;
+      ids.set(key, id);
+      colors.push({
+        id,
+        rgb: key === -1 ? [0, 0, 0] : [pixels[i], pixels[i + 1], pixels[i + 2]],
+        count: 0,
+      });
+      if (id === 256) {
+        wideIds = new Uint32Array(indices.length);
+        wideIds.set(indices.subarray(0, k));
       }
-      colors.set(key, (j = palette.length));
-      if (key === -1) transparent = true;
-      palette.push(
-        key === -1 ? [0, 0, 0] : [p.data[i], p.data[i + 1], p.data[i + 2]],
-      );
     }
-    indices[k] = j;
+    colors[id].count++;
+    if (wideIds) wideIds[k] = id;
+    else indices[k] = id;
   }
-  return {
-    indices,
-    palette,
-    transparent,
-    transparentIndex: colors.get(-1) ?? 0,
-  };
+  const transparentId = ids.get(-1) ?? -1;
+  const transparent = transparentId >= 0;
+  if (!wideIds)
+    return {
+      indices,
+      palette: colors.map((c) => c.rgb),
+      transparent,
+      transparentIndex: Math.max(0, transparentId),
+    };
+  const { palette, remap } = reducePalette(colors, transparentId);
+  // All pixels with the same RGB use the nearest entry found once above.
+  for (let k = 0; k < indices.length; k++) indices[k] = remap[wideIds[k]];
+  return { indices, palette, transparent, transparentIndex: 0 };
 }
 export class GifWriter {
   private encoder = GIFEncoder();
