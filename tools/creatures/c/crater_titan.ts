@@ -18,6 +18,7 @@ const controls = {
   incline: 0,
   bank: 0,
   neckTilt: 0,
+  throat: 0,
   reach: 0,
   spread: 0,
   backSpread: 0,
@@ -173,6 +174,7 @@ export function craterTitanFrame(
   const golden = variant === 'gold';
   const heading = 0.77 + (TAU * side) / 16 + k.yaw;
   const F = F3.yaw(heading);
+  const stance = anim === 'tech_ash' ? F3.yaw(0.77 + (TAU * side) / 16) : F;
   const torso = F.at(
     -2 + k.hipForward,
     gait * 2 + k.hipSide,
@@ -182,7 +184,7 @@ export function craterTitanFrame(
     .pitch(0.12 + 0.13 * k.crouch + k.incline)
     .roll(0.025 * gait + k.bank);
   const head = torso
-    .at(2, 0, 30)
+    .at(2, 0, 30 + k.throat)
     .turn(headLead + 0.33 * look + 0.21 * k.glance)
     .pitch(-0.13 - 0.12 * look + k.neckTilt);
   const rock = strataRock(F, golden, false, phase),
@@ -212,11 +214,19 @@ export function craterTitanFrame(
     if (walk && step.planted) planted.push(d === 1 ? 'footR' : 'footL');
     const lift =
       (walk ? step.lift * 8 : 0) + (d === 1 ? Math.max(0, k.foot) * 26 : 0);
-    const toe = F.p(5 + stride + d * k.advance, d * (19 + k.stand), 5 + lift),
+    const toe = stance.p(
+        5 + stride + d * k.advance,
+        d * (19 + k.stand),
+        5 + lift,
+      ),
       hip = torso.p(-1, d * 12, -8);
     const knee = ik(hip, toe, 21, 20, F.v(0.8, d * 0.25, 0.05));
     r.cap(hip, knee, 8, 9, dark).cap(knee, toe, 8, 6.5, rock);
-    const boot = F.at(7 + stride + d * k.advance, d * (20 + k.stand), 6 + lift);
+    const boot = stance.at(
+      7 + stride + d * k.advance,
+      d * (20 + k.stand),
+      6 + lift,
+    );
     ledge(r, boot, 0, 0, 0, 13, 8.8, 7, plane);
     r.ell(boot, [6, -3, -2], [8.5, 5, 3.3], dark).ell(
       boot,
@@ -497,6 +507,14 @@ export function craterTitanFrame(
   r.spike(head.p(6, 10, 10), head.v(0.35, 0.65, -0.7), 3.9, 2.1, plane, 3);
   for (let j = 0; j < 3; j++)
     r.ell(head, [8 + 0.85 * j, 8 - j * 0.7, 5.3 - j], [1.2, 1, 0.75], ash);
+  if (k.throat > 0) {
+    const collar = torso.at(2, 0, 28);
+    r.cap(collar.o, head.o, 11, 9, dark);
+    for (let j = 1; j <= 2; j++) {
+      const band = collar.at(0, 0, (j * k.throat) / 3);
+      r.ell(band, [0, 0, 0], [11.5, 10, 2], plane);
+    }
+  }
   loc.vent = head.p(-1, 0, 12);
   for (let i = 0; i < 3; i++) {
     const u = (clock / 1.5 + i / 3) % 1;

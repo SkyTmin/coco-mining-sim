@@ -33,6 +33,8 @@ export interface ToadPose {
   keyRig?: number;
   setStaff?: number;
   travel?: number;
+  spread?: number;
+  approach?: number;
   phase?: number;
 }
 export function bodyFrame(
@@ -140,7 +142,7 @@ export function bodyFrame(
     r.ell(hip, [-3, 0, 0], [17, 14, 12], skin);
     const heel = F.at(
       -6 + cycle.forward - s * (A.step ?? 0),
-      s * (32 - (A.tuck ?? 0) * 0.4),
+      s * (32 - (A.tuck ?? 0) * 0.4 + (A.spread ?? 0)),
       6 + swing * 5.8 + (A.tuck ?? 0),
     );
     r.cap(hip.p(5, s * 3, -2), heel.o, 9, 5.1, skin);
@@ -155,7 +157,8 @@ export function bodyFrame(
     }
     r.poly([sole.o, ...toes], skin, -0.1);
     const socket = s < 0 ? 'footL' : 'footR';
-    sockets[socket] = sole.p(6, 0, -2);
+    // In the landing stance the outer toes break the water ahead of the sole.
+    sockets[socket] = anim === 'tech_leap' ? sole.p(12, s * 10, -2) : sole.p(6, 0, -2);
     sockets[socket + 'Ground'] = [sockets[socket][0], sockets[socket][1], 0];
   }
   // Overlapping panels hang away from the hindquarters. Shells stitched along the hem.
@@ -423,7 +426,7 @@ export function bodyFrame(
   const fr = projectFigure(r, 160, [84, 115], sockets, '#202d37');
   fr.planted = planted;
   fr.dx = A.travel ?? 0;
-  fr.dy = -jump - l.pop * 11;
+  fr.dy = (A.approach ?? 0) - jump - l.pop * 11;
   return fr;
 }
 const creature: Creature = {

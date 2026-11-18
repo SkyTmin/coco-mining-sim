@@ -329,7 +329,7 @@ function ash(f: FxInput) {
         3 * (landing[0] - wind * 29) * v * u * u +
         landing[0] * u * u * u,
       source[1] * v * v * v +
-        3 * (source[1] - 43) * v * v * u +
+        3 * (source[1] - 82) * v * v * u +
         3 * (landing[1] - 27) * v * u * u +
         landing[1] * u * u * u,
     ];
@@ -340,7 +340,8 @@ function ash(f: FxInput) {
       oval(p, x, y, 4.5, 2.3, '#794d46', fade);
       p.lineS(x - wind * 2, y + 1, x + wind * 3, y - 2, '#ffe0aa', fade);
     });
-  const front = clamp01(age / travel),
+  // The shutter opens on the released pressure front, already beyond the lip.
+  const front = clamp01(0.21 + (0.79 * age) / travel),
     back = clamp01((age - releaseDuration) / travel);
   if (back < 1) {
     const steps = Math.max(1, Math.ceil((front - back) * 28));
@@ -384,6 +385,20 @@ function ash(f: FxInput) {
         );
       if (u < 0.42 && i % 5 === 0) f.above.lineS(x, y + 1, x + wind * 2, y, '#df9a62', opacity * 0.88);
     }
+  }
+  if (age < 0.16) {
+    // The first hot core is visible through the ash at the exact release frame;
+    // the pale pressure curl leads it and folds back into the slower grey plume.
+    const light = 1 - sstep(0, 0.16, age),
+      lip = streamline(0.042),
+      neck = streamline(0.08),
+      cap = streamline(front);
+    f.above.lineS(...source, ...lip, '#ffe9b8', light);
+    f.above.lineS(lip[0], lip[1] + 1, ...neck, '#d49668', light * 0.83);
+    oval(f.above, cap[0], cap[1], 6.4 + (2 * age) / 0.16, 4.5, '#655962', light);
+    oval(f.above, cap[0] + wind * 1.2, cap[1] - 1.6, 5.6, 3.9, '#bdb2a9', light * 0.98);
+    f.above.lineS(cap[0] + wind * 5, cap[1] - 1, cap[0] + wind * 3, cap[1] - 3, '#e0d4ba', light);
+    f.above.lineS(cap[0] + wind * 3, cap[1] - 3, cap[0] - wind, cap[1] - 4, '#c9bba7', light);
   }
   if (age >= travel) {
     const down = age - travel,
@@ -460,8 +475,28 @@ function lavaTongue(
 function pillars(f: FxInput) {
   const primary = f.hits[0],
     born = f.pointAt(primary, 'fist');
+  const final = (Math.round(f.duration * 24) - 1) / 24;
+  const remaining = 1 - sstep(final - 5 / 24, final, f.t);
+  // All three fissures drain into their own crust before the last frame enters idle.
+  const basin = (p: Pen, x: number, y: number, r: number, age: number) => {
+    const grow = 0.28 + 0.72 * sstep(0, 0.105, age),
+      rx = r * grow * (0.24 + 0.76 * remaining);
+    const heat = (1 - sstep(0.07, 0.34, age)) * remaining;
+    const shades = ['#574249', '#854c43', '#b46b45', '#e29a54', '#ffd27a'];
+    const shade = shades[Math.min(4, Math.floor(heat * 5))];
+    oval(p, x, y, rx + 1.3, rx * 0.36 + 1.1, '#392b32', remaining * 0.9);
+    oval(p, x, y - 0.6, rx, Math.max(0.6, rx * 0.29), shade, remaining);
+    p.lineS(
+      x - rx * 0.45,
+      y + 0.4,
+      x + rx * 0.25,
+      y - 0.6,
+      heat > 0.55 ? '#ffdc8e' : '#8c5e4e',
+      remaining * (0.37 + 0.58 * heat),
+    );
+  };
   heatedStroke(f, 'fist', primary, '#ef9950', 2);
-  if (f.t >= primary) paintImpact(f, 'under', 'fist', born, (p, x, y) => pool(p, x, y, 6, f.t - primary));
+  if (f.t >= primary) paintImpact(f, 'under', 'fist', born, (p, x, y) => basin(p, x, y, 6, f.t - primary));
   for (let i = 0; i < 3; i++) {
     const socket = 'pillar' + i,
       hit = f.hits[i + 1];
@@ -478,7 +513,12 @@ function pillars(f: FxInput) {
             lerp(born[0], x, u),
             lerp(born[1], y, u) + Math.sin(u * 6 * Math.PI) * 3 * Math.sin(u * Math.PI),
           ];
-        f.under.lineS(...prev, ...next, '#da7547', clamp01(1.4 - (f.t - primary)));
+        f.under.lineS(
+          ...prev,
+          ...next,
+          remaining > 0.56 ? '#da7547' : '#7e5045',
+          remaining * clamp01(1.4 - (f.t - primary)),
+        );
         prev = next;
       }
     }
@@ -486,14 +526,14 @@ function pillars(f: FxInput) {
       ripple(f.under, x, y, 10 + i, 0.35, '#f1a64d', 0.77, sstep(primary, hit - 0.04, f.t));
       continue;
     }
-    paintImpact(f, 'under', socket, target, (p, x, y) => pool(p, x, y, 12 + i, age));
+    paintImpact(f, 'under', socket, target, (p, x, y) => basin(p, x, y, 12 + i, age));
     // The first basin fans sideways, the second forks and the last rises in a
     // thin white spire. Each silhouette jumps above its own lip on its birth frame.
     const duration = [0.64, 0.53, 0.41][i],
-      fade = clamp01((duration - age) / 0.16);
+      fade = clamp01((duration - age) / 0.16) * remaining;
     if (fade <= 0) continue;
     const pressure = Math.sin(Math.PI * clamp01((age + 0.037) / duration)) ** 0.6;
-    const h = [30, 50, 72][i] * pressure,
+    const h = (i === 2 ? 72 * (0.43 + 0.57 * sstep(0, 1 / 24, age)) : [30, 50][i] * pressure) * remaining,
       lean = [-12, 6, -3][i];
     if (i === 0) {
       lavaTongue(f.above, x - 2, y, h, 5.9, lean, '#ee944a', fade);
@@ -502,9 +542,19 @@ function pillars(f: FxInput) {
       lavaTongue(f.above, x - 1, y, h * 0.86, 4.2, -8, '#ef9149', fade);
       lavaTongue(f.above, x + 1, y, h, 5, lean, '#ffc263', fade);
     } else {
-      lavaTongue(f.above, x, y, h, 5, lean, '#ffd47a', fade);
+      lavaTongue(
+        f.above,
+        x,
+        y,
+        h,
+        2 + 3 * remaining,
+        lean * remaining,
+        remaining > 0.63 ? '#ffd47a' : remaining > 0.24 ? '#e18e51' : '#956044',
+        fade,
+      );
       lavaTongue(f.above, x - 2, y, h * 0.51, 2.5, -8, '#f28e45', fade);
-      oval(f.above, x + lean, y - h - 2, 2, 3.2, '#ffe8a3', fade);
+      if (remaining > 0.33)
+        oval(f.above, x + lean * remaining, y - h - 2, 2 * remaining, 3.2 * remaining, '#ffe8a3', fade);
     }
     f.above.lineS(x - 4, y, x + 2, y - 1, '#ffd379', fade);
     for (let k = 0; k < 3; k++) {

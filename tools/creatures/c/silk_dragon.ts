@@ -64,6 +64,10 @@ export function bodyFrame(
   A: SilkPose = {},
   headSide = side,
 ) {
+  // A whip stays aloft through the broad sweep before the narrow terminal snap.
+  if (anim === 'tech_lash' && A.brushDown && A.brushDown > 0.21 && A.brushDown < 1) {
+    A = { ...A, brushDown: 0.21 + 0.79 * ((A.brushDown - 0.21) / 0.79) ** 5.2 };
+  }
   const lead = Math.max(-0.62, Math.min(0.62, ((((headSide - side + 24) % 16) - 8) * Math.PI) / 8));
   const g = variant === 'gold',
     r = new Rig(),
@@ -138,8 +142,8 @@ export function bodyFrame(
     );
     // In the backward sweep the mask bows after the terminal tassel; the contact stays on the floor.
     if (A.brushDown) {
-      const backArc = (1 - Math.cos((side * TAU) / 16)) * 0.5;
-      pos[2] -= A.brushDown * backArc * 31 * (1 - u) ** 1.4;
+      const backArc = Math.max(0, -Math.sin(0.36 + (side * TAU) / 16 + (A.skew ?? 0)));
+      pos[2] -= A.brushDown * backArc * 43 * (1 - u) ** 1.4;
     }
     const tangent = -Math.atan((14 * TAU * Math.sin(u * TAU + 0.05)) / 73);
     return root

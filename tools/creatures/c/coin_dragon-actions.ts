@@ -417,7 +417,17 @@ function dive(f: FxInput) {
   const { t, feet } = f;
   const [entry, exit] = f.hits;
   glintTrail(f, 'mouth', entry, '#dfb16d', 2);
-  glintTrail(f, 'mouth', exit, '#f2d48f');
+  // At exit the last submerged samples are below the marble, outside the exposed
+  // muzzle. Its visible stroke starts at the lip, after the one-frame contact hold.
+  if (t >= exit + 2 / 24 && t <= exit + 4 / 24) {
+    const from = Math.max(exit, t - 2 / 24);
+    if (f.pointAt(from, 'mouth')[1] <= f.pointAt(exit, 'mouth')[1] + 1)
+      paintSocketTrail(f, 'above', 'mouth', from, t, {
+        color: '#f2d48f',
+        width: 1,
+        alpha: 0.76 * (1 - sstep(exit + 3 / 24, exit + 4 / 24, t)),
+      });
+  }
   const burrow = f.pointAt(entry, 'mouth');
   const emerge = f.pointAt(exit, 'mouth');
   for (const [i, hit] of f.hits.entries()) {

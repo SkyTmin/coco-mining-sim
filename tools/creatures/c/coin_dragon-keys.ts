@@ -161,12 +161,12 @@ export default {
       [
         17,
         {
-          dx: -44,
-          dy: -8,
+          dx: -60,
+          dy: -15,
           bodyYaw: -1.62,
           rear: -0.32,
           chest: 1.25,
-          cofferHigh: 11,
+          cofferHigh: 29,
           lid: 1.45,
           wings: 0.56,
           headFold: -0.44,
@@ -177,12 +177,12 @@ export default {
       [
         19,
         {
-          dx: -32,
-          dy: -8,
+          dx: -49,
+          dy: -17,
           bodyYaw: -1.32,
           rear: -0.3,
           chest: 1.13,
-          cofferHigh: 13,
+          cofferHigh: 28,
           lid: 1.53,
           wings: 0.7,
           headFold: -0.45,
@@ -191,14 +191,15 @@ export default {
       [
         22,
         {
-          dx: 43,
-          dy: -6,
+          dx: -2,
+          dy: -21,
           bodyYaw: 0.47,
           rear: 0.28,
           squat: 10,
-          headFold: 0.46,
+          headFold: 0.34,
           chest: -0.39,
-          cofferReach: 18,
+          cofferReach: 17,
+          cofferHigh: 21,
           lid: 0,
           tail: 0.48,
           wings: -0.54,
@@ -208,14 +209,15 @@ export default {
       [
         28,
         {
-          dx: 50,
-          dy: -5,
+          dx: 2,
+          dy: -18,
           bodyYaw: 0.62,
           rear: 0.34,
           squat: 13,
-          headFold: 0.6,
+          headFold: 0.36,
           chest: -0.42,
-          cofferReach: 21,
+          cofferReach: 18,
+          cofferHigh: 25,
           tail: 0.5,
           wings: -0.4,
           stance: 8,
@@ -401,7 +403,7 @@ export default {
       [
         18,
         {
-          dx: -21,
+          dx: -43,
           dy: -4,
           bodyYaw: -0.56,
           rear: -0.36,
@@ -415,7 +417,7 @@ export default {
       [
         19,
         {
-          dx: -13,
+          dx: -39,
           dy: -4,
           bodyYaw: -0.38,
           rear: -0.29,
@@ -431,7 +433,7 @@ export default {
         {
           buried: 0.12,
           compact: 0.11,
-          dx: 26,
+          dx: -39,
           dy: -20,
           bodyYaw: 0.15,
           rear: 0.49,
@@ -448,7 +450,7 @@ export default {
         {
           buried: 1,
           compact: 0.08,
-          dx: 29,
+          dx: -37,
           dy: 90,
           bodyYaw: -2.09,
           headTurn: 1.75,
@@ -516,7 +518,7 @@ export default {
   },
   show: {
     title: 'Монета на ребре',
-    reference: 'guardian-strike',
+    reference: 'mammoth-stomp',
     weapon: 'claw',
     contactKind: 'body',
     stop: 0.06,

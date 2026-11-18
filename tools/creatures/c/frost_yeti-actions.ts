@@ -75,6 +75,15 @@ function snowProp(f:FxInput,source:XY,front:XY,landing:XY) {
     }
   }
  }
+// A dark cobalt edge stays legible against both the fur and the pale sky.
+function iceLance(p:FxInput['above'],tip:XY,dx:number,dy:number,width:number,alpha=1) {
+  const len=Math.hypot(dx,dy), nx=-dy/len,ny=dx/len;
+  const shoulder:XY=[tip[0]-.74*dx,tip[1]-.74*dy],root:XY=[tip[0]-dx,tip[1]-dy];
+  const a:XY=[shoulder[0]+width*nx,shoulder[1]+width*ny],b:XY=[shoulder[0]-width*nx,shoulder[1]-width*ny];
+  p.col('#233c61',alpha);fillPoly(p,[...tip,...a,...root,...b]);
+  p.col('#3299b5',alpha);fillPoly(p,[tip[0]-.17*dx,tip[1]-.17*dy,a[0]-.65*nx,a[1]-.65*ny,...root,...shoulder]);
+  p.col('#b5f9fa',alpha);p.line(root[0]+dx*.13,root[1]+dy*.13,tip[0]-.27*dx,tip[1]-.27*dy);
+}
 export function props(f:FxInput) {
   if(f.anim==='tech_snowball' && f.t<32/24) {
     const src=f.pointAt(32/24,'clubTip');
@@ -82,8 +91,9 @@ export function props(f:FxInput) {
   } else if(f.anim==='tech_icicles' && f.t>=14/24 && f.t<24/24) {
     const belt=f.pointAt(14/24,'belt'),tip=f.pointAt(24/24,'clubTip'),u=progress(f.t,14/24,24/24);
     for(let i=0;i<5;i++) {
+      const spread=(i-2)*(1-u);
       const x=lerp(belt[0]+i-2,tip[0],u),y=lerp(belt[1],tip[1],u)-Math.sin(Math.PI*u)*(10+i);
-      shard(f.above,x-1,y-5,1,5,1.7,ice[i%3],ice[2]);
+      iceLance(f.above,[x+spread,y],spread*1.6,8+i%2,2.1);
     }
   }
 }
@@ -131,23 +141,28 @@ function icicles(f:FxInput) {
   });
   for(let i=0;i<5;i++) {
     const land=(30+i*2)/24,born=f.t-land,id='icicle-'+i;
-    const dest:XY=[Math.min(f.w-7,Math.max(7,impact[0]-26+i*13)),f.feet[1]+[6,-3,11,0,7][i]];
-    const end=projectileAt(f,id,'clubTip',bat,land,dest,12+i*3);
+    // The club bats the bundle towards the clear snow, past the actor's feet.
+    const direction=impact[0]>=f.feet[0]?1:-1;
+    const room=direction>0?f.w-7-impact[0]:impact[0]-7;
+    const reach=Math.max(0,Math.min(83,room)), side=direction*(.28+.17*i)*reach;
+    const dest:XY=[impact[0]+side,Math.min(f.h-8,f.feet[1]+[12,-1,18,4,12][i])];
+    const arc=10+i*4.5;
+    const end=projectileAt(f,id,'clubTip',bat,land,dest,arc);
     if(age<0) continue;
     if(born<0) {
       const v=progress(f.t,bat,land);
       const x=end[0],y=end[1];
-      const dx=2*(i-2)*(1-v),dy=3+5*v;
-      ellFill(f.under,[x,dest[1]],3,1,'#293b50',.48);
-      // shard() puts its leading vertex at centre + vector. Anchor this vertex at the measured point.
-      shard(f.above,x-dx,y-dy,dx,dy,1.7,ice[i%3],ice[2]);
+      const vy=dest[1]-impact[1]-4*arc*(1-2*v), speed=Math.hypot(side,vy)||1;
+      ellFill(f.under,[x,dest[1]],3,1,'#293b50',.58);
+      iceLance(f.above,[x,y],12*side/speed,12*vy/speed,2.8);
     } else if(born<.32) {
       const fade=1-progress(born,.13,.31);
       paintImpact(f,'under',id,dest,(p,x,y)=>{
         ellFill(p,[x,y],2.5,1.2,'#3d526a',fade);p.col('#deeef0',fade);p.line(x,y,x+2+born*12,y+born*4);
       });
-      if(born<.12)shard(f.above,dest[0]-1,dest[1]-5,1,5,1.6,ice[0],ice[2]);
-      else scatter(f,dest,born-.1,888+i,4,ice,.21);
+      const sunk=progress(born,.07,.28);
+      iceLance(f.above,dest,direction*3,10-6*sunk,2.3,fade);
+      if(born>.045)scatter(f,dest,born-.045,888+i,4,['#81e2ea','#467aab','#efffff'],.20);
     }
   }
 }

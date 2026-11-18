@@ -1,6 +1,6 @@
 import { paintImpact, paintSocketTrail } from '../technique-fx';
 import { trk,TAU,hash,lerp,sstep } from '../kit/f11-mobkit';
-import { flare,fly,type Pen } from '../fx/pen';
+import { flare,fly,fillPoly,type Pen } from '../fx/pen';
 import { oval,ellFill,progress,settle } from '../fx/field';
 import type { Animation,BodyFrame,FxInput,XY } from '../types';
 import type { ToadPose } from './toad_shaman';
@@ -173,27 +173,52 @@ function staff(f:FxInput) {
   }
 
 }
+function fillCrown(pen:Pen,x:number,y:number,direction:number,rim:number,height:number) {
+  const at=(d:number)=>x+direction*rim*d;
+  fillPoly(pen,[x,y,at(.40),y-2,at(.65),y-height,at(.78),y-3,at(1),y-height*.48,at(.92),y+1]);
+  pen.col('#83c1bd');pen.line(at(.18),y,at(.66),y-height+1);pen.line(at(.67),y-height+2,at(.79),y-2);
+  pen.col('#e1eff0');pen.dot(at(.66),y-height,2,2);pen.dot(at(.98),y-height*.48,2,1);
+}
 function leap(f:FxInput) {
   const hit=27/24,age=f.t-hit;
   if(f.t>=24/24 && age<.05) paintSocketTrail(f,'above','footR',24/24,hit,{color:'#b6c69b',width:2,alpha:.85});
   if(age<0) {
-    const target:XY=[f.feet[0]+12,f.feet[1]+4],u=progress(f.t,.44,1.18);
+    const a=f.pointAt(hit,'footL'),b=f.pointAt(hit,'footR');
+    const target:XY=[(a[0]+b[0])/2,(a[1]+b[1])/2],u=progress(f.t,.44,hit);
     if(u>0) {ellFill(f.under,target,13+u*17,2.6+u*4,'#243a40',.18+u*.22);oval(f.under,target,13+u*17,3+u*4,water[1],u*.45);}
     return;
   }
-  const left=f.pointAt(hit,'footL'), right=f.pointAt(hit,'footR'),center:XY=[(left[0]+right[0])/2,(left[1]+right[1])/2],u=progress(age,0,.56);
+  const left=f.pointAt(hit,'footL'),right=f.pointAt(hit,'footR');
+  const center:XY=[(left[0]+right[0])/2,(left[1]+right[1])/2];
+  const u=progress(age,0,.56),fade=1-progress(u,.55,1);
   for(const [i,pt] of [left,right].entries()) {
-    if(age<.19) paintImpact(f,'above',i?'footR':'footL',pt,(pen,x,y)=>{
-      const v=age/.19;ellFill(pen,[x,y],2+v*7,1+v*1.7,water[0],1-v);
-      pen.col(water[1],1-v);pen.line(x,y,x+(i?1:-1)*(2+v*9),y-v*10);
+    const outward=pt[0]<center[0]?-1:1;
+    if(age<.17) paintImpact(f,'above',i?'footR':'footL',pt,(pen,x,y)=>{
+      const v=age/.17, rim=5+v*12;
+      const crest=3+Math.sin(Math.PI*v)*7;
+      pen.col('#385e67',1-v*.65);fillCrown(pen,x,y,outward,rim,crest);
+      pen.col('#405e65',1-v);pen.line(x,y+1,x+outward*rim,y+2-v*3);
+      pen.col('#e7eeaa',1-v);pen.line(x,y,x+outward*rim,y-v*3);
     });
-    drops(f,pt,age,561+i,17,.54);
-    oval(f.under,pt,5+u*26,1.5+u*7,water[0],(1-u)*.9);
+    // Far and near rims issue from the same toes. Only the outside spray crosses the figure layer.
+    oval(f.under,pt,1+u*43,1+u*12,'#38575b',fade);
+    oval(f.under,[pt[0],pt[1]+1],1+u*43,1+u*12,'#bbd5ab',fade*.9);
+    for(let j=0;j<6;j++) {
+      const flight=.24+.035*j,v=Math.min(1,age/flight);
+      const run=(14+j*4.6)*v, x=pt[0]+outward*run,y=pt[1]+j*.58*v-4*v*(1-v)*(7+j*1.9);
+      if(age<flight && age>0) {
+        const tail=3*(1-v);
+        f.above.col('#3f6368',fade);f.above.line(x-outward*tail,y+2,x,y-1);
+        f.above.col(j%2?'#91d6d5':'#e5f5ee',fade);f.above.dot(x,y-1,j%3===1?3:2,2);
+      } else if(age>=flight) {
+        const r=(age-flight)*28;oval(f.under,[x,y],1+r,1+r*.34,'#aacba3',fade);
+      }
+    }
   }
-  oval(f.under,center,20+u*46,4+u*14,water[1],(1-u)*.81);
-  for(let i=0;i<8;i++){
-    const a=TAU*i/8,x=center[0]+Math.cos(a)*(19+u*25),y=center[1]+Math.sin(a)*(6+u*8);
-    oval(f.above,[x,y-Math.sin(Math.PI*u)*(7+i%4)],2+i%3,2+i%3,water[0],(1-u)*.82,.05,5.4);
+  if(u>.11) {
+    const spread=(u-.11)/.89,rx=Math.abs(right[0]-left[0])*.5+spread*29;
+    oval(f.under,center,rx,4+spread*20,'#86b5a1',fade*.88,.04,3.10);
+    oval(f.under,[center[0],center[1]+2],rx*.97,4+spread*19,'#d7e0ad',fade*.70,.20,2.93);
   }
 }
 function spores(f:FxInput) {

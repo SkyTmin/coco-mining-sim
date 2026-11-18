@@ -62,20 +62,138 @@ function loop(f:FxInput) {
   }
   if(age>=.16)scatter(f,floor,age-.16,174,16,paper,.66,true);
 }
-function lash(f:FxInput) {
-  const hitTime=15/24;
-  if(f.t>=12/24 && f.t<=16/24)paintSocketTrail(f,'above','tail',Math.max(12/24,f.t-3/24),hitTime,{color:'#f5bd8a',width:1,alpha:.97});
-  if(f.t<hitTime)return;
-  const hit=f.pointAt(hitTime,'tail'),before=f.pointAt(14/24,'tail'),age=f.t-hitTime,u=progress(f.t,hitTime,1.03);
-  const dx=hit[0]-before[0],dy=hit[1]-before[1],len=Math.hypot(dx,dy)||1;
-  const end:XY=[hit[0]+dx/len*22,hit[1]+dy/len*6];
-  f.under.col(deep,.87*(1-u));f.under.line(...hit,...end);
-  f.under.col(wind,.89*(1-u));f.under.line(hit[0],hit[1]-1,end[0],end[1]-1);
-  if(age<.18)paintImpact(f,'above','tail',hit,(p,x,y)=>{
-    const a=1-age/.18;
-    p.col('#9e514e',a);star(p,x,y,9*a,6,.28);flare(p,x,y,7*a,'#fff2be',a);
-  });
-  scatter(f,end,age,213,8,['#fff2c8','#d4a75f','#a56845'],.39,true);
+function lash(f: FxInput) {
+  const frame = f.t * 24,
+    hitTime = 15 / 24;
+  if (frame >= 12 && frame < 17) {
+    const lead = Math.min(f.t, hitTime),
+      oldest = Math.max(12 / 24, lead - 2.25 / 24);
+    const fade = 1 - progress(frame, 15, 17);
+    // Three nested lengths leave a fine old tip and a bright, thicker moving end.
+    // Keep the sweep behind the head wherever the real brush crosses its silhouette.
+    paintSocketTrail(f, 'under', 'tail', oldest, lead, {
+      color: '#b97873',
+      width: 1,
+      alpha: 0.77 * fade,
+    });
+    paintSocketTrail(f, 'under', 'tail', Math.max(oldest, lead - 1.55 / 24), lead, {
+      color: '#f2aa77',
+      width: 2,
+      alpha: 0.97 * fade,
+    });
+    paintSocketTrail(f, 'under', 'tail', Math.max(oldest, lead - 0.9 / 24), lead, {
+      color: '#fff1c5',
+      width: 1,
+      alpha: fade,
+    });
+  }
+  if (frame < 15 || frame >= 25) return;
+  const hit = f.pointAt(hitTime, 'tail'),
+    floorEnd = f.pointAt(19 / 24, 'tailFloor');
+  const dir =
+    Math.sign(floorEnd[0] - hit[0]) || Math.sign(hit[0] - f.pointAt(14 / 24, 'tail')[0]) || 1;
+  const age = frame - 15;
+  const fade = 1 - progress(frame, 21, 25);
+  // A split starts exactly under the tuft. The exposed splinters follow the grain
+  // past the last grounded brush position, then stay in that plank while the tail rises.
+  const room = dir > 0 ? f.w - 3 - hit[0] : hit[0] - 2;
+  const length = Math.min(
+    Math.max(0, room),
+    5 + (Math.min(14, Math.abs(floorEnd[0] - hit[0])) + 12) * progress(age, 0, 3),
+  );
+  const bend = Math.max(-4, Math.min(4, (floorEnd[1] - hit[1]) * 0.45));
+  const x = hit[0],
+    y = hit[1],
+    midX = x + dir * length * 0.45,
+    midY = y + 2 + Math.min(0, bend);
+  const tipX = x + dir * length,
+    tipY = y + bend;
+  f.under.col('#382d39', fade);
+  fillPoly(f.under, [
+    x,
+    y,
+    midX,
+    midY - 1,
+    tipX,
+    tipY,
+    midX + dir * 3,
+    midY + 2,
+    x + dir * 2,
+    y + 2,
+  ]);
+  f.under.col('#ffe0a2', 0.96 * fade);
+  f.under.line(x, y - 1, midX, midY - 1);
+  f.under.col('#ab774d', fade);
+  f.under.line(midX, midY, tipX, tipY - 1);
+  if (age >= 2) {
+    f.under.col('#45313a', fade);
+    f.under.line(midX, midY, midX + dir * 8, midY - 4);
+    f.under.col('#f1b879', fade);
+    f.under.line(midX + dir * 3, midY - 2, midX + dir * 7, midY - 4);
+    const peel = 4 * progress(age, 1, 3);
+    f.under.col('#634634', fade);
+    fillPoly(f.under, [
+      midX,
+      midY,
+      midX + dir * 5,
+      midY - peel,
+      midX + dir * 8,
+      midY - peel,
+      midX + dir * 3,
+      midY,
+    ]);
+    f.under.lineS(midX + dir * 3, midY - 2, midX + dir * 7, midY - peel, '#fff1c7', fade, 0.62);
+  }
+  if (age < 4.2)
+    paintImpact(f, 'above', 'tail', hit, (p, x, y) => {
+      const snap = 1 - progress(age, 0, 4.2);
+      const rays = [
+        [10, -6],
+        [5, -10],
+        [-4, -5],
+        [8, 2],
+      ];
+      for (const [dx, dy] of rays)
+        p.lineS(
+          x + dir * snap,
+          y - snap,
+          x + dir * dx * snap,
+          y + dy * snap,
+          '#ffe1a0',
+          snap,
+          0.95,
+        );
+      p.col('#fff4c6', snap);
+      fillPoly(p, [
+        x - dir * 3 * snap,
+        y,
+        x,
+        y - 2 * snap,
+        x + dir * 4 * snap,
+        y - 2 * snap,
+        x + dir * snap,
+        y + snap,
+      ]);
+    });
+  if (age < 7)
+    for (const [vx, vy, span] of [
+      [2.7, -2.8, 4],
+      [-1.65, -2.15, 3],
+      [1.1, -3.1, 2],
+    ]) {
+      const dt = age / 1.25,
+        chipX = x + dir * vx * dt,
+        chipY = y + vy * dt + 0.32 * dt * dt;
+      f.above.lineS(
+        chipX,
+        chipY,
+        chipX + dir * span,
+        chipY - 1,
+        '#ffe2a2',
+        1 - progress(age, 4.5, 7),
+        0.96,
+      );
+    }
 }
 function kites(f:FxInput) {
   const launch=21/24;
