@@ -110,3 +110,28 @@
 ## Роли Codex
 
 В `.codex/agents/` лежат три конфигурации. У автора и критика `model_reasoning_effort = "high"`, у сборщика — `"low"`. Для каждой роли заданы `name`, `description` и `developer_instructions`. Модель наследуется от родительской сессии. Все три файла прошли разбор TOML. Оба значения усилия есть в каталоге установленного Codex CLI 0.167.0-alpha.4. [Поля пользовательского агента](https://developers.openai.com/codex/subagents#custom-agent-file-schema) · [Справочник конфигурации](https://developers.openai.com/codex/config-reference)
+
+## Итоговая проверка
+
+Ошибки и предупреждения в таблице приведены для полной проверки без кэша. Число кадров включает прогулку и показ всех приёмов.
+
+| Картина | До Б2, ошибки / предупреждения | После, ошибки / предупреждения | Цвета | Приёмы | Кадров совпало |
+|---|---:|---:|---:|---:|---:|
+| Ежевичный страж (`bramble_warden`) | 0 / 1 | 0 / 0 | 58 | 2/2 | 1134 |
+| Жук-таран Самоцвет (`gem_beetle`) | 0 / 0 | 0 / 0 | 61 | 2/2 | 1082 |
+| Шёлковый дракон (`silk_dragon`) | 0 / 1 | 0 / 0 | 61 | 3/3 | 1201 |
+| Йети Буран (`frost_yeti`) | 8 / 3 | 0 / 0 | 122 | 4/4 | 1323 |
+| Квакунья (`toad_shaman`) | 9 / 6 | 0 / 0 | 158 | 5/5 | 1553 |
+| Титан Жерло (`crater_titan`) | 2 / 7 | 0 / 0 | 106 | 6/6 | 1889 |
+| Монетный дракон (`coin_dragon`) | 0 / 5 | 0 / 0 | 114 | 6/6 | 1844 |
+| Грозовой баран (`storm_ram`) | новая картина | 0 / 0 | 84 | 2/2 | 1238 |
+
+`npm run ws -- gate all --force` принял восемь картин и все 30 приёмов. В `npm test` прошли 79 тестов, TypeScript прошёл проверку типов. `npm run ws -- snap all --check` подтвердил 11 264 кадра. При независимой проверке экспорта `verify --all-frames` сверил 12 219 кадров с исходниками и PNG-слоями, включая золотые варианты.
+
+Проверки проекта StyLua и Rojo прошли, Lune выполнил 192 теста. Selene 0.32.0 с полным словарём Roblox сообщил о трёх ошибках `if_same_then_else` на строках 87, 90, 93 в `src/client/Mine/Input.luau`, десяти предупреждениях и нуле ошибок разбора. Состав `src` и конфигурация Selene совпадают с началом Б2; эти 13 замечаний воспроизводятся на исходной версии. [Ветви обработки ввода](../../../../src/client/Mine/Input.luau#L87)
+
+## Просмотр и архив
+
+Показы приёмов подписаны по-русски и сохраняют исходный темп 24 кадра/с. На общей стене помещаются восемь картин. [Йети](https://github.com/SkyTmin/coco-mining-sim/releases/download/creatures-b2/frost_yeti-showreel.gif) · [Квакунья](https://github.com/SkyTmin/coco-mining-sim/releases/download/creatures-b2/toad_shaman-showreel.gif) · [Грозовой баран](https://github.com/SkyTmin/coco-mining-sim/releases/download/creatures-b2/storm_ram-showreel.gif) · [Общая стена](https://github.com/SkyTmin/coco-mining-sim/releases/download/creatures-b2/paintings.gif)
+
+Полный архив содержит 51 114 файлов. В него входят GIF ×3, нативные PNG всех слоёв, глубины, траектории, метаданные восьми существ и семь комплектов рам. Размер архива 296 596 711 байт, SHA-256 `915336d5945eb937d1d5c2d288135d632a828c548b5e7fdd81cd5b662b70d1a2`. [Скачать ZIP](https://github.com/SkyTmin/coco-mining-sim/releases/download/creatures-b2/creatures-b2.zip)

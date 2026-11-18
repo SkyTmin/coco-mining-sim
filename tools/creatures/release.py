@@ -15,8 +15,10 @@ def main():
     if output.is_relative_to(ASSETS):
         parser.error("The archive must be outside its input tree")
     metas = sorted(ASSETS.glob("*/meta.json"))
-    if len(metas) != 7:
-        raise ValueError("Expected the seven pilot creatures")
+    golden = {p.stem for p in (ROOT / "tools/creatures/golden").glob("*.json")}
+    exported = {p.parent.name for p in metas}
+    if not golden or exported != golden:
+        raise ValueError(f"Exported creatures differ from the approved inventory: {exported ^ golden}")
     for path in metas:
         meta = json.loads(path.read_text())
         if not {"life", "showreel"}.issubset(meta["animations"]):
@@ -27,7 +29,8 @@ def main():
         actual = {f.name for f in (path.parent / "gif").glob("*.gif")}
         if actual != expected:
             raise ValueError(f"{path.parent.name} unexpected or missing GIF files: {actual ^ expected}")
-    files = sorted(p for p in ASSETS.rglob("*") if p.is_file())
+    # The workshop cache contains local timestamps. Only the delivered art enters the archive.
+    files = sorted(p for p in ASSETS.rglob("*") if p.is_file() and p.name != ".ws-render.json")
     output.parent.mkdir(parents=True, exist_ok=True)
     temp = output.with_suffix(".partial")
     with zipfile.ZipFile(temp, "w", allowZip64=True) as archive:

@@ -95,3 +95,20 @@ node --import tsx tech-metrics.ts
 npm run gallery:techniques
 python3 release.py /tmp/creatures-pilot-3.zip
 ```
+
+## Выпуск библиотеки Б2
+
+Из `tools/creatures` эти команды собирают восемь картин, общий зал и три подписанных показа приёмов. Полный архив определяется принятыми файлами в `golden/`. Локальные кэши мастерской в архив не входят.
+
+```sh
+npm ci
+npm test
+npm run ws -- gate all
+npm run ws -- snap all --check
+npm run ws -- render all
+npm run verify -- --all-frames bramble_warden gem_beetle silk_dragon frost_yeti toad_shaman crater_titan coin_dragon storm_ram
+npm run gallery:b2
+python3 release.py /tmp/creatures-b2.zip
+```
+
+Галерея и подписанные показы находятся в `.studio/b2-gallery/`. При публикации рядом с ZIP доступны четыре отдельных GIF. [Скачать картины](https://github.com/SkyTmin/coco-mining-sim/releases/tag/creatures-b2)
