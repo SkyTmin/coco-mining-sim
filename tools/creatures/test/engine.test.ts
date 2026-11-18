@@ -185,3 +185,41 @@ test('native transparent PNG layers reassemble to the pixels decoded from GIF at
     rmSync(temp, { recursive: true, force: true });
   }
 });
+
+test('a fractional contact starts FX, hit stop, flash and camera shake on its declared frame', () => {
+  const action: Creature = {
+    ...creature,
+    animations: {
+      tech_one: { seconds: 2, hits: [1.3], stop: 0.09, shake: 0.8 },
+    },
+  };
+  const before = compose(action, scene, border, 'tech_one', 30 / 24);
+  const hit = compose(action, scene, border, 'tech_one', 31 / 24);
+  assert.ok(!before.layers.fxo.data.some(Boolean));
+  assert.ok(hit.layers.fxo.data.some(Boolean));
+  assert.ok(hit.camera.some(Boolean));
+  assert.deepEqual(
+    hit.body.points,
+    action.frame('tech_one', 1.3, 0, 'normal').points,
+  );
+  const [x, y] = screenPoint(hit.body, [8, 8], hit.feet);
+  assert.ok(hit.layers.body.get(x, y)[0] > hit.body.px.get(8, 8)[0]);
+});
+test('a hidden figure leaves no shadow, reflected emission or gold halo during its show', () => {
+  const hidden: Creature = {
+    ...creature,
+    animations: { show: { seconds: 5 } },
+    frame: (...args) => ({ ...creature.frame(...args), sx: 0, sy: 0 }),
+  };
+  const r = compose(hidden, scene, border, 'show', 0, 0, 'gold');
+  for (const k of ['fxu', 'body', 'lit'] as const)
+    assert.ok(!r.layers[k].data.some(Boolean), k);
+});
+
+test('the actual final exported pose of a one-shot returns to idle and releases its FX', () => {
+  const r = picture('tech_one', 35 / 24),
+    idle = picture('idle', 0);
+  for (const key of ['body', 'lit', 'fxu', 'fxo'] as const)
+    assert.deepEqual(bytes(r.layers[key]), bytes(idle.layers[key]), key);
+  assert.deepEqual(r.body.points, idle.body.points);
+});

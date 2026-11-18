@@ -1,16 +1,32 @@
 import gifenc from 'gifenc';
+import { createHash } from 'node:crypto';
 import { PNG } from 'pngjs';
 import { mkdirSync, writeFileSync, renameSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { Px } from './rig/px';
 
 const { GIFEncoder, quantize, applyPalette } = gifenc;
+// Idle holds, empty effects and rigid frame loops share many exact RGBA buffers.
+const pngCache = new Map<string, Buffer>();
 export function savePNG(path: string, p: Px) {
   mkdirSync(dirname(path), { recursive: true });
-  const encode = PNG.sync.write(
-    { width: p.w, height: p.h, data: p.data },
-    { filterType: 0, deflateLevel: 4 },
-  );
+  const key =
+    p.w +
+    'x' +
+    p.h +
+    ':' +
+    createHash('sha256').update(p.data).digest('base64');
+  let encode = pngCache.get(key);
+  if (!encode) {
+    encode = PNG.sync.write(
+      { width: p.w, height: p.h, data: p.data },
+      // Pixel-art fills have long repeated RGBA sequences. LZ77 search compresses
+      // those across rows, unlike pngjs's default run-length strategy.
+      { filterType: 0, deflateLevel: 6, deflateStrategy: 0 },
+    );
+    if (pngCache.size >= 384) pngCache.delete(pngCache.keys().next().value!);
+    pngCache.set(key, encode);
+  }
   writeFileSync(path, encode);
 }
 // Preserve the original RGB triplets exactly whenever a frame fits a GIF table.

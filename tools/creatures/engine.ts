@@ -196,8 +196,18 @@ export function compose(
       ? hits[hits.map(hitFrame).lastIndexOf(last)]
       : t;
   const dir = anim === 'turn' ? Math.floor(t * 4) % 16 : side;
-  const body = c.frame(anim, sample, dir, variant);
-  const env = Math.max(0, 1 - since / 0.24) * (spec.shake ?? 0);
+  const finalFrame = !spec.loop && n >= frameCount(spec.seconds) - 1;
+  const poseAnim =
+    finalFrame && anim !== 'away'
+      ? anim === 'phase' && c.animations['idle-f2']
+        ? 'idle-f2'
+        : 'idle'
+      : anim;
+  const poseTime = finalFrame ? (anim === 'away' ? spec.seconds : 0) : sample;
+  const body = c.frame(poseAnim, poseTime, dir, variant);
+  const env = finalFrame
+    ? 0
+    : Math.max(0, 1 - since / 0.24) * (spec.shake ?? 0);
   const dx = Math.round(Math.sin(n * 2.3) * 10 * env),
     dy = Math.round(Math.cos(n * 2.1) * 6 * env);
   const fullFeet: XY = [feet[0] + b + dx, feet[1] + b + dy];
@@ -210,8 +220,14 @@ export function compose(
   if (dx || dy) blit(layers.bg, bg, b + dx, b + dy, clip);
   const origin = screenPoint(body, body.anchor, feet);
   const floorXY: XY = [origin[0] + b + dx, feet[1] + b + dy];
-  if (body.px.data.some((v, i) => i % 4 === 3 && v !== 0)) {
-    const r = body.px.w * 0.26;
+  const scaleX = Math.abs(body.sx ?? 1),
+    scaleY = Math.abs(body.sy ?? 1);
+  const visible =
+    scaleX > 0 &&
+    scaleY > 0 &&
+    body.px.data.some((v, i) => i % 4 === 3 && v !== 0);
+  if (visible) {
+    const r = body.px.w * 0.26 * scaleX;
     layers.fxu.ell(floorXY[0], floorXY[1] + 1, r, r * 0.21, [18, 13, 21, 72]);
     layers.fxu.ell(
       floorXY[0],
@@ -236,8 +252,8 @@ export function compose(
         layers.fxu.ell(
           floorXY[0],
           floorXY[1],
-          body.px.w * 0.16,
-          body.px.h * 0.035,
+          body.px.w * 0.16 * scaleX,
+          body.px.h * 0.035 * scaleY,
           [r / count, g / count, bv / count, 42],
         );
     }
@@ -248,14 +264,14 @@ export function compose(
       screenPoint(body, p, feet),
     ]),
   );
-  if (c.effects) {
+  if (c.effects && !(finalFrame && anim === 'away')) {
     const [under, above] = getFxCanvases(w, h);
-    const historical = new Map<number, BodyFrame>([[sample, body]]);
+    const historical = new Map<number, BodyFrame>([[poseTime, body]]);
     c.effects({
-      anim,
-      t,
-      duration: spec.seconds,
-      hits,
+      anim: poseAnim,
+      t: finalFrame ? 0 : (hits.find((hit) => hitFrame(hit) === n) ?? t),
+      duration: c.animations[poseAnim]?.seconds ?? spec.seconds,
+      hits: finalFrame ? [] : hits,
       variant,
       feet,
       points,
@@ -266,7 +282,7 @@ export function compose(
       pointAt: (when, name) => {
         let fr = historical.get(when);
         if (!fr) {
-          fr = c.frame(anim, when, dir, variant);
+          fr = c.frame(poseAnim, when, dir, variant);
           historical.set(when, fr);
         }
         if (!fr.points[name])
@@ -286,7 +302,11 @@ export function compose(
       clip,
       body.ghost.alpha,
     );
-  const flash = body.flash ?? (since < 0.1 ? 0.32 * (1 - since / 0.1) : 0);
+  const flash =
+    body.flash ??
+    (!finalFrame && hits.length === 1 && since < 0.1
+      ? 0.09 * (1 - since / 0.1)
+      : 0);
   sprite(
     layers.body,
     flash ? body.px.tint([255, 240, 211, 255], flash) : body.px,
@@ -297,10 +317,10 @@ export function compose(
   if (body.lit) sprite(layers.lit, body.lit, body, fullFeet, clip);
   if (body.over && (anim === 'peek' || anim === 'show'))
     sprite(layers.over, body.over, body, fullFeet, [0, 0, W, H]);
-  if (variant === 'gold') {
+  if (variant === 'gold' && visible) {
     const x = floorXY[0],
       y = floorXY[1],
-      r = body.px.w * 0.25;
+      r = body.px.w * 0.25 * scaleX;
     for (let i = 0; i < 100; i++) {
       const a = (i * 2 * Math.PI) / 100;
       layers.fxu.set(
