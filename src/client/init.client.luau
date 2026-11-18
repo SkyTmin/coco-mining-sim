@@ -38,6 +38,7 @@ Remotes.event("ProfilePatch").OnClientEvent:Connect(function(ops)
 end)
 
 require(script.Fx.CelPicks).start()
+task.spawn(require(script.Art.CampLook).showcases)
 local Strings = require(Shared:WaitForChild("Strings"))
 local function translate(key: string, ...: any): string
 	return Strings.t(key, Strings.localeOf(player), ...)

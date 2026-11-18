@@ -1,0 +1,80 @@
+--!strict
+local RS = game:GetService("ReplicatedStorage")
+local Http = game:GetService("HttpService")
+local Config = require(RS.Shared.Config)
+local CampProfile = require(RS.Shared.Play.CampProfile)
+local Worlds = require(RS.Shared.Mine.Worlds)
+local Persistence = require(RS.Shared.Persistence)
+local Builder = require(script.Parent.Parent.Camp.CampBuilder)
+local Profiles = require(script.Parent.ProfileService)
+local Mines = require(script.Parent.MineService)
+local Plots = require(script.Parent.PlotService)
+local Camp = {}
+local previous: { [number]: any } = {}
+local holograms: { [number]: any } = {}
+
+function Camp.hologram(plot: number, data: any?)
+	holograms[plot] = data
+end
+
+local function update(i: number)
+	local entry = Builder.get(i)
+	if not entry then
+		return
+	end
+	local owner = Plots.owner(i)
+	local session = owner and Mines.get(owner)
+	local holo = if owner then nil else holograms[i]
+	local card = if owner
+		then Profiles.Read(owner, function(p)
+			return CampProfile.card(p, owner.DisplayName)
+		end)
+		else holo and holo.card
+	local depth = if session then session.state.front else card and card.bestDepth or 0
+	local world = Worlds.of(depth)
+	local id = if owner then owner.UserId else holo and holo.userId
+	local root = entry.model
+	if owner then
+		owner:SetAttribute("CampRank", card and card.rank)
+		owner:SetAttribute("CampBest", card and card.bestDepth)
+	end
+	root:SetAttribute("CampFront", if session then depth else nil)
+	local data = { card = card, id = id, world = world.index, place = holo and holo.place }
+	if Persistence.equal(previous[i], data) then
+		return
+	end
+	previous[i] = data
+	root:SetAttribute("CampUser", id)
+	root:SetAttribute("Hologram", holo ~= nil)
+	root:SetAttribute("CampCard", if card then Http:JSONEncode(card) else nil)
+	entry.setLook(if card then card.rank else "none", owner ~= nil)
+	entry.setLight(
+		if card then Color3.fromHex(Config.art.worlds[world.id].light) else nil,
+		holo ~= nil
+	)
+	entry.setPlaque({
+		name = card and card.name,
+		rank = card and card.rank,
+		depth = card and card.bestDepth,
+		likes = card and card.likes,
+		hologram = holo ~= nil,
+		place = holo and holo.place,
+	})
+	for j, a in entry.showcase do
+		local pick = if not card then nil elseif j == 1 then card.pick else card.showcase[j - 1]
+		a:SetAttribute("Pick", pick)
+		a:SetAttribute("Golden", card ~= nil and j == 1 and card.golden)
+	end
+end
+
+function Camp.Start()
+	task.spawn(function()
+		while true do
+			for i = 1, Config.plots.count do
+				update(i)
+			end
+			task.wait(Config.social.positionSeconds)
+		end
+	end)
+end
+return Camp

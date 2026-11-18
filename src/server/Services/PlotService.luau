@@ -30,6 +30,14 @@ local function part(
 	return p
 end
 
+function PlotService.owner(index: number): Player?
+	local slot = slots[index]
+	return slot and slot.owner
+end
+function PlotService.frame(index: number): CFrame?
+	local slot = slots[index]
+	return slot and slot.frame
+end
 function PlotService.get(player: Player): number?
 	return assignments[player]
 end
@@ -105,6 +113,7 @@ function PlotService.Start()
 		local origin = part(model, "Origin", Vector3.one, frame, gray)
 		origin.Transparency, origin.CanCollide, origin.CanQuery = 1, false, false
 		slots[i] = { frame = frame, origin = origin }
+		CampBuilder.entrance(i, model, frame)
 		part(
 			model,
 			"Platform",

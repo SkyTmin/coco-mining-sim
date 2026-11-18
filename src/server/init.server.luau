@@ -15,6 +15,7 @@ for _, service in
 		services.PlotService,
 		services.MineService,
 		services.PickaxeService,
+		services.CampService,
 		services.EventService,
 		services.RebirthService,
 		services.HitService,

@@ -27,13 +27,13 @@ export type Entrance = {
 	setLook: (look: string, occupied: boolean) -> (),
 	setPlaque: (data: PlaqueData) -> (),
 	-- colour of the owner's current world, nil = dark entrance
-	setLight: (color: Color3?) -> (),
+	setLight: (color: Color3?, dim: boolean?) -> (),
 	-- 4 pedestals: [1] the held pickaxe, [2..4] the rarest ones; Codex parents pickaxe models to these attachments
 	showcase: { Attachment },
 	-- where ТЗ-06б puts flying chests (left of the arch, seen from the camp)
 	chestShelf: Attachment,
 	-- the board above the arch for a duel score; nil left/right hides it
-	setDuel: (left: number?, right: number?) -> (),
+	setDuel: (left: number?, right: number?, a: string?, b: string?) -> (),
 	destroy: () -> (),
 }
 
@@ -300,91 +300,266 @@ function CampArt.crater(root: Folder)
 	disc(root, "TradingPad", F(22, 0.09, 22), 5, 0.24, hex("967E66"), Enum.Material.Cobblestone)
 end
 
+local Format = require(game:GetService("ReplicatedStorage").Shared.Format)
+local function lettering(parent: BasePart, face: Enum.NormalId): (SurfaceGui, TextLabel)
+	local gui = Instance.new("SurfaceGui")
+	gui.Face, gui.SizingMode, gui.PixelsPerStud, gui.LightInfluence, gui.Parent =
+		face, Enum.SurfaceGuiSizingMode.PixelsPerStud, 26, 0.1, parent
+	local label = Instance.new("TextLabel")
+	label.Size, label.BackgroundTransparency, label.TextScaled, label.Font =
+		UDim2.fromScale(0.96, 0.88), 1, true, Enum.Font.GothamBold
+	label.Position, label.TextColor3, label.TextStrokeTransparency, label.Text, label.Parent =
+		UDim2.fromScale(0.02, 0.06), hex("FFF5DE"), 0.58, "", gui
+	return gui, label
+end
+
 function CampArt.entrance(model: Model, frame: CFrame): Entrance
-	local line = frame * CFrame.new(0, 0, DEPTH + SPECTATORS)
-	local arch = Instance.new("Model")
-	arch.Name = "Arch"
-	arch.Parent = model
+	local line = frame * F(0, 0, DEPTH + SPECTATORS)
+	local arch = group(model, "Arch")
+	local trim = group(arch, "RankTrim")
+	local w, h = camp.archWidth, camp.archHeight
+	local posts, bulbs = {}, {}
 	for _, side in { -1, 1 } do
-		part(
-			arch,
-			"Pillar",
-			Vector3.new(4, 24, 4),
-			line * CFrame.new(side * (OPENING_W / 2 + 4), 12, 0)
+		local x = side * (w / 2 - 3)
+		block(arch, "Foundation", line * F(x, 1.1, 0), V(6, 2.2, 6), iron, Enum.Material.Slate)
+		table.insert(
+			posts,
+			block(
+				arch,
+				"Pier",
+				line * F(x, h / 2, 0),
+				V(4.6, h, 4.4),
+				wood,
+				Enum.Material.WoodPlanks
+			)
+		)
+		table.insert(
+			bulbs,
+			lantern(
+				arch,
+				line * F(side * (w / 2 - 6), 0, 2) * A(0, if side < 0 then 0 else math.pi, 0),
+				false
+			)
 		)
 	end
-	part(arch, "Beam", Vector3.new(OPENING_W + 12, 4, 4), line * CFrame.new(0, OPENING_H + 7, 0))
-	local plaquePart =
-		part(arch, "Plaque", Vector3.new(24, 6, 0.5), line * CFrame.new(0, OPENING_H + 12, 1.5))
-	local gui = Instance.new("SurfaceGui")
-	gui.Face, gui.PixelsPerStud, gui.Parent = Enum.NormalId.Back, 20, plaquePart
-	local label = Instance.new("TextLabel")
-	label.Size, label.BackgroundTransparency, label.TextScaled = UDim2.fromScale(1, 1), 1, true
-	label.Text, label.Parent = "", gui
-	local light = Instance.new("SurfaceLight")
-	light.Face, light.Range, light.Brightness, light.Enabled = Enum.NormalId.Back, 30, 2, false
-	light.Parent = part(
-		arch,
-		"LightSource",
-		Vector3.new(OPENING_W, OPENING_H, 0.2),
-		frame * CFrame.new(0, OPENING_H / 2, 2)
+	table.insert(
+		posts,
+		block(
+			arch,
+			"Lintel",
+			line * F(0, h - 1.5, 0),
+			V(w, 3.5, 4.6),
+			wood,
+			Enum.Material.WoodPlanks
+		)
 	)
+	local plaque = block(
+		arch,
+		"Plaque",
+		line * F(0, h + 2.4, 1),
+		V(29, 5.6, 1),
+		hex("534879"),
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		arch,
+		"GiltEdge",
+		line * F(0, h + 2.4, 0.65),
+		V(29.7, 6.15, 1),
+		hex("E1BD78"),
+		Enum.Material.Metal
+	)
+	local _, label = lettering(plaque, Enum.NormalId.Back)
+	local source =
+		part(arch, "WorldLight", V(OPENING_W, OPENING_H, 0.15), frame * F(0, OPENING_H / 2, 2))
+	source.Transparency, source.CanCollide, source.CanQuery = 1, false, false
+	local light = Instance.new("SurfaceLight")
+	light.Face, light.Range, light.Angle, light.Brightness, light.Enabled, light.Parent =
+		Enum.NormalId.Back, 42, 112, 1.6, false, source
 	local showcase = {}
-	for i, offset in
-		{
-			Vector3.new(-20, 0, 6),
-			Vector3.new(20, 0, 6),
-			Vector3.new(-27, 0, 6),
-			Vector3.new(27, 0, 6),
-		}
-	do
-		local pedestal = part(
+	for i, offset in { V(-15, 0, 5), V(15, 0, 5), V(-19, 0, 8), V(19, 0, 8) } do
+		local base = line * F(offset)
+		disc(model, "Plinth", base * F(0, 0.3, 0), 2, 0.6, iron, Enum.Material.Slate)
+		local stand = disc(
 			model,
 			"Pedestal" .. i,
-			Vector3.new(4, 3, 4),
-			line * CFrame.new(offset + Vector3.new(0, 1.5, 0))
+			base * F(0, 1.45, 0),
+			1.55,
+			2.2,
+			stone,
+			Enum.Material.Marble
 		)
+		disc(model, "Rim", base * F(0, 2.59, 0), 1.72, 0.18, hex("CEAA67"), Enum.Material.Metal)
 		local a = Instance.new("Attachment")
-		a.Name, a.Position, a.Parent = "Item", Vector3.new(0, 3.5, 0), pedestal
+		a.Name, a.CFrame, a.Parent = "Item", stand.CFrame:ToObjectSpace(base * F(0, 4.6, 0)), stand
 		showcase[i] = a
 	end
-	local shelfPart = part(
-		model,
-		"ChestShelf",
-		Vector3.new(10, 1, 6),
-		line * CFrame.new(-(OPENING_W / 2 + 7), 0.5, -6)
+	local shelf =
+		part(model, "ChestShelf", V(4 * S, 0.1, 2 * S), line * F(-OPENING_W / 2 - 2 * S, 0.05, -S))
+	shelf.Transparency, shelf.CanCollide, shelf.CanQuery = 1, false, false
+	local slot = Instance.new("Attachment")
+	slot.Name, slot.Parent = "Shelf", shelf
+	local duel = block(
+		arch,
+		"DuelBoard",
+		line * F(0, h + 8, 0),
+		V(28, 4, 0.6),
+		hex("442D53"),
+		Enum.Material.SmoothPlastic
 	)
-	local shelf = Instance.new("Attachment")
-	shelf.Name, shelf.Position, shelf.Parent = "Shelf", Vector3.new(0, 0.5, 0), shelfPart
-	local duel =
-		part(arch, "DuelBoard", Vector3.new(16, 4, 0.5), line * CFrame.new(0, OPENING_H + 18, 1.5))
-	duel.Transparency = 1
-	local duelGui = Instance.new("SurfaceGui")
-	duelGui.Face, duelGui.Enabled, duelGui.Parent = Enum.NormalId.Back, false, duel
-	local duelLabel = label:Clone()
-	duelLabel.Parent = duelGui
+	duel.CanCollide, duel.Transparency = false, 1
+	local duelGui, score = lettering(duel, Enum.NormalId.Back)
+	duelGui.Enabled = false
+	local lastLook = ""
+	local function setLook(look: string, occupied: boolean)
+		for _, bulb in bulbs do
+			bulb.Material = if occupied then Enum.Material.Neon else Enum.Material.Glass
+			bulb.Color = if occupied then amber else iron
+		end
+		if look == lastLook then
+			return
+		end
+		lastLook = look
+		trim:ClearAllChildren()
+		local tier = 0
+		for i, rank in Cfg.rebirth.ranks do
+			if rank.id == look then
+				tier = i
+			end
+		end
+		local tint = hex(camp.rankColors[tier + 1])
+		local mat = if tier == 0
+			then Enum.Material.WoodPlanks
+			elseif tier < 3 then Enum.Material.Slate
+			elseif tier == 7 then Enum.Material.Basalt
+			else Enum.Material.Metal
+		for _, p in posts do
+			p.Material, p.Color =
+				mat,
+				if tier == 6 or tier == 8
+					then hex("DBAC52")
+					elseif tier == 7 then hex("352E41")
+					else tint
+		end
+		for _, side in { -1, 1 } do
+			local x = side * (w / 2 - 3)
+			local function detail(
+				n: string,
+				pos: CFrame,
+				size: Vector3,
+				c: Color3,
+				m: Enum.Material
+			)
+				return block(trim, n, line * pos, size, c, m)
+			end
+			detail(
+				"Knee",
+				F(x - side * 2.6, h - 5.1, 0) * A(0, 0, -side * 0.75),
+				V(1.55, 8, 2.4),
+				posts[1].Color,
+				mat
+			)
+			if tier > 0 then
+				for j = 1, 3 do
+					detail(
+						"Collar",
+						F(x, h * j / 4, 0),
+						V(5.05, 0.64, 4.9),
+						if tier == 1 then iron elseif tier == 2 then hex("C48753") else hex("F2D69D"),
+						mat
+					)
+				end
+			end
+			if tier >= 3 then
+				for j = 1, 4 do
+					detail(
+						"Rivet",
+						F(x, h * j / 5, 2.3),
+						V(0.66, 0.66, 0.4),
+						iron,
+						Enum.Material.Metal
+					).Shape =
+						Enum.PartType.Ball
+				end
+			end
+			if tier >= 4 then
+				detail(
+					"Flute",
+					F(x, h / 2, 2.27),
+					V(0.48, h - 2, 0.4),
+					if tier == 4 then hex("EFF5FF") else hex("FFD37E"),
+					Enum.Material.Metal
+				)
+			end
+			if tier == 6 or tier == 8 then
+				local jewel = detail(
+					"Crest",
+					F(x, h + 1.3, 0) * A(0, math.pi / 4, side * 0.22),
+					V(1.8, 4.8, 1.8),
+					if tier == 6 then hex("72DAFF") else hex("F8A454"),
+					Enum.Material.Glass
+				)
+				if tier == 8 then
+					local fire = Instance.new("Fire")
+					fire.Size, fire.Heat, fire.Color, fire.SecondaryColor, fire.Parent =
+						4, 3, hex("FFAD53"), hex("D94E4E"), jewel
+				else
+					detail(
+						"CrystalCore",
+						F(x, h + 1.6, 0) * A(0, 0.7, side * 0.22),
+						V(0.77, 4.9, 0.77),
+						hex("9FF4FF"),
+						Enum.Material.Neon
+					)
+				end
+			elseif tier == 7 then
+				for _, edge in { -1, 1 } do
+					detail(
+						"ObsidianRib",
+						F(x + edge * 2, h / 2, 2.3),
+						V(0.3, h, 0.3),
+						hex("EEC767"),
+						Enum.Material.Metal
+					)
+				end
+			end
+		end
+	end
+	setLook("none", false)
 	return {
 		model = model,
-		setLook = function(_look: string, _occupied: boolean) end,
+		showcase = showcase,
+		chestShelf = slot,
+		setLook = setLook,
+		setLight = function(color: Color3?, dim: boolean?)
+			light.Enabled = color ~= nil
+			light.Color, light.Brightness = color or amber, if dim then 0.5 else 1.6
+		end,
 		setPlaque = function(data: PlaqueData)
+			plaque.Transparency = if data.name then 0 else 0.15
 			label.Text = if data.name
 				then string.format(
-					"%s · %s · %s",
+					"%s  %s    ⛏ %s    %s",
+					if data.hologram then "🏆 " .. tostring(data.place) else "◆",
 					data.name,
-					tostring(data.depth or 0),
-					tostring(data.likes or 0)
+					Format.short(data.depth or 0),
+					if data.hologram then "" else "♥ " .. Format.short(data.likes or 0)
 				)
 				else ""
+			for i, rank in Cfg.rebirth.ranks do
+				if rank.id == data.rank then
+					label.TextColor3 = hex(camp.rankColors[i + 1])
+					return
+				end
+			end
+			label.TextColor3 = hex("FFF5DE")
 		end,
-		setLight = function(color: Color3?)
-			light.Enabled = color ~= nil
-			light.Color = color or Color3.new(1, 1, 1)
-		end,
-		showcase = showcase,
-		chestShelf = shelf,
-		setDuel = function(left: number?, right: number?)
+		setDuel = function(left: number?, right: number?, a: string?, b: string?)
 			duelGui.Enabled = left ~= nil and right ~= nil
-			duelLabel.Text = if left and right then string.format("%d : %d", left, right) else ""
+			duel.Transparency = if duelGui.Enabled then 0 else 1
+			score.Text = if left and right
+				then string.format("%s  %d : %d  %s", a or "", left, right, b or "")
+				else ""
 		end,
 		destroy = function()
 			arch:Destroy()

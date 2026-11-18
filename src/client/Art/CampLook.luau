@@ -128,4 +128,73 @@ function CampLook.moment(kind: MomentKind, data: MomentData)
 	Debris:AddItem(beam, 3)
 end
 
+-- Display meshes are shared templates. Only the local copies rotate.
+function CampLook.showcases()
+	local picks = require(script.Parent.Parent.Fx.CelPicks)
+	local PickModel = require(game:GetService("ReplicatedStorage").Shared.Models.PickModel)
+	local shown: { [Attachment]: Model } = {}
+	local root = workspace:WaitForChild("Plots")
+	local function bind(a: Instance)
+		if not a:IsA("Attachment") or a.Name ~= "Item" then
+			return
+		end
+		local generation = 0
+		local function refresh()
+			generation += 1
+			local current = generation
+			if shown[a] then
+				shown[a]:Destroy()
+				shown[a] = nil
+			end
+			local id = a:GetAttribute("Pick")
+			if not id or not a.Parent then
+				return
+			end
+			local template = picks.template(id)
+			if current ~= generation or not a:IsDescendantOf(root) then
+				return
+			end
+			local m = if template
+				then template:Clone()
+				else PickModel.forPick(id, a.WorldCFrame, true)
+			m.Name = "DisplayPick"
+			for _, p in m:GetDescendants() do
+				if p:IsA("BasePart") then
+					p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
+				end
+			end
+			m:PivotTo(a.WorldCFrame)
+			local glow = Instance.new("Highlight")
+			local colors = { "BA9569", "8CAB91", "69C3F2", "BE85FA", "FFBE50" }
+			local stars = Config.progress.rarities[Config.pickaxes[id].rarity].stars
+			glow.OutlineColor =
+				Color3.fromHex(if a:GetAttribute("Golden") then "FFE495" else colors[stars + 1])
+			glow.FillColor, glow.FillTransparency, glow.OutlineTransparency =
+				glow.OutlineColor, 0.85, 0.32
+			glow.DepthMode, glow.Parent = Enum.HighlightDepthMode.Occluded, m
+			shown[a] = m
+			m.Parent = a.Parent
+		end
+		a:GetAttributeChangedSignal("Pick"):Connect(refresh)
+		a:GetAttributeChangedSignal("Golden"):Connect(refresh)
+		a.Destroying:Once(function()
+			generation += 1
+			if shown[a] then
+				shown[a]:Destroy()
+				shown[a] = nil
+			end
+		end)
+		task.defer(refresh)
+	end
+	root.DescendantAdded:Connect(bind)
+	for _, item in root:GetDescendants() do
+		bind(item)
+	end
+	game:GetService("RunService").Heartbeat:Connect(function()
+		local angle = os.clock() * 0.55
+		for mount, model in shown do
+			model:PivotTo(mount.WorldCFrame * CFrame.Angles(0, angle, math.rad(16)))
+		end
+	end)
+end
 return CampLook
