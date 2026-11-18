@@ -42,7 +42,7 @@ const studioDir = join(tools, '.studio');
 async function gateKey(id: string) {
   const { inputsOf, inputHash } = await import('./cache');
   const { c } = await loadPainting(id);
-  const studio = ['capture', 'checks', 'clip', 'gate', 'ws'].map((f) => join(tools, 'studio', f + '.ts'));
+  const studio = ['capture', 'checks', 'clip', 'gate', 'visibility', 'ws'].map((f) => join(tools, 'studio', f + '.ts'));
   const extra = [join(tools, 'c', id + '.studio.json'), join(tools, '../../docs/reports/creatures/pilot-3/reference/tech-metrics.json')];
   return inputHash([...inputsOf(id, c.theme, c.rarity), ...studio, ...extra.filter((f) => existsSync(f))]);
 }

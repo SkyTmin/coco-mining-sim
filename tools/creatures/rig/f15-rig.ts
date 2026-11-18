@@ -308,9 +308,13 @@ export interface RigOut {
   p: Px;
   lit: Px | null;
   eye: [number, number] | null;
+  /** With `opt.ids`: index of the primitive that owns each pixel (-1 = empty) — the studio's visibility check. */
+  id?: Int16Array;
 }
 
 export interface RigOpt {
+  /** Return the per-pixel primitive index (`RigOut.id`); off for normal rendering. */
+  ids?: boolean;
   /** Цвет внешнего контура; null — без него. */
   outline?: RGBA | null;
   /** Порог разрыва глубины для внутреннего контура, пиксели (0 — без него). */
@@ -646,5 +650,5 @@ export function renderRig(
     const yi = Math.floor(y);
     if (xi >= 0 && yi >= 0 && xi < w && yi < h && zb[yi * w + xi] <= d + 1.2) eye = [xi, yi];
   }
-  return { p, lit, eye };
+  return opt.ids ? { p, lit, eye, id: id.slice(0, N) } : { p, lit, eye };
 }

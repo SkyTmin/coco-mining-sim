@@ -85,3 +85,31 @@ test('foot sockets are recognised and the pilot walks keep planted feet still', 
   const p = await loadPainting('bramble_warden');
   assert.deepEqual(footSlide(p, {}, ['walk_e']), []);
 });
+
+test('a fist tucked behind the torso is "gone"; the same fist held in front, or behind another limb, is not', async () => {
+  const { viewBaseline, worstGone } = await import('../studio/visibility');
+  // In this projection +y is towards the viewer.
+  function pose(y: number, shield = false) {
+    const r = new Rig();
+    r.tag = 'torso';
+    r.ell(F3.yaw(0), [0, 0, 30], [12, 14, 16], fur);
+    r.tag = 'head';
+    r.ell(F3.yaw(0), [0, 0, 52], [7, 7, 7], fur);
+    if (shield) {
+      r.tag = 'armL';
+      r.cap([-8, y + 8, 22], [8, y + 8, 22], 6, 6, wood);
+    }
+    r.tag = 'fistR';
+    r.ball([0, y, 22], 4, wood);
+    return r;
+  }
+  const rest = [viewBaseline(pose(20))];
+  assert.ok(rest[0].get('fistR')!.share > 0.9, 'the fist in front of the torso is visible');
+  const gone = worstGone(pose(-20), rest);
+  assert.ok(gone, 'a fist behind the torso must be reported');
+  assert.equal(gone.tag, 'fistR');
+  assert.equal(gone.by, 'torso');
+  assert.equal(worstGone(pose(20), rest), null);
+  assert.equal(worstGone(pose(20, true), rest), null, 'covered by the other arm is normal');
+  assert.equal(worstGone(pose(-20), rest, (t) => t === 'fistR'), null, 'studio.json can allow it');
+});

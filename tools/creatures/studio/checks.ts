@@ -9,6 +9,7 @@ import type { Creature, Scene, Border, XY } from '../types';
 import type { Px } from '../rig/px';
 import { captureRig } from './capture';
 import { baselineOf, worstClip, type ClipAllow, type ClipBaseline } from './clip';
+import { viewBaseline, worstGone, type ViewBaseline } from './visibility';
 
 export interface Painting {
   c: Creature;
@@ -17,7 +18,7 @@ export interface Painting {
 }
 export interface Finding {
   anim: string;
-  kind: 'clip' | 'thin-clip' | 'jump' | 'hidden-contact' | 'weak-impact' | 'end-pop' | 'foot-slide';
+  kind: 'clip' | 'thin-clip' | 'jump' | 'hidden-contact' | 'weak-impact' | 'end-pop' | 'foot-slide' | 'part-gone';
   /** errors fail the gate; warnings are listed for the author and the critic. */
   level: 'error' | 'warn';
   frames: number[];
@@ -26,6 +27,8 @@ export interface Finding {
 export interface StudioConfig {
   /** Designed overlaps, matched by tag or label substring: e.g. { a: 'tongue', b: 'head' }. */
   clipAllow?: ClipAllow[];
+  /** Named parts allowed to disappear into the body around a strike (tag substring), e.g. ['tongue']. */
+  partGone?: string[];
   /** Animations or frames to skip for a check, e.g. { jump: ['show:74-77'] }. */
   skip?: Partial<Record<Finding['kind'], string[]>>;
 }
@@ -73,6 +76,8 @@ export interface FrameSample {
   clip: string | null;
   /** The clipping part is a thin rod (whisker, chain, string): reported as a warning. */
   thin: boolean;
+  /** A part visible at rest that is (almost) gone from the picture in this frame. */
+  gone: string | null;
   contrast: number | null;
   hidden: string | null;
 }
@@ -88,6 +93,21 @@ function restPose(p: Painting, anim: string) {
   }
   return m.get(anim) ?? null;
 }
+let viewCache = new WeakMap<Creature, Map<string, ViewBaseline | null>>();
+function restView(p: Painting, anim: string) {
+  let m = viewCache.get(p.c);
+  if (!m) viewCache.set(p.c, (m = new Map()));
+  if (!m.has(anim)) {
+    const { rig } = captureRig(() => compose(p.c, p.s, p.b, anim, 0));
+    m.set(anim, rig ? viewBaseline(rig) : null);
+  }
+  return m.get(anim) ?? null;
+}
+function restNames(p: Painting, anim: string) {
+  const names = ['idle', anim];
+  if (p.c.animations['idle-f2'] && (anim === 'phase' || anim === 'idle-f2' || anim === 'show')) names.push('idle-f2');
+  return names;
+}
 function restBaselines(p: Painting, anim: string) {
   const names = ['idle', anim];
   if (p.c.animations['idle-f2'] && (anim === 'phase' || anim === 'idle-f2' || anim === 'show')) names.push('idle-f2');
@@ -101,6 +121,10 @@ export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {
   const count = frameCount(spec.seconds);
   const hits = new Set((spec.hits ?? []).map(hitFrame));
   const base = restBaselines(p, anim);
+  const views = restNames(p, anim)
+    .map((a) => restView(p, a))
+    .filter((b): b is ViewBaseline => !!b);
+  const allowed = (label: string) => (cfg.partGone ?? []).some((x) => label.includes(x));
   const out: FrameSample[] = [];
   for (let n = 0; n < count; n++) {
     const { result: f, rig } = captureRig(() => compose(c, s, b, anim, n / 24));
@@ -118,6 +142,13 @@ export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {
         clip = w.capLabel + ' in ' + w.ellLabel + ' @' + w.depth.toFixed(2);
         thin = w.radius < THIN_ROD;
       }
+    }
+    let gone: string | null = null;
+    // Only around a strike: elsewhere parts hide by design (blinks, sleep, the egg in hatch).
+    const strikeWindow = [...hits].some((h) => n >= h - 4 && n <= h + 2);
+    if (strikeWindow && rig && views.length && !skipped(cfg, 'part-gone', anim, n)) {
+      const g = worstGone(rig, views, allowed);
+      if (g) gone = g.tag + ' ' + Math.round(g.rest * 100) + '% → ' + Math.round(g.share * 100) + '% visible, hidden by ' + g.by;
     }
     // Impact readability: effect pixels that stay visible against the floor under them.
     let contrast: number | null = null,
@@ -151,7 +182,7 @@ export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {
         if (total && cover / total > 0.5) hidden = 'contact at ' + Math.round(x) + ',' + Math.round(y) + ' under a foreground prop';
       }
     }
-    out.push({ n, mask, clip, thin, contrast, hidden });
+    out.push({ n, mask, clip, thin, gone, contrast, hidden });
   }
   return out;
 }
@@ -171,6 +202,11 @@ export function findings(p: Painting, anim: string, samples: FrameSample[], cfg:
     const worst = [...hit].sort((a, b) => parseFloat(a.clip!.split('@')[1]) - parseFloat(b.clip!.split('@')[1]))[0];
     const frames = hit.map((s) => s.n);
     out.push({ anim, kind: thin ? 'thin-clip' : 'clip', level: thin ? 'warn' : 'error', frames, note: ranges(frames) + ' — worst ' + worst.n + ': ' + worst.clip });
+  }
+  const gone = samples.filter((s) => s.gone);
+  if (gone.length) {
+    const frames = gone.map((s) => s.n);
+    out.push({ anim, kind: 'part-gone', level: 'error', frames, note: ranges(frames) + ' — ' + gone[0].n + ': ' + gone[0].gone });
   }
   const d: number[] = [];
   for (let i = 1; i < samples.length; i++) {
@@ -246,6 +282,7 @@ export function footSlide(p: Painting, cfg: StudioConfig = {}, anims = ['walk_e'
 
 export function checkCreature(p: Painting, anims = defaultAnims(p.c), cfg = studioConfig(p.c.id), walks = true) {
   restCache = new WeakMap();
+  viewCache = new WeakMap();
   const all: Finding[] = [];
   for (const a of anims) all.push(...findings(p, a, sampleAnimation(p, a, cfg), cfg));
   if (walks) all.push(...footSlide(p, cfg));
