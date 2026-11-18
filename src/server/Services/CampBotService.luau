@@ -144,6 +144,7 @@ function Bots.helper(host: Player)
 		end
 	end
 end
+local seqs: { [any]: number } = setmetatable({}, { __mode = "k" })
 local function step(b: any)
 	local visit = Visit.get(b)
 	local s = if visit and visit.role == "guest" then Mines.get(visit.owner) else Mines.display(b)
@@ -165,7 +166,13 @@ local function step(b: any)
 		return
 	end
 	local ability = not visit and not s.duel and s.charge >= Config.mine.ultCharge
-	Hit.botIntent(b, Wire.encodeIntent(if ability then "Ability" else "Hit", 0, best.x, best.y, 0))
+	-- Wire.decodeIntent drops seq 0, so every actor needs its own non-zero sequence.
+	local seq = (seqs[b] or 0) % 65535 + 1
+	seqs[b] = seq
+	Hit.botIntent(
+		b,
+		Wire.encodeIntent(if ability then "Ability" else "Hit", seq, best.x, best.y, 0)
+	)
 	local shoulder = b.Character:FindFirstChild("RightShoulder", true)
 	if shoulder and shoulder:IsA("Motor6D") then
 		local base = shoulder:GetAttribute("Rest") or shoulder.C0
