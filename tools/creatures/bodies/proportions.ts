@@ -54,6 +54,13 @@ export function applyProportions(rig: Rig, points: Points, basis: F3, factors: C
     transformPrimitive(q, (p) => map(tag, p), Math.sqrt(length * width) * factor(tag));
   }
   const owner = (k: string): string => {
+    const arm = /^(?:shoulder|elbow|hand)([LR])$/.exec(k);
+    if (arm) {
+      const side = arm[1];
+      // The socket and the painted bone must use the same pivot when a card resizes its limbs.
+      return ['arm' + side, 'leg' + side + '0', 'fin' + side, 'fore' + side]
+        .find(tag => origins.has(tag)) ?? k;
+    }
     if (k === 'staffHand') return 'armR';
     if (k === 'vent' || k === 'mouth' || k === 'eye') return 'head';
     if (k === 'staffTip' || k === 'staffFoot') return 'staff';

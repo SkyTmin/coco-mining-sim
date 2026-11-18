@@ -1,6 +1,6 @@
 // Library moves keep the six approved timing landmarks and replace pilot-specific angles
 // with targets for the body solver. The same book drives the renderer, contact tests and FX.
-import { aim, look, reach } from '../bodies/goals';
+import { aim, goalAt, look, reach } from '../bodies/goals';
 import type { V3 } from '../rig/f15-rig';
 import type { BodyType, CardMove } from '../bodies/card-data';
 import {
@@ -59,19 +59,22 @@ function bodyPose(
   const raw = (local ?? template.target)[stage];
   const scale = local ? 1 : size;
   // Swing about the prep-to-hit midpoint. Z=0 remains a physical ground target at any amplitude.
-  const x = (24 + (raw[0] - 24) * amplitude) * scale;
+  // The rigid crook reaches the same planted contact when the wind-up is widened or mirrored.
+  const fixedLanding = body === 'squat-mage' && move.template === 'overhead' && stage >= 2;
+  const swingAmplitude = fixedLanding ? 1 : amplitude;
+  const x = (24 + (raw[0] - 24) * swingAmplitude) * scale;
   const isLimb = /^(hand|foot|fore|hind|arm|leg)/.test(move.weapon);
   // A paired foot must remain on its own side of the hips. The two-handed staff
   // reverses the side of its arc around the neutral grip, without crossing the head.
   let lateral = raw[1] * side;
   if (isLimb) lateral = raw[1] * (side < 0 ? 1.16 : 1);
   const fixedHand = move.weapon === 'weaponTip' && ['giant', 'squat-mage', 'winged-dragon'].includes(body);
-  if (fixedHand && side < 0) lateral = raw[1] + (stage < 2 ? -2 : 2);
+  if (fixedHand && side < 0) lateral = raw[1] + (fixedLanding ? 0 : stage < 2 ? -2 : 2);
   // A staff held in only the right hand reverses its leading edge over the wrist.
   // Mirroring the whole torso with that same grip would send the staff through the chest.
-  const turn = fixedHand && side < 0 ? 0.9 : side;
+  const turn = fixedLanding ? 1 : fixedHand && side < 0 ? 0.9 : side;
   if (pole && side < 0) lateral = raw[1] + (stage < 2 ? -6 : 5);
-  const point: V3 = [x, lateral * amplitude * scale, raw[2] * scale];
+  const point: V3 = [x, lateral * swingAmplitude * scale, raw[2] * scale];
   const isHit = stage === 2;
   const position = isLimb ? reach(move.weapon, point) : aim(move.weapon, point, isHit ? frame : undefined);
   const movement = movementFor(body, move.template);
@@ -79,10 +82,10 @@ function bodyPose(
   const pose: JointPose = {
     ...position,
     dx: advance * size * strength,
-    lean: advance * 0.33 * size * strength,
-    crouch: (overrides.crouch ?? template.crouch)[stage] * size * strength,
-    pitch: (overrides.pitch ?? template.pitch)[stage] * amplitude,
-    twist: (overrides.twist ?? template.twist)[stage] * turn * amplitude,
+    lean: (movement.lean?.[stage] ?? advance * 0.33) * size * strength,
+    crouch: (overrides.crouch ?? movement.crouch ?? template.crouch)[stage] * size * strength,
+    pitch: (overrides.pitch ?? movement.pitch ?? template.pitch)[stage] * swingAmplitude,
+    twist: (overrides.twist ?? template.twist)[stage] * turn * swingAmplitude,
     stride: (stage + 1) * size * 1.5,
   };
   const lift = overrides.lift ?? movement.lift ?? template.lift;
@@ -91,13 +94,31 @@ function bodyPose(
     pose.jaw = [0, 0.14, 1, 0.77][stage];
     pose['head.pitch'] = [-0.19, -0.08, 0.21, 0.24][stage];
   }
-  if (isLimb && !/^foot/.test(move.weapon)) {
+  if (isLimb && !/^foot/.test(move.weapon) && move.template !== 'leap') {
     const gazeHeight = body === 'squat-mage' && move.template === 'summon' ? 7 : 3;
     Object.assign(pose, look('head', [point[0] + 8, point[1], point[2] + gazeHeight]));
   }
   if (move.template === 'leap' && /^(foot|fore|hind)[LR]$/.test(move.weapon)) {
     const near = move.weapon.endsWith('R') ? 'L' : 'R';
     Object.assign(pose, reach(move.weapon.slice(0, -1) + near, [x, -point[1], point[2]]));
+  }
+  if (body === 'armed-biped' && move.template === 'overhead') {
+    // Guide the two-handed shaft from above the brow to an extended grip at contact.
+    pose.clubLift = [48, 40, -6, 10][stage] * amplitude;
+    pose.clubForward = [3, 18, 46, 19][stage] * amplitude;
+    pose.clubSide = [-3, -8, -12, -9][stage] * amplitude;
+  }
+  if (body === 'squat-mage' && move.template === 'leap' && move.weapon === 'handL') {
+    // Carry the crook just outside the hock's sweep so the trailing leg never flicks its cap.
+    pose['armR.forward'] = 5;
+    pose['armR.right'] = 4;
+    // The leading palm receives the weight. The hind feet kick behind the pelvis
+    // in flight and are still raised when the palm first touches the ground.
+    const feet = familyPath(body, 'footL', 'leap')![stage];
+    for (const sign of [-1, 1]) {
+      Object.assign(pose, reach(sign < 0 ? 'footL' : 'footR',
+        [feet[0] * amplitude, sign * Math.abs(feet[1]) + (stage === 1 ? 13 : 0), stage === 2 ? 5 : feet[2]]));
+    }
   }
   return pose;
 }
@@ -132,6 +153,14 @@ export function buildMove(move: CardMove, body: BodyType, overrides: MoveOverrid
     [follow, bodyPose(move, body, 3, follow, overrides)],
     [end, {}],
   ]);
+  let pathKeys: PoseKey[] | undefined;
+  if (move.template === 'overhead' && body === 'armed-biped' && move.weapon === 'weaponTip') {
+    // Lift the handle in front of the face before carrying it back over the crown (the mochi swing).
+    const lift = { ...keys[2].pose, dx: 0, lean: 0, crouch: 0 };
+    const [forward, right, up] = goalAt(lift, move.weapon)!;
+    Object.assign(lift, aim(move.weapon, [forward * .63, right * .75, up * .88]));
+    pathKeys = [{ role: 'prep', frame: Math.round(prep * 8 / 14), pose: lift }];
+  }
   const contacts: TechniqueContact[] = [];
   const repeatKeys: PoseKey[] = [];
   const ground = def.kind === 'floor' ? move.weapon + 'Ground' : undefined;
@@ -168,9 +197,11 @@ export function buildMove(move: CardMove, body: BodyType, overrides: MoveOverrid
     reachHand: drivingHand(move, body),
     reference: move.reference,
     contactKind: def.kind,
+    recovery: def.recovery,
     floorSocket: ground,
     contacts,
     keys,
+    pathKeys,
     repeatKeys,
     seconds: (end + 1) / 24,
     stop: def.stop,

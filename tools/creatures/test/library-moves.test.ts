@@ -4,12 +4,14 @@ import { readFile } from 'node:fs/promises';
 import { createCanvas } from '@napi-rs/canvas';
 import { goalAt, toLocal } from '../bodies/goals';
 import { heavySkeleton } from '../bodies/heavy-quadruped';
-import { F3 } from '../rig/f15-rig';
+import { F3, vdot, vnorm, vsub, type V3 } from '../rig/f15-rig';
+import { makeBodyCreature } from '../bodies';
+import { defaultLife } from '../studio/new';
 import { readCreatureCard } from '../bodies/card-data';
 import type { CardMove } from '../bodies/card-data';
 import { Pen } from '../fx/pen';
 import { buildEffects, effectPresets, type MoveImpact } from '../fx/presets';
-import { buildMove, buildMoveBook, defaultMoveParameters, moveTemplates, type MoveId } from '../moves';
+import { buildMove, buildMoveBook, defaultMoveParameters, moveTemplates, weaponFor, type MoveId } from '../moves';
 import { techniqueContacts, techniquePoseAt, type TechniqueBook } from '../technique';
 import { emptyTechniqueTrace } from '../technique-fx';
 import type { FxInput, XY } from '../types';
@@ -193,5 +195,48 @@ test('generated ram and volley goals reach their physical horn in four actual ri
         );
       }
     }
+  }
+});
+
+test('an overhead lift passes in front of the face before the backswing and recoils clear of the floor', () => {
+  const spec = buildMove(move('overhead'), 'armed-biped');
+  const tip = (frame: number) => goalAt(techniquePoseAt(spec, frame / 24), 'weaponTip')!;
+  assert.equal(spec.recovery, 'rebound');
+  assert.ok(tip(8)[0] > tip(14)[0] + 20, 'the tool must travel back after the initial lift');
+  assert.ok(tip(14)[2] > 90);
+  assert.equal(tip(19)[2], 0);
+  assert.ok(tip(23)[2] > 30);
+});
+
+test('the jumping mage kicks both hind feet back and receives its weight on the leading palm', () => {
+  const jump = move('leap');
+  jump.weapon = weaponFor('squat-mage', 'leap');
+  const spec = buildMove(jump, 'squat-mage');
+  const point = (frame: number, socket: string) => goalAt(techniquePoseAt(spec, frame / 24), socket)!;
+  assert.equal(spec.recovery, 'absorb');
+  assert.equal(techniqueContacts(spec)[0].socket, 'handL');
+  for (const foot of ['footL', 'footR']) {
+    assert.ok(point(24, foot)[0] < point(24, 'handL')[0] - 60);
+    assert.ok(point(27, foot)[2] > point(27, 'handL')[2], 'hind feet land after the leading palm');
+  }
+  assert.deepEqual(point(27, 'handL'), point(33, 'handL'));
+  assert.ok(spec.keys[4].pose.crouch > spec.keys[3].pose.crouch);
+});
+
+test('the carried staff keeps its direction while the jumping mage extends and lands', async () => {
+  const jump = { ...move('leap'), weapon: weaponFor('squat-mage', 'leap') };
+  const moves = [move('overhead'), jump];
+  const source = (await import('../c/toad_shaman-life')).default;
+  const card = { ...readCreatureCard('bramble_warden'), body: 'squat-mage' as const, moves,
+    life: defaultLife(source, moves), proportions: { width: 1, length: 1, height: 1 } };
+  const book = buildMoveBook(moves, 'squat-mage');
+  const actor = makeBodyCreature(card, book);
+  const spec = book[jump.id];
+  let previous: V3 | undefined;
+  for (let n = spec.keys[1].frame; n <= spec.keys[4].frame; n++) {
+    const { joints } = actor.frame(jump.id, n / 24, 0, 'normal');
+    const shaft = vnorm(vsub(joints!.staffTip, joints!.handR));
+    if (previous) assert.ok(vdot(shaft, previous) > Math.cos(Math.PI / 18), 'staff flipped on frame ' + n);
+    previous = shaft;
   }
 });

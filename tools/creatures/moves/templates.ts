@@ -2,7 +2,7 @@
 // anticipation, the start of the strike, contact and follow-through. Rest and return belong to the body.
 import type { BodyType } from '../bodies/card-data';
 import type { V3 } from '../rig/f15-rig';
-import type { ContactKind } from '../technique';
+import type { ContactKind, Technique } from '../technique';
 
 export type Track = readonly [number, number, number, number];
 export type TargetPath = readonly [V3, V3, V3, V3];
@@ -13,6 +13,7 @@ interface MoveTemplate {
   kind: Exclude<ContactKind, 'projectile'>;
   frames: readonly [number, number, number, number, number, number];
   stop: number;
+  recovery?: Technique['recovery'];
   target: TargetPath;
   advance: Track;
   pitch: Track;
@@ -31,16 +32,17 @@ export const moveTemplates = {
     kind: 'floor',
     frames: [0, 14, 16, 19, 23, 30],
     stop: 0.08,
+    recovery: 'rebound',
     target: [
-      [-13, 14, 56],
-      [10, 16, 54],
-      [32, 10, 0],
-      [37, 9, 1],
+      [-18, 16, 76],
+      [22, 12, 69],
+      [40, 8, 0],
+      [35, 10, 35],
     ],
-    advance: [-12, -9, 12, 17],
-    pitch: [-0.48, -0.28, 0.63, 0.74],
-    twist: [0.37, 0.21, -0.33, -0.48],
-    crouch: [-4, -2, 9, 13],
+    advance: [-6, -1, 12, 9],
+    pitch: [-0.38, -0.08, 0.52, 0.18],
+    twist: [0.16, 0.06, -0.18, -0.08],
+    crouch: [-4, -1, 10, 4],
   },
   ram: {
     source: ['gem_beetle', 'tech_horn'],
@@ -119,19 +121,20 @@ export const moveTemplates = {
     reference: 'mammoth-stomp',
     weapon: 'footL',
     kind: 'floor',
-    frames: [0, 17, 24, 27, 33, 42],
+    frames: [0, 17, 24, 27, 33, 47],
     stop: 0.06,
+    recovery: 'absorb',
     target: [
       [-10, -11, 2],
-      [-7, -9, 29],
+      [-24, -10, 14],
       [1, -13, 0],
-      [4, -15, 0],
+      [1, -13, 0],
     ],
-    advance: [-15, -6, 15, 21],
-    pitch: [0.3, -0.32, 0.24, 0.35],
+    advance: [-12, 0, 15, 15],
+    pitch: [0.34, 0.05, 0.19, 0.38],
     twist: [0.21, -0.2, -0.3, -0.35],
-    crouch: [9, -1, 6, 9],
-    lift: [0, 23, 0, 0],
+    crouch: [15, -2, 3, 13],
+    lift: [0, 27, 0, 0],
   },
   pillars: {
     source: ['crater_titan', 'tech_pillar'],
@@ -213,5 +216,7 @@ export function templateFor(id: MoveId): MoveTemplate {
 
 export function weaponFor(body: BodyType, id: MoveId) {
   // A long flier lands its whip-like tail while the belly and fins remain airborne.
-  return body === 'long-flier' && id === 'leap' ? 'tailTip' : templateFor(id).weapon;
+  if (id === 'leap' && body === 'long-flier') return 'tailTip';
+  if (id === 'leap' && body === 'squat-mage') return 'handL';
+  return templateFor(id).weapon;
 }

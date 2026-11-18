@@ -158,7 +158,7 @@ function poseTail(body: BodyType, rig: Rig, points: Points, basis: F3, pose: Joi
       ringMaps[seams.get(p) ?? byPosition.get(p.join(',')) ?? nearest(rings, p)](p);
     transformPart(rig, (t) => t === 'torso', skin);
     transformPart(rig, (t) => t === 'crest' || t === 'finL', ringMaps[2]);
-    for (const k of ['finL', 'handL', 'foreL', 'footL', 'hindL'])
+    for (const k of ['finL', 'shoulderL', 'handL', 'foreL', 'footL', 'hindL'])
       if (points[k]) points[k] = ringMaps[2](points[k]);
     transformPart(rig, (t) => t === 'tail' || t === 'tailKnot' || t === 'tassel', tipMap);
   } else {

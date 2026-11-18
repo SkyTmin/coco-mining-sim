@@ -74,6 +74,11 @@ for (const family of Object.keys(examples) as BodyType[]) {
     for (const name of ['handL', 'handR', 'footL', 'footR', 'mouth', 'weaponTip']) {
       assert.ok(idle.points[name]?.every(Number.isFinite), family + ' lacks ' + name);
     }
+    for (const side of ['L', 'R']) {
+      assert.ok(idle.joints?.['shoulder' + side]?.every(Number.isFinite), family + ' shoulder' + side);
+      if (family !== 'long-flier')
+        assert.ok(idle.joints?.['elbow' + side]?.every(Number.isFinite), family + ' elbow' + side);
+    }
     const hit = book[move.id].keys.find(k => k.role === 'hit')!;
     const target = goalAt(hit.pose, move.weapon)!;
     assert.ok(target);
