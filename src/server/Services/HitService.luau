@@ -108,6 +108,7 @@ local function record(timing: MineService.Timing, elapsed: number)
 	timing.max = math.max(timing.max, elapsed)
 end
 
+local Moments = require(script.Parent.CampMomentService)
 local Visit = require(script.Parent.VisitService)
 local CampRules = require(Shared.Play.CampRules)
 local function guestHit(player: Player, visit: any, intent: any, now: number)
@@ -183,6 +184,7 @@ local function guestHit(player: Player, visit: any, intent: any, now: number)
 		outcome.strike,
 		"helper"
 	)
+	Moments.hit(s, outcome, false)
 	EventService.flush(host, s)
 	if host.Parent == game:GetService("Players") then
 		for _, v in outcome.rewards do
@@ -345,7 +347,11 @@ local function onIntent(player: Player, packet: any)
 			outcome.strike,
 			outcome.visual
 		)
+		Moments.hit(s, outcome, ability)
 		EventService.flush(player, s)
+		if player:GetAttribute("CampBot") then
+			break
+		end
 		for _, id in outcome.newCards do
 			Remotes.event("Toast"):FireClient(player, "card_unlocked_" .. id)
 		end
@@ -602,6 +608,11 @@ function HitService.Creative(player: Player, op: string, a: any, b: any, c: any)
 	publish(s, 0, front, res, {}, 0, false, nil)
 end
 
+function HitService.botIntent(actor: any, packet: buffer)
+	if RunService:IsStudio() and actor:GetAttribute("CampBot") then
+		onIntent(actor, packet)
+	end
+end
 function HitService.Start()
 	Remotes.event("MineIntent").OnServerEvent:Connect(onIntent)
 end

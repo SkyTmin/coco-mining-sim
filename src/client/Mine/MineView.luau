@@ -22,9 +22,18 @@ function MineView.new(plot: number, frame: CFrame, options: any): any
 	return setmetatable({
 		plot = plot,
 		root = folder,
-		renderer = Wall.new(folder, frame),
+		renderer = Wall.new(
+			folder,
+			frame,
+			if options.owner
+				then nil
+				else Config.mine.nearWindow * Config.plots.frameWidth * Config.mine.height
+		),
 		breaking = Break.new(folder),
-		lightning = Lightning.new(folder),
+		lightning = Lightning.new(
+			folder,
+			if options.owner then nil else math.max(8, Quality.budget().links // 4)
+		),
 		options = options,
 		dirty = false,
 		parts = {},
@@ -149,15 +158,17 @@ function MineView:step(now: number)
 	if self.dirty then
 		self.dirty = false
 		self:draw(win, math.min(Quality.budget().oreLayers, Config.mine.nearWindow), win)
-		local plate = Ride.plate(
-			win.front,
-			Worlds.of(win.front).plateDepth,
-			win.plateDamage,
-			0,
-			nil,
-			"idle",
-			false
-		)
+		local plate = if win.duel
+			then nil
+			else Ride.plate(
+				win.front,
+				Worlds.of(win.front).plateDepth,
+				win.plateDamage,
+				0,
+				nil,
+				"idle",
+				false
+			)
 		Wall.plate(self.renderer, win, plate, self.options.translate, 1, 0)
 		table.clear(self.parts)
 		table.clear(self.moves)

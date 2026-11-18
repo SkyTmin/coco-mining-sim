@@ -25,7 +25,7 @@ function PickaxeService.attachDisplay(character: Model, id: string, golden: bool
 	end
 	local grip = CFrame.new(0, -hand.Size.Y * 0.17, -0.10)
 		* CFrame.Angles(math.rad(-77), 0, math.rad(-13))
-	local model, handle = PickModel.forPick(id, hand.CFrame * grip, false)
+	local model, handle = PickModel.forPick(id, hand.CFrame * grip, false, nil, true)
 	PickModel.appearance(model, id, golden)
 	local motor = Instance.new("Motor6D")
 	motor.Name, motor.Part0, motor.Part1, motor.C0 = "PickaxeGrip", hand, handle, grip

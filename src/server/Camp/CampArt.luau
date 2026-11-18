@@ -4,6 +4,7 @@ local Config = game:GetService("ReplicatedStorage").Shared.Config
 local Cfg = require(Config)
 
 local CampArt = {}
+local Rules = require(game:GetService("ReplicatedStorage").Shared.Play.CampRules)
 
 local S = Cfg.mine.blockSize
 local DEPTH = Cfg.plots.platformDepth * S
@@ -370,6 +371,7 @@ function CampArt.entrance(model: Model, frame: CFrame): Entrance
 		Enum.Material.Metal
 	)
 	local _, label = lettering(plaque, Enum.NormalId.Back)
+	label.Name = "Inscription"
 	local source =
 		part(arch, "WorldLight", V(OPENING_W, OPENING_H, 0.15), frame * F(0, OPENING_H / 2, 2))
 	source.Transparency, source.CanCollide, source.CanQuery = 1, false, false
@@ -395,10 +397,11 @@ function CampArt.entrance(model: Model, frame: CFrame): Entrance
 		showcase[i] = a
 	end
 	local shelf =
-		part(model, "ChestShelf", V(4 * S, 0.1, 2 * S), line * F(-OPENING_W / 2 - 2 * S, 0.05, -S))
+		part(model, "ShelfAnchor", V(4 * S, 0.1, 2 * S), line * F(-OPENING_W / 2 - 2 * S, 0.05, -S))
 	shelf.Transparency, shelf.CanCollide, shelf.CanQuery = 1, false, false
 	local slot = Instance.new("Attachment")
-	slot.Name, slot.Parent = "Shelf", shelf
+	slot.Name, slot.Parent = "ChestShelf", shelf
+	slot:SetAttribute("Footprint", Vector2.new(4 * S, 2 * S))
 	local duel = block(
 		arch,
 		"DuelBoard",
@@ -540,7 +543,9 @@ function CampArt.entrance(model: Model, frame: CFrame): Entrance
 			label.Text = if data.name
 				then string.format(
 					"%s  %s    ⛏ %s    %s",
-					if data.hologram then "🏆 " .. tostring(data.place) else "◆",
+					if data.hologram
+						then "🏆 " .. tostring(data.place)
+						else Rules.badge(data.rank),
 					data.name,
 					Format.short(data.depth or 0),
 					if data.hologram then "" else "♥ " .. Format.short(data.likes or 0)
@@ -604,6 +609,12 @@ function CampArt.depthScale(root: Folder, centre: CFrame): DepthScale
 		Enum.Material.Neon
 	)
 	cap.CanCollide = false
+	local badge = Instance.new("BillboardGui")
+	badge.Name, badge.Size, badge.StudsOffset, badge.MaxDistance, badge.Parent =
+		"WorldBadge", UDim2.fromOffset(44, 24), Vector3.yAxis * 1.5, 160, cap
+	local glyph = Instance.new("TextLabel")
+	glyph.Name, glyph.BackgroundTransparency, glyph.Size, glyph.Font, glyph.TextScaled, glyph.TextColor3, glyph.TextStrokeTransparency, glyph.Parent =
+		"World", 1, UDim2.fromScale(1, 1), Enum.Font.GothamBold, true, hex("FFF1C7"), 0.32, badge
 	local mark = disc(m, "WeekRecord", centre, r + 0.32, 0.2, hex("FFD34E"), Enum.Material.Neon)
 	local flag = block(m, "WeekFlag", centre, V(4, 1.5, 0.22), iron, Enum.Material.Metal)
 	local gui, label = lettering(flag, Enum.NormalId.Front)

@@ -229,6 +229,9 @@ function Social.start(parent: Instance, tr: any)
 		local hit = workspace:Raycast(ray.Origin, ray.Direction * 145, params)
 		local obj: Instance? = hit and hit.Instance
 		while obj and obj ~= workspace do
+			if obj.Parent == plots and hit and hit.Instance.Name ~= "Plaque" then
+				return
+			end
 			local id = obj:GetAttribute("CampUser")
 			if id then
 				open(findPlot(id))
@@ -301,11 +304,40 @@ function Social.start(parent: Instance, tr: any)
 		end
 	end)
 	local function bindPlot(plot: Instance)
-		plot.AttributeChanged:Connect(function()
+		local function plaque()
+			if not plot:GetAttribute("Hologram") then
+				return
+			end
+			local raw = plot:GetAttribute("CampCard")
+			local inscription = plot:FindFirstChild("Inscription", true)
+			if raw and inscription and inscription:IsA("TextLabel") then
+				local d = Http:JSONDecode(raw)
+				inscription.Text = string.format(
+					"🏆 %s   %s   ⛏ %s",
+					tr("camp_week_place", plot:GetAttribute("WeekPlace") or 1),
+					d.name,
+					Format.short(d.bestDepth)
+				)
+			end
+		end
+		local language = me:GetAttributeChangedSignal("MineLanguage"):Connect(plaque)
+		plot.Destroying:Once(function()
+			language:Disconnect()
+		end)
+		plot.DescendantAdded:Connect(function(item)
+			if item.Name == "Inscription" then
+				task.defer(plaque)
+			end
+		end)
+		plot.AttributeChanged:Connect(function(key)
+			if key == "Hologram" or key == "WeekPlace" or key == "CampCard" then
+				task.defer(plaque)
+			end
 			if card.open and current == plot then
 				render()
 			end
 		end)
+		plaque()
 		task.defer(function()
 			local strip = plot:WaitForChild("SpectatorStrip", 8)
 			if not strip then

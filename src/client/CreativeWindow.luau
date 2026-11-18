@@ -91,6 +91,11 @@ function CreativeWindow.start(
 		{ "mine_charge", "mine.charge" },
 		{ "mine_stats", "mine.stats" },
 	}
+	if game:GetService("RunService"):IsStudio() then
+		table.insert(operations, { "camp_bots_on", "camp.bots", Config.plots.count - 1 })
+		table.insert(operations, { "camp_bots_off", "camp.bots", 0 })
+		table.insert(operations, { "camp_bot_help", "camp.helper" })
+	end
 	local operationButtons: { Candy.Control } = {}
 	for i, op in operations do
 		local control = slot(i + 3)

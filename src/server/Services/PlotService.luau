@@ -107,6 +107,9 @@ function PlotService.assign(player: Player): number?
 			fn(i)
 		end
 		player:SetAttribute("Plot", i)
+		if player:GetAttribute("CampBot") then
+			return i
+		end
 		local function spawnAt(character: Model)
 			local pivot = character:WaitForChild("HumanoidRootPart", 8)
 			if not pivot or player.Character ~= character or assignments[player] ~= i then
@@ -120,9 +123,19 @@ function PlotService.assign(player: Player): number?
 		end
 		return i
 	end
+	if PlotService.evictBot and not player:GetAttribute("CampBot") and PlotService.evictBot() then
+		return PlotService.assign(player)
+	end
 	return nil
 end
 
+function PlotService.release(player: Player)
+	local i = assignments[player]
+	if i then
+		slots[i].owner, assignments[player] = nil, nil
+		slots[i].origin:SetAttribute("MineFront", nil)
+	end
+end
 function PlotService.Start()
 	local root = Instance.new("Folder")
 	root.Name = "Plots"
@@ -220,11 +233,7 @@ function PlotService.Start()
 	Players.PlayerAdded:Connect(PlotService.assign)
 	Players.PlayerRemoving:Connect(function(player)
 		returned[player] = nil
-		local i = assignments[player]
-		if i then
-			slots[i].owner, assignments[player] = nil, nil
-			slots[i].origin:SetAttribute("MineFront", nil)
-		end
+		PlotService.release(player)
 	end)
 	for _, player in Players:GetPlayers() do
 		PlotService.assign(player)

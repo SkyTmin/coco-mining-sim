@@ -23,6 +23,7 @@ export type Pick = Config.PickaxeConfig & {
 }
 
 local Camp = require(script.Parent.CampProfile)
+local Income = require(script.Parent.Income)
 local Circle = {}
 Circle.profileVersion = Config.game.profileVersion
 
@@ -254,8 +255,7 @@ function Circle.coinsPerMinute(profile: Profile, front: number): number
 	local shape =
 		Config.progress.hitSizes[if Upgrade.hitSizeEnabled then profile.circle.hitSize else 1]
 	return value
-		* (1 + profile.cups)
-		* effects.coins
+		* Income.permanent(profile, effects)
 		* shape.blocks
 		* 60
 		/ (pick.interval * Power.hits(Worlds.durability(front), pick.strength))

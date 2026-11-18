@@ -70,7 +70,7 @@ function CampDuel.start(parent: Instance, tr: any)
 		end
 		count.Text = if n > 0 then tostring(n) else ""
 		label.Text = string.format(
-			"%s  %d : %d  %s   ·   %ds",
+			"%s  %d : %d  %s   ·   ⏱ %d",
 			match.a,
 			match.x,
 			match.y,

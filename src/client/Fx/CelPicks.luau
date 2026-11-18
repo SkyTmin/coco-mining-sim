@@ -97,7 +97,21 @@ local function apply(model: Instance)
 	local size = model:GetAttribute("CelSize")
 	local held = model:GetAttribute("CelMount") == "held"
 	local template = CelPicks.template(id :: string)
-	if not template or not model.Parent or model:FindFirstChild("CelModel") then
+	if not model.Parent or model:FindFirstChild("CelModel") then
+		return
+	end
+	if not template then
+		if
+			model:GetAttribute("CompactPick")
+			and model.Parent == game:GetService("Players").LocalPlayer.Character
+		then
+			local detailed, grip = PickModel.new(PickModel.icon(id), root.CFrame, 0.056, false)
+			PickModel.appearance(detailed, id, model:FindFirstChild("GoldenOutline") ~= nil)
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0, weld.Part1, weld.Parent = root, grip, grip
+			hide(model, nil)
+			detailed.Name, detailed.Parent = "CelModel", model
+		end
 		return
 	end
 	local scale = (if type(size) == "number" then size else PickModel.HELD_SIZE)

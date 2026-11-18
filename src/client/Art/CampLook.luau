@@ -68,16 +68,7 @@ end
 
 -- The line over a player's head (rank badge, name, depth). Returns the updater; destroy with the character.
 local Format = require(game:GetService("ReplicatedStorage").Shared.Format)
-local rankBadges = { "◇", "◆", "⚒", "✦", "✧", "★", "❖", "♜", "♛" }
-local function rankIndex(id: string?): number
-	for i, rank in Config.rebirth.ranks do
-		if rank.id == id then
-			return i + 1
-		end
-	end
-	return 1
-end
-
+local Rules = require(game:GetService("ReplicatedStorage").Shared.Play.CampRules)
 function CampLook.nameplate(character: Model): (NameplateData) -> ()
 	local gui = Instance.new("BillboardGui")
 	gui.Name, gui.Size, gui.StudsOffset, gui.AlwaysOnTop =
@@ -94,10 +85,14 @@ function CampLook.nameplate(character: Model): (NameplateData) -> ()
 	local rim = Instance.new("UIStroke")
 	rim.Thickness, rim.Parent = 1.3, pill
 	return function(data)
-		local index = rankIndex(data.rank)
+		local index = Rules.rankIndex(data.rank)
 		rim.Color = Color3.fromHex(camp.rankColors[index])
-		pill.Text =
-			string.format("%s  %s   ⛏ %s", rankBadges[index], data.name, Format.short(data.depth))
+		pill.Text = string.format(
+			"%s  %s   ⛏ %s",
+			Rules.badge(data.rank),
+			data.name,
+			Format.short(data.depth)
+		)
 	end
 end
 
@@ -156,6 +151,7 @@ function CampLook.names()
 end
 
 -- A player's token on the depth scale (avatar circle with a rank-coloured ring). Codex moves the returned part.
+local thumbnails = {}
 function CampLook.scaleToken(
 	parent: Instance,
 	userId: number,
@@ -176,6 +172,28 @@ function CampLook.scaleToken(
 	face.Image = if userId > 0
 		then "rbxthumb://type=AvatarHeadShot&id=" .. userId .. "&w=48&h=48"
 		else ""
+	if userId > 0 then
+		if thumbnails[userId] then
+			face.Image = thumbnails[userId]
+		else
+			task.spawn(function()
+				local players = game:GetService("Players")
+				local ok, uri, ready = pcall(
+					players.GetUserThumbnailAsync,
+					players,
+					userId,
+					Enum.ThumbnailType.HeadShot,
+					Enum.ThumbnailSize.Size48x48
+				)
+				if ok and ready then
+					thumbnails[userId] = uri
+					if face.Parent then
+						face.Image = uri
+					end
+				end
+			end)
+		end
+	end
 	local round = Instance.new("UICorner")
 	round.CornerRadius, round.Parent = UDim.new(1, 0), face
 	local rim = Instance.new("UIStroke")
@@ -222,7 +240,7 @@ function CampLook.scale()
 					local token = CampLook.scaleToken(
 						root,
 						id,
-						Color3.fromHex(camp.rankColors[rankIndex(rank)]),
+						Color3.fromHex(camp.rankColors[Rules.rankIndex(rank)]),
 						id == self.UserId
 					)
 					token.Position = at
@@ -266,24 +284,219 @@ function CampLook.reaction(character: Model, id: string)
 end
 
 -- A moment everyone sees [ТЗ-06 §12.2]. Codex decides who sees it (hideOthersFx), this only draws and plays it.
-function CampLook.moment(kind: MomentKind, data: MomentData)
-	if not data.position then
+local Tween = game:GetService("TweenService")
+local function pulse(
+	name: string,
+	at: Vector3,
+	color: Color3,
+	size: Vector3,
+	finish: Vector3,
+	life: number,
+	ball: boolean
+): Part
+	local light = Instance.new("Part")
+	light.Name, light.Size, light.CFrame = name, size, CFrame.new(at)
+	light.Anchored, light.CanCollide, light.CanQuery, light.CanTouch, light.CastShadow =
+		true, false, false, false, false
+	light.Material, light.Color, light.Transparency = Enum.Material.Neon, color, 0.28
+	if ball then
+		light.Shape = Enum.PartType.Ball
+	end
+	light.Parent = workspace
+	Tween:Create(
+		light,
+		TweenInfo.new(life, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+		{ Size = finish, Transparency = 1 }
+	):Play()
+	Debris:AddItem(light, life)
+	return light
+end
+function CampLook.moment(kind: string, data: MomentData)
+	local at = data.position
+	if not at then
 		return
 	end
-	local beam = Instance.new("Part")
-	beam.Anchored, beam.CanCollide, beam.CanQuery, beam.Material =
-		true, false, false, Enum.Material.Neon
-	beam.Size, beam.Color = Vector3.new(2, 200, 2), data.color or Color3.new(1, 1, 1)
-	beam.CFrame = CFrame.new(data.position + Vector3.new(0, 100, 0))
-	beam.Name = "Moment_" .. kind
-	beam.Parent = workspace
-	Debris:AddItem(beam, 3)
+	local color = data.color or Color3.fromHex("E2CF95")
+	if kind == "ult" or kind == "spark" then
+		pulse(
+			"PortalFlash",
+			at + Vector3.yAxis * 5,
+			color,
+			Vector3.new(2, 2, 2),
+			Vector3.new(15, 12, 6),
+			0.45,
+			true
+		)
+		if kind == "ult" then
+			Sfx.play("ult_rumble_away", 0.2, 0.84)
+		end
+	elseif kind == "core" then
+		for i = 1, 5 do
+			task.delay(i * 0.16, function()
+				local angle = i * 2.4
+				local centre = at
+					+ Vector3.new(math.cos(angle) * 11, 26 + i * 3, math.sin(angle) * 11)
+				local star =
+					pulse("CoreStar", centre, color, Vector3.one, Vector3.one * 4, 0.55, true)
+				local sparks = Instance.new("ParticleEmitter")
+				sparks.Color = ColorSequence.new(Color3.fromHSV(i / 5, 0.62, 1), color)
+				sparks.Lifetime, sparks.Speed, sparks.SpreadAngle =
+					NumberRange.new(0.4, 0.9), NumberRange.new(9, 20), Vector2.new(360, 360)
+				sparks.LightEmission, sparks.Rate, sparks.Parent = 1, 0, star
+				sparks:Emit(14)
+			end)
+		end
+	else
+		local h = if kind == "plate" then 118 elseif kind == "legendary" then 85 else 40
+		local life = if kind == "pickChest" then 1.1 else 3
+		for i = 1, 2 do
+			local width = if i == 1 then 1.15 else 2.8
+			pulse(
+				"PortalRay",
+				at + Vector3.yAxis * h / 2,
+				if i == 1 then color:Lerp(Color3.new(1, 1, 1), 0.65) else color,
+				Vector3.new(width, h, width),
+				Vector3.new(0.15, h, 0.15),
+				life,
+				false
+			)
+		end
+		if kind == "plate" then
+			Sfx.play("ult_rumble_near", 0.2, 0.72)
+		end
+	end
+end
+
+function CampLook.moments(parent: Instance, tr: any)
+	local Shared = game:GetService("ReplicatedStorage").Shared
+	local Remotes = require(Shared.Remotes)
+	local Profile = require(script.Parent.Parent.ProfileState)
+	local Candy = require(script.Parent.Parent.Ui.Candy)
+	local Widgets = require(script.Parent.Parent.Ui.MenuWidgets)
+	local players = game:GetService("Players")
+	local self = players.LocalPlayer
+	local layer = Candy.layer(parent, "CampMoments", 12)
+	local shakeUntil = 0
+	local poses = {}
+	local function swing(id: number, plot: Instance)
+		local other = if id > 0 then players:GetPlayerByUserId(id) else nil
+		local rig = if other then other.Character else nil
+		if not rig and plot:GetAttribute("CampUser") == id then
+			for _, m in game:GetService("CollectionService"):GetTagged("CampBot") do
+				if m:GetAttribute("CampUser") == id then
+					rig = m
+					break
+				end
+			end
+		end
+		local joint = rig and rig:FindFirstChild("RightShoulder", true)
+		if joint and joint:IsA("Motor6D") then
+			poses[joint] =
+				{ at = os.clock(), base = if poses[joint] then poses[joint].base else joint.C0 }
+		end
+	end
+	Remotes.unreliable("CampMoments").OnClientEvent:Connect(function(batch)
+		for _, data in batch do
+			local plot = workspace.Plots:FindFirstChild("Plot_" .. data.plot)
+			local origin = plot and plot:FindFirstChild("Origin")
+			if not origin then
+				continue
+			end
+			if data.kind == "swing" then
+				if data.id ~= self.UserId then
+					swing(data.id, plot)
+				end
+				continue
+			end
+			local hidden = data.id ~= self.UserId and Profile.preference("hideOthersFx")
+			if not hidden then
+				local line = origin.CFrame
+					* CFrame.new(
+						0,
+						0,
+						(Config.plots.platformDepth + Config.plots.spectatorDepth)
+							* Config.mine.blockSize
+					)
+				CampLook.moment(data.kind, {
+					position = line.Position,
+					color = Color3.fromHex(data.color or "FFCB59"),
+					userId = data.id,
+					pickId = data.pick,
+				})
+				if data.kind == "core" and not Profile.preference("reducedMotion") then
+					shakeUntil = os.clock() + 0.6
+				end
+			end
+			if data.kind == "legendary" then
+				local box = Candy.panel(
+					layer,
+					"Legendary",
+					UDim2.fromOffset(104, 54),
+					UDim2.new(0.5, -52, 0, 20)
+				)
+				local face =
+					Candy.icon(box, nil, UDim2.fromScale(0.45, 0.84), UDim2.fromScale(0.02, 0.08))
+				face.Image = "rbxthumb://type=AvatarHeadShot&id=" .. data.id .. "&w=48&h=48"
+				Widgets.pickIcon(
+					Candy.icon(box, nil, UDim2.fromScale(0.48, 0.85), UDim2.fromScale(0.50, 0.07)),
+					data.pick
+				)
+				Debris:AddItem(box, 3)
+			end
+		end
+	end)
+	game:GetService("RunService")
+		:BindToRenderStep("CampMoments", Enum.RenderPriority.Camera.Value + 2, function()
+			local now = os.clock()
+			for joint, pose in poses do
+				local t = math.min(1, (now - pose.at) / 0.34)
+				if joint.Parent then
+					joint.C0 = pose.base * CFrame.Angles(-math.sin(t * math.pi) * 0.85, 0, 0)
+				end
+				if t >= 1 or not joint.Parent then
+					poses[joint] = nil
+				end
+			end
+			local camera = workspace.CurrentCamera
+			if camera and now < shakeUntil then
+				camera.CFrame *= CFrame.new(0, math.sin(now * 50) * (shakeUntil - now) * 0.18, 0)
+			end
+		end)
+	Remotes.event("CampSignal").OnClientEvent:Connect(function(kind, name)
+		if kind == "core" then
+			local title, frame = Candy.ribbon(
+				layer,
+				"Core",
+				UDim2.fromScale(0.62, 0.075),
+				UDim2.fromScale(0.19, 0.14),
+				Candy.purple
+			)
+			title.Text = tr("camp_core", name)
+			Debris:AddItem(frame, 4)
+		end
+	end)
 end
 
 -- Display meshes are shared templates. Only the local copies rotate.
 function CampLook.showcases()
 	local picks = require(script.Parent.Parent.Fx.CelPicks)
-	local PickModel = require(game:GetService("ReplicatedStorage").Shared.Models.PickModel)
+	local widgets = require(script.Parent.Parent.Ui.MenuWidgets)
+	local function flatPick(id: string): Model
+		local m = Instance.new("Model")
+		local plate = Instance.new("Part")
+		plate.Size, plate.Transparency, plate.Anchored, plate.Parent =
+			Vector3.new(3.2, 3.2, 0.08), 1, true, m
+		m.PrimaryPart = plate
+		for _, side in { Enum.NormalId.Front, Enum.NormalId.Back } do
+			local surface = Instance.new("SurfaceGui")
+			surface.Face, surface.CanvasSize, surface.LightInfluence, surface.Parent =
+				side, Vector2.new(128, 128), 0.15, plate
+			local icon = Instance.new("ImageLabel")
+			icon.Size, icon.BackgroundTransparency, icon.Parent = UDim2.fromScale(1, 1), 1, surface
+			widgets.pickIcon(icon, id)
+		end
+		return m
+	end
 	local shown: { [Attachment]: Model } = {}
 	local root = workspace:WaitForChild("Plots")
 	local function bind(a: Instance)
@@ -306,10 +519,13 @@ function CampLook.showcases()
 			if current ~= generation or not a:IsDescendantOf(root) then
 				return
 			end
-			local m = if template
-				then template:Clone()
-				else PickModel.forPick(id, a.WorldCFrame, true)
+			local m = if template then template:Clone() else flatPick(id)
 			m.Name = "DisplayPick"
+			for _, effect in m:GetChildren() do
+				if effect.Name == "CelAura" or effect.Name == "CelMote" then
+					effect:Destroy()
+				end
+			end
 			for _, p in m:GetDescendants() do
 				if p:IsA("BasePart") then
 					p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
@@ -342,10 +558,19 @@ function CampLook.showcases()
 	for _, item in root:GetDescendants() do
 		bind(item)
 	end
+	local last = 0
 	game:GetService("RunService").Heartbeat:Connect(function()
-		local angle = os.clock() * 0.55
+		local camera = workspace.CurrentCamera
+		local now = os.clock()
+		if not camera or now - last < 1 / 30 then
+			return
+		end
+		last = now
+		local rotation = CFrame.Angles(0, now * 0.55, math.rad(16))
 		for mount, model in shown do
-			model:PivotTo(mount.WorldCFrame * CFrame.Angles(0, angle, math.rad(16)))
+			if (camera.CFrame.Position - mount.WorldPosition).Magnitude <= camp.nameDistance then
+				model:PivotTo(mount.WorldCFrame * rotation)
+			end
 		end
 	end)
 end

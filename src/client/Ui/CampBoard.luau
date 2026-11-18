@@ -20,7 +20,7 @@ local function text(
 	v.Font, v.TextSize, v.TextColor3, v.Parent = Enum.Font.GothamBold, font, Candy.ink, parent
 	return v
 end
-local function fill(parent: Instance, rows: { any }, own: any, tr: any)
+local function fill(parent: Instance, rows: { any }, tr: any)
 	local old = parent:FindFirstChild("Rows")
 	local scroll = if old then (old :: ScrollingFrame).CanvasPosition else Vector2.zero
 	if old then
@@ -58,6 +58,8 @@ local function fill(parent: Instance, rows: { any }, own: any, tr: any)
 			tr("camp_empty")
 	end
 	list.CanvasPosition = scroll
+end
+local function yourRow(parent: Instance, rows: { any }, own: any, tr: any)
 	local footer = parent:FindFirstChild("YourRow")
 		or text(parent, "YourRow", UDim2.fromScale(0.95, 0.08), UDim2.fromScale(0.025, 0.82), 16)
 	footer.Text = string.format("%s   %s   ⛏ %s", own.place, own.name, Format.short(own.depth))
@@ -96,8 +98,16 @@ function CampBoard.start(parent: Instance, tr: any)
 	local paper = surface:WaitForChild("Content")
 	local title = text(paper, "Title", UDim2.fromScale(1, 0.13), UDim2.fromScale(0, 0), 30)
 	local pageButtons = {}
+	local previousPage, previousData, previousLocale
+	local rows = {}
 	local function refresh()
-		local rows = Http:JSONDecode(cache:GetAttribute(page) or "[]")
+		local data = cache:GetAttribute(page) or "[]"
+		local locale = self:GetAttribute("MineLanguage")
+		local rebuild = data ~= previousData or page ~= previousPage or locale ~= previousLocale
+		if rebuild then
+			rows = Http:JSONDecode(data)
+			previousData, previousPage, previousLocale = data, page, locale
+		end
 		local p = Profile.getProfile()
 		local depth = if not p
 			then 0
@@ -114,7 +124,10 @@ function CampBoard.start(parent: Instance, tr: any)
 			end
 		end
 		for _, panel in { paper, modal.panel } do
-			fill(panel, rows, own, tr)
+			if rebuild then
+				fill(panel, rows, tr)
+			end
+			yourRow(panel, rows, own, tr)
 		end
 		title.Text = "🏆  " .. tr("camp_board")
 		modal.title.Text = tr("camp_board")

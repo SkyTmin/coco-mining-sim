@@ -59,9 +59,14 @@ local function update(i: number)
 	local owner = Plots.owner(i)
 	local session = owner and Mines.get(owner)
 	local holo = if owner then nil else holograms[i]
+	local gilded = {}
 	local card = if owner
 		then Profiles.Read(owner, function(p)
-			return CampProfile.card(p, owner.DisplayName)
+			local live = CampProfile.card(p, owner.DisplayName)
+			for _, id in live.showcase do
+				gilded[id] = p.collection[id].golden > 0
+			end
+			return live
 		end)
 		else holo and holo.card
 	local depth = if session then session.state.front else card and card.bestDepth or 0
@@ -76,7 +81,8 @@ local function update(i: number)
 		owner:SetAttribute("CampBest", card and card.bestDepth)
 	end
 	root:SetAttribute("CampFront", if session then depth else nil)
-	local data = { card = card, id = id, world = world.index, place = holo and holo.place }
+	local data =
+		{ card = card, id = id, world = world.index, place = holo and holo.place, gilded = gilded }
 	if Persistence.equal(previous[i], data) then
 		return
 	end
@@ -102,7 +108,10 @@ local function update(i: number)
 	for j, a in entry.showcase do
 		local pick = if not card then nil elseif j == 1 then card.pick else card.showcase[j - 1]
 		a:SetAttribute("Pick", pick)
-		a:SetAttribute("Golden", card ~= nil and j == 1 and card.golden)
+		a:SetAttribute(
+			"Golden",
+			card ~= nil and (if j == 1 then card.golden else gilded[pick] == true)
+		)
 	end
 end
 
@@ -122,7 +131,10 @@ function Camp.Start()
 			local crown = Builder.scale.pillar.Parent:FindFirstChild("BestWorld")
 			local world = Worlds.of(record)
 			crown.Color = Color3.fromHex(Config.art.worlds[world.id].light)
-			crown:SetAttribute("World", world.index)
+			if crown:GetAttribute("World") ~= world.index then
+				crown:SetAttribute("World", world.index)
+				crown.WorldBadge.World.Text = "🌐 " .. tostring(world.index)
+			end
 			for _, player in game:GetService("Players"):GetPlayers() do
 				movement(player)
 			end

@@ -1,5 +1,6 @@
 --!strict
 local Config = require(script.Parent.Parent.Config)
+local Worlds = require(script.Parent.Parent.Mine.Worlds)
 local Ranks = require(script.Parent.Ranks)
 local Camp = {}
 
@@ -23,14 +24,18 @@ local function count(value: any): boolean
 end
 
 function Camp.initialize(p: any, now: number)
-	local best = 0
+	local best = if count(p.deepestWorld)
+			and p.deepestWorld >= 1
+			and p.deepestWorld <= #Config.worlds
+		then Worlds.at(p.deepestWorld).start
+		else 0
 	for _, depth in
 		{
 			p.bestDepth,
 			p.recordDepth,
 			p.maxDepth,
-			p.stats and p.stats.bestDepth,
-			p.mine and p.mine.front,
+			type(p.stats) == "table" and p.stats.bestDepth,
+			type(p.mine) == "table" and p.mine.front,
 		}
 	do
 		if count(depth) then
@@ -92,8 +97,9 @@ function Camp.card(p: any, name: string): any
 	local function order(id: string): number
 		local pick = Config.pickaxes[id]
 		local rarity = Config.progress.rarities[pick.rarity].stars
-		local family = table.find(Config.familyRules.order, pick.family) or 0
-		return rarity * 100 + (if p.collection[id].golden > 0 then 10 else 0) + family
+		local family = table.find(Config.familyRules.order, pick.family)
+			or (#Config.familyRules.order + 1)
+		return rarity * 100 + (if p.collection[id].golden > 0 then 10 else 0) - family
 	end
 	table.sort(picks, function(a, b)
 		return order(a) > order(b)

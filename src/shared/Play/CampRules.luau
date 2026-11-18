@@ -1,6 +1,18 @@
 --!strict
 local Config = require(script.Parent.Parent.Config)
 local Rules = {}
+local badges = { "◇", "◆", "⚒", "✦", "✧", "★", "❖", "♜", "♛" }
+function Rules.rankIndex(id: string?): number
+	for i, rank in Config.rebirth.ranks do
+		if rank.id == id then
+			return i + 1
+		end
+	end
+	return 1
+end
+function Rules.badge(id: string?): string
+	return badges[Rules.rankIndex(id)]
+end
 function Rules.space(roles: { [any]: string }, role: string): boolean
 	local count = 0
 	for _, value in roles do

@@ -48,7 +48,31 @@ PickModel.HAND_MOUNT = legacyGrip:Inverse()
 	* CFrame.new(0.3, -0.3, -0.2)
 	* CFrame.Angles(math.rad(-105), math.pi, 0)
 
-local function build(size: number, anchored: boolean, mount: CFrame): (Model, Part)
+-- Sample the centre slice of the original voxel asset for a small replicated hand model.
+-- The local wielder still gets the full voxel model when the cel mesh is unavailable.
+local coarse = {}
+local step = 4
+for x = 0, xSize - 1, step do
+	for z = 0, zSize - 1, step do
+		local cx, cy, cz = x + step / 2, ySize / 2, z + step / 2
+		for _, box in data.b do
+			local bx, by, bz, w, d, h, color = table.unpack(box)
+			if
+				cx >= bx
+				and cx < bx + w
+				and cy >= by
+				and cy < by + d
+				and cz >= bz
+				and cz < bz + h
+			then
+				table.insert(coarse, { x, ySize / 4, z, step, ySize / 2, step, color })
+				break
+			end
+		end
+	end
+end
+
+local function build(size: number, anchored: boolean, mount: CFrame, boxes: any?): (Model, Part)
 	local pixel = size / span
 	local model = Instance.new("Model")
 	model.Name = "MinePickaxe"
@@ -64,7 +88,7 @@ local function build(size: number, anchored: boolean, mount: CFrame): (Model, Pa
 	root.Anchored, root.Transparency, model.PrimaryPart = anchored, 1, root
 	local head: Part? = nil
 	local headSize = 0
-	for _, box in data.b do
+	for _, box in boxes or data.b do
 		local x, y, z, w, d, h, color = table.unpack(box)
 		local at = Vector3.new(y + d / 2, z + h / 2, x + w / 2) - middle
 		local relative = mount * CFrame.new(-centre * pixel) * turn * CFrame.new(at * pixel)
@@ -121,7 +145,8 @@ function PickModel.forPick(
 	id: string,
 	frame: CFrame,
 	anchored: boolean,
-	first: boolean?
+	first: boolean?,
+	compact: boolean?
 ): (Model, BasePart)
 	local art = Config.art.pickaxes[id] or Config.art.pickaxes.starter
 	local model = ArtModel.clone(art.model)
@@ -155,7 +180,11 @@ function PickModel.forPick(
 		model:Destroy()
 	end
 	local model, root
-	if first then
+	if compact then
+		model, root = build(HELD_SIZE, anchored, legacyGrip:Inverse() * handGrip, coarse)
+		model:SetAttribute("CompactPick", true)
+		model:PivotTo(frame)
+	elseif first then
 		model, root = PickModel.view()
 		model:PivotTo(frame)
 	else

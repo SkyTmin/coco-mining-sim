@@ -59,7 +59,14 @@ function CreativeService.Start()
 		then
 			return
 		end
-		if op == "toggle" then
+		if op == "camp.bots" and studio then
+			require(script.Parent.CampBotService).set(
+				delta,
+				require(Shared.Strings).localeOf(player)
+			)
+		elseif op == "camp.helper" and studio then
+			require(script.Parent.CampBotService).helper(player)
+		elseif op == "toggle" then
 			local enabled = player:GetAttribute("Creative") ~= true
 			player:SetAttribute("Creative", enabled)
 			toast:FireClient(player, if enabled then "creative_on" else "creative_off")

@@ -24,18 +24,19 @@ export type Style = {
 local LINK: Style =
 	{ core = 0.15, halo = 0.8, color = BLUE, life = 0.24, jag = 0.3, pieces = 4, forks = 1 }
 
-function Lightning.new(parent: Instance): any
+function Lightning.new(parent: Instance, limit: number?): any
 	local anchor = Instance.new("Part")
 	anchor.Anchored, anchor.CanCollide, anchor.CanQuery, anchor.CanTouch, anchor.Transparency =
 		true, false, false, false, 1
 	anchor.Name, anchor.Parent = "LightningPool", parent
 	local attachments, segments, lights = {}, {}, {}
-	for i = 1, SEGMENTS * 2 do
+	local segmentsCount = limit or SEGMENTS
+	for i = 1, segmentsCount * 2 do
 		local point = Instance.new("Attachment")
 		point.Parent = anchor
 		attachments[i] = point
 	end
-	for i = 1, SEGMENTS do
+	for i = 1, segmentsCount do
 		local core, halo = Instance.new("Beam"), Instance.new("Beam")
 		for _, beam in { core, halo } do
 			beam.Enabled, beam.FaceCamera, beam.LightEmission, beam.Parent = false, true, 1, anchor

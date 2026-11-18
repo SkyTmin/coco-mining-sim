@@ -20,17 +20,23 @@ local function store(): DataStore
 	return DSS:GetDataStore(storeName)
 end
 local written, writing, cache, rigs = {}, {}, {}, {}
-local function save(player: Player)
+local function publicCard(player: Player)
 	if player.UserId <= 0 or not Profiles.IsReal(player) then
+		return
+	end
+	return Profiles.Read(player, function(p)
+		return CampProfile.card(p, player.DisplayName)
+	end)
+end
+local function save(player: Player, final: any?)
+	local card = final or publicCard(player)
+	if not card then
 		return
 	end
 	while writing[player] do
 		task.wait()
 	end
-	local card = Profiles.Read(player, function(p)
-		return CampProfile.card(p, player.DisplayName)
-	end)
-	if not card or Persistence.equal(written[player], card) then
+	if Persistence.equal(written[player], card) then
 		return
 	end
 	writing[player] = true
@@ -197,8 +203,13 @@ function Holo.Start()
 		clear(i, true)
 	end)
 	Profiles.BeforeRelease(function(p)
-		save(p)
-		written[p] = nil
+		local final = publicCard(p)
+		return function()
+			if final then
+				save(p, final)
+			end
+			written[p] = nil
+		end
 	end)
 	task.spawn(function()
 		while true do

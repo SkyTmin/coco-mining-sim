@@ -52,6 +52,7 @@ Test.describe("Strings", function()
 				"creative_on",
 				"creative_off",
 				"camp_like",
+				"camp_liked",
 				"camp_watch",
 				"camp_help",
 				"camp_duel",
@@ -92,6 +93,7 @@ Test.describe("Strings", function()
 		for _, key in
 			{
 				"camp_like",
+				"camp_liked",
 				"camp_watch",
 				"camp_help",
 				"camp_duel",

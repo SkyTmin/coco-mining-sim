@@ -5,6 +5,7 @@ local Config = require(Shared.Config)
 local Remotes = require(Shared.Remotes)
 local Family = require(Shared.Play.Family)
 local Collection = require(Shared.Play.Collection)
+local Moments = require(script.Parent.CampMomentService)
 local Chest = require(Shared.Play.Chest)
 local Keys = require(Shared.Play.Keys)
 local Perks = require(Shared.Play.Perks)
@@ -76,6 +77,7 @@ function CollectionService.Start()
 					value = Chest.open(p, session.state.seed)
 				end)
 				if value then
+					Moments.pick(session, value.id, true)
 					result(player, value, "chest")
 					Analytics.event(player, "chest_open", 1, value.rarity, value.family)
 				end
@@ -89,6 +91,7 @@ function CollectionService.Start()
 					success = Collection.merge(p, a)
 				end)
 				if success then
+					Moments.pick(session, a, false)
 					Analytics.event(player, "merge", 1, a)
 					Analytics.event(player, "pick_get", 1, "merge", a)
 				end

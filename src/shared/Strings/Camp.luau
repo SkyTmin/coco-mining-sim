@@ -1,5 +1,25 @@
 --!strict
 return {
+	camp_core = {
+		en = "{1} reached the Core!",
+		ru = "{1} дошёл до Ядра!",
+		es = "¡{1} llegó al Núcleo!",
+		fr = "{1} a atteint le Noyau !",
+	},
+	camp_bot = { en = "Bot {1}", ru = "Бот {1}", es = "Bot {1}", fr = "Robot {1}" },
+	camp_bots_on = { en = "7 bots", ru = "7 ботов", es = "7 bots", fr = "7 robots" },
+	camp_bots_off = {
+		en = "Clear bots",
+		ru = "Убрать ботов",
+		es = "Quitar bots",
+		fr = "Sans robots",
+	},
+	camp_bot_help = {
+		en = "Bot helper",
+		ru = "Бот-гость",
+		es = "Bot ayudante",
+		fr = "Aide robot",
+	},
 	camp_win = { en = "Victory!", ru = "Победа!", es = "¡Victoria!", fr = "Victoire !" },
 	camp_loss = { en = "So close!", ru = "Почти!", es = "¡Por poco!", fr = "De justesse !" },
 	camp_draw = { en = "Draw", ru = "Ничья", es = "Empate", fr = "Égalité" },
@@ -45,7 +65,7 @@ return {
 	camp_like = { en = "Like", ru = "Лайк", es = "Me gusta", fr = "J’aime" },
 	camp_liked = {
 		en = "Liked today",
-		ru = "Уже ❤ сегодня",
+		ru = "Уже сегодня❤",
 		es = "Ya votaste",
 		fr = "Déjà aimé",
 	},

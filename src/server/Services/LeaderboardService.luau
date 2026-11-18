@@ -7,6 +7,7 @@ local Http = game:GetService("HttpService")
 local Profiles = require(script.Parent.ProfileService)
 local Config = require(RS.Shared.Config)
 local CampProfile = require(RS.Shared.Play.CampProfile)
+local Mines = require(script.Parent.MineService)
 local Builder = require(script.Parent.Parent.Camp.CampBuilder)
 local Rules = require(RS.Shared.Play.CampRules)
 local Board = {}
@@ -23,8 +24,18 @@ end
 function Board.weekly(): { any }
 	return weekly
 end
-local function flush(player: Player)
+local pending = {}
+local function depths(player: Player)
 	if player.UserId <= 0 or not Profiles.IsReal(player) then
+		return nil
+	end
+	return Profiles.Read(player, function(p)
+		return { All = p.bestDepth, [p.weekBest.week] = p.weekBest.depth }
+	end)
+end
+local function flush(player: Player, final: any?)
+	local snapshot = final or depths(player)
+	if not snapshot then
 		return
 	end
 	local record = sent[player]
@@ -35,11 +46,8 @@ local function flush(player: Player)
 	while record.busy do
 		task.wait()
 	end
-	local snapshot = Profiles.Read(player, function(p)
-		return { All = p.bestDepth, [p.weekBest.week] = p.weekBest.depth }
-	end)
-	if not snapshot then
-		return
+	for week, depth in pending[player] or {} do
+		snapshot[week] = math.max(snapshot[week] or 0, depth)
 	end
 	record.busy = true
 	for period, depth in snapshot do
@@ -54,6 +62,9 @@ local function flush(player: Player)
 			else
 				warn("[CampBoard] write: " .. tostring(err))
 			end
+		end
+		if pending[player] and (pending[player][period] or 0) <= (record.values[period] or 0) then
+			pending[player][period] = nil
 		end
 	end
 	record.busy = false
@@ -116,9 +127,21 @@ end
 function Board.Start()
 	cache = Instance.new("Folder")
 	cache.Name, cache.Parent = "Leaderboard", RS
+	Mines.OnWeekEnded(function(player, week, depth)
+		if player.UserId > 0 then
+			local previous = pending[player] or {}
+			pending[player] = previous
+			previous[week] = math.max(previous[week] or 0, depth)
+		end
+	end)
 	Profiles.BeforeRelease(function(player)
-		flush(player)
-		sent[player] = nil
+		local final = depths(player)
+		return function()
+			if final then
+				flush(player, final)
+			end
+			sent[player], pending[player] = nil, nil
+		end
 	end)
 	task.spawn(function()
 		while true do

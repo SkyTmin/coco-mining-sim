@@ -27,6 +27,8 @@ for _, service in
 		services.HitService,
 		services.UpgradeService,
 		services.CollectionService,
+		services.CampMomentService,
+		services.CampBotService,
 		services.CreativeService,
 		services.ServerLog,
 		services.Analytics,

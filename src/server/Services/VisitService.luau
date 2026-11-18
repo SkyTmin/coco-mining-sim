@@ -37,6 +37,12 @@ function Visit.leave(player: Player)
 	Mines.unsubscribe(player, visit.plot)
 	player:SetAttribute("GuestPlot", nil)
 	player:SetAttribute("WatchingPlot", nil)
+	if player:GetAttribute("CampBot") and visit.role == "guest" and player.Character then
+		local home = Plots.digFrame(player)
+		if home then
+			player.Character:PivotTo(home)
+		end
+	end
 	countViewers(visit.plot)
 	Analytics.event(
 		player,
@@ -63,7 +69,7 @@ function Visit.join(player: Player, plot: number, role: string): boolean
 	local list = roles[plot] or {}
 	roles[plot] = list
 	if not Rules.space(list, role) then
-		if denied[player] ~= plot then
+		if denied[player] ~= plot and player.Parent == Players then
 			Remotes.event("Toast"):FireClient(player, "camp_full")
 		end
 		denied[player] = plot
@@ -184,6 +190,11 @@ function Visit.Start()
 		while true do
 			for _, player in Players:GetPlayers() do
 				update(player)
+			end
+			for actor in assignments do
+				if actor:GetAttribute("CampBot") then
+					update(actor)
+				end
 			end
 			task.wait(social.positionSeconds)
 		end

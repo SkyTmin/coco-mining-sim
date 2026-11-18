@@ -91,7 +91,8 @@ local function layers(s: Session, offset: number, limit: number): { { number } }
 				local ore = 0
 				if State.isSolid(st, x, y, d) then
 					if s.duel then
-						ore = Gen.cellAt(st.seed, x, y, d % Config.worlds[1].length)
+						local index = Gen.cellAt(st.seed, x, y, d % Config.worlds[1].length)
+						ore = math.max(1, index)
 					elseif d == world.plateDepth then
 						ore = Wire.PLATE
 					else
@@ -152,14 +153,30 @@ function MineService.damage(st: State.MineState): { any }
 	return out
 end
 
-local function send(kind: string, plot: number, packet: buffer, visual: any?, only: Player?)
+local function hasViewers(plot: number): boolean
+	for player in subscribers[plot] or {} do
+		if player.Parent == Players then
+			return true
+		end
+	end
+	return false
+end
+
+local function send(
+	kind: string,
+	plot: number,
+	packet: buffer,
+	visual: any?,
+	only: Player?,
+	temporary: boolean?
+)
 	if only then
-		windowRemote:FireClient(only, kind, packet, visual)
+		windowRemote:FireClient(only, kind, packet, visual, temporary)
 		return
 	end
 	for player in subscribers[plot] or {} do
 		if player.Parent == Players then
-			windowRemote:FireClient(player, kind, packet, visual)
+			windowRemote:FireClient(player, kind, packet, visual, temporary)
 		end
 	end
 end
@@ -185,7 +202,9 @@ local function sendTail(s: Session, only: Player?)
 end
 
 function MineService.event(s: Session, event: any)
-	send("event", s.plot, Wire.encodeEvent(event))
+	if hasViewers(s.plot) then
+		send("event", s.plot, Wire.encodeEvent(event))
+	end
 end
 
 function MineService.window(s: Session, damageReset: any, only: Player?)
@@ -195,6 +214,9 @@ function MineService.window(s: Session, damageReset: any, only: Player?)
 	end
 	if not s.duel then
 		PlotService.depth(s.plot, st.front)
+	end
+	if not only and not hasViewers(s.plot) then
+		return
 	end
 	local frozen = {}
 	for _, cell in (if s.duel then {} else Perks.frozen(s.perks, st)) do
@@ -217,13 +239,17 @@ function MineService.window(s: Session, damageReset: any, only: Player?)
 			layers = layers(s, 0, mine.nearWindow),
 		}),
 		damageReset,
-		only
+		only,
+		s.duel == true
 	)
 	sendTail(s, only)
 end
 
 function MineService.subscribe(player: Player, s: Session)
 	s = duels[s.player] or s
+	if player:GetAttribute("CampBot") then
+		return
+	end
 	subscribers[s.plot][player] = true
 	windowRemote:FireClient(player, "watch", s.plot, PlotService.frame(s.plot))
 	MineService.window(s, nil, player)
@@ -299,14 +325,30 @@ local function expireDamage(s: Session, now: number)
 	end
 end
 
+local weekHooks = {}
+function MineService.OnWeekEnded(fn: (Player, string, number) -> ())
+	table.insert(weekHooks, fn)
+end
+local function recordDepth(s: Session, front: number)
+	local week = Camp.week(os.time())
+	ProfileService.Mutate(s.player, function(p)
+		if p.weekBest.week ~= week and p.weekBest.depth > 0 then
+			for _, hook in weekHooks do
+				hook(s.player, p.weekBest.week, p.weekBest.depth)
+			end
+		end
+		Camp.advance(p, front, week)
+	end)
+end
 function MineService.result(s: Session, res: any)
 	if not s.duel and res.delta > 0 then
-		ProfileService.Mutate(s.player, function(p)
-			Camp.advance(p, s.state.front, Camp.week(os.time()))
-		end)
+		recordDepth(s, s.state.front)
 	end
 	if not s.duel then
 		PlotService.depth(s.plot, s.state.front)
+	end
+	if not hasViewers(s.plot) then
+		return
 	end
 	if res.delta > 0 then
 		res.layers = layers(s, 0, mine.nearWindow)
@@ -318,6 +360,9 @@ function MineService.result(s: Session, res: any)
 end
 
 function MineService.reject(player: Player, s: Session, seq: number)
+	if player:GetAttribute("CampBot") then
+		return
+	end
 	windowRemote:FireClient(
 		player,
 		"result",
@@ -338,6 +383,9 @@ function MineService.prepareAdopt(state: State.MineState, now: number): any
 	}
 end
 function MineService.adopt(s: Session, prepared: any)
+	if prepared.state.front > s.state.front then
+		recordDepth(s, prepared.state.front)
+	end
 	s.state, s.perks, s.streak, s.pace, s.bucket =
 		prepared.state, prepared.perks, prepared.streak, prepared.pace, prepared.bucket
 	s.charge, s.streakUntil, s.lastHitAt, s.hitInterval, s.digStopAt, s.resyncAt =
@@ -348,6 +396,9 @@ function MineService.adopt(s: Session, prepared: any)
 end
 
 function MineService.reset(s: Session, depth: number, width: number)
+	if depth > s.state.front then
+		recordDepth(s, depth)
+	end
 	s.state = State.new(s.state.seed, width, mine.height, depth)
 	s.charge = 0
 	s.perks = Perks.new()
@@ -361,6 +412,43 @@ function MineService.reset(s: Session, depth: number, width: number)
 	MineService.window(s, "reset")
 end
 
+local function open(player: Player, profile: any, state: any?, plot: number)
+	local rng = Random.new()
+	local s: Session = {
+		player = player,
+		state = state or fresh(rng, profile.width),
+		plot = plot,
+		rng = rng,
+		bucket = Validate.bucket(os.clock()),
+		charge = 0,
+		resyncAt = -math.huge,
+		lastHitAt = -math.huge,
+		hitInterval = 0,
+		digStopAt = -math.huge,
+		stopAfterUlt = false,
+		hit = { count = 0, total = 0, max = 0 },
+		ult = { count = 0, total = 0, max = 0 },
+		perks = Perks.new(),
+		streak = Streak.new(workspace:GetServerTimeNow()),
+		streakUntil = 0,
+		pace = Pace.new(),
+		perkFamily = profile.family,
+	}
+	s.state.chestFrequency = Family.effects(profile).chestFrequency
+	sessions[player], subscribers[plot] = s, { [player] = true }
+	MineService.window(s)
+end
+function MineService.openBot(actor: any, p: any, state: any, plot: number)
+	if RunService:IsStudio() and actor:GetAttribute("CampBot") then
+		open(actor, p, state, plot)
+	end
+end
+function MineService.closeBot(actor: any)
+	if RunService:IsStudio() and actor:GetAttribute("CampBot") and sessions[actor] then
+		subscribers[sessions[actor].plot] = nil
+		sessions[actor] = nil
+	end
+end
 function MineService.Start()
 	ProfileService.OnLoaded(function(player)
 		if player.Parent ~= Players then
@@ -386,30 +474,7 @@ function MineService.Start()
 				ProfileService.FailLoad(player)
 			end
 		end
-		local rng = Random.new()
-		local s: Session = {
-			player = player,
-			state = state or fresh(rng, profile.width),
-			plot = plot,
-			rng = rng,
-			bucket = Validate.bucket(os.clock()),
-			charge = 0,
-			resyncAt = -math.huge,
-			lastHitAt = -math.huge,
-			hitInterval = 0,
-			digStopAt = -math.huge,
-			stopAfterUlt = false,
-			hit = { count = 0, total = 0, max = 0 },
-			ult = { count = 0, total = 0, max = 0 },
-			perks = Perks.new(),
-			streak = Streak.new(workspace:GetServerTimeNow()),
-			streakUntil = 0,
-			pace = Pace.new(),
-			perkFamily = profile.family,
-		}
-		s.state.chestFrequency = Family.effects(profile).chestFrequency
-		sessions[player], subscribers[plot] = s, { [player] = true }
-		MineService.window(s)
+		open(player, profile, state, plot)
 	end)
 	local sweptAt = os.clock()
 	RunService.Heartbeat:Connect(function()

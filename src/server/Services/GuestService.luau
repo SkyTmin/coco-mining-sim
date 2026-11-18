@@ -25,7 +25,7 @@ function Guest.offer(from: Player, to: Player, kind: string, accept: () -> ())
 		accept = accept,
 	}
 	pending[to] = item
-	if to.UserId < 0 then
+	if to:GetAttribute("CampBot") then
 		task.delay(Config.social.botAcceptSeconds, function()
 			if pending[to] == item then
 				pending[to] = nil
@@ -63,7 +63,7 @@ local function allowed(from: Player, to: Player): string?
 	if mode ~= "friends" then
 		return nil
 	end
-	if to.UserId < 0 or from.UserId < 0 then
+	if to:GetAttribute("CampBot") or from:GetAttribute("CampBot") then
 		return mode
 	end
 	local list = friends[to] or {}
@@ -94,7 +94,7 @@ function Guest.request(from: Player, to: Player?)
 			Visit.move(from, plot, "guest")
 		end
 	end
-	if mode == "all" and to.UserId >= 0 then
+	if mode == "all" and not to:GetAttribute("CampBot") then
 		start()
 	else
 		Guest.offer(from, to, "guest", start)

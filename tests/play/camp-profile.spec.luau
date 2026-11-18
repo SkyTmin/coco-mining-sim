@@ -18,6 +18,26 @@ Test.describe("Camp profile", function()
 			assert(not Circle.migrate(p))
 		end
 	)
+	Test.it(
+		"publishes only the public fields and orders showcases by rarity, gold and family order",
+		function()
+			local p = Defaults.new(1)
+			p.collection.storm_rare = { count = 1, golden = 0 }
+			p.collection.rift_rare = { count = 1, golden = 0 }
+			p.collection.frost_rare = { count = 0, golden = 1 }
+			p.collection.dynamite_legendary = { count = 1, golden = 0 }
+			local card = Camp.card(p, "Miner")
+			assert(table.concat(card.showcase, ",") == "dynamite_legendary,frost_rare,storm_rare")
+			local keys = {}
+			for key in card do
+				table.insert(keys, key)
+			end
+			table.sort(keys)
+			assert(
+				table.concat(keys, ",") == "bestDepth,duelWins,golden,likes,name,pick,rank,showcase"
+			)
+		end
+	)
 	Test.it("uses ISO weeks across calendar years and only advances the current record", function()
 		assert(Camp.week(1609459200) == "2020W53" and Camp.week(1609718400) == "2021W01")
 		local p = Defaults.new(1)
