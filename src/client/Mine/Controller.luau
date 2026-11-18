@@ -48,6 +48,7 @@ local RewardBurst = require(Client.Fx.RewardBurst)
 local MenuWidgets = require(Client.Ui.MenuWidgets)
 
 local CampLook = require(Client.Art.CampLook)
+local MineView = require(script.Parent.MineView)
 local Controller = {}
 local mine = Config.mine
 local S = mine.blockSize
@@ -255,9 +256,10 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 	end
 
+	local ownView, visiting: any, ownReceive
 	local function setup(plot: number)
 		if renderer then
-			return
+			return true
 		end
 		local plots = workspace:WaitForChild("Plots", 8)
 		local model = plots and plots:WaitForChild("Plot_" .. plot, 8)
@@ -266,15 +268,20 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			return
 		end
 		local frame = origin.CFrame
-		renderer = Wall.new(world, frame)
+		ownView = MineView.new(
+			plot,
+			frame,
+			{ owner = true, parent = world, translate = translate, receive = ownReceive }
+		)
+		renderer = ownView.renderer
 		tunnel = Tunnel.new(world, frame, model :: Instance)
-		depthSign = DepthSign.new(world, frame, window.front, model)
+		depthSign = DepthSign.new(world, frame, 0, model)
 		spectatorSigns = DepthSign.spectators(world, plots :: Instance, plot)
-		breaking = Break.new(world)
-		lightning = Lightning.new(world)
+		breaking, lightning = ownView.breaking, ownView.lightning
 		debris = TravelDebris.new(world, frame)
 		view = Camera.new(player, frame)
 		dirty = true
+		return true
 	end
 
 	local function targetPosition(point: any, offset: number): Vector3
@@ -430,14 +437,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		intent:FireServer(Wire.encodeIntent(kind, seq, cell.x, cell.y, cell.dRel))
 	end
 
-	local function onWindow(packet: any, damageReset: any)
-		local win = Wire.decodeWindow(packet)
-		if
-			not win
-			or (player:GetAttribute("Plot") ~= nil and win.plot ~= player:GetAttribute("Plot"))
-		then
-			return
-		end
+	local function onWindow(win: any, damageReset: any)
 		if damageReset == "events" and window then
 			if
 				pending
@@ -490,24 +490,12 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			Dissolve.clear(breaking.dissolve)
 		end
 		table.clear(events)
-		setup(win.plot)
 	end
 
 	local function applyLayers(part: any)
-		if
-			not part
-			or not window
-			or part.plot ~= window.plot
-			or part.front ~= window.front
-			or part.width ~= window.width
-			or part.height ~= window.height
-		then
-			return
+		if MineView.append(window, part) then
+			dirty = true
 		end
-		for i, layer in part.layers do
-			window.layers[part.offset + i] = layer
-		end
-		dirty = true
 	end
 
 	local function applyResult(res: any, visual: any?)
@@ -610,17 +598,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				end
 			end
 		end
-		for _, cell in res.cells do
-			local layer = window.layers[cell.dRel + 1]
-			local radius = (window.width - 1) // 2
-			if layer then
-				layer[(cell.x + radius) * window.height + cell.y + 1] = 0
-			end
-		end
-		if res.delta > 0 then
-			window.layers, window.front = res.layers, res.front
-		end
-		window.charge, window.damage, window.plateDamage = res.charge, res.damage, res.plateDamage
+		MineView.apply(window, res)
 		if res.ability then
 			Hud.ultimate(hud, res.coins, now)
 		end
@@ -806,11 +784,11 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 		end
 	end
 
-	windowRemote.OnClientEvent:Connect(function(kind, packet, visual)
+	ownReceive = function(kind, packet, visual)
 		if kind == "window" then
 			onWindow(packet, visual)
 		elseif kind == "layers" then
-			local part = Wire.decodeLayers(packet)
+			local part = packet
 			local queued = echoes[#echoes]
 			if part and queued and part.front == queued.res.front then
 				table.insert(queued.tail, part)
@@ -823,7 +801,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				applyLayers(part)
 			end
 		elseif kind == "event" then
-			local event = Wire.decodeEvent(packet)
+			local event = packet
 			if not event or not window or event.plot ~= window.plot then
 				return
 			end
@@ -850,7 +828,7 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 				eventFx.rubble(event.points)
 			end
 		elseif kind == "result" then
-			local res = Wire.decodeResult(packet)
+			local res = packet
 			if res and res.accepted then
 				musicLastHit = os.clock()
 				rush.sync(res, workspace:GetServerTimeNow())
@@ -875,6 +853,46 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 			else
 				applyResult(res, visual)
 			end
+		end
+	end
+
+	local decoders = {
+		window = Wire.decodeWindow,
+		layers = Wire.decodeLayers,
+		result = Wire.decodeResult,
+		event = Wire.decodeEvent,
+	}
+	windowRemote.OnClientEvent:Connect(function(kind, packet, extra)
+		if kind == "watch" or kind == "unwatch" then
+			if visiting then
+				visiting:destroy()
+				visiting = nil
+			end
+			if kind == "watch" then
+				visiting = MineView.new(
+					packet,
+					extra,
+					{ owner = false, parent = world, translate = translate }
+				)
+			end
+			return
+		end
+		local decode = decoders[kind]
+		local data = decode and decode(packet)
+		if not data then
+			return
+		end
+		local target = if visiting and visiting.plot == data.plot then visiting else ownView
+		if
+			not target
+			and kind == "window"
+			and (not player:GetAttribute("Plot") or data.plot == player:GetAttribute("Plot"))
+		then
+			setup(data.plot)
+			target = ownView
+		end
+		if target and target.plot == data.plot then
+			target[kind](target, data, extra)
 		end
 	end)
 
@@ -1069,6 +1087,9 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 
 	RunService:BindToRenderStep("MineFrame", Enum.RenderPriority.Camera.Value + 1, function(dt)
 		local now = os.clock()
+		if visiting then
+			visiting:step(now)
+		end
 		local r, v = renderer, view
 		if not r or not v or not window then
 			if now - lastRequest >= 1 then
@@ -1245,18 +1266,15 @@ function Controller.start(guiParent: Instance, translate: (string, ...any) -> st
 					renderWindow.damage = table.clone(window.damage)
 					table.insert(renderWindow.damage, pending.damage)
 				end
-				Wall.update(r, renderWindow, visible, nil)
-				FamilyFx.frozen(frozenCells)
-				Break.cracks(
-					breaking,
-					r,
+				ownView:draw(
+					renderWindow,
+					visible,
 					if digging then renderWindow else NO_DAMAGE,
-					State.cellKey,
-					nil,
 					if lastTarget
 						then State.cellKey(lastTarget.x, lastTarget.y, lastTarget.depth)
 						else nil
 				)
+				FamilyFx.frozen(frozenCells)
 			else
 				Wall.clear(r)
 				Break.clear(breaking)
