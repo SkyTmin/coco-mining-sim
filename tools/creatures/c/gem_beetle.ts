@@ -1,7 +1,11 @@
 // Six articulated feet support the pair of cut stones. The hinge and crystal facets share a frame.
 import { F3, Rig, type Mat, type V3 } from '../rig/f15-rig';
 import { hx, tn, TAU, ik } from '../kit/f11-mobkit';
-import { everyday, life, projectFigure } from '../rig/figure';
+import { everyday, life, projectFigure, scaleFigure } from '../rig/figure';
+import plan from './gem_beetle-life';
+import { strideFoot } from '../motion';
+import { ramp, localPoint } from './engraving';
+import { facet, armouredHead, etchedMetal, hingeClips } from './beetle-cut';
 import { animations, pose, effects } from './gem_beetle-actions';
 import type { Creature, Variant } from '../types';
 
@@ -29,6 +33,7 @@ export function buildFrame(
   side: number,
   variant: Variant,
   a: BeetlePose = {},
+  headLead = 0,
 ) {
   const r = new Rig(),
     g = variant === 'gold',
@@ -62,6 +67,27 @@ export function buildFrame(
     T: tn('#354c71', '#487b9c', '#78c7d0', '#d1fbef'),
     glow: 0.15 + (a.glow ?? 0) * 0.35,
   };
+  const scale = 1.18,
+    planted: string[] = [];
+  const plate: Mat = {
+    T: g
+      ? tn('#514048', '#815645', '#aa875d', '#dbb483')
+      : tn('#293444', '#3d535d', '#66868c', '#b3c9bd'),
+  };
+  const quartz: Mat = {
+    T: g
+      ? tn('#53414a', '#947445', '#d1ba69', '#fff0c2')
+      : tn('#3f5f80', '#598daa', '#8ec1d2', '#eff4d7'),
+  };
+  core.pat = ([t, x, y], l) =>
+    ramp(
+      core,
+      l,
+      1.2 * Math.cos(x * 4 + y * 2) + 0.7 * Math.sin(23 * t),
+      t * 25,
+      x * 4,
+    );
+  const legMetal = etchedMetal(brass);
   const ground = F3.yaw(
     0.5 + (side * TAU) / 16 + (a.yaw ?? 0) + 0.22 * l.look,
   ).scale(1.04);
@@ -84,6 +110,11 @@ export function buildFrame(
     for (let i = 0; i < 3; i++) {
       const f = 11 - 12 * i,
         phase = l.q + ((s > 0 ? i : i + 1) % 2) * Math.PI;
+      const gait = strideFoot(
+        t,
+        ((s > 0 ? i : i + 1) % 2) * 0.5,
+        plan.stride / (scale * 1.04),
+      );
       const swing = anim === 'walk' ? Math.max(0, Math.sin(phase)) : 0;
       const stride = swing * Math.cos(phase) * 2;
       const tap =
@@ -93,7 +124,7 @@ export function buildFrame(
       const hip = b.p(f, s * 6, -1);
       // The far tripod reaches around the shell; its two outer toes break the silhouette.
       const spread = s < 0 ? 8 : 0,
-        offset = (1 - i) * (s < 0 ? 13 : 5) + 4 * stride;
+        offset = (1 - i) * (s < 0 ? 10 : 5) + 4 * stride;
       let toe = b.p(
         f + offset,
         s * (17.8 + spread + 3.2 * (i % 2) - 6 * fold),
@@ -101,9 +132,9 @@ export function buildFrame(
       );
       if (anim === 'walk')
         toe = ground.p(
-          -1 + f + offset,
+          -1 + f + (1 - i) * (s < 0 ? 10 : 5) + gait.forward,
           s * (17.8 + spread + 3.2 * (i % 2)),
-          1.6 + 4 * swing,
+          1.6 + 4.8 * gait.lift,
         );
       const knee = ik(
         hip,
@@ -113,7 +144,24 @@ export function buildFrame(
         b.v((1 - i) * 0.8, s, 1.4),
       );
       r.cap(hip, knee, 3.2, 2.7, joint);
-      r.cap(knee, toe, 2.65, 1.15, brass);
+      r.cap(knee, toe, 2.65, 1.15, legMetal);
+      const ring = F3.yaw(0.5 + (side * TAU) / 16, knee);
+      r.ell(ring, [0, s * 0.6, 0.15], [2.2, 2.1, 1.8], plate);
+      r.dot(ring.p(0.35, s * 2.15, 0.2), brass.T[3], 0, 1.2, 1.4);
+      const edge = ring.p(-2.4, s * 2.6, -3);
+      if (i === 0) r.cap(knee, edge, 1.35, 0.15, legMetal);
+      if (i === 1)
+        for (const offset of [-1, 0, 1])
+          r.line(
+            toe,
+            [toe[0] + offset + 1, toe[1] + 1.6 * s, toe[2] - 1.1],
+            brass.T[1],
+            0,
+            0.7,
+          );
+      const footName = (s < 0 ? 'left' : 'right') + i;
+      sockets[footName] = toe;
+      if (anim === 'walk' && gait.planted) planted.push(footName);
       let claw = b.p(
         f + offset + 2.5,
         s * (19.6 + spread + 3.2 * (i % 2) - 6 * fold),
@@ -121,17 +169,37 @@ export function buildFrame(
       );
       if (anim === 'walk')
         claw = ground.p(
-          1.5 + f + offset,
+          1.5 + f + (1 - i) * (s < 0 ? 10 : 5) + gait.forward,
           s * (19.6 + spread + 3.2 * (i % 2)),
-          1 + 4 * swing,
+          1 + 4.8 * gait.lift,
         );
       if (i !== 1 || s === 1) r.line(toe, claw, brass.T[2], 0, 0.7);
       if (s === 1 && i === 0) sockets.foot = toe;
     }
+  steel.pat = ([x, y, z], l) =>
+    ramp(
+      steel,
+      l,
+      1.35 * Math.cos(19 * x + 1.7 * z) + 0.54 * Math.sin(6 * y + 9 * z),
+      x * 25,
+      z * 11,
+    );
   r.ell(b, [-5, 0, 0], [21, 13, 9], steel);
+  for (let i = 0; i < 4; i++)
+    r.ell(b, [-17 + i * 6, 0, -1.8], [3.85, 13.1, 5.4], {
+      ...plate,
+      pat: ([x, y, z], l) =>
+        ramp(
+          plate,
+          l,
+          1.1 * Math.cos(8 * x) + 0.55 * Math.cos(6 * z + 3 * y),
+          x * 6,
+          z * 8,
+        ),
+    });
   const h = b
     .at(12, 0, 0)
-    .turn(0.59 * l.look)
+    .turn(0.59 * l.look + headLead)
     .pitch(
       (a.head ?? 0) + 0.36 * l.sleep + 0.19 * l.tired - 0.13 * Math.sin(l.q),
     );
@@ -145,19 +213,34 @@ export function buildFrame(
       Math.abs(y) > 0.35 &&
       Math.abs(x + y * y - 1) < 0.12
         ? brass.T[v > 0.4 ? 2 : 1]
-        : null,
+        : ramp(
+            plate,
+            v,
+            0.78 * Math.cos(17 * x + 3 * z) + 0.7 * Math.sin(13 * z + 2 * y),
+            x * 12,
+            z * 9,
+          ),
   };
   r.ell(h, [3, 0, 0], [10, 9.7, 7.4], helmet);
   const reach = a.reach ?? 0;
   const root = h.p(8.7, 0, 1),
     bend = h.p(20 + reach, 0, 4),
-    tip = h.p(22.4 + reach, 0, 27);
+    tip = h.p(17.8 + reach, 0, 20.6);
   r.cap(root, bend, 4.8, 3.7, gem);
   r.cap(bend, tip, 4.2, 0.35, core);
-  r.cap(h.p(21 + reach, 0, 13), h.p(28 + reach, 0, 17.5), 2.9, 0.3, core);
+  r.cap(h.p(19.7 + reach, 0, 10.5), h.p(24.1 + reach, 0, 15.3), 2.9, 0.3, core);
   sockets.horn = tip;
+  r.cap(h.p(12, 0, 1.8), h.p(14.3, 0, 2.3), 4.3, 4.15, legMetal);
+  r.line(
+    h.p(18.9 + reach, 1.9, 12),
+    h.p(19.8 + reach, 0.5, 13.2),
+    plate.T[0],
+    0,
+    1.2,
+  );
   for (const s of [-1, 1]) {
-    const eye = h.p(7, s * 9.1, 2.2);
+    armouredHead(r, h, s, legMetal, steel, core, Boolean(l.blink));
+    const eye = h.p(6, s * 9.9, 3);
     r.line(
       eye,
       h.p(10, s * 7, 3.2),
@@ -181,35 +264,33 @@ export function buildFrame(
       shoulder = p(2, 5.8, 14),
       lip = p(6.5, 12.4, 6),
       hip = p(-22, 10, 6);
-    r.poly([nose, shoulder, back, rump], shade);
-    r.poly([nose, lip, shoulder], gem);
+    r.poly([nose, shoulder, back, rump], facet(w, s, shade, quartz, steel, 0));
+    r.poly([nose, lip, shoulder], facet(w, s, gem, quartz, shade, 0));
     const glint = Math.sin(l.q + s * 0.3);
     // Interior inclusions and a moving reflection sit beneath the polished upper cut.
-    const polished: Mat = {
-      ...gem,
-      pat: (world, illumination) => {
-        const d: V3 = [world[0] - w.o[0], world[1] - w.o[1], world[2] - w.o[2]];
-        const x = d[0] * w.f[0] + d[1] * w.f[1] + d[2] * w.f[2];
-        const y = s * (d[0] * w.s[0] + d[1] * w.s[1] + d[2] * w.s[2]);
-        const edge = x + 0.95 * y;
-        if (Math.abs(edge - (3 + glint * 3)) < 0.62 && y < 12)
-          return light.T[illumination > 0.3 ? 3 : 2];
-        if (edge < 0 && x + y * 0.48 < -8.8)
-          return shade.T[illumination > 0.4 ? 2 : 1];
-        return null;
+    const cut = (m: Mat) => facet(w, s, m, quartz, shade, glint);
+    r.poly([shoulder, lip, outer], cut(gem));
+    r.poly([shoulder, outer, back], cut(light));
+    r.poly([back, outer, hip, rump], cut(shade));
+    r.poly([nose, p(11, 9, -1), outer, lip], cut(shade));
+    r.poly([hip, outer, p(-15, 12, -2), rump], cut(shade));
+    const membrane: Mat = {
+      ...steel,
+      pat: (P, l) => {
+        const [x, y] = localPoint(w, P);
+        return ramp(steel, l, 0.7 * Math.sin(x * 0.6 + y * 1.7), x, y);
       },
     };
-    r.poly([shoulder, lip, outer], polished);
-    r.poly([shoulder, outer, back], { ...polished, T: light.T });
-    r.poly([back, outer, hip, rump], glint < -0.65 ? light : shade);
-    r.poly([nose, p(11, 9, -1), outer, lip], shade);
-    r.poly([hip, outer, p(-15, 12, -2), rump], shade);
+    r.poly([p(7, 1, 3), p(-23, 1, 0.5), p(-11, 10, 1)], membrane, -0.3);
+    hingeClips(r, w, s, legMetal, plate);
     r.line(back, shoulder, glint > 0.3 ? core.T[3] : light.T[2], 0.13, 0.8);
     sockets[s === 1 ? 'rightWing' : 'leftWing'] = shoulder;
   }
-  const frame = projectFigure(r, 80, [37, 56], sockets, '#1e2437');
+  scaleFigure(r, sockets, scale, 1.56);
+  const frame = projectFigure(r, 96, [46, 72], sockets, '#1e2437');
   return {
     ...frame,
+    planted,
     dx: a.dx,
     dy: a.dy,
     sx: a.sx,
@@ -223,7 +304,14 @@ const creature: Creature = {
   rarity: 'uncommon',
   animations: { ...everyday, ...animations },
   effects,
-  frame: (anim, t, side, variant) =>
-    buildFrame(anim, t, side, variant, pose(anim, t)),
+  frame: (anim, t, side, variant, steer) =>
+    buildFrame(
+      anim,
+      t,
+      side,
+      variant,
+      pose(anim, t),
+      steer ? ((((steer.headSide - side + 24) % 16) - 8) * Math.PI) / 8 : 0,
+    ),
 };
 export default creature;

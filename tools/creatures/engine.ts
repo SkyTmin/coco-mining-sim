@@ -271,8 +271,8 @@ export function compose(
   const env = finalFrame
     ? 0
     : Math.max(0, 1 - since / 0.24) * (spec.shake ?? 0);
-  const dx = Math.round(Math.sin(n * 2.3) * 10 * env),
-    dy = Math.round(Math.cos(n * 2.1) * 6 * env);
+  const dx = Math.round(Math.sin(n * 2.3) * 10 * env) || 0,
+    dy = Math.round(Math.cos(n * 2.1) * 6 * env) || 0;
   const fullFeet: XY = [feet[0] + b + dx, feet[1] + b + dy];
   const layers = {} as Layers;
   for (const key of layerNames)

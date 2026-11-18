@@ -47,6 +47,11 @@ export async function verifyRelease(
   const [w, h] = meta.canvas;
   assert.equal(meta.id, id);
   assert.equal(meta.fps, 24);
+  if (c.motion) {
+    assert.equal(meta.motion.life.stride, c.motion.stride);
+    assert.equal(Object.keys(meta.motion.directions).length, 8);
+    assert.ok(c.animations.life);
+  }
   const frameLoop = join(assetRoot, 'frames', c.rarity, 'loop'),
     bgLoop = join(output, 'bg', 'loop');
   const thickness = meta.thickness;
@@ -58,6 +63,22 @@ export async function verifyRelease(
     blit(field, framed, -thickness, -thickness);
     return { ...item, pixels: field };
   });
+  const front = pixels(join(output, 'bg', 'front.png'), w, h),
+    combined = new Px(w, h);
+  for (const o of objects) blit(combined, o.pixels, thickness, thickness);
+  assert.deepEqual(
+    Buffer.from(front.data),
+    Buffer.from(combined.data),
+    id + ' foreground atlas',
+  );
+  if (c.motion) {
+    assert.ok(objects.length, id + ' requires foreground depth');
+    const exported = objects.map(({ id, depth }) => ({ id, depth }));
+    const declared = (s.front ?? [])
+      .map(({ id, depth }) => ({ id, depth }))
+      .sort((a, b) => a.depth - b.depth);
+    assert.deepEqual(exported, declared, id + ' foreground depth order');
+  }
   imageFiles(frameLoop, 72);
   imageFiles(bgLoop, 72);
   const main = Object.keys(c.animations).find((name) =>
@@ -154,6 +175,21 @@ export async function verifyRelease(
             n / 24,
             0,
             suffix === anim ? 'normal' : 'gold',
+          );
+          assert.deepEqual(
+            track[n].feet,
+            current.worldFeet,
+            id + '/' + suffix + ' floor at ' + n,
+          );
+          assert.deepEqual(
+            track[n].camera,
+            current.camera,
+            id + '/' + suffix + ' camera at ' + n,
+          );
+          assert.deepEqual(
+            track[n].contacts,
+            current.contact,
+            id + '/' + suffix + ' contacts at ' + n,
           );
           for (const key of layerNames) {
             const actual = Buffer.from(layers[key].data.buffer);

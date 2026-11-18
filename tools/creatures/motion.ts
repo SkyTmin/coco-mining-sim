@@ -92,12 +92,13 @@ export function placement(
 ): Placement {
   const [w, h] = sizes[c.rarity],
     plan = c.motion;
+  const facing = anim === 'turn' ? wrap(Math.floor(t * 4), 16) : side;
   const fixed = {
     feet: origin,
     anim,
     t,
-    side,
-    headSide: side,
+    side: facing,
+    headSide: facing,
     lift: 0,
     start: 0,
     duration: c.animations[anim]?.seconds ?? 1,
@@ -134,8 +135,7 @@ export function placement(
     i++;
   }
   const beat = beats[i],
-    next = beats[(i + 1) % beats.length],
-    prev = beats[(i + beats.length - 1) % beats.length];
+    next = beats[(i + 1) % beats.length];
   const project = (a: XY): XY => [a[0] * w, a[1] * h];
   const a = project(beat.at),
     b = project(next.at);

@@ -276,7 +276,7 @@ export async function render(
     foreground:
       'Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.',
     background:
-      'use frames/<anim>/bg/NNN.png when present, otherwise bg/loop/(frame % 72).png',
+      'use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png',
     animations: Object.fromEntries(
       Object.entries(c.animations).map(([a, v]) => [
         a,

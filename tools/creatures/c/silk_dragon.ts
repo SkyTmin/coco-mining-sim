@@ -1,7 +1,10 @@
+import { attachMotion } from '../motion';
+import route from './silk_dragon-life';
+import { finishSurfaces } from './surface-work';
 // The silk body is stretched between bamboo ribs. Each side keeps its dark lining on a turn.
 import { F3, Rig, vdot, vsub, vlerp, type V3, type Mat } from '../rig/f15-rig';
 import { hx, tn, TAU, sstep } from '../kit/f11-mobkit';
-import { everyday, life, projectFigure } from '../rig/figure';
+import { everyday, life, projectFigure, scaleFigure } from '../rig/figure';
 import { animations, effects, pose, presentation } from './silk_dragon-actions';
 import type { Creature, Variant } from '../types';
 
@@ -45,7 +48,15 @@ export interface SilkPose {
   lift?: number;
   tilt?: number;
 }
-export function bodyFrame(anim: string, t: number, side: number, variant: Variant, A: SilkPose = {}) {
+export function bodyFrame(
+  anim: string,
+  t: number,
+  side: number,
+  variant: Variant,
+  A: SilkPose = {},
+  headSide = side,
+) {
+  const lead = Math.max(-0.62, Math.min(0.62, ((((headSide - side + 24) % 16) - 8) * Math.PI) / 8));
   const g = variant === 'gold',
     r = new Rig(),
     l = life(anim, t, 1.13);
@@ -97,6 +108,8 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
     const z =
       42 +
       14 * Math.cos(u * TAU + 0.05) +
+      4.5 * (1 - u) ** 3 +
+      2 * Math.sin(u * TAU) +
       3.5 * Math.sin(delay + u * 2.1) +
       9 * Math.sin(u * Math.PI + l.q) * Math.abs(l.walk) +
       15 * fold * Math.cos(u * TAU) +
@@ -136,7 +149,9 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
   }
   const crest = ribs[2];
   r.poly([crest.p(4, 0, 10), crest.p(-4, 0, 21), crest.p(-9, 0, 9)], cane);
-  const H = ribs[0].turn(0.17 + 0.77 * l.look).pitch(-0.07 + 0.35 * l.tired - 0.18 * l.happy);
+  const H = ribs[0]
+    .turn(0.17 + 0.77 * l.look + lead * 0.82)
+    .pitch(-0.07 + 0.35 * l.tired - 0.18 * l.happy);
   r.ell(H, [2, 0, 1], [10, 8, 7], paper);
   r.ell(H, [10, 0, -1], [7, 5.5, 3.8], paper);
   r.ell(H, [10, 0, -4], [5.8, 5, 1.6], lining);
@@ -189,14 +204,63 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
     tip = tail.p(-5, 2, -7);
   r.poly([tail.p(1, -3, 2), tail.p(-11, -6, 4), tail.p(-8, -5, 1), tip, tail.p(2, 2, 1)], silk);
   r.poly([tail.p(0, 0, 0), tail.p(-7, 5, 1), tail.p(-12, 6, -2), tail.p(-5, 0, -3)], cane);
-  r.eye = H.p(5, 7.1, 2.8);
-  return projectFigure(
+  // A ceremonial collar with separate overlapping scales; the bamboo hoop stands proud of the cheek.
+  for (const side of [-1, 1]) {
+    for (let j = 0; j < 3; j++) {
+      const C = H.at(-3.5 - j * 1.6, side * (5 + j * 0.6), j * 1.3 - 1);
+      r.ell(C, [0, 0, 0], [2.7, 1.5, 2.1], j % 2 ? cane : lining);
+    }
+    r.ell(H, [6.4, side * 6.9, 3.6], [2.4, 1.8, 2.0], l.blink ? brow : eye);
+    r.dot(H.p(7.8, side * 7.6, 4.0), brow.T[0], 0, 1, 1.5);
+    if (!l.blink) r.dot(H.p(7.1, side * 7.8, 5.0), paper.T[3], 0.33, 1, 1.6);
+    r.ell(H, [13.5, side * 2.9, 1.2], [2.0, 1.1, 1.25], brow);
+    r.line(H.p(11, side * 4, -2), H.p(16, side * 1.8, -1.8), silk.T[2], 0, 1.1);
+    r.ell(H, [2.8, side * 8, 1.4], [1.6, 0.85, 1.3], lining);
+    const fin = ribs[side < 0 ? 2 : 1];
+    r.ell(fin, [-2, side * 6, 2], [2, 2, 2], cane);
+    r.dot(fin.p(-2, side * 7.9, 3), brow.T[0]);
+    for (let j = 0; j < 3; j++)
+      r.line(
+        fin.p(-2 - j * 1.6, side * (6 + j * 0.7), 1 - j * 0.6),
+        fin.p(-3 - j * 1.6, side * (7 + j * 0.7), -j * 0.6),
+        cane.T[2],
+      );
+  }
+  for (let j = 1; j < count; j++) {
+    const F = ribs[j],
+      zw = 8 + Math.sin((j / count) * Math.PI) * 5 - (4 * j) / count;
+    r.ell(F, [0, 0, zw], [1.8, 1.5, 1.7], cane);
+    r.dot(F.p(0.3, 0.3, zw + 1.4), brow.T[1]);
+  }
+  const knot = tail.at(-8.4, 0, -3);
+  r.ell(knot, [0, 0, 0], [3.4, 4.1, 3.3], lining);
+  r.ell(knot, [-2.8, 0, -1.5], [1.7, 3.55, 2.7], cane);
+  const lag = Math.sin(l.q - 0.92);
+  for (let j = 0; j < 3; j++) {
+    const start = knot.p(-2.5, (j - 1) * 1.55, -2.9),
+      bend = knot.p(-5 + (j - 1) * 1.2, (j - 1) * 3, -6.2 + lag);
+    const end = knot.p(-4.5 + (j - 1) * 4, (j - 1) * 5, -11.8 + j * 0.6 + lag * 1.7);
+    r.cap(start, bend, 1.25, 1.05, j === 1 ? paper : silk);
+    r.cap(bend, end, 1.05, 0.28, j === 1 ? paper : cane);
+  }
+  r.eye = H.p(7.2, 7.8, 4);
+  const sockets = { head: H.p(16, 0, -1), tail: tip, ...finSockets };
+  finishSurfaces(
     r,
-    112,
-    [53, 88],
-    { head: H.p(16, 0, -1), tail: tip, ...finSockets },
-    '#2a1c30',
+    root,
+    [
+      [paper, 'paper'],
+      [silk, 'brocade'],
+      [lining, 'brocade'],
+      [ridge, 'brocade'],
+      [cane, 'bamboo'],
+      [brow, 'lacquer'],
+      [eye, 'iris'],
+    ],
+    'lacquer',
   );
+  scaleFigure(r, sockets, 1.06 * (1 - 0.22 * l.hatch), 1.66 * (1 - 0.42 * l.hatch));
+  return projectFigure(r, 128, [61, 96], sockets, '#2a1c30');
 }
 const creature: Creature = {
   id: 'silk_dragon',
@@ -204,7 +268,10 @@ const creature: Creature = {
   theme: 'sky_islands',
   animations: { ...everyday, ...animations },
   effects,
-  frame: (anim, t, side, variant) =>
-    Object.assign(bodyFrame(anim, t, side, variant, pose(anim, t)), presentation(anim, t)),
+  frame: (anim, t, side, variant, motion) =>
+    Object.assign(
+      bodyFrame(anim, t, side, variant, pose(anim, t), motion?.headSide),
+      presentation(anim, t),
+    ),
 };
-export default creature;
+export default attachMotion(creature, route);

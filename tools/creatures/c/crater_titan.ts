@@ -1,10 +1,14 @@
-import { projectFigure } from '../rig/figure';
+import { textureFigure } from './relief-material';
+import { strideFoot } from '../motion';
+import route from './crater_titan-life';
+import { projectFigure, scaleFigure } from '../rig/figure';
 import { animations as actions, effects, pose } from './crater_titan-actions';
 import { F3, Rig, renderRig, vlerp, type Mat, type V3 } from '../rig/f15-rig';
 import { hx, ik, TAU, tn } from '../kit/f11-mobkit';
 import type { BodyFrame, Creature, Variant, XY } from '../types';
 
-const anchor: XY = [72, 109];
+const anchor: XY = [80, 119];
+const scale = 1.14;
 const controls = {
   vent: 0,
   arm: 0,
@@ -124,7 +128,12 @@ export function craterTitanFrame(
   side: number,
   variant: Variant,
   external: Partial<Controls> = {},
+  headSide = side,
 ): BodyFrame {
+  const headLead = Math.max(
+    -0.68,
+    Math.min(0.68, ((((headSide - side + 24) % 16) - 8) * TAU) / 16),
+  );
   const k = { ...controls, ...external };
   const clock =
     anim === 'walk'
@@ -153,11 +162,20 @@ export function craterTitanFrame(
     .roll(0.025 * gait);
   const head = torso
     .at(2, 0, 30)
-    .turn(0.33 * look + 0.21 * k.glance)
+    .turn(headLead + 0.33 * look + 0.21 * k.glance)
     .pitch(-0.13 - 0.12 * look);
   const rock = strataRock(F, golden, false, phase),
     plane = strataRock(F, golden, true, phase);
   const dark: Mat = { T: golden ? copper : lip };
+  const ore: Mat = {
+    T: golden
+      ? tn('#263c39', '#656347', '#b3a26b', '#f1df98')
+      : tn('#392f34', '#796142', '#c4a367', '#eddb99'),
+  };
+  const ash: Mat = { T: tn('#3e3b49', '#696272', '#998c8d', '#c1adaa') };
+  const pyrite: Mat = { T: tn('#4d3826', '#996a31', '#dbad59', '#ffe4a0') };
+  const pocket: Mat = { T: tn('#191b24', '#24212f', '#332935', '#4a3840') };
+  const glass: Mat = { T: tn('#211d2c', '#423743', '#64515a', '#8c6663') };
   const hot: Mat = {
     T: phase > 0.6 ? igneous : clinker,
     glow: 0.48 + 0.4 * phase,
@@ -166,15 +184,18 @@ export function craterTitanFrame(
   const white = hx(phase > 0.65 ? '#fff6cb' : '#ffc16d');
   const r = new Rig();
   const loc: Record<string, V3> = {};
+  const planted: string[] = [];
   for (const d of [-1, 1]) {
-    const stride = Math.max(0, gait * d);
+    const step = strideFoot(t, d === 1 ? 0 : 0.5, route.stride / scale);
+    const stride = walk ? step.forward : 0;
+    if (walk && step.planted) planted.push(d === 1 ? 'footR' : 'footL');
     const lift =
-      Math.max(0, stride) * 8 + (d === 1 ? Math.max(0, k.foot) * 26 : 0);
-    const toe = F.p(5 + stride * 7, d * 19, 5 + lift),
+      (walk ? step.lift * 8 : 0) + (d === 1 ? Math.max(0, k.foot) * 26 : 0);
+    const toe = F.p(5 + stride, d * 19, 5 + lift),
       hip = torso.p(-1, d * 12, -8);
     const knee = ik(hip, toe, 21, 20, F.v(0.8, d * 0.25, 0.05));
     r.cap(hip, knee, 8, 9, dark).cap(knee, toe, 8, 6.5, rock);
-    const boot = F.at(7 + stride * 7, d * 20, 6 + lift);
+    const boot = F.at(7 + stride, d * 20, 6 + lift);
     ledge(r, boot, 0, 0, 0, 13, 8.8, 7, plane);
     r.ell(boot, [6, -3, -2], [8.5, 5, 3.3], dark).ell(
       boot,
@@ -207,6 +228,32 @@ export function craterTitanFrame(
     if (phase > 0.14 && d === 1)
       r.line(b, sternum.p(2.2, d * 9, 3), white, 0.7);
   }
+  // Ventral belt, layered around the waist. A chipped hanging plate breaks the belly outline.
+  for (const d of [-1, 1]) {
+    r.ell(torso, [9, d * 14, -10], [8, 8, 4.2], rock);
+    r.spike(
+      torso.p(12, d * 10, -11),
+      torso.v(0.2, d * 0.3, -1),
+      6,
+      3.2,
+      glass,
+      3,
+    );
+  }
+  // Chunky iron oxide heart at the front, with a quartz rim and a fork through the glass.
+  const keel = torso.at(21.5, 0, 9).pitch(-0.09);
+  r.ell(keel, [0.4, 0, -0.4], [3.4, 9.6, 10], ore);
+  r.ell(keel, [2.1, 0, -0.55], [3.3, 8.0, 8.7], glass);
+  for (const d of [-1, 1]) {
+    const lip = keel.p(5.25, d * 2.8, 1.2);
+    r.line(keel.p(4.2, 0, 5.8), lip, magma, 0.78, 1.5);
+    r.line(lip, keel.p(4.9, d * 5.5, -2.7), white, 0.65, 1.5);
+  }
+  // The back continues the channel from the vent down through the notched saddle.
+  const rear = torso.at(-20, 0, 11);
+  r.cap(rear.p(-1, 0, 7), rear.p(1.1, 3, -7), 1.8, 1, glass);
+  r.line(rear.p(-1.7, 0, 7.4), rear.p(-0.2, 2.7, -1.7), magma, 0.32, 1.1);
+  r.ell(rear, [-0.55, 4, -3.6], [1.8, 3.2, 2.6], ash);
   const limb = new Rig();
   for (const d of [-1, 1]) {
     const lead = d === 1;
@@ -235,8 +282,58 @@ export function craterTitanFrame(
       10,
       plane,
     );
+    const shoulder = F3.yaw(0.77 + (TAU * side) / 16, sh);
+    armRig.ell(shoulder, [-1, -d * 3, 8], [5.0, 3.6, 1.55], glass);
+    armRig.poly(
+      [
+        shoulder.p(4, d * 4, 7.9),
+        shoulder.p(8, d * 3.3, 7.4),
+        shoulder.p(5.6, d * 7, 8.3),
+      ],
+      ore,
+      0.55,
+    );
+    for (const j of [0, 1, 2])
+      armRig.dot(
+        shoulder.p(3 + j * 1.8, d * (6 - j * 0.83), 7.8 + j * 0.36),
+        j === 1 ? hx('#d5cbc1') : hx('#a9a4a0'),
+        0,
+        1,
+        0.85,
+      );
+    armRig.ell(shoulder, [0, d * 4.1, 6.7], [2.2, 2.7, 1.6], ash);
+    // A freshly struck fracture has a broad dark wall, a mineral face and a narrow reflecting edge.
+    const fracture = [
+      shoulder.p(11, -d * 1, 8.7),
+      shoulder.p(5, d * 6, 8.4),
+      shoulder.p(-2, d * 6, 8.9),
+      shoulder.p(3, d * 2, 9.0),
+    ];
+    armRig.poly(fracture, pocket, 0.8);
+    armRig.poly(
+      [fracture[0], fracture[1], shoulder.p(6, d * 5.2, 10.4)],
+      ash,
+      1.1,
+    );
+    armRig.line(fracture[1], fracture[2], hx('#cbbfaf'), 0, 1.2);
+    const orebed = shoulder.at(1, d * 2, 10);
+    armRig.ell(orebed, [0, 0, 0], [3.7, 2.1, 0.9], pocket);
+    armRig.poly(
+      [
+        orebed.p(-2.9, 0, 0.6),
+        orebed.p(-0.4, -1.4, 1),
+        orebed.p(2.5, -0.3, 1),
+        orebed.p(1, 1.8, 1),
+      ],
+      pyrite,
+      1,
+    );
+    armRig.dot(orebed.p(-0.4, -0.7, 1.5), hx('#f1ddae'), 0, 1, 1.4);
     const fore = F3.yaw(0.77 + (TAU * side) / 16, vlerp(el, hand, 0.55));
     armRig.ell(fore, [0, 0, 1], [11, 10, 7], dark, (q) => q[2] > 0.65);
+    armRig.ell(fore, [0, d * 5, 2.4], [6.3, 4.8, 2], plane);
+    armRig.cap(fore.p(3, d * 6, 4), fore.p(-4, d * 8, 3.3), 0.67, 0.95, ore);
+    armRig.spike(el, F.v(-0.73, d * 0.45, 0.52), 6, 2.6, glass, 3);
     const palm = F3.yaw(0.77 + (TAU * side) / 16, hand).roll(
       d * (-0.14 - 0.27 * raise),
     );
@@ -252,6 +349,21 @@ export function craterTitanFrame(
       );
     }
     armRig.cap(palm.p(-1, d * 7, 1), palm.p(3, d * 10, -3), 3, 2, dark);
+    armRig.ell(palm, [5, d * 7, 0.3], [2, 2.4, 1.8], hot);
+    armRig.ell(palm, [-1, 0, 6.3], [2.8, 3.6, 0.75], glass);
+    for (const j of [-1, 0, 1])
+      armRig.ell(palm, [5.7, j * 4.2, 2.1], [2.4, 2.0, 1.35], plane);
+    // The three pads are separated on the forward-facing plane, where the hand reads in silhouette.
+    for (const j of [-1, 0, 1]) {
+      armRig.ell(palm, [7.2, j * 5.2, 1.7], [3.3, 2.3, 3.5], rock);
+      armRig.cap(
+        palm.p(9.4, j * 5.2 - 1, 3.2),
+        palm.p(9.8, j * 5.2 + 1, 3.2),
+        0.6,
+        0.7,
+        ash,
+      );
+    }
     if (lead) loc.fist = palm.p(8, 0, -4);
   }
   r.prims.push(...limb.prims);
@@ -279,13 +391,38 @@ export function craterTitanFrame(
   const muzzle = head.at(17.5, 0, -4);
   ledge(r, muzzle, 0, 0, -1, 12, 14, 9, dark);
   for (const d of [-1, 1]) {
-    const eye = muzzle.p(9.8, d * 9.4, 2);
+    const eye = muzzle.p(12, d * 8.5, 2.5);
+    r.ell(muzzle, [9, d * 7, 2], [3.8, 5.3, 2.9], glass);
     const blinking = clock > 2.23 && clock < 2.36;
-    r.cap(muzzle.p(11.2, d * 4, 1.8), eye, 1.3, blinking ? 0.35 : 2, {
+    r.cap(muzzle.p(12.4, d * 4.0, 2), eye, 1.3, blinking ? 0.35 : 2, {
       T: [magma, magma, white, white],
       glow: 0.95,
     });
     r.cap(muzzle.p(5, d * 4, 4), muzzle.p(7, d * 10, 5), 2.1, 1.5, plane);
+    r.dot(muzzle.p(12.7, d * 7.3, 2.5), hx('#422a2c'), 0, 1, 1.5);
+    r.dot(muzzle.p(13.5, d * 8.1, 3.1), white, 0.73, 1, 2.4);
+    r.cap(
+      muzzle.p(13.55, d * 7, 1.65),
+      muzzle.p(13.65, d * 7.1, 3.15),
+      0.55,
+      0.7,
+      pocket,
+    );
+    r.spike(
+      muzzle.p(6, d * 10.2, -2.5),
+      muzzle.v(0.5, d * 0.5, -1),
+      4.5,
+      2.2,
+      ash,
+      3,
+    );
+    r.line(
+      muzzle.p(9.8, d * 8, -2.2),
+      muzzle.p(11.2, d * 2, -2.5),
+      hx('#2a2430'),
+      0,
+      1.2,
+    );
     if (d === 1) {
       loc.eye = eye;
       r.eye = eye;
@@ -313,6 +450,20 @@ export function craterTitanFrame(
     r.poly([inner[i], inner[j], floor[j], floor[i]], dark);
   }
   r.poly(floor, hot);
+  const outlet = head.at(13, 6.3, 5.8).turn(0.25);
+  r.ell(outlet, [0, 0, 0], [2.45, 4.5, 3.5], ash);
+  r.ell(outlet, [1.5, 0.7, 0.3], [1.8, 3.3, 2.4], pocket);
+  r.cap(outlet.p(2.5, -0.5, -0.3), outlet.p(2.5, 1.6, -0.5), 0.65, 0.55, hot);
+  r.ell(head, [0, 0.2, 5.5], [4.9, 4.2, 1.1], hot);
+  r.ell(head, [0.5, -0.6, 6.1], [2.4, 2.0, 0.65], glass);
+  for (const o of [-1, 1])
+    r.line(head.p(2, -0.2 + o, 6.3), head.p(4, o * 1.3, 5.8), white, 0.79, 0.7);
+  r.cap(head.p(4, 11, 9.5), head.p(8, 9.6, 10.7), 1.25, 0.7, ash);
+  r.ell(head, [9, -8.2, 6.1], [2.2, 1.8, 2.1], glass);
+  r.dot(head.p(10.4, -8.6, 7.7), magma, 0.64, 1, 1.5);
+  r.spike(head.p(6, 10, 10), head.v(0.35, 0.65, -0.7), 3.9, 2.1, plane, 3);
+  for (let j = 0; j < 3; j++)
+    r.ell(head, [8 + 0.85 * j, 8 - j * 0.7, 5.3 - j], [1.2, 1, 0.75], ash);
   loc.vent = head.p(-1, 0, 12);
   for (let i = 0; i < 3; i++) {
     const u = (clock / 1.5 + i / 3) % 1;
@@ -327,21 +478,24 @@ export function craterTitanFrame(
       { T: [c, c, c, c], soft: true },
     );
   }
-  // Raise the silhouette out of the ground plane and broaden the crag in camera space.
-  const widen = (p: V3): V3 => [p[0] * 1.17, p[1] * 0.99, p[2] * 1.12];
-  for (const prim of r.prims) {
-    if (prim.k === 0) {
-      prim.c = widen(prim.c);
-      prim.a = prim.a.map(widen) as [V3, V3, V3];
-    } else if (prim.k === 1 || prim.k === 4) {
-      prim.a = widen(prim.a);
-      prim.b = widen(prim.b);
-    } else if (prim.k === 2) prim.pts = prim.pts.map(widen);
-    else prim.p = widen(prim.p);
-  }
-  for (const key of Object.keys(loc)) loc[key] = widen(loc[key]);
+  textureFigure(r, (m) =>
+    m.T === rock.T
+      ? 'basalt'
+      : m.T === plane.T
+        ? 'slate'
+        : m === ore
+          ? 'brass'
+          : m === ash
+            ? 'pumice'
+            : m === glass
+              ? 'slate'
+              : m.T === dark.T
+                ? 'pumice'
+                : undefined,
+  );
   r.eye = loc.eye;
-  const body = projectFigure(r, 144, anchor, loc, undefined, 3.8);
+  scaleFigure(r, loc, scale, 1.28);
+  const body = projectFigure(r, 160, anchor, loc, undefined, 3.8);
   if (phase > 0.03 && body.lit) {
     // The colour pass has already depth-tested the veins. Only exposed lava emits light.
     const pixels = body.px.data,
@@ -365,10 +519,11 @@ export function craterTitanFrame(
   if (!body.eye && body.lit?.get(...luminousEye)[3]) body.eye = luminousEye;
   const over =
     anim === 'peek'
-      ? renderRig(limb, 144, 144, ...body.anchor, { inner: 3.8 }).p
+      ? renderRig(limb, 160, 160, ...body.anchor, { inner: 3.8 }).p
       : undefined;
   return {
     ...body,
+    planted,
     over,
     dx: k.dx,
     dy: k.dy,
@@ -396,7 +551,7 @@ export default {
   theme: 'volcano',
   animations: { ...base, ...actions },
   effects,
-  frame(anim, t, side, variant) {
+  frame(anim, t, side, variant, motion) {
     const last = actions[anim]?.seconds;
     if (last && anim !== 'away' && t * 24 >= Math.round(last * 24) - 1)
       return craterTitanFrame(
@@ -405,6 +560,13 @@ export default {
         side,
         variant,
       );
-    return craterTitanFrame(anim, t, side, variant, pose(anim, t));
+    return craterTitanFrame(
+      anim,
+      t,
+      side,
+      variant,
+      pose(anim, t),
+      motion?.headSide,
+    );
   },
 } satisfies Creature;

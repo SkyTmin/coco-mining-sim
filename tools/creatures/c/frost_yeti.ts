@@ -1,7 +1,10 @@
+import route from './frost_yeti-life';
+import { strideFoot, attachMotion } from '../motion';
+import { finishSurfaces } from './surface-work';
 // Broad-backed ice quarryman. The hands and both wrists are solved from the same club shaft.
 import { F3, Rig, vadd, vmul, vlerp, type Mat, type V3 } from '../rig/f15-rig';
-import { hx, tn, TAU } from '../kit/f11-mobkit';
-import { everyday, life, projectFigure } from '../rig/figure';
+import { tn, TAU } from '../kit/f11-mobkit';
+import { everyday, life, projectFigure, scaleFigure } from '../rig/figure';
 import { animations, effects, pose, presentation } from './frost_yeti-actions';
 import type { Creature, Variant } from '../types';
 
@@ -21,7 +24,9 @@ export function bodyFrame(
   side: number,
   variant: Variant,
   A: FrostPose = {},
+  headSide = side,
 ) {
+  const lead = Math.max(-0.62, Math.min(0.62, ((((headSide - side + 24) % 16) - 8) * Math.PI) / 8));
   const gold = variant === 'gold',
     r = new Rig(),
     l = life(anim, t, 3.2);
@@ -61,10 +66,17 @@ export function bodyFrame(
   const hips = F.at(-5, 0, 25 - drop * 0.37);
   r.ell(hips, [0, 0, 0], [13, 15, 13], coat);
   r.ell(hips, [2, 0, 2], [13.7, 15.3, 3.4], leather);
-  const sockets: Record<string, V3> = {};
+  const sockets: Record<string, V3> = {},
+    planted: string[] = [];
+  const scale = 1.23;
   for (const s of [-1, 1]) {
-    const move = Math.max(0, l.walk * s),
-      step = F.at(1 + 3 * move, s * 13, move * 5);
+    const stride =
+      anim === 'walk'
+        ? strideFoot(t, s < 0 ? 0 : 0.5, 26 / scale)
+        : { forward: 0, lift: 0, planted: true };
+    const move = stride.lift,
+      step = F.at(1 + stride.forward, s * 13, move * 6);
+    if (stride.planted) planted.push(s < 0 ? 'footL' : 'footR');
     const knee = F.p(3 + move * 2, s * 11, 14 - drop * 0.28);
     r.cap(hips.p(0, s * 8, 1), knee, 7, 6.4, slate);
     r.cap(knee, step.p(-2, 0, 4), 6.6, 5.7, coat);
@@ -72,9 +84,30 @@ export function bodyFrame(
     r.ell(step, [7, 0, 3.5], [4.4, 5.8, 2.5], coat);
     sockets[s < 0 ? 'footL' : 'footR'] = step.p(6, 0, 0);
   }
+  const lockLight: Mat = {
+    T: gold
+      ? tn('#665046', '#a68568', '#ddbc8f', '#fff1b8')
+      : tn('#52677c', '#8c9da6', '#d2d9d3', '#fff7db'),
+  };
+  const browBlack: Mat = { T: tn('#252a39', '#333945', '#434755', '#5b6266') };
+  const amber: Mat = { T: tn('#614a41', '#ba793c', '#efb244', '#ffe49a'), glow: 0.36 };
+  // Four overlapping curls sweep from the crown to the outer mantle. Their overlapping dark edges
+  // are visible as separate tapered forms even in the two oblique rear views.
+  for (const side of [-1, 1])
+    for (const [x, lat, z] of [
+      [-9, 9, 21],
+      [-3, 14, 20.5],
+      [3, 18, 18.5],
+      [7, 20, 14.3],
+    ]) {
+      const base = torso.at(x, side * lat, z);
+      r.cap(base.p(0, -side, 0), base.p(-1, side * 4, -4), 3.7, 2.8, lockLight);
+      r.cap(base.p(-1, side * 4, -4), base.p(1.5, side * 7, -11), 2.8, 0.5, lockLight);
+      r.line(base.p(-2, side * 5, -5), base.p(0.2, side * 7, -10), coat.T[0], 0, 0.6);
+    }
   const H = torso
     .at(14, 0, 14)
-    .turn(0.45 * l.look + (A.headTurn ?? 0))
+    .turn(0.45 * l.look + (A.headTurn ?? 0) + lead * 0.62)
     .pitch(0.15 * l.sleep + 0.13 * l.tired - 0.22 * (A.jaw ?? 0));
   r.ell(H, [0, 0, 0], [9.5, 11.3, 10.2], coat);
   // A bare brow mask breaks the shag. The eyes lie on its forward, upward-facing plane.
@@ -104,8 +137,14 @@ export function bodyFrame(
   });
   r.ell(H, [13.2, 0, 0.3], [3.5, 5.1, 2.6], slate);
   for (const s of [-1, 1]) {
-    r.cap(H.p(10.4, s * 2.1, 7.3), H.p(8, s * 7.5, 8.7), 2.0, 1.7, coat);
-    r.dot(H.p(12.9, s * 5.7, 5.5), l.blink ? slate.T[0] : hx('#beeaf1'), 0.15, 1, 1.6);
+    r.cap(H.p(11.4, s * 1.9, 7.1), H.p(9.4, s * 7.8, 9.4), 2.4, 2.0, browBlack);
+    const E = H.at(12.5, s * 5.3, 5.8);
+    r.ell(E, [0, 0, 0], [2.7, 2.25, l.blink ? 0.65 : 2.0], l.blink ? browBlack : amber);
+    if (!l.blink) {
+      r.cap(E.p(1.6, s * 0.7, 0.8), E.p(2.3, s * 0.85, -0.3), 0.65, 0.6, browBlack);
+      r.dot(E.p(1.2, s * 1.5, 1.6), bone.T[3], 0.3, 1, 1);
+    }
+
     r.cap(H.p(12.1, s * 5.7, -4.4 - jaw * 2), H.p(13.4, s * 6.2, -0.8 - jaw * 2), 1.15, 0.15, bone);
     const tuft = H.p(0, s * 9.4, -0.3);
     r.cap(tuft, H.p(1, s * 10, -8), 3.2, 0.4, coat);
@@ -171,16 +210,16 @@ export function bodyFrame(
       b = ((i + 1) * TAU) / faces;
     const v = (n: number, u: number, rr: number) => edge(n, rr * Math.cos(u), rr * Math.sin(u));
     r.poly([v(22, a, 3), v(22, b, 3), v(32, b, 8), v(32, a, 8)], blue);
-    r.poly([v(32, a, 8), v(32, b, 8), v(48, b, 5.2), v(48, a, 5.2)], i % 3 === 1 ? bright : blue);
+    r.poly([v(32, a, 8), v(32, b, 8), v(53, b, 5.2), v(53, a, 5.2)], i % 3 === 1 ? bright : blue);
   }
   r.poly(
     Array.from({ length: faces }, (_, i) =>
-      edge(48, 5.2 * Math.cos((i * TAU) / faces), 5.2 * Math.sin((i * TAU) / faces)),
+      edge(53, 5.2 * Math.cos((i * TAU) / faces), 5.2 * Math.sin((i * TAU) / faces)),
     ),
     bright,
   );
   sockets.clubGrip = G.o;
-  sockets.clubTip = shaft(48);
+  sockets.clubTip = shaft(53);
   for (const s of [-1, 1]) {
     const shoulder = torso.p(1, s * 22, 6),
       grip = shaft(s > 0 ? -5 : 7);
@@ -194,13 +233,66 @@ export function bodyFrame(
       [-0.5, 7],
       [0.5, 5],
     ]) {
-      const lock = vadd(E, F.v(a * 5, s * 5.5, 2));
-      r.cap(lock, vadd(lock, F.v(-2, s * 2, -b)), 2.9, 0.2, coat);
+      const lock = vadd(E, F.v(a * 8, s * 7.7, 3));
+      r.cap(lock, vadd(lock, F.v(-2, s * 3.6, -b * 1.5)), 3.4, 0.35, lockLight);
     }
     r.ball(hand, 4.7, slate);
     r.cap(vadd(hand, F.v(1, -s * 2, 2)), vadd(hand, F.v(4, s, 1)), 1.8, 1.3, slate);
   }
-  const fr = projectFigure(r, 112, [55, 92], sockets, '#272a3b');
+  // A bruised blue nose, cream tusks and rime at the visible ends of the long facial locks.
+  for (const s of [-1, 1]) {
+    r.ell(H, [15.4, s * 2, 0.8], [1.2, 1.2, 0.88], slate);
+    r.dot(H.p(15.9, s * 2.2, 1.15), slate.T[0]);
+    r.line(H.p(10.4, s * 3, 7.55), H.p(7.9, s * 6.7, 8.7), coat.T[3]);
+    for (let j = 0; j < 3; j++) {
+      const tuft = H.p(-3 + j * 2.8, s * (8.4 + j * 0.2), 1 + j * 0.22);
+      r.cap(tuft, H.p(-3 + j * 2.8, s * (10.7 + j * 0.25), -6 - j * 0.8), 1.8 - j * 0.18, 0.25, coat);
+    }
+  }
+  // Seminatural striations in the serac, three ice-screws and the belt's square buckle.
+  for (const [x, y, z, h] of [
+    [-5, 2, 4, 10],
+    [1, 0, 5, 13],
+    [6, -1, 5, 6],
+  ]) {
+    r.line(S.p(x - 1, y + 1, z), S.p(x - 2.2, y + 2, z + h), bright.T[2], 0.28, 0.75);
+    r.line(S.p(x - 1.3, y + 1, z + 2), S.p(x - 2.8, y + 2.7, z + h * 0.7), ice.T[0], 0, 0.6);
+  }
+  const buckle = hips.at(11, 8, 3);
+  r.ell(buckle, [0, 0, 0], [3.2, 4.4, 2.7], bone);
+  r.ell(buckle, [2.3, 0.2, 0.2], [1.6, 2.5, 1.5], leather);
+  r.cap(buckle.p(3, -1, 0), buckle.p(4, 1.8, 0.4), 0.6, 0.55, bone);
+  for (const s of [-1, 0, 1]) r.ball(hips.p(12, 4 + s * 3.2, 3), 1.3, bone);
+  r.ell(belt, [0.8, 0, 2], [2.6, 3.4, 1.3], leather);
+  r.dot(belt.p(2, 1, 2.4), bright.T[2], 0.1);
+  for (let j = 0; j < 3; j++) {
+    const end = shaft(-8 + j * 4);
+    r.cap(end, vadd(end, F.v(-0.6, 0, -1.3)), 2.7, 2.3, bone);
+  }
+  r.line(edge(33, 2, 6), edge(40, 0, 4.1), bright.T[3], 0.3, 0.7);
+  r.line(edge(40, 0, 4.1), edge(46, 2.8, 3.1), ice.T[1], 0.15, 0.7);
+  for (let j = 0; j < 3; j++) r.dot(edge(35 + j * 3, 3 - j, 5.2), bright.T[3], 0.31);
+  finishSurfaces(
+    r,
+    F,
+    [
+      [coat, 'fur'],
+      [lockLight, 'ivory'],
+      [amber, 'iris'],
+      [browBlack, 'lacquer'],
+      [slate, 'granite'],
+      [face, 'granite'],
+      [ice, 'ice'],
+      [blue, 'ice'],
+      [bright, 'ice'],
+      [leather, 'strap'],
+      [bone, 'ivory'],
+    ],
+    'lacquer',
+  );
+  scaleFigure(r, sockets, scale, 1.275);
+  const fr = projectFigure(r, 128, [63, 100], sockets, '#272a3b');
+  fr.planted = planted;
   fr.dy = -(A.lift ?? 0) - l.pop * 7;
   return fr;
 }
@@ -210,7 +302,10 @@ const creature: Creature = {
   theme: 'polar_night',
   animations: { ...everyday, ...animations },
   effects,
-  frame: (anim, t, side, variant) =>
-    Object.assign(bodyFrame(anim, t, side, variant, pose(anim, t)), presentation(anim, t)),
+  frame: (anim, t, side, variant, motion) =>
+    Object.assign(
+      bodyFrame(anim, t, side, variant, pose(anim, t), motion?.headSide),
+      presentation(anim, t),
+    ),
 };
-export default creature;
+export default attachMotion(creature, route);

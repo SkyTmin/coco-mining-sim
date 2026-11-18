@@ -6,13 +6,13 @@ import { compose, frameCount, hitFrame } from '../engine';
 import { sizes, type BodyFrame } from '../types';
 
 const pilot = [
-  ['bramble_warden', 2, 'paw'],
-  ['gem_beetle', 2, 'foot'],
-  ['silk_dragon', 3, ''],
-  ['frost_yeti', 4, 'footR'],
-  ['toad_shaman', 5, 'footR'],
-  ['crater_titan', 6, 'footR'],
-  ['coin_dragon', 6, 'footR'],
+  ['bramble_warden', 2],
+  ['gem_beetle', 2],
+  ['silk_dragon', 3],
+  ['frost_yeti', 4],
+  ['toad_shaman', 5],
+  ['crater_titan', 6],
+  ['coin_dragon', 6],
 ] as const;
 
 function fingerprint(body: BodyFrame) {
@@ -29,7 +29,7 @@ for (const [id, techniques] of pilot) {
     id + ' has its pilot techniques, closed idle and framed presentations',
     async () => {
       const { c, s, b } = await loadPainting(id);
-      const [w, h, size] = sizes[c.rarity];
+      const [, , size] = sizes[c.rarity];
       const idle = c.frame('idle', 0, 0, 'normal');
       assert.equal(idle.px.w, size);
       assert.equal(idle.px.h, size);

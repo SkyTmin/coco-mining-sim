@@ -1,16 +1,18 @@
 // Pilot comparison plates. All nine sprites share a ground line and native pixel pitch.
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PNG } from 'pngjs';
 import { Px } from './rig/px';
 import { compose } from './engine';
-import { GifWriter } from './render-io';
-import { sizes, type Border, type Creature, type Scene } from './types';
+import { indexed } from './render-io';
+import gifenc from 'gifenc';
+import { loadPainting } from './render';
+import { sizes } from './types';
 import type { RGBA } from './rig/f15-rig';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const output = join(here, '../../docs/reports/creatures/pilot');
+const output = join(here, '../../docs/reports/creatures/pilot-2');
 const ids = [
   'bramble_warden',
   'gem_beetle',
@@ -45,39 +47,52 @@ function centered(row: Px[], gap: number, width: number) {
     return left;
   });
 }
-async function subject(id: string) {
-  const creature: Creature = (await import(`./c/${id}.ts`)).default;
-  const scene: Scene = (await import(`./scenes/${creature.theme}.ts`)).default;
-  const border: Border = (await import(`./frames/${creature.rarity}.ts`))
-    .default;
-  return { creature, scene, border };
-}
-function reference(kind: string) {
-  const prefix = join(output, 'reference', kind + '-sequence');
-  const sheet = PNG.sync.read(readFileSync(prefix + '.png'));
-  const { width, height, anchor, columns } = JSON.parse(
-    readFileSync(prefix + '.json', 'utf8'),
-  );
-  return (n: number) => {
-    const p = new Px(width, height);
-    const left = (n % columns) * width,
-      top = Math.floor(n / columns) * height;
-    for (let y = 0; y < height; y++) {
-      const i = ((y + top) * sheet.width + left) * 4;
-      p.data.set(sheet.data.subarray(i, i + width * 4), y * width * 4);
+// Report previews keep the prior picture on screen. Only changed pixels consume a
+// palette slot at the next tick, leaving the full-resolution release untouched.
+class PreviewGif {
+  private encoder = gifenc.GIFEncoder();
+  private previous?: Uint32Array;
+  add(image: Px, n: number) {
+    const current = new Uint32Array(
+      image.data.buffer,
+      image.data.byteOffset,
+      image.w * image.h,
+    );
+    let patch = image;
+    if (this.previous) {
+      patch = new Px(image.w, image.h);
+      const next = new Uint32Array(patch.data.buffer);
+      for (let i = 0; i < next.length; i++)
+        if (current[i] !== this.previous[i]) next[i] = current[i];
     }
-    return { px: p, anchor };
-  };
+    this.previous = current.slice();
+    const { indices, palette, transparent, transparentIndex } = indexed(patch);
+    this.encoder.writeFrame(indices, image.w, image.h, {
+      palette,
+      transparent,
+      transparentIndex,
+      dispose: 1,
+      repeat: 0,
+      delay:
+        10 * (Math.round(((n + 1) * 100) / 24) - Math.round((n * 100) / 24)),
+    });
+  }
+  write(path: string) {
+    this.encoder.finish();
+    writeFileSync(path, this.encoder.bytesView());
+  }
 }
 async function main() {
-  const subjects = await Promise.all(ids.map(subject));
-  const references = ['f11boss', 'f13boss'].map(reference);
-  const wallGif = new GifWriter(1),
-    lineupGif = new GifWriter(1);
+  const subjects = await Promise.all(ids.map(loadPainting));
+  const durations = subjects.map(({ c }) =>
+    Math.round(c.animations.life.seconds * 24),
+  );
+  const wallGif = new PreviewGif(),
+    singles = ids.map(() => new PreviewGif());
   mkdirSync(output, { recursive: true });
   const gap = 15,
     margin = 20;
-  const widths = subjects.map(({ creature }) => {
+  const widths = subjects.map(({ c: creature }) => {
     const [w, , , b] = sizes[creature.rarity];
     return w + 2 * b;
   });
@@ -86,11 +101,22 @@ async function main() {
     2 * margin +
     Math.max(sum(widths.slice(0, 4)) + 3 * gap, sum(widths.slice(4)) + 2 * gap);
   const wallHeight = 508;
-  for (let n = 0; n < 72; n++) {
-    const t = n / 24;
-    const images = subjects.map(({ creature, scene, border }) =>
-      compose(creature, scene, border, 'idle', t, 0, 'normal'),
-    );
+  const wallFrames = Math.max(...durations);
+  for (let n = 0; n < wallFrames; n++) {
+    const images = subjects.map(({ c, s, b }, i) => {
+      // Synchronise the ends of differently timed routes for the wall; retain
+      // original frame timing in each individual preview and the release master.
+      const wallFrame = Math.floor((n * durations[i]) / wallFrames);
+      const result = compose(c, s, b, 'life', wallFrame / 24, 0, 'normal');
+      if (n < durations[i]) {
+        const individual =
+          wallFrame === n
+            ? result
+            : compose(c, s, b, 'life', n / 24, 0, 'normal');
+        singles[i].add(individual.picture, n);
+      }
+      return result;
+    });
     const wall = matte(wallWidth, wallHeight, [48, 42, 42, 255]);
     // A quiet gallery rail and cast shadows keep the furnishings behind the art.
     for (const rail of [15, 222, wallHeight - 12]) {
@@ -111,23 +137,6 @@ async function main() {
       });
     }
     wallGif.add(wall, n);
-    const sprites = [
-      ...images.map((x) => x.body),
-      ...references.map((read) => read(n)),
-    ];
-    const sheet = matte(
-      sum(sprites.map((s) => s.px.w)) + 10 * (sprites.length + 1),
-      192,
-      paper,
-    );
-    const xs = centered(
-      sprites.map((s) => s.px),
-      10,
-      sheet.w,
-    );
-    sheet.line(0, 151, sheet.w - 1, 151, [53, 48, 57, 255]);
-    sprites.forEach((s, j) => copy(sheet, s.px, xs[j], 151 - s.anchor[1]));
-    lineupGif.add(sheet, n);
     if (n === 0) {
       const row = images.map((x) => x.layers.frame),
         frameSheet = matte(sum(widths) + 12 * 8, 278, paper);
@@ -146,7 +155,11 @@ async function main() {
     }
   }
   wallGif.write(join(output, 'paintings.gif'));
-  lineupGif.write(join(output, 'lineup.gif'));
+  singles.forEach((gif, i) => {
+    const dir = join(output, ids[i]);
+    mkdirSync(dir, { recursive: true });
+    gif.write(join(dir, 'painting-life.gif'));
+  });
 }
 main().catch((err) => {
   console.error(err);

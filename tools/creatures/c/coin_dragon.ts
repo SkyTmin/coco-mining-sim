@@ -1,5 +1,8 @@
+import { textureFigure } from './relief-material';
+import { strideFoot } from '../motion';
+import route from './coin_dragon-life';
 import { animations as actions, effects, pose } from './coin_dragon-actions';
-import { projectFigure } from '../rig/figure';
+import { projectFigure, scaleFigure } from '../rig/figure';
 import {
   F3,
   Rig,
@@ -12,7 +15,8 @@ import {
 import { hx, ik, TAU, tn } from '../kit/f11-mobkit';
 import type { BodyFrame, Creature, Variant, XY } from '../types';
 
-const anchor: XY = [71, 112];
+const anchor: XY = [79, 118];
+const scale = 1.13;
 const controls = {
   jaw: 0,
   neck: 0,
@@ -43,6 +47,12 @@ const wingG = tn('#32242d', '#75503e', '#a97943', '#cba361');
 const ironT = tn('#20252b', '#333d41', '#566365', '#7d8d88');
 const woodT = tn('#342329', '#5e3b30', '#8e5c3f', '#b78054');
 const ink = hx('#30272c');
+const soot: Mat = { T: tn('#151925', '#24242c', '#35303a', '#554143') };
+const amber: Mat = {
+  T: tn('#7b412a', '#c37a32', '#efb947', '#ffe19c'),
+  glow: 0.5,
+};
+const plumb: Mat = { T: tn('#34403e', '#737f75', '#abafa0', '#e2dbbb') };
 function medal(gold: boolean, reverse: boolean, gleam: boolean): Mat {
   const T = gold || reverse ? goldT : bronzeT;
   return {
@@ -53,7 +63,13 @@ function medal(gold: boolean, reverse: boolean, gleam: boolean): Mat {
     pat(q, l) {
       const d = Math.hypot(q[0], q[2]),
         face = q[1];
-      if (Math.abs(face) < 0.38) return T[0];
+      const a = Math.atan2(q[2], q[0]);
+      if (Math.abs(face) < 0.43) return ink;
+      if (d > 0.75 && d < 0.84) return T[0];
+      if (d > 0.59 && d < 0.68 && Math.sin(a * 11) > 0.1)
+        return q[2] > 0.1 ? hx('#e8cf94') : T[1];
+      if (Math.abs(q[0]) < 0.13 && Math.abs(q[2]) < 0.37) return T[0];
+      if (Math.abs(q[2]) < 0.12 && Math.abs(q[0]) < 0.35) return T[3];
       if (d > 0.72 && d < 0.91) return T[q[2] > 0.18 && l > -0.1 ? 3 : 1];
       if (Math.abs(q[0] + 0.36 * q[2]) < 0.12 && Math.abs(q[2]) < 0.45)
         return T[reverse ? 3 : 1];
@@ -180,6 +196,61 @@ function chestBox(
   }
   r.ell(F, [front + 0.45, 0, 0.2], [0.9, 2.2, 2.7], metal);
   r.dot(F.p(front + 1.6, 0, 0.3), ink, 0, 1);
+  // Keyhole and latch on a large, dark-matted square. The silver bolt catches the upper edge.
+  const lock = F.at(front + 1.15, 0, -0.7);
+  panel(
+    r,
+    lock,
+    [
+      [0.2, -3.2, -2.4],
+      [0.2, 3.2, -2.4],
+      [0.2, 3.2, 2.4],
+      [0.2, -3.2, 2.4],
+    ],
+    soot,
+  );
+  panel(
+    r,
+    lock,
+    [
+      [0.55, -2.7, -1.9],
+      [0.55, 2.7, -1.9],
+      [0.55, 2.7, 2.1],
+      [0.55, -2.7, 2.1],
+    ],
+    metal,
+  );
+  r.ell(lock, [1, 0, 1], [0.7, 1.05, 1], soot);
+  r.line(lock.p(1.6, 0, 0.7), lock.p(1.6, 0, -1.3), ink, 0, 1.1);
+  r.cap(lock.p(1.2, -2.0, 2), lock.p(1.2, 2, 2), 0.65, 0.65, plumb);
+  // Parallel plank joints and an almond-shaped knot on the near side survive all rotations.
+  for (const d of [-1, 1]) {
+    for (const z of [-2.7, 0.1])
+      r.line(
+        F.p(-6, d * (half + 0.1), z),
+        F.p(6, d * (half + 0.1), z),
+        hx('#392831'),
+        0,
+        0.8,
+      );
+    r.ell(F, [-1.6, d * (half + 0.27), -0.5], [2.4, 0.5, 0.9], soot);
+    r.line(
+      F.p(-3.4, d * (half + 0.6), -0.1),
+      F.p(0.35, d * (half + 0.6), -0.3),
+      hx('#bd8455'),
+      0,
+      1,
+    );
+    for (const f of [-5, 0, 5])
+      r.dot(F.p(f, d * (half + 0.5), 2), hx('#dac49a'), 0, 1, 1.2);
+    r.cap(
+      F.p(front - 0.8, d * (half + 0.1), -3.8),
+      F.p(front + 0.1, d * (half + 0.1), -0.9),
+      0.95,
+      0.65,
+      metal,
+    );
+  }
 }
 export function coinDragonFrame(
   anim: string,
@@ -187,7 +258,12 @@ export function coinDragonFrame(
   side: number,
   variant: Variant,
   external: Partial<Controls> = {},
+  headSide = side,
 ): BodyFrame {
+  const headLead = Math.max(
+    -0.68,
+    Math.min(0.68, ((((headSide - side + 24) % 16) - 8) * TAU) / 16),
+  );
   const k = { ...controls, ...external };
   const clock =
     anim === 'walk'
@@ -229,10 +305,16 @@ export function coinDragonFrame(
     glint: Mat = { T: [eyeC, eyeC, eyeC, eyeC], glow: 0.82 };
   const membrane: Mat = { T: gold ? wingG : wingT };
   const loc: Record<string, V3> = {};
+  const planted: string[] = [];
   // Splayed hind feet carry the full weight. Their toes stay on the floor during the supporting half-step.
   for (const d of [-1, 1]) {
-    const stride = Math.max(0, d * gait),
-      toe = F.p(-11 + 8 * stride, d * 19, 4 + Math.max(0, stride) * 6),
+    const step = strideFoot(t, d === 1 ? 0 : 0.5, route.stride / scale);
+    if (walking && step.planted) planted.push(d === 1 ? 'footR' : 'footL');
+    const toe = F.p(
+        -11 + (walking ? step.forward : 0),
+        d * 19,
+        4 + (walking ? step.lift * 6 : 0),
+      ),
       hip = root.p(-11, d * 12, -2);
     const knee = ik(hip, toe, 17.5, 17, F.v(0.66, d * 0.38, -0.1));
     r.cap(hip, knee, 10.3, 5.6, hide).cap(knee, toe, 4.8, 3.1, hide);
@@ -256,14 +338,18 @@ export function coinDragonFrame(
       );
   }
   const tailWave = Math.sin(cycle - 0.8);
-  const tailSwing = k.tail < 0 ? k.tail*.48 : k.tail;
+  const tailSwing = k.tail < 0 ? k.tail * 0.48 : k.tail;
   const tail = [
     root.p(-18, 0, -4),
     root.p(-32, -1, -8),
     root.p(-43, 5, -13),
     root.p(-47, 17, -12),
     root.p(-41 + 7 * tailSwing, 29 + 6 * tailWave, -8 + 13 * k.tail),
-    root.p(-31 + 20 * tailSwing, 38 + 7 * tailWave - 13 * tailSwing, 1 + 20 * k.tail),
+    root.p(
+      -31 + 20 * tailSwing,
+      38 + 7 * tailWave - 13 * tailSwing,
+      1 + 20 * k.tail,
+    ),
   ];
   for (let i = 0; i < tail.length - 1; i++)
     r.cap(tail[i], tail[i + 1], 9.4 - i * 1.65, 7.7 - i * 1.5, hide);
@@ -273,6 +359,19 @@ export function coinDragonFrame(
   r.ell(bag, [0, 0, -0.5], [5.5, 5.5, 7], wood);
   r.ell(bag, [0, 0, 5], [3.1, 3.1, 1.7], bronze);
   r.cap(bag.p(0.5, 0, 5.8), bag.p(4, 1, 8), 1.2, 0.5, bronze);
+  r.cap(bag.p(-1.1, 4.7, 4), bag.p(1.8, 5, -3), 1, 0.65, bronze);
+  r.ell(bag, [0.1, 4.2, 3.9], [1.5, 2.4, 1.3], iron);
+  r.cap(bag.p(-0.9, 2.7, 4.7), bag.p(-4.3, 3.2, 8), 1, 0.3, bronze);
+  // Interlocking bands grow smaller toward the tether. The final coin shows its other die.
+  for (let i = 1; i < tail.length - 1; i++) {
+    const ring = F3.yaw(0.48 + (side * TAU) / 16, tail[i]);
+    r.ell(
+      ring,
+      [0, 1, 3.2],
+      [5.4 - i * 0.55, 2.4, 2.3],
+      medal(gold, i === 4, false),
+    );
+  }
   loc.tail = bag.p(0, 0, -3);
   r.ell(root, [0, 0, 0], [25, 17, 18], hide).ell(
     root,
@@ -314,6 +413,12 @@ export function coinDragonFrame(
   const slot = root.at(-2, 0, 18.5);
   r.ell(slot, [0, 0, 0], [9.6, 3.3, 1.5], bronze);
   r.ell(slot, [0, 0, 1.3], [7.8, 1.2, 0.5], phase > 0.3 ? glint : iron);
+  r.ell(slot, [0, 0, 1.85], [7.1, 1.8, 0.65], phase > 0.3 ? glint : soot);
+  r.cap(slot.p(-6, -2.1, 1.1), slot.p(6, -2.1, 1.1), 0.6, 0.75, plumb);
+  for (const d of [-1, 1])
+    r.dot(slot.p(d * 8.1, 0, 1.28), hx('#ebe3c5'), 0, 1, 1.3);
+  r.ell(slot, [2.7, 0, 2.4], [3.1, 1, 2.7], bronze);
+  r.dot(slot.p(2.1, -0.13, 4.1), hx('#fff0b8'), 0.4, 1, 0.8);
   loc.slot = slot.p(0, 0, 2);
   // Long angular neck with separate nape, throat and jaw; the head turns independently to inspect the lock.
   const tuck = asleep ? 1 : 0;
@@ -323,7 +428,7 @@ export function coinDragonFrame(
     upper = root.p(22 + 5 * k.neck, -5, 37 - 20 * tuck + 2 * breath);
   const head = root
     .at(30.5 + 9 * k.neck, -4 + 6 * tuck, 47 - 35 * tuck + 2.3 * breath)
-    .turn(0.23 * g + 0.32 * tuck)
+    .turn(headLead + 0.23 * g + 0.32 * tuck)
     .pitch(0.11 + 0.22 * tuck + 0.1 * g);
   frontRig
     .cap(base, bend, 9, 7.3, hide)
@@ -341,6 +446,13 @@ export function coinDragonFrame(
       0.2,
     );
     frontRig.ell(neck, [4, 0.3, 0], [3.2, 4.5, 2.0], bronze);
+    for (const d of [-1, 1])
+      frontRig.ell(
+        neck,
+        [1, d * 5.5, 0.6],
+        [3.1, 1.15, 2.3],
+        medal(gold, false, false),
+      );
   }
   frontRig.ell(head, [1, 0, 1], [10.4, 8.2, 7.4], hide);
   const nose = head.at(9, 0, 0.8).pitch(0.07);
@@ -350,7 +462,7 @@ export function coinDragonFrame(
       horn = head.p(-7, d * 8.8, 13.8);
     frontRig
       .cap(temple, horn, 3.3, 2.1, bronze)
-      .cap(horn, head.p(-18, d * 10.2, 17), 2.2, 0.45, silver);
+      .cap(horn, head.p(-19, d * 10.2, 20.0), 2.2, 0.45, silver);
     frontRig.cap(
       head.p(-6, d * 5, 0),
       head.p(-11, d * 12, 3.4),
@@ -358,16 +470,34 @@ export function coinDragonFrame(
       0.4,
       bronze,
     );
-    const eye = head.p(4.4, d * 7.9, 3.5);
-    frontRig.ell(head, [3.9, d * 7.4, 3.15], [3.65, 1.2, 2.15], iron);
+    frontRig.ell(head, [-3.2, d * 5.8, 6.2], [3.9, 3.1, 2.25], bronze);
+    frontRig.cap(
+      head.p(-4.2, d * 6.1, 7.4),
+      head.p(-2.6, d * 7.9, 7.5),
+      1.15,
+      0.8,
+      plumb,
+    );
+    frontRig.line(head.p(-5, d * 8.5, 8.2), horn, ink, 0, 0.8);
+    const eye = head.p(4.6, d * 9.45, 4.0);
+    frontRig.ell(head, [3.7, d * 7.8, 3.8], [4.8, 1.75, 3.45], soot);
     const blink = clock > 1.75 && clock < 1.91;
     frontRig.ell(
       head,
-      [4.4, d * 8.4, 3.55],
-      [2.3, 0.72, blink ? 0.4 : 1.4],
-      glint,
+      [4.1, d * 9.1, 4.05],
+      [3.0, 1.0, blink ? 0.4 : 2.0],
+      amber,
     );
-    if (!blink) frontRig.dot(eye, ink, 0, 1, 1.4);
+    if (!blink) {
+      frontRig.cap(
+        head.p(4.8, d * 10.05, 2.9),
+        head.p(4.7, d * 10.1, 4.9),
+        0.58,
+        0.76,
+        soot,
+      );
+      frontRig.dot(head.p(3.45, d * 10.35, 4.87), hx('#fff0bc'), 0.8, 1, 1.4);
+    }
     frontRig.cap(
       head.p(-0.5, d * 8.3, 6.6),
       head.p(6.7, d * 7.4, 5.4),
@@ -375,7 +505,22 @@ export function coinDragonFrame(
       0.9,
       bronze,
     );
-    frontRig.ell(nose, [6.4, d * 3.6, 2.35], [1.6, 0.9, 0.55], iron);
+    frontRig.ell(nose, [6.8, d * 3.5, 2.2], [2.1, 1.3, 0.85], bronze);
+    frontRig.ell(nose, [7, d * 3.9, 2.45], [1.7, 1.1, 0.55], soot);
+    frontRig.cap(
+      nose.p(-1, d * 5.1, -0.8),
+      nose.p(6.9, d * 4.3, -1.55),
+      0.9,
+      0.5,
+      soot,
+    );
+    frontRig.cap(
+      nose.p(5, d * 4.7, -1.45),
+      nose.p(5.55, d * 4.7, -5.2),
+      1.2,
+      0.2,
+      silver,
+    );
     frontRig.cap(
       nose.p(5, d * 4.3, -2.1),
       nose.p(5.2, d * 4.2, -5.1),
@@ -406,6 +551,15 @@ export function coinDragonFrame(
     const wing = root.at(-4, d * 10, 9).roll(d * fold * 0.42);
     const elbow = wing.p(-5, d * 9, 18 + 5 * k.wings),
       tip = wing.p(-15, d * 17, 32 - 6 * fold);
+    r.ell(wing, [0, d * 2, 0.8], [3.3, 2.4, 2.6], bronze);
+    r.dot(wing.p(0.6, d * 4, 1.45), ink, 0, 1, 1.5);
+    r.cap(
+      wing.p(-0.2, d * 3, -0.9),
+      wing.p(-1.8, d * 3.8, -3.3),
+      0.7,
+      0.6,
+      plumb,
+    );
     const corners = [
       wing.p(-47, d * 18, 13),
       wing.p(-31, d * 16, 14),
@@ -419,10 +573,29 @@ export function coinDragonFrame(
     for (let i = 0; i < corners.length - 1; i++)
       r.poly([tip, corners[i], corners[i + 1]], membrane);
     for (const i of [0, 2, 4, 6]) r.cap(tip, corners[i], 1.25, 0.5, bronze);
-    r.cap(tip, wing.p(-15, d * 18, 35 - 6 * fold), 1.2, 0.2, silver);
+    r.cap(tip, wing.p(-15, d * 18, 37 - 6 * fold), 1.2, 0.2, silver);
   }
+  const shoulderMedal = root.at(12, 15, 10);
+  r.ell(shoulderMedal, [0, 0, 0], [6.8, 2.1, 6.2], iron);
+  r.ell(shoulderMedal, [0, 1.2, 0], [6.0, 1.45, 5.6], bronze);
+  const diamond = [
+    [0, 3, 3.6],
+    [3.5, 3, 0],
+    [0, 3, -3.6],
+    [-3.5, 3, 0],
+  ] as V3[];
+  for (let i = 0; i < 4; i++)
+    r.line(
+      shoulderMedal.p(...diamond[i]),
+      shoulderMedal.p(...diamond[(i + 1) % 4]),
+      i < 2 ? hx('#ecd194') : ink,
+      0,
+      0.7,
+    );
   const coffer = root
     .at(28, 3, -9 + 24 * k.chest + (asleep ? 5 : 0))
+    .turn(0.47)
+    .scale(1.11)
     .pitch(-0.14 - 0.24 * k.chest)
     .roll(0.06 * gait);
   chestBox(r, coffer, Math.max(0, k.lid), wood, bronze, glint);
@@ -443,6 +616,12 @@ export function coinDragonFrame(
     arm.cap(shoulder, elbow, 4.5, 3.2, hide).cap(elbow, hand, 3.7, 2.2, hide);
     const wrist = F3.yaw(0.48 + (side * TAU) / 16, hand).roll(d * 0.18);
     arm.ell(wrist, [0, 0, 0.4], [2.8, 3.2, 1.6], hide);
+    arm.ell(
+      wrist,
+      [-1, d * 1.25, 1.6],
+      [2.5, 2.2, 1.1],
+      medal(gold, false, false),
+    );
     for (let j = -1; j <= 1; j++) {
       const knuckle = wrist.p(3, j * 2.35, 1.1),
         tip = wrist.p(6.2 + 0.65 * (1 - Math.abs(j)), j * 2.5 - d * 0.7, -1.4);
@@ -453,29 +632,33 @@ export function coinDragonFrame(
     if (d === 1) loc.claw = wrist.p(6.85, -0.7, -1.4);
   }
   r.prims.push(...frontRig.prims);
-  // Extend the silhouette in its ground plane and give the arched neck a little more height.
-  const scalePoint = (v: V3): V3 => [v[0] * 1.08, v[1] * 1.04, v[2] * 1.15];
-  for (const prim of r.prims) {
-    if (prim.k === 0) {
-      prim.c = scalePoint(prim.c);
-      prim.a = prim.a.map(scalePoint) as [V3, V3, V3];
-    } else if (prim.k === 1 || prim.k === 4) {
-      prim.a = scalePoint(prim.a);
-      prim.b = scalePoint(prim.b);
-    } else if (prim.k === 2) prim.pts = prim.pts.map(scalePoint);
-    else prim.p = scalePoint(prim.p);
-  }
-  for (const key of Object.keys(loc)) loc[key] = scalePoint(loc[key]);
+  textureFigure(r, (m) =>
+    m === hide
+      ? 'leather'
+      : m === membrane
+        ? 'wing'
+        : m === wood
+          ? 'wood'
+          : m === silver || m === iron
+            ? 'silver'
+            : m === bronze
+              ? 'brass'
+              : m.gpat
+                ? 'coin'
+                : undefined,
+  );
   r.eye = loc.eye;
-  const body = projectFigure(r, 144, anchor, loc, undefined, 3.7);
+  scaleFigure(r, loc, scale, 1.31);
+  const body = projectFigure(r, 160, anchor, loc, undefined, 3.8);
   const luminousEye = body.points.eye.map(Math.round) as XY;
   if (!body.eye && body.lit?.get(...luminousEye)[3]) body.eye = luminousEye;
   const over =
     anim === 'peek'
-      ? renderRig(frontRig, 144, 144, ...body.anchor, { inner: 3.7 }).p
+      ? renderRig(frontRig, 160, 160, ...body.anchor, { inner: 3.7 }).p
       : undefined;
   return {
     ...body,
+    planted,
     over,
     dx: k.dx,
     dy: k.dy,
@@ -503,7 +686,7 @@ export default {
   theme: 'treasury',
   animations: { ...base, ...actions },
   effects,
-  frame(anim, t, side, variant) {
+  frame(anim, t, side, variant, motion) {
     const last = actions[anim]?.seconds;
     if (last && anim !== 'away' && t * 24 >= Math.round(last * 24) - 1)
       return coinDragonFrame(
@@ -512,6 +695,13 @@ export default {
         side,
         variant,
       );
-    return coinDragonFrame(anim, t, side, variant, pose(anim, t));
+    return coinDragonFrame(
+      anim,
+      t,
+      side,
+      variant,
+      pose(anim, t, side),
+      motion?.headSide,
+    );
   },
 } satisfies Creature;

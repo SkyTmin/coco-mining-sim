@@ -1,7 +1,10 @@
+import route from './toad_shaman-life';
+import { strideFoot, attachMotion } from '../motion';
+import { finishSurfaces } from './surface-work';
 // A splayed marsh elder, bearing a ribbed lantern cap on a crooked root staff.
 import { F3, Rig, vlerp, type Mat, type V3 } from '../rig/f15-rig';
 import { hx, tn, TAU } from '../kit/f11-mobkit';
-import { everyday, life, projectFigure } from '../rig/figure';
+import { everyday, life, projectFigure, scaleFigure } from '../rig/figure';
 import { animations, effects, pose, presentation } from './toad_shaman-actions';
 import type { Creature, Variant } from '../types';
 
@@ -15,7 +18,15 @@ export interface ToadPose {
   lift?: number;
   phase?: number;
 }
-export function bodyFrame(anim: string, t: number, side: number, variant: Variant, A: ToadPose = {}) {
+export function bodyFrame(
+  anim: string,
+  t: number,
+  side: number,
+  variant: Variant,
+  A: ToadPose = {},
+  headSide = side,
+) {
+  const lead = Math.max(-0.62, Math.min(0.62, ((((headSide - side + 24) % 16) - 8) * Math.PI) / 8));
   const r = new Rig(),
     gold = variant === 'gold',
     l = life(anim, t, 5.26),
@@ -73,22 +84,29 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
   );
   r.ell(B, [-3, 0, 0], [22, 31, 19], skin);
   r.ell(B, [-6, 0, 6], [21, 34, 19], moss);
-  const sockets: Record<string, V3> = {};
+  const sockets: Record<string, V3> = {},
+    planted: string[] = [];
+  const scale = 1.22;
   // The weight is carried on folded hocks. Webs unite each set of long toes.
   for (const s of [-1, 1]) {
-    const swing = Math.max(0, stride * s),
+    const cycle =
+      anim === 'walk'
+        ? strideFoot(t, s < 0 ? 0.5 : 0, 22 / (1.11 * scale))
+        : { forward: 0, lift: 0, planted: true };
+    const swing = cycle.lift,
       hip = B.at(-7, s * 24, -5);
+    if (cycle.planted) planted.push(s < 0 ? 'footL' : 'footR');
     r.ell(hip, [-3, 0, 0], [17, 14, 12], skin);
-    const heel = F.at(-6 + 4 * swing, s * 29, 6 + swing * 6);
+    const heel = F.at(-6 + cycle.forward, s * 32, 6 + swing * 5.8);
     r.cap(hip.p(5, s * 3, -2), heel.o, 9, 5.1, skin);
     const sole = heel.at(9, s * 3, -3);
     r.ell(sole, [0, 0, 0], [10.2, 7.1, 3.2], skin);
     const toes: V3[] = [];
     for (const [i, k] of [-1, 0, 1].entries()) {
-      const end = sole.p(11 + (i === 1 ? 4 : 0), s * (4 + k * 5), -1.2);
+      const end = sole.p(11 + (i === 1 ? 4 : 0), s * (5.8 + k * 5.8), -1.2);
       toes.push(end);
       r.cap(sole.p(4, s * (k * 2.5), 0), end, 2.1, 1.2, skin);
-      r.ell(sole, [11 + (i === 1 ? 4 : 0), s * (4 + k * 5), -1.2], [2.1, 1.7, 1.1], skin);
+      r.ell(sole, [11 + (i === 1 ? 4 : 0), s * (5.8 + k * 5.8), -1.2], [2.1, 1.7, 1.1], skin);
     }
     r.poly([sole.o, ...toes], skin, -0.1);
     sockets[s < 0 ? 'footL' : 'footR'] = sole.p(6, 0, -2);
@@ -137,7 +155,7 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
     }
   }
   const H = B.at(11, 0, 9)
-    .turn(0.38 * l.look)
+    .turn(0.38 * l.look + lead * 0.7)
     .pitch(0.18 * l.sleep - 0.1 * l.look);
   r.ell(H, [0, 0, 0], [17, 27, 13.4], skin);
   const throat = (A.throat ?? 0) + 0.18 * (1 + Math.sin(l.q));
@@ -200,13 +218,13 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
   // Root staff is planted outside the haunch. Fork, gills and the cap share its pivot.
   const staffLift = (A.staffLift ?? 0) + 12 * l.happy - 3 * l.tired + 2.6 * Math.max(0, l.walk);
   const S = F.at(7, 46, 1 + staffLift).roll(
-    -0.085 + (A.staffAngle ?? 0) + 0.026 * Math.sin(l.q - 0.55),
+    -0.37 + (A.staffAngle ?? 0) + 0.026 * Math.sin(l.q - 0.55),
   );
-  const crook = [S.p(0, 0, 0), S.p(2, -2, 28), S.p(-2, -1, 53), S.p(-3, 2, 59), S.p(-0.5, 3, 66)];
+  const crook = [S.p(0, 0, 0), S.p(2, -2, 28), S.p(-2, -1, 53), S.p(-5, -2, 62), S.p(-6, -9, 71.3)];
   for (let i = 1; i < crook.length; i++)
     r.cap(crook[i - 1], crook[i], 2.5 - i * 0.22, 2.5 - i * 0.24, twig);
   r.cap(crook[2], S.p(1, 6, 60), 1.6, 0.35, twig);
-  const fungus = S.at(-1, 3, 66).roll(-0.3).pitch(-0.36);
+  const fungus = S.at(-6, -9, 71.3).roll(-0.3).pitch(-0.36);
   r.ell(fungus, [0, 0, -2], [4.8, 4.9, 7.2], gill);
   r.ell(fungus, [0, 0, 0], [12 + phase * 3, 15 + phase * 3, 3.7], gill);
   for (const s of [-1, 1]) {
@@ -220,6 +238,20 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
     cap,
     (q) => q[2] < -0.16,
   );
+  const honey: Mat = { T: tn('#806044', '#ac7f49', '#d8ab5c', '#f7dc81'), glow: 0.46 };
+  const throatRing: Mat = { T: tn('#343b39', '#414840', '#655a43', '#8c7756') };
+  // The amber gills hang below the outer brim, with dark dividers between each warm blade.
+  r.ell(fungus, [0, 0, -8.4], [4.5, 4.6, 1.65], throatRing);
+  for (let j = 0; j < 5; j++) {
+    const a = -1.12 + j * 0.48,
+      b = a + 0.32;
+    const outer = fungus.p(Math.cos(a) * 12, Math.sin(a) * 13, -0.3);
+    const lip = fungus.p(Math.cos(b) * 11.5, Math.sin(b) * 12.5, -1.6);
+    const root = fungus.p(Math.cos(a) * 4.6, Math.sin(a) * 4.6, -8.4);
+    r.poly([outer, lip, root], honey, 0.4);
+    r.cap(root, fungus.p(Math.cos(a) * 11.6, Math.sin(a) * 12.6, -2.1), 0.5, 0.75, throatRing);
+  }
+  r.ell(fungus, [9, 5, -3.2], [1.15, 1.0, 2.2], honey);
   for (const z of [-1, -0.2]) r.line(fungus.p(7, 8, z), fungus.p(9.4, 4, z), gill.T[1], 0.3, 1.1);
   for (const [x, y, z] of [
     [-6, -6, 6.7],
@@ -231,7 +263,7 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
   sockets.staffFoot = crook[0];
   for (const s of [-1, 1]) {
     const shoulder = B.p(4, s * 24, 1),
-      elbow = B.p(8, s * 33, -7);
+      elbow = B.p(8, s * 35, -7);
     const hand = s > 0 ? S.p(1, -2, 31) : F.p(23, s * 24, 8 - drop * 0.22);
     r.cap(shoulder, elbow, 5.8, 4.6, skin);
     r.cap(elbow, hand, 4.4, 3.1, skin);
@@ -254,7 +286,67 @@ export function bodyFrame(anim: string, t: number, side: number, variant: Varian
       r.ell(M, [0, 0, 5], [1.5, 1.5, 6], gill);
       r.ell(M, [0, 0, 10], [4.6, 4.4, 2.5], gill, (q) => q[2] < -0.24);
     }
-  const fr = projectFigure(r, 144, [76, 107], sockets, '#202d37');
+  // The cloak carries cowries, knots and a stitched repair on its outer shoulder.
+  const patch = B.at(-4, 26, 7).turn(-0.22);
+  r.poly([patch.p(-5, -2, 2), patch.p(4, -2, 3), patch.p(4, 1, -5), patch.p(-4, 1, -6)], moss);
+  for (let j = 0; j < 4; j++)
+    r.line(patch.p(-4 + j * 2, 1, -3), patch.p(-3 + j * 2, 1, -5), shell.T[1], 0, 0.7);
+  for (const s of [-1, 1]) {
+    r.ell(H, [0, s * 23, 1.5], [3.6, 2.8, 2.1], moss);
+    for (let j = 0; j < 3; j++)
+      r.ball(H.p(2 + j * 2.4, s * (24 - j * 0.25), 2.6 + j * 0.3), 1.2 - j * 0.18, skin);
+    r.line(H.p(15, s * 17, -2), H.p(19, s * 11, -2.8), shell.T[1], 0, 0.95);
+    r.cap(H.p(13, s * 8, -13), H.p(15, s * 2, -15), 1.1, 0.5, skin);
+    const lichen = B.at(-10, s * 18, 14);
+    for (let j = 0; j < 3; j++) {
+      r.cap(
+        lichen.p(j * 2, 0, 0),
+        lichen.p(-2 + j * 1.5, s * (1 + j), 4 + 0.7 * j),
+        1.35,
+        0.25,
+        moss,
+      );
+      r.dot(lichen.p(-2 + j * 1.5, s * (1 + j), 4 + 0.7 * j), cap.T[2]);
+    }
+    r.line(solePoint(s, 8), solePoint(s, 11), skin.T[1], 0, 0.7);
+  }
+  function solePoint(s: number, x: number) {
+    return F.p(7 + x, s * (31 + x * 0.17), 3);
+  }
+  for (let j = 0; j < 4; j++)
+    r.cap(S.p(1, -2, 26 + j * 2), S.p(2, -1, 26 + j * 2), 2.8, 2.5, j === 3 ? shell : twig);
+  r.line(S.p(1, 1, 49), S.p(-1, 1, 60), twig.T[0], 0, 0.8);
+  r.dot(S.p(1, 1, 6), shell.T[2]);
+  r.ell(fungus, [6, 7, -1], [1.15, 1.05, 2.5], gill);
+  for (let j = 0; j < 5; j++) {
+    const a = -1.15 + j * 0.56;
+    r.line(
+      fungus.p(Math.cos(a) * 3, Math.sin(a) * 3, -2.7),
+      fungus.p(Math.cos(a) * 11, Math.sin(a) * 11, -1.2),
+      gill.T[1],
+      0.2,
+      0.8,
+    );
+  }
+  finishSurfaces(
+    r,
+    F,
+    [
+      [skin, 'skin'],
+      [moss, 'moss'],
+      [mouth, 'wattle'],
+      [shell, 'shell'],
+      [twig, 'root'],
+      [cap, 'cap'],
+      [gill, 'gill'],
+      [honey, 'gill'],
+      [throatRing, 'bamboo'],
+    ],
+    'wattle',
+  );
+  scaleFigure(r, sockets, scale, 1.42);
+  const fr = projectFigure(r, 160, [84, 115], sockets, '#202d37');
+  fr.planted = planted;
   fr.dy = -jump - l.pop * 11;
   return fr;
 }
@@ -270,7 +362,10 @@ const creature: Creature = {
     ...animations,
   },
   effects,
-  frame: (anim, t, side, variant) =>
-    Object.assign(bodyFrame(anim, t, side, variant, pose(anim, t)), presentation(anim, t)),
+  frame: (anim, t, side, variant, motion) =>
+    Object.assign(
+      bodyFrame(anim, t, side, variant, pose(anim, t), motion?.headSide),
+      presentation(anim, t),
+    ),
 };
-export default creature;
+export default attachMotion(creature, route);

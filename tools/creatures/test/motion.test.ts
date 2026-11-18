@@ -143,6 +143,49 @@ for (const id of ids) {
         Math.max(...ys) - Math.min(...ys) >= h * 0.1,
         id + ' depth travel',
       );
+      // The portrait route accelerates and turns at a changing depth, whereas
+      // the direction clips below are the constant-speed cycles consumed by the game.
+      const footprints = new Map<string, XY>();
+      let lastBeat = -1,
+        occluded = false;
+      for (let n = 0; n < Math.round(spec.seconds * 24); n += 2) {
+        const frame = compose(c, s, b, 'life', n / 24);
+        if (frame.motion.beat !== lastBeat) {
+          footprints.clear();
+          lastBeat = frame.motion.beat;
+        }
+        const active = new Set(
+          frame.motion.anim === 'walk' ? (frame.body.planted ?? []) : [],
+        );
+        for (const k of footprints.keys())
+          if (!active.has(k)) footprints.delete(k);
+        for (const k of active) {
+          const p = frame.points[k],
+            first = footprints.get(k);
+          assert.ok(p, id + ' missing socket ' + k);
+          if (first)
+            assert.ok(
+              Math.hypot(p[0] - first[0], p[1] - first[1]) <= 1.000001,
+              id + ' life ' + k + ' slid at ' + n,
+            );
+          else footprints.set(k, p);
+        }
+        if (!occluded)
+          for (let i = 3; i < frame.layers.body.data.length; i += 4) {
+            if (
+              frame.layers.body.data[i] >= 200 &&
+              frame.layers.bgf.data[i] >= 200
+            ) {
+              occluded = true;
+              break;
+            }
+          }
+      }
+      assert.ok(occluded, id + ' must pass behind one of its foreground props');
+      assert.deepEqual(
+        compose(c, s, b, 'life', 0).picture.data,
+        compose(c, s, b, 'life', spec.seconds).picture.data,
+      );
       for (const dir of directions) {
         const name = 'walk_' + dir,
           contacts = new Map<string, XY>();
@@ -191,3 +234,15 @@ for (const id of ids) {
     },
   );
 }
+
+test('the isolated turntable keeps the head aligned with each sampled side', () => {
+  const c: Creature = {
+    ...sample,
+    animations: { ...sample.animations, turn: { seconds: 4, loop: true } },
+  };
+  for (let i = 0; i < 16; i++) {
+    const frame = placement(c, 'turn', i / 4, 0, [0, 0]);
+    assert.equal(frame.side, i);
+    assert.equal(frame.headSide, i);
+  }
+});

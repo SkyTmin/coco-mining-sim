@@ -153,7 +153,7 @@ const tracks: Record<string, KeyPose<typeof normal>[]> = {
     [1.77, {}],
   ],
 };
-export function pose(anim: string, t: number) {
+export function pose(anim: string, t: number, side = 0) {
   if (anim === 'away' || anim === 'back') {
     const k = anim === 'away' ? sstep(0.07, 1.38, t) : 1 - sstep(0.04, 1.39, t);
     return {
@@ -165,6 +165,15 @@ export function pose(anim: string, t: number) {
     };
   }
   const p = tracks[anim] ? keyPose(t, tracks[anim], normal) : { ...normal };
+  if (anim === 'tech_dive' && side !== 0) {
+    // Project the burrowing stride in the facing direction. The motion path
+    // can stage the same dive against the right wall without leaving the field.
+    const a = 0.48 + (side * TAU) / 16,
+      stride = p.dx;
+    p.dx = (stride * Math.cos(a)) / Math.cos(0.48);
+    p.dy += stride * (Math.sin(a) - Math.sin(0.48)) * 0.25;
+    p.rot *= Math.cos(a) / Math.cos(0.48);
+  }
   if (anim === 'tech_tail') p.wings += 0.4 * springBack(t - 0.6);
   if (anim === 'tech_claw') p.tail += 0.64 * springBack(t - 0.51);
   if (anim === 'tech_chest') p.lid += 0.26 * springBack(t - 0.96);
@@ -350,9 +359,12 @@ function rain(f: FxInput, show = false) {
 }
 function dive(f: FxInput) {
   const { t, feet } = f;
+  const [entry, exit] = animations.tech_dive.hits!;
+  const burrow = f.pointAt(entry, 'mouth');
+  const x0 = Math.max(29, Math.min(f.w - 32, burrow[0]));
   const mound = clamp01(sstep(0, 0.25, t) * (1 - sstep(1.52, 1.93, t)));
   if (mound > 0) {
-    const x = feet[0] + 78,
+    const x = x0,
       y = feet[1] + 20;
     oval(f.under, x + 3, y + 1, 40, 7, '#332c2c', 0.77 * mound);
     // The back of the hoard sits on the stone. Its front ranks pass in front
@@ -409,7 +421,7 @@ function dive(f: FxInput) {
     if (age < 0) continue;
     const center = f.pointAt(hit, 'mouth'),
       y = feet[1] + 7,
-      dir = i ? -1 : 1;
+      dir = (i ? -1 : 1) * (Math.sign(burrow[0] - feet[0]) || 1);
     for (let j = 0; j < 12; j++) {
       const xx = center[0] + (j - 5.5) * 3.2,
         off = age - 0.014 * Math.abs(j - 5);
@@ -429,7 +441,7 @@ function dive(f: FxInput) {
   }
   if (t > 0.78 && t < 1.49) {
     const u = sstep(0.78, 1.46, t),
-      x = lerp(feet[0] + 78, feet[0] - 5, u);
+      x = lerp(x0, f.pointAt(exit, 'mouth')[0], u);
     for (let j = -4; j <= 4; j++)
       coin(f.above, x + j * 3.8, feet[1] + 4 - (5 - Math.abs(j)) * 2.1, 4, j * 0.7 + t * 6, 0.53, 0.87);
   }

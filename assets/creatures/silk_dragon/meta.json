@@ -9,49 +9,293 @@
     160
   ],
   "thickness": 12,
-  "bodySize": 112,
+  "bodySize": 128,
   "canvas": [
     232,
     184
   ],
   "anchor": [
-    53,
-    88
+    61,
+    114
   ],
-  "eye": null,
-  "primitives": 55,
+  "eye": [
+    91,
+    37
+  ],
+  "primitives": 99,
   "feet": [
     112,
     135
   ],
   "points": {
     "head": [
-      94.05762940940747,
-      52.579356817025726
+      104.52108717397192,
+      41.70958533632586
     ],
     "tail": [
-      7.475759545661248,
-      37.52735664337978
+      12.744305118400924,
+      35.422067967068955
     ],
     "finL": [
-      54.81412105749007,
-      39.669062035838294
+      62.922968320939475,
+      39.88234437239754
     ],
     "finR": [
-      37.951355446193475,
-      65.42631854662568
+      45.04843677296508,
+      59.357759318306904
     ]
+  },
+  "motion": {
+    "life": {
+      "stride": 29,
+      "yaw": 0.36,
+      "fly": true,
+      "beats": [
+        {
+          "seconds": 0.75,
+          "at": [
+            0.3605769230769231,
+            0.825
+          ],
+          "anim": "idle",
+          "side": 0,
+          "lift": 0
+        },
+        {
+          "seconds": 1.12,
+          "at": [
+            0.3605769230769231,
+            0.825
+          ],
+          "anim": "fly",
+          "lift": 0
+        },
+        {
+          "seconds": 1.13,
+          "at": [
+            0.2644230769230769,
+            0.86875
+          ],
+          "anim": "fly",
+          "lift": 4
+        },
+        {
+          "seconds": 0.9,
+          "at": [
+            0.30288461538461536,
+            0.95625
+          ],
+          "anim": "fly",
+          "lift": 3
+        },
+        {
+          "seconds": 1.1,
+          "at": [
+            0.4182692307692308,
+            0.9625
+          ],
+          "anim": "fly",
+          "lift": 2
+        },
+        {
+          "seconds": 1.8,
+          "at": [
+            0.5096153846153846,
+            0.875
+          ],
+          "anim": "tech_kites",
+          "side": 0,
+          "lift": 3
+        },
+        {
+          "seconds": 1.47,
+          "at": [
+            0.5096153846153846,
+            0.875
+          ],
+          "anim": "fly",
+          "lift": 3
+        },
+        {
+          "seconds": 0.98,
+          "at": [
+            0.6778846153846154,
+            0.85625
+          ],
+          "anim": "fly",
+          "lift": 3
+        },
+        {
+          "seconds": 1.02,
+          "at": [
+            0.7403846153846154,
+            0.85625
+          ],
+          "anim": "fly",
+          "lift": 4
+        },
+        {
+          "seconds": 0.73,
+          "at": [
+            0.7019230769230769,
+            0.91875
+          ],
+          "anim": "fly",
+          "lift": 4
+        },
+        {
+          "seconds": 1.1,
+          "at": [
+            0.6057692307692307,
+            0.9625
+          ],
+          "anim": "tech_lash",
+          "side": 0,
+          "lift": 1
+        },
+        {
+          "seconds": 1.05,
+          "at": [
+            0.6057692307692307,
+            0.9625
+          ],
+          "anim": "fly",
+          "lift": 1
+        },
+        {
+          "seconds": 1.35,
+          "at": [
+            0.5048076923076923,
+            0.89375
+          ],
+          "anim": "fly",
+          "lift": 4
+        },
+        {
+          "seconds": 0.5,
+          "at": [
+            0.3605769230769231,
+            0.825
+          ],
+          "anim": "idle",
+          "side": 0,
+          "lift": 0
+        }
+      ]
+    },
+    "track": "frames/<anim>/motion.json",
+    "directions": {
+      "walk_n": {
+        "velocity": [
+          0,
+          -17.4
+        ],
+        "pixelsPerSecond": 17.4,
+        "worldStride": 29,
+        "feet": [
+          100,
+          131.7
+        ]
+      },
+      "walk_ne": {
+        "velocity": [
+          20.50609665440988,
+          -12.303657992645926
+        ],
+        "pixelsPerSecond": 23.91401262858243,
+        "worldStride": 29,
+        "feet": [
+          89.74695167279506,
+          129.15182899632296
+        ]
+      },
+      "walk_e": {
+        "velocity": [
+          29,
+          0
+        ],
+        "pixelsPerSecond": 29,
+        "worldStride": 29,
+        "feet": [
+          85.5,
+          123
+        ]
+      },
+      "walk_se": {
+        "velocity": [
+          20.50609665440988,
+          12.303657992645926
+        ],
+        "pixelsPerSecond": 23.91401262858243,
+        "worldStride": 29,
+        "feet": [
+          89.74695167279506,
+          116.84817100367704
+        ]
+      },
+      "walk_s": {
+        "velocity": [
+          0,
+          17.4
+        ],
+        "pixelsPerSecond": 17.4,
+        "worldStride": 29,
+        "feet": [
+          100,
+          114.3
+        ]
+      },
+      "walk_sw": {
+        "velocity": [
+          -20.506096654409877,
+          12.303657992645928
+        ],
+        "pixelsPerSecond": 23.91401262858243,
+        "worldStride": 29,
+        "feet": [
+          110.25304832720494,
+          116.84817100367704
+        ]
+      },
+      "walk_w": {
+        "velocity": [
+          -29,
+          0
+        ],
+        "pixelsPerSecond": 29,
+        "worldStride": 29,
+        "feet": [
+          114.5,
+          123
+        ]
+      },
+      "walk_nw": {
+        "velocity": [
+          -20.506096654409884,
+          -12.303657992645926
+        ],
+        "pixelsPerSecond": 23.914012628582434,
+        "worldStride": 29,
+        "feet": [
+          110.25304832720494,
+          129.15182899632296
+        ]
+      }
+    }
   },
   "layers": [
     "bg",
+    "bgfBack",
     "fxu",
     "body",
     "lit",
     "fxo",
+    "bgf",
     "frame",
     "over"
   ],
-  "background": "use frames/<anim>/bg/NNN.png when present, otherwise bg/loop/(frame % 72).png",
+  "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
   "animations": {
     "idle": {
       "seconds": 3,
@@ -147,6 +391,78 @@
         32
       ],
       "shake": 0.06,
+      "stop": 0
+    },
+    "life": {
+      "seconds": 15,
+      "frames": 360,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_n": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_ne": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_e": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_se": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_s": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_sw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_w": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_nw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
       "stop": 0
     }
   }
