@@ -568,58 +568,88 @@ function CampArt.entrance(model: Model, frame: CFrame): Entrance
 end
 
 function CampArt.depthScale(root: Folder, centre: CFrame): DepthScale
-	local height = 25
-	local pillar =
-		part(root, "DepthScale", Vector3.new(5, height, 5), centre * CFrame.new(0, height / 2, 0))
-	local mark =
-		part(root, "WeekRecord", Vector3.new(6, 0.4, 6), centre, Color3.fromRGB(255, 200, 61))
-	mark.Transparency = 1
-	local worlds = #Cfg.worlds
-	local function pointAt(worldIndex: number, fraction: number): Vector3
-		local share = (math.clamp(worldIndex, 1, worlds) - 1 + math.clamp(fraction, 0, 1)) / worlds
-		return (centre * CFrame.new(0, share * height, 0)).Position
+	local h, r = camp.scaleHeight, camp.scaleRadius
+	local m = group(root, "SurveyInstrument")
+	local pillar = disc(m, "DepthScale", centre * F(0, h / 2, 0), r, h, iron, Enum.Material.Metal)
+	for i, world in Cfg.worlds do
+		local band = h / #Cfg.worlds
+		local rgb = world.color
+		disc(
+			m,
+			"World" .. i,
+			centre * F(0, (i - 0.5) * band, 0),
+			r + 0.1,
+			band - 0.23,
+			Color3.fromRGB(rgb[1], rgb[2], rgb[3]),
+			Enum.Material.Glass
+		)
+		for _, angle in { 0, math.pi / 2, math.pi, math.pi * 1.5 } do
+			block(
+				m,
+				"Tick",
+				centre * A(0, angle, 0) * F(0, i * band - 0.1, -r - 0.13),
+				V(0.85, 0.14, 0.13),
+				amber,
+				Enum.Material.Neon
+			)
+		end
 	end
-	return {
-		pillar = pillar,
-		pointAt = pointAt,
-		setRecord = function(worldIndex: number?, fraction: number?, _depth: number?)
-			mark.Transparency = if worldIndex then 0 else 1
-			if worldIndex then
-				mark.CFrame = CFrame.new(pointAt(worldIndex, fraction or 0))
-			end
-		end,
-	}
+	disc(m, "CompassFoot", centre * F(0, 0.35, 0), r + 1.15, 0.7, iron, Enum.Material.Metal)
+	local cap = block(
+		m,
+		"BestWorld",
+		centre * F(0, h + 1, 0) * A(0, math.pi / 4, 0.5),
+		V(2.1, 2.1, 2.1),
+		amber,
+		Enum.Material.Neon
+	)
+	cap.CanCollide = false
+	local mark = disc(m, "WeekRecord", centre, r + 0.32, 0.2, hex("FFD34E"), Enum.Material.Neon)
+	local flag = block(m, "WeekFlag", centre, V(4, 1.5, 0.22), iron, Enum.Material.Metal)
+	local gui, label = lettering(flag, Enum.NormalId.Front)
+	local function pointAt(i: number, f: number)
+		return (centre * F(0, (i - 1 + f) * h / #Cfg.worlds, 0)).Position
+	end
+	local function setRecord(i: number?, f: number?, depth: number?)
+		mark.Transparency, flag.Transparency, gui.Enabled =
+			if i then 0 else 1, if i then 0 else 1, i ~= nil
+		if i then
+			local at = pointAt(i, f or 0)
+			mark.Position = at
+			flag.CFrame = F(at + V(0, 0.5, -r - 1.3))
+			label.Text = "🏆 " .. Format.short(depth or 0)
+		end
+	end
+	setRecord(nil, nil, nil)
+	return { pillar = pillar, pointAt = pointAt, setRecord = setRecord }
 end
 
 function CampArt.board(root: Folder, frame: CFrame): Board
-	local model = Instance.new("Model")
-	model.Name, model.Parent = "TopBoard", root
-	local face = part(model, "Face", Vector3.new(16, 20, 1), frame * CFrame.new(0, 11, 0))
+	local m = group(root, "TopBoard")
+	for _, side in { -1, 1 } do
+		block(m, "Post", frame * F(side * 7.6, 6, 0), V(1, 12, 1.4), wood, Enum.Material.WoodPlanks)
+		disc(m, "Boot", frame * F(side * 7.6, 0.5, 0), 1.25, 1, iron, Enum.Material.Metal)
+	end
+	block(m, "CarvedFrame", frame * F(0, 10, 0), V(18, 16, 1.4), hex("675166"), Enum.Material.Wood)
+	local face = block(
+		m,
+		"Face",
+		frame * F(0, 10, -0.75),
+		V(17, 15, 0.3),
+		hex("FAE8C9"),
+		Enum.Material.SmoothPlastic
+	)
 	local gui = Instance.new("SurfaceGui")
-	gui.Face, gui.PixelsPerStud, gui.Parent = Enum.NormalId.Front, 25, face
+	gui.Name, gui.Face, gui.CanvasSize, gui.LightInfluence, gui.Parent =
+		"BoardSurface", Enum.NormalId.Front, Vector2.new(510, 450), 0.12, face
 	local content = Instance.new("Frame")
 	content.Name, content.Size, content.BackgroundTransparency, content.Parent =
 		"Content", UDim2.fromScale(1, 1), 1, gui
-	local switch = part(
-		model,
-		"Switch",
-		Vector3.new(6, 2, 1),
-		frame * CFrame.new(0, 2.5, -0.5),
-		Color3.fromRGB(255, 200, 61)
-	)
-	return { model = model, content = content, switch = switch }
-end
-
--- One row of the top board (place, avatar, name, depth); Codex lays rows out in `content`.
-function CampArt.boardRow(parent: Instance, entry: BoardEntry): Frame
-	local row = Instance.new("Frame")
-	row.Name, row.Size, row.BackgroundTransparency = "Row", UDim2.new(1, 0, 0, 40), 1
-	local label = Instance.new("TextLabel")
-	label.Size, label.BackgroundTransparency, label.TextScaled = UDim2.fromScale(1, 1), 1, true
-	label.Text = string.format("%d. %s — %d", entry.place, entry.name, entry.depth)
-	label.Parent = row
-	row.Parent = parent
-	return row
+	local switch =
+		block(m, "Switch", frame * F(0, 2, -1), V(6, 1.2, 0.75), amber, Enum.Material.Metal)
+	local _, label = lettering(switch, Enum.NormalId.Front)
+	label.Text = "◀   🏆   ▶"
+	return { model = m, content = content, switch = switch }
 end
 
 -- Turns a rig Codex built from a HumanoidDescription into a weekly-top hologram (material, shimmer).

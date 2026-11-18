@@ -163,11 +163,79 @@ function CampLook.scaleToken(
 	isSelf: boolean
 ): BasePart
 	local p = Instance.new("Part")
-	p.Name, p.Size, p.Anchored, p.CanCollide =
-		"Token_" .. userId, Vector3.new(1.5, 1.5, 0.2), true, false
-	p.Color = if isSelf then Color3.fromRGB(255, 200, 61) else rankColor
+	p.Name, p.Size, p.Anchored, p.CanCollide, p.CanTouch, p.Transparency =
+		"Token_" .. userId, Vector3.one * 2, true, false, false, 1
+	p:SetAttribute("CampUser", userId)
+	local badge = Instance.new("BillboardGui")
+	local size = if isSelf then 3.5 else 2.7
+	badge.Size, badge.MaxDistance, badge.AlwaysOnTop, badge.Parent =
+		UDim2.fromScale(size, size), 175, false, p
+	local face = Instance.new("ImageLabel")
+	face.Size, face.BackgroundColor3, face.Parent = UDim2.fromScale(0.88, 0.88), rankColor, badge
+	face.Position = UDim2.fromScale(0.06, 0.06)
+	face.Image = if userId > 0
+		then "rbxthumb://type=AvatarHeadShot&id=" .. userId .. "&w=48&h=48"
+		else ""
+	local round = Instance.new("UICorner")
+	round.CornerRadius, round.Parent = UDim.new(1, 0), face
+	local rim = Instance.new("UIStroke")
+	rim.Color, rim.Thickness, rim.Parent =
+		if isSelf then Color3.fromHex("FFD34E") else rankColor, 3, face
+	if userId < 0 then
+		local glyph = Instance.new("TextLabel")
+		glyph.Size, glyph.BackgroundTransparency, glyph.TextScaled, glyph.Text, glyph.Parent =
+			UDim2.fromScale(1, 1), 1, true, "⚒", face
+	end
 	p.Parent = parent
 	return p
+end
+
+function CampLook.scale()
+	local rules = require(game:GetService("ReplicatedStorage").Shared.Play.CampRules)
+	local self = game:GetService("Players").LocalPlayer
+	local tween = game:GetService("TweenService")
+	local plots = workspace:WaitForChild("Plots")
+	local tokens = {}
+	local root = Instance.new("Folder")
+	root.Name, root.Parent = "ScaleTokens", workspace
+	while true do
+		for i = 1, Config.plots.count do
+			local plot = plots:FindFirstChild("Plot_" .. i)
+			local id = plot and plot:GetAttribute("CampUser")
+			local front = plot and plot:GetAttribute("CampFront")
+			local old = tokens[i]
+			local rank = plot and plot:GetAttribute("CampRank")
+			if old and (old.id ~= id or not front or old.rank ~= rank) then
+				old.part:Destroy()
+				tokens[i] = nil
+				old = nil
+			end
+			if id and front then
+				local y, angle = rules.token(front, i)
+				local radius = camp.scaleRadius + 1.7
+				local at = Vector3.new(
+					math.sin(angle) * radius,
+					math.max(1.6, y),
+					-math.cos(angle) * radius
+				)
+				if not old then
+					local token = CampLook.scaleToken(
+						root,
+						id,
+						Color3.fromHex(camp.rankColors[rankIndex(rank)]),
+						id == self.UserId
+					)
+					token.Position = at
+					tokens[i] = { part = token, id = id, rank = rank }
+				elseif old.part.Position ~= at then
+					tween
+						:Create(old.part, TweenInfo.new(camp.scaleSeconds * 0.7), { Position = at })
+						:Play()
+				end
+			end
+		end
+		task.wait(camp.scaleSeconds)
+	end
 end
 
 -- One of the six reactions over a character's head for 3 s [ТЗ-06 §9]. id: like|fire|bolt|wow|party|gem.

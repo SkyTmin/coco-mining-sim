@@ -66,6 +66,7 @@ local function update(i: number)
 	end
 	previous[i] = data
 	root:SetAttribute("CampUser", id)
+	root:SetAttribute("CampRank", card and card.rank)
 	root:SetAttribute("Hologram", holo ~= nil)
 	root:SetAttribute("CampCard", if card then Http:JSONEncode(card) else nil)
 	entry.setLook(if card then card.rank else "none", owner ~= nil)
@@ -94,6 +95,17 @@ function Camp.Start()
 			for i = 1, Config.plots.count do
 				update(i)
 			end
+			local record = 0
+			for i = 1, Config.plots.count do
+				local owner = Plots.owner(i)
+				if owner then
+					record = math.max(record, owner:GetAttribute("CampBest") or 0)
+				end
+			end
+			local crown = Builder.scale.pillar.Parent:FindFirstChild("BestWorld")
+			local world = Worlds.of(record)
+			crown.Color = Color3.fromHex(Config.art.worlds[world.id].light)
+			crown:SetAttribute("World", world.index)
 			for _, player in game:GetService("Players"):GetPlayers() do
 				movement(player)
 			end

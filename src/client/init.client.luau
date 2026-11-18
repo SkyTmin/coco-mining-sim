@@ -40,12 +40,14 @@ end)
 require(script.Fx.CelPicks).start()
 task.spawn(require(script.Art.CampLook).showcases)
 task.spawn(require(script.Art.CampLook).names)
+task.spawn(require(script.Art.CampLook).scale)
 local Strings = require(Shared:WaitForChild("Strings"))
 local function translate(key: string, ...: any): string
 	return Strings.t(key, Strings.localeOf(player), ...)
 end
 
 local playerGui = player:WaitForChild("PlayerGui")
+task.spawn(require(script.Ui.CampBoard).start, playerGui, translate)
 local showToast = require(script.Toast).create(playerGui, translate)
 Remotes.event("Toast").OnClientEvent:Connect(showToast)
 require(script.CreativeWindow).start(

@@ -12,6 +12,9 @@ function Builder.build(): Folder
 	local root = Instance.new("Folder")
 	root.Name = "Camp"
 	Art.crater(root)
+	Builder.scale = Art.depthScale(root, CFrame.identity)
+	local pos = Vector3.new(-22, 0, 22)
+	Art.board(root, CFrame.lookAt(pos, Vector3.zero))
 	root.Parent = workspace
 	return root
 end
