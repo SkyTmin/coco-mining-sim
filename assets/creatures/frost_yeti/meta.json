@@ -1,0 +1,173 @@
+{
+  "id": "frost_yeti",
+  "rarity": "epic",
+  "theme": "polar_night",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    208,
+    160
+  ],
+  "thickness": 14,
+  "bodySize": 112,
+  "canvas": [
+    236,
+    188
+  ],
+  "anchor": [
+    55,
+    92
+  ],
+  "eye": null,
+  "primitives": 68,
+  "feet": [
+    114,
+    137
+  ],
+  "points": {
+    "footL": [
+      68.29610959792693,
+      90.28045091911585
+    ],
+    "footR": [
+      45.61486705695729,
+      97.90685539614009
+    ],
+    "mouth": [
+      65.66539753103463,
+      59.60915923799111
+    ],
+    "belt": [
+      50.25473918779061,
+      71.88335278410489
+    ],
+    "clubGrip": [
+      56.5046875706014,
+      78.21295475910438
+    ],
+    "clubTip": [
+      92.41732237478908,
+      50.354780467802044
+    ]
+  },
+  "layers": [
+    "bg",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "frame",
+    "over"
+  ],
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise bg/loop/(frame % 72).png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "happy": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tech_snowball": {
+      "seconds": 2.4,
+      "frames": 58,
+      "loop": false,
+      "hit": [
+        41
+      ],
+      "shake": 0.25,
+      "stop": 0.07
+    },
+    "tech_slam": {
+      "seconds": 1.3,
+      "frames": 31,
+      "loop": false,
+      "hit": [
+        19
+      ],
+      "shake": 0.35,
+      "stop": 0.06
+    },
+    "tech_icicles": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        29,
+        31,
+        34,
+        36,
+        38
+      ],
+      "shake": 0.08,
+      "stop": 0
+    },
+    "tech_roar": {
+      "seconds": 1.6,
+      "frames": 38,
+      "loop": false,
+      "hit": [
+        28
+      ],
+      "shake": 0,
+      "stop": 0
+    }
+  }
+}
