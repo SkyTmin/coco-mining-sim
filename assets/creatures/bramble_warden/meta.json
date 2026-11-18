@@ -1,0 +1,139 @@
+{
+  "id": "bramble_warden",
+  "rarity": "common",
+  "theme": "root_edge",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    160,
+    128
+  ],
+  "thickness": 8,
+  "bodySize": 80,
+  "canvas": [
+    176,
+    144
+  ],
+  "anchor": [
+    38,
+    58
+  ],
+  "eye": null,
+  "primitives": 30,
+  "feet": [
+    85,
+    107
+  ],
+  "points": {
+    "paw": [
+      44.85819345785423,
+      64.45899913636254
+    ],
+    "snout": [
+      67.116984334134,
+      54.51839258578893
+    ],
+    "spine": [
+      22.905780953781864,
+      26.621721409198628
+    ]
+  },
+  "layers": [
+    "bg",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "frame",
+    "over"
+  ],
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise bg/loop/(frame % 72).png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "happy": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tech_ram": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        29
+      ],
+      "shake": 0.2,
+      "stop": 0.06
+    },
+    "tech_volley": {
+      "seconds": 1.6,
+      "frames": 38,
+      "loop": false,
+      "hit": [
+        13,
+        17,
+        20
+      ],
+      "shake": 0.08,
+      "stop": 0
+    }
+  }
+}
