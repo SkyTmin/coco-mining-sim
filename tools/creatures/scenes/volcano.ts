@@ -82,37 +82,149 @@ function caldera(w: number, h: number) {
     horizon + 6,
     hx('#35303a'),
   );
-  p.rect(0, horizon, w - 1, h - 1, mixc(coal, bank, 0.6));
-  const slabs = [hx('#49414a'), hx('#484049'), hx('#4e444a'), hx('#483f47')];
-  for (let row = 0, y = horizon; y < h; row++, y += 12) {
-    for (let col = -1, x = (row % 2) * 14 - 29; x < w; col++, x += 29) {
-      const v = hash(col, row, 42),
-        chip = 2 + Math.round(v * 3),
-        dy = Math.round(hash(col, row, 89) * 2);
-      const shade = mixc(slabs[Math.floor(v * 3.999)], bank, (1 - y / h) * 0.55);
+  // The lower wall breaks into a lava fan. Basalt columns, clinker and rope
+  // lava cut across one another, so the cooling directions remain legible.
+  const ash = hx('#746170'),
+    glass = hx('#3a3747'),
+    clinker = hx('#53434a'),
+    obsidian = hx('#292b38');
+  const fan = [glass, hx('#48404b'), hx('#50464e'), hx('#584b51'), hx('#63505a')];
+  const channel = (x: number) => horizon + 36 + 13 * Math.sin(x * 0.037) + 0.11 * (w - x);
+  const plates: { u: number; v: number; kind: number; seed: number }[] = [];
+  for (let row = -1; row < 11; row++)
+    for (let col = -1; col < 11; col++) {
+      const seed = hash(col, row, 97);
+      plates.push({
+        u: col * 33 + (seed - 0.5) * 25,
+        v: horizon + row * 21 + (hash(col, row, 93) - 0.5) * 17,
+        kind: Math.floor(hash(col, row, 155) * 6),
+        seed,
+      });
+    }
+  for (let y = horizon; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      // Unequal cooling centres split the crust into irregular polygonal plates.
+      let first = 1e9,
+        second = 1e9,
+        near = plates[0];
+      for (const plate of plates) {
+        const dx = x - plate.u,
+          dy = (y - plate.v) * 1.48,
+          d = dx * dx + dy * dy;
+        if (d < first) {
+          second = first;
+          first = d;
+          near = plate;
+        } else if (d < second) second = d;
+      }
+      const dx = x - near.u,
+        dy = y - near.v,
+        v = near.seed,
+        flow = y - channel(x);
+      const edge = (second - first) / (1 + Math.sqrt(second) + Math.sqrt(first));
+      const vein = dy - dx * (v - 0.4) * 0.76 + 1.5 * Math.sin(dx * 0.38);
+      const ripple = Math.sin(
+        (dy + 0.22 * dx) * (0.52 + v * 0.24) + 1.3 * Math.sin(dx * 0.13 + v * 3),
+      );
+      let tone = fan[[1, 2, 1, 2, 3, 1][near.kind]];
+      if (near.kind === 0 && edge > 1.8 && Math.abs(dx) < 12 && ripple > 0.54) tone = fan[2]; // rope lava
+      if (near.kind === 1 && Math.abs(vein) < 0.85 && dx > -9 && dx < 20 * v) tone = glass; // slate split
+      if (near.kind === 2 && vein < 1 && vein > -3.5 && dx < 12 && dx > -9) tone = fan[0]; // glass shard
+      if (near.kind === 3 && Math.abs(vein) < 4 && dx > -6 && hash(x >> 1, y >> 1, 317) > 0.72)
+        tone = fan[3]; // clinker
+      if (near.kind === 4 && edge < 1.8) tone = fan[2]; // ash between the facets
+      if (near.kind === 5 && dy > -4 && dy < 6 && dx < 11 && dx > -8 && ripple > 0.77) tone = fan[2]; // weathered polish
+      if (edge < 0.62) {
+        tone = dx + dy > 0 ? glass : fan[2];
+      }
+      if (Math.abs(flow) < 11)
+        tone = mixc(tone, hx('#81433e'), Math.floor((1 - Math.abs(flow) / 11) * 5) / 12);
+      p.set(x, y, tone);
+    }
+  // Individual splintered tables cast small shadows; a bright fracture stops at each notch.
+  for (const [x, y, len, h, slant] of [
+    [12, 153, 30, 9, 4],
+    [84, 195, 42, 9, -6],
+    [166, 173, 39, 7, 5],
+    [196, 118, 28, 8, -4],
+    [71, 82, 23, 5, 3],
+  ]) {
+    const slab: Point[] = [
+      [x - len * 0.5, y + 3],
+      [x - len * 0.25, y - h],
+      [x + 8, y - h + slant],
+      [x + len * 0.47, y - h + 3 + slant],
+      [x + len * 0.31, y - 1],
+      [x + len * 0.42, y + 2],
+      [x + 4, y + h * 0.32],
+    ];
+    face(
+      p,
+      slab.map(([u, v]) => [u + 2, v + 2]),
+      glass,
+    );
+    face(p, slab, fan[2]);
+    p.line(...slab[0], ...slab[1], fan[3]);
+    p.line(...slab[1], ...slab[2], fan[3]);
+    p.line(x + 2, y - h + 3, x + 5, y - h + 5, glass);
+    p.line(x + 5, y - h + 5, x + 11, y - h + 4, glass);
+    p.line(x + 9, y + 1, x + 16, y - 1, fan[1]);
+  }
+  // Coarse shattered ends of basalt columns in seven irregular groups.
+  for (const [cx, cy, n] of [
+    [6, 82, 13],
+    [19, 125, 6],
+    [246, 112, 10],
+    [235, 175, 9],
+    [132, 204, 8],
+    [67, 90, 5],
+    [166, 66, 5],
+  ]) {
+    for (let i = 0; i < n; i++) {
+      const X = cx + Math.round((hash(i, cx, 12) - 0.5) * 32),
+        Y = cy + Math.round((hash(i, cy, 13) - 0.5) * 11);
+      const R = 3 + Math.floor(hash(i, cx, 14) * 6);
+      const stone: Point[] = [
+        [X - R, Y],
+        [X - R * 0.4, Y - R * 0.45],
+        [X + R * 0.6, Y - R * 0.35],
+        [X + R, Y],
+        [X + R * 0.4, Y + R * 0.43],
+        [X - R * 0.6, Y + R * 0.5],
+      ];
       face(
         p,
-        [
-          [x + chip, y + dy],
-          [x + 26, y],
-          [x + 30, y + 3],
-          [x + 28, y + 11],
-          [x + 24, y + 12],
-          [x + 2, y + 12],
-          [x - 1, y + 8],
-        ],
-        shade,
+        stone.map(([u, v]) => [u, v + 2]),
+        coal,
       );
-      p.line(x + chip, y + dy, x + 22, y, mixc(shade, rim, 0.5));
-      if (v > 0.43) {
-        p.line(x + 8, y + 5, x + 11 + Math.round(v * 5), y + 4, mixc(shade, rim, 0.32));
-        p.set(x + 7, y + 6, rim);
-      }
-      if (v > 0.77) {
-        p.line(x + 22, y + 12, x + 19, y + 7, coal);
-        p.line(x + 19, y + 7, x + 15, y + 8, coal);
-      }
+      face(p, stone, fan[(i % 4) + 1]);
+      p.line(...stone[0], ...stone[1], mixc(ash, fan[2], 0.6));
+      if (i % 3 === 1) p.line(X - 2, Y + 1, X + 1, Y, clinker);
     }
+  }
+  for (const [cx, cy] of [
+    [29, 167],
+    [75, 119],
+    [197, 181],
+    [147, 97],
+    [214, 135],
+  ]) {
+    for (let i = 0; i < 16; i++) {
+      const x = cx + (hash(i, cx, 18) - 0.5) * 21,
+        y = cy + (hash(i, cy, 11) - 0.5) * 7;
+      p.ell(x, y, 1.3 + hash(i, cx, 17) * 2, 1.1, obsidian);
+      p.set(x - 1, y - 1, fan[3]);
+    }
+  }
+  // Broken liquid seam, with dull crust bridges and reflected light on the lee bank.
+  for (let x = 0; x < w; x++) {
+    const y = Math.round(channel(x) + Math.round(Math.sin(x * 0.23) * 2)),
+      wave = Math.sin(x * 0.18) + Math.cos(x * 0.09);
+    if (wave < -0.85) continue;
+    p.line(x, y - 1, x, y + 2, cinder);
+    p.set(x, y + 2, obsidian);
+    if (wave > 0.32) p.set(x, y, hot);
+    if (wave > 1.25) p.set(x, y - 1, hx('#bc7755'));
   }
   // Split in the upper terrace with a dull, broken line of molten rock.
   const fissure: Point[] = [
@@ -188,4 +300,59 @@ const volcano: Scene = (p, t) => {
     if (q > 0.12 && q < 0.86) p.set(x, y, mixc(bank, hot, Math.sin(q * Math.PI) * 0.8));
   }
 };
+volcano.front = [
+  {
+    id: 'split-basalt',
+    depth: 180,
+    paint(p) {
+      const x = Math.round(p.w * 0.22),
+        y = Math.round(p.h * 0.865);
+      p.ell(x + 3, y + 1, 20, 4, hx('#302b36'));
+      for (const [dx, dy, height, width] of [
+        [-9, -1, 11, 13],
+        [5, -2, 24, 11],
+        [-2, 0, 33, 13],
+        [10, 2, 6, 10],
+      ]) {
+        const X = x + dx,
+          Y = y + dy,
+          T = Y - height;
+        face(
+          p,
+          [
+            [X - width / 2, T],
+            [X + 1, T + 2],
+            [X + 1, Y],
+            [X - width / 2, Y - 2],
+          ],
+          hx('#534751'),
+        );
+        face(
+          p,
+          [
+            [X + 1, T + 2],
+            [X + width / 2, T],
+            [X + width / 2, Y - 2],
+            [X + 1, Y],
+          ],
+          hx('#302e3b'),
+        );
+        face(
+          p,
+          [
+            [X - width / 2, T],
+            [X - 1, T - 3],
+            [X + width / 2, T - 2],
+            [X + width / 2, T],
+            [X + 1, T + 2],
+          ],
+          hx('#70616b'),
+        );
+        p.line(X - width / 2 + 1, T + 1, X - width / 2 + 1, T + height * 0.32, hx('#705a61'));
+        p.line(X - 2, T + height * 0.4, X, Y - height * 0.4, coal);
+        p.line(X, Y - height * 0.4, X - 2, Y - height * 0.27, hx('#8e594e'));
+      }
+    },
+  },
+];
 export default volcano;
