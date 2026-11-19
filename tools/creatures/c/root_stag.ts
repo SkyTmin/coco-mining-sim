@@ -86,7 +86,11 @@ const figure = lightFrame(card, card.life, {
   pose: (anim, t) => {
     const p = sample(anim, t * 24),
       sleep = p.sleep ?? (anim === 'sleep' ? 1 : 0);
-    if (anim === 'turn') return { ...p, crouch: 7 * Math.sin((Math.PI * t) / 4) ** 2 };
+    if (anim === 'turn') {
+      // Sink onto the planted diagonal as the crown swings across the far shoulder.
+      const transfer = Math.sin(Math.PI * progress(t, 0.75, 1.75)) ** 2;
+      return { ...p, crouch: 7 * Math.sin((Math.PI * t) / 4) ** 2 + 2.4 * transfer };
+    }
     if (anim === 'walk') return { ...p, crouch: 4.5 };
     if (!sleep) return p;
     return {
