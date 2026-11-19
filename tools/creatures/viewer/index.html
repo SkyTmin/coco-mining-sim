@@ -11,7 +11,7 @@
 <body>
   <header class="masthead">
     <a href="#ispolin" class="wordmark"><span class="mark" aria-hidden="true">◈</span> Галерея существ</a>
-    <nav aria-label="Разделы галереи"><a href="#ispolin">Главная картина</a><a href="#collection">Коллекция</a></nav>
+    <nav aria-label="Разделы галереи"><a href="#ours">Наши</a><a href="#bosses">Боссы</a><a href="#pets">Питомцы</a></nav>
   </header>
   <main>
     <header class="title"><h1>Живые картины</h1></header>
@@ -32,11 +32,13 @@
         </div>
         <p id="presence" role="status" aria-live="polite"></p>
       </div>
+      <div class="playback">
+        <div id="variants" class="variants" role="group" aria-label="Облик" hidden></div>
+        <h3 id="clips-title">Анимации</h3>
+        <div id="clips" class="clip-list" role="group" aria-labelledby="clips-title"></div>
+      </div>
     </section>
-    <section id="collection" aria-labelledby="collection-title">
-      <div class="section-title"><h2 id="collection-title">Коллекция</h2><span id="work-count"></span></div>
-      <div id="paintings" class="collection"></div>
-    </section>
+    <div id="collection"></div>
   </main>
   <noscript>Для анимации картин включите JavaScript.</noscript>
 </body>

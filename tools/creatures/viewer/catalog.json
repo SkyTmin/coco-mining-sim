@@ -1,0 +1,4145 @@
+[
+  {
+    "id": "meadow_colossus",
+    "name": "Луговой исполин",
+    "section": "ours",
+    "rarity": "uncommon",
+    "color": "#374638",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 84
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "fidget_a",
+        "name": "Первый жест",
+        "frames": 48
+      },
+      {
+        "id": "fidget_b",
+        "name": "Второй жест",
+        "frames": 48
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 48
+      },
+      {
+        "id": "trick",
+        "name": "Трюк",
+        "frames": 60
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 84
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "tech_forefall",
+        "name": "Обвал передних лап",
+        "frames": 42
+      },
+      {
+        "id": "tech_heelwave",
+        "name": "Гул под лугом",
+        "frames": 41
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1073
+      }
+    ]
+  },
+  {
+    "id": "penguin_marshal",
+    "name": "Пингвин-маршал",
+    "section": "ours",
+    "rarity": "common",
+    "color": "#435565",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 84
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 48
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "trick",
+        "name": "Трюк",
+        "frames": 60
+      },
+      {
+        "id": "fidget_a",
+        "name": "Первый жест",
+        "frames": 48
+      },
+      {
+        "id": "fidget_b",
+        "name": "Второй жест",
+        "frames": 48
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "tech_slide",
+        "name": "Парад на льду",
+        "frames": 54
+      },
+      {
+        "id": "tech_leap",
+        "name": "Полярный притоп",
+        "frames": 48
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1080
+      }
+    ]
+  },
+  {
+    "id": "bramble_warden",
+    "name": "Ежевичный страж",
+    "section": "ours",
+    "rarity": "common",
+    "color": "#56644b",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 360
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "tech_ram",
+        "name": "Колючее колесо",
+        "frames": 48
+      },
+      {
+        "id": "tech_volley",
+        "name": "Колючий залп",
+        "frames": 38
+      },
+      {
+        "id": "showreel",
+        "name": "Все приёмы",
+        "frames": 98
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      }
+    ]
+  },
+  {
+    "id": "gem_beetle",
+    "name": "Самоцветный жук",
+    "section": "ours",
+    "rarity": "uncommon",
+    "color": "#504b63",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 336
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "tech_horn",
+        "name": "Вспоротый кварц",
+        "frames": 38
+      },
+      {
+        "id": "tech_prism",
+        "name": "Тройная призма",
+        "frames": 34
+      },
+      {
+        "id": "showreel",
+        "name": "Все приёмы",
+        "frames": 84
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      }
+    ]
+  },
+  {
+    "id": "storm_ram",
+    "name": "Грозовой баран",
+    "section": "ours",
+    "rarity": "common",
+    "color": "#485c68",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 464
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "tech_ram",
+        "name": "Громовой таран",
+        "frames": 38
+      },
+      {
+        "id": "tech_volley",
+        "name": "Шаровая гроза",
+        "frames": 48
+      },
+      {
+        "id": "showreel",
+        "name": "Все приёмы",
+        "frames": 98
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      }
+    ]
+  },
+  {
+    "id": "silk_dragon",
+    "name": "Шёлковый дракон",
+    "section": "ours",
+    "rarity": "rare",
+    "color": "#866851",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 359
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "tech_loop",
+        "name": "Петля-вихрь",
+        "frames": 48
+      },
+      {
+        "id": "tech_lash",
+        "name": "Хлыст лентой",
+        "frames": 26
+      },
+      {
+        "id": "tech_kites",
+        "name": "Бумажные змеи",
+        "frames": 43
+      },
+      {
+        "id": "showreel",
+        "name": "Все приёмы",
+        "frames": 135
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      }
+    ]
+  },
+  {
+    "id": "frost_yeti",
+    "name": "Йети Буран",
+    "section": "ours",
+    "rarity": "epic",
+    "color": "#526b73",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 417
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "tech_snowball",
+        "name": "Ком",
+        "frames": 58
+      },
+      {
+        "id": "tech_slam",
+        "name": "Дубина в наст",
+        "frames": 31
+      },
+      {
+        "id": "tech_icicles",
+        "name": "Сосулечный дождь",
+        "frames": 48
+      },
+      {
+        "id": "tech_roar",
+        "name": "Рёв",
+        "frames": 38
+      },
+      {
+        "id": "showreel",
+        "name": "Все приёмы",
+        "frames": 199
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      }
+    ]
+  },
+  {
+    "id": "toad_shaman",
+    "name": "Квакунья",
+    "section": "ours",
+    "rarity": "legendary",
+    "color": "#4c614e",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 401
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой во второй фазе",
+        "frames": 72
+      },
+      {
+        "id": "away",
+        "name": "Уход",
+        "frames": 36
+      },
+      {
+        "id": "back",
+        "name": "Возвращение",
+        "frames": 36
+      },
+      {
+        "id": "tech_croak",
+        "name": "Квак",
+        "frames": 48
+      },
+      {
+        "id": "tech_tongue",
+        "name": "Язык",
+        "frames": 22
+      },
+      {
+        "id": "tech_staff",
+        "name": "Удар посохом",
+        "frames": 41
+      },
+      {
+        "id": "tech_leap",
+        "name": "Прыжок",
+        "frames": 48
+      },
+      {
+        "id": "tech_spores",
+        "name": "Облако спор",
+        "frames": 48
+      },
+      {
+        "id": "phase",
+        "name": "Цветение",
+        "frames": 53
+      },
+      {
+        "id": "showreel",
+        "name": "Все приёмы",
+        "frames": 237
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      }
+    ]
+  },
+  {
+    "id": "crater_titan",
+    "name": "Кратерный титан",
+    "section": "ours",
+    "rarity": "mythic",
+    "color": "#68483c",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 408
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой во второй фазе",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "tech_eruption",
+        "name": "Извержение",
+        "frames": 58
+      },
+      {
+        "id": "tech_fist",
+        "name": "Кулак-кратер",
+        "frames": 29
+      },
+      {
+        "id": "tech_sweep",
+        "name": "Размах",
+        "frames": 34
+      },
+      {
+        "id": "tech_quake",
+        "name": "Топот",
+        "frames": 38
+      },
+      {
+        "id": "tech_ash",
+        "name": "Пепельная туча",
+        "frames": 48
+      },
+      {
+        "id": "tech_pillar",
+        "name": "Столбы лавы",
+        "frames": 43
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "phase",
+        "name": "Разлом",
+        "frames": 48
+      },
+      {
+        "id": "show",
+        "name": "Камешек",
+        "frames": 120
+      },
+      {
+        "id": "away",
+        "name": "Уход",
+        "frames": 36
+      },
+      {
+        "id": "back",
+        "name": "Возвращение",
+        "frames": 36
+      },
+      {
+        "id": "peek",
+        "name": "Выглядывание",
+        "frames": 43
+      },
+      {
+        "id": "showreel",
+        "name": "Все приёмы",
+        "frames": 286
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      }
+    ]
+  },
+  {
+    "id": "coin_dragon",
+    "name": "Монетный дракон",
+    "section": "ours",
+    "rarity": "secret",
+    "color": "#675a43",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 403
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой во второй фазе",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "tech_breath",
+        "name": "Монетное дыхание",
+        "frames": 43
+      },
+      {
+        "id": "tech_tail",
+        "name": "Кошель",
+        "frames": 26
+      },
+      {
+        "id": "tech_chest",
+        "name": "Сундук-ловушка",
+        "frames": 38
+      },
+      {
+        "id": "tech_claw",
+        "name": "Тройной коготь",
+        "frames": 22
+      },
+      {
+        "id": "tech_rain",
+        "name": "Монетный дождь",
+        "frames": 53
+      },
+      {
+        "id": "tech_dive",
+        "name": "Нырок в насыпь",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "phase",
+        "name": "Чеканка",
+        "frames": 48
+      },
+      {
+        "id": "show",
+        "name": "Монета на ребре",
+        "frames": 120
+      },
+      {
+        "id": "away",
+        "name": "Уход",
+        "frames": 36
+      },
+      {
+        "id": "back",
+        "name": "Возвращение",
+        "frames": 36
+      },
+      {
+        "id": "peek",
+        "name": "Выглядывание",
+        "frames": 43
+      },
+      {
+        "id": "showreel",
+        "name": "Все приёмы",
+        "frames": 266
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      }
+    ]
+  },
+  {
+    "id": "king",
+    "name": "Крысиный король",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 1,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "roar",
+        "name": "Рёв",
+        "frames": 30
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 34
+      },
+      {
+        "id": "rollAim",
+        "name": "Прицеливание перед перекатом",
+        "frames": 21
+      },
+      {
+        "id": "roll",
+        "name": "Перекат",
+        "frames": 53
+      },
+      {
+        "id": "whipAim",
+        "name": "Хлыст хвостом",
+        "frames": 48
+      },
+      {
+        "id": "cleaveAim",
+        "name": "Рубка тесаком",
+        "frames": 59
+      },
+      {
+        "id": "summon",
+        "name": "Призыв стражи",
+        "frames": 39
+      },
+      {
+        "id": "swap",
+        "name": "Смена оружия",
+        "frames": 39
+      },
+      {
+        "id": "sweepAim",
+        "name": "Тройной взмах рельсом",
+        "frames": 56
+      },
+      {
+        "id": "leapAim",
+        "name": "Подготовка прыжка",
+        "frames": 21
+      },
+      {
+        "id": "leap",
+        "name": "Прыжок и ударная волна",
+        "frames": 46
+      },
+      {
+        "id": "dizzy",
+        "name": "Головокружение",
+        "frames": 32
+      },
+      {
+        "id": "stun",
+        "name": "Оглушение",
+        "frames": 11
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 21
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 34
+      }
+    ]
+  },
+  {
+    "id": "kinglet",
+    "name": "Малый король",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 1,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "roar",
+        "name": "Рёв",
+        "frames": 29
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 34
+      },
+      {
+        "id": "rollAim",
+        "name": "Прицеливание перед перекатом",
+        "frames": 21
+      },
+      {
+        "id": "roll",
+        "name": "Перекат",
+        "frames": 53
+      },
+      {
+        "id": "whipAim",
+        "name": "Хлыст хвостом",
+        "frames": 48
+      },
+      {
+        "id": "dizzy",
+        "name": "Головокружение",
+        "frames": 21
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 20
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 23
+      }
+    ]
+  },
+  {
+    "id": "f2_armor",
+    "name": "Живые доспехи",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 2,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "roar",
+        "name": "Пробуждение",
+        "frames": 36
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 36
+      },
+      {
+        "id": "swing",
+        "name": "Рубка мечом",
+        "frames": 39
+      },
+      {
+        "id": "thrustAim",
+        "name": "Замах для укола",
+        "frames": 28
+      },
+      {
+        "id": "lunge",
+        "name": "Выпад",
+        "frames": 17
+      },
+      {
+        "id": "crouch",
+        "name": "Подготовка прыжка",
+        "frames": 20
+      },
+      {
+        "id": "air",
+        "name": "Прыжок с ударом",
+        "frames": 53
+      },
+      {
+        "id": "idle_crack",
+        "name": "Латы трещат",
+        "frames": 39
+      },
+      {
+        "id": "idle_burst",
+        "name": "Латы разбиты",
+        "frames": 39
+      },
+      {
+        "id": "rebuild",
+        "name": "Сборка доспехов",
+        "frames": 51
+      },
+      {
+        "id": "dizzy",
+        "name": "Ошеломление",
+        "frames": 34
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 22
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 36
+      }
+    ]
+  },
+  {
+    "id": "f2_mite",
+    "name": "Латник",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 2,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 34
+      },
+      {
+        "id": "ring",
+        "name": "Кружение роя",
+        "frames": 44
+      },
+      {
+        "id": "windup",
+        "name": "Укус",
+        "frames": 21
+      },
+      {
+        "id": "hop",
+        "name": "Прыжок в сторону",
+        "frames": 17
+      },
+      {
+        "id": "gather",
+        "name": "Сбор роя",
+        "frames": 36
+      },
+      {
+        "id": "escape",
+        "name": "Уход под латы",
+        "frames": 18
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 20
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 22
+      }
+    ]
+  },
+  {
+    "id": "f3_maw",
+    "name": "Алая пасть",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 3,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "roar",
+        "name": "Пробуждение",
+        "frames": 39
+      },
+      {
+        "id": "swim",
+        "name": "Плавание",
+        "frames": 39
+      },
+      {
+        "id": "crawl",
+        "name": "Ползание",
+        "frames": 39
+      },
+      {
+        "id": "rise",
+        "name": "Всплытие",
+        "frames": 24
+      },
+      {
+        "id": "leap",
+        "name": "Прыжок из воды",
+        "frames": 54
+      },
+      {
+        "id": "beached",
+        "name": "На берегу",
+        "frames": 56
+      },
+      {
+        "id": "tail",
+        "name": "Хвостовая волна",
+        "frames": 57
+      },
+      {
+        "id": "surface",
+        "name": "Выныривание",
+        "frames": 36
+      },
+      {
+        "id": "spit",
+        "name": "Плевок",
+        "frames": 65
+      },
+      {
+        "id": "roar_phase",
+        "name": "Голод",
+        "frames": 36
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 34
+      }
+    ]
+  },
+  {
+    "id": "f4_idol",
+    "name": "Каменный идол",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 4,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "roar",
+        "name": "Пробуждение",
+        "frames": 32
+      },
+      {
+        "id": "idle_law1",
+        "name": "Заповедь поклона",
+        "frames": 92
+      },
+      {
+        "id": "idle_law2",
+        "name": "Заповедь неподвижности",
+        "frames": 92
+      },
+      {
+        "id": "idle_law3",
+        "name": "Заповедь опущенного меча",
+        "frames": 92
+      },
+      {
+        "id": "idle_open",
+        "name": "Открытое сердце",
+        "frames": 120
+      },
+      {
+        "id": "idle_gaze",
+        "name": "Каменный взор",
+        "frames": 82
+      },
+      {
+        "id": "idle_spent",
+        "name": "Истощение",
+        "frames": 87
+      },
+      {
+        "id": "idle_wrath",
+        "name": "Гнев",
+        "frames": 40
+      },
+      {
+        "id": "idle_slam",
+        "name": "Удар рукой",
+        "frames": 60
+      },
+      {
+        "id": "idle_phase",
+        "name": "Пробуждение стражей",
+        "frames": 60
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 36
+      }
+    ]
+  },
+  {
+    "id": "f4_statue",
+    "name": "Страж идола",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 4,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "dormant",
+        "name": "Дремота на постаменте",
+        "frames": 34
+      },
+      {
+        "id": "rise",
+        "name": "Пробуждение",
+        "frames": 33
+      },
+      {
+        "id": "creep",
+        "name": "Крадётся",
+        "frames": 36
+      },
+      {
+        "id": "still",
+        "name": "Замирание",
+        "frames": 24
+      },
+      {
+        "id": "wind",
+        "name": "Удар клинком",
+        "frames": 36
+      },
+      {
+        "id": "bow",
+        "name": "Поклон",
+        "frames": 34
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 17
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 22
+      }
+    ]
+  },
+  {
+    "id": "f5_minotaur",
+    "name": "Минотавр",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 5,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "roar",
+        "name": "Пробуждение",
+        "frames": 39
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 39
+      },
+      {
+        "id": "aim",
+        "name": "Прицеливание рогами",
+        "frames": 27
+      },
+      {
+        "id": "gore",
+        "name": "Набег",
+        "frames": 34
+      },
+      {
+        "id": "skid",
+        "name": "Торможение",
+        "frames": 22
+      },
+      {
+        "id": "dizzy",
+        "name": "Оглушение",
+        "frames": 48
+      },
+      {
+        "id": "axe",
+        "name": "Удар секирой",
+        "frames": 60
+      },
+      {
+        "id": "whirl",
+        "name": "Вихрь секиры",
+        "frames": 56
+      },
+      {
+        "id": "bellow",
+        "name": "Боевой рёв",
+        "frames": 53
+      },
+      {
+        "id": "idle_phase",
+        "name": "Рёв лабиринта",
+        "frames": 77
+      },
+      {
+        "id": "idle_rage",
+        "name": "Кровавая ярость",
+        "frames": 77
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 21
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 35
+      }
+    ]
+  },
+  {
+    "id": "f6boss",
+    "name": "Красный змей",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 6,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "roar",
+        "name": "Пробуждение",
+        "frames": 41
+      },
+      {
+        "id": "chase",
+        "name": "Ползание",
+        "frames": 48
+      },
+      {
+        "id": "f6_bite",
+        "name": "Укус",
+        "frames": 51
+      },
+      {
+        "id": "f6_tail",
+        "name": "Взмах хвостом",
+        "frames": 53
+      },
+      {
+        "id": "f6_wave",
+        "name": "Полоса пламени",
+        "frames": 77
+      },
+      {
+        "id": "f6_sweep",
+        "name": "Огненный веер",
+        "frames": 70
+      },
+      {
+        "id": "f6_takeoff",
+        "name": "Взлёт",
+        "frames": 34
+      },
+      {
+        "id": "f6_fly",
+        "name": "Полёт",
+        "frames": 48
+      },
+      {
+        "id": "f6_mark",
+        "name": "Прицеливание с высоты",
+        "frames": 81
+      },
+      {
+        "id": "f6_dive",
+        "name": "Пикирование",
+        "frames": 75
+      },
+      {
+        "id": "f6_summon",
+        "name": "Призыв змеёнышей",
+        "frames": 44
+      },
+      {
+        "id": "chase_phase",
+        "name": "Смена фазы",
+        "frames": 44
+      },
+      {
+        "id": "dizzy",
+        "name": "Оглушение",
+        "frames": 44
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 36
+      }
+    ]
+  },
+  {
+    "id": "f7boss",
+    "name": "Отражение героя",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 7,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "roar",
+        "name": "Появление",
+        "frames": 35
+      },
+      {
+        "id": "intro",
+        "name": "Выход из зеркала",
+        "frames": 60
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 39
+      },
+      {
+        "id": "combo",
+        "name": "Первый удар",
+        "frames": 32
+      },
+      {
+        "id": "combo_second",
+        "name": "Второй удар",
+        "frames": 33
+      },
+      {
+        "id": "combo_third",
+        "name": "Завершающий удар",
+        "frames": 36
+      },
+      {
+        "id": "heavy",
+        "name": "Тяжёлый удар",
+        "frames": 41
+      },
+      {
+        "id": "dashAim",
+        "name": "Подготовка рывка",
+        "frames": 20
+      },
+      {
+        "id": "dash",
+        "name": "Рывок",
+        "frames": 29
+      },
+      {
+        "id": "guard",
+        "name": "Блок",
+        "frames": 34
+      },
+      {
+        "id": "riposte",
+        "name": "Контрудар",
+        "frames": 32
+      },
+      {
+        "id": "gaze",
+        "name": "Зеркальный взгляд",
+        "frames": 48
+      },
+      {
+        "id": "mdive",
+        "name": "Нырок в зеркало",
+        "frames": 36
+      },
+      {
+        "id": "maim",
+        "name": "Прицеливание из зеркала",
+        "frames": 36
+      },
+      {
+        "id": "mrun",
+        "name": "Зеркальный пробег",
+        "frames": 36
+      },
+      {
+        "id": "shift",
+        "name": "Фаза теней",
+        "frames": 39
+      },
+      {
+        "id": "shift_light",
+        "name": "Отражённый свет",
+        "frames": 39
+      },
+      {
+        "id": "shift_shards",
+        "name": "Разбитое зеркало",
+        "frames": 39
+      },
+      {
+        "id": "idle_shards",
+        "name": "Залп осколков",
+        "frames": 56
+      },
+      {
+        "id": "daze",
+        "name": "Ошеломление",
+        "frames": 41
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 35
+      }
+    ]
+  },
+  {
+    "id": "f8boss",
+    "name": "Демон семи лун",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 8,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "roar",
+        "name": "Пробуждение",
+        "frames": 39
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 36
+      },
+      {
+        "id": "phase",
+        "name": "Шесть глаз",
+        "frames": 53
+      },
+      {
+        "id": "phase_crescent",
+        "name": "Лунный серп",
+        "frames": 53
+      },
+      {
+        "id": "phase_moons",
+        "name": "Семь лун",
+        "frames": 53
+      },
+      {
+        "id": "idle_moonray",
+        "name": "Луч луны",
+        "frames": 48
+      },
+      {
+        "id": "fan",
+        "name": "Веер полумесяцев",
+        "frames": 53
+      },
+      {
+        "id": "sweep",
+        "name": "Круговой взмах",
+        "frames": 52
+      },
+      {
+        "id": "aim",
+        "name": "Прицеливание",
+        "frames": 22
+      },
+      {
+        "id": "dash",
+        "name": "Рывок",
+        "frames": 42
+      },
+      {
+        "id": "eyes",
+        "name": "Разрезы глаз",
+        "frames": 58
+      },
+      {
+        "id": "volley",
+        "name": "Змеиный залп",
+        "frames": 58
+      },
+      {
+        "id": "rings",
+        "name": "Лунные кольца",
+        "frames": 80
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 38
+      }
+    ]
+  },
+  {
+    "id": "f9boss",
+    "name": "Многоглавая гидра",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 9,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "idle_tail",
+        "name": "Взмах хвостом",
+        "frames": 74
+      },
+      {
+        "id": "idle_flood",
+        "name": "Разлив озера",
+        "frames": 44
+      },
+      {
+        "id": "idle_geyser",
+        "name": "Гейзер",
+        "frames": 58
+      },
+      {
+        "id": "idle_rise",
+        "name": "Подъём из воды",
+        "frames": 58
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 41
+      }
+    ]
+  },
+  {
+    "id": "f9_head",
+    "name": "Голова гидры",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 9,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "rise",
+        "name": "Подъём из воды",
+        "frames": 36
+      },
+      {
+        "id": "bite",
+        "name": "Укус",
+        "frames": 39
+      },
+      {
+        "id": "cast_fire",
+        "name": "Огненный выдох",
+        "frames": 58
+      },
+      {
+        "id": "cast_ice",
+        "name": "Ледяной шар",
+        "frames": 54
+      },
+      {
+        "id": "cast_venom",
+        "name": "Ядовитый плевок",
+        "frames": 51
+      },
+      {
+        "id": "cast_bolt",
+        "name": "Молния",
+        "frames": 51
+      },
+      {
+        "id": "cast_light",
+        "name": "Световой луч",
+        "frames": 51
+      },
+      {
+        "id": "heal",
+        "name": "Исцеление",
+        "frames": 44
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 32
+      }
+    ]
+  },
+  {
+    "id": "f9_crown",
+    "name": "Скрытая голова",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 9,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "rise",
+        "name": "Подъём коронованной головы",
+        "frames": 35
+      },
+      {
+        "id": "up",
+        "name": "Над водой",
+        "frames": 44
+      },
+      {
+        "id": "bite",
+        "name": "Укус",
+        "frames": 41
+      },
+      {
+        "id": "prism",
+        "name": "Призматический залп",
+        "frames": 48
+      },
+      {
+        "id": "dive",
+        "name": "Нырок",
+        "frames": 17
+      },
+      {
+        "id": "hunt",
+        "name": "Подводная охота",
+        "frames": 39
+      },
+      {
+        "id": "whirl",
+        "name": "Водоворот",
+        "frames": 58
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 39
+      }
+    ]
+  },
+  {
+    "id": "f10boss",
+    "name": "Король демонов",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 10,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "f10_throne",
+        "name": "На троне",
+        "frames": 48
+      },
+      {
+        "id": "f10_command",
+        "name": "Приказ свите",
+        "frames": 48
+      },
+      {
+        "id": "f10_rise",
+        "name": "Подъём с трона",
+        "frames": 54
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 36
+      },
+      {
+        "id": "slash",
+        "name": "Рубящий удар",
+        "frames": 51
+      },
+      {
+        "id": "cleave",
+        "name": "Раскол земли",
+        "frames": 57
+      },
+      {
+        "id": "stuck",
+        "name": "Меч в земле",
+        "frames": 39
+      },
+      {
+        "id": "f10_storm",
+        "name": "Грозовой залп",
+        "frames": 56
+      },
+      {
+        "id": "f10_unfurl",
+        "name": "Расправление крыльев",
+        "frames": 41
+      },
+      {
+        "id": "f10_takeoff",
+        "name": "Взлёт",
+        "frames": 36
+      },
+      {
+        "id": "f10_air",
+        "name": "Перья в полёте",
+        "frames": 56
+      },
+      {
+        "id": "f10_dive",
+        "name": "Пикирование",
+        "frames": 51
+      },
+      {
+        "id": "f10_landed",
+        "name": "Приземление",
+        "frames": 39
+      },
+      {
+        "id": "f10_roar",
+        "name": "Рёв ярости",
+        "frames": 41
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 35
+      }
+    ]
+  },
+  {
+    "id": "f11boss",
+    "name": "Древний страж",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 11,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "f11_wake",
+        "name": "Пробуждение",
+        "frames": 58
+      },
+      {
+        "id": "f11_gaze",
+        "name": "Взгляд линзы",
+        "frames": 92
+      },
+      {
+        "id": "f11_slam",
+        "name": "Кулаки в землю",
+        "frames": 65
+      },
+      {
+        "id": "f11_stomp",
+        "name": "Топот",
+        "frames": 57
+      },
+      {
+        "id": "f11_rockets",
+        "name": "Ракетная батарея",
+        "frames": 53
+      },
+      {
+        "id": "f11_spin",
+        "name": "Двойной луч",
+        "frames": 102
+      },
+      {
+        "id": "f11_shift",
+        "name": "Перестройка корпуса",
+        "frames": 32
+      },
+      {
+        "id": "f11_stagger",
+        "name": "На колене",
+        "frames": 56
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 39
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 39
+      }
+    ]
+  },
+  {
+    "id": "f12boss",
+    "name": "Ледниковый мамонт",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 12,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "roar",
+        "name": "Пробуждение",
+        "frames": 58
+      },
+      {
+        "id": "f12b_tusk",
+        "name": "Бивни",
+        "frames": 33
+      },
+      {
+        "id": "f12b_stomp",
+        "name": "Топот",
+        "frames": 38
+      },
+      {
+        "id": "f12b_paw",
+        "name": "Скребёт копытом",
+        "frames": 26
+      },
+      {
+        "id": "f12b_charge",
+        "name": "Набег",
+        "frames": 56
+      },
+      {
+        "id": "f12b_skid",
+        "name": "Юз",
+        "frames": 21
+      },
+      {
+        "id": "f12b_stunned",
+        "name": "Удар в стену",
+        "frames": 58
+      },
+      {
+        "id": "f12b_drum",
+        "name": "Бубен шаманки",
+        "frames": 36
+      },
+      {
+        "id": "f12b_spikes",
+        "name": "Шипы из пола",
+        "frames": 59
+      },
+      {
+        "id": "f12b_blow",
+        "name": "Выдох на жаровню",
+        "frames": 32
+      },
+      {
+        "id": "f12b_douse",
+        "name": "Идёт к жаровне",
+        "frames": 36
+      },
+      {
+        "id": "f12b_rear",
+        "name": "Дыбы и вьюга",
+        "frames": 41
+      },
+      {
+        "id": "f12b_rear_ice",
+        "name": "Ледниковый период",
+        "frames": 41
+      },
+      {
+        "id": "f12b_drop",
+        "name": "Сияние и падение на колени",
+        "frames": 44
+      },
+      {
+        "id": "f12b_getup",
+        "name": "Подъём",
+        "frames": 34
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 39
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 63
+      }
+    ]
+  },
+  {
+    "id": "f13boss",
+    "name": "Кукловод",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 13,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "f13_hang_rest",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "roar",
+        "name": "Выход на сцену",
+        "frames": 58
+      },
+      {
+        "id": "f13_trans",
+        "name": "Перемена декораций",
+        "frames": 77
+      },
+      {
+        "id": "f13_cut1",
+        "name": "Рубка вагой",
+        "frames": 23
+      },
+      {
+        "id": "f13_cut2",
+        "name": "Укол вагой",
+        "frames": 26
+      },
+      {
+        "id": "f13_snare",
+        "name": "Аркан",
+        "frames": 34
+      },
+      {
+        "id": "f13_grid",
+        "name": "Сетка",
+        "frames": 58
+      },
+      {
+        "id": "f13_needle",
+        "name": "Иглы",
+        "frames": 82
+      },
+      {
+        "id": "f13_hang_bolt",
+        "name": "Молния над кораблём",
+        "frames": 39
+      },
+      {
+        "id": "f13_hang_memory",
+        "name": "Память звезды",
+        "frames": 44
+      },
+      {
+        "id": "f13_hang_star",
+        "name": "Падение звезды",
+        "frames": 36
+      },
+      {
+        "id": "f13_hang_wave",
+        "name": "Волна сцены",
+        "frames": 44
+      },
+      {
+        "id": "f13_spent",
+        "name": "Без сил",
+        "frames": 58
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 39
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 125
+      }
+    ]
+  },
+  {
+    "id": "f13_giant",
+    "name": "Рыцарь-исполин",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 13,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "f13_stand",
+        "name": "На сцене",
+        "frames": 36
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 36
+      },
+      {
+        "id": "f13_lance",
+        "name": "Выпад копьём",
+        "frames": 39
+      },
+      {
+        "id": "f13_shield",
+        "name": "Удар щитом",
+        "frames": 44
+      },
+      {
+        "id": "f13_charge_aim",
+        "name": "Подготовка разбега",
+        "frames": 29
+      },
+      {
+        "id": "f13_charge",
+        "name": "Таран",
+        "frames": 44
+      },
+      {
+        "id": "f13_slump",
+        "name": "Падение на колени",
+        "frames": 48
+      },
+      {
+        "id": "f13_rebuild",
+        "name": "Подъём на нитях",
+        "frames": 56
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 17
+      }
+    ]
+  },
+  {
+    "id": "f14boss",
+    "name": "Повелитель часа",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 14,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "roar",
+        "name": "Пробуждение",
+        "frames": 58
+      },
+      {
+        "id": "f14_hour",
+        "name": "Часовая стрелка",
+        "frames": 56
+      },
+      {
+        "id": "f14_minute",
+        "name": "Минутная стрелка",
+        "frames": 34
+      },
+      {
+        "id": "f14_lunge",
+        "name": "Выпад",
+        "frames": 6
+      },
+      {
+        "id": "f14_stuck",
+        "name": "Застрял",
+        "frames": 29
+      },
+      {
+        "id": "f14_spin",
+        "name": "Вращение маятником",
+        "frames": 52
+      },
+      {
+        "id": "f14_clap",
+        "name": "Хлопок",
+        "frames": 54
+      },
+      {
+        "id": "f14_place",
+        "name": "Остановка и ножи",
+        "frames": 64
+      },
+      {
+        "id": "f14_ritual",
+        "name": "Отмотка",
+        "frames": 132
+      },
+      {
+        "id": "f14_broken",
+        "name": "Сломанные часы",
+        "frames": 58
+      },
+      {
+        "id": "f14_tired",
+        "name": "Полночь",
+        "frames": 87
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 39
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "f14_toHub",
+        "name": "Путь к центру часов",
+        "frames": 39
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 63
+      }
+    ]
+  },
+  {
+    "id": "f15boss",
+    "name": "Хозяин подземелья",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 15,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "f15l_sleep",
+        "name": "Спящий плащ",
+        "frames": 48
+      },
+      {
+        "id": "f15l_stir",
+        "name": "Шевелится",
+        "frames": 22
+      },
+      {
+        "id": "f15l_wake",
+        "name": "Пробуждение",
+        "frames": 82
+      },
+      {
+        "id": "f15l_palm",
+        "name": "Ладонь-созвездие",
+        "frames": 50
+      },
+      {
+        "id": "f15l_sweep",
+        "name": "Рубящая дуга",
+        "frames": 36
+      },
+      {
+        "id": "f15l_repel",
+        "name": "Три кольца",
+        "frames": 57
+      },
+      {
+        "id": "f15l_well",
+        "name": "Колодец тяготения",
+        "frames": 130
+      },
+      {
+        "id": "f15l_orbit",
+        "name": "Планеты короны",
+        "frames": 107
+      },
+      {
+        "id": "f15l_meteor",
+        "name": "Звездопад",
+        "frames": 69
+      },
+      {
+        "id": "f15l_conduct",
+        "name": "Дирижёр памяти",
+        "frames": 36
+      },
+      {
+        "id": "f15l_dstrike",
+        "name": "Когти из тьмы",
+        "frames": 45
+      },
+      {
+        "id": "f15l_dstrike_stars",
+        "name": "Пять звёзд из тьмы",
+        "frames": 44
+      },
+      {
+        "id": "f15l_gather",
+        "name": "Сбор орбит",
+        "frames": 53
+      },
+      {
+        "id": "f15l_memory",
+        "name": "Память подземелья",
+        "frames": 58
+      },
+      {
+        "id": "f15l_wrap",
+        "name": "Затмение",
+        "frames": 44
+      },
+      {
+        "id": "f15l_dark",
+        "name": "Тёмный ход",
+        "frames": 36
+      },
+      {
+        "id": "f15l_open",
+        "name": "Открытое ядро",
+        "frames": 63
+      },
+      {
+        "id": "f15l_nova",
+        "name": "Сверхновая",
+        "frames": 87
+      },
+      {
+        "id": "f15l_core_beam",
+        "name": "Вращение лучей звезды",
+        "frames": 166
+      },
+      {
+        "id": "f15l_core_pulse",
+        "name": "Ядро и импульс",
+        "frames": 51
+      },
+      {
+        "id": "f15l_core_breath",
+        "name": "Выдох звезды",
+        "frames": 68
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 39
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 77
+      }
+    ]
+  },
+  {
+    "id": "f15b_echo_king",
+    "name": "Эхо Крысиного короля",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 15,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 39
+      },
+      {
+        "id": "windup",
+        "name": "Замах и рубка",
+        "frames": 36
+      },
+      {
+        "id": "rollAim",
+        "name": "Подготовка переката",
+        "frames": 22
+      },
+      {
+        "id": "roll",
+        "name": "Перекат",
+        "frames": 44
+      },
+      {
+        "id": "dizzy",
+        "name": "Ошеломление",
+        "frames": 29
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "f15e_rise",
+        "name": "Сборка созвездия",
+        "frames": 34
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 17
+      }
+    ]
+  },
+  {
+    "id": "f15b_echo_mino",
+    "name": "Эхо Минотавра",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 15,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 39
+      },
+      {
+        "id": "axe",
+        "name": "Удар секирой",
+        "frames": 57
+      },
+      {
+        "id": "aim",
+        "name": "Подготовка набега",
+        "frames": 24
+      },
+      {
+        "id": "gore",
+        "name": "Набег рогами",
+        "frames": 39
+      },
+      {
+        "id": "dizzy",
+        "name": "Оглушение",
+        "frames": 36
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "f15e_rise",
+        "name": "Сборка созвездия",
+        "frames": 34
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 17
+      }
+    ]
+  },
+  {
+    "id": "f15b_echo_serpent",
+    "name": "Эхо Красного змея",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 15,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "chase",
+        "name": "Ползание",
+        "frames": 39
+      },
+      {
+        "id": "f6_bite",
+        "name": "Укус",
+        "frames": 41
+      },
+      {
+        "id": "f6_wave",
+        "name": "Волна пламени",
+        "frames": 53
+      },
+      {
+        "id": "f6_sweep",
+        "name": "Огненный веер",
+        "frames": 53
+      },
+      {
+        "id": "dizzy",
+        "name": "Ошеломление",
+        "frames": 34
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "f15e_rise",
+        "name": "Сборка созвездия",
+        "frames": 34
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 17
+      }
+    ]
+  },
+  {
+    "id": "f15b_echo_hydra",
+    "name": "Эхо гидры",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 15,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "chase",
+        "name": "Призыв трёх голов",
+        "frames": 51
+      },
+      {
+        "id": "f15e_rise",
+        "name": "Сборка созвездия",
+        "frames": 31
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 17
+      }
+    ]
+  },
+  {
+    "id": "f15b_echo_head",
+    "name": "Голова эха",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 15,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "chase",
+        "name": "Парение",
+        "frames": 34
+      },
+      {
+        "id": "bite",
+        "name": "Укус",
+        "frames": 41
+      },
+      {
+        "id": "cast_fire",
+        "name": "Огненный плевок",
+        "frames": 48
+      },
+      {
+        "id": "cast_ice",
+        "name": "Ледяной плевок",
+        "frames": 48
+      },
+      {
+        "id": "cast_venom",
+        "name": "Ядовитый плевок",
+        "frames": 48
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "f15e_rise",
+        "name": "Сборка созвездия",
+        "frames": 31
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 17
+      }
+    ]
+  },
+  {
+    "id": "f15b_echo_demon",
+    "name": "Эхо Короля демонов",
+    "section": "bosses",
+    "rarity": "secret",
+    "floor": 15,
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 58
+      },
+      {
+        "id": "chase",
+        "name": "Ходьба",
+        "frames": 39
+      },
+      {
+        "id": "slash",
+        "name": "Рубящий удар",
+        "frames": 50
+      },
+      {
+        "id": "cleave",
+        "name": "Раскол",
+        "frames": 56
+      },
+      {
+        "id": "stuck",
+        "name": "Меч в земле",
+        "frames": 32
+      },
+      {
+        "id": "f10_storm",
+        "name": "Грозовой залп",
+        "frames": 53
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 24
+      },
+      {
+        "id": "f15e_rise",
+        "name": "Сборка созвездия",
+        "frames": 34
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
+        "frames": 17
+      }
+    ]
+  },
+  {
+    "id": "pet_mole",
+    "name": "Крот-забойщик",
+    "section": "pets",
+    "rarity": "common",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_mole"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_mole_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_roach",
+    "name": "Таракан-бегун",
+    "section": "pets",
+    "rarity": "common",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_roach"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_roach_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_mouse",
+    "name": "Мышь-воришка",
+    "section": "pets",
+    "rarity": "common",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_mouse"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_mouse_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_pigeon",
+    "name": "Голубь-почтальон",
+    "section": "pets",
+    "rarity": "common",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_pigeon"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_pigeon_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_cat",
+    "name": "Кот Шрам",
+    "section": "pets",
+    "rarity": "uncommon",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_cat"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_cat_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_bulldog",
+    "name": "Бульдог Кастет",
+    "section": "pets",
+    "rarity": "uncommon",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_bulldog"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_bulldog_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_ferret",
+    "name": "Хорёк-шнырь",
+    "section": "pets",
+    "rarity": "uncommon",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_ferret"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_ferret_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_scarab",
+    "name": "Жук-скарабей",
+    "section": "pets",
+    "rarity": "uncommon",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_scarab"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_scarab_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_badger",
+    "name": "Барсук-проходчик",
+    "section": "pets",
+    "rarity": "rare",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_badger"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_badger_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_owl",
+    "name": "Сова-фонарщица",
+    "section": "pets",
+    "rarity": "rare",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_owl"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_owl_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_raccoon",
+    "name": "Енот-медвежатник",
+    "section": "pets",
+    "rarity": "rare",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_raccoon"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_raccoon_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_shepherd",
+    "name": "Овчарка Верная",
+    "section": "pets",
+    "rarity": "epic",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_shepherd"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_shepherd_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_fox",
+    "name": "Лис-картёжник",
+    "section": "pets",
+    "rarity": "epic",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_fox"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_fox_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_spider",
+    "name": "Паук-отмычка",
+    "section": "pets",
+    "rarity": "epic",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_spider"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_spider_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_dragon",
+    "name": "Угольный дракон",
+    "section": "pets",
+    "rarity": "legendary",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_dragon"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_dragon_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_wolf",
+    "name": "Волк-вожак",
+    "section": "pets",
+    "rarity": "legendary",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_wolf"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_wolf_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_raven",
+    "name": "Ворон-ключник",
+    "section": "pets",
+    "rarity": "legendary",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_raven"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_raven_gold"
+      }
+    ]
+  },
+  {
+    "id": "pet_phoenix",
+    "name": "Феникс свободы",
+    "section": "pets",
+    "rarity": "mythic",
+    "clips": [
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "work",
+        "name": "Трюк",
+        "frames": 48
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 26
+      },
+      {
+        "id": "attack",
+        "name": "Атака",
+        "frames": 22
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      }
+    ],
+    "variants": [
+      {
+        "id": "base",
+        "name": "Обычный",
+        "atlas": "pet_phoenix"
+      },
+      {
+        "id": "gold",
+        "name": "Золотой",
+        "atlas": "pet_phoenix_gold"
+      }
+    ]
+  }
+]

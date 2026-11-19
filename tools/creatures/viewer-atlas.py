@@ -119,8 +119,7 @@ def pack(assets, out, ident):
                  for obj in load(source / 'bg/front-depth.json')]
         scene = material(dest, sorted((source / 'bg/loop').glob('*.png')), front)
         has_behavior = (source / 'behavior.json').is_file()
-        names = [key for key in meta['animations'] if key not in {'walk', 'life', 'showreel'}] if has_behavior else [
-            key for key in ['life', 'happy'] if key in meta['animations']]
+        names = list(meta['animations'])
         clips = {}
         sprites = Atlas()
         for name in names:
@@ -128,11 +127,12 @@ def pack(assets, out, ident):
             track = load(directory / 'motion.json')
             if len(track) != meta['animations'][name]['frames']:
                 raise ValueError(f'{ident}/{name}: frame count differs from metadata')
+            layers = (*LAYERS, 'over') if (directory / 'over').is_dir() else LAYERS
             frames = []
             for n, sample in enumerate(track):
                 # Feet and camera are in field pixels. Sprite origins include the border and shake.
                 row = [*sample['feet'], *sample['camera'], sample['backgroundFrame']]
-                for layer in LAYERS:
+                for layer in layers:
                     with Image.open(directory / layer / f'{n:03d}.png') as image:
                         row.append(sprites.trim(image.convert('RGBA')))
                 frames.append(row)
@@ -149,8 +149,8 @@ def pack(assets, out, ident):
         generated = list(dest.iterdir())
         files = generated + list(frame_dir.iterdir())
         total = sum(f.stat().st_size for f in files)
-        if total > 15_000_000 or any(f.stat().st_size > 16_000_000 for f in files):
-            raise ValueError(f'{ident} exceeds viewer size limits ({total:,} bytes)')
+        if any(f.stat().st_size > 15_000_000 for f in files):
+            raise ValueError(f'{ident} contains a file over 15 MB')
         target = out / ident
         target.mkdir(exist_ok=True)
         current = {f.name for f in generated}

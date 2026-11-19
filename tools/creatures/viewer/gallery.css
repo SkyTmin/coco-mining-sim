@@ -99,3 +99,16 @@ h1 { font-size: clamp(44px, 6.2vw, 92px); line-height: 1.05; letter-spacing: -.0
 @media (pointer: coarse) {
   .keyboard-hint { display: none; }
 }
+
+.playback { grid-column: 1 / -1; padding: 18px clamp(16px, 2.6vw, 40px) 24px; border-top: 1px solid var(--line); }
+.playback h3 { margin-bottom: 10px; font-size: 24px; }
+.clip-list, .variants { display: flex; flex-wrap: wrap; gap: 6px; }
+.variants[hidden], #gestures[hidden], .actions[hidden] { display: none; }
+.variants { margin-bottom: 14px; }
+.playback button { border: 1px solid var(--line); border-radius: 3px; padding: 7px 11px; min-height: 36px;
+  color: var(--ink); background: transparent; cursor: pointer; }
+.playback button:hover { border-color: var(--green); }
+.playback button[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: #fff; }
+#collection > section { margin-bottom: clamp(30px, 5vw, 64px); scroll-margin-top: 12px; }
+.work.selected figcaption { border-color: var(--green); }
+@media (pointer: coarse) { .playback button { min-height: 44px; } }
