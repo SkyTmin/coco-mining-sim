@@ -131,3 +131,18 @@ test('ws sheet-lint returns 1 with JSON measurements for a rejected image throug
   assert.equal(report.ok, false);
   assert.deepEqual(report.cells[0].extraSizes, [16]);
 });
+
+test('a declared airborne prop keeps its own contour, clearance and palette checks', () => {
+  const png = poses();
+  const run = () => lintSheet(png, [3, 1], [], poses(), [], [2]).cells[1];
+  assert.ok(run().issues.some(s => s.startsWith('prop:')));
+  rect(png, 54, 12, 4, 8, green);
+  assert.deepEqual(run().issues, []);
+  assert.equal(run().prop?.pixels, 32);
+  assert.ok(check(png).cells[1].issues.some(s => s.startsWith('spot:')));
+  rect(png, 54, 12, 4, 8, 0xffce22);
+  assert.ok(run().issues.some(s => s.startsWith('prop palette:')));
+  rect(png, 89, 10, 4, 5, green);
+  assert.ok(run().issues.some(s => s.startsWith('spot:')));
+  assert.throws(() => lintSheet(png, [3, 1], [], undefined, [], [0]), /--prop/);
+});

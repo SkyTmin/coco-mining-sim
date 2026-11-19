@@ -30,6 +30,8 @@ export interface Finding {
 export interface StudioConfig {
   /** Movement supplied by the body family, without an authored character sheet. */
   bodyClips?: string[];
+  /** A multi-act performance uses the B7 3–4 second window. */
+  multiActTrick?: boolean;
   contactAllow?: ContactException[];
   /** Designed overlaps, matched by tag or label substring: e.g. { a: 'tongue', b: 'head' }. */
   clipAllow?: ClipAllow[];
