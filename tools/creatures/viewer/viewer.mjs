@@ -63,7 +63,9 @@ async function loadArtwork(id, runtime, priority) {
     typeof data.scene === 'string'
       ? sharedMaterial(new URL(root + data.scene, document.baseURI).href, ...data.canvas)
       : material(root, data.scene, ...data.canvas, priority),
-    sharedMaterial('./atlases/frames/' + data.rarity + '/atlas.json', ...(data.borderCanvas ?? data.canvas)),
+    data.border
+      ? material(root, data.border, ...(data.borderCanvas ?? data.canvas), priority)
+      : sharedMaterial('./atlases/frames/' + data.rarity + '/atlas.json', ...(data.borderCanvas ?? data.canvas)),
     actorPages(root, data.actors, priority),
     data.behavior ? json(root + 'behavior.json') : null,
   ]);

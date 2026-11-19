@@ -18,6 +18,7 @@ const works = [
   ['sand_scorpion', 'Скорпион Анкхар', '#987448'],
   ['sky_whale', 'Небесный кит Алтан', '#475c7d'],
   ['nebula_squid', 'Кальмар Туманность', '#64567f'],
+  ['druse_phoenix', 'Феникс Друза', '#4d3e59'],
   ['bramble_warden', 'Ежевичный страж', '#56644b'],
   ['gem_beetle', 'Самоцветный жук', '#504b63'],
   ['storm_ram', 'Грозовой баран', '#485c68'],
@@ -48,6 +49,7 @@ const labels: Record<string, string> = {
   turn: 'Разворот',
   look: 'Взгляд',
   happy: 'Радость',
+  'happy-f2': 'Радость во втором облике',
   trick: 'Трюк',
   fidget_a: 'Первый жест',
   fidget_b: 'Второй жест',
@@ -62,6 +64,18 @@ const labels: Record<string, string> = {
   peek: 'Выглядывание',
   away: 'Уход',
   back: 'Возвращение',
+};
+const titles: Record<string, Record<string, string>> = {
+  druse_phoenix: {
+    phase: 'Огранка пламенем',
+    'idle-f2': 'Покой во втором облике',
+    trick: 'Корона из перьев-осколков',
+    trick_b: 'Кристальный ксилофон',
+    'trick-f2': 'Огненный обруч',
+    'trick_b-f2': 'Перерождение из жеоды',
+    show: 'Камень раскрывается',
+    peek: 'Перо поверх рамы',
+  },
 };
 type Clip = { id: string; name: string; frames?: number };
 type Entry = {
@@ -112,7 +126,10 @@ async function nativeEntry(id: string, name: string, color: string, section: str
   const order = ['life', ...Object.keys(meta.animations).filter((clip) => clip !== 'life')];
   const clips = order.map((key) => ({
     id: key,
-    name: key === 'showreel' && !c.behavior ? 'Все приёмы' : c.techniques?.[key]?.title ?? labels[key],
+    name:
+      key === 'showreel' && !c.behavior
+        ? 'Все приёмы'
+        : titles[id]?.[key] ?? c.techniques?.[key]?.title ?? labels[key],
     frames: meta.animations[key].frames,
   }));
   return { id, name, section, rarity: packed.rarity, color, clips };

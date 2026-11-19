@@ -1,5 +1,5 @@
 // Cached, parallel rendering. A creature is re-rendered only when one of its inputs changed:
-// shared pipeline code, its own c/<id>* files and helpers, its scene and its rarity frame.
+// shared pipeline code, its own c/<id>* files and helpers, its scene and its frame.
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -58,6 +58,7 @@ export function inputsOf(id: string, theme: string, rarity: string) {
     join(assets, id, 'behavior.json'),
     ...sceneInputs(theme),
     join(tools, 'frames', rarity + '.ts'),
+    join(tools, 'frames', id + '.ts'),
     join(tools, 'frame-kit.ts'),
   ].filter((f) => existsSync(f));
   return [...new Set(files)].sort();

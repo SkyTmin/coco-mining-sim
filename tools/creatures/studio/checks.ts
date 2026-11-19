@@ -30,6 +30,8 @@ export interface Finding {
 export interface StudioConfig {
   /** Movement supplied by the body family, without an authored character sheet. */
   bodyClips?: string[];
+  /** Native field-space pose targets. Full visual sheets can be distributed outside git. */
+  keyframes?: Record<string, { frame: number; points: Record<string, [number, number, number]> }[]>;
   /** A multi-act performance uses the B7 3–4 second window. */
   multiActTrick?: boolean;
   contactAllow?: ContactException[];

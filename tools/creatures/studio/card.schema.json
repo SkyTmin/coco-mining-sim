@@ -110,7 +110,8 @@
         "armed-biped",
         "squat-mage",
         "giant",
-        "winged-dragon"
+        "winged-dragon",
+        "winged-bird"
       ]
     },
     "template": {

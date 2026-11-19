@@ -1699,6 +1699,175 @@
     ]
   },
   {
+    "id": "druse_phoenix",
+    "name": "Феникс Друза",
+    "section": "ours",
+    "rarity": "secret",
+    "color": "#4d3e59",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "fidget_a",
+        "name": "Первый жест",
+        "frames": 42
+      },
+      {
+        "id": "fidget_b",
+        "name": "Второй жест",
+        "frames": 42
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 48
+      },
+      {
+        "id": "happy-f2",
+        "name": "Радость во втором облике",
+        "frames": 48
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 84
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 48
+      },
+      {
+        "id": "phase",
+        "name": "Огранка пламенем",
+        "frames": 48
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой во втором облике",
+        "frames": 36
+      },
+      {
+        "id": "trick",
+        "name": "Корона из перьев-осколков",
+        "frames": 126
+      },
+      {
+        "id": "trick_b",
+        "name": "Кристальный ксилофон",
+        "frames": 126
+      },
+      {
+        "id": "trick-f2",
+        "name": "Огненный обруч",
+        "frames": 126
+      },
+      {
+        "id": "trick_b-f2",
+        "name": "Перерождение из жеоды",
+        "frames": 126
+      },
+      {
+        "id": "show",
+        "name": "Камень раскрывается",
+        "frames": 138
+      },
+      {
+        "id": "peek",
+        "name": "Перо поверх рамы",
+        "frames": 72
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1800
+      }
+    ]
+  },
+  {
     "id": "bramble_warden",
     "name": "Ежевичный страж",
     "section": "ours",

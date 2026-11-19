@@ -17,7 +17,8 @@ import {
   type Layers,
 } from './engine';
 import { indexed } from './render-io';
-import { loadPainting } from './render';
+import { loadPainting, paintingFrameDir } from './render';
+import { lifeCycleCount } from './motion';
 import { Px } from './rig/px';
 
 const here = dirname(fileURLToPath(import.meta.url)),
@@ -66,7 +67,7 @@ export async function verifyRelease(
     assert.equal(Object.keys(meta.motion.directions).length, 8);
     assert.ok(c.animations.life);
   }
-  const frameLoop = join(assetRoot, 'frames', c.rarity, 'loop'),
+  const frameLoop = join(paintingFrameDir(c, output), 'loop'),
     bgLoop = join(output, 'bg', 'loop');
   const thickness = meta.thickness;
   const objects: { id: string; depth: number; pixels: Px }[] = JSON.parse(
@@ -263,11 +264,17 @@ export async function verifyRelease(
     }
   }
   if (c.behavior) {
-    const life = readFileSync(join(output, 'gif', 'painting-life.gif'));
-    assert.ok(
-      life.equals(readFileSync(join(output, 'gif', 'paintings.gif'))),
-      id + ' seeded preview',
-    );
+    const preview = readFileSync(join(output, 'gif', 'paintings.gif'));
+    const cycles = lifeCycleCount(c);
+    if (cycles > 1) {
+      const reader = new omggif.GifReader(preview);
+      assert.equal(reader.numFrames(), cycles * meta.animations.life.frames, id + ' alternating life cycles');
+      assert.equal(reader.width, w * meta.scale);
+      assert.equal(reader.height, h * meta.scale);
+    } else {
+      const life = readFileSync(join(output, 'gif', 'painting-life.gif'));
+      assert.ok(life.equals(preview), id + ' seeded preview');
+    }
     gifCount++;
   }
   const turn = new omggif.GifReader(

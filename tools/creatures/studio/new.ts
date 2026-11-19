@@ -82,6 +82,12 @@ const families: Record<
     effects: 'lava',
     tones: ['#332c36', '#56444a', '#846058', '#b56e45', '#f8bd71'],
   },
+  'winged-bird': {
+    parts: ['body', 'neck', 'head', 'wingL', 'wingR', 'tail', 'footL', 'footR'],
+    moves: ['dive', 'sweep', 'volley', 'breath', 'ram', 'leap'],
+    effects: 'crystal',
+    tones: ['#122334', '#255052', '#469885', '#82b8be', '#d8e5de'],
+  },
   'winged-dragon': {
     parts: ['body', 'neck', 'head', 'wingL', 'wingR', 'tail', 'claws'],
     moves: ['sweep', 'breath', 'volley', 'summon', 'dive', 'ram'],
@@ -218,6 +224,18 @@ export async function newCommand(args: string[]) {
   // The blank model inherits the locomotion of its family. Its artist will
   // supply a second form and a reveal before those beats can enter the route.
   const life = defaultLife(original, moves);
+  if (body === 'winged-bird') {
+    const [home, left, right] = life.beats;
+    life.beats = [
+      { ...home, seconds: 2 },
+      { ...home, seconds: 2, anim: 'walk' },
+      { ...left, seconds: 1, anim: 'turn' },
+      { ...left, seconds: 1.5, anim: moves[0].id },
+      { ...left, seconds: 3, anim: 'walk' },
+      { ...right, seconds: 1.5, anim: moves[1].id },
+      { ...right, seconds: 2.5, anim: 'walk' },
+    ];
+  }
   for (const beat of life.beats) {
     if (['phase', 'idle-f2', 'show'].includes(beat.anim)) beat.anim = 'idle';
   }
