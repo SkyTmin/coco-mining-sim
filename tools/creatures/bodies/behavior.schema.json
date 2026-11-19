@@ -10,11 +10,14 @@
     "depthScale",
     "stops",
     "walkShare",
-    "attackInterval",
     "attacks",
     "weights",
     "events",
     "yaw"
+  ],
+  "anyOf": [
+    { "required": ["attackInterval"] },
+    { "required": ["lifeAttacks"] }
   ],
   "additionalProperties": false,
   "properties": {
@@ -87,6 +90,13 @@
         "type": "string",
         "pattern": "^tech_[a-z0-9_]+$"
       }
+    },
+    "lifeAttacks": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^tech_[a-z0-9_]+$" }
     },
     "weights": {
       "type": "object",

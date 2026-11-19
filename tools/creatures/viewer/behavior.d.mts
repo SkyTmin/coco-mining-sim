@@ -8,8 +8,10 @@ export interface BehaviorConfig {
   stops: [number, number][];
   walkShare: [number, number];
   weights: Record<string, number>;
-  attackInterval: [number, number];
+  attackInterval?: [number, number];
   attacks: string[];
+  /** Full attacks in each 30-second excursion, followed by phase, idle-f2 and the return to idle. */
+  lifeAttacks?: string[];
   /** Eligible normalized anchor rectangle [left, top, right, bottom] for a technique. */
   attackBounds?: Record<string, [number, number, number, number]>;
   events: Record<string, string[]>;

@@ -25,6 +25,10 @@ const works = [
 ];
 const labels: Record<string, string> = {
   life: 'Жизнь',
+  squirrel_peek: 'Белка выглядывает',
+  squirrel_throw: 'Белка бросает орех',
+  squirrel_cheer: 'Белка радуется',
+  squirrel_sleep: 'Белка спит в дупле',
   showreel: 'Все анимации',
   idle: 'Покой',
   'idle-f2': 'Покой во второй фазе',

@@ -45,7 +45,8 @@ export function reelChapters(c: Creature) {
   let cursor = 0;
   const names = c.behavior
     ? ['hatch','turn','idle','fidget_a','fidget_b', ...directions.map(d => 'walk_' + d),
-       'look','happy','trick', ...c.behavior.attacks,'tired','sleep_in','sleep','wake_startled','sleep_out',
+       'look','happy','trick', ...Object.keys(c.animations).filter(key => c.animations[key].companion),
+       ...c.behavior.attacks,'tired','sleep_in','sleep','wake_startled','sleep_out',
        ...['phase', 'idle-f2', 'show'].filter(name => c.animations[name])]
     : Object.keys(c.animations).filter(name => name.startsWith('tech_'));
   return names.map(name => {
@@ -236,7 +237,7 @@ function routePlacement(
         }
       : {
           ...fixed,
-          anim: 'idle',
+          anim: c.behavior?.lifeAttacks && (chapter.name === 'phase' || chapter.name === 'idle-f2') ? 'idle-f2' : 'idle',
           t: (age - chapter.frames) / 24,
           start: (chapter.start + chapter.frames) / 24,
           duration: 6 / 24,

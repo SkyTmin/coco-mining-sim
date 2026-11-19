@@ -8,7 +8,7 @@ import { validateBehavior } from '../viewer/behavior.mjs';
 import { studioConfig } from './checks';
 import type { Px } from '../rig/px';
 import type { loadPainting } from '../render';
-import type { Animation } from '../types';
+import type { Animation, Rarity } from '../types';
 
 const approvedBeforePets = new Set([
   'bramble_warden', 'gem_beetle', 'silk_dragon', 'frost_yeti', 'toad_shaman',
@@ -21,8 +21,19 @@ const rules: Record<string, [number, number, boolean]> = {
   sleep_in: [1, 1.5, false], sleep: [3, 4, true], sleep_out: [1, 1.5, false],
   wake_startled: [0.8, 1.2, false],
 };
-export function petClipIssues(animations: Record<string, Animation>, references: string[], bodyClips: string[] = [], multiActTrick = false) {
+export function petClipIssues(animations: Record<string, Animation>, references: string[], bodyClips: string[] = [], multiActTrick = false, performanceRarity?: Rarity) {
   const issues: string[] = [];
+  const limits = { ...rules };
+  if (performanceRarity) {
+    if (performanceRarity !== 'legendary' && performanceRarity !== 'mythic')
+      issues.push('lifeAttacks requires a legendary or mythic pet');
+    const mythic = performanceRarity === 'mythic';
+    limits.trick = mythic ? [5, 6, false] : [4, 5, false];
+    limits.phase = [1.5, 2.5, false];
+    limits['idle-f2'] = [3, 3, true];
+    if (mythic) limits.show = [4, 6, false];
+    else if (animations.show) issues.push('show is reserved for a mythic pet');
+  } else if (multiActTrick) limits.trick = [3, 4, false];
   const angles = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'].map(d => 'walk_' + d);
   const inherited = new Set<string>();
   if (!Array.isArray(bodyClips)) issues.push('bodyClips must be an array of clip names');
@@ -31,11 +42,10 @@ export function petClipIssues(animations: Record<string, Animation>, references:
       issues.push('invalid body-derived clip ' + name);
     else inherited.add(name);
   }
-  for (const name of [...Object.keys(rules), ...angles, 'hatch', 'turn', 'tired']) {
+  for (const name of [...Object.keys(limits), ...angles, 'hatch', 'turn', 'tired']) {
     const clip = animations[name];
     if (!clip) { issues.push('missing ' + name); continue; }
-    const limit: [number, number, boolean] | undefined = name === 'trick' && multiActTrick
-      ? [3, 4, false] : rules[name] ?? (angles.includes(name) ? [1, 1, true] : undefined);
+    const limit: [number, number, boolean] | undefined = limits[name] ?? (angles.includes(name) ? [1, 1, true] : undefined);
     if (limit && (clip.seconds < limit[0] || clip.seconds > limit[1] || !!clip.loop !== limit[2]))
       issues.push(name + ' duration or looping differs from the pet set');
   }
@@ -70,7 +80,8 @@ export function petGate(painting: Painting, references: string[]) {
   if (approvedBeforePets.has(c.id) && !c.behavior) return [];
   if (!c.behavior) return ['new paintings require behavior.json'];
   const { bodyClips, multiActTrick } = studioConfig(c.id);
-  const issues = petClipIssues(c.animations, references, bodyClips, multiActTrick);
+  const rank = c.behavior.lifeAttacks ? c.rarity : undefined;
+  const issues = petClipIssues(c.animations, references, bodyClips, multiActTrick, rank);
   if (!validateSchema(c.behavior))
     issues.push(...(validateSchema.errors ?? []).map(err => 'behavior.json ' + err.instancePath + ' ' + err.message));
   issues.push(...validateBehavior(c.behavior, c.animations));
@@ -90,18 +101,31 @@ export function petGate(painting: Painting, references: string[]) {
   }
   if (!c.animations.idle) return issues;
   const resting = compose(c, s, b, 'idle', 0).layers.body;
+  const second = rank && c.animations['idle-f2'] ? compose(c, s, b, 'idle-f2', 0).layers.body : undefined;
   const asleep = Array.isArray(bodyClips) && bodyClips.includes('sleep') && c.animations.sleep
     ? compose(c, s, b, 'sleep', 0).layers.body : undefined;
   let minimum = 1, count = 0;
   for (const [name, clip] of Object.entries(c.animations)) {
     if (clip.loop) continue;
+    if (rank === 'mythic' && name === 'show') {
+      // A decoy opens the show. The revealed body holds its own presentation pose.
+      const end = frameCount(clip.seconds) - 1;
+      const held = compose(c, s, b, name, end / 24).layers.body;
+      for (let f = Math.max(0, end - Math.ceil(0.7 * 24) + 1); f < end; f++) {
+        const iou = maskOverlap(held, compose(c, s, b, name, f / 24).layers.body);
+        if (iou < 0.9) { issues.push('show must hold its final body pose for 0.7 s (frame ' + f + ')'); break; }
+      }
+      continue;
+    }
     for (const n of [0, frameCount(clip.seconds) - 1]) {
       const rendered = compose(c, s, b, name, n / 24);
       const sleepSeam = asleep && joinsSleep(name, n === 0);
-      const iou = maskOverlap(sleepSeam ? asleep : resting, rendered.layers.body);
+      const phaseSeam = name === 'phase' && n > 0 && second;
+      const target = phaseSeam || (sleepSeam ? asleep : resting);
+      const iou = maskOverlap(target, rendered.layers.body);
       minimum = Math.min(minimum, iou);
       count++;
-      if (iou < 0.9) issues.push(name + ' frame ' + n + ' vs ' + (sleepSeam ? 'sleep' : 'idle') + ' IoU ' + iou.toFixed(3) + ' < 0.900');
+      if (iou < 0.9) issues.push(name + ' frame ' + n + ' vs ' + (phaseSeam ? 'idle-f2' : sleepSeam ? 'sleep' : 'idle') + ' IoU ' + iou.toFixed(3) + ' < 0.900');
     }
   }
   console.log('  ' + c.id + ': ' + count + ' one-shot endpoints, lowest endpoint IoU ' + minimum.toFixed(3));

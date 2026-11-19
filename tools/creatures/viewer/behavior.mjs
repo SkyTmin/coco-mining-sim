@@ -41,7 +41,8 @@ export function validateBehavior(data, animations) {
   if (!pair(data.field, n => Number.isInteger(n) && n > 0) || !positive(data.stride) ||
       !Number.isFinite(data.yaw) || !positive(data.depthScale)) issues.push('field/stride/depthScale');
   if (!interval(data.walkShare, 0.35, 0.50)) issues.push('walkShare must be within 35–50%');
-  if (!interval(data.attackInterval, 30, 45)) issues.push('attackInterval must be within 30–45 s');
+  if ((!data.lifeAttacks || data.attackInterval !== undefined) && !interval(data.attackInterval, 30, 45))
+    issues.push('attackInterval must be within 30–45 s');
   if (!Array.isArray(data.stops) || data.stops.length < 3 ||
       !data.stops.every(stop => pair(stop, n => Number.isFinite(n) && n >= 0 && n <= 1)) ||
       new Set(data.stops.map(String)).size !== data.stops.length) issues.push('distinct floor stops');
@@ -67,6 +68,13 @@ export function validateBehavior(data, animations) {
     else if (attacks.some(name => !data.stops.some(at => attackFits(bounds[name], at))))
       issues.push('an attack cannot start at any floor stop');
   }
+  if (data.lifeAttacks !== undefined) {
+    const moves = data.lifeAttacks;
+    if (!Array.isArray(moves) || moves.length < 3 || moves.length > 4 ||
+        new Set(moves).size !== moves.length || !moves.every(name => Array.isArray(attacks) && attacks.includes(name)))
+      issues.push('lifeAttacks must name three or four distinct authored attacks');
+    for (const clip of ['phase', 'idle-f2']) if (!animations?.[clip]) issues.push('missing ' + clip);
+  }
   for (const [event, expected] of Object.entries(requiredEvents)) {
     if (JSON.stringify(data.events?.[event]) !== JSON.stringify(expected)) issues.push('event ' + event);
   }
@@ -84,6 +92,11 @@ export function validateBehavior(data, animations) {
     if (!Array.isArray(marks) || marks[0] !== 0 || marks.at(-1) !== end ||
         marks.some((t,i) => !Number.isInteger(t) || (i && (t <= marks[i-1] || t - marks[i-1] > 7))))
       issues.push('invalid interrupt marks ' + clip);
+  }
+  if (!issues.length && data.lifeAttacks) {
+    const score = performancePlan(data, animations);
+    if (score.maxWalk < Math.round(ticks(data.previewSeconds) * data.walkShare[0]))
+      issues.push('lifeAttacks, turns and phase leave too little time for the minimum walking share');
   }
   return issues;
 }
@@ -123,15 +136,58 @@ export function turnFramesFor(bearings, from, to) {
   return frames;
 }
 
+function turnBearings(config, animations) {
+  const count = length(animations, 'turn');
+  return animations.turn.bearings ?? Array.from({length: count},
+    (_, frame) => config.yaw + 2 * Math.PI * frame / count);
+}
+
+function walkingLeg(config, from, to, bearings) {
+  const dx = (to[0] - from[0]) * config.field[0];
+  const dz = (to[1] - from[1]) * config.field[1] / config.depthScale;
+  const index = (Math.round(Math.atan2(dz, dx) / (Math.PI / 4)) + 8) % 8;
+  const angle = index * Math.PI / 4;
+  return {
+    from, to, distance: Math.hypot(dx, dz), direction: petDirections[index],
+    departing: turnFramesFor(bearings, config.yaw, angle),
+    entering: turnFramesFor(bearings, angle, config.yaw),
+  };
+}
+
+// Each full attack starts at an eligible stop. Back at home, the pet holds
+// its second form for a whole idle cycle, then reverses the transformation.
+function performancePlan(config, animations) {
+  const home = config.stops[0], stops = [{ at: home, actions: [] }];
+  let previous = 0;
+  for (const name of config.lifeAttacks) {
+    for (let step = 1; step <= config.stops.length; step++) {
+      const index = (previous + step) % config.stops.length, at = config.stops[index];
+      if (!attackFits(config.attackBounds?.[name], at)) continue;
+      if (index !== previous) stops.push({ at, actions: [] });
+      stops.at(-1).actions.push(name);
+      previous = index;
+      break;
+    }
+  }
+  if (stops.length === 1) stops.push({ at: config.stops[1], actions: [] });
+  if (stops.at(-1).at !== home) stops.push({ at: home, actions: [] });
+  const bearings = turnBearings(config, animations);
+  const legs = stops.slice(1).map((next, i) => walkingLeg(config, stops[i].at, next.at, bearings));
+  const actions = config.lifeAttacks.reduce((sum, name) => sum + length(animations, name), 0);
+  const turns = legs.reduce((sum, leg) => sum + leg.departing.length + leg.entering.length, 0);
+  // One regular idle frame at each seam, plus both directions of the actual phase clip.
+  const fixed = 2 + actions + turns + 2 * length(animations, 'phase') + length(animations, 'idle-f2');
+  return { stops, legs, maxWalk: ticks(config.previewSeconds) - fixed };
+}
+
 export function createPetBehavior(config, animations, seed = config.seed) {
   const random = randomSource(seed);
   const choose = list => list[Math.floor(random() * list.length)];
   const between = range => range[0] + random() * (range[1] - range[0]);
   const window = ticks(config.previewSeconds);
   const idleFrames = length(animations, 'idle');
-  const turnTicks = length(animations, 'turn');
-  const bearings = animations.turn.bearings ?? Array.from({length: turnTicks},
-    (_, frame) => config.yaw + 2 * Math.PI * frame / turnTicks);
+  const bearings = turnBearings(config, animations);
+  const score = config.lifeAttacks ? performancePlan(config, animations) : undefined;
   const home = config.stops[0];
   const canAttack = (name, at) => attackFits(config.attackBounds?.[name], at);
   const pickAttack = at => choose(at && config.attackBounds
@@ -161,18 +217,15 @@ export function createPetBehavior(config, animations, seed = config.seed) {
     const rows = [];
     const chosen = config.stops.slice(1);
     const take = () => chosen.splice(Math.floor(random() * chosen.length), 1)[0];
-    const via = [home, take(), take(), home];
-    const legs = via.slice(1).map((to, i) => {
-      const from = via[i];
-      const dx = (to[0] - from[0]) * config.field[0];
-      const dz = (to[1] - from[1]) * config.field[1] / config.depthScale;
-      const direction = petDirections[(Math.round(Math.atan2(dz, dx) / (Math.PI / 4)) + 8) % 8];
-      return {from, to, distance: Math.hypot(dx, dz), direction};
-    });
-    const walks = Math.round(window * between(config.walkShare));
+    const via = score ? score.stops.map(stop => stop.at) : [home, take(), take(), home];
+    const legs = score?.legs ?? via.slice(1).map((to, i) => walkingLeg(config, via[i], to, bearings));
+    const requested = Math.round(window * between(config.walkShare));
+    const walks = score ? Math.min(requested, score.maxWalk) : requested;
+    if (score && walks < Math.round(window * config.walkShare[0]))
+      throw Error('lifeAttacks, turns and phase leave too little time for the minimum walking share');
     const distance = legs.reduce((sum, leg) => sum + leg.distance, 0);
     const attacks = [];
-    while (nextAttack < cycleStart + window) {
+    while (!score && nextAttack < cycleStart + window) {
       const clip = pickAttack(), frames = length(animations, clip);
       attacks.push({tick: nextAttack - cycleStart, clip, frames});
       nextAttack = nextAttackAfter(nextAttack);
@@ -198,8 +251,6 @@ export function createPetBehavior(config, animations, seed = config.seed) {
       walked += leg.distance;
       const end = Math.round(walks * walked / distance);
       leg.count = end - used;
-      leg.departing = turnFrames(leg.direction, false);
-      leg.entering = turnFrames(leg.direction, true);
       leg.movingTicks = leg.count + leg.departing.length + leg.entering.length;
       used = end;
     }
@@ -213,14 +264,28 @@ export function createPetBehavior(config, animations, seed = config.seed) {
         rows.push(sampleAt(name, frame, at, leg.direction));
       }
     }
-    // Ease into the discrete authored views of the turntable. Returning to the
-    // resting view before a gesture prevents the whole shell flipping in one tick.
-    function turnFrames(dir, entering) {
-      if (!dir) return [];
-      const walkBearing = petDirections.indexOf(dir) * Math.PI / 4;
-      return entering
-        ? turnFramesFor(bearings, walkBearing, config.yaw)
-        : turnFramesFor(bearings, config.yaw, walkBearing);
+    if (score) {
+      const play = (name, at, reverse = false) => {
+        const count = length(animations, name);
+        for (let i = 0; i < count; i++) rows.push(sampleAt(name, reverse ? count - i - 1 : i, at));
+      };
+      const spare = score.maxWalk - walks;
+      rows.push(sampleAt('idle', 0, home));
+      for (const [i, stop] of score.stops.entries()) {
+        const before = Math.floor(spare * i / score.stops.length);
+        rest(stop.at, Math.floor(spare * (i + 1) / score.stops.length) - before, false, false);
+        for (const name of stop.actions) play(name, stop.at);
+        const leg = legs[i];
+        if (!leg) continue;
+        for (const frame of leg.departing) rows.push(sampleAt('turn', frame, leg.from));
+        walk(leg);
+        for (const frame of leg.entering) rows.push(sampleAt('turn', frame, leg.to));
+      }
+      play('phase', home);
+      play('idle-f2', home);
+      play('phase', home, true);
+      rows.push(sampleAt('idle', 0, home));
+      return rows;
     }
     function excursion(first, end, budget) {
       const count = end - first;

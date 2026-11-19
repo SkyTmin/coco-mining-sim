@@ -14,6 +14,8 @@ export type Rarity =
   | 'mythic'
   | 'secret';
 export interface Animation {
+  /** A separately selectable performance by a second character in this painting. */
+  companion?: boolean;
   bearings?: number[]; // world bearing in radians of each authored turntable frame
   interrupt?: number[]; // interruptible 24 Hz local frame indices
   /** Physical ground displacement in field pixels, sampled independently of flight or camera shake. */
