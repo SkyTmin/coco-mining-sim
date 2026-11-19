@@ -227,7 +227,13 @@ export function templateFor(id: MoveId): MoveTemplate {
   return moveTemplates[id];
 }
 
+// The radial skeleton guides the selected arm's physical tip to the target.
+const cephalopodEffectors: Record<MoveId, string> = {
+  overhead: 'arm7', ram: 'arm0', slide: 'arm4', sweep: 'arm4', volley: 'arm1',
+  breath: 'arm1', leap: 'arm5', pillars: 'arm2', roar: 'arm3', summon: 'arm0', dive: 'arm6',
+};
 export function weaponFor(body: BodyType, id: MoveId) {
+  if (body === 'cephalopod') return cephalopodEffectors[id];
   // A long flier lands its whip-like tail while the belly and fins remain airborne.
   if (id === 'leap' && body === 'long-flier') return 'tailTip';
   if (id === 'leap' && body === 'squat-mage') return 'handL';

@@ -21,6 +21,12 @@ const families: Record<
   BodyType,
   { parts: string[]; moves: TemplateId[]; effects: EffectId; tones: string[] }
 > = {
+  cephalopod: {
+    parts: ['mantle', 'head', ...Array.from({ length: 8 }, (_, i) => 'arm' + i)],
+    moves: ['sweep', 'overhead', 'roar', 'summon'],
+    effects: 'silk-wind',
+    tones: ['#46314b', '#744257', '#ad5f61', '#dc8b73', '#f3bb8d'],
+  },
   'light-quadruped': {
     parts: ['torso', 'neck', 'head', 'foreL', 'foreR', 'hindL', 'hindR', 'tail'],
     moves: ['ram', 'leap', 'volley'],

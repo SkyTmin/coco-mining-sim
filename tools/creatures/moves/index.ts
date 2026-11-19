@@ -18,6 +18,7 @@ export { moveTemplates, defaultMoveParameters, weaponFor, type MoveId } from './
 const rigScale: Record<BodyType, number> = {
   'heavy-quadruped': 1,
   'light-quadruped': 1,
+  cephalopod: 1,
   hexapod: 1,
   'long-flier': 1.15,
   'armed-biped': 1.4,

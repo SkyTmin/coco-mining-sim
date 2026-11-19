@@ -103,6 +103,7 @@
       "enum": [
         "heavy-quadruped",
         "light-quadruped",
+        "cephalopod",
         "hexapod",
         "long-flier",
         "armed-biped",

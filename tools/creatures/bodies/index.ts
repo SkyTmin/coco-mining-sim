@@ -1,4 +1,5 @@
 import { armedFrame, type ArmedAppearance } from './armed-biped';
+import { cephalopodFrame, type CephalopodAppearance } from './cephalopod';
 import { lightFrame, type LightAppearance } from './light-quadruped';
 import { heavyFrame, type HeavyAppearance } from './heavy-quadruped';
 import { pilotFrame, type PilotAppearance } from './families';
@@ -17,8 +18,19 @@ export interface BodyAppearance {
   heavy?: HeavyAppearance;
   light?: LightAppearance;
   armed?: ArmedAppearance;
+  cephalopod?: CephalopodAppearance;
   draw?: PilotAppearance;
   effects?: PaintHooks;
+}
+
+function frameFor(card: CreatureCard, route: MotionPlan, appearance: BodyAppearance): Creature['frame'] {
+  switch (card.body) {
+    case 'heavy-quadruped': return heavyFrame(card, route, appearance.heavy);
+    case 'armed-biped': return armedFrame(card, route, appearance.armed);
+    case 'light-quadruped': return lightFrame(card, route, appearance.light);
+    case 'cephalopod': return cephalopodFrame(card, route, appearance.cephalopod);
+    default: return pilotFrame(card, route, appearance.draw);
+  }
 }
 
 export function makeBodyCreature(
@@ -27,14 +39,6 @@ export function makeBodyCreature(
   route: MotionPlan = card.life,
   appearance: BodyAppearance = {},
 ): Creature {
-  const frame =
-    card.body === 'heavy-quadruped'
-      ? heavyFrame(card, route, appearance.heavy)
-      : card.body === 'armed-biped'
-        ? armedFrame(card, route, appearance.armed)
-        : card.body === 'light-quadruped'
-          ? lightFrame(card, route, appearance.light)
-          : pilotFrame(card, route, appearance.draw);
   const animations: Record<string, Animation> = { ...everyday };
   if (card.body === 'long-flier' || card.body === 'winged-dragon')
     animations.fly = { seconds: 1, loop: true };
@@ -46,7 +50,7 @@ export function makeBodyCreature(
     rarity: card.rarity,
     theme: card.theme,
     animations,
-    frame,
+    frame: frameFor(card, route, appearance),
     ...buildEffects(card, book, appearance.effects),
   };
   return attachMotion(withTechniques(creature, book), route);
