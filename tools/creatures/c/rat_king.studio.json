@@ -1,0 +1,16 @@
+{
+  "minPrimitives": 400,
+  "bodyClips": [
+    "walk_n",
+    "walk_ne",
+    "walk_e",
+    "walk_se",
+    "walk_s",
+    "walk_sw",
+    "walk_w",
+    "walk_nw",
+    "turn",
+    "tired",
+    "sleep"
+  ]
+}

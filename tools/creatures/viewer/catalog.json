@@ -1300,9 +1300,183 @@
     ]
   },
   {
-    "id": "king",
+    "id": "rat_king",
     "name": "Крысиный король",
     "section": "bosses",
+    "rarity": "secret",
+    "color": "#57463f",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 84
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 48
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "trick",
+        "name": "Трюк",
+        "frames": 60
+      },
+      {
+        "id": "fidget_a",
+        "name": "Первый жест",
+        "frames": 48
+      },
+      {
+        "id": "fidget_b",
+        "name": "Второй жест",
+        "frames": 48
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "phase",
+        "name": "Смена фазы",
+        "frames": 48
+      },
+      {
+        "id": "show",
+        "name": "Представление",
+        "frames": 120
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой во второй фазе",
+        "frames": 72
+      },
+      {
+        "id": "tech_cleave",
+        "name": "Рубка тесаком",
+        "frames": 31
+      },
+      {
+        "id": "tech_whip",
+        "name": "Хлыст хвостом",
+        "frames": 22
+      },
+      {
+        "id": "tech_roll",
+        "name": "Коронный перекат",
+        "frames": 38
+      },
+      {
+        "id": "tech_summon",
+        "name": "Призыв стражи",
+        "frames": 43
+      },
+      {
+        "id": "tech_sweep",
+        "name": "Тройной взмах рельсом",
+        "frames": 57
+      },
+      {
+        "id": "tech_leap",
+        "name": "Прыжок с ударной волной",
+        "frames": 48
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1499
+      }
+    ]
+  },
+  {
+    "id": "king",
+    "name": "Крысиный король",
+    "section": "archive",
     "rarity": "secret",
     "floor": 1,
     "clips": [
@@ -1532,7 +1706,7 @@
   {
     "id": "f2_armor",
     "name": "Живые доспехи",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 2,
     "clips": [
@@ -1742,7 +1916,7 @@
   {
     "id": "f3_maw",
     "name": "Алая пасть",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 3,
     "clips": [
@@ -1811,7 +1985,7 @@
   {
     "id": "f4_idol",
     "name": "Каменный идол",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 4,
     "clips": [
@@ -2001,7 +2175,7 @@
   {
     "id": "f5_minotaur",
     "name": "Минотавр",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 5,
     "clips": [
@@ -2080,7 +2254,7 @@
   {
     "id": "f6boss",
     "name": "Красный змей",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 6,
     "clips": [
@@ -2169,7 +2343,7 @@
   {
     "id": "f7boss",
     "name": "Отражение героя",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 7,
     "clips": [
@@ -2293,7 +2467,7 @@
   {
     "id": "f8boss",
     "name": "Демон семи лун",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 8,
     "clips": [
@@ -2382,7 +2556,7 @@
   {
     "id": "f9boss",
     "name": "Многоглавая гидра",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 9,
     "clips": [
@@ -2569,7 +2743,7 @@
   {
     "id": "f10boss",
     "name": "Король демонов",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 10,
     "clips": [
@@ -2663,7 +2837,7 @@
   {
     "id": "f11boss",
     "name": "Древний страж",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 11,
     "clips": [
@@ -2732,7 +2906,7 @@
   {
     "id": "f12boss",
     "name": "Ледниковый мамонт",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 12,
     "clips": [
@@ -2831,7 +3005,7 @@
   {
     "id": "f13boss",
     "name": "Кукловод",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 13,
     "clips": [
@@ -3081,7 +3255,7 @@
   {
     "id": "f14boss",
     "name": "Повелитель часа",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 14,
     "clips": [
@@ -3170,7 +3344,7 @@
   {
     "id": "f15boss",
     "name": "Хозяин подземелья",
-    "section": "bosses",
+    "section": "archive",
     "rarity": "secret",
     "floor": 15,
     "clips": [

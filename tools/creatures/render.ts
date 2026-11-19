@@ -260,7 +260,7 @@ export async function render(
     anchor: idle.anchor,
     eye: idle.eye,
     primitives: idle.primitives,
-    feet: [Math.round(w * 0.48) + thickness, Math.round(h * 0.77) + thickness],
+    feet: (c.portraitOrigin ?? ground(w, h)).map(v => v + thickness),
     points: idle.points,
     motion: c.motion
       ? {
@@ -269,7 +269,7 @@ export async function render(
           directions: Object.fromEntries(
             directions.map((d) => {
               const v = directionVector(d, c.motion!.stride);
-              const start = ground(w, h);
+              const start = c.portraitOrigin ?? ground(w, h);
               return [
                 'walk_' + d,
                 {

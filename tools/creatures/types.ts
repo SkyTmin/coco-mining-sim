@@ -65,6 +65,8 @@ export interface Creature {
   id: string;
   rarity: Rarity;
   theme: string;
+  /** Standing position in field pixels for standalone clips and showreel chapters. */
+  portraitOrigin?: XY;
   animations: Record<string, Animation>;
   frame: (
     anim: string,

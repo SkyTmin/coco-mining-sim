@@ -45,7 +45,8 @@ export function reelChapters(c: Creature) {
   let cursor = 0;
   const names = c.behavior
     ? ['hatch','turn','idle','fidget_a','fidget_b', ...directions.map(d => 'walk_' + d),
-       'look','happy','trick', ...c.behavior.attacks,'tired','sleep_in','sleep','wake_startled','sleep_out']
+       'look','happy','trick', ...c.behavior.attacks,'tired','sleep_in','sleep','wake_startled','sleep_out',
+       ...['phase', 'idle-f2', 'show'].filter(name => c.animations[name])]
     : Object.keys(c.animations).filter(name => name.startsWith('tech_'));
   return names.map(name => {
     const frames = Math.round(c.animations[name].seconds * 24);
@@ -381,7 +382,7 @@ function routePlacement(
 
 /** Apply the action's own ground trajectory after resolving a life beat or showreel chapter. */
 export function placement(c: Creature, anim: string, t: number, side: number, origin: XY): Placement {
-  const at = routePlacement(c, anim, t, side, origin);
+  const at = routePlacement(c, anim, t, side, c.portraitOrigin ?? origin);
   const delta = c.animations[at.anim]?.groundOffset?.(at.t, at.side);
   return delta ? { ...at, feet: [at.feet[0] + delta[0], at.feet[1] + delta[1]] } : at;
 }

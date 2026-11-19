@@ -24,6 +24,28 @@ test('behavior schema, clip names, timings and every interruption are validated'
   assert.ok(validateBehavior(config,{...clips, tech_missing:clips.happy}).length);
 });
 
+test('wide attacks only start at floor positions where their entire effect fits', () => {
+  const restricted = {...config, attackBounds: {tech_forefall: [0.53, 0.67, 0.72, 0.82]}};
+  assert.deepEqual(validateBehavior(restricted, clips), []);
+  assert.ok(validateBehavior({...config, attackBounds: {tech_forefall: [0, 0, 0.2, 0.2]}}, clips).length);
+  for (const interactive of [false, true]) {
+    const seen = new Set<string>();
+    const pet = createPetBehavior(restricted, clips);
+    for (let tick = 0; tick < 720 * 30; tick++) {
+      if (interactive && tick % 97 === 0) pet.event('skill_ready');
+      const state = pet.advance(1 / 24);
+      if (state.anim.startsWith('tech_')) {
+        seen.add(state.anim);
+        if (state.anim === 'tech_forefall') {
+          assert.ok(state.at[0] >= 0.53 && state.at[0] <= 0.72);
+          assert.ok(state.at[1] >= 0.67 && state.at[1] <= 0.82);
+        }
+      }
+    }
+    assert.deepEqual([...seen].sort(), ['tech_forefall', 'tech_heelwave']);
+  }
+});
+
 test('seeded 30 s excursions close on home, walk 35–50%, and play intact attacks every 30–45 s', () => {
   for (const seed of [2, 9127, config.seed]) {
     const pet = run(seed);
@@ -68,6 +90,10 @@ test('fixed seed, seek chunk size and renderer give the same real floor walk', (
   assert.ok(changed);
   const plan: MotionPlan = {stride:config.stride, yaw:config.yaw, beats:config.stops.map(at => ({at,seconds:1,anim:'idle'}))};
   const c = attachPetBehavior({id:'fixture',rarity:'uncommon',animations:clips} as unknown as Creature,plan,config);
+  c.portraitOrigin = [84, 92];
+  assert.deepEqual(placement(c, 'idle', 0, 0, [77, 99]).feet, c.portraitOrigin);
+  const firstChapter = reelChapters(c)[0];
+  assert.deepEqual(placement(c, 'showreel', firstChapter.start / 24, 0, [77, 99]).feet, c.portraitOrigin);
   const reference = run();
   for (let i = 0; i < 720; i++) {
     const row = reference.sample(), pos = placement(c,'life',i/24,0,[77,99]);
@@ -78,6 +104,8 @@ test('fixed seed, seek chunk size and renderer give the same real floor walk', (
   }
   const reel = reelChapters(c);
   assert.deepEqual(new Set(reel.map(x => x.name)), new Set(Object.keys(clips)));
+  const boss = { ...c, animations: { ...c.animations, phase: clips.look, 'idle-f2': clips.idle, show: clips.trick } };
+  assert.deepEqual(reelChapters(boss).slice(-3).map(chapter => chapter.name), ['phase', 'idle-f2', 'show']);
 });
 
 test('events interrupt within 0.3 s, leave feet planted and follow sleep / wake sequences', () => {

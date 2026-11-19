@@ -155,8 +155,8 @@ const rarityNames = {
   mythic: 'Мифическая',
   secret: 'Секретная',
 };
-const sections = { ours: 'Наши существа', bosses: 'Боссы «Каторги»', pets: 'Питомцы «Каторги»' };
-const wallColors = { ours: '#525e52', bosses: '#504354', pets: '#475957' };
+const sections = { ours: 'Наши существа', bosses: 'Боссы «Каторги»', pets: 'Питомцы «Каторги»', archive: 'Архив «Каторги»' };
+const wallColors = { ours: '#525e52', bosses: '#504354', pets: '#475957', archive: '#504354' };
 const moods = {
   idle: 'Отдыхает',
   life: 'Гуляет',
@@ -497,7 +497,7 @@ function controls() {
     }),
   );
   $('#variants').hidden = !entry.variants?.length;
-  $('#variants').setAttribute('aria-label', entry.section === 'bosses' ? 'Части босса' : 'Облик');
+  $('#variants').setAttribute('aria-label', entry.section === 'pets' ? 'Облик' : 'Части босса');
   refreshControls();
 }
 
@@ -507,7 +507,17 @@ function archive(catalog) {
     const block = document.createElement('section');
     block.id = section;
     block.setAttribute('aria-labelledby', section + '-title');
-    block.innerHTML = '<div class="section-title"><h2></h2><span></span></div><div class="collection"></div>';
+    const collection = document.createElement('div');
+    collection.className = 'collection';
+    const isArchive = section === 'archive';
+    const header = document.createElement(isArchive ? 'summary' : 'div');
+    header.className = 'section-title';
+    header.innerHTML = '<h2></h2><span></span>';
+    if (isArchive) {
+      const disclosure = document.createElement('details');
+      disclosure.append(header, collection);
+      block.append(disclosure);
+    } else block.append(header, collection);
     const heading = block.querySelector('h2');
     heading.id = section + '-title';
     heading.textContent = title;
@@ -531,7 +541,7 @@ function archive(catalog) {
       select.setAttribute('aria-label', 'Выбрать главную картину «' + entry.name + '»');
       work.querySelector('h3').append(select);
       work.querySelector('small').textContent = rarityNames[entry.rarity];
-      block.querySelector('.collection').append(work);
+      collection.append(work);
     }
     $('#collection').append(block);
   }

@@ -10,6 +10,8 @@ export interface BehaviorConfig {
   weights: Record<string, number>;
   attackInterval: [number, number];
   attacks: string[];
+  /** Eligible normalized anchor rectangle [left, top, right, bottom] for a technique. */
+  attackBounds?: Record<string, [number, number, number, number]>;
   events: Record<string, string[]>;
 }
 export interface PetSample {

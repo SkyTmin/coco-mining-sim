@@ -102,6 +102,18 @@
         "exclusiveMinimum": 0
       }
     },
+    "attackBounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^tech_[a-z0-9_]+$": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
     "events": {
       "type": "object",
       "required": [

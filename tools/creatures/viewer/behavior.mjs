@@ -26,6 +26,14 @@ function interval(v, min, max) {
   return pair(v, n => Number.isFinite(n) && n >= min && n <= max) && v[1] >= v[0];
 }
 
+
+// A long effect can fit at the center of the field but cross the rail at a side stop.
+function attackFits(bounds, at) {
+  if (!bounds) return true;
+  const [left, top, right, bottom] = bounds;
+  return left <= at[0] && at[0] <= right && top <= at[1] && at[1] <= bottom;
+}
+
 export function validateBehavior(data, animations) {
   if (!data || typeof data !== 'object') return ['expected a behavior object'];
   const issues = [];
@@ -46,6 +54,19 @@ export function validateBehavior(data, animations) {
       !attacks.every(a => typeof a === 'string' && a.startsWith('tech_') && animations?.[a]) ||
       Object.keys(animations ?? {}).some(a => a.startsWith('tech_') && !attacks.includes(a)))
     issues.push('attacks must name all authored techniques');
+  if (data.attackBounds !== undefined) {
+    const bounds = data.attackBounds;
+    const valid = bounds && typeof bounds === 'object' && !Array.isArray(bounds) && Array.isArray(attacks) &&
+      Object.entries(bounds).every(([name, r]) => attacks.includes(name) && Array.isArray(r) && r.length === 4 &&
+        r.every(v => Number.isFinite(v) && v >= 0 && v <= 1) && r[0] <= r[2] && r[1] <= r[3]);
+    if (!valid) issues.push('invalid attackBounds');
+    // A tap may come between two stops. One attack covering the entire route guarantees a response.
+    else if (!Array.isArray(data.stops) || !attacks.some(name =>
+      data.stops.every(at => Array.isArray(at) && attackFits(bounds[name], at))))
+      issues.push('no attack fits the entire walking route');
+    else if (attacks.some(name => !data.stops.some(at => attackFits(bounds[name], at))))
+      issues.push('an attack cannot start at any floor stop');
+  }
   for (const [event, expected] of Object.entries(requiredEvents)) {
     if (JSON.stringify(data.events?.[event]) !== JSON.stringify(expected)) issues.push('event ' + event);
   }
@@ -112,7 +133,9 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   const bearings = animations.turn.bearings ?? Array.from({length: turnTicks},
     (_, frame) => config.yaw + 2 * Math.PI * frame / turnTicks);
   const home = config.stops[0];
-  const pickAttack = () => choose(config.attacks);
+  const canAttack = (name, at) => attackFits(config.attackBounds?.[name], at);
+  const pickAttack = at => choose(at && config.attackBounds
+    ? config.attacks.filter(name => canAttack(name, at)) : config.attacks);
   const longestAttack = Math.max(...config.attacks.map(name => length(animations, name)));
   // Reserve complete clips on either side of the preview seam while preserving
   // the data's interval between *starts*, even when the cooldown spans a cycle.
@@ -222,7 +245,8 @@ export function createPetBehavior(config, animations, seed = config.seed) {
     }
     if (attacks.length) {
       const a = attacks[0];
-      const after = window - a.tick - a.frames;
+      const reserved = config.attackBounds ? longestAttack : a.frames;
+      const after = window - a.tick - reserved;
       // Partition the route at a floor stop, so an autonomous attack never
       // interrupts a step or an unfinished character gesture.
       const movement = legs.reduce((n, leg) => n + leg.movingTicks, 0);
@@ -236,8 +260,11 @@ export function createPetBehavior(config, animations, seed = config.seed) {
         if (i < legs.length) spent += legs[i].movingTicks;
       }
       excursion(0,split,a.tick);
-      for (let f = 0; f < a.frames; f++) rows.push(sampleAt(a.clip, f, via[split]));
-      excursion(split,legs.length,after);
+      const at = via[split];
+      const clip = canAttack(a.clip, at) ? a.clip : pickAttack(at);
+      const frames = length(animations, clip);
+      for (let f = 0; f < frames; f++) rows.push(sampleAt(clip, f, at));
+      excursion(split,legs.length,window - a.tick - frames);
     } else {
       excursion(0,legs.length,window);
     }
@@ -252,7 +279,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   }
   function begin(sequence, at) {
     const [first, ...rest] = sequence;
-    reaction = {anim: first === 'attack' ? pickAttack() : first, age: 0, rest, at};
+    reaction = {anim: first === 'attack' ? pickAttack(at) : first, age: 0, rest, at};
   }
   function sleeping() {
     return reaction && ['sleep_in', 'sleep'].includes(reaction.anim);

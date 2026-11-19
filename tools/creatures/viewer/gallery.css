@@ -64,6 +64,9 @@ h1 { font-size: clamp(44px, 6.2vw, 92px); line-height: 1.05; letter-spacing: -.0
 #collection { margin: clamp(36px, 6vw, 82px) 0 52px; scroll-margin-top: 14px; }
 .section-title { border-top: 1px solid var(--line); padding-top: 19px; margin-bottom: 24px; display: flex;
   justify-content: space-between; align-items: baseline; gap: 12px; }
+summary.section-title { cursor: pointer; }
+summary.section-title h2::before { content: '▸'; display: inline-block; font-size: .53em; margin-right: .55em; vertical-align: .15em; }
+details[open] > summary.section-title h2::before { transform: rotate(90deg); }
 .section-title h2 { font-size: clamp(33px, 4vw, 54px); letter-spacing: -.045em; }
 .collection { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 18px; }
 .work { min-width: 0; margin: 0; }
