@@ -42,3 +42,14 @@ test('a derived sleep loop shares its pose with the three sleeping endpoints', (
     assert.equal(joinsSleep(name, false), name === 'sleep_in');
   }
 });
+
+test('multi-act tricks require three to four seconds and an ending', () => {
+  const trickIssues = (seconds: number, loop: boolean, multiAct: boolean) =>
+    petClipIssues({ trick: { seconds, loop } }, ['trick'], [], multiAct)
+      .filter(issue => issue.startsWith('trick '));
+  assert.deepEqual(trickIssues(3.75, false, true), []);
+  assert.equal(trickIssues(3.75, false, false).length, 1);
+  assert.equal(trickIssues(2.5, false, true).length, 1);
+  assert.equal(trickIssues(4.1, false, true).length, 1);
+  assert.equal(trickIssues(3.5, true, true).length, 1);
+});

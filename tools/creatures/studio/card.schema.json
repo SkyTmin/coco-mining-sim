@@ -47,6 +47,11 @@
       "minItems": 1,
       "uniqueItems": true
     },
+    "secondaryMotion": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$" },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
     "materials": {
       "type": "array",
       "items": {

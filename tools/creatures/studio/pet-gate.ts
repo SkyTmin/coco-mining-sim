@@ -21,7 +21,7 @@ const rules: Record<string, [number, number, boolean]> = {
   sleep_in: [1, 1.5, false], sleep: [3, 4, true], sleep_out: [1, 1.5, false],
   wake_startled: [0.8, 1.2, false],
 };
-export function petClipIssues(animations: Record<string, Animation>, references: string[], bodyClips: string[] = []) {
+export function petClipIssues(animations: Record<string, Animation>, references: string[], bodyClips: string[] = [], multiActTrick = false) {
   const issues: string[] = [];
   const angles = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'].map(d => 'walk_' + d);
   const inherited = new Set<string>();
@@ -34,7 +34,8 @@ export function petClipIssues(animations: Record<string, Animation>, references:
   for (const name of [...Object.keys(rules), ...angles, 'hatch', 'turn', 'tired']) {
     const clip = animations[name];
     if (!clip) { issues.push('missing ' + name); continue; }
-    const limit: [number, number, boolean] | undefined = rules[name] ?? (angles.includes(name) ? [1, 1, true] : undefined);
+    const limit: [number, number, boolean] | undefined = name === 'trick' && multiActTrick
+      ? [3, 4, false] : rules[name] ?? (angles.includes(name) ? [1, 1, true] : undefined);
     if (limit && (clip.seconds < limit[0] || clip.seconds > limit[1] || !!clip.loop !== limit[2]))
       issues.push(name + ' duration or looping differs from the pet set');
   }
@@ -68,8 +69,8 @@ export function petGate(painting: Painting, references: string[]) {
   const { c, s, b } = painting;
   if (approvedBeforePets.has(c.id) && !c.behavior) return [];
   if (!c.behavior) return ['new paintings require behavior.json'];
-  const { bodyClips } = studioConfig(c.id);
-  const issues = petClipIssues(c.animations, references, bodyClips);
+  const { bodyClips, multiActTrick } = studioConfig(c.id);
+  const issues = petClipIssues(c.animations, references, bodyClips, multiActTrick);
   if (!validateSchema(c.behavior))
     issues.push(...(validateSchema.errors ?? []).map(err => 'behavior.json ' + err.instancePath + ' ' + err.message));
   issues.push(...validateBehavior(c.behavior, c.animations));

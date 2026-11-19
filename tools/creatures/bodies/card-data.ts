@@ -42,6 +42,7 @@ export interface CreatureCard {
   rarity: Rarity;
   proportions: Record<string, number>;
   parts: string[];
+  secondaryMotion?: Record<string, string>;
   materials: { name: string; tones: string[]; texture: string }[];
   details: string[];
   effects: EffectId;
