@@ -63,7 +63,7 @@ test('scaffolding publishes five readable files together and preserves an existi
   const files = writeCreatureDraft(card, dir);
   assert.equal(files.length, 5);
   assert.deepEqual(readCreatureCard(card.id, dir), card);
-  assert.deepEqual(JSON.parse(readFileSync(join(dir, 'draft_probe.studio.json'), 'utf8')), {});
+  assert.deepEqual(JSON.parse(readFileSync(join(dir, 'draft_probe.studio.json'), 'utf8')), { minPrimitives: 250 });
   assert.match(readFileSync(keys, 'utf8'), /buildMoveBook/);
   assert.match(readFileSync(join(dir, 'draft_probe.ts'), 'utf8'), /makeBodyCreature/);
   assert.throws(() => writeCreatureDraft(card, dir), /уже существует/);

@@ -108,7 +108,7 @@ export function writeCreatureDraft(card: CreatureCard, dir = join(tools, 'c')) {
   const data = `import { readCreatureCard } from '../bodies/card-data';\n`;
   const files = new Map([
     [id + '.card.json', JSON.stringify(card, null, 2) + '\n'],
-    [id + '.studio.json', '{}\n'],
+    [id + '.studio.json', '{ "minPrimitives": 250 }\n'],
     [id + '-life.ts', data + `\nexport default readCreatureCard('${id}').life;\n`],
     [
       id + '-keys.ts',

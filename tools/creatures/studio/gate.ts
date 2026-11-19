@@ -4,6 +4,7 @@ import { loadPainting } from '../render';
 import { measureDetail, minimumColours } from '../detail';
 import { measureCreature, readReferences } from '../tech-metrics';
 import { cardRuntimeIssues } from './card';
+import { studioConfig } from './checks';
 import { measureRef, readPoseRefs, refIssues } from './ref';
 import { petGate } from './pet-gate';
 import { sizes } from '../types';
@@ -36,17 +37,20 @@ export async function gateExtras(ids: string[]) {
       failed++;
     }
     const [, fieldHeight, canvas] = sizes[c.rarity];
-    const m = measureDetail(c.frame('idle', 0, 0, 'normal').px);
+    const rest = c.frame('idle', 0, 0, 'normal');
+    const m = measureDetail(rest.px);
+    const minPrimitives = studioConfig(id).minPrimitives;
     const extent = Math.max(m.width, m.height);
     const detail: string[] = [];
     if (m.colours < minimumColours[c.rarity]) detail.push(`colours ${m.colours} < ${minimumColours[c.rarity]}`);
     if (m.edge < 0.85) detail.push(`edge ${m.edge.toFixed(2)} < 0.85`);
     if (m.flat > 0.03) detail.push(`flat ${(m.flat * 100).toFixed(1)}% > 3%`);
+    if (minPrimitives && rest.primitives < minPrimitives) detail.push(`primitives ${rest.primitives} < ${minPrimitives}`);
     if (extent < canvas * 0.8 || extent > canvas * 0.9) detail.push(`extent ${extent} not in 80–90% of ${canvas}`);
     if (m.height < fieldHeight * 0.55 || m.height > fieldHeight * 0.65)
       detail.push(`height ${m.height} not in 55–65% of field ${fieldHeight}`);
     console.log(
-      `${detail.length ? '✗' : '✓'} ${id} detail: ${m.colours} colours, edge ${m.edge.toFixed(2)}, flat ${(m.flat * 100).toFixed(1)}%` +
+      `${detail.length ? '✗' : '✓'} ${id} detail: ${rest.primitives} primitives, ${m.colours} colours, edge ${m.edge.toFixed(2)}, flat ${(m.flat * 100).toFixed(1)}%` +
         (detail.length ? ' — ' + detail.join('; ') : ''),
     );
     if (detail.length) failed++;

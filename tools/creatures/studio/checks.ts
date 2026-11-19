@@ -35,6 +35,9 @@ export interface StudioConfig {
   clipAllow?: ClipAllow[];
   /** Legacy strings match a tag substring. New rules apply to an exact part and an inclusive interval. */
   partGone?: (string | { part: string; anim: string; frames: [number, number]; reason: string })[];
+  /** Detail floor: rig primitives in `idle` frame 0. Owner 19.11: the colossus (663) is the bar, the penguin (77)
+   *  is too plain; new creatures start at 250 (`ws new` writes it). */
+  minPrimitives?: number;
   /** Animations or frames to skip for a check, e.g. { jump: ['show:74-77'] }. */
   skip?: Partial<Record<Finding['kind'], string[]>>;
 }
