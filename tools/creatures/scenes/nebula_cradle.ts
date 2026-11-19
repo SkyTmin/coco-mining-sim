@@ -123,15 +123,6 @@ function nursery(p: Px) {
     p.line(x + 2, y, x + 16, y - 3, hx('#796975'));
     p.line(x + 19, y - 2, x + 35, y, hx('#675b6b'));
   }
-  for (const [x, y, h, k] of [
-    [3, 188, 19, 3],
-    [10, 189, 13, 1],
-    [19, 191, 9, -2],
-    [227, 187, 10, 2],
-    [239, 190, 25, -2],
-    [249, 191, 15, 1],
-  ])
-    crystal(p, x, y, h, k);
 }
 let cache: Px;
 const paint: Scene = (p, t) => {
@@ -155,4 +146,21 @@ const paint: Scene = (p, t) => {
   const bearing = 0.5 + 0.5 * Math.cos(a);
   p.set(205, 46, mixc(hx('#675568'), hx('#ddc5aa'), bearing));
 };
+paint.front = [
+  {
+    id: 'crystals-on-the-broken-bank',
+    depth: 177,
+    paint(p) {
+      for (const [x, y, h, k] of [
+        [3, 188, 19, 3],
+        [10, 189, 13, 1],
+        [19, 191, 9, -2],
+        [227, 187, 10, 2],
+        [239, 190, 25, -2],
+        [249, 191, 15, 1],
+      ])
+        crystal(p, x, y, h, k);
+    },
+  },
+];
 export default paint;

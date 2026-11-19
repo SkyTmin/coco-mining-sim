@@ -113,7 +113,6 @@ function still(p: Px) {
   cloud(p, 200, 158, 105, 15, 5);
   cloudbank(p, 177, 4, '#5b6a85', '#8d9ead');
   cloud(p, -3, 185, 94, 19, 9);
-  cloud(p, p.w - 9, 195, 96, 24, 7);
 }
 let cache: Px;
 const paint: Scene = (p, t) => {
@@ -146,4 +145,5 @@ const paint: Scene = (p, t) => {
     p.line(x, y, x + 4 + i, y - 1, i % 2 ? hx('#8394a7') : moonlit);
   }
 };
+paint.front = [{ id: 'near-cloud-rim', depth: 162, paint: (p) => cloud(p, p.w - 9, 195, 96, 24, 7) }];
 export default paint;
