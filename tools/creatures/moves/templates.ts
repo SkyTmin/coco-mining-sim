@@ -228,11 +228,16 @@ export function templateFor(id: MoveId): MoveTemplate {
 }
 
 // The radial skeleton guides the selected arm's physical tip to the target.
+const arachnidEffectors: Record<MoveId, string> = {
+  overhead: 'clawR', ram: 'clawR', slide: 'clawL', sweep: 'clawL', volley: 'sting',
+  breath: 'sting', leap: 'footR0', pillars: 'footR0', roar: 'clawR', summon: 'sting', dive: 'sting',
+};
 const cephalopodEffectors: Record<MoveId, string> = {
   overhead: 'arm7', ram: 'arm0', slide: 'arm4', sweep: 'arm4', volley: 'arm1',
   breath: 'arm1', leap: 'arm5', pillars: 'arm2', roar: 'arm3', summon: 'arm0', dive: 'arm6',
 };
 export function weaponFor(body: BodyType, id: MoveId) {
+  if (body === 'arachnid') return arachnidEffectors[id];
   if (body === 'cephalopod') return cephalopodEffectors[id];
   // A long flier lands its whip-like tail while the belly and fins remain airborne.
   if (id === 'leap' && body === 'long-flier') return 'tailTip';

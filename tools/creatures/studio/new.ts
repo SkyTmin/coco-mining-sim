@@ -21,6 +21,13 @@ const families: Record<
   BodyType,
   { parts: string[]; moves: TemplateId[]; effects: EffectId; tones: string[] }
 > = {
+  arachnid: {
+    parts: ['thorax', 'abdomen', 'clawL', 'clawR', 'tail', 'sting', ...['L', 'R'].flatMap(side =>
+      Array.from({length: 4}, (_, i) => 'foot' + side + i))],
+    moves: ['summon', 'overhead', 'sweep', 'volley', 'pillars'],
+    effects: 'crystal',
+    tones: ['#4c3941', '#795441', '#a97844', '#cba15c', '#f2d48e'],
+  },
   cephalopod: {
     parts: ['mantle', 'head', ...Array.from({ length: 8 }, (_, i) => 'arm' + i)],
     moves: ['sweep', 'overhead', 'roar', 'summon'],
@@ -202,6 +209,12 @@ export async function newCommand(args: string[]) {
     logic: ['', '', '', '', ''],
   }));
   const original: MotionPlan = (await import('../c/' + bodySources[body] + '-life.ts')).default;
+  // The blank model inherits the locomotion of its family. Its artist will
+  // supply a second form and a reveal before those beats can enter the route.
+  const life = defaultLife(original, moves);
+  for (const beat of life.beats) {
+    if (['phase', 'idle-f2', 'show'].includes(beat.anim)) beat.anim = 'idle';
+  }
   const card: CreatureCard = {
     id,
     name: values.name ?? id,
@@ -216,7 +229,7 @@ export async function newCommand(args: string[]) {
     details: [],
     effects,
     moves,
-    life: defaultLife(original, moves),
+    life,
   };
   const files = writeCreatureDraft(card);
   console.log(files.map((f) => 'c/' + f).join('\n'));
