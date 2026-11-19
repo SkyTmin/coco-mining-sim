@@ -8,7 +8,7 @@ const c = hx;
 function path(p: Px, points: Point[], color: string) {
   for (let j = 1; j < points.length; j++) p.line(...points[j - 1], ...points[j], c(color));
 }
-function island(p: Px, x: number, y: number, s: number) {
+export function island(p: Px, x: number, y: number, s: number) {
   const local = (pts: Point[]) => pts.map(([u, v]) => [x + u * s, y + v * s] as Point);
   face(
     p,
@@ -100,7 +100,7 @@ function island(p: Px, x: number, y: number, s: number) {
     '#718184',
   );
 }
-function cloudbank(p: Px, y: number, seed: number, shade: string, rim: string) {
+export function cloudbank(p: Px, y: number, seed: number, shade: string, rim: string) {
   let x = -14;
   for (let j = 0; x < p.w + 20; j++) {
     const roll = 7 + Math.floor(hash(seed, j) * 21),
