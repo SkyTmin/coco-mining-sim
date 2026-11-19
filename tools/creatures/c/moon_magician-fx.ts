@@ -5,6 +5,7 @@ import { ellFill, oval, progress } from '../fx/field';
 import { disc, fillPoly, flare, star, type Pen } from '../fx/pen';
 import type { FxInput, XY } from '../types';
 import { beats } from './moon_magician-poses';
+import { archHalf, drapeSpan, MOON } from '../scenes/magic_tent';
 
 const ink = '#1d1a2b';
 const dove = ['#3b3a58', '#bfc2dd', '#ecebfb', '#ffffff'];
@@ -183,15 +184,18 @@ function nightOver(f: FxInput, amount: number) {
   const b = f.backdrop;
   b.col('#0b0e28', 0.42 * amount);
   b.rect(0, 0, f.w, f.h);
-  // Moonlight answers: a halo round the painted moon and brighter stars.
-  oval(b, [128, 50], 24 + 2 * Math.sin(f.t * 3), 24, '#9fb4ff', 0.5 * amount);
-  oval(b, [128, 50], 27, 27, '#5f74c8', 0.35 * amount);
-  for (let i = 0; i < 14; i++) {
-    const x = 40 + hash(i, 61) * 176,
-      y = 22 + hash(i, 67) * 84,
+  // Moonlight answers: a halo round the moon in the arch, brighter stars there, a cool beam on the floor.
+  oval(b, [MOON.x, MOON.y], MOON.r + 4 + Math.sin(f.t * 3), MOON.r + 4, '#9fb4ff', 0.5 * amount);
+  oval(b, [MOON.x, MOON.y], MOON.r + 7, MOON.r + 7, '#5f74c8', 0.35 * amount);
+  for (let i = 0; i < 12; i++) {
+    const y = 14 + hash(i, 67) * 44,
+      half = archHalf(Math.round(y)) ?? 0,
+      x = 128 + (hash(i, 61) - 0.5) * 2 * Math.max(0, half - 4),
       tw = Math.sin(f.t * 4 + i * 1.7);
-    if (tw > 0.2) sparkle(b, [x, y], 1.6 + tw, amount * (0.4 + 0.5 * tw), starDust);
+    if (tw > 0.2 && half > 6) sparkle(b, [x, y], 1.2 + tw, amount * (0.4 + 0.5 * tw), starDust);
   }
+  b.col('#8fa6ff', 0.1 * amount);
+  fillPoly(b, [100, 66, 156, 66, 134, 126, 64, 126]);
 }
 function formAmbient(f: FxInput, amount: number) {
   if (amount <= 0) return;
@@ -227,13 +231,17 @@ function curtainRipple(f: FxInput, frame: number, from: number, to: number) {
   if (frame < from || frame > to) return;
   const k = (frame - from) / (to - from),
     a = 0.3 * Math.sin(k * Math.PI);
+  // A ripple runs across the arch drapes, as if the night wind came through the artists' door.
+  f.backdrop.col('#e07a92', a);
   for (const side of [-1, 1])
-    for (let band = 0; band < 3; band++) {
-      const d = ((k * 3 + band / 3) % 1) * 56;
-      const x = side < 0 ? Math.round(d) : Math.round(f.w - 1 - d);
-      f.backdrop.col('#e07a92', a);
-      f.backdrop.rect(x, 26, 2, 70);
-    }
+    for (let band = 0; band < 2; band++)
+      for (let y = 10; y <= 66; y++) {
+        const span = drapeSpan(side, y);
+        if (!span) continue;
+        const u = (k * 2 + band / 2 + y * 0.01) % 1;
+        const x = Math.round(side < 0 ? span[1] - u * (span[1] - span[0]) : span[0] + u * (span[1] - span[0]));
+        f.backdrop.rect(x, y, 1, 1);
+      }
 }
 
 // ---- clips ---------------------------------------------------------------------------------------
