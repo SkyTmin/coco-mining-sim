@@ -221,7 +221,7 @@ function tricorne(r: Rig, s: CephalopodSkeleton, c: C) {
 function tool(r: Rig, s: CephalopodSkeleton, i: number, c: C) {
   const name = implementsByArm[i],
     axes = implementAxes(i, s),
-    arm = s.arms[i];
+    arm = s.arms[(s.pose[name + 'Hand'] ?? i + 1) - 1];
   // While handling the hat, the lantern slides back into an earlier coil.
   // Follow the physical chain for the transfer; its bail stays in contact.
   const transfer = i === 7 ? Math.max(s.pose.hatPickup ?? 0, s.pose.hatHand ?? 0) : 0;
