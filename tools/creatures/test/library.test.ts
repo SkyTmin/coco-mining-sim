@@ -12,7 +12,7 @@ import { baselineOf, worstClip } from '../studio/clip';
 import { defaultLife } from '../studio/new';
 import type { MotionPlan } from '../types';
 
-const examples: Record<BodyType, [MoveId, string[]]> = {
+const examples = {
   'heavy-quadruped': ['ram', ['torso', 'head', 'foreL', 'foreR', 'hindL', 'hindR', 'horns']],
   hexapod: ['ram', ['thorax', 'head', 'abdomen', 'horn', 'elytra', 'legs']],
   'long-flier': ['sweep', ['head', 'neck', 'body', 'tail', 'fins']],
@@ -20,7 +20,7 @@ const examples: Record<BodyType, [MoveId, string[]]> = {
   'squat-mage': ['overhead', ['body', 'head', 'cloak', 'armL', 'armR', 'staff', 'legL', 'legR']],
   giant: ['breath', ['chest', 'head', 'hips', 'armL', 'armR', 'legL', 'legR']],
   'winged-dragon': ['sweep', ['body', 'neck', 'head', 'wingL', 'wingR', 'tail', 'claws']],
-};
+} satisfies Partial<Record<BodyType, [MoveId, string[]]>>;
 
 const clipFrames: Partial<Record<BodyType, number[]>> = {
   'squat-mage': [7, 10, 18, 26, 28],
@@ -28,7 +28,7 @@ const clipFrames: Partial<Record<BodyType, number[]>> = {
   'armed-biped': [23],
 };
 
-for (const family of Object.keys(examples) as BodyType[]) {
+for (const family of Object.keys(examples) as (keyof typeof examples)[]) {
   test(family + ' moves its painted geometry when the contact target changes', async () => {
     const [template, parts] = examples[family];
     const base = readCreatureCard('bramble_warden');

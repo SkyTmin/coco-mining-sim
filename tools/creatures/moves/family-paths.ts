@@ -44,6 +44,13 @@ const dragonClaw: Paths = {
 
 const familyPaths: Partial<Record<BodyType,Sockets>> = {
   'armed-biped': {weaponTip:armedPole},
+  'light-quadruped': {
+    weaponTip: {
+      ram: [[23,-4,41],[29,-2,38],[43,2,33],[47,4,34]],
+      volley: [[24,-3,33],[29,-2,37],[35,4,47],[35,5,48]],
+    },
+    footL: {leap: [[-12,-7,0],[-12,-7,25],[-12,-7,0],[-13,-7,0]]},
+  },
   'heavy-quadruped': {
     weaponTip:{
       overhead:[[3,14,54],[22,15,52],[36,11,0],[34,11,35]],

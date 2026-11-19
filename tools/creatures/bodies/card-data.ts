@@ -5,6 +5,7 @@ import type { MotionPlan, Rarity } from '../types';
 export const cardDirectory = join(import.meta.dirname, '../c');
 
 export type BodyType =
+  | 'light-quadruped'
   | 'heavy-quadruped'
   | 'hexapod'
   | 'long-flier'

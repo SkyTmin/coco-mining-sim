@@ -30,6 +30,18 @@ export function creatureIds() {
     .filter((id) => readFileSync(join(tools, 'c', id + '.ts'), 'utf8').includes("'" + id + "'"));
 }
 
+// A glade, lagoon or station imports its parent landscape and may share drawing helpers.
+function sceneInputs(theme: string) {
+  const dir = join(tools, 'scenes');
+  const files = new Set([join(dir, theme + '.ts')]);
+  for (const file of files) {
+    if (!existsSync(file)) continue;
+    for (const match of readFileSync(file, 'utf8').matchAll(/\bfrom\s*['"]\.\/([\w-]+)(?:\.ts)?['"]/g))
+      files.add(join(dir, match[1] + '.ts'));
+  }
+  return files;
+}
+
 export function inputsOf(id: string, theme: string, rarity: string) {
   const cardFile = join(tools, 'c', id + '.card.json');
   const card = existsSync(cardFile) ? JSON.parse(readFileSync(cardFile, 'utf8')) as CreatureCard : undefined;
@@ -43,7 +55,7 @@ export function inputsOf(id: string, theme: string, rarity: string) {
     ...own,
     join(tools, 'viewer/behavior.mjs'),
     join(assets, id, 'behavior.json'),
-    join(tools, 'scenes', theme + '.ts'),
+    ...sceneInputs(theme),
     join(tools, 'frames', rarity + '.ts'),
     join(tools, 'frame-kit.ts'),
   ].filter((f) => existsSync(f));

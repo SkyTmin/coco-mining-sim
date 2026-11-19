@@ -21,6 +21,12 @@ const families: Record<
   BodyType,
   { parts: string[]; moves: TemplateId[]; effects: EffectId; tones: string[] }
 > = {
+  'light-quadruped': {
+    parts: ['torso', 'neck', 'head', 'foreL', 'foreR', 'hindL', 'hindR', 'tail'],
+    moves: ['ram', 'leap', 'volley'],
+    effects: 'thorns',
+    tones: ['#473948', '#775149', '#a77357', '#cba182', '#efcfac'],
+  },
   'heavy-quadruped': {
     parts: ['torso', 'head', 'foreL', 'foreR', 'hindL', 'hindR', 'horns'],
     moves: ['ram', 'volley'],

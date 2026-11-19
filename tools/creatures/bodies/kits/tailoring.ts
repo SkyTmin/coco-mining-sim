@@ -87,3 +87,42 @@ export function stitchedStrap(r: Rig, points: V3[], halfWidth: V3, hide: Mat, se
       r.line(edge(vlerp(a, b, 0.12), s), edge(vlerp(a, b, 0.67), s), seam.T[2], 0, 0.26);
   }
 }
+
+// A small layered tuft points along the local forward axis, with a lifted ridge.
+export function furTuft(r: Rig, frame: F3, length: number, width: number, fur: Mat, shadow: Mat) {
+  for (const s of [-1, 1, 0]) {
+    const base = frame.p(s === 0 ? -.16 * length : 0, width * s * .43, s === 0 ? .35 : 0);
+    const tip = frame.p(length * (s === 0 ? 1 : .73), width * s * .81, -.14 * length);
+    furLock(r, base, tip, frame.v(0, .45 * width, 0), frame.v(.27 * length, 0, .18 * width), fur, shadow);
+  }
+}
+
+// A curved, asymmetric flight feather in the forward/across plane. Its outer
+// vane has a longer unbroken leading edge, while the inner vane is notched.
+export function flightFeather(r: Rig, frame: F3, length: number, width: number, vane: Mat, shade: Mat, shaft: Mat) {
+  const axis = (t: number) => frame.p(length*t, width*.42*t*t, width*.36*Math.sin(Math.PI*t));
+  const rows = [0,.19,.43,.64,.83,1];
+  for (let i=1; i<rows.length; i++) {
+    const a=rows[i-1], b=rows[i];
+    for (const sign of [-1,1]) {
+      const edge = (t: number, notch: number) => vadd(axis(t),frame.v(-length*notch,
+        sign * width * Math.sin(Math.PI*t) * (sign === 1 ? .68 : 1), -.2*width*Math.sin(Math.PI*t)));
+      r.poly([axis(a),edge(a,0),edge(b,sign < 0 && b < 1 ? .045 : 0),axis(b)],sign>0 ? vane : shade);
+    }
+    r.cap(axis(a),axis(b),.12+.28*(1-a),.12+.28*(1-b),shaft);
+    if (b < 1) r.line(axis(a),frame.p(length*b,width*.42*b*b-.85*width*Math.sin(Math.PI*b),0),vane.T[2],0,.33);
+  }
+}
+
+// Buckle lies on the local across/up plane, forward faces the viewer.
+export function strapBuckle(r: Rig, frame: F3, width: number, height: number, metal: Mat, leather: Mat) {
+  const w = width*.5, h=height*.5, bar = Math.min(width,height)*.085;
+  r.poly([frame.p(0,-w,-h), frame.p(0,w,-h), frame.p(0,w,h), frame.p(0,-w,h)],leather);
+  const corners = [[-w,-h],[w,-h],[w,h],[-w,h]];
+  for (let i=0; i<4; i++) {
+    const [a,b] = corners[i], [c,d] = corners[(i+1)%4];
+    r.cap(frame.p(bar,a,b),frame.p(bar,c,d),bar,bar,metal);
+  }
+  r.cap(frame.p(bar,0,-h),frame.p(bar*1.8,.12*w,.42*h),bar*.75,bar*.42,metal);
+  r.ball(frame.p(bar,.12*w,.42*h),bar*.65,metal);
+}

@@ -102,6 +102,7 @@
       "type": "string",
       "enum": [
         "heavy-quadruped",
+        "light-quadruped",
         "hexapod",
         "long-flier",
         "armed-biped",

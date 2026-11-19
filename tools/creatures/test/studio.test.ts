@@ -66,6 +66,14 @@ test('render cache inputs: own files and helpers in, other creatures out', async
   assert.ok(!files.some((f) => f.startsWith('test/') || f.startsWith('studio/')));
 });
 
+test('a scene variant invalidates with its parent landscape and nested relief helpers', () => {
+  const files = inputsOf('frost_fox', 'polar_ice_lagoon', 'rare').map((f) => f.split('/tools/creatures/')[1]);
+  assert.ok(files.includes('scenes/polar_ice_lagoon.ts'));
+  assert.ok(files.includes('scenes/polar_night.ts'));
+  assert.ok(files.includes('scenes/relief.ts'));
+  assert.ok(!files.includes('scenes/sky_post.ts'));
+});
+
 test('golden comparison names the changed frames and nothing else', async () => {
   const { compareGolden } = await import('../studio/snap');
   const old = { idle: ['a', 'b', 'c', 'd'], tech_x: ['e', 'f'] };

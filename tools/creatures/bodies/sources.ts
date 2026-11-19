@@ -2,6 +2,7 @@ import type { BodyType } from './card-data';
 
 /** Accepted anatomy and walk cycle used by each family. */
 export const bodySources: Record<BodyType, string> = {
+  'light-quadruped': 'root_stag',
   'heavy-quadruped': 'bramble_warden',
   hexapod: 'gem_beetle',
   'long-flier': 'silk_dragon',

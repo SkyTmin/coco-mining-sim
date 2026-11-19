@@ -1,4 +1,5 @@
 import { armedFrame, type ArmedAppearance } from './armed-biped';
+import { lightFrame, type LightAppearance } from './light-quadruped';
 import { heavyFrame, type HeavyAppearance } from './heavy-quadruped';
 import { pilotFrame, type PilotAppearance } from './families';
 import { bodySources } from './sources';
@@ -14,6 +15,7 @@ export const bodyTypes = Object.keys(bodySources) as BodyType[];
 
 export interface BodyAppearance {
   heavy?: HeavyAppearance;
+  light?: LightAppearance;
   armed?: ArmedAppearance;
   draw?: PilotAppearance;
   effects?: PaintHooks;
@@ -30,7 +32,9 @@ export function makeBodyCreature(
       ? heavyFrame(card, route, appearance.heavy)
       : card.body === 'armed-biped'
         ? armedFrame(card, route, appearance.armed)
-        : pilotFrame(card, route, appearance.draw);
+        : card.body === 'light-quadruped'
+          ? lightFrame(card, route, appearance.light)
+          : pilotFrame(card, route, appearance.draw);
   const animations: Record<string, Animation> = { ...everyday };
   if (card.body === 'long-flier' || card.body === 'winged-dragon')
     animations.fly = { seconds: 1, loop: true };
