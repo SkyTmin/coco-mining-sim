@@ -1,3 +1,4 @@
+import { tosses } from './ink_admiral-juggle';
 import { ellFill, oval, pathSmear, progress, scatter, shard } from '../fx/field';
 import { paintImpact, paintSocketTrail } from '../technique-fx';
 import type { Creature, FxInput, XY } from '../types';
@@ -65,11 +66,9 @@ export const effects: Creature['effects'] = (f) => {
   const n = f.t * 24;
   if (f.anim === 'trick') {
     for (const [socket, begin, end] of [
-      ['scopeGrip', 18, 50],
-      ['sabreGrip', 24, 60],
-      ['mapGrip', 22, 54],
-      ['hatGrip', 28, 65],
-    ] as const) {
+      ...tosses.map((t) => [t.ball + 'Grip', t.release, t.catch] as const),
+      ['hatGrip', 23, 65] as const,
+    ]) {
       if (n <= begin + 2 || n >= end) continue;
       paintSocketTrail(f, 'under', socket, (n - 2) / 24, n / 24, { color: ink[3], width: 1, alpha: 0.58 });
     }
