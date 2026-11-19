@@ -26,6 +26,8 @@ export interface BirdPose {
   step?: [number, number];
   lift?: [number, number];
   facing?: -1 | 1;
+  bearing?: number;
+  remiges?: number;
 }
 
 interface FlightFeather {
@@ -86,7 +88,7 @@ export function birdSkeleton(
   const pulse = (lag: number) => Math.sin((loop ? (walking ? gait : t) * frequency : 0) - lag);
   const crouch = clamp(pose.crouch ?? (anim === 'sleep' ? 1 : 0));
   const flying = clamp(pose.tuck ?? 0);
-  const facing = F3.yaw(yaw + side * Math.PI / 8 + (pose.facing === -1 ? Math.PI - yaw * 2 : 0));
+  const facing = F3.yaw(yaw + side * Math.PI / 8 + (pose.bearing ?? 0) + (pose.facing === -1 ? Math.PI - yaw * 2 : 0));
   const body = facing.at(pose.lean ? 2 * Math.sin(pose.lean) : 0, 0,
     55 - 21 * crouch + (walking ? 0 : 0.9) * pulse(0.26) + (walking ? 2.2 * Math.abs(pulse(0)) : 0))
     .pitch((pose.lean ?? 0) + (walking ? 0.032 : 0) + pulse(0.2) * 0.016)
@@ -125,10 +127,12 @@ export function birdSkeleton(
     const leading = sign === near;
     const spread = clamp((leading ? pose.nearWing : pose.farWing) ?? pose.wing ?? 0.12);
     const stroke = pose.flap ?? 0;
+    const remiges = pose.remiges ?? 0;
+    const folded = remiges * (1 - spread);
     const lag = leading ? 0.46 : 0.81;
     const shoulder = body.p(-2, sign * (11.5 + spread * 0.7), 11);
-    const elbow = body.p(mix(-17, 3, spread), sign * (18 + spread * 17), 14 + spread * 15 - stroke * 12 + pulse(lag) * 1.5);
-    const wrist = body.p(mix(-27, -4, spread), sign * (23 + spread * 35), 8 + spread * 26 - stroke * 26 + pulse(lag + 0.48) * 2.4);
+    const elbow = body.p(mix(-17, 3, spread), sign * (18 + spread * 17 + folded * 4), 14 + spread * 15 + folded * 11 - stroke * 12 + pulse(lag) * 1.5);
+    const wrist = body.p(mix(-27, -4, spread), sign * (23 + spread * 35 + folded * 6), 8 + spread * 26 + folded * 18 - stroke * 26 + pulse(lag + 0.48) * 2.4);
     const flight: FlightFeather[] = [];
     for (let i = 0; i < 14; i++) {
       const u = i / 13;
@@ -136,9 +140,9 @@ export function birdSkeleton(
         ? vlerp(shoulder, elbow, 0.14 + u * 1.7)
         : vlerp(elbow, wrist, (u - 0.45) / 0.55);
       const tip = body.p(
-        mix(-21 - 36 * u, -35 - 15 * Math.sin(u * Math.PI) + 19 * u, spread),
-        sign * mix(15 + 16 * u, 23 + 64 * u + 2 * (pose.fan ?? 0), spread),
-        mix(-17 + 13 * u, 2 + 47 * u, spread) - stroke * (13 + 29 * u) + 2.1 * pulse(lag + 1 + u),
+        mix(-21 - (36 + 9 * folded) * u, -35 - 15 * Math.sin(u * Math.PI) + 19 * u, spread),
+        sign * mix(15 + (16 + 7 * folded) * u, 23 + (64 + 26 * remiges) * u + 2 * (pose.fan ?? 0), spread),
+        mix(-17 + (13 + 32 * folded) * u, 2 + (47 - 17 * remiges) * u, spread) - stroke * (13 + 29 * u) + 2.1 * pulse(lag + 1 + u),
       );
       flight.push({ root, tip });
     }

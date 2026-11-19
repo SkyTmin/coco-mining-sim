@@ -1,6 +1,7 @@
 import { ellFill, oval } from '../fx/field';
 import { fillPoly, type Pen } from '../fx/pen';
 import type { FxInput, XY } from '../types';
+import { xylophoneTips } from '../scenes/druse_phoenix';
 import { clamp, frames, progress, ramp } from './druse_phoenix-timing';
 
 const tau = Math.PI * 2;
@@ -79,51 +80,48 @@ function crownBand(p: Pen, [x, y]: XY, a: number, n: number) {
 }
 
 function crown(fx: FxInput, n: number) {
-  if (n < frames.crownRelease || n > 124) return;
-  const root = fx.points.crown;
-  const source = n < 63 ? fx.pointAt(frames.crownRelease / 24, 'wingNear') : root;
-  const floating = ramp(n, 43, 61);
-  const descending = ramp(n, 66, frames.crownSeat);
-  const unmake = ramp(n, 110, 124);
-  const free: XY = [root[0] + 17 * (1 - descending), Math.max(14, root[1] - 21 * (1 - descending) + 14 * descending)];
-  const born = n >= 50;
-  if (born && n < 124) crownBand(fx.above, free, ramp(n, 50, 65) * (1 - unmake), n);
+  if (n < frames.crownRelease || n >= 120) return;
+  const crest = fx.points.crown;
+  const seat = ramp(n, 65, frames.crownSeat);
+  const assembly: XY = [174, 48];
+  const worn: XY = [crest[0], crest[1] + 11];
+  const center: XY = [assembly[0] + (worn[0] - assembly[0]) * seat, assembly[1] + (worn[1] - assembly[1]) * seat];
+  const release = ramp(n, 102, 114);
+  if (n >= 53 && release < 1)
+    crownBand(fx.above, center, ramp(n, 53, 61) * (1 - release), n);
   for (let i = 0; i < prongs.length; i++) {
+    const born = frames.crownRelease + Math.floor(i / 2);
+    if (n < born) continue;
     const [dx, dy, radius, angle] = prongs[i];
-    const launch = frames.crownRelease + i * 2;
-    if (n < launch) continue;
-    const age = progress(n, launch, 55 + i);
-    const flourish = Math.sin(Math.PI * age);
-    const [fromX, fromY] = [source[0] + (i - 3) * 2.5, source[1] + (3 - i) * 1.7];
-    const [toX, toY] = [free[0] + dx, free[1] + dy];
-    const x = fromX + (toX - fromX) * age + flourish * (i - 3) * 6.8 + unmake * (i - 3) * 3.4;
-    const y = fromY + (toY - fromY) * age - flourish * (21 + i * 2.3) - unmake * (13 + i * 2.9);
-    const spin = angle + tau * (1 - floating) * age * (i % 2 ? 0.91 : -1.3);
-    const a = 1 - unmake;
-    for (let j = 3; j >= 1; j--) {
-      const trail = flourish * j / 3;
-      cross(fx.above, [x - 2 * j * (i - 2) * trail, y + 4 * j * trail], 2.1 - 0.29 * j, tourmaline, a * trail * 0.83);
-    }
-    shard(fx.above, [x, Math.max(5, y)], radius * (0.88 + 0.12 * floating), spin, tourmaline, a);
-    if ((i + n) % 17 < 4) cross(fx.above, [x - 2, y - 4], 2.2, tourmaline, a);
+    const u = ramp(n, born, 57 + (i % 3));
+    const scatter = Math.sin(Math.PI * u);
+    const root = n < 60 ? fx.pointAt(born / 24, 'wingNear') : center;
+    const folded = ramp(n, 105 + i % 3, 116 + i % 3);
+    const target: XY = [center[0] + dx, center[1] + dy];
+    const wing = fx.points.wingNear;
+    const x = root[0] + (target[0] - root[0]) * u + scatter * (i - 3) * 7;
+    const y = root[1] + (target[1] - root[1]) * u - scatter * (17 + i * 2.1);
+    const returning: XY = [x + (wing[0] - x) * folded, y + (wing[1] - y) * folded];
+    shard(fx.above, returning, radius * (1 - .85 * folded),
+      angle + tau * scatter * (i % 2 ? .65 : -.61), tourmaline, 1 - folded);
+    if (scatter > .30) cross(fx.above, [x - 3, y + 4], 2.2, tourmaline, scatter);
   }
-  if (n <= frames.crownSeat + 14)
-    dust(fx.above, [root[0], root[1] - 7], n - frames.crownSeat, 11, 24, tourmaline, -10);
+  const clasp = 1 - progress(n, frames.crownSeat, frames.crownSeat + 8);
+  if (n >= frames.crownSeat && clasp > 0) cross(fx.above, worn, 8, tourmaline, clasp);
 }
 
-const ringR: XY = [33, 47];
-function ringCenter(fx: FxInput, n: number): XY {
-  const [x, y] = fx.feet;
+const ringR: XY = [35, 47];
+function ringCenter([x, y]: XY, n: number): XY {
   const drop = ramp(n, frames.ringClosed, frames.ringRoll);
-  const roll = ramp(n, frames.ringRoll, 107);
-  return [x + 50 - 62 * roll, y - ringR[1] - 22 * (1 - drop)];
+  const roll = progress(n, frames.ringRoll, 104);
+  return [x + 52 - 40 * roll, y - ringR[1] - 30 * (1 - drop)];
 }
 
 function ringPoint([x, y]: XY, a: number, radiusOffset = 0): XY {
   const cy = Math.cos(a), sy = Math.sin(a);
   return [
-    x + cy * (ringR[0] + radiusOffset) - sy * 11,
-    y + sy * (ringR[1] + radiusOffset),
+    x + cy * (ringR[0] + radiusOffset) - sy * 10,
+    y + sy * (ringR[1] + radiusOffset) + 4 * cy,
   ];
 }
 
@@ -135,70 +133,81 @@ function circlePiece(p: Pen, center: XY, a: number, b: number, radii: XY, color:
   ], color, alpha);
 }
 
-function fireLoop(fx: FxInput, center: XY, n: number, alpha: number) {
-  const open = progress(n, frames.ringIgnite, frames.ringClosed);
-  const start = 2.68;
-  for (let i = 0; i < Math.ceil(52 * open); i++) {
-    const a = start + (i / 52) * tau;
-    const b = Math.min(start + open * tau, a + (1.12 / 52) * tau);
-    const wiggle = Math.sin(i * 1.61 + n * 0.37) * 1.1;
-    const p = Math.cos(a) > 0 ? fx.above : fx.under;
-    circlePiece(p, center, a, b, [-5 + wiggle, 5 + wiggle], warm[0], alpha);
-    circlePiece(p, center, a, b, [-3 + wiggle, 4 + wiggle], warm[2], alpha);
-    circlePiece(p, center, a, b, [-1 + wiggle, 2.8 + wiggle], warm[4], alpha);
-    if (i % 4) circlePiece(p, center, a, b, [-0.45 + wiggle, 0.75 + wiggle], warm[5], alpha);
-    if (i % 3 === 0) {
-      const at = ringPoint(center, a, 6 + 6 * Math.sin(i * 3.84 + n * 0.19) ** 2);
-      cross(p, at, 1.2 + 1.35 * Math.sin(i + n * 0.23) ** 2, warm, alpha * 0.85);
-    }
-  }
-  if (n <= frames.ringClosed) {
-    const at = ringPoint(center, start + open * tau);
-    const tail = fx.points.tail;
-    fx.under.lineS(...tail, ...at, warm[2], alpha * 0.7, 0.5);
-    fx.under.lineS(tail[0], tail[1] - 1, at[0], at[1] - 1, warm[4], alpha * 0.72, 0);
-    cross(fx.above, at, 5.5, warm, alpha);
-  }
-}
-
-function crystalHoop(fx: FxInput, center: XY, n: number, alpha: number) {
-  const angle = 2.68 - ramp(n, frames.ringRoll, 107) * 1.29;
-  const fixed = 32;
-  for (let i = 0; i < fixed; i++) {
-    const a = angle + (i / fixed) * tau;
-    const b = a + (1.06 / fixed) * tau;
-    const fore = Math.cos(a) > 0.014;
-    const p = fore ? fx.above : fx.under;
-    const mix = Math.sin(a - 0.8) > 0 ? 0 : 1;
-    circlePiece(p, center, a, b, [-5.3, 5.6], tourmaline[0], alpha);
-    circlePiece(p, center, a, b, [-4, 4.4], tourmaline[2 + mix], alpha);
-    circlePiece(p, center, a, b, [0.45, 4.25], tourmaline[3 + mix], alpha);
-    const edge = ringPoint(center, a, 4);
-    const inner = ringPoint(center, b, -3.6);
-    p.lineS(...edge, ...inner, tourmaline[i % 4 === 1 ? 5 : 2], alpha * 0.91, 0.32);
-    if (i % 4 === 0) {
-      const jewel = ringPoint(center, a, 2.2);
-      shard(p, jewel, 6, a + 1.52, tourmaline, alpha);
-      if ((i + Math.floor(n)) % 9 === 0) cross(p, jewel, 3.7, tourmaline, alpha);
-    }
-  }
-  if (n >= frames.ringRoll) {
-    const [x, y] = [center[0] - 11, fx.feet[1] + 1];
-    ellFill(fx.under, [x, y], 14, 3.6, '#131925', 0.62 * alpha);
-    oval(fx.under, [x, y], 12, 3, tourmaline[3], alpha * 0.7, 0.28, 2.9);
-    if (n < 105) dust(fx.under, [x, y], (n - frames.ringRoll) % 13, 8, 11, tourmaline, 5);
-  }
-}
-
 function hoop(fx: FxInput, n: number) {
-  if (n < frames.ringIgnite || n >= 125) return;
-  const center = ringCenter(fx, n);
-  const cooling = ramp(n, frames.ringClosed, frames.ringCrystal);
-  const gone = ramp(n, 113, 125);
-  if (cooling < 1) fireLoop(fx, center, n, 1 - cooling);
-  if (cooling > 0) crystalHoop(fx, center, n, cooling * (1 - gone));
-  if (n >= frames.ringJump && n <= 124)
-    dust(fx.above, ringPoint(center, -2.05), n - frames.ringJump, 11, 34, tourmaline, 7);
+  if (n < frames.ringIgnite || n > 122) return;
+  const center = ringCenter(fx.feet, n);
+  const drawn = progress(n, frames.ringIgnite, frames.ringClosed);
+  const frozen = n >= frames.ringCrystal;
+  const breakFrame = 104;
+  const start = Math.PI / 2;
+  if (n < breakFrame) {
+    for (let i = 0; i < Math.ceil(40 * drawn); i++) {
+      const a = start + i * tau / 40;
+      const b = Math.min(start + drawn * tau, a + tau * 1.035 / 40);
+      const front = i >= 20;
+      const p = front ? fx.above : fx.under;
+      const cold = frozen || n >= frames.ringClosed + 1 + (i % 9);
+      const palette = cold ? tourmaline : warm;
+      const thickness = cold ? 5.4 : 4 + 1.9 * Math.sin(i * 2.7 + n * .56) ** 2;
+      const brightness = front ? 1 : .71;
+      circlePiece(p, center, a, b, [-thickness, thickness], palette[0], 1);
+      circlePiece(p, center, a, b, [-thickness + 1.4, thickness - .7], palette[front ? 3 : 2], 1);
+      circlePiece(p, center, a, b, [1.6, thickness - .65], palette[front ? 5 : 3], brightness);
+      if (cold && i % 5 === 0) {
+        const at = ringPoint(center, a + .05, 2);
+        const roll = progress(n, frames.ringRoll, breakFrame);
+        shard(p, at, 5.8, a + 1.52 + roll * 1.8, palette, brightness);
+      }
+    }
+    if (n < frames.ringClosed) {
+      const source = fx.points.tailTip;
+      const tip = ringPoint(center, start + drawn * tau);
+      const curve: XY = [(source[0] + tip[0]) / 2, (source[1] + tip[1]) / 2 + 13];
+      fx.under.lineS(...source, ...curve, warm[2], .84, .5);
+      fx.under.lineS(...curve, ...tip, warm[4], .9, .5);
+      cross(fx.above, tip, 6.5, warm);
+    }
+    if (n >= frames.ringRoll) {
+      const foot = ringPoint(center, Math.PI / 2);
+      ellFill(fx.under, foot, 17, 3.2, '#171420', .78);
+      dust(fx.under, foot, (n - frames.ringRoll) % 10, 7, 13, tourmaline, 5);
+    }
+  } else {
+    const u = progress(n, breakFrame, 122);
+    for (let i = 0; i < 18; i++) {
+      const a = start + i * tau / 18;
+      const [x, y] = ringPoint(center, a);
+      const floor = fx.feet[1] + (i % 5) - 2;
+      const targetY = y + (floor - y) * u * u;
+      const targetX = x + (i % 7 - 3) * 6 * u;
+      shard(i < 9 ? fx.under : fx.above, [targetX, targetY], 7 - 5 * u, a + u * 2, tourmaline, 1 - u);
+    }
+    if (n <= 108) cross(fx.above, [center[0], center[1] + 7], 11, tourmaline, 1 - u);
+  }
+}
+
+function landing(fx: FxInput, n: number, key: number, palette: string[], duration = 14) {
+  const u = progress(n, key, key + duration);
+  if (n < key || u >= 1) return;
+  const from = fx.pointAt(key / 24, 'footL');
+  const at: XY = [from[0], fx.feet[1] + 1];
+  const spread = 9 + 28 * u;
+  oval(fx.under, at, spread, 2 + 4 * u, palette[3], (1 - u) * .54, .1, 5.8);
+  dust(fx.under, at, n - key, duration - 1, 39, palette, 10);
+}
+
+function railAnswer(fx: FxInput, n: number, key: number, palette: string[]) {
+  const p = fx.over;
+  if (!p) return;
+  const reach = progress(n, key, key + 12);
+  if (n < key || reach >= 1) return;
+  const a = 1 - reach;
+  const x = -8, y = 5 + reach * 45;
+  p.lineS(x, -8, x, y, palette[2], a * .88, .8);
+  p.lineS(x + 2, -7, x + 2, y - 2, palette[5], a, .38);
+  p.lineS(-8, -8, 8 + 65 * reach, -8, palette[3], a, .62);
+  cross(p, [x, y - 2], 6.5, palette, a);
+  cross(p, [8 + 65 * reach, -8], 5.3, palette, a);
 }
 
 const blackStone = ['#151925', '#29323e', '#3e4650', '#59636a', '#7d8380', '#a2a7a1'];
@@ -249,7 +258,8 @@ function block(
 }
 
 function rollShow(fx: FxInput, n: number) {
-  const [floorX, floorY] = fx.feet;
+  const [baseX, floorY] = fx.feet;
+  const floorX = baseX - 36;
   const split = frames.showSplit;
   const rolling = 1 - (1 - progress(n, 0, 37)) ** 2.25;
   const x = floorX - 153 * (1 - rolling);
@@ -267,7 +277,7 @@ function rollShow(fx: FxInput, n: number) {
       const tx = x + side * (4 * burst + 49 * Math.sin(burst * 1.13));
       const ty = y - 25 * Math.sin(burst * Math.PI);
       const rot = spin + wobble + side * burst * 1.64;
-      block(fx.above, [tx, ty], rot, 1.1 * (1 - 0.26 * burst), side, blackStone, crack, fade);
+      block(side < 0 && n >= split ? fx.under : fx.above, [tx, ty], rot, 1.1 * (1 - 0.26 * burst), side, blackStone, crack, fade);
     }
   }
   if (n > split && n < 106) {
@@ -276,8 +286,8 @@ function rollShow(fx: FxInput, n: number) {
     oval(fx.under, [floorX, floorY + 1], 18 + burst * 73, 4 + burst * 13, tourmaline[2], circle, 0, tau);
     oval(fx.under, [floorX, floorY], 18 + burst * 73, 4 + burst * 13, tourmaline[5], circle * 0.64, 0.14, 2.9);
   }
-  if (n > 102 && n < 133) {
-    dust(fx.under, [floorX, floorY], n - 102, 13, 51, tourmaline, 9);
+  if (n >= 111 && n < 133) {
+    landing(fx, n, 111, tourmaline);
     const k = progress(n, 109, 131);
     cross(fx.above, [fx.points.wingNear[0] + 4, fx.points.wingNear[1] - 3], 3.8, tourmaline, Math.sin(Math.PI * k));
   }
@@ -285,58 +295,61 @@ function rollShow(fx: FxInput, n: number) {
 
 function rebirth(fx: FxInput, n: number) {
   const split = frames.rebirthSplit;
-  if (n < 18 || n >= 115) return;
-  const x = fx.feet[0];
-  const y = fx.feet[1] - 11 - 6 * Math.sin((n - 22) * 0.11);
-  const gather = ramp(n, 18, 37);
-  const fissure = ramp(n, 43, split - 1);
-  const explode = progress(n, split, 88);
-  const a = gather * (1 - ramp(n, 75, 92));
-  const pulse = Math.sin(n * (0.2 + fissure * 0.12)) ** 2;
-  if (a > 0) {
-    const span = 31 + explode * 23;
-    ellFill(fx.under, [x, fx.feet[1] + 1], 22 * (1 - explode * 0.79), 4, '#301b27', 0.64 * a);
-    ellFill(fx.under, [x, y - 30], span, span * 1.17, warm[2], 0.25 * a);
-    ellFill(fx.under, [x, y - 30], span * 0.78, span, warm[4], a * (0.13 + pulse * 0.1));
-    for (const side of [-1, 1] as const) {
-      const spread = 41 * (1 - gather) + Math.sin(explode * 1.73) * 76;
-      block(
-        fx.above,
-        [x + side * spread, y - 26 * Math.sin(Math.PI * explode) - 7 * (1 - gather)],
-        side * ((1 - gather) * 0.55 + explode * 2),
-        0.84 + 0.39 * gather, side, moltenStone, fissure, a,
-      );
-    }
-    const flicker = (0.47 + pulse * 0.53) * fissure;
-    cross(fx.above, [x - 5, y - 37], 4 + 7 * fissure, warm, flicker * a);
+  if (n < 32 || n >= 109) return;
+  const rolling = progress(n, 41, 65);
+  const x = fx.feet[0] - 55 + 112 * rolling;
+  const y = fx.feet[1] + 1 - 5 * Math.sin(Math.PI * rolling * 3) ** 2;
+  const close = ramp(n, 32, 41);
+  const crack = ramp(n, 64, split - 1);
+  const opened = ramp(n, split, split + 11);
+  const scatter = progress(n, split, 97);
+  const ink = (n >= 41 ? 1 : ramp(n, 32, 38)) * (1 - ramp(n, 89, 99));
+  const gap = 29 * (1 - close) + 40 * opened + 19 * scatter;
+  const rotation = rolling * tau + .11 * Math.sin(rolling * tau);
+  ellFill(fx.under, [x, y + 1], 24 * (1 - .64 * opened), 4, '#1b1427', ink * .74);
+  ellFill(fx.under, [x, y - 25], 33 + 25 * opened, 31, warm[2], ink * .24);
+  if (ink > 0) {
+    // A moving rear stone and opaque front lid share the same hinge and floor.
+    block(fx.under, [x - gap, y - 17 * opened], rotation - .89 * opened, .98, -1, moltenStone, crack, ink);
+    block(fx.above, [x + gap, y + 13 * opened], rotation + .94 * opened, .98, 1, moltenStone, crack, ink);
   }
+  if (n >= 39 && n < 65) dust(fx.under, [x, y], (n - 38) % 10, 8, 21, warm, 10);
   if (n >= split) {
-    const age = n - split;
-    dust(fx.above, [x, y - 30], age, 43, 95, warm, 21);
-    const wave = progress(n, split, split + 35);
-    const alpha = 1 - wave;
-    oval(fx.under, [x, fx.feet[1]], 12 + wave * 109, 4 + wave * 22, warm[1], alpha, 0, tau);
-    oval(fx.under, [x, fx.feet[1] - 1], 12 + wave * 109, 4 + wave * 22, warm[4], alpha * 0.81, 0, tau);
-    if (age < 9) cross(fx.above, [x, y - 32], 28 * (1 - age / 9), warm, alpha);
+    const alpha = 1 - scatter;
+    oval(fx.under, [x, fx.feet[1]], 16 + 113 * scatter, 3 + 19 * scatter, warm[3], alpha, 0, tau);
+    dust(fx.above, [x, y - 24], n - split, 40, 87, warm, 22);
+    const point = [x - 5, y - 31] as XY;
+    const flash = 1 - progress(n, split, split + 6);
+    cross(fx.above, point, 25 * flash, warm, flash);
   }
 }
 
 function phase(fx: FxInput, n: number) {
-  const a = ramp(n, 6, 18) * (1 - ramp(n, 32, 45));
-  if (a <= 0) return;
-  const [x, y] = fx.points.chest;
-  const u = progress(n, 6, 44);
-  const floor = fx.feet;
-  ellFill(fx.under, floor, 21 + u * 37, 6 + u * 7, warm[1], a * 0.58);
-  oval(fx.under, floor, 18 + u * 36, 4 + u * 7, warm[4], a * 0.8, 0.12, 6.2);
-  ellFill(fx.under, [x, y], 30, 37, warm[2], a * 0.25);
-  const sweeps: readonly [string, number][] = [['chest', 12], ['wingNear', 19], ['wingFar', 23], ['tail', 28]];
-  for (const [key, when] of sweeps) {
-    const pos = fx.points[key];
-    const pulse = ramp(n, when - 5, when) * (1 - ramp(n, when + 1, when + 11));
-    cross(fx.above, pos, 2.6 + pulse * 5.6, warm, pulse);
-    dust(fx.above, pos, n - when, 7, 28, warm, -11);
+  const wave = progress(n, 15, 26);
+  if (n < 15 || n > 43) return;
+  const markers = ['tailTip', 'tail', 'pelvis', 'chest', 'head'] as const;
+  const cursor = wave * (markers.length - 1);
+  const segment = Math.min(markers.length - 2, Math.floor(cursor));
+  const u = cursor - segment;
+  const a = fx.points[markers[segment]], b = fx.points[markers[segment + 1]];
+  const spot: XY = [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+  if (n <= 26) {
+    oval(fx.above, spot, 15, 12, warm[3], .95, .18, 5.85);
+    cross(fx.above, spot, 8, warm);
+    cross(fx.under, [spot[0] - 11, spot[1] + 8], 5, warm, .82);
   }
+  const flash = ramp(n, 24, 26) * (1 - ramp(n, 27, 33));
+  if (flash > 0) {
+    const head = fx.points.head;
+    ellFill(fx.above, head, 26, 27, warm[5], flash * .36);
+    cross(fx.above, head, 27 * flash, warm, flash);
+    if (fx.over) {
+      const p = fx.over;
+      p.lineS(17, -8, 238, -8, warm[4], flash * .72, .48);
+      cross(p, [128, -9], 8, warm, flash);
+    }
+  }
+  dust(fx.above, fx.points.chest, n - 27, 19, 67, warm, 6);
 }
 
 function everyday(fx: FxInput, n: number) {
@@ -372,11 +385,27 @@ export function effects(fx: FxInput): void {
   const n = fx.t * 24;
   switch (fx.anim) {
     case 'trick':
-      return crown(fx, n);
+      crown(fx, n);
+      if (n >= 23 && n < 35) railAnswer(fx, n, 23, tourmaline);
+      return landing(fx, n, 100, tourmaline);
+    case 'trick_b':
+      for (const [i, begin] of frames.notes.entries()) {
+        const age = n - begin;
+        if (age < 0 || age >= 9) continue;
+        const at = xylophoneTips[i];
+        const glow = 1 - age / 9;
+        cross(fx.above, at, 7, tourmaline, glow * .9);
+        dust(fx.above, at, age, 8, 23, tourmaline, -5);
+      }
+      landing(fx, n, 37, tourmaline);
+      return landing(fx, n, 110, tourmaline);
     case 'trick-f2':
-      return hoop(fx, n);
+      hoop(fx, n);
+      if (n >= 17 && n < 29) railAnswer(fx, n, 17, warm);
+      return landing(fx, n, 111, warm, 11);
     case 'trick_b-f2':
-      return rebirth(fx, n);
+      rebirth(fx, n);
+      return landing(fx, n, 110, warm);
     case 'show':
       return rollShow(fx, n);
     case 'phase':

@@ -7,6 +7,7 @@ import type { BodyFrame, Creature, Variant, XY } from '../types';
 
 export interface PhoenixPose extends BirdPose {
   phase?: number;
+  ignition?: number;
   glow?: number;
   eye?: number;
   beak?: number;
@@ -149,7 +150,7 @@ function carapace(r: Rig, s: BirdSkeleton, m: Palette, phase: number) {
     [13, 15, 25], [19, 12, 19], [23, 7, 12], [25, 0.3, 0.45]], 17, m, true);
 
   // Rows trace the curved back and rump, like overlapping polished cabochons.
-  for (let row = 0; row < 7; row++) {
+  for (let row = 0; row < 5; row++) {
     for (let i = 0; i < 12; i++) {
       const a = TAU * (i + (row % 2) * 0.5) / 12, c = Math.cos(a), z = Math.sin(a);
       const x = 16 - row * 5;
@@ -272,22 +273,21 @@ function mask(r: Rig, s: BirdSkeleton, m: Palette, pose: PhoenixPose, phase: num
   r.poly([M, J, lower], m.amber).poly([N, lower, J], tinted(m.amber, -0.09)).poly([M, N, J], flat(m.coal, 1));
   s.points.beak = tip;
 
+  // A single swept crest grows from the brow all the way to the nape.
   r.tag = 'crestBase';
-  for (let i = 0; i < 8; i++) {
-    const a = (i - 3.5) / 3.5, drag = s.pulse(1.24 + i * 0.15);
-    const start = h.p(1.5 - Math.abs(a) * 3.2, a * 6.1, 10.5);
-    const tip = h.p(-2 - Math.abs(a) * 13 + 1.2 * drag, a * (11 + (pose.fan ?? 0) * 2.5), 24 + (1 - Math.abs(a)) * 13 + 1.15 * drag);
-    blade(r, start, tip, h.s, i % 3 === 1 ? m.violet : m.sea, { width: 4.1 - 1.2 * Math.abs(a), depth: 1.6, accent: i % 3 ? m.ice : m.amber, etched: true, grain: i % 4 / 3 });
-  }
-  r.tag = 'crestStreamers';
-  for (let i = 0; i < 7; i++) {
-    const a = (i - 3) / 3, lag = s.pulse(1.82 + i * 0.19);
-    blade(r, h.p(-6, a * 6.8, 14), h.p(-24.1 - 3 * a * a + lag * 1.8, a * 13.5, 23 + 3 * (1 - a * a) + lag * 2),
-      h.v(0, 0.48, -0.88), i % 3 === 0 ? m.violet : m.jade, { width: 2.8, depth: 1.25, accent: m.sea, etched: i % 2 === 0 });
+  for (let i = 0; i < 9; i++) {
+    const a = (i - 4) / 4, drag = s.pulse(1.24 + i * 0.15);
+    const ridge = 1 - Math.abs(a);
+    const start = h.p(3 - 4 * Math.abs(a), a * 5.3, 10.5);
+    const tip = h.p(-12 - 15 * ridge + 1.3 * drag, a * 7.5,
+      17 + 23 * ridge + 1.15 * drag);
+    blade(r, start, tip, h.s, i % 3 === 1 ? m.violet : m.sea,
+      { width: 3.65 - Math.abs(a), depth: 1.35, accent: i % 3 ? m.ice : m.amber, etched: true, grain: i % 4 / 3 });
+    if (i === 4) s.points.crown = h.p(-21, 0, 34);
   }
 }
 
-function feathers(r: Rig, s: BirdSkeleton, m: Palette, phase: number) {
+function feathers(r: Rig, s: BirdSkeleton, m: Palette, phase: number, lit?: Palette, ignition = 0) {
   for (const w of s.wings) {
     const suffix = w.side < 0 ? 'L' : 'R';
     const wingAxis = s.body.v(0.02, 0.58 * w.side, 0.82);
@@ -295,10 +295,11 @@ function feathers(r: Rig, s: BirdSkeleton, m: Palette, phase: number) {
     r.tag = 'wingPrimary' + suffix;
     for (let i = w.flight.length - 1; i >= 0; i--) {
       const { root, tip } = w.flight[i];
-      const trim = [m.violet, m.sea, m.jade, m.sea, m.violet, m.violet, m.slate][i % 7];
+      const tint = lit && ignition >= .24 + (1 - i / (w.flight.length - 1)) * .28 ? lit : m;
+      const trim = [tint.ice, tint.sea, tint.jade, tint.sea, tint.violet, tint.violet, tint.slate][i % 7];
       blade(r, root, tip, wingAxis, trim, {
-        width: 3.55 + i * 0.11, depth: 2.6 - i * 0.055, grain: ((i * 5) % 13) / 12,
-        accent: i % 4 === 0 ? m.ice : m.sea, etched: i % 2 === 0,
+        width: 4.35 + i * 0.11, depth: 2.6 - i * 0.055, grain: ((i * 5) % 13) / 12,
+        accent: i % 3 === 0 ? tint.amber : tint.ice, etched: i % 2 === 0,
       });
       const q = vlerp(root, tip, 0.67), p = vlerp(root, tip, 0.94);
       if (i % 2 === 1) {
@@ -317,7 +318,7 @@ function feathers(r: Rig, s: BirdSkeleton, m: Palette, phase: number) {
       });
     }
     r.tag = 'wingCoverts' + suffix;
-    for (let row = 0; row < 3; row++) {
+    for (let row = 0; row < 2; row++) {
       for (let i = 0; i < 12; i++) {
         const grove = w.flight[i];
         const u = (i + 0.1) / 12;
@@ -400,26 +401,27 @@ function feet(r: Rig, s: BirdSkeleton, m: Palette, phase: number) {
   }
 }
 
-function tail(r: Rig, s: BirdSkeleton, m: Palette, pose: PhoenixPose, phase: number, heat: number) {
+function tail(r: Rig, s: BirdSkeleton, cold: Palette, hot: Palette, pose: PhoenixPose, ignition: number, heat: number) {
   const f = s.tail, crowd = pose.fan ?? 0;
-  const ember = flat(m.amber, 3, 0.38 + heat * 0.55);
   for (let i = 0; i < 11; i++) {
     const across = (i - 5) / 5;
     const lag = 1.75 + Math.abs(across) * 0.9 + i * 0.095;
     const length = 78 - Math.abs(across) * 28 + 2 * (i % 2);
+    const switchAt = 0.025 + i * 0.016;
+    const m = ignition >= switchAt ? hot : cold;
+    const unfurl = clamp((ignition - switchAt) / 0.105);
+    const ember = flat(m.amber, 3, 0.38 + heat * 0.55);
     const root = f.p(3 - Math.abs(across) * 7, across * 9.7, -3 + 4 * across * across);
     const ribbon = (u: number) => f.p(
-      3 - length * u - 5 * phase * u * u,
-      across * (9.7 + (31 + crowd * 12) * u) + u * u * (4 + 8 * phase) * s.pulse(lag + u * 1.15),
+      3 - length * u - 5 * unfurl * u * u,
+      across * (9.7 + (31 + crowd * 12) * u) + u * u * (4 + 8 * unfurl) * s.pulse(lag + u * 1.15),
       -4 - u * (21 + Math.abs(across) * 8) + u * u * (4 + 40 * Math.abs(across)) +
-        u * u * (5 + 12 * phase) * s.pulse(lag + u * 0.9) + phase * (5 + 11 * u) * Math.sin(u * 5 + across * 2),
+        u * u * (5 + 12 * unfurl) * s.pulse(lag + u * 0.9) + unfurl * (5 + 11 * u) * Math.sin(u * 5 + across * 2),
     );
     const tip = ribbon(1);
     const mid = ribbon(0.49);
     const shell = i % 3 === 0 ? m.violet : i % 3 === 1 ? m.sea : m.jade;
     r.tag = 'tailOuter' + i;
-    const switchAt = 0.19 + Math.abs(across) * 0.14;
-    const unfurl = clamp((phase - switchAt) / (1 - switchAt));
     const width = (4.4 + 1.8 * (1 - Math.abs(across))) * (1 - 0.25 * unfurl);
     const strand = f.v(0, 0.43, 0.91);
     // One feather starts as two mineral blades. The molten seam between them
@@ -458,6 +460,7 @@ function tail(r: Rig, s: BirdSkeleton, m: Palette, pose: PhoenixPose, phase: num
   r.tag = 'tailCoverts';
   for (let i = 0; i < 15; i++) {
     const a = (i - 7) / 7, lag = s.pulse(1.34 + i * 0.06);
+    const m = ignition >= 0.16 + i * 0.009 ? hot : cold;
     blade(r, f.p(4, a * 12.7, 1), f.p(-20 - (1 - a * a) * 7, a * (20 + 3.1 * crowd), 3.5 + 3 * lag + a * a * 10),
       f.v(0, 0.71, 0.71), i % 3 === 1 ? m.violet : m.jade,
       { width: 3.4, depth: 2.1, accent: i % 3 ? m.sea : m.amber, grain: i % 5 / 4, etched: i % 2 === 0 });
@@ -493,21 +496,24 @@ export function renderPhoenix(
   pose: PhoenixPose, t: number, side: number, variant: Variant,
   motion?: BirdMotion, anim = 'idle', stride = 24, yaw = 0.35,
 ): BodyFrame {
-  const phase = clamp(pose.phase ?? 0), heat = clamp(pose.glow ?? 0);
+  const phase = (pose.phase ?? 0) >= .5 ? 1 : 0, heat = clamp(pose.glow ?? 0);
   const period = anim === 'idle-f2' ? 1.5 : anim === 'sleep' ? 3.5 : undefined;
   const blinkProgress = (t / (period ?? 3) + 0.41) % 1;
   const blink = blinkProgress > 0.905 && blinkProgress < 0.955 ? Math.sin((blinkProgress - 0.905) / 0.05 * Math.PI) ** 2 : 0;
   if (pose.eye === undefined && (anim === 'idle' || anim === 'idle-f2')) pose = { ...pose, eye: blink };
   const skeleton = birdSkeleton(anim, t, side, stride, yaw, pose, motion, period);
   const r = new Rig();
-  const m = phoenixPalette(phase, heat, variant);
+  const ignition = pose.ignition ?? phase;
+  const cold = phoenixPalette(0, 0, variant);
+  const hot = ignition > 0 ? phoenixPalette(1, heat, variant) : cold;
+  const material = (threshold: number) => ignition >= threshold ? hot : cold;
   if (!pose.hidden) {
-    tail(r, skeleton, m, pose, phase, heat);
-    carapace(r, skeleton, m, phase);
-    collar(r, skeleton, m);
-    mask(r, skeleton, m, pose, phase);
-    feathers(r, skeleton, m, phase);
-    feet(r, skeleton, m, phase);
+    tail(r, skeleton, cold, hot, pose, ignition, heat);
+    carapace(r, skeleton, material(.47), Number(ignition >= .47));
+    collar(r, skeleton, material(.65));
+    mask(r, skeleton, material(.88), pose, Number(ignition >= .88));
+    feathers(r, skeleton, material(.54), Number(ignition >= .54), hot, ignition);
+    feet(r, skeleton, material(.57), Number(ignition >= .57));
   }
   const scale = pose.size ?? 1;
   if (scale !== 1) scaleFigure(r, skeleton.points, scale);

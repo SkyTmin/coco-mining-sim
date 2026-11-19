@@ -157,7 +157,7 @@ function writePainting(
         r.layers[layer as keyof typeof r.layers],
       );
     }
-    if (['show', 'peek'].includes(name) || (r.body.over && ['show', 'peek'].includes(r.motion.anim))) {
+    if (['show', 'peek'].includes(name) || r.layers.over.data.some((value, i) => i % 4 === 3 && value > 0)) {
       savePNG(join(dir, 'over', file), r.layers.over);
       overFrames.add(file);
     }

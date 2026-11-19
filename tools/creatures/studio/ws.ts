@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { cpus } from 'node:os';
 import { join } from 'node:path';
 import { loadPainting } from '../render';
-import { checkCreature, defaultAnims, studioConfig } from './checks';
+import { approvedLandmarksPath, checkCreature, defaultAnims, studioConfig } from './checks';
 
 export const pilotIds = [
   'bramble_warden',
@@ -46,7 +46,7 @@ async function gateKey(id: string) {
   const { poseRefInputs } = await import('./ref');
   const studio = ['ref', 'capture', 'checks', 'clip', 'contact-audit', 'gate', 'pet-gate', 'visibility', 'ws'].map((f) => join(tools, 'studio', f + '.ts'));
   const extra = [join(tools, '../../assets/creatures', id, 'meta.json'), join(tools, 'studio', 'card.ts'), join(tools, 'studio', 'card.schema.json'), join(tools, 'c', id + '.studio.json'), join(tools, '../../docs/reports/creatures/pilot-3/reference/tech-metrics.json')];
-  return inputHash([...new Set([...inputsOf(id, c.theme, c.rarity), ...studio, ...poseRefInputs(id), ...extra.filter((f) => existsSync(f))])]);
+  return inputHash([...new Set([...inputsOf(id, c.theme, c.rarity), ...studio, ...poseRefInputs(id), ...[...extra, approvedLandmarksPath(id)].filter((f) => existsSync(f))])]);
 }
 
 async function check(args: string[], strict: boolean) {
