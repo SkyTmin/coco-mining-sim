@@ -8,6 +8,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from viewer_repack import repack
+
 HERE = Path(__file__).resolve().parent
 DEFAULT_ASSETS = HERE.parent.parent / 'assets/creatures'
 LAYERS = ('fxu', 'body', 'lit', 'fxo')
@@ -168,6 +170,8 @@ def pack(assets, out, ident):
         for path in target.iterdir():
             if path.is_file() and path.name not in current:
                 path.unlink()
+        # Frames that play together onto the same page, lossless WebP (viewer_repack.py).
+        repack(target)
         print(f'{ident}: {description}, {total:,} bytes including shared border', flush=True)
 
 

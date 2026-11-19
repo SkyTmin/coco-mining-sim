@@ -5,9 +5,13 @@ import importlib.util
 import math
 import re
 import shutil
+import sys
 from pathlib import Path
 
 from PIL import Image
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from viewer_repack import repack  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location("viewer_atlas", HERE.parent / "viewer-atlas.py")
@@ -168,6 +172,7 @@ def pack(out, ident, rarity, records, bounds, sprites, name, feet):
     if rarity == "secret":
         data["views"] = boss_views(data)
     viewer.save(target / "atlas.json", data)
+    repack(target)  # frames that play together onto the same page (viewer_repack.py)
     for path in target.glob("sprites-*.*"):
         if path.name not in actors["pages"]:
             path.unlink()
