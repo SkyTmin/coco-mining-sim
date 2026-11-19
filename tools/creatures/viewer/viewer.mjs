@@ -1,3 +1,4 @@
+import { paintSceneryRays } from './scenery.mjs';
 import { createPetBehavior } from './behavior.mjs';
 
 import { drawSprite, imagePage, json, material, sharedMaterial } from './material.mjs';
@@ -328,7 +329,8 @@ class Painting {
     const view = data.views?.[state.anim] ?? data;
     const [width, height] = view.field,
       pad = view.thickness;
-    let [x, y] = view.offset ?? [0, 0];
+    const [fieldX, fieldY] = view.offset ?? [0, 0];
+    let x = fieldX, y = fieldY;
     const living = state.at;
     if (living || (this.reaction && this.selected === 'life')) {
       const anchor = living
@@ -370,6 +372,10 @@ class Painting {
         if (depth > feetY === front) scene.stamp(ctx, sprite, px + dx, py + dy);
     };
     props(false);
+    const backdrop = row[10];
+    if (backdrop) actor.stamp(ctx, backdrop[0], backdrop[1] + fieldX, backdrop[2] + fieldY);
+    paintSceneryRays(ctx, data.sceneryRays?.[state.anim]?.[frame],
+      pad + dx + fieldX, pad + dy + fieldY, x - fieldX, y - fieldY);
     for (const sprite of row.slice(5, 9))
       if (sprite) actor.stamp(ctx, sprite[0], sprite[1] + x, sprite[2] + y);
     props(true);

@@ -1,6 +1,7 @@
 import { createCanvas, type Canvas } from '@napi-rs/canvas';
 import { Px } from './rig/px';
 import { placement } from './motion';
+import { paintSceneryRays } from './viewer/scenery.mjs';
 import { Pen } from './fx/pen';
 import { emptyTechniqueTrace } from './technique-fx';
 import { frameImage } from './frame-kit';
@@ -9,6 +10,7 @@ import {
   type Creature,
   type FxInput,
   type Scene,
+  type SceneryRay,
   type Border,
   type BodyFrame,
   type Variant,
@@ -152,6 +154,25 @@ function getFxCanvases(w: number, h: number): [Canvas, Canvas] {
     g.reset();
   }
   return pair;
+}
+const fieldCanvases = new Map<string, Canvas>();
+function fieldCanvas(w: number, h: number, kind: string) {
+  const key = kind + w + 'x' + h;
+  let canvas = fieldCanvases.get(key);
+  if (!canvas) {
+    canvas = createCanvas(w, h);
+    fieldCanvases.set(key, canvas);
+  }
+  canvas.getContext('2d').reset();
+  return canvas;
+}
+export function compositeSceneryRays(
+  target: Px, rays: SceneryRay[], w: number, h: number, pad: number, dx: number, dy: number,
+) {
+  if (!rays.length) return;
+  const canvas = fieldCanvas(w, h, 'rays');
+  paintSceneryRays(canvas.getContext('2d'), rays);
+  blit(target, asPx(canvas), pad + dx, pad + dy, [pad, pad, pad + w, pad + h]);
 }
 // Source layers are field-sized. Keep the soft contact and the golden reflection
 // off the outside rail even when a creature departs the painting.
@@ -335,11 +356,25 @@ export function compose(
       screenPoint(body, p, feet),
     ]),
   );
+  let backdrop: Px | undefined;
+  const sceneryRays: SceneryRay[] = [];
   const techniqueTrace = emptyTechniqueTrace();
   if ((c.props || c.effects) && !(finalFrame && anim === 'away')) {
     const [under, above] = getFxCanvases(w, h);
     const historical = new Map<number, BodyFrame>([[poseTime, body]]);
+    let field: Canvas | undefined;
+    let fieldPen: Pen | undefined;
     const fx: FxInput = {
+      get backdrop() {
+        if (!fieldPen) {
+          field = fieldCanvas(w, h, 'backdrop');
+          fieldPen = new Pen(field.getContext('2d'), 0, 0, 0, 0);
+        }
+        return fieldPen;
+      },
+      sceneryRay(from, to, color, alpha) {
+        if (alpha > 0) sceneryRays.push([...from, ...to, color, Math.min(1, alpha)]);
+      },
       anim: poseAnim,
       t: finalFrame ? 0 : (contact[0] ?? t),
       duration: c.animations[poseAnim]?.seconds ?? spec.seconds,
@@ -369,6 +404,15 @@ export function compose(
     };
     c.props?.(fx);
     c.effects?.(fx);
+    if (field) {
+      const fieldPixels = asPx(field);
+      if (fieldPixels.data.some((value, index) => index % 4 === 3 && value > 0)) {
+        backdrop = new Px(W, H);
+        blit(backdrop, fieldPixels, b + dx, b + dy, clip);
+        blit(layers.bgfBack, backdrop);
+      }
+    }
+    compositeSceneryRays(layers.bgfBack, sceneryRays, w, h, b, dx, dy);
     blit(layers.fxu, asPx(under), b + dx, b + dy, clip);
     blit(layers.fxo, asPx(above), b + dx, b + dy, clip);
   }
@@ -413,6 +457,8 @@ export function compose(
   return {
     layers,
     picture: stack(layers),
+    backdrop,
+    sceneryRays,
     body,
     feet: fullFeet,
     worldFeet: feet,

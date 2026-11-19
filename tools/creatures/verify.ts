@@ -7,6 +7,7 @@ import omggif from 'omggif';
 import { PNG } from 'pngjs';
 import {
   compose,
+  compositeSceneryRays,
   blit,
   splitForeground,
   frameCount,
@@ -163,9 +164,13 @@ export async function verifyRelease(
           track[n].camera[0],
           track[n].camera[1],
         );
+        const backdrop = join(dir, 'backdrop', file);
+        if (existsSync(backdrop)) blit(layers.bgfBack, pixels(backdrop, w, h));
+        compositeSceneryRays(layers.bgfBack, track[n].sceneryRays ?? [],
+          w - thickness * 2, h - thickness * 2, thickness, track[n].camera[0], track[n].camera[1]);
         for (const key of layerNames) {
           if (key === 'bgf' || key === 'bgfBack') continue;
-          if (key === 'over' && !hasOver) {
+          if (key === 'over' && !hasOver && !existsSync(join(dir, key, file))) {
             layers.over = new Px(w, h);
             continue;
           }

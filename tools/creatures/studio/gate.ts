@@ -21,7 +21,7 @@ export async function gateExtras(ids: string[]) {
     const painting = await loadPainting(id);
     const { c } = painting;
     const registered = readPoseRefs(id);
-    const petIssues = petGate(painting, Object.keys(registered));
+    const petIssues = petGate(painting, Object.keys(registered), registered.hatch?.frames);
     for (const issue of petIssues) console.log('  ! ' + id + ' pet: ' + issue);
     if (petIssues.length) failed++;
     for (const [anim, spec] of Object.entries(registered)) {

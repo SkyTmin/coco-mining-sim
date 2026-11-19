@@ -110,20 +110,35 @@ def pack_actor(source, dest, ident, meta, scene, rarity):
     has_behavior = (source / 'behavior.json').is_file()
     names = list(meta['animations'])
     clips = {}
+    rays = {}
     sprites = Atlas()
     for name in names:
         directory = source / 'frames' / name
         track = load(directory / 'motion.json')
         if len(track) != meta['animations'][name]['frames']:
             raise ValueError(f'{ident}/{name}: frame count differs from metadata')
-        layers = (*LAYERS, 'over') if (directory / 'over').is_dir() else LAYERS
+        has_over = (directory / 'over').is_dir()
         frames = []
         for n, sample in enumerate(track):
             # Feet and camera are in field pixels. Sprite origins include the border and shake.
             row = [*sample['feet'], *sample['camera'], sample['backgroundFrame']]
-            for layer in layers:
-                with Image.open(directory / layer / f'{n:03d}.png') as image:
+            filename = f'{n:03d}.png'
+            for layer in LAYERS:
+                with Image.open(directory / layer / filename) as image:
                     row.append(sprites.trim(image.convert('RGBA')))
+            backdrop = directory / 'backdrop' / filename
+            if has_over or backdrop.is_file():
+                over = directory / 'over' / filename
+                if over.is_file():
+                    with Image.open(over) as image:
+                        row.append(sprites.trim(image.convert('RGBA')))
+                else:
+                    row.append(None)
+            if backdrop.is_file():
+                with Image.open(backdrop) as image:
+                    row.append(sprites.trim(image.convert('RGBA')))
+            if sample.get('sceneryRays'):
+                rays.setdefault(name, {})[n] = sample['sceneryRays']
             frames.append(row)
         clips[name] = frames
     origin = list(clips['idle'][0][:2]) if has_behavior else None
@@ -133,6 +148,7 @@ def pack_actor(source, dest, ident, meta, scene, rarity):
         'id': ident, 'rarity': rarity, 'fps': meta['fps'], 'canvas': meta['canvas'],
         'field': meta['field'], 'thickness': meta['thickness'], 'origin': origin, 'scene': scene,
         'actors': sprites.write(dest, 'sprites'), 'clips': clips,
+        **({'sceneryRays': rays} if rays else {}),
         'animations': {name: meta['animations'][name] for name in names}, 'behavior': has_behavior,
     })
     return f'{len(clips)} clips, {len(sprites.images)} unique sprites'

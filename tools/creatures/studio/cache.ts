@@ -54,6 +54,7 @@ export function inputsOf(id: string, theme: string, rarity: string) {
     ...walk(tools),
     ...own,
     join(tools, 'viewer/behavior.mjs'),
+    join(tools, 'viewer/scenery.mjs'),
     join(assets, id, 'behavior.json'),
     ...sceneInputs(theme),
     join(tools, 'frames', rarity + '.ts'),

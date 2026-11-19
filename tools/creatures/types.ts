@@ -48,7 +48,12 @@ export interface BodyFrame {
   flash?: number; // 0..1
   over?: Px; // isolated foreground limb in local sprite coordinates
 }
+/** Endpoints in field pixels. The first follows the performer and the second stays on the scenery. */
+export type SceneryRay = [number, number, number, number, string, number];
 export interface FxInput {
+  /** Effects anchored to the field rather than to the performer. */
+  readonly backdrop: Pen;
+  sceneryRay(from: XY, to: XY, color: string, alpha: number): void;
   under: Pen;
   above: Pen;
   anim: string;

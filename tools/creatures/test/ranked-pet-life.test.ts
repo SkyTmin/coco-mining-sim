@@ -5,7 +5,7 @@ import Ajv from 'ajv';
 import { compose } from '../engine';
 import { attachPetBehavior, placement, reelChapters } from '../motion';
 import { Px } from '../rig/px';
-import { petClipIssues } from '../studio/pet-gate';
+import { petClipIssues, petGate } from '../studio/pet-gate';
 import type { Animation, Border, Creature, MotionPlan, Scene } from '../types';
 import { createPetBehavior, interruptFrames, petDirections, validateBehavior, type BehaviorConfig } from '../viewer/behavior.mjs';
 
@@ -110,4 +110,22 @@ test('legendary and mythic pets register their phase, show and longer trick to t
   assert.ok(petClipIssues(clips, ref, [], true, 'mythic').includes('missing show'));
   assert.ok(petClipIssues({ ...extra, phase: animation(1, 'phase') }, [...ref, 'show'], [], true, 'mythic')
     .some(s => s.startsWith('phase duration')));
+});
+
+test('a ranked hatch may start in a registered birth pose and must finish standing', () => {
+  const references = Object.keys(clips);
+  function hatchIssues(ranked: boolean, keys: number[], holdBirth: boolean) {
+    const hatchActor = { ...actor, id: 'meadow_colossus', frame(anim: string, t: number, side: number, variant: 'normal' | 'gold') {
+      const result = actor.frame(anim, t, side, variant);
+      if (anim === 'hatch' && (t === 0 || holdBirth)) result.dy = -20;
+      return result;
+    } };
+    const behavior = { ...config, lifeAttacks: ranked ? config.lifeAttacks : undefined, attackInterval: ranked ? undefined : ordinary.attackInterval };
+    const c = attachPetBehavior(hatchActor, plan, behavior);
+    return petGate({ c, s: scene, b: border }, references, keys).filter(s => s.startsWith('hatch frame'));
+  }
+  assert.deepEqual(hatchIssues(true, [0, 12], false), []);
+  assert.match(hatchIssues(true, [12], false)[0], /frame 0.*registered/);
+  assert.match(hatchIssues(true, [0, 12], true)[0], /frame 47 vs idle/);
+  assert.match(hatchIssues(false, [0, 12], false)[0], /frame 0 vs idle/);
 });

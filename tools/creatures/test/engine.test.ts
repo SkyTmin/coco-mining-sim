@@ -242,3 +242,25 @@ test('opaque GIF deltas retain earlier RGB and a moving edge under local palette
   }
   assert.equal(reader.frameInfo(1).transparent_index, 0);
 });
+
+test('field light stays on the wall as a performer carries the start of its ray and glint', () => {
+  const c: Creature = { ...creature, effects(f) {
+    f.backdrop.col('#5533aa');
+    f.backdrop.rect(30, 16, 2, 2);
+    f.sceneryRay(f.points.tip, [31, 19], '#33aaff', 1);
+    f.above.col('#ff5577');
+    f.above.dot(...f.points.tip);
+  }};
+  const snapshots = [62, 100].map(x => compose({ ...c, portraitOrigin: [x, 86] }, scene, border, 'idle', 0));
+  for (const r of snapshots) {
+    assert.deepEqual(r.backdrop!.get(38, 24), [85, 51, 170, 255]);
+    assert.deepEqual(r.layers.bgfBack.get(39, 27), [51, 170, 255, 255]);
+    const [x, y] = r.points.tip;
+    assert.deepEqual(r.layers.bgfBack.get(x + 8, y + 8), [51, 170, 255, 255]);
+    assert.deepEqual(r.layers.fxo.get(x + 8, y + 8), [255, 85, 119, 255]);
+    assert.deepEqual(r.sceneryRays, [[x, y, 31, 19, '#33aaff', 1]]);
+  }
+  assert.notDeepEqual(snapshots[0].points.tip, snapshots[1].points.tip);
+  assert.deepEqual(snapshots[0].backdrop!.data, snapshots[1].backdrop!.data);
+  assert.equal(picture('idle', 0).backdrop, undefined);
+});

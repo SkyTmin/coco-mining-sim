@@ -112,7 +112,9 @@ function writePainting(
   const [, , size] = sizes[c.rarity];
   const pivots = turn ? turnPivots(c, size, frames) : [];
   const dir = join(output, 'frames', suffix),
-    movedFrames = new Set<string>();
+    movedFrames = new Set<string>(),
+    backdropFrames = new Set<string>(),
+    overFrames = new Set<string>();
   const track = [];
   for (let f = 0; f < frames; f++) {
     const t = f / 24,
@@ -120,6 +122,7 @@ function writePainting(
     gif.add(r.picture, f);
     track.push({
       feet: r.worldFeet,
+      ...(r.sceneryRays.length ? { sceneryRays: r.sceneryRays } : {}),
       camera: r.camera,
       backgroundFrame: r.backgroundFrame,
       side: r.motion.side,
@@ -136,12 +139,20 @@ function writePainting(
       'body',
       'lit',
       'fxo',
-      ...(['show', 'peek'].includes(name) ? ['over'] : []),
+
     ] as const) {
       savePNG(
         join(output, 'frames', suffix, layer, file),
         r.layers[layer as keyof typeof r.layers],
       );
+    }
+    if (['show', 'peek'].includes(name) || (r.body.over && ['show', 'peek'].includes(r.motion.anim))) {
+      savePNG(join(dir, 'over', file), r.layers.over);
+      overFrames.add(file);
+    }
+    if (r.backdrop) {
+      savePNG(join(dir, 'backdrop', file), r.backdrop);
+      backdropFrames.add(file);
     }
     if (r.camera.some(Boolean)) {
       savePNG(join(dir, 'bg', file), r.layers.bg);
@@ -166,7 +177,9 @@ function writePainting(
       if (!/^\d{3,}\.png$/.test(file)) continue;
       if (
         parseInt(file, 10) >= frames ||
-        (layer.name === 'bg' && !movedFrames.has(file))
+        (layer.name === 'bg' && !movedFrames.has(file)) ||
+        (layer.name === 'backdrop' && !backdropFrames.has(file)) ||
+        (layer.name === 'over' && !overFrames.has(file))
       )
         unlinkSync(join(dir, layer.name, file));
     }

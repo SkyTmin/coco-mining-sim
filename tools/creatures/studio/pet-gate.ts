@@ -75,7 +75,7 @@ export function joinsSleep(name: string, first: boolean) {
 }
 
 type Painting = Awaited<ReturnType<typeof loadPainting>>;
-export function petGate(painting: Painting, references: string[]) {
+export function petGate(painting: Painting, references: string[], hatchKeys: number[] = []) {
   const { c, s, b } = painting;
   if (approvedBeforePets.has(c.id) && !c.behavior) return [];
   if (!c.behavior) return ['new paintings require behavior.json'];
@@ -123,6 +123,11 @@ export function petGate(painting: Painting, references: string[]) {
       const phaseSeam = name === 'phase' && n > 0 && second;
       const target = phaseSeam || (sleepSeam ? asleep : resting);
       const iou = maskOverlap(target, rendered.layers.body);
+      if (rank && name === 'hatch' && n === 0 && iou < 0.9) {
+        // A birth image is calibrated to its own sheet, which gateExtras measures with ws ref.
+        if (!hatchKeys.includes(0)) issues.push('hatch frame 0 birth pose needs its own registered sheet key');
+        continue;
+      }
       minimum = Math.min(minimum, iou);
       count++;
       if (iou < 0.9) issues.push(name + ' frame ' + n + ' vs ' + (phaseSeam ? 'idle-f2' : sleepSeam ? 'sleep' : 'idle') + ' IoU ' + iou.toFixed(3) + ' < 0.900');
