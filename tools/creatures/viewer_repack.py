@@ -17,7 +17,7 @@ from pathlib import Path
 from PIL import Image
 
 ATLASES = Path(__file__).resolve().parent / 'viewer' / 'atlases'
-SIDE = 1024
+SIDE = 2048  # 1024 gave 688 pages: over the 511 files an artifact version may hold
 FILL = 0.78  # take sprites for a page until this share of its area is claimed
 
 
