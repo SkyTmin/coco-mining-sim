@@ -14,7 +14,7 @@ const pale = hx('#cfc1ae'),
   ice = hx('#939abd');
 const horizon = 76;
 
-function sparkle(p: Px, x: number, y: number, bright: number) {
+export function sparkle(p: Px, x: number, y: number, bright: number) {
   const light = bright > 0.8 ? pale : bright > 0.36 ? star : ice;
   p.set(x, y, light);
   if (bright > 0.66) {
@@ -25,7 +25,7 @@ function sparkle(p: Px, x: number, y: number, bright: number) {
   if (bright > 0.94) p.set(x, y + 2, cloud[5]);
 }
 
-function islet(p: Px, x: number, y: number, width: number, depth: number) {
+export function islet(p: Px, x: number, y: number, width: number, depth: number) {
   const top: Point[] = [
     [x - width, y],
     [x - width * 0.72, y - 2],

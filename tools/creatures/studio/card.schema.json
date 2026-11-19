@@ -103,6 +103,7 @@
       "enum": [
         "heavy-quadruped",
         "light-quadruped",
+        "sky-swimmer",
         "arachnid",
         "cephalopod",
         "hexapod",

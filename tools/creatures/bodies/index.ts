@@ -1,4 +1,5 @@
 import { armedFrame, type ArmedAppearance } from './armed-biped';
+import { skySwimmerFrame, type SkySwimmerAppearance } from './sky-swimmer';
 import { arachnidFrame, type ArachnidAppearance } from './arachnid';
 import { cephalopodFrame, type CephalopodAppearance } from './cephalopod';
 import { lightFrame, type LightAppearance } from './light-quadruped';
@@ -16,6 +17,7 @@ export { bodySources };
 export const bodyTypes = Object.keys(bodySources) as BodyType[];
 
 export interface BodyAppearance {
+  skySwimmer?: SkySwimmerAppearance;
   arachnid?: ArachnidAppearance;
   heavy?: HeavyAppearance;
   light?: LightAppearance;
@@ -27,6 +29,7 @@ export interface BodyAppearance {
 
 function frameFor(card: CreatureCard, route: MotionPlan, appearance: BodyAppearance): Creature['frame'] {
   switch (card.body) {
+    case 'sky-swimmer': return skySwimmerFrame(card, route, appearance.skySwimmer);
     case 'arachnid': return arachnidFrame(card, route, appearance.arachnid);
     case 'heavy-quadruped': return heavyFrame(card, route, appearance.heavy);
     case 'armed-biped': return armedFrame(card, route, appearance.armed);

@@ -21,6 +21,12 @@ const families: Record<
   BodyType,
   { parts: string[]; moves: TemplateId[]; effects: EffectId; tones: string[] }
 > = {
+  'sky-swimmer': {
+    parts: ['body', 'head', 'finL', 'finR', 'tail', 'flukes', 'island', 'lamp'],
+    moves: ['pillars', 'ram', 'sweep', 'overhead', 'volley', 'summon'],
+    effects: 'silk-wind',
+    tones: ['#26384e', '#3a5572', '#527b91', '#8bb0b0', '#dacb9a'],
+  },
   arachnid: {
     parts: ['thorax', 'abdomen', 'clawL', 'clawR', 'tail', 'sting', ...['L', 'R'].flatMap(side =>
       Array.from({length: 4}, (_, i) => 'foot' + side + i))],
