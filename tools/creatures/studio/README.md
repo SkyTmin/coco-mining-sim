@@ -123,6 +123,7 @@
 ```sh
 npm run ws -- export-ref meadow_colossus idle 0
 npm run ws -- sheet-lint poses.png --grid 3x2 --ref .studio/meadow_colossus-idle-0-ref.png --air 3,4
+npm run ws -- sheet-lint sleep-io.png --grid 3x2 --low 3,4,5   # присед, поклон, лёжа: рост не сравнивается, линия ступней — да
 npm run ws -- label poses.png --grid 3x2 --roles 'стойка;сжатие;взлёт;вершина;опора;возврат'
 ```
 

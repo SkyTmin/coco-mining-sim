@@ -58,6 +58,17 @@ test('height and feet are measured independently against the first grounded pose
   assert.equal(check(jump, [3]).ok, false, 'an airborne pose still has to clear the margin');
 });
 
+test('a marked low pose (crouch, lying) skips height but keeps the feet line', () => {
+  const crouch = poses(); rect(crouch, 64, 10, 20, 14, key);
+  catches(crouch, 'height');
+  assert.equal(lintSheet(crouch, [3, 1], [], undefined, [2]).ok, true);
+  const sunk = poses(); rect(sunk, 64, 10, 20, 32, key); rect(sunk, 64, 22, 20, 12, green);
+  assert.deepEqual(lintSheet(sunk, [3, 1], [], undefined, [2]).cells[1].issues.map(s => s.split(':')[0]), ['feet']);
+  const lowFirst = poses(); rect(lowFirst, 14, 10, 20, 14, key);
+  assert.equal(lintSheet(lowFirst, [3, 1], [], undefined, [1]).standingCell, 2, 'the reference pose is the first standing one');
+  assert.throws(() => lintSheet(crouch, [3, 1], [2], undefined, [2]), /--low/);
+});
+
 test('purple/paint mixture is measured at the contour even when its channels are far from the key', () => {
   const png = poses();
   // (255,0,255) × .5 + (52,139,70) × .5.

@@ -140,30 +140,35 @@ function inspectCell(png: PNG, grid: XY, index: number, palette?: Palette) {
     fringeRatio, foreignRatio: palette ? foreignRatio : null, issues };
 }
 
-export function lintSheet(png: PNG, grid: XY, air: number[] = [], ref?: PNG) {
+/** `air` cells skip height and the feet line; `low` cells (crouch, lying, bow) skip only height: the feet stay on the line. */
+export function lintSheet(png: PNG, grid: XY, air: number[] = [], ref?: PNG, low: number[] = []) {
   const count = grid[0] * grid[1];
-  if (air.some(n => !Number.isInteger(n) || n < 1 || n > count) || new Set(air).size !== air.length) throw new Error('--air needs unique one-based cell numbers');
+  const bad = (list: number[]) => list.some(n => !Number.isInteger(n) || n < 1 || n > count) || new Set(list).size !== list.length;
+  if (bad(air)) throw new Error('--air needs unique one-based cell numbers');
+  if (bad(low) || low.some(n => air.includes(n))) throw new Error('--low needs unique one-based cell numbers not listed in --air');
   const palette = ref ? referencePalette(ref) : undefined;
   const cells = Array.from({ length: count }, (_, i) => inspectCell(png, grid, i, palette));
   const grounded = cells.filter(cell => !air.includes(cell.cell) && cell.bodyPixels > 12);
-  const standing = grounded[0];
-  for (const cell of grounded.slice(1)) {
-    for (const metric of ['height', 'feet'] as const) {
+  const standing = grounded.find(cell => !low.includes(cell.cell)) ?? grounded[0];
+  for (const cell of grounded) {
+    if (cell === standing) continue;
+    for (const metric of low.includes(cell.cell) ? ['feet'] as const : ['height', 'feet'] as const) {
       const delta = (cell[metric] - standing[metric]) / standing[metric];
       if (Math.abs(delta) > 0.12 + 1e-12) cell.issues.push(`${metric}: ${(100 * delta).toFixed(1)}% from grounded cell ${standing.cell} (max ±12%)`);
     }
   }
-  return { ok: cells.every(cell => cell.issues.length === 0), grid, air, standingCell: standing?.cell ?? null, cells };
+  return { ok: cells.every(cell => cell.issues.length === 0), grid, air, low, standingCell: standing?.cell ?? null, cells };
 }
 
 export function lintCommand(args: string[]) {
   const { values, positionals } = parseArgs({ args, allowPositionals: true, options: {
-    grid: { type: 'string' }, air: { type: 'string' }, ref: { type: 'string' }, json: { type: 'boolean' },
+    grid: { type: 'string' }, air: { type: 'string' }, low: { type: 'string' }, ref: { type: 'string' }, json: { type: 'boolean' },
   } });
   if (positionals.length !== 1) throw new Error('expected one PNG path');
   const input = positionals[0], png = PNG.sync.read(readFileSync(input));
-  const air = values.air === undefined ? [] : values.air.split(',').map(Number);
-  const result = lintSheet(png, gridOf(values.grid, png), air, values.ref ? PNG.sync.read(readFileSync(values.ref)) : undefined);
+  const cellsOf = (list?: string) => list === undefined ? [] : list.split(',').map(Number);
+  const air = cellsOf(values.air), low = cellsOf(values.low);
+  const result = lintSheet(png, gridOf(values.grid, png), air, values.ref ? PNG.sync.read(readFileSync(values.ref)) : undefined, low);
   if (values.json) console.log(JSON.stringify(result, null, 2));
   else {
     console.log(`${result.ok ? '✓' : '✗'} ${input}: ${result.cells.length} cells`);
