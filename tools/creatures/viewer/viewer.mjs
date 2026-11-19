@@ -1,31 +1,6 @@
 import { createPetBehavior } from './behavior.mjs';
 
-async function json(url) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(response.status + ' ' + url);
-  return response.json();
-}
-
-async function imagePage(url) {
-  const image = new Image();
-  image.src = url;
-  await image.decode();
-  return image;
-}
-
-function drawSprite(ctx, image, rect, x, y) {
-  const [, sx, sy, width, height] = rect;
-  ctx.drawImage(image, sx, sy, width, height, x, y, width, height);
-}
-
-async function textures(root, atlas) {
-  const pages = await Promise.all(atlas.pages.map((name) => imagePage(root + name)));
-  return (ctx, index, x, y) => {
-    if (index < 0) return;
-    const rect = atlas.rects[index];
-    drawSprite(ctx, pages[rect[0]], rect, x, y);
-  };
-}
+import { drawSprite, imagePage, json, material, sharedMaterial } from './material.mjs';
 
 // Some boss atlases contain hundreds of MB of decoded pixels. A thumbnail needs
 // only the pages for its current pose. Keep a small working set and prefetch the next pose.
@@ -76,63 +51,11 @@ function actorPages(root, atlas) {
   };
 }
 
-function buffer(width, height) {
-  const surface = document.createElement('canvas');
-  surface.width = width;
-  surface.height = height;
-  return surface.getContext('2d');
-}
-
-// Unchanged tiles are shared by all 72 phases. Keep only a base and the current composite in memory.
-async function material(root, atlas, width, height) {
-  const stamp = await textures(root, atlas);
-  const base = buffer(width, height),
-    active = buffer(width, height);
-  const tile = atlas.tile,
-    columns = Math.ceil(width / tile);
-  const x = (i) => (i % columns) * tile,
-    y = (i) => Math.floor(i / columns) * tile;
-  atlas.base.forEach((id, i) => stamp(base, id, x(i), y(i)));
-  let last = -1;
-  return {
-    stamp,
-    props: atlas.props,
-    phases: atlas.phases.length,
-    paint(ctx, phase, destWidth = width, destHeight = height) {
-      phase %= atlas.phases.length;
-      if (phase !== last) {
-        active.clearRect(0, 0, width, height);
-        active.drawImage(base.canvas, 0, 0);
-        for (const [i, sprite] of atlas.phases[phase]) {
-          const left = x(i),
-            top = y(i);
-          active.clearRect(left, top, tile, tile);
-          stamp(active, sprite, left, top);
-        }
-        last = phase;
-      }
-      ctx.drawImage(active.canvas, 0, 0, destWidth, destHeight);
-    },
-  };
-}
-
-const sharedMaterials = new Map();
-function sharedMaterial(url, width, height) {
-  if (!sharedMaterials.has(url)) {
-    const root = url.slice(0, url.lastIndexOf('/') + 1);
-    const loading = json(url).then((data) => material(root, data, ...(data.canvas ?? [width, height])));
-    sharedMaterials.set(
-      url,
-      loading.catch((error) => {
-        sharedMaterials.delete(url);
-        throw error;
-      }),
-    );
+async function loadArtwork(id, runtime) {
+  if (runtime === 'f1') {
+    const { loadKingPainting } = await import('./king-painting.mjs');
+    return loadKingPainting();
   }
-  return sharedMaterials.get(url);
-}
-
-async function loadArtwork(id) {
   const root = './atlases/' + id + '/';
   const data = await json(root + 'atlas.json');
   const [scene, border, actor, behavior] = await Promise.all([
@@ -211,6 +134,8 @@ class Painting {
     if (!this.entry.clips.some((c) => c.id === clip)) clip = homeClip(this.entry);
     this.surface = this.pet = this.reaction = this.pending = this.heldSample = this.previous = null;
     this.away = false;
+    this.direction = 0;
+    this.manualStage = 1;
     this.sleepAt = null;
     this.lastTap = -Infinity;
     this.selected = clip;
@@ -243,9 +168,10 @@ class Painting {
     this.failed = false;
     const ticket = this.ticket;
     try {
-      const art = await loadArtwork(this.atlasId);
+      const art = await loadArtwork(this.atlasId, this.entry.runtime);
       if (ticket !== this.ticket) return;
       this.surface = art;
+      if (!this.pet && art.createBattle) this.pet = art.createBattle();
       if (!this.pet && art.behavior) this.pet = createPetBehavior(art.behavior, art.data.animations);
       this.button.setAttribute('aria-busy', 'false');
       if (this === featured) {
@@ -272,6 +198,13 @@ class Painting {
     }
   }
   choose(id) {
+    if (this.entry.runtime === 'f1') {
+      if (this.selected === 'life') this.manualStage = this.pet?.stage ?? 1;
+      else if (id === 'life' && this.pet && this.pet.stage !== this.manualStage) this.pet.setStage(this.manualStage);
+      if (['swap', 'sweepAim', 'leapAim', 'leap'].includes(id)) this.manualStage = 4;
+      if (id === 'summon') this.manualStage = Math.max(2, this.manualStage);
+      if (['rollAim', 'roll', 'cleaveAim'].includes(id) && this.manualStage === 4) this.manualStage = 1;
+    }
     this.selected = id;
     this.age = 0;
     this.reaction = this.heldSample = this.previous = null;
@@ -286,6 +219,7 @@ class Painting {
       this.ensure();
       return;
     }
+    if (this.entry.runtime === 'f1' && this.selected !== 'life') this.choose('life');
     if (this.pet && this.selected === 'life') {
       if (this.away) setAway(false, false, this);
       this.pet.event(event);
@@ -293,6 +227,58 @@ class Painting {
     }
     const clip = event === 'like' && this.trickClip ? this.trickClip : 'happy';
     if (this.has(clip)) this.reaction = { anim: clip, age: 0 };
+  }
+  changeStage(stage) {
+    if (!this.pet || this.entry.runtime !== 'f1') return;
+    this.choose('life');
+    if (stage) this.pet.setStage(stage);
+    else this.pet.nextStage();
+    this.previous = null;
+    this.draw();
+    if (this === featured) refreshControls();
+  }
+  face(direction) {
+    this.direction = direction;
+    if (this.selected === 'life') {
+      // An isolated pose can face the camera freely. The walking battle always faces its target.
+      const clip = this.button.dataset.clip;
+      this.choose(this.has(clip) && clip !== 'life' ? clip : 'idle');
+    }
+    this.previous = null;
+    this.draw();
+    if (this === featured) refreshControls();
+  }
+  drawKing(dt) {
+    const living = this.selected === 'life';
+    this.age += dt;
+    if (living) this.pet.advance(dt);
+    const stage = living ? this.pet.stage : this.manualStage;
+    const clip = this.selected;
+    const tick = Math.floor(this.age * 24);
+    const signature = [clip, this.direction, tick, stage].join('/');
+    if (this.previous === signature) return;
+    this.previous = signature;
+    const duration = this.surface.clips.find((c) => c.id === clip)?.duration;
+    const frame = duration ? tick % Math.ceil(duration * 24 - 1e-7) : tick;
+    const time = frame / 24;
+    this.surface.render(this.ctx, {
+      clip, direction: this.direction, time, stage, battle: this.pet, tick,
+    });
+    const king = living ? this.pet.state.mobs.find((m) => m.kind === 'king') : undefined;
+    const displayClip = king?.data?.petMode ?? king?.mode ?? clip;
+    const button = this.button;
+    const changed = Number(button.dataset.stage) !== stage || button.dataset.clip !== displayClip;
+    button.dataset.clip = displayClip;
+    button.dataset.frame = frame;
+    button.dataset.stage = stage;
+    button.dataset.direction = living && king ? (Math.round(king.face * 4 / Math.PI) + 8) % 8 : this.direction;
+    if (this === featured) {
+      if (changed) {
+        refreshKingControls();
+        refreshMood();
+      }
+      if (heroVisible) copyToHero();
+    }
   }
   sample(dt) {
     const { data } = this.surface;
@@ -311,9 +297,10 @@ class Painting {
   }
   draw(dt = 0) {
     if (!this.surface || (!this.visible && !(this === featured && heroVisible))) {
-      this.pet?.advance(dt);
+      if (this.entry.runtime !== 'f1' || this.selected === 'life') this.pet?.advance(dt);
       return;
     }
+    if (this.entry.runtime === 'f1') return this.drawKing(dt);
     const { data, scene, border, actor } = this.surface,
       ctx = this.ctx;
     const state = this.heldSample ?? this.sample(dt);
@@ -413,6 +400,10 @@ function copyToHero() {
   if (featured.button.dataset.clip) {
     hero.dataset.clip = featured.button.dataset.clip;
     hero.dataset.frame = featured.button.dataset.frame;
+    if (featured.entry.runtime === 'f1') {
+      hero.dataset.stage = featured.button.dataset.stage;
+      hero.dataset.direction = featured.button.dataset.direction;
+    }
   }
 }
 function releaseLater(player) {
@@ -434,6 +425,8 @@ function selectFeatured(player, open = true) {
   hero.setAttribute('aria-label', player.entry.name + ' — коснуться картины');
   delete hero.dataset.clip;
   delete hero.dataset.frame;
+  delete hero.dataset.stage;
+  delete hero.dataset.direction;
   copyToHero();
   controls();
   markSelection();
@@ -448,7 +441,21 @@ function refreshMood() {
       : (moods[id] ?? featured.entry.clips.find((clip) => clip.id === id)?.name);
   if ($('#mood').textContent !== text) $('#mood').textContent = text ?? 'Гуляет';
 }
+const directions = ['Восток', 'Юго-восток', 'Юг', 'Юго-запад', 'Запад', 'Северо-запад', 'Север', 'Северо-восток'];
+function refreshKingControls() {
+  const king = featured.entry.runtime === 'f1';
+  $('#battle-controls').hidden = !king;
+  if (!king) return;
+  const living = featured.selected === 'life';
+  $('#stage').value = living ? featured.pet?.stage ?? 1 : featured.manualStage;
+  $('#next-stage').disabled = $('#stage').disabled = !featured.pet;
+  for (const btn of $('#directions').children) {
+    btn.disabled = !featured.pet;
+    btn.setAttribute('aria-pressed', !living && Number(btn.dataset.direction) === featured.direction);
+  }
+}
 function refreshControls() {
+  refreshKingControls();
   $('#feature-title').textContent = featured.entry.name;
   $('.feature .rarity').textContent = rarityNames[featured.entry.rarity] + ' картина';
   for (const button of $('#clips').children)
@@ -464,6 +471,7 @@ function refreshControls() {
     : 'С клавиатуры используйте Enter.';
   $('.actions').hidden = !featured.pet;
   $('#leave').disabled = $('#skill').disabled = !featured.pet;
+  $('#skill').hidden = featured.entry.runtime === 'f1';
   $('#leave').textContent = featured.away ? 'Вернуться' : 'Уйти';
   $('#presence').textContent = !featured.away
     ? ''
@@ -616,6 +624,20 @@ async function start() {
   );
   observer.observe(hero);
   players.forEach((player) => observer.observe(player.button));
+  for (const [index, name] of directions.entries()) {
+    const button = buttonFor('', () => featured.face(index));
+    const arrow = document.createElement('span');
+    arrow.textContent = '→';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.style.transform = 'rotate(' + index * 45 + 'deg)';
+    button.append(arrow);
+    button.dataset.direction = index;
+    button.title = name;
+    button.setAttribute('aria-label', name);
+    $('#directions').append(button);
+  }
+  $('#stage').addEventListener('change', (event) => featured.changeStage(Number(event.target.value)));
+  $('#next-stage').addEventListener('click', () => featured.changeStage());
   $('#leave').addEventListener('click', () => setAway(!featured.away));
   $('#skill').addEventListener('click', () => {
     if (featured.selected !== 'life') featured.choose('life');

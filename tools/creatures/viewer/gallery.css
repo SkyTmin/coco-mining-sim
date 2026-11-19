@@ -115,3 +115,14 @@ details[open] > summary.section-title h2::before { transform: rotate(90deg); }
 #collection > section { margin-bottom: clamp(30px, 5vw, 64px); scroll-margin-top: 12px; }
 .work.selected figcaption { border-color: var(--green); }
 @media (pointer: coarse) { .playback button { min-height: 44px; } }
+
+#battle-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 14px 28px; margin-bottom: 20px; }
+#battle-controls[hidden] { display: none; }
+.stage-controls, #directions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.stage-controls label, #directions-label { display: block; flex-basis: 100%; font-size: 14px; color: var(--muted); }
+#directions-label { margin-bottom: 6px; }
+.stage-controls select { font: inherit; min-height: 36px; color: var(--ink); background: var(--paper);
+  border: 1px solid var(--line); border-radius: 3px; padding: 6px; }
+#directions button { font-size: 18px; line-height: 1; min-width: 36px; padding: 6px; }
+#directions button span { display: inline-block; }
+@media (pointer: coarse) { .stage-controls select, #directions button { min-height: 44px; } }

@@ -104,6 +104,38 @@ def material(directory, paths, front=()):
     return {**atlas.write(directory, 'tiles'), 'tile': TILE, 'base': base, 'phases': phases, 'props': props}
 
 
+def pack_actor(source, dest, ident, meta, scene, rarity):
+    has_behavior = (source / 'behavior.json').is_file()
+    names = list(meta['animations'])
+    clips = {}
+    sprites = Atlas()
+    for name in names:
+        directory = source / 'frames' / name
+        track = load(directory / 'motion.json')
+        if len(track) != meta['animations'][name]['frames']:
+            raise ValueError(f'{ident}/{name}: frame count differs from metadata')
+        layers = (*LAYERS, 'over') if (directory / 'over').is_dir() else LAYERS
+        frames = []
+        for n, sample in enumerate(track):
+            # Feet and camera are in field pixels. Sprite origins include the border and shake.
+            row = [*sample['feet'], *sample['camera'], sample['backgroundFrame']]
+            for layer in layers:
+                with Image.open(directory / layer / f'{n:03d}.png') as image:
+                    row.append(sprites.trim(image.convert('RGBA')))
+            frames.append(row)
+        clips[name] = frames
+    origin = list(clips['idle'][0][:2]) if has_behavior else None
+    if has_behavior:
+        shutil.copyfile(source / 'behavior.json', dest / 'behavior.json')
+    save(dest / 'atlas.json', {
+        'id': ident, 'rarity': rarity, 'fps': meta['fps'], 'canvas': meta['canvas'],
+        'field': meta['field'], 'thickness': meta['thickness'], 'origin': origin, 'scene': scene,
+        'actors': sprites.write(dest, 'sprites'), 'clips': clips,
+        'animations': {name: meta['animations'][name] for name in names}, 'behavior': has_behavior,
+    })
+    return f'{len(clips)} clips, {len(sprites.images)} unique sprites'
+
+
 def pack(assets, out, ident):
     source = assets / ident
     meta = load(source / 'meta.json')
@@ -118,34 +150,11 @@ def pack(assets, out, ident):
         front = [(obj['depth'], source / 'bg/front' / (obj['id'] + '.png'))
                  for obj in load(source / 'bg/front-depth.json')]
         scene = material(dest, sorted((source / 'bg/loop').glob('*.png')), front)
-        has_behavior = (source / 'behavior.json').is_file()
-        names = list(meta['animations'])
-        clips = {}
-        sprites = Atlas()
-        for name in names:
-            directory = source / 'frames' / name
-            track = load(directory / 'motion.json')
-            if len(track) != meta['animations'][name]['frames']:
-                raise ValueError(f'{ident}/{name}: frame count differs from metadata')
-            layers = (*LAYERS, 'over') if (directory / 'over').is_dir() else LAYERS
-            frames = []
-            for n, sample in enumerate(track):
-                # Feet and camera are in field pixels. Sprite origins include the border and shake.
-                row = [*sample['feet'], *sample['camera'], sample['backgroundFrame']]
-                for layer in layers:
-                    with Image.open(directory / layer / f'{n:03d}.png') as image:
-                        row.append(sprites.trim(image.convert('RGBA')))
-                frames.append(row)
-            clips[name] = frames
-        origin = list(clips['idle'][0][:2]) if has_behavior else None
-        if has_behavior:
-            shutil.copyfile(source / 'behavior.json', dest / 'behavior.json')
-        save(dest / 'atlas.json', {
-            'id': ident, 'rarity': rarity, 'fps': meta['fps'], 'canvas': meta['canvas'],
-            'field': meta['field'], 'thickness': meta['thickness'], 'origin': origin, 'scene': scene,
-            'actors': sprites.write(dest, 'sprites'), 'clips': clips,
-            'animations': {name: meta['animations'][name] for name in names}, 'behavior': has_behavior,
-        })
+        if ident == 'rat_king':
+            save(dest / 'scene.json', {**scene, 'canvas': meta['canvas']})
+            description = 'native F1 painting, throne room material'
+        else:
+            description = pack_actor(source, dest, ident, meta, scene, rarity)
         generated = list(dest.iterdir())
         files = generated + list(frame_dir.iterdir())
         total = sum(f.stat().st_size for f in files)
@@ -159,7 +168,7 @@ def pack(assets, out, ident):
         for path in target.iterdir():
             if path.is_file() and path.name not in current:
                 path.unlink()
-        print(f'{ident}: {len(clips)} clips, {len(sprites.images)} unique sprites, {total:,} bytes including shared border', flush=True)
+        print(f'{ident}: {description}, {total:,} bytes including shared border', flush=True)
 
 
 if __name__ == '__main__':

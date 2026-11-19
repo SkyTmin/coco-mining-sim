@@ -1305,36 +1305,106 @@
     "section": "bosses",
     "rarity": "secret",
     "color": "#57463f",
+    "runtime": "f1",
     "clips": [
       {
         "id": "life",
-        "name": "Жизнь",
-        "frames": 720
+        "name": "Жизнь"
       },
       {
         "id": "idle",
         "name": "Покой",
-        "frames": 72
+        "frames": 58
       },
       {
-        "id": "walk",
+        "id": "roar",
+        "name": "Рёв",
+        "frames": 30
+      },
+      {
+        "id": "chase",
         "name": "Ходьба",
-        "frames": 24
+        "frames": 34
       },
       {
-        "id": "look",
-        "name": "Взгляд",
+        "id": "rollAim",
+        "name": "Прицеливание перед перекатом",
+        "frames": 21
+      },
+      {
+        "id": "roll",
+        "name": "Перекат",
+        "frames": 53
+      },
+      {
+        "id": "whipAim",
+        "name": "Хлыст хвостом",
+        "frames": 48
+      },
+      {
+        "id": "cleaveAim",
+        "name": "Рубка тесаком",
+        "frames": 59
+      },
+      {
+        "id": "summon",
+        "name": "Призыв стражи",
+        "frames": 63
+      },
+      {
+        "id": "swap",
+        "name": "Смена оружия",
+        "frames": 39
+      },
+      {
+        "id": "sweepAim",
+        "name": "Тройной взмах рельсом",
+        "frames": 68
+      },
+      {
+        "id": "leapAim",
+        "name": "Подготовка прыжка",
+        "frames": 21
+      },
+      {
+        "id": "leap",
+        "name": "Прыжок и ударная волна",
+        "frames": 80
+      },
+      {
+        "id": "dizzy",
+        "name": "Головокружение",
+        "frames": 32
+      },
+      {
+        "id": "stun",
+        "name": "Оглушение",
+        "frames": 11
+      },
+      {
+        "id": "recover",
+        "name": "Передышка",
+        "frames": 21
+      },
+      {
+        "id": "dying",
+        "name": "Гибель",
         "frames": 36
       },
       {
-        "id": "sleep",
-        "name": "Сон",
-        "frames": 84
+        "id": "fidget_a",
+        "name": "Осматривает крышку",
+        "frames": 48
       },
       {
-        "id": "turn",
-        "name": "Разворот",
-        "frames": 96
+        "id": "fidget_b",
+        "name": "Принюхивается",
+        "frames": 48
+      },
+      {
+        "id": "look",
+        "name": "Осматривается",
+        "frames": 36
       },
       {
         "id": "happy",
@@ -1342,34 +1412,19 @@
         "frames": 48
       },
       {
-        "id": "tired",
-        "name": "Усталость",
-        "frames": 36
-      },
-      {
-        "id": "hatch",
-        "name": "Вылупление",
-        "frames": 36
-      },
-      {
         "id": "trick",
         "name": "Трюк",
         "frames": 60
       },
       {
-        "id": "fidget_a",
-        "name": "Первый жест",
-        "frames": 48
-      },
-      {
-        "id": "fidget_b",
-        "name": "Второй жест",
-        "frames": 48
-      },
-      {
         "id": "sleep_in",
-        "name": "Засыпание",
+        "name": "Засыпает",
         "frames": 30
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 84
       },
       {
         "id": "sleep_out",
@@ -1378,98 +1433,23 @@
       },
       {
         "id": "wake_startled",
-        "name": "Испуг во сне",
+        "name": "Резкое пробуждение",
         "frames": 24
       },
       {
-        "id": "phase",
-        "name": "Смена фазы",
-        "frames": 48
+        "id": "hatch",
+        "name": "Появление",
+        "frames": 36
       },
       {
-        "id": "show",
-        "name": "Представление",
-        "frames": 120
-      },
-      {
-        "id": "idle-f2",
-        "name": "Покой во второй фазе",
-        "frames": 72
-      },
-      {
-        "id": "tech_cleave",
-        "name": "Рубка тесаком",
-        "frames": 31
-      },
-      {
-        "id": "tech_whip",
-        "name": "Хлыст хвостом",
-        "frames": 22
-      },
-      {
-        "id": "tech_roll",
-        "name": "Коронный перекат",
-        "frames": 38
-      },
-      {
-        "id": "tech_summon",
-        "name": "Призыв стражи",
-        "frames": 43
-      },
-      {
-        "id": "tech_sweep",
-        "name": "Тройной взмах рельсом",
-        "frames": 57
-      },
-      {
-        "id": "tech_leap",
-        "name": "Прыжок с ударной волной",
-        "frames": 48
-      },
-      {
-        "id": "walk_n",
-        "name": "Шаг на север",
+        "id": "turn",
+        "name": "Поворот",
         "frames": 24
       },
       {
-        "id": "walk_ne",
-        "name": "Шаг на северо-восток",
-        "frames": 24
-      },
-      {
-        "id": "walk_e",
-        "name": "Шаг на восток",
-        "frames": 24
-      },
-      {
-        "id": "walk_se",
-        "name": "Шаг на юго-восток",
-        "frames": 24
-      },
-      {
-        "id": "walk_s",
-        "name": "Шаг на юг",
-        "frames": 24
-      },
-      {
-        "id": "walk_sw",
-        "name": "Шаг на юго-запад",
-        "frames": 24
-      },
-      {
-        "id": "walk_w",
-        "name": "Шаг на запад",
-        "frames": 24
-      },
-      {
-        "id": "walk_nw",
-        "name": "Шаг на северо-запад",
-        "frames": 24
-      },
-      {
-        "id": "showreel",
-        "name": "Все анимации",
-        "frames": 1499
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 60
       }
     ]
   },

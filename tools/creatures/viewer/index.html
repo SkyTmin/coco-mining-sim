@@ -34,6 +34,22 @@
       </div>
       <div class="playback">
         <div id="variants" class="variants" role="group" aria-label="Облик" hidden></div>
+        <div id="battle-controls" hidden>
+          <div class="stage-controls">
+            <label for="stage">Стадия боя</label>
+            <select id="stage">
+              <option value="1">I · Тесак и крышка</option>
+              <option value="2">II · Стража</option>
+              <option value="3">III · Узел лопнул</option>
+              <option value="4">IV · Смена оружия</option>
+            </select>
+            <button type="button" id="next-stage">Следующая стадия</button>
+          </div>
+          <div class="direction-controls">
+            <span id="directions-label">Сторона клипа</span>
+            <div id="directions" role="group" aria-labelledby="directions-label"></div>
+          </div>
+        </div>
         <h3 id="clips-title">Анимации</h3>
         <div id="clips" class="clip-list" role="group" aria-labelledby="clips-title"></div>
       </div>

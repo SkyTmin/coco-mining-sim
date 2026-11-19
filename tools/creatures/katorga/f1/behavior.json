@@ -1,0 +1,20 @@
+{
+  "seed": 22,
+  "field": [256, 208],
+  "tilePixels": 32,
+  "walkLimits": [0.25, 2.65, 7.75, 6.45],
+  "throne": [3.55, 4.85],
+  "burrows": [[0.25, 3.8, 1.1, 4.15], [7.75, 3.45, 6.95, 3.9], [7.6, 5.5, 6.8, 5.35]],
+  "targetRoute": [[5.7, 4.8], [6.25, 3.85], [3.55, 4.1], [1.8, 5.4], [2.85, 3.75], [5.65, 5.4]],
+  "targetSpeed": 2.45,
+  "dodgeSpeed": 5.4,
+  "openingSeconds": 0.8,
+  "stages": [
+    {"id": 1, "label": "Тесак и крышка", "seconds": 12},
+    {"id": 2, "label": "Стража", "seconds": 9},
+    {"id": 3, "label": "Узел лопнул", "seconds": 10},
+    {"id": 4, "label": "Смена оружия", "seconds": 13}
+  ],
+  "returnSeconds": 2.2,
+  "gestures": {"tap": "happy", "tap_asleep": "wake_startled", "like": "trick", "idle_owner": "sleep_in", "owner_back": "sleep_out"}
+}
