@@ -1386,59 +1386,146 @@
         "name": "Гибель",
         "frames": 34
       }
-    ]
-  },
-  {
-    "id": "kinglet",
-    "name": "Малый король",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 1,
-    "clips": [
+    ],
+    "variants": [
       {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
+        "id": "king",
+        "name": "Крысиный король",
+        "atlas": "king",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "roar",
+            "name": "Рёв",
+            "frames": 30
+          },
+          {
+            "id": "chase",
+            "name": "Ходьба",
+            "frames": 34
+          },
+          {
+            "id": "rollAim",
+            "name": "Прицеливание перед перекатом",
+            "frames": 21
+          },
+          {
+            "id": "roll",
+            "name": "Перекат",
+            "frames": 53
+          },
+          {
+            "id": "whipAim",
+            "name": "Хлыст хвостом",
+            "frames": 48
+          },
+          {
+            "id": "cleaveAim",
+            "name": "Рубка тесаком",
+            "frames": 59
+          },
+          {
+            "id": "summon",
+            "name": "Призыв стражи",
+            "frames": 39
+          },
+          {
+            "id": "swap",
+            "name": "Смена оружия",
+            "frames": 39
+          },
+          {
+            "id": "sweepAim",
+            "name": "Тройной взмах рельсом",
+            "frames": 56
+          },
+          {
+            "id": "leapAim",
+            "name": "Подготовка прыжка",
+            "frames": 21
+          },
+          {
+            "id": "leap",
+            "name": "Прыжок и ударная волна",
+            "frames": 46
+          },
+          {
+            "id": "dizzy",
+            "name": "Головокружение",
+            "frames": 32
+          },
+          {
+            "id": "stun",
+            "name": "Оглушение",
+            "frames": 11
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 21
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 34
+          }
+        ]
       },
       {
-        "id": "roar",
-        "name": "Рёв",
-        "frames": 29
-      },
-      {
-        "id": "chase",
-        "name": "Ходьба",
-        "frames": 34
-      },
-      {
-        "id": "rollAim",
-        "name": "Прицеливание перед перекатом",
-        "frames": 21
-      },
-      {
-        "id": "roll",
-        "name": "Перекат",
-        "frames": 53
-      },
-      {
-        "id": "whipAim",
-        "name": "Хлыст хвостом",
-        "frames": 48
-      },
-      {
-        "id": "dizzy",
-        "name": "Головокружение",
-        "frames": 21
-      },
-      {
-        "id": "recover",
-        "name": "Передышка",
-        "frames": 20
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 23
+        "id": "kinglet",
+        "name": "Малый король",
+        "atlas": "kinglet",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "roar",
+            "name": "Рёв",
+            "frames": 29
+          },
+          {
+            "id": "chase",
+            "name": "Ходьба",
+            "frames": 34
+          },
+          {
+            "id": "rollAim",
+            "name": "Прицеливание перед перекатом",
+            "frames": 21
+          },
+          {
+            "id": "roll",
+            "name": "Перекат",
+            "frames": 53
+          },
+          {
+            "id": "whipAim",
+            "name": "Хлыст хвостом",
+            "frames": 48
+          },
+          {
+            "id": "dizzy",
+            "name": "Головокружение",
+            "frames": 21
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 20
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 23
+          }
+        ]
       }
     ]
   },
@@ -1519,59 +1606,136 @@
         "name": "Гибель",
         "frames": 36
       }
-    ]
-  },
-  {
-    "id": "f2_mite",
-    "name": "Латник",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 2,
-    "clips": [
+    ],
+    "variants": [
       {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
+        "id": "f2_armor",
+        "name": "Живые доспехи",
+        "atlas": "f2_armor",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "roar",
+            "name": "Пробуждение",
+            "frames": 36
+          },
+          {
+            "id": "chase",
+            "name": "Ходьба",
+            "frames": 36
+          },
+          {
+            "id": "swing",
+            "name": "Рубка мечом",
+            "frames": 39
+          },
+          {
+            "id": "thrustAim",
+            "name": "Замах для укола",
+            "frames": 28
+          },
+          {
+            "id": "lunge",
+            "name": "Выпад",
+            "frames": 17
+          },
+          {
+            "id": "crouch",
+            "name": "Подготовка прыжка",
+            "frames": 20
+          },
+          {
+            "id": "air",
+            "name": "Прыжок с ударом",
+            "frames": 53
+          },
+          {
+            "id": "idle_crack",
+            "name": "Латы трещат",
+            "frames": 39
+          },
+          {
+            "id": "idle_burst",
+            "name": "Латы разбиты",
+            "frames": 39
+          },
+          {
+            "id": "rebuild",
+            "name": "Сборка доспехов",
+            "frames": 51
+          },
+          {
+            "id": "dizzy",
+            "name": "Ошеломление",
+            "frames": 34
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 22
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 36
+          }
+        ]
       },
       {
-        "id": "chase",
-        "name": "Ходьба",
-        "frames": 34
-      },
-      {
-        "id": "ring",
-        "name": "Кружение роя",
-        "frames": 44
-      },
-      {
-        "id": "windup",
-        "name": "Укус",
-        "frames": 21
-      },
-      {
-        "id": "hop",
-        "name": "Прыжок в сторону",
-        "frames": 17
-      },
-      {
-        "id": "gather",
-        "name": "Сбор роя",
-        "frames": 36
-      },
-      {
-        "id": "escape",
-        "name": "Уход под латы",
-        "frames": 18
-      },
-      {
-        "id": "recover",
-        "name": "Передышка",
-        "frames": 20
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 22
+        "id": "f2_mite",
+        "name": "Латник",
+        "atlas": "f2_mite",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "chase",
+            "name": "Ходьба",
+            "frames": 34
+          },
+          {
+            "id": "ring",
+            "name": "Кружение роя",
+            "frames": 44
+          },
+          {
+            "id": "windup",
+            "name": "Укус",
+            "frames": 21
+          },
+          {
+            "id": "hop",
+            "name": "Прыжок в сторону",
+            "frames": 17
+          },
+          {
+            "id": "gather",
+            "name": "Сбор роя",
+            "frames": 36
+          },
+          {
+            "id": "escape",
+            "name": "Уход под латы",
+            "frames": 18
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 20
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 22
+          }
+        ]
       }
     ]
   },
@@ -1711,59 +1875,126 @@
         "name": "Гибель",
         "frames": 36
       }
-    ]
-  },
-  {
-    "id": "f4_statue",
-    "name": "Страж идола",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 4,
-    "clips": [
+    ],
+    "variants": [
       {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
+        "id": "f4_idol",
+        "name": "Каменный идол",
+        "atlas": "f4_idol",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "roar",
+            "name": "Пробуждение",
+            "frames": 32
+          },
+          {
+            "id": "idle_law1",
+            "name": "Заповедь поклона",
+            "frames": 92
+          },
+          {
+            "id": "idle_law2",
+            "name": "Заповедь неподвижности",
+            "frames": 92
+          },
+          {
+            "id": "idle_law3",
+            "name": "Заповедь опущенного меча",
+            "frames": 92
+          },
+          {
+            "id": "idle_open",
+            "name": "Открытое сердце",
+            "frames": 120
+          },
+          {
+            "id": "idle_gaze",
+            "name": "Каменный взор",
+            "frames": 82
+          },
+          {
+            "id": "idle_spent",
+            "name": "Истощение",
+            "frames": 87
+          },
+          {
+            "id": "idle_wrath",
+            "name": "Гнев",
+            "frames": 40
+          },
+          {
+            "id": "idle_slam",
+            "name": "Удар рукой",
+            "frames": 60
+          },
+          {
+            "id": "idle_phase",
+            "name": "Пробуждение стражей",
+            "frames": 60
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 36
+          }
+        ]
       },
       {
-        "id": "dormant",
-        "name": "Дремота на постаменте",
-        "frames": 34
-      },
-      {
-        "id": "rise",
-        "name": "Пробуждение",
-        "frames": 33
-      },
-      {
-        "id": "creep",
-        "name": "Крадётся",
-        "frames": 36
-      },
-      {
-        "id": "still",
-        "name": "Замирание",
-        "frames": 24
-      },
-      {
-        "id": "wind",
-        "name": "Удар клинком",
-        "frames": 36
-      },
-      {
-        "id": "bow",
-        "name": "Поклон",
-        "frames": 34
-      },
-      {
-        "id": "recover",
-        "name": "Передышка",
-        "frames": 17
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 22
+        "id": "f4_statue",
+        "name": "Страж идола",
+        "atlas": "f4_statue",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "dormant",
+            "name": "Дремота на постаменте",
+            "frames": 34
+          },
+          {
+            "id": "rise",
+            "name": "Пробуждение",
+            "frames": 33
+          },
+          {
+            "id": "creep",
+            "name": "Крадётся",
+            "frames": 36
+          },
+          {
+            "id": "still",
+            "name": "Замирание",
+            "frames": 24
+          },
+          {
+            "id": "wind",
+            "name": "Удар клинком",
+            "frames": 36
+          },
+          {
+            "id": "bow",
+            "name": "Поклон",
+            "frames": 34
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 17
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 22
+          }
+        ]
       }
     ]
   },
@@ -2185,118 +2416,153 @@
         "name": "Гибель",
         "frames": 41
       }
-    ]
-  },
-  {
-    "id": "f9_head",
-    "name": "Голова гидры",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 9,
-    "clips": [
+    ],
+    "variants": [
       {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
+        "id": "f9boss",
+        "name": "Многоглавая гидра",
+        "atlas": "f9boss",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "idle_tail",
+            "name": "Взмах хвостом",
+            "frames": 74
+          },
+          {
+            "id": "idle_flood",
+            "name": "Разлив озера",
+            "frames": 44
+          },
+          {
+            "id": "idle_geyser",
+            "name": "Гейзер",
+            "frames": 58
+          },
+          {
+            "id": "idle_rise",
+            "name": "Подъём из воды",
+            "frames": 58
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 41
+          }
+        ]
       },
       {
-        "id": "rise",
-        "name": "Подъём из воды",
-        "frames": 36
+        "id": "f9_head",
+        "name": "Голова гидры",
+        "atlas": "f9_head",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "rise",
+            "name": "Подъём из воды",
+            "frames": 36
+          },
+          {
+            "id": "bite",
+            "name": "Укус",
+            "frames": 39
+          },
+          {
+            "id": "cast_fire",
+            "name": "Огненный выдох",
+            "frames": 58
+          },
+          {
+            "id": "cast_ice",
+            "name": "Ледяной шар",
+            "frames": 54
+          },
+          {
+            "id": "cast_venom",
+            "name": "Ядовитый плевок",
+            "frames": 51
+          },
+          {
+            "id": "cast_bolt",
+            "name": "Молния",
+            "frames": 51
+          },
+          {
+            "id": "cast_light",
+            "name": "Световой луч",
+            "frames": 51
+          },
+          {
+            "id": "heal",
+            "name": "Исцеление",
+            "frames": 44
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 32
+          }
+        ]
       },
       {
-        "id": "bite",
-        "name": "Укус",
-        "frames": 39
-      },
-      {
-        "id": "cast_fire",
-        "name": "Огненный выдох",
-        "frames": 58
-      },
-      {
-        "id": "cast_ice",
-        "name": "Ледяной шар",
-        "frames": 54
-      },
-      {
-        "id": "cast_venom",
-        "name": "Ядовитый плевок",
-        "frames": 51
-      },
-      {
-        "id": "cast_bolt",
-        "name": "Молния",
-        "frames": 51
-      },
-      {
-        "id": "cast_light",
-        "name": "Световой луч",
-        "frames": 51
-      },
-      {
-        "id": "heal",
-        "name": "Исцеление",
-        "frames": 44
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 32
-      }
-    ]
-  },
-  {
-    "id": "f9_crown",
-    "name": "Скрытая голова",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 9,
-    "clips": [
-      {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
-      },
-      {
-        "id": "rise",
-        "name": "Подъём коронованной головы",
-        "frames": 35
-      },
-      {
-        "id": "up",
-        "name": "Над водой",
-        "frames": 44
-      },
-      {
-        "id": "bite",
-        "name": "Укус",
-        "frames": 41
-      },
-      {
-        "id": "prism",
-        "name": "Призматический залп",
-        "frames": 48
-      },
-      {
-        "id": "dive",
-        "name": "Нырок",
-        "frames": 17
-      },
-      {
-        "id": "hunt",
-        "name": "Подводная охота",
-        "frames": 39
-      },
-      {
-        "id": "whirl",
-        "name": "Водоворот",
-        "frames": 58
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 39
+        "id": "f9_crown",
+        "name": "Скрытая голова",
+        "atlas": "f9_crown",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "rise",
+            "name": "Подъём коронованной головы",
+            "frames": 35
+          },
+          {
+            "id": "up",
+            "name": "Над водой",
+            "frames": 44
+          },
+          {
+            "id": "bite",
+            "name": "Укус",
+            "frames": 41
+          },
+          {
+            "id": "prism",
+            "name": "Призматический залп",
+            "frames": 48
+          },
+          {
+            "id": "dive",
+            "name": "Нырок",
+            "frames": 17
+          },
+          {
+            "id": "hunt",
+            "name": "Подводная охота",
+            "frames": 39
+          },
+          {
+            "id": "whirl",
+            "name": "Водоворот",
+            "frames": 58
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 39
+          }
+        ]
       }
     ]
   },
@@ -2654,69 +2920,161 @@
         "name": "Гибель",
         "frames": 125
       }
-    ]
-  },
-  {
-    "id": "f13_giant",
-    "name": "Рыцарь-исполин",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 13,
-    "clips": [
+    ],
+    "variants": [
       {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
+        "id": "f13boss",
+        "name": "Кукловод",
+        "atlas": "f13boss",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "f13_hang_rest",
+            "name": "Покой",
+            "frames": 72
+          },
+          {
+            "id": "roar",
+            "name": "Выход на сцену",
+            "frames": 58
+          },
+          {
+            "id": "f13_trans",
+            "name": "Перемена декораций",
+            "frames": 77
+          },
+          {
+            "id": "f13_cut1",
+            "name": "Рубка вагой",
+            "frames": 23
+          },
+          {
+            "id": "f13_cut2",
+            "name": "Укол вагой",
+            "frames": 26
+          },
+          {
+            "id": "f13_snare",
+            "name": "Аркан",
+            "frames": 34
+          },
+          {
+            "id": "f13_grid",
+            "name": "Сетка",
+            "frames": 58
+          },
+          {
+            "id": "f13_needle",
+            "name": "Иглы",
+            "frames": 82
+          },
+          {
+            "id": "f13_hang_bolt",
+            "name": "Молния над кораблём",
+            "frames": 39
+          },
+          {
+            "id": "f13_hang_memory",
+            "name": "Память звезды",
+            "frames": 44
+          },
+          {
+            "id": "f13_hang_star",
+            "name": "Падение звезды",
+            "frames": 36
+          },
+          {
+            "id": "f13_hang_wave",
+            "name": "Волна сцены",
+            "frames": 44
+          },
+          {
+            "id": "f13_spent",
+            "name": "Без сил",
+            "frames": 58
+          },
+          {
+            "id": "chase",
+            "name": "Ходьба",
+            "frames": 39
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 24
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 125
+          }
+        ]
       },
       {
-        "id": "f13_stand",
-        "name": "На сцене",
-        "frames": 36
-      },
-      {
-        "id": "chase",
-        "name": "Ходьба",
-        "frames": 36
-      },
-      {
-        "id": "f13_lance",
-        "name": "Выпад копьём",
-        "frames": 39
-      },
-      {
-        "id": "f13_shield",
-        "name": "Удар щитом",
-        "frames": 44
-      },
-      {
-        "id": "f13_charge_aim",
-        "name": "Подготовка разбега",
-        "frames": 29
-      },
-      {
-        "id": "f13_charge",
-        "name": "Таран",
-        "frames": 44
-      },
-      {
-        "id": "f13_slump",
-        "name": "Падение на колени",
-        "frames": 48
-      },
-      {
-        "id": "f13_rebuild",
-        "name": "Подъём на нитях",
-        "frames": 56
-      },
-      {
-        "id": "recover",
-        "name": "Передышка",
-        "frames": 24
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 17
+        "id": "f13_giant",
+        "name": "Рыцарь-исполин",
+        "atlas": "f13_giant",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "f13_stand",
+            "name": "На сцене",
+            "frames": 36
+          },
+          {
+            "id": "chase",
+            "name": "Ходьба",
+            "frames": 36
+          },
+          {
+            "id": "f13_lance",
+            "name": "Выпад копьём",
+            "frames": 39
+          },
+          {
+            "id": "f13_shield",
+            "name": "Удар щитом",
+            "frames": 44
+          },
+          {
+            "id": "f13_charge_aim",
+            "name": "Подготовка разбега",
+            "frames": 29
+          },
+          {
+            "id": "f13_charge",
+            "name": "Таран",
+            "frames": 44
+          },
+          {
+            "id": "f13_slump",
+            "name": "Падение на колени",
+            "frames": 48
+          },
+          {
+            "id": "f13_rebuild",
+            "name": "Подъём на нитях",
+            "frames": 56
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 24
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 17
+          }
+        ]
       }
     ]
   },
@@ -2941,304 +3299,426 @@
         "name": "Гибель",
         "frames": 77
       }
-    ]
-  },
-  {
-    "id": "f15b_echo_king",
-    "name": "Эхо Крысиного короля",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 15,
-    "clips": [
+    ],
+    "variants": [
       {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
+        "id": "f15boss",
+        "name": "Хозяин подземелья",
+        "atlas": "f15boss",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "f15l_sleep",
+            "name": "Спящий плащ",
+            "frames": 48
+          },
+          {
+            "id": "f15l_stir",
+            "name": "Шевелится",
+            "frames": 22
+          },
+          {
+            "id": "f15l_wake",
+            "name": "Пробуждение",
+            "frames": 82
+          },
+          {
+            "id": "f15l_palm",
+            "name": "Ладонь-созвездие",
+            "frames": 50
+          },
+          {
+            "id": "f15l_sweep",
+            "name": "Рубящая дуга",
+            "frames": 36
+          },
+          {
+            "id": "f15l_repel",
+            "name": "Три кольца",
+            "frames": 57
+          },
+          {
+            "id": "f15l_well",
+            "name": "Колодец тяготения",
+            "frames": 130
+          },
+          {
+            "id": "f15l_orbit",
+            "name": "Планеты короны",
+            "frames": 107
+          },
+          {
+            "id": "f15l_meteor",
+            "name": "Звездопад",
+            "frames": 69
+          },
+          {
+            "id": "f15l_conduct",
+            "name": "Дирижёр памяти",
+            "frames": 36
+          },
+          {
+            "id": "f15l_dstrike",
+            "name": "Когти из тьмы",
+            "frames": 45
+          },
+          {
+            "id": "f15l_dstrike_stars",
+            "name": "Пять звёзд из тьмы",
+            "frames": 44
+          },
+          {
+            "id": "f15l_gather",
+            "name": "Сбор орбит",
+            "frames": 53
+          },
+          {
+            "id": "f15l_memory",
+            "name": "Память подземелья",
+            "frames": 58
+          },
+          {
+            "id": "f15l_wrap",
+            "name": "Затмение",
+            "frames": 44
+          },
+          {
+            "id": "f15l_dark",
+            "name": "Тёмный ход",
+            "frames": 36
+          },
+          {
+            "id": "f15l_open",
+            "name": "Открытое ядро",
+            "frames": 63
+          },
+          {
+            "id": "f15l_nova",
+            "name": "Сверхновая",
+            "frames": 87
+          },
+          {
+            "id": "f15l_core_beam",
+            "name": "Вращение лучей звезды",
+            "frames": 166
+          },
+          {
+            "id": "f15l_core_pulse",
+            "name": "Ядро и импульс",
+            "frames": 51
+          },
+          {
+            "id": "f15l_core_breath",
+            "name": "Выдох звезды",
+            "frames": 68
+          },
+          {
+            "id": "chase",
+            "name": "Ходьба",
+            "frames": 39
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 24
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 77
+          }
+        ]
       },
       {
-        "id": "chase",
-        "name": "Ходьба",
-        "frames": 39
+        "id": "f15b_echo_king",
+        "name": "Эхо Крысиного короля",
+        "atlas": "f15b_echo_king",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "chase",
+            "name": "Ходьба",
+            "frames": 39
+          },
+          {
+            "id": "windup",
+            "name": "Замах и рубка",
+            "frames": 36
+          },
+          {
+            "id": "rollAim",
+            "name": "Подготовка переката",
+            "frames": 22
+          },
+          {
+            "id": "roll",
+            "name": "Перекат",
+            "frames": 44
+          },
+          {
+            "id": "dizzy",
+            "name": "Ошеломление",
+            "frames": 29
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 24
+          },
+          {
+            "id": "f15e_rise",
+            "name": "Сборка созвездия",
+            "frames": 34
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 17
+          }
+        ]
       },
       {
-        "id": "windup",
-        "name": "Замах и рубка",
-        "frames": 36
+        "id": "f15b_echo_mino",
+        "name": "Эхо Минотавра",
+        "atlas": "f15b_echo_mino",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "chase",
+            "name": "Ходьба",
+            "frames": 39
+          },
+          {
+            "id": "axe",
+            "name": "Удар секирой",
+            "frames": 57
+          },
+          {
+            "id": "aim",
+            "name": "Подготовка набега",
+            "frames": 24
+          },
+          {
+            "id": "gore",
+            "name": "Набег рогами",
+            "frames": 39
+          },
+          {
+            "id": "dizzy",
+            "name": "Оглушение",
+            "frames": 36
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 24
+          },
+          {
+            "id": "f15e_rise",
+            "name": "Сборка созвездия",
+            "frames": 34
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 17
+          }
+        ]
       },
       {
-        "id": "rollAim",
-        "name": "Подготовка переката",
-        "frames": 22
+        "id": "f15b_echo_serpent",
+        "name": "Эхо Красного змея",
+        "atlas": "f15b_echo_serpent",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "chase",
+            "name": "Ползание",
+            "frames": 39
+          },
+          {
+            "id": "f6_bite",
+            "name": "Укус",
+            "frames": 41
+          },
+          {
+            "id": "f6_wave",
+            "name": "Волна пламени",
+            "frames": 53
+          },
+          {
+            "id": "f6_sweep",
+            "name": "Огненный веер",
+            "frames": 53
+          },
+          {
+            "id": "dizzy",
+            "name": "Ошеломление",
+            "frames": 34
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 24
+          },
+          {
+            "id": "f15e_rise",
+            "name": "Сборка созвездия",
+            "frames": 34
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 17
+          }
+        ]
       },
       {
-        "id": "roll",
-        "name": "Перекат",
-        "frames": 44
+        "id": "f15b_echo_hydra",
+        "name": "Эхо гидры",
+        "atlas": "f15b_echo_hydra",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "chase",
+            "name": "Призыв трёх голов",
+            "frames": 51
+          },
+          {
+            "id": "f15e_rise",
+            "name": "Сборка созвездия",
+            "frames": 31
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 17
+          }
+        ]
       },
       {
-        "id": "dizzy",
-        "name": "Ошеломление",
-        "frames": 29
+        "id": "f15b_echo_head",
+        "name": "Голова эха",
+        "atlas": "f15b_echo_head",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "chase",
+            "name": "Парение",
+            "frames": 34
+          },
+          {
+            "id": "bite",
+            "name": "Укус",
+            "frames": 41
+          },
+          {
+            "id": "cast_fire",
+            "name": "Огненный плевок",
+            "frames": 48
+          },
+          {
+            "id": "cast_ice",
+            "name": "Ледяной плевок",
+            "frames": 48
+          },
+          {
+            "id": "cast_venom",
+            "name": "Ядовитый плевок",
+            "frames": 48
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 24
+          },
+          {
+            "id": "f15e_rise",
+            "name": "Сборка созвездия",
+            "frames": 31
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 17
+          }
+        ]
       },
       {
-        "id": "recover",
-        "name": "Передышка",
-        "frames": 24
-      },
-      {
-        "id": "f15e_rise",
-        "name": "Сборка созвездия",
-        "frames": 34
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 17
-      }
-    ]
-  },
-  {
-    "id": "f15b_echo_mino",
-    "name": "Эхо Минотавра",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 15,
-    "clips": [
-      {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
-      },
-      {
-        "id": "chase",
-        "name": "Ходьба",
-        "frames": 39
-      },
-      {
-        "id": "axe",
-        "name": "Удар секирой",
-        "frames": 57
-      },
-      {
-        "id": "aim",
-        "name": "Подготовка набега",
-        "frames": 24
-      },
-      {
-        "id": "gore",
-        "name": "Набег рогами",
-        "frames": 39
-      },
-      {
-        "id": "dizzy",
-        "name": "Оглушение",
-        "frames": 36
-      },
-      {
-        "id": "recover",
-        "name": "Передышка",
-        "frames": 24
-      },
-      {
-        "id": "f15e_rise",
-        "name": "Сборка созвездия",
-        "frames": 34
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 17
-      }
-    ]
-  },
-  {
-    "id": "f15b_echo_serpent",
-    "name": "Эхо Красного змея",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 15,
-    "clips": [
-      {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
-      },
-      {
-        "id": "chase",
-        "name": "Ползание",
-        "frames": 39
-      },
-      {
-        "id": "f6_bite",
-        "name": "Укус",
-        "frames": 41
-      },
-      {
-        "id": "f6_wave",
-        "name": "Волна пламени",
-        "frames": 53
-      },
-      {
-        "id": "f6_sweep",
-        "name": "Огненный веер",
-        "frames": 53
-      },
-      {
-        "id": "dizzy",
-        "name": "Ошеломление",
-        "frames": 34
-      },
-      {
-        "id": "recover",
-        "name": "Передышка",
-        "frames": 24
-      },
-      {
-        "id": "f15e_rise",
-        "name": "Сборка созвездия",
-        "frames": 34
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 17
-      }
-    ]
-  },
-  {
-    "id": "f15b_echo_hydra",
-    "name": "Эхо гидры",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 15,
-    "clips": [
-      {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
-      },
-      {
-        "id": "chase",
-        "name": "Призыв трёх голов",
-        "frames": 51
-      },
-      {
-        "id": "f15e_rise",
-        "name": "Сборка созвездия",
-        "frames": 31
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 17
-      }
-    ]
-  },
-  {
-    "id": "f15b_echo_head",
-    "name": "Голова эха",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 15,
-    "clips": [
-      {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
-      },
-      {
-        "id": "chase",
-        "name": "Парение",
-        "frames": 34
-      },
-      {
-        "id": "bite",
-        "name": "Укус",
-        "frames": 41
-      },
-      {
-        "id": "cast_fire",
-        "name": "Огненный плевок",
-        "frames": 48
-      },
-      {
-        "id": "cast_ice",
-        "name": "Ледяной плевок",
-        "frames": 48
-      },
-      {
-        "id": "cast_venom",
-        "name": "Ядовитый плевок",
-        "frames": 48
-      },
-      {
-        "id": "recover",
-        "name": "Передышка",
-        "frames": 24
-      },
-      {
-        "id": "f15e_rise",
-        "name": "Сборка созвездия",
-        "frames": 31
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 17
-      }
-    ]
-  },
-  {
-    "id": "f15b_echo_demon",
-    "name": "Эхо Короля демонов",
-    "section": "bosses",
-    "rarity": "secret",
-    "floor": 15,
-    "clips": [
-      {
-        "id": "idle",
-        "name": "Покой",
-        "frames": 58
-      },
-      {
-        "id": "chase",
-        "name": "Ходьба",
-        "frames": 39
-      },
-      {
-        "id": "slash",
-        "name": "Рубящий удар",
-        "frames": 50
-      },
-      {
-        "id": "cleave",
-        "name": "Раскол",
-        "frames": 56
-      },
-      {
-        "id": "stuck",
-        "name": "Меч в земле",
-        "frames": 32
-      },
-      {
-        "id": "f10_storm",
-        "name": "Грозовой залп",
-        "frames": 53
-      },
-      {
-        "id": "recover",
-        "name": "Передышка",
-        "frames": 24
-      },
-      {
-        "id": "f15e_rise",
-        "name": "Сборка созвездия",
-        "frames": 34
-      },
-      {
-        "id": "dying",
-        "name": "Гибель",
-        "frames": 17
+        "id": "f15b_echo_demon",
+        "name": "Эхо Короля демонов",
+        "atlas": "f15b_echo_demon",
+        "clips": [
+          {
+            "id": "idle",
+            "name": "Покой",
+            "frames": 58
+          },
+          {
+            "id": "chase",
+            "name": "Ходьба",
+            "frames": 39
+          },
+          {
+            "id": "slash",
+            "name": "Рубящий удар",
+            "frames": 50
+          },
+          {
+            "id": "cleave",
+            "name": "Раскол",
+            "frames": 56
+          },
+          {
+            "id": "stuck",
+            "name": "Меч в земле",
+            "frames": 32
+          },
+          {
+            "id": "f10_storm",
+            "name": "Грозовой залп",
+            "frames": 53
+          },
+          {
+            "id": "recover",
+            "name": "Передышка",
+            "frames": 24
+          },
+          {
+            "id": "f15e_rise",
+            "name": "Сборка созвездия",
+            "frames": 34
+          },
+          {
+            "id": "dying",
+            "name": "Гибель",
+            "frames": 17
+          }
+        ]
       }
     ]
   },

@@ -204,9 +204,11 @@ class Painting {
     clearTimeout(this.releaseTimer);
     clearTimeout(this.sleepTimer);
     this.ticket = {};
-    this.entry = entry;
+    // A boss part (hydra head, echo) is a variant with its own clip list; a pet's gold skin shares the clips.
+    this.entry = variant?.clips ? { ...entry, clips: variant.clips } : entry;
     this.variant = variant;
     this.atlasId = variant?.atlas ?? entry.id;
+    if (!this.entry.clips.some((c) => c.id === clip)) clip = homeClip(this.entry);
     this.surface = this.pet = this.reaction = this.pending = this.heldSample = this.previous = null;
     this.away = false;
     this.sleepAt = null;
@@ -495,6 +497,7 @@ function controls() {
     }),
   );
   $('#variants').hidden = !entry.variants?.length;
+  $('#variants').setAttribute('aria-label', entry.section === 'bosses' ? 'Части босса' : 'Облик');
   refreshControls();
 }
 
