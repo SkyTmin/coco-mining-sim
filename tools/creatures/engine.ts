@@ -297,14 +297,15 @@ export function compose(
     scaleY > 0 &&
     body.px.data.some((v, i) => i % 4 === 3 && v !== 0);
   if (visible) {
-    const r = (body.px.w * 0.26 * scaleX) / (1 + at.lift * 0.025);
-    layers.fxu.ell(floorXY[0], floorXY[1] + 1, r, r * 0.21, [18, 13, 21, 72]);
+    const opacity = body.groundShadow?.opacity ?? 1;
+    const r = ((body.groundShadow?.radius ?? body.px.w * 0.26) * scaleX) / (1 + at.lift * 0.025);
+    layers.fxu.ell(floorXY[0], floorXY[1] + 1, r, r * 0.21, [18, 13, 21, Math.round(72 * opacity)]);
     layers.fxu.ell(
       floorXY[0],
       floorXY[1] + 1,
       r * 0.7,
       r * 0.14,
-      [17, 13, 22, 65],
+      [17, 13, 22, Math.round(65 * opacity)],
     );
     if (body.lit) {
       let r = 0,

@@ -166,7 +166,7 @@ function ear(r: Rig, H: F3, s: number, angle: number, j: Record<string, V3>) {
   }
   j['earTip' + name] = point(1, 0, 0);
 }
-function cape(r: Rig, B: F3, travel: number, tuck: number, breath: number, j: Record<string, V3>) {
+function cape(r: Rig, B: F3, travel: number, tuck: number, breath: number, j: Record<string, V3>, reef: number) {
   r.tag = 'cape';
   const surf = (u: number, v: number): V3 => {
     const a = (u - 0.5) * Math.PI * 1.12;
@@ -174,9 +174,9 @@ function cape(r: Rig, B: F3, travel: number, tuck: number, breath: number, j: Re
     const flare = Math.max(0, (u - 0.46) / 0.54) ** 1.06 * v ** 1.35;
     const hem = 6 * Math.cos(u * Math.PI * 4 + 0.35) + 2 * Math.cos(u * Math.PI * 8);
     return B.p(
-      -1.7 - (7.1 + v * (8.6 + travel * 5)) * Math.cos(a) - v * (3 + 4 * travel) + fold - 12 * flare,
-      (9.1 + v * (13.8 + travel * 4)) * Math.sin(a) + 10.5 * flare + v * v * (1.3 * breath + travel * 2.8),
-      19 - v * (44 + hem - tuck * 10) + fold * 0.5 + v * v * travel * 4,
+      -v * reef * 9 -1.7 - (7.1 + v * (8.6 + travel * 5)) * Math.cos(a) - v * (3 + 4 * travel) + fold - 12 * flare,
+      (9.1 + v * (13.8 + travel * 4 - reef * 14)) * Math.sin(a) + 10.5 * flare + v * v * (1.3 * breath + travel * 2.8),
+      19 - v * (44 + hem - tuck * 10 - reef * 19) + fold * 0.5 + v * v * travel * 4,
     );
   };
   foldedCloth(r, surf, 12, velvetLight, velvet, gold);
@@ -464,7 +464,9 @@ export function moonFigureWithHistory(sample: PoseSample): Figure {
       lag(hem, 'pitch') * 0.47 +
       Math.sin(lag(hem, 'flip') - 0.28) * lag(hem, 'tuck') * 0.5 +
       restWind;
-    cape(r, body, wind, tuck, motion, j);
+    // Gather the cloth toward the shoulders as the back faces the viewer.
+    const reef = anim === 'trick' ? tuck * (1 + .72 * Math.max(0, Math.sin(get('flip')))) : 0;
+    cape(r, body, wind, tuck, motion, j, reef);
     r.tag = 'tail';
     r.ell(body, [-8.2, 0, -0.8], [4.85, 4.2, 4.2], frost);
     cuirass(r, body, metal);
@@ -580,6 +582,10 @@ export function moonFigureWithHistory(sample: PoseSample): Figure {
     );
     scaleFigure(r, j, portraitScale);
     const frame = projectFigure(r, 96, [48, 78], j, '#232135', 4.4, true);
+    if (anim === 'trick' && jump > 0) {
+      const height = Math.min(1, jump / 34);
+      frame.groundShadow = { radius: 96 * .26 * (1 - .55 * height), opacity: 1 - .64 * height };
+    }
     frame.planted = planted;
     return frame;
   };
