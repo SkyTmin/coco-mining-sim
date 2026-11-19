@@ -346,7 +346,7 @@ export function compose(
           floorXY[1],
           body.px.w * 0.16 * scaleX,
           body.px.h * 0.035 * scaleY,
-          [r / count, g / count, bv / count, 42],
+          [r / count, g / count, bv / count, Math.round(42 * (body.groundShadow?.reflectionOpacity ?? 1))],
         );
     }
   }

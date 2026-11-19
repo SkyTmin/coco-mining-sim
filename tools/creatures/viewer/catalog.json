@@ -1003,6 +1003,702 @@
     ]
   },
   {
+    "id": "grove_lord",
+    "name": "Владыка рощи",
+    "section": "ours",
+    "rarity": "legendary",
+    "color": "#556341",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 84
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 48
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 36
+      },
+      {
+        "id": "trick",
+        "name": "Трюк",
+        "frames": 108
+      },
+      {
+        "id": "phase",
+        "name": "Смена фазы",
+        "frames": 48
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой во второй фазе",
+        "frames": 72
+      },
+      {
+        "id": "fidget_a",
+        "name": "Первый жест",
+        "frames": 48
+      },
+      {
+        "id": "fidget_b",
+        "name": "Второй жест",
+        "frames": 48
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "squirrel_peek",
+        "name": "Белка выглядывает",
+        "frames": 58
+      },
+      {
+        "id": "squirrel_throw",
+        "name": "Белка бросает орех",
+        "frames": 56
+      },
+      {
+        "id": "squirrel_cheer",
+        "name": "Белка радуется",
+        "frames": 40
+      },
+      {
+        "id": "squirrel_sleep",
+        "name": "Белка спит в дупле",
+        "frames": 84
+      },
+      {
+        "id": "tech_sap_breath",
+        "name": "Янтарное дыхание",
+        "frames": 48
+      },
+      {
+        "id": "tech_catkin_cast",
+        "name": "Золотые серёжки",
+        "frames": 48
+      },
+      {
+        "id": "tech_acorn_quake",
+        "name": "Желудёвый гром",
+        "frames": 70
+      },
+      {
+        "id": "tech_branch_hook",
+        "name": "Сучковатый крюк",
+        "frames": 48
+      },
+      {
+        "id": "tech_root_step",
+        "name": "Поступь корней",
+        "frames": 48
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1700
+      }
+    ]
+  },
+  {
+    "id": "sand_scorpion",
+    "name": "Скорпион Анкхар",
+    "section": "ours",
+    "rarity": "legendary",
+    "color": "#987448",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 84
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 48
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 42
+      },
+      {
+        "id": "trick",
+        "name": "Трюк",
+        "frames": 108
+      },
+      {
+        "id": "phase",
+        "name": "Смена фазы",
+        "frames": 48
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой во второй фазе",
+        "frames": 72
+      },
+      {
+        "id": "fidget_a",
+        "name": "Первый жест",
+        "frames": 48
+      },
+      {
+        "id": "fidget_b",
+        "name": "Второй жест",
+        "frames": 48
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "tech_sand_vortex",
+        "name": "Погребённый полдень",
+        "frames": 72
+      },
+      {
+        "id": "tech_gate_claw",
+        "name": "Затвор усыпальницы",
+        "frames": 48
+      },
+      {
+        "id": "tech_crescent_cut",
+        "name": "Левый серп",
+        "frames": 48
+      },
+      {
+        "id": "tech_beacon",
+        "name": "Три огня дозора",
+        "frames": 48
+      },
+      {
+        "id": "tech_dune_drum",
+        "name": "Шаг погребального хора",
+        "frames": 48
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1446
+      }
+    ]
+  },
+  {
+    "id": "sky_whale",
+    "name": "Небесный кит Алтан",
+    "section": "ours",
+    "rarity": "mythic",
+    "color": "#475c7d",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 84
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 48
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 48
+      },
+      {
+        "id": "trick",
+        "name": "Трюк",
+        "frames": 132
+      },
+      {
+        "id": "show",
+        "name": "Представление",
+        "frames": 132
+      },
+      {
+        "id": "phase",
+        "name": "Смена фазы",
+        "frames": 48
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой во второй фазе",
+        "frames": 72
+      },
+      {
+        "id": "fidget_a",
+        "name": "Первый жест",
+        "frames": 48
+      },
+      {
+        "id": "fidget_b",
+        "name": "Второй жест",
+        "frames": 48
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "tech_star_spout",
+        "name": "Небесный фонтан",
+        "frames": 74
+      },
+      {
+        "id": "tech_bow_ram",
+        "name": "Лобовая зыбь",
+        "frames": 48
+      },
+      {
+        "id": "tech_tide_paddle",
+        "name": "Гребок прилива",
+        "frames": 48
+      },
+      {
+        "id": "tech_fluke_break",
+        "name": "Удар двулопастного хвоста",
+        "frames": 48
+      },
+      {
+        "id": "tech_beacon_watch",
+        "name": "Круговая вахта",
+        "frames": 66
+      },
+      {
+        "id": "tech_cloud_keel",
+        "name": "Звёздный киль",
+        "frames": 48
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1688
+      }
+    ]
+  },
+  {
+    "id": "nebula_squid",
+    "name": "Кальмар Туманность",
+    "section": "ours",
+    "rarity": "mythic",
+    "color": "#64567f",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 84
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 48
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупление",
+        "frames": 48
+      },
+      {
+        "id": "trick",
+        "name": "Трюк",
+        "frames": 132
+      },
+      {
+        "id": "show",
+        "name": "Представление",
+        "frames": 132
+      },
+      {
+        "id": "phase",
+        "name": "Смена фазы",
+        "frames": 48
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой во второй фазе",
+        "frames": 72
+      },
+      {
+        "id": "fidget_a",
+        "name": "Первый жест",
+        "frames": 48
+      },
+      {
+        "id": "fidget_b",
+        "name": "Второй жест",
+        "frames": 48
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "tech_star_spiral",
+        "name": "Спираль рождения",
+        "frames": 78
+      },
+      {
+        "id": "tech_lunar_hook",
+        "name": "Лунный крюк",
+        "frames": 48
+      },
+      {
+        "id": "tech_tidal_club",
+        "name": "Дно созвездия",
+        "frames": 48
+      },
+      {
+        "id": "tech_long_cast",
+        "name": "Ловчая комета",
+        "frames": 48
+      },
+      {
+        "id": "tech_orbit_chimes",
+        "name": "Звёздные колокола",
+        "frames": 66
+      },
+      {
+        "id": "tech_comet_form",
+        "name": "Сердце кометы",
+        "frames": 54
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1698
+      }
+    ]
+  },
+  {
     "id": "bramble_warden",
     "name": "Ежевичный страж",
     "section": "ours",

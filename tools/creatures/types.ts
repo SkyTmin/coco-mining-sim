@@ -36,7 +36,7 @@ export interface BodyFrame {
   /** Projected figure's actual rig and world-space anatomical sockets for studio diagnostics. */
   rig?: Rig;
   joints?: Record<string, V3>;
-  groundShadow?: { radius: number; opacity: number };
+  groundShadow?: { radius: number; opacity: number; reflectionOpacity?: number };
   planted?: string[]; // sockets on the floor throughout the current stance
   // Post-raster effects, anchored about the feet. Translation is in picture pixels.
   dx?: number;

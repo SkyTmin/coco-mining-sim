@@ -75,7 +75,7 @@ export function cephalopodSkeleton(
   const sub = turning && Number.isInteger(side) ? (t * 4) % 1 : 0;
   const face = F3.yaw(route.yaw + ((side + sub) * Math.PI) / 8);
   const gait = walking ? Math.sin(phase * TAU) : 0;
-  const phaseAngle = walking ? phase * TAU : (t * TAU) / 3;
+  const phaseAngle = walking ? phase * TAU : (pose.wavePhase ?? (t * TAU) / 3);
   const body = face
     .at(
       (pose.lean ?? 0) + gait * 1.35,
