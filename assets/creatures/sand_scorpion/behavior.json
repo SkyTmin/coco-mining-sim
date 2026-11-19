@@ -1,0 +1,80 @@
+{
+  "$schema": "../../../tools/creatures/bodies/behavior.schema.json",
+  "seed": 9224,
+  "previewSeconds": 30,
+  "field": [
+    256,
+    208
+  ],
+  "stride": 23,
+  "yaw": 0.87,
+  "depthScale": 0.6,
+  "stops": [
+    [
+      0.37,
+      0.75
+    ],
+    [
+      0.52,
+      0.78
+    ],
+    [
+      0.585,
+      0.74
+    ]
+  ],
+  "walkShare": [
+    0.35,
+    0.4
+  ],
+  "weights": {
+    "idle": 4,
+    "fidget_a": 2,
+    "fidget_b": 2,
+    "look": 2,
+    "trick": 2
+  },
+  "attacks": [
+    "tech_sand_vortex",
+    "tech_gate_claw",
+    "tech_crescent_cut",
+    "tech_beacon",
+    "tech_dune_drum"
+  ],
+  "events": {
+    "tap": [
+      "happy"
+    ],
+    "tap_asleep": [
+      "wake_startled",
+      "happy"
+    ],
+    "like": [
+      "trick"
+    ],
+    "double_tap": [
+      "trick"
+    ],
+    "rare_find": [
+      "happy"
+    ],
+    "approach": [
+      "look"
+    ],
+    "idle_owner": [
+      "sleep_in",
+      "sleep"
+    ],
+    "owner_back": [
+      "sleep_out"
+    ],
+    "skill_ready": [
+      "attack"
+    ]
+  },
+  "lifeAttacks": [
+    "tech_sand_vortex",
+    "tech_crescent_cut",
+    "tech_dune_drum"
+  ]
+}
