@@ -20,6 +20,7 @@ const requiredEvents = {
 const requiredClips = ['idle', 'fidget_a', 'fidget_b', 'look', 'happy', 'trick',
   'sleep_in', 'sleep', 'sleep_out', 'wake_startled', 'hatch', 'turn', 'tired',
   ...petDirections.map(dir => 'walk_' + dir)];
+const trickClips = { f1: ['trick', 'trick_b'], f2: ['trick-f2', 'trick_b-f2'] };
 const pair = (v, check) => Array.isArray(v) && v.length === 2 && v.every(check);
 const positive = v => Number.isFinite(v) && v > 0;
 function interval(v, min, max) {
@@ -41,17 +42,31 @@ export function validateBehavior(data, animations) {
   if (!pair(data.field, n => Number.isInteger(n) && n > 0) || !positive(data.stride) ||
       !Number.isFinite(data.yaw) || !positive(data.depthScale)) issues.push('field/stride/depthScale');
   if (!interval(data.walkShare, 0.35, 0.50)) issues.push('walkShare must be within 35–50%');
-  if ((!data.lifeAttacks || data.attackInterval !== undefined) && !interval(data.attackInterval, 30, 45))
+  const hasTricks = data.tricks !== undefined;
+  if (!hasTricks && (!data.lifeAttacks || data.attackInterval !== undefined) && !interval(data.attackInterval, 30, 45))
     issues.push('attackInterval must be within 30–45 s');
   if (!Array.isArray(data.stops) || data.stops.length < 3 ||
       !data.stops.every(stop => pair(stop, n => Number.isFinite(n) && n >= 0 && n <= 1)) ||
       new Set(data.stops.map(String)).size !== data.stops.length) issues.push('distinct floor stops');
   const weights = data.weights ?? {};
-  if (!['idle', 'fidget_a', 'fidget_b', 'look', 'trick'].every(k => positive(weights[k])) ||
+  if (!['idle', 'fidget_a', 'fidget_b', 'look', ...(hasTricks ? [] : ['trick'])].every(k => positive(weights[k])) ||
       Object.entries(weights).some(([k,v]) => !positive(v) || !animations?.[k]))
     issues.push('positive weights for ambient clips');
   const attacks = data.attacks;
-  if (!Array.isArray(attacks) || !attacks.length || new Set(attacks).size !== attacks.length ||
+  if (hasTricks) {
+    if (['attacks', 'attackInterval', 'lifeAttacks', 'attackBounds'].some(key => data[key] !== undefined))
+      issues.push('tricks cannot be combined with attack fields');
+    if (Object.keys(animations ?? {}).some(name => name.startsWith('tech_')))
+      issues.push('tricks cannot have tech_* clips');
+    for (const [form, allowed] of Object.entries(trickClips)) {
+      const list = data.tricks?.[form];
+      if (!Array.isArray(list) || !list.includes(allowed[0]) || new Set(list).size !== list.length ||
+          !list.every(name => allowed.includes(name) && animations?.[name]))
+        issues.push('tricks.' + form + ' must name distinct authored tricks for that form');
+    }
+    for (const name of ['phase', 'idle-f2', 'happy-f2'])
+      if (!animations?.[name]) issues.push('missing clip ' + name);
+  } else if (!Array.isArray(attacks) || !attacks.length || new Set(attacks).size !== attacks.length ||
       !attacks.every(a => typeof a === 'string' && a.startsWith('tech_') && animations?.[a]) ||
       Object.keys(animations ?? {}).some(a => a.startsWith('tech_') && !attacks.includes(a)))
     issues.push('attacks must name all authored techniques');
@@ -76,11 +91,12 @@ export function validateBehavior(data, animations) {
     for (const clip of ['phase', 'idle-f2']) if (!animations?.[clip]) issues.push('missing ' + clip);
   }
   for (const [event, expected] of Object.entries(requiredEvents)) {
+    if (hasTricks && event === 'skill_ready') continue;
     if (JSON.stringify(data.events?.[event]) !== JSON.stringify(expected)) issues.push('event ' + event);
   }
   for (const [event, sequence] of Object.entries(data.events ?? {})) {
     if (!Array.isArray(sequence) || !sequence.length ||
-        sequence.some(k => k !== 'attack' && !animations?.[k])) issues.push('unknown clip in ' + event);
+        sequence.some(k => !(k === 'attack' && !hasTricks) && !animations?.[k])) issues.push('unknown clip in ' + event);
   }
   for (const clip of requiredClips) if (!animations?.[clip]) issues.push('missing clip ' + clip);
   for (const [clip, spec] of Object.entries(animations ?? {})) {
@@ -98,6 +114,8 @@ export function validateBehavior(data, animations) {
     if (score.maxWalk < Math.round(ticks(data.previewSeconds) * data.walkShare[0]))
       issues.push('lifeAttacks, turns and phase leave too little time for the minimum walking share');
   }
+  if (!issues.length && hasTricks && trickPlan(data, animations).maxWalk < Math.round(ticks(data.previewSeconds) * data.walkShare[0]))
+    issues.push('tricks, turns and phase leave too little time for the minimum walking share');
   return issues;
 }
 
@@ -148,7 +166,7 @@ function walkingLeg(config, from, to, bearings) {
   const index = (Math.round(Math.atan2(dz, dx) / (Math.PI / 4)) + 8) % 8;
   const angle = index * Math.PI / 4;
   return {
-    from, to, distance: Math.hypot(dx, dz), direction: petDirections[index],
+    from, to, angle, distance: Math.hypot(dx, dz), direction: petDirections[index],
     departing: turnFramesFor(bearings, config.yaw, angle),
     entering: turnFramesFor(bearings, angle, config.yaw),
   };
@@ -180,6 +198,26 @@ function performancePlan(config, animations) {
   return { stops, legs, maxWalk: ticks(config.previewSeconds) - fixed };
 }
 
+function trickPlan(config, animations, bearings = turnBearings(config, animations), cycle) {
+  const home = config.stops[0];
+  const stops = [home, ...config.stops.slice(1, 3), home].map(at => ({ at, actions: [] }));
+  const legs = stops.slice(1).map((next, i) => walkingLeg(config, stops[i].at, next.at, bearings));
+  // Keep facing along the route at intermediate waypoints. Only gestures and
+  // performances at home use the portrait orientation.
+  for (const [i, leg] of legs.entries()) {
+    leg.departing = turnFramesFor(bearings, legs[i - 1]?.angle ?? config.yaw, leg.angle);
+    leg.entering = i === legs.length - 1 ? turnFramesFor(bearings, leg.angle, config.yaw) : [];
+  }
+  const selected = list => cycle === undefined
+    ? Math.max(...list.map(name => length(animations, name)))
+    : length(animations, list[cycle % list.length]);
+  const turns = legs.reduce((sum, leg) => sum + leg.departing.length + leg.entering.length, 0);
+  const fixed = 2 + selected(config.tricks.f1) + selected(config.tricks.f2) + turns +
+    2 * length(animations, 'phase') + length(animations, 'idle-f2');
+  if (cycle !== undefined) stops.at(-1).actions.push(config.tricks.f1[cycle % config.tricks.f1.length]);
+  return { stops, legs, maxWalk: ticks(config.previewSeconds) - fixed };
+}
+
 export function createPetBehavior(config, animations, seed = config.seed) {
   const random = randomSource(seed);
   const choose = list => list[Math.floor(random() * list.length)];
@@ -187,12 +225,14 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   const window = ticks(config.previewSeconds);
   const idleFrames = length(animations, 'idle');
   const bearings = turnBearings(config, animations);
-  const score = config.lifeAttacks ? performancePlan(config, animations) : undefined;
+  const ranked = config.lifeAttacks ? performancePlan(config, animations) : undefined;
+  const tricks = config.tricks;
+  const trickIndex = { f1: 0, f2: 0 };
   const home = config.stops[0];
   const canAttack = (name, at) => attackFits(config.attackBounds?.[name], at);
   const pickAttack = at => choose(at && config.attackBounds
     ? config.attacks.filter(name => canAttack(name, at)) : config.attacks);
-  const longestAttack = Math.max(...config.attacks.map(name => length(animations, name)));
+  const longestAttack = Math.max(0, ...(config.attacks ?? []).map(name => length(animations, name)));
   // Reserve complete clips on either side of the preview seam while preserving
   // the data's interval between *starts*, even when the cooldown spans a cycle.
   function nextAttackAfter(start) {
@@ -208,12 +248,14 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   }
   let nextAttack = Math.round(window * (0.40 + 0.27 * random()));
   let absolute = 0, cycleStart = 0, cursor = 0, remainder = 0;
-  let path = [], pending, reaction;
+  let path = [], pending, reaction, held;
   const sampleAt = (anim, frame, at, direction = 'se') => ({anim, frame, at, direction, elapsed: frame / petFPS});
 
   // Plan a closed excursion. Spend the walk budget in proportion to the actual
   // three floor distances. The planted-foot phase depends on distance travelled.
   function planCycle() {
+    const cycle = cycleStart / window;
+    const score = tricks ? trickPlan(config, animations, bearings, cycle) : ranked;
     const rows = [];
     const chosen = config.stops.slice(1);
     const take = () => chosen.splice(Math.floor(random() * chosen.length), 1)[0];
@@ -222,7 +264,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
     const requested = Math.round(window * between(config.walkShare));
     const walks = score ? Math.min(requested, score.maxWalk) : requested;
     if (score && walks < Math.round(window * config.walkShare[0]))
-      throw Error('lifeAttacks, turns and phase leave too little time for the minimum walking share');
+      throw Error('Actions, turns and phase leave too little time for the minimum walking share');
     const distance = legs.reduce((sum, leg) => sum + leg.distance, 0);
     const attacks = [];
     while (!score && nextAttack < cycleStart + window) {
@@ -235,7 +277,8 @@ export function createPetBehavior(config, animations, seed = config.seed) {
         for (let f = 0; f < count; f++) rows.push(sampleAt('idle', (start + f) % idleFrames, at));
       };
       while (frames) {
-        const options = Object.entries(config.weights).filter(([name]) => length(animations, name) <= frames);
+        const options = Object.entries(config.weights).filter(([name]) =>
+          (!tricks || !tricks.f1.includes(name) && !tricks.f2.includes(name)) && length(animations, name) <= frames);
         if (!options.length || first) {
           const count = first ? Math.min(idleFrames, frames) : frames;
           fillIdle(count, last ? (idleFrames - count % idleFrames) % idleFrames : 0);
@@ -265,15 +308,23 @@ export function createPetBehavior(config, animations, seed = config.seed) {
       }
     }
     if (score) {
-      const play = (name, at, reverse = false) => {
+      const play = (name, at, reverse = false, form = 'f1') => {
         const count = length(animations, name);
-        for (let i = 0; i < count; i++) rows.push(sampleAt(name, reverse ? count - i - 1 : i, at));
+        for (let i = 0; i < count; i++) {
+          const row = sampleAt(name, reverse ? count - i - 1 : i, at);
+          rows.push(tricks ? { ...row, form } : row);
+        }
       };
       const spare = score.maxWalk - walks;
       rows.push(sampleAt('idle', 0, home));
       for (const [i, stop] of score.stops.entries()) {
-        const before = Math.floor(spare * i / score.stops.length);
-        rest(stop.at, Math.floor(spare * (i + 1) / score.stops.length) - before, false, false);
+        if (tricks) {
+          if (i === 0 || i === legs.length)
+            rest(stop.at, i === 0 ? Math.ceil(spare / 2) : Math.floor(spare / 2), false, false);
+        } else {
+          const before = Math.floor(spare * i / score.stops.length);
+          rest(stop.at, Math.floor(spare * (i + 1) / score.stops.length) - before, false, false);
+        }
         for (const name of stop.actions) play(name, stop.at);
         const leg = legs[i];
         if (!leg) continue;
@@ -282,8 +333,9 @@ export function createPetBehavior(config, animations, seed = config.seed) {
         for (const frame of leg.entering) rows.push(sampleAt('turn', frame, leg.to));
       }
       play('phase', home);
-      play('idle-f2', home);
-      play('phase', home, true);
+      play('idle-f2', home, false, 'f2');
+      if (tricks) play(tricks.f2[cycle % tricks.f2.length], home, false, 'f2');
+      play('phase', home, true, 'f2');
       rows.push(sampleAt('idle', 0, home));
       return rows;
     }
@@ -338,13 +390,17 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   path = planCycle();
 
   function current() {
+    if (!reaction && held)
+      return { ...sampleAt(held.anim, held.frame, held.at), form: held.form };
     if (!reaction) return path[cursor];
-    const {anim, age, at} = reaction;
-    return sampleAt(anim, age % length(animations, anim), at);
+    const {anim, age, at, form, reverse} = reaction;
+    const count = length(animations, anim);
+    const row = sampleAt(anim, reverse ? count - age - 1 : age % count, at);
+    return tricks ? { ...row, form } : row;
   }
-  function begin(sequence, at) {
+  function begin(sequence, at, form) {
     const [first, ...rest] = sequence;
-    reaction = {anim: first === 'attack' ? pickAttack(at) : first, age: 0, rest, at};
+    reaction = {anim: first === 'attack' ? pickAttack(at) : first, age: 0, rest, at, form};
   }
   function sleeping() {
     return reaction && ['sleep_in', 'sleep'].includes(reaction.anim);
@@ -352,12 +408,22 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   function dispatch() {
     if (!pending) return false;
     const state = current();
+    if (tricks && state.anim === 'phase') return false;
     if (!animations[state.anim].interrupt.includes(state.frame)) return false;
     const event = pending;
     pending = undefined;
     if ((event === 'owner_back' && !sleeping()) || (event === 'idle_owner' && sleeping())) return false;
-    const sequence = config.events[event === 'tap' && sleeping() ? 'tap_asleep' : event];
-    begin(sequence, state.at);
+    const form = state.form ?? 'f1';
+    if (tricks && event === 'change_form') {
+      reaction = { anim: 'phase', age: 0, at: state.at, rest: [], form,
+        reverse: form === 'f2', toggle: true };
+    } else if (tricks && ['double_tap', 'skill_ready', 'like'].includes(event)) {
+      const list = tricks[form];
+      begin([list[trickIndex[form]++ % list.length]], state.at, form);
+    } else {
+      const sequence = config.events[event === 'tap' && sleeping() ? 'tap_asleep' : event];
+      begin(form === 'f2' ? sequence.map(name => name === 'happy' ? 'happy-f2' : name) : sequence, state.at, form);
+    }
     return true;
   }
   function step() {
@@ -365,9 +431,17 @@ export function createPetBehavior(config, animations, seed = config.seed) {
     if (reaction) {
       reaction.age++;
       if (reaction.age === length(animations, reaction.anim) && reaction.anim !== 'sleep') {
-        if (reaction.rest.length) begin(reaction.rest, reaction.at);
-        else reaction = undefined;
+        if (reaction.rest.length) begin(reaction.rest, reaction.at, reaction.form);
+        else {
+          if (reaction.toggle) {
+            const form = reaction.reverse ? 'f1' : 'f2';
+            held = { form, at: reaction.at, frame: 0, anim: form === 'f2' ? 'idle-f2' : 'idle' };
+          }
+          reaction = undefined;
+        }
       }
+    } else if (held) {
+      held.frame = (held.frame + 1) % length(animations, held.anim);
     } else if (++cursor === path.length) {
       cursor = 0;
       cycleStart += window;
@@ -377,7 +451,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   }
   function sample() {
     const state = current();
-    return {...state, at: [...state.at], tick: absolute};
+    return {...state, ...(tricks ? { form: state.form ?? 'f1' } : {}), at: [...state.at], tick: absolute};
   }
   return {
     sample,
@@ -390,8 +464,9 @@ export function createPetBehavior(config, animations, seed = config.seed) {
       return sample();
     },
     event(name) {
-      if (name === 'double_tap' && !config.events.double_tap) name = 'like';
-      if (!Object.hasOwn(config.events, name) || name === 'tap_asleep') return false;
+      const trickEvent = tricks && ['double_tap', 'skill_ready', 'change_form'].includes(name);
+      if (!tricks && name === 'double_tap' && !config.events.double_tap) name = 'like';
+      if ((!trickEvent && !Object.hasOwn(config.events, name)) || name === 'tap_asleep') return false;
       pending = name;
       dispatch();
       return true;

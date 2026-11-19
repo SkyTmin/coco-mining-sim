@@ -5,6 +5,7 @@ import { compose, frameCount } from '../engine';
 import { readCreatureCard } from '../bodies/card-data';
 import schema from '../bodies/behavior.schema.json' with { type: 'json' };
 import { validateBehavior } from '../viewer/behavior.mjs';
+import type { BehaviorConfig } from '../viewer/behavior.mjs';
 import { studioConfig } from './checks';
 import type { Px } from '../rig/px';
 import type { loadPainting } from '../render';
@@ -21,10 +22,25 @@ const rules: Record<string, [number, number, boolean]> = {
   sleep_in: [1, 1.5, false], sleep: [3, 4, true], sleep_out: [1, 1.5, false],
   wake_startled: [0.8, 1.2, false],
 };
-export function petClipIssues(animations: Record<string, Animation>, references: string[], bodyClips: string[] = [], multiActTrick = false, performanceRarity?: Rarity) {
+export function petClipIssues(animations: Record<string, Animation>, references: string[], bodyClips: string[] = [], multiActTrick = false, performanceRarity?: Rarity, tricks?: NonNullable<BehaviorConfig['tricks']>) {
   const issues: string[] = [];
   const limits = { ...rules };
-  if (performanceRarity) {
+  const secretTricks = tricks && performanceRarity === 'secret';
+  if (tricks) {
+    limits['happy-f2'] = [0, Infinity, false];
+    limits['idle-f2'] = [0, Infinity, true];
+    limits.phase = secretTricks ? [2, 3, false] : [0, Infinity, false];
+    for (const name of ['trick', 'trick_b', 'trick-f2', 'trick_b-f2']) {
+      if (secretTricks || animations[name])
+        limits[name] = secretTricks ? [5, 7, false] : [0, Infinity, false];
+    }
+    if (secretTricks) {
+      if (tricks.f1?.length !== 2 || tricks.f2?.length !== 2)
+        issues.push('a secret painting needs two tricks in each form');
+      limits.show = [5, 6, false];
+      limits.peek = [0, Infinity, false];
+    }
+  } else if (performanceRarity) {
     if (performanceRarity !== 'legendary' && performanceRarity !== 'mythic')
       issues.push('lifeAttacks requires a legendary or mythic pet');
     const mythic = performanceRarity === 'mythic';
@@ -53,7 +69,12 @@ export function petClipIssues(animations: Record<string, Animation>, references:
     // Walk is the native southeast track that the eight camera headings project.
     if (['life', 'showreel', 'walk'].includes(name)) continue;
     if (!references.includes(name) && !inherited.has(name)) issues.push(name + ' has no registered sheet');
-    if (name.startsWith('tech_') && animations[name].loop) issues.push(name + ' must be a one-shot');
+    if (name.startsWith('tech_')) {
+      if (tricks) issues.push(name + ' is forbidden in a painting with tricks');
+      else if (animations[name].loop) issues.push(name + ' must be a one-shot');
+    }
+    if (secretTricks && /^(death|die|dying|dead)(?:[_-]|$)/.test(name))
+      issues.push(name + ' is forbidden in a secret painting with tricks');
   }
   return issues;
 }
@@ -80,8 +101,11 @@ export function petGate(painting: Painting, references: string[], hatchKeys: num
   if (approvedBeforePets.has(c.id) && !c.behavior) return [];
   if (!c.behavior) return ['new paintings require behavior.json'];
   const { bodyClips, multiActTrick } = studioConfig(c.id);
-  const rank = c.behavior.lifeAttacks ? c.rarity : undefined;
-  const issues = petClipIssues(c.animations, references, bodyClips, multiActTrick, rank);
+  const tricks = c.behavior.tricks;
+  const rank = c.behavior.lifeAttacks || tricks ? c.rarity : undefined;
+  const issues = petClipIssues(c.animations, references, bodyClips, multiActTrick, rank, tricks);
+  if (tricks && Object.keys(c.techniques ?? {}).some(name => name.startsWith('tech_')))
+    issues.push('a painting with tricks cannot register techniques');
   if (!validateSchema(c.behavior))
     issues.push(...(validateSchema.errors ?? []).map(err => 'behavior.json ' + err.instancePath + ' ' + err.message));
   issues.push(...validateBehavior(c.behavior, c.animations));
@@ -107,7 +131,7 @@ export function petGate(painting: Painting, references: string[], hatchKeys: num
   let minimum = 1, count = 0;
   for (const [name, clip] of Object.entries(c.animations)) {
     if (clip.loop) continue;
-    if (rank === 'mythic' && name === 'show') {
+    if ((rank === 'mythic' || (tricks && rank === 'secret')) && name === 'show') {
       // A decoy opens the show. The revealed body holds its own presentation pose.
       const end = frameCount(clip.seconds) - 1;
       const held = compose(c, s, b, name, end / 24).layers.body;
@@ -120,8 +144,8 @@ export function petGate(painting: Painting, references: string[], hatchKeys: num
     for (const n of [0, frameCount(clip.seconds) - 1]) {
       const rendered = compose(c, s, b, name, n / 24);
       const sleepSeam = asleep && joinsSleep(name, n === 0);
-      const phaseSeam = name === 'phase' && n > 0 && second;
-      const target = phaseSeam || (sleepSeam ? asleep : resting);
+      const secondSeam = second && ((name === 'phase' && n > 0) || (tricks && name.endsWith('-f2')));
+      const target = secondSeam || (sleepSeam ? asleep : resting);
       const iou = maskOverlap(target, rendered.layers.body);
       if (rank && name === 'hatch' && n === 0 && iou < 0.9) {
         // A birth image is calibrated to its own sheet, which gateExtras measures with ws ref.
@@ -130,7 +154,7 @@ export function petGate(painting: Painting, references: string[], hatchKeys: num
       }
       minimum = Math.min(minimum, iou);
       count++;
-      if (iou < 0.9) issues.push(name + ' frame ' + n + ' vs ' + (phaseSeam ? 'idle-f2' : sleepSeam ? 'sleep' : 'idle') + ' IoU ' + iou.toFixed(3) + ' < 0.900');
+      if (iou < 0.9) issues.push(name + ' frame ' + n + ' vs ' + (secondSeam ? 'idle-f2' : sleepSeam ? 'sleep' : 'idle') + ' IoU ' + iou.toFixed(3) + ' < 0.900');
     }
   }
   console.log('  ' + c.id + ': ' + count + ' one-shot endpoints, lowest endpoint IoU ' + minimum.toFixed(3));

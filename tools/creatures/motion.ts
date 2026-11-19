@@ -43,11 +43,14 @@ export const lifeDuration = (p: MotionPlan) =>
 // Frame indices keep short attacks and the six-frame rests exactly on a GIF tick.
 export function reelChapters(c: Creature) {
   let cursor = 0;
+  const tricks = c.behavior?.tricks;
   const names = c.behavior
     ? ['hatch','turn','idle','fidget_a','fidget_b', ...directions.map(d => 'walk_' + d),
-       'look','happy','trick', ...Object.keys(c.animations).filter(key => c.animations[key].companion),
-       ...c.behavior.attacks,'tired','sleep_in','sleep','wake_startled','sleep_out',
-       ...['phase', 'idle-f2', 'show'].filter(name => c.animations[name])]
+       'look','happy', ...(tricks?.f1 ?? ['trick']), ...Object.keys(c.animations).filter(key => c.animations[key].companion),
+       ...(c.behavior.attacks ?? []),'tired','sleep_in','sleep','wake_startled','sleep_out',
+       ...['show', 'peek'].filter(name => tricks && c.animations[name]),
+       ...['phase', 'idle-f2'].filter(name => c.animations[name]),
+       ...(tricks ? ['happy-f2', ...tricks.f2] : ['show'].filter(name => c.animations[name]))]
     : Object.keys(c.animations).filter(name => name.startsWith('tech_'));
   return names.map(name => {
     const frames = Math.round(c.animations[name].seconds * 24);
@@ -237,7 +240,9 @@ function routePlacement(
         }
       : {
           ...fixed,
-          anim: c.behavior?.lifeAttacks && (chapter.name === 'phase' || chapter.name === 'idle-f2') ? 'idle-f2' : 'idle',
+          anim: (c.behavior?.lifeAttacks || c.behavior?.tricks) &&
+            (chapter.name === 'phase' || chapter.name === 'idle-f2' ||
+             (c.behavior?.tricks && chapter.name.endsWith('-f2'))) ? 'idle-f2' : 'idle',
           t: (age - chapter.frames) / 24,
           start: (chapter.start + chapter.frames) / 24,
           duration: 6 / 24,

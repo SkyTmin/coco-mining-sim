@@ -80,6 +80,7 @@ export function cardRuntimeIssues(c: Creature): string[] {
     .sort();
   const ids = data.moves.map((m) => m.id).sort();
   if (ids.join(',') !== actual.join(',')) errors.push('Список приёмов отличается от карточки');
+  if (!ids.length && !c.behavior?.tricks) errors.push('Для картины без приёмов нужен список трюков');
   for (const m of data.moves) {
     const move = c.techniques?.[m.id];
     if (!move || move.reference !== m.reference || move.weapon !== m.weapon)

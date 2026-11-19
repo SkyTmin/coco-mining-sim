@@ -39,7 +39,8 @@ export async function gateExtras(ids: string[]) {
     const [, fieldHeight, canvas] = sizes[c.rarity];
     const rest = c.frame('idle', 0, 0, 'normal');
     const m = measureDetail(rest.px);
-    const minPrimitives = studioConfig(id).minPrimitives;
+    const secretTricks = c.rarity === 'secret' && c.behavior?.tricks;
+    const minPrimitives = Math.max(studioConfig(id).minPrimitives ?? 0, secretTricks ? 900 : 0);
     const extent = Math.max(m.width, m.height);
     const detail: string[] = [];
     if (m.colours < minimumColours[c.rarity]) detail.push(`colours ${m.colours} < ${minimumColours[c.rarity]}`);
