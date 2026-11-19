@@ -10,7 +10,6 @@ export interface BehaviorConfig {
   weights: Record<string, number>;
   attackInterval?: [number, number];
   attacks?: string[];
-  /** Tricks of each form instead of attacks (TZ-B10): f1 at the stops, f2 after the phase. */
   tricks?: { f1: string[]; f2: string[] };
   /** Full attacks in each 30-second excursion, followed by phase, idle-f2 and the return to idle. */
   lifeAttacks?: string[];
@@ -25,6 +24,7 @@ export interface PetSample {
   direction: 'n'|'ne'|'e'|'se'|'s'|'sw'|'w'|'nw';
   elapsed: number;
   tick: number;
+  form?: 'f1' | 'f2';
 }
 type Clips = Record<string, { seconds: number; interrupt?: number[]; bearings?: number[] }>;
 export const petFPS: number;

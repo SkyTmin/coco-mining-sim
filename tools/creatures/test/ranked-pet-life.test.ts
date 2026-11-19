@@ -129,3 +129,20 @@ test('a ranked hatch may start in a registered birth pose and must finish standi
   assert.match(hatchIssues(true, [0, 12], true)[0], /frame 47 vs idle/);
   assert.match(hatchIssues(false, [0, 12], false)[0], /frame 0 vs idle/);
 });
+
+test('the ranked phase ends at the second form silhouette', () => {
+  function phaseIssues(arrives: boolean) {
+    const shifted = { ...actor, id: 'meadow_colossus', frame(...args: Parameters<Creature['frame']>) {
+      const [anim, t] = args;
+      const result = actor.frame(...args);
+      if (anim === 'idle-f2') result.dx = 20;
+      if (anim === 'phase' && arrives) result.dx = 20 * t / (clips.phase.seconds - 1 / 24);
+      return result;
+    } };
+    const c = attachPetBehavior(shifted, plan, config);
+    return petGate({ c, s: scene, b: border }, Object.keys(clips))
+      .filter(issue => issue.startsWith('phase frame'));
+  }
+  assert.deepEqual(phaseIssues(true), []);
+  assert.match(phaseIssues(false)[0], /frame 41 vs idle-f2/);
+});

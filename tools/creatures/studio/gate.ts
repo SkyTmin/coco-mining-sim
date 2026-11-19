@@ -8,6 +8,7 @@ import { studioConfig } from './checks';
 import { measureRef, readPoseRefs, refIssues } from './ref';
 import { petGate } from './pet-gate';
 import { sizes } from '../types';
+import { compose, frameCount } from '../engine';
 
 export async function gateExtras(ids: string[]) {
   let failed = 0;
@@ -21,13 +22,40 @@ export async function gateExtras(ids: string[]) {
     const painting = await loadPainting(id);
     const { c } = painting;
     const registered = readPoseRefs(id);
-    const petIssues = petGate(painting, Object.keys(registered), registered.hatch?.frames);
+    const config = studioConfig(id);
+    const keys = config.keyframes ?? {};
+    const petIssues = petGate(painting, [...Object.keys(registered), ...Object.keys(keys)],
+      [...(registered.hatch?.frames ?? []), ...(keys.hatch ?? []).map(key => key.frame)]);
     for (const issue of petIssues) console.log('  ! ' + id + ' pet: ' + issue);
     if (petIssues.length) failed++;
     for (const [anim, spec] of Object.entries(registered)) {
       const rows = measureRef(painting, anim, spec);
       const errors = refIssues(rows);
       console.log(`${errors.length ? "✗" : "✓"} ${id} ${anim} ref: ${rows.length} keys, min IoU ${Math.min(...rows.map(r => r.iou)).toFixed(3)}`);
+      for (const err of errors) console.log('  ! ' + err);
+      if (errors.length) failed++;
+    }
+    for (const [anim, poses] of Object.entries(keys)) {
+      const clip = c.animations[anim];
+      const count = clip ? frameCount(clip.seconds) : 0;
+      const errors: string[] = [];
+      if (!poses.length) errors.push('missing pose targets');
+      for (const pose of poses) {
+        if (!Number.isInteger(pose.frame) || pose.frame < 0 || pose.frame >= count) {
+          errors.push('invalid frame ' + pose.frame);
+          continue;
+        }
+        const frame = compose(c, painting.s, painting.b, anim, pose.frame / 24);
+        const targets = Object.entries(pose.points);
+        if (!targets.length) errors.push('frame ' + pose.frame + ' has no landmarks');
+        for (const [name, [x, y, radius]] of targets) {
+          const point = frame.points[name];
+          if (!point || ![x,y,radius].every(Number.isFinite) || radius <= 0 ||
+              Math.hypot(point[0] - x, point[1] - y) > radius)
+            errors.push('frame ' + pose.frame + ' missed ' + name + ' at ' + x + ',' + y);
+        }
+      }
+      console.log(`${errors.length ? '✗' : '✓'} ${id} ${anim} landmarks: ${poses.length} keys`);
       for (const err of errors) console.log('  ! ' + err);
       if (errors.length) failed++;
     }
@@ -39,7 +67,8 @@ export async function gateExtras(ids: string[]) {
     const [, fieldHeight, canvas] = sizes[c.rarity];
     const rest = c.frame('idle', 0, 0, 'normal');
     const m = measureDetail(rest.px);
-    const minPrimitives = studioConfig(id).minPrimitives;
+    const secretTricks = c.rarity === 'secret' && c.behavior?.tricks;
+    const minPrimitives = Math.max(config.minPrimitives ?? 0, secretTricks ? 900 : 0);
     const extent = Math.max(m.width, m.height);
     const detail: string[] = [];
     if (m.colours < minimumColours[c.rarity]) detail.push(`colours ${m.colours} < ${minimumColours[c.rarity]}`);

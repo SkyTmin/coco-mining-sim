@@ -1,8 +1,8 @@
 {
   "id": "moon_magician",
   "rarity": "secret",
-  "frame": "moon_magician",
   "theme": "magic_tent",
+  "frame": "frame",
   "fps": 24,
   "scale": 2,
   "field": [
@@ -22,8 +22,8 @@
   "eye": null,
   "primitives": 903,
   "feet": [
-    141,
-    178
+    146,
+    184.4
   ],
   "points": {
     "capeTip": [
@@ -323,8 +323,8 @@
         "pixelsPerSecond": 15.6,
         "worldStride": 26,
         "feet": [
-          123,
-          167.8
+          128,
+          174.20000000000002
         ]
       },
       "walk_ne": {
@@ -335,8 +335,8 @@
         "pixelsPerSecond": 21.440149253211835,
         "worldStride": 26,
         "feet": [
-          113.80761184457488,
-          165.51543289325508
+          118.80761184457488,
+          171.9154328932551
         ]
       },
       "walk_e": {
@@ -347,8 +347,8 @@
         "pixelsPerSecond": 26,
         "worldStride": 26,
         "feet": [
-          110,
-          160
+          115,
+          166.4
         ]
       },
       "walk_se": {
@@ -359,8 +359,8 @@
         "pixelsPerSecond": 21.440149253211835,
         "worldStride": 26,
         "feet": [
-          113.80761184457488,
-          154.48456710674492
+          118.80761184457488,
+          160.88456710674492
         ]
       },
       "walk_s": {
@@ -371,8 +371,8 @@
         "pixelsPerSecond": 15.6,
         "worldStride": 26,
         "feet": [
-          123,
-          152.2
+          128,
+          158.6
         ]
       },
       "walk_sw": {
@@ -383,8 +383,8 @@
         "pixelsPerSecond": 21.440149253211835,
         "worldStride": 26,
         "feet": [
-          132.1923881554251,
-          154.48456710674492
+          137.1923881554251,
+          160.88456710674492
         ]
       },
       "walk_w": {
@@ -395,8 +395,8 @@
         "pixelsPerSecond": 26,
         "worldStride": 26,
         "feet": [
-          136,
-          160
+          141,
+          166.4
         ]
       },
       "walk_nw": {
@@ -407,8 +407,8 @@
         "pixelsPerSecond": 21.440149253211835,
         "worldStride": 26,
         "feet": [
-          132.1923881554251,
-          165.51543289325508
+          137.1923881554251,
+          171.9154328932551
         ]
       }
     }
@@ -558,46 +558,46 @@
       "end": 1200
     },
     {
-      "name": "phase",
-      "start": 1200,
-      "frames": 48,
-      "end": 1254
-    },
-    {
-      "name": "idle-f2",
-      "start": 1254,
-      "frames": 60,
-      "end": 1320
-    },
-    {
-      "name": "happy-f2",
-      "start": 1320,
-      "frames": 48,
-      "end": 1374
-    },
-    {
-      "name": "trick-f2",
-      "start": 1374,
-      "frames": 132,
-      "end": 1512
-    },
-    {
-      "name": "trick_b-f2",
-      "start": 1512,
-      "frames": 144,
-      "end": 1662
-    },
-    {
       "name": "show",
-      "start": 1662,
+      "start": 1200,
       "frames": 132,
-      "end": 1800
+      "end": 1338
     },
     {
       "name": "peek",
-      "start": 1800,
+      "start": 1338,
       "frames": 60,
-      "end": 1866
+      "end": 1404
+    },
+    {
+      "name": "phase",
+      "start": 1404,
+      "frames": 48,
+      "end": 1458
+    },
+    {
+      "name": "idle-f2",
+      "start": 1458,
+      "frames": 36,
+      "end": 1500
+    },
+    {
+      "name": "happy-f2",
+      "start": 1500,
+      "frames": 48,
+      "end": 1554
+    },
+    {
+      "name": "trick-f2",
+      "start": 1554,
+      "frames": 132,
+      "end": 1692
+    },
+    {
+      "name": "trick_b-f2",
+      "start": 1692,
+      "frames": 144,
+      "end": 1842
     }
   ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
@@ -989,8 +989,8 @@
       ]
     },
     "idle-f2": {
-      "seconds": 2.5,
-      "frames": 60,
+      "seconds": 1.5,
+      "frames": 36,
       "loop": true,
       "hit": [],
       "shake": 0,
@@ -1002,11 +1002,7 @@
         18,
         24,
         30,
-        36,
-        42,
-        48,
-        54,
-        59
+        35
       ]
     },
     "trick-f2": {
@@ -1582,8 +1578,8 @@
       ]
     },
     "showreel": {
-      "seconds": 77.75,
-      "frames": 1866,
+      "seconds": 76.75,
+      "frames": 1842,
       "loop": true,
       "hit": [],
       "shake": 0,
@@ -1896,11 +1892,7 @@
         1824,
         1830,
         1836,
-        1842,
-        1848,
-        1854,
-        1860,
-        1865
+        1841
       ]
     }
   }

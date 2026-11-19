@@ -10,10 +10,32 @@ import { cpus } from 'node:os';
 import { join } from 'node:path';
 import { loadPainting } from '../render';
 import { compose, frameCount } from '../engine';
+import { lifeCycleCount } from '../motion';
+import type { BodyFrame, Creature } from '../types';
 
 const tools = join(import.meta.dirname, '..');
 const goldenDir = join(tools, 'golden');
 type Golden = Record<string, string[]>;
+
+function reuseTrickPoses(c: Creature): Creature {
+  if (!c.behavior?.tricks) return c;
+  const poses = new Map<string, BodyFrame>();
+  return {
+    ...c,
+    frame(anim, time, side, variant, motion) {
+      if (motion?.techniquePose) return c.frame(anim, time, side, variant, motion);
+      const key = [anim, time, side, variant, motion?.headSide, motion?.gaitPhase].join('/');
+      const existing = poses.get(key);
+      if (existing) return existing;
+      // Life and showreel reuse local poses at different positions and on different
+      // scenery frames. Keep their rasters, but release the geometry diagnostics.
+      const { rig, joints, ...raster } = c.frame(anim, time, side, variant, motion);
+      if (poses.size >= 2000) poses.delete(poses.keys().next().value!);
+      poses.set(key, raster);
+      return raster;
+    },
+  };
+}
 
 function ranges(frames: number[]) {
   const out: string[] = [];
@@ -28,11 +50,12 @@ function ranges(frames: number[]) {
 
 /** Hashes of the final picture of every frame (life and showreel included: they are what the owner sees). */
 export async function hashCreature(id: string, only: string[] = []): Promise<Golden> {
-  const { c, s, b } = await loadPainting(id);
+  const { c: original, s, b } = await loadPainting(id);
+  const c = reuseTrickPoses(original);
   const out: Golden = {};
   for (const anim of Object.keys(c.animations)) {
     if (only.length && !only.includes(anim)) continue;
-    const n = frameCount(c.animations[anim].seconds);
+    const n = frameCount(c.animations[anim].seconds) * (anim === 'life' ? lifeCycleCount(c) : 1);
     const list: string[] = [];
     for (let i = 0; i < n; i++) {
       const f = compose(c, s, b, anim, i / 24);

@@ -63,7 +63,9 @@ async function loadArtwork(id, runtime, priority) {
     typeof data.scene === 'string'
       ? sharedMaterial(new URL(root + data.scene, document.baseURI).href, ...data.canvas)
       : material(root, data.scene, ...data.canvas, priority),
-    sharedMaterial('./atlases/frames/' + (data.frame ?? data.rarity) + '/atlas.json', ...(data.borderCanvas ?? data.canvas)),
+    data.border
+      ? material(root, data.border, ...(data.borderCanvas ?? data.canvas), priority)
+      : sharedMaterial('./atlases/frames/' + data.rarity + '/atlas.json', ...(data.borderCanvas ?? data.canvas)),
     actorPages(root, data.actors, priority),
     data.behavior ? json(root + 'behavior.json') : null,
   ]);
@@ -160,6 +162,9 @@ class Painting {
     if (this.has('trick')) return 'trick';
     if (this.entry.section === 'pets' && this.has('work')) return 'work';
   }
+  get hasTricks() {
+    return Boolean(this.surface?.behavior?.tricks);
+  }
   has(id) {
     return this.entry.clips.some((clip) => clip.id === id);
   }
@@ -224,10 +229,10 @@ class Painting {
       this.ensure();
       return;
     }
-    if (this.entry.runtime === 'f1' && this.selected !== 'life') this.choose('life');
+    if ((this.entry.runtime === 'f1' || this.hasTricks) && this.selected !== 'life') this.choose('life');
     if (this.pet && this.selected === 'life') {
       if (this.away) setAway(false, false, this);
-      this.pet.event(event);
+      this.pet.event(this.hasTricks && event === 'like' ? 'double_tap' : event);
       return;
     }
     const clip = event === 'like' && this.trickClip ? this.trickClip : 'happy';
@@ -482,6 +487,8 @@ function refreshControls() {
   $('.actions').hidden = !featured.pet;
   $('#leave').disabled = $('#skill').disabled = !featured.pet;
   $('#skill').hidden = featured.entry.runtime === 'f1';
+  $('#skill').textContent = featured.hasTricks ? 'Показать трюк' : 'Показать приём';
+  $('#change-form').hidden = $('#change-form').disabled = !featured.hasTricks;
   $('#leave').textContent = featured.away ? 'Вернуться' : 'Уйти';
   $('#presence').textContent = !featured.away
     ? ''
@@ -649,7 +656,12 @@ async function start() {
   $('#stage').addEventListener('change', (event) => featured.changeStage(Number(event.target.value)));
   $('#next-stage').addEventListener('click', () => featured.changeStage());
   $('#leave').addEventListener('click', () => setAway(!featured.away));
+  $('#change-form').addEventListener('click', () => featured.interact('change_form'));
   $('#skill').addEventListener('click', () => {
+    if (featured.hasTricks) {
+      featured.interact('like');
+      return;
+    }
     if (featured.selected !== 'life') featured.choose('life');
     if (featured.away) setAway(false);
     featured.pet.event('skill_ready');

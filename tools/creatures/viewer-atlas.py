@@ -79,7 +79,7 @@ class Atlas:
         return {'pages': pages, 'rects': rects}
 
 
-def material(directory, paths, front=()):
+def material(directory, paths, front=(), prefix='tiles'):
     """Tile an entire animated material once; each phase stores changes from phase zero."""
     if len(paths) != 72:
         raise ValueError(f'Expected 72 scenery phases in {directory}, found {len(paths)}')
@@ -103,10 +103,10 @@ def material(directory, paths, front=()):
             sprite = atlas.trim(image.convert('RGBA'))
         if sprite:
             props.append([depth, *sprite])
-    return {**atlas.write(directory, 'tiles'), 'tile': TILE, 'base': base, 'phases': phases, 'props': props}
+    return {**atlas.write(directory, prefix), 'tile': TILE, 'base': base, 'phases': phases, 'props': props}
 
 
-def pack_actor(source, dest, ident, meta, scene, rarity):
+def pack_actor(source, dest, ident, meta, scene, rarity, border=None):
     has_behavior = (source / 'behavior.json').is_file()
     names = list(meta['animations'])
     clips = {}
@@ -145,11 +145,11 @@ def pack_actor(source, dest, ident, meta, scene, rarity):
     if has_behavior:
         shutil.copyfile(source / 'behavior.json', dest / 'behavior.json')
     save(dest / 'atlas.json', {
-        'id': ident, 'rarity': rarity, **({'frame': meta['frame']} if 'frame' in meta else {}),
-        'fps': meta['fps'], 'canvas': meta['canvas'],
+        'id': ident, 'rarity': rarity, 'fps': meta['fps'], 'canvas': meta['canvas'],
         'field': meta['field'], 'thickness': meta['thickness'], 'origin': origin, 'scene': scene,
         'actors': sprites.write(dest, 'sprites'), 'clips': clips,
         **({'sceneryRays': rays} if rays else {}),
+        **({'border': border} if border else {}),
         'animations': {name: meta['animations'][name] for name in names}, 'behavior': has_behavior,
     })
     return f'{len(clips)} clips, {len(sprites.images)} unique sprites'
@@ -159,12 +159,15 @@ def pack(assets, out, ident):
     source = assets / ident
     meta = load(source / 'meta.json')
     rarity = meta['rarity']
-    frame_key = meta.get('frame', rarity)
-    frame_dir = out / 'frames' / frame_key
-    frame_dir.mkdir(parents=True, exist_ok=True)
-    # Several creatures can share a border. Rebuild it from the canonical material.
-    frame = material(frame_dir, sorted((assets / 'frames' / frame_key / 'loop').glob('*.png')))
-    save(frame_dir / 'atlas.json', frame)
+    local_frame = meta.get('frame')
+    frame_files = []
+    if not local_frame:
+        frame_dir = out / 'frames' / rarity
+        frame_dir.mkdir(parents=True, exist_ok=True)
+        # Several creatures can share a border. Rebuild it from the canonical material.
+        frame = material(frame_dir, sorted((assets / 'frames' / rarity / 'loop').glob('*.png')))
+        save(frame_dir / 'atlas.json', frame)
+        frame_files = list(frame_dir.iterdir())
     with tempfile.TemporaryDirectory(dir=out) as temporary:
         dest = Path(temporary)
         front = [(obj['depth'], source / 'bg/front' / (obj['id'] + '.png'))
@@ -174,9 +177,12 @@ def pack(assets, out, ident):
             save(dest / 'scene.json', {**scene, 'canvas': meta['canvas']})
             description = 'native F1 painting, throne room material'
         else:
-            description = pack_actor(source, dest, ident, meta, scene, rarity)
+            border = None
+            if local_frame:
+                border = material(dest, sorted((source / local_frame / 'loop').glob('*.png')), prefix='border-tiles')
+            description = pack_actor(source, dest, ident, meta, scene, rarity, border)
         generated = list(dest.iterdir())
-        files = generated + list(frame_dir.iterdir())
+        files = generated + frame_files
         total = sum(f.stat().st_size for f in files)
         if any(f.stat().st_size > 15_000_000 for f in files):
             raise ValueError(f'{ident} contains a file over 15 MB')
@@ -190,7 +196,7 @@ def pack(assets, out, ident):
                 path.unlink()
         # Frames that play together onto the same page, lossless WebP (viewer_repack.py).
         repack(target)
-        print(f'{ident}: {description}, {total:,} bytes including shared border', flush=True)
+        print(f'{ident}: {description}, {total:,} bytes including border', flush=True)
 
 
 if __name__ == '__main__':

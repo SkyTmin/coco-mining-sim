@@ -27,7 +27,7 @@ import {
   foregroundObjects,
   ground,
 } from './engine';
-import { reelChapters, attachMotion, attachPetBehavior, directions, directionVector } from './motion';
+import { reelChapters, attachMotion, attachPetBehavior, directions, directionVector, lifeCycleCount } from './motion';
 import { GifWriter, savePNG } from './render-io';
 import { frameImage } from './frame-kit';
 import { Px } from './rig/px';
@@ -39,13 +39,21 @@ function safeID(id: string) {
   if (!/^[a-z][a-z0-9_-]*$/.test(id)) throw new Error('Unsupported id ' + id);
   return id;
 }
+function hasCustomFrame(id: string) {
+  return existsSync(join(tools, 'frames', safeID(id) + '.ts'));
+}
+export function paintingFrameDir(c: Creature, output: string) {
+  return hasCustomFrame(c.id)
+    ? join(output, 'frame')
+    : join(dirname(output), 'frames', c.rarity);
+}
 export async function loadPainting(id: string) {
   const c: Creature = (await import('./c/' + safeID(id) + '.ts')).default;
   if (c.id !== id) throw new Error('Creature id mismatch');
   const s: Scene = (await import('./scenes/' + safeID(c.theme) + '.ts'))
     .default;
-  const b: Border = (await import('./frames/' + safeID(c.border ?? c.rarity) + '.ts'))
-    .default;
+  const frame = hasCustomFrame(id) ? id : c.rarity;
+  const b: Border = (await import('./frames/' + safeID(frame) + '.ts')).default;
   const lifeFile = join(tools, 'c', id + '-life.ts');
   if (existsSync(lifeFile)) {
     const plan = (await import('./c/' + id + '-life.ts')).default;
@@ -104,6 +112,8 @@ function writePainting(
   const spec = c.animations[name],
     frames = frameCount(spec.seconds),
     suffix = name + (variant === 'gold' ? '-gold' : '');
+  const cycles = name === 'life' ? lifeCycleCount(c) : 1;
+  const showcase = cycles > 1 ? new GifWriter(scale, true) : undefined;
   const gif = new GifWriter(scale, true),
     turn =
       name === 'turn' && variant === 'normal'
@@ -120,6 +130,7 @@ function writePainting(
     const t = f / 24,
       r = compose(c, s, b, name, t, 0, variant);
     gif.add(r.picture, f);
+    showcase?.add(r.picture, f);
     track.push({
       feet: r.worldFeet,
       ...(r.sceneryRays.length ? { sceneryRays: r.sceneryRays } : {}),
@@ -186,6 +197,11 @@ function writePainting(
   }
   writeFileSync(join(dir, 'motion.json'), JSON.stringify(track));
   gif.write(join(output, 'gif', 'painting-' + suffix + '.gif'));
+  if (showcase) {
+    for (let f = frames; f < frames * cycles; f++)
+      showcase.add(compose(c, s, b, name, f / 24, 0, variant).picture, f);
+    showcase.write(join(output, 'gif', 'paintings.gif'));
+  }
   turn?.write(join(output, 'gif', 'turn.gif'));
 }
 export function writePaintingMaterials(
@@ -212,6 +228,7 @@ export function writePaintingMaterials(
       2,
     ) + '\n',
   );
+  const frameDir = paintingFrameDir(c, output);
   for (let f = 0; f < 72; f++) {
     const t = f / 24,
       file = String(f).padStart(3, '0') + '.png';
@@ -220,8 +237,7 @@ export function writePaintingMaterials(
     const framed = new Px(w + thickness * 2, h + thickness * 2);
     blit(framed, bg, thickness, thickness);
     savePNG(join(output, 'bg', 'loop', file), framed);
-    const border = frameImage(b, w, h, thickness, t),
-      frameDir = join(dirname(output), 'frames', c.border ?? c.rarity);
+    const border = frameImage(b, w, h, thickness, t);
     savePNG(join(frameDir, 'loop', file), border);
     if (f === 0) {
       savePNG(join(output, 'bg', 'base.png'), framed);
@@ -247,13 +263,13 @@ export async function render(
     !name ||
     name === 'idle' ||
     !existsSync(join(output, 'bg', 'base.png')) ||
-    !existsSync(join(assetRoot, 'frames', c.border ?? c.rarity, 'base.png'))
+    !existsSync(join(paintingFrameDir(c, output), 'base.png'))
   )
     writePaintingMaterials(c, s, b, output);
   for (const anim of names) {
     if (!c.animations[anim]) throw new Error('Unknown animation ' + anim);
     writePainting(c, s, b, anim, 'normal', scale, output);
-    if (anim === 'life' && c.behavior)
+    if (anim === 'life' && c.behavior && lifeCycleCount(c) === 1)
       copyFileSync(join(output, 'gif', 'painting-life.gif'), join(output, 'gif', 'paintings.gif'));
     if (anim === 'idle' || anim === main)
       writePainting(c, s, b, anim, 'gold', scale, output);
@@ -263,8 +279,8 @@ export async function render(
   const meta = {
     id: c.id,
     rarity: c.rarity,
-    ...(c.border ? { frame: c.border } : {}),
     theme: c.theme,
+    frame: hasCustomFrame(c.id) ? 'frame' : undefined,
     fps: 24,
     scale,
     field: [w, h],

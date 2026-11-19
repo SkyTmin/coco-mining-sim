@@ -50,6 +50,21 @@ test('the card and runtime use the same technique clock and detect an altered wa
   assert.match(cardRuntimeIssues({ ...yeti, motion }).join(), /life/);
 });
 
+test('a move-free secret card requires the secret detail inventory and delayed parts', () => {
+  const old = readCreatureCard('rat_king');
+  const card = {
+    ...old,
+    moves: [],
+    life: { ...old.life, beats: old.life.beats.filter(beat => !beat.anim.startsWith('tech_')) },
+    details: Array.from({ length: 60 }, (_, i) => 'Деталь ' + i),
+    secondaryMotion: Object.fromEntries(
+      old.parts.slice(0, 7).map(part => [part, 'Отстаёт на два кадра'])),
+  };
+  assert.deepEqual(cardIssues(card, card.id), []);
+  assert.ok(cardIssues({ ...card, details: card.details.slice(1) }, card.id).length);
+  assert.ok(cardIssues({ ...card, secondaryMotion: {} }, card.id).length);
+});
+
 test('scaffolding publishes five readable files together and preserves an existing or partial draft', (t) => {
   const dir = mkdtempSync(join(tmpdir(), 'creature-draft-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));

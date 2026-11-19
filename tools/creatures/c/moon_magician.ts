@@ -10,7 +10,6 @@ const magician: Creature = {
   id: card.id,
   rarity: card.rarity,
   theme: card.theme,
-  border: 'moon_magician',
   animations: { ...clips },
   frame: armedFrame(card, card.life, { pose: gesture, figure: magicianFigure(gesture) }),
   effects: magicianEffects,

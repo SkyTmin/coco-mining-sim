@@ -31,15 +31,20 @@ def main():
     for path in metas:
         meta = json.loads(path.read_text())
         inputs.append(path.parent)
-        frame_set = ASSETS / "frames" / meta["rarity"]
+        if meta.get("frame") == "frame":
+            frame_set = path.parent / "frame"
+        else:
+            frame_set = ASSETS / "frames" / meta["rarity"]
+            inputs.append(frame_set)
         if not frame_set.is_dir() or not any(frame_set.glob("*.png")):
-            raise ValueError(f"Missing frames for {meta['rarity']}")
-        inputs.append(frame_set)
+            raise ValueError(f"Missing frames in {frame_set.relative_to(ASSETS)}")
         if not {"life", "showreel"}.issubset(meta["animations"]):
             raise ValueError(f"{path.parent.name} needs a fresh export")
         expected = {f"painting-{a}.gif" for a in meta["animations"]}
-        main_move = next(a for a in meta["animations"] if a.startswith("tech_"))
-        expected.update({"turn.gif", "painting-idle-gold.gif", f"painting-{main_move}-gold.gif"})
+        main_move = next((a for a in meta["animations"] if a.startswith("tech_")), None)
+        expected.update({"turn.gif", "painting-idle-gold.gif"})
+        if main_move:
+            expected.add(f"painting-{main_move}-gold.gif")
         if (path.parent / "behavior.json").is_file():
             expected.add("paintings.gif")
         actual = {f.name for f in (path.parent / "gif").glob("*.gif")}
@@ -52,7 +57,7 @@ def main():
     temp = output.with_suffix(".partial")
     with zipfile.ZipFile(temp, "w", allowZip64=True) as archive:
         for path in files:
-            if path.suffix not in {".gif", ".png", ".json"}:
+            if path.suffix not in {".gif", ".png", ".json", ".md", ".txt"}:
                 raise ValueError(f"Unrecognized asset: {path}")
             name = path.relative_to(ROOT).as_posix()
             info = zipfile.ZipInfo(name, (1980, 1, 1, 0, 0, 0))

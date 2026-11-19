@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import Ajv from 'ajv';
+import legacyBehavior from '../../../assets/creatures/meadow_colossus/behavior.json' with { type: 'json' };
+import behaviorSchema from '../bodies/behavior.schema.json' with { type: 'json' };
 import { Px } from '../rig/px';
 import { joinsSleep, maskOverlap, petClipIssues } from '../studio/pet-gate';
+import { petDirections } from '../viewer/behavior.mjs';
 
 test('a displaced one-shot cannot pass by registering its silhouette back to idle', () => {
   const idle = new Px(12, 12), offset = new Px(12, 12);
@@ -52,4 +56,58 @@ test('multi-act tricks require three to four seconds and an ending', () => {
   assert.equal(trickIssues(2.5, false, true).length, 1);
   assert.equal(trickIssues(4.1, false, true).length, 1);
   assert.equal(trickIssues(3.5, true, true).length, 1);
+});
+
+test('the behavior schema accepts either legacy attacks or tricks for both forms', () => {
+  const validate = new Ajv().compile(behaviorSchema);
+  const { attacks, attackInterval, ...shared } = legacyBehavior;
+  const { skill_ready, ...events } = shared.events;
+  const { trick, ...weights } = shared.weights;
+  const behavior = { ...shared, events, weights, tricks: { f1: ['trick'], f2: ['trick-f2'] } };
+  assert.ok(validate(legacyBehavior));
+  assert.ok(validate(behavior));
+  assert.ok(validate({
+    ...behavior,
+    events: { ...events, skill_ready: ['trick'] },
+    tricks: { f1: ['trick_b', 'trick'], f2: ['trick_b-f2', 'trick-f2'] },
+  }));
+  for (const invalid of [
+    { ...behavior, attacks },
+    { ...behavior, attackInterval },
+    { ...behavior, lifeAttacks: attacks },
+    { ...behavior, attackBounds: {} },
+    { ...behavior, events: { ...events, skill_ready } },
+    { ...behavior, tricks: { f1: ['trick'] } },
+    { ...behavior, tricks: { f1: ['trick_b'], f2: ['trick-f2'] } },
+    { ...behavior, tricks: { f1: ['trick'], f2: ['trick-f2', 'trick-f2'] } },
+  ]) assert.equal(validate(invalid), false);
+});
+
+test('the secret clip gate requires two authored tricks in each form and disallows combat', () => {
+  const tricks = { f1: ['trick', 'trick_b'], f2: ['trick-f2', 'trick_b-f2'] };
+  const clips = {
+    idle: { seconds: 3, loop: true },
+    fidget_a: { seconds: 1.5 }, fidget_b: { seconds: 1.5 },
+    look: { seconds: 1.5 }, happy: { seconds: 1.5 },
+    sleep_in: { seconds: 1 }, sleep: { seconds: 3, loop: true }, sleep_out: { seconds: 1 },
+    wake_startled: { seconds: 1 }, hatch: { seconds: 3 }, turn: { seconds: 4 }, tired: { seconds: 2 },
+    ...Object.fromEntries(petDirections.map(direction => ['walk_' + direction, { seconds: 1, loop: true }])),
+    trick: { seconds: 5 },
+    trick_b: { seconds: 7 },
+    'trick-f2': { seconds: 6 },
+    'trick_b-f2': { seconds: 5.5 },
+    'happy-f2': { seconds: 1.5 },
+    'idle-f2': { seconds: 3, loop: true },
+    phase: { seconds: 2.5 },
+    show: { seconds: 5.5 },
+    peek: { seconds: 2 },
+  };
+  const inspect = (animations: Parameters<typeof petClipIssues>[0], forms = tricks) =>
+    petClipIssues(animations, Object.keys(animations), [], false, 'secret', forms);
+  assert.deepEqual(inspect(clips), []);
+  assert.ok(inspect(clips, { ...tricks, f2: ['trick-f2'] }).includes('a secret painting needs two tricks in each form'));
+  for (const [name, seconds] of [['phase', 1.9], ['show', 6.1], ['trick_b-f2', 4.9]] as const)
+    assert.ok(inspect({ ...clips, [name]: { seconds } }).some(issue => issue.startsWith(name + ' duration')));
+  for (const name of ['tech_stamp', 'die'])
+    assert.ok(inspect({ ...clips, [name]: { seconds: 2 } }).some(issue => issue.startsWith(name + ' is forbidden')));
 });

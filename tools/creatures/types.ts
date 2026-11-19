@@ -73,8 +73,6 @@ export interface Creature {
   id: string;
   rarity: Rarity;
   theme: string;
-  /** Own frame in `frames/<border>.ts`; the rarity frame when absent (secret creatures). */
-  border?: string;
   /** Gallery titles for clips whose generic label says too little (named tricks). */
   titles?: Record<string, string>;
   /** Standing position in field pixels for standalone clips and showreel chapters. */

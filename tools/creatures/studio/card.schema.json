@@ -75,8 +75,7 @@
       "type": "array",
       "items": {
         "$ref": "#/definitions/move"
-      },
-      "minItems": 0
+      }
     },
     "life": {
       "$ref": "#/definitions/life"
@@ -111,7 +110,8 @@
         "armed-biped",
         "squat-mage",
         "giant",
-        "winged-dragon"
+        "winged-dragon",
+        "winged-bird"
       ]
     },
     "template": {
@@ -330,8 +330,10 @@
             "minItems": 25
           },
           "moves": {
-            "minItems": 2,
-            "maxItems": 2
+            "anyOf": [
+              { "maxItems": 0 },
+              { "minItems": 2, "maxItems": 2 }
+            ]
           }
         }
       }
@@ -350,8 +352,10 @@
             "minItems": 25
           },
           "moves": {
-            "minItems": 2,
-            "maxItems": 2
+            "anyOf": [
+              { "maxItems": 0 },
+              { "minItems": 2, "maxItems": 2 }
+            ]
           }
         }
       }
@@ -370,8 +374,10 @@
             "minItems": 35
           },
           "moves": {
-            "minItems": 3,
-            "maxItems": 3
+            "anyOf": [
+              { "maxItems": 0 },
+              { "minItems": 3, "maxItems": 3 }
+            ]
           }
         }
       }
@@ -390,8 +396,10 @@
             "minItems": 35
           },
           "moves": {
-            "minItems": 4,
-            "maxItems": 4
+            "anyOf": [
+              { "maxItems": 0 },
+              { "minItems": 4, "maxItems": 4 }
+            ]
           }
         }
       }
@@ -410,8 +418,10 @@
             "minItems": 50
           },
           "moves": {
-            "minItems": 5,
-            "maxItems": 5
+            "anyOf": [
+              { "maxItems": 0 },
+              { "minItems": 5, "maxItems": 5 }
+            ]
           }
         }
       }
@@ -430,8 +440,10 @@
             "minItems": 50
           },
           "moves": {
-            "minItems": 5,
-            "maxItems": 6
+            "anyOf": [
+              { "maxItems": 0 },
+              { "minItems": 5, "maxItems": 6 }
+            ]
           }
         }
       }
@@ -455,6 +467,21 @@
               { "minItems": 5, "maxItems": 6 }
             ]
           }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rarity": { "const": "secret" },
+          "moves": { "maxItems": 0 }
+        }
+      },
+      "then": {
+        "required": ["secondaryMotion"],
+        "properties": {
+          "details": { "minItems": 60 },
+          "secondaryMotion": { "minProperties": 7 }
         }
       }
     }
