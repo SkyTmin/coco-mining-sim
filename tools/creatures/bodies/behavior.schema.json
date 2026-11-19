@@ -10,14 +10,14 @@
     "depthScale",
     "stops",
     "walkShare",
-    "attacks",
     "weights",
     "events",
     "yaw"
   ],
   "anyOf": [
     { "required": ["attackInterval"] },
-    { "required": ["lifeAttacks"] }
+    { "required": ["lifeAttacks"] },
+    { "required": ["tricks"] }
   ],
   "additionalProperties": false,
   "properties": {
@@ -178,8 +178,9 @@
           ]
         },
         "skill_ready": {
-          "const": [
-            "attack"
+          "anyOf": [
+            { "const": ["attack"] },
+            { "type": "array", "minItems": 1, "maxItems": 1, "items": { "type": "string", "pattern": "^trick" } }
           ]
         }
       },
@@ -193,6 +194,16 @@
     },
     "yaw": {
       "type": "number"
+    },
+    "tricks": {
+      "description": "TZ-B10: tricks of the first and the second form instead of attacks",
+      "type": "object",
+      "required": ["f1", "f2"],
+      "additionalProperties": false,
+      "properties": {
+        "f1": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "f2": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+      }
     }
   }
 }

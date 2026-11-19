@@ -9,7 +9,9 @@ export interface BehaviorConfig {
   walkShare: [number, number];
   weights: Record<string, number>;
   attackInterval?: [number, number];
-  attacks: string[];
+  attacks?: string[];
+  /** Tricks of each form instead of attacks (TZ-B10): f1 at the stops, f2 after the phase. */
+  tricks?: { f1: string[]; f2: string[] };
   /** Full attacks in each 30-second excursion, followed by phase, idle-f2 and the return to idle. */
   lifeAttacks?: string[];
   /** Eligible normalized anchor rectangle [left, top, right, bottom] for a technique. */

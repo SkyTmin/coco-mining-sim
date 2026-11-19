@@ -18,6 +18,7 @@ const works = [
   ['sand_scorpion', 'Скорпион Анкхар', '#987448'],
   ['sky_whale', 'Небесный кит Алтан', '#475c7d'],
   ['nebula_squid', 'Кальмар Туманность', '#64567f'],
+  ['moon_magician', 'Мурлен, лунный фокусник', '#3b3560'],
   ['bramble_warden', 'Ежевичный страж', '#56644b'],
   ['gem_beetle', 'Самоцветный жук', '#504b63'],
   ['storm_ram', 'Грозовой баран', '#485c68'],
@@ -112,7 +113,7 @@ async function nativeEntry(id: string, name: string, color: string, section: str
   const order = ['life', ...Object.keys(meta.animations).filter((clip) => clip !== 'life')];
   const clips = order.map((key) => ({
     id: key,
-    name: key === 'showreel' && !c.behavior ? 'Все приёмы' : c.techniques?.[key]?.title ?? labels[key],
+    name: key === 'showreel' && !c.behavior ? 'Все приёмы' : c.titles?.[key] ?? c.techniques?.[key]?.title ?? labels[key],
     frames: meta.animations[key].frames,
   }));
   return { id, name, section, rarity: packed.rarity, color, clips };

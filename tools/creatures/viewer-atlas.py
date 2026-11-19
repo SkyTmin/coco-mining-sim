@@ -145,7 +145,8 @@ def pack_actor(source, dest, ident, meta, scene, rarity):
     if has_behavior:
         shutil.copyfile(source / 'behavior.json', dest / 'behavior.json')
     save(dest / 'atlas.json', {
-        'id': ident, 'rarity': rarity, 'fps': meta['fps'], 'canvas': meta['canvas'],
+        'id': ident, 'rarity': rarity, **({'frame': meta['frame']} if 'frame' in meta else {}),
+        'fps': meta['fps'], 'canvas': meta['canvas'],
         'field': meta['field'], 'thickness': meta['thickness'], 'origin': origin, 'scene': scene,
         'actors': sprites.write(dest, 'sprites'), 'clips': clips,
         **({'sceneryRays': rays} if rays else {}),
@@ -158,10 +159,11 @@ def pack(assets, out, ident):
     source = assets / ident
     meta = load(source / 'meta.json')
     rarity = meta['rarity']
-    frame_dir = out / 'frames' / rarity
+    frame_key = meta.get('frame', rarity)
+    frame_dir = out / 'frames' / frame_key
     frame_dir.mkdir(parents=True, exist_ok=True)
     # Several creatures can share a border. Rebuild it from the canonical material.
-    frame = material(frame_dir, sorted((assets / 'frames' / rarity / 'loop').glob('*.png')))
+    frame = material(frame_dir, sorted((assets / 'frames' / frame_key / 'loop').glob('*.png')))
     save(frame_dir / 'atlas.json', frame)
     with tempfile.TemporaryDirectory(dir=out) as temporary:
         dest = Path(temporary)

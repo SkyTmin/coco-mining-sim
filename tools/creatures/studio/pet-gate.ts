@@ -21,10 +21,20 @@ const rules: Record<string, [number, number, boolean]> = {
   sleep_in: [1, 1.5, false], sleep: [3, 4, true], sleep_out: [1, 1.5, false],
   wake_startled: [0.8, 1.2, false],
 };
-export function petClipIssues(animations: Record<string, Animation>, references: string[], bodyClips: string[] = [], multiActTrick = false, performanceRarity?: Rarity) {
+export function petClipIssues(animations: Record<string, Animation>, references: string[], bodyClips: string[] = [], multiActTrick = false, performanceRarity?: Rarity, tricks = false) {
   const issues: string[] = [];
   const limits = { ...rules };
-  if (performanceRarity) {
+  if (tricks) {
+    // Owner 19.11: paintings perform tricks in both forms instead of attacks (TZ-B10 §1–2).
+    for (const name of ['trick', 'trick_b', 'trick-f2', 'trick_b-f2']) limits[name] = [5, 7, false];
+    limits.phase = [1.5, 3, false];
+    limits['idle-f2'] = [2.5, 3, true];
+    limits['happy-f2'] = [1.5, 2.5, false];
+    if (performanceRarity === 'mythic' || performanceRarity === 'secret') limits.show = [4, 6, false];
+    else if (animations.show) issues.push('show is reserved for a mythic or secret pet');
+    for (const name of Object.keys(animations))
+      if (name.startsWith('tech_')) issues.push(name + ': a trick painting has no tech_* clips');
+  } else if (performanceRarity) {
     if (performanceRarity !== 'legendary' && performanceRarity !== 'mythic')
       issues.push('lifeAttacks requires a legendary or mythic pet');
     const mythic = performanceRarity === 'mythic';
@@ -80,8 +90,9 @@ export function petGate(painting: Painting, references: string[], hatchKeys: num
   if (approvedBeforePets.has(c.id) && !c.behavior) return [];
   if (!c.behavior) return ['new paintings require behavior.json'];
   const { bodyClips, multiActTrick } = studioConfig(c.id);
-  const rank = c.behavior.lifeAttacks ? c.rarity : undefined;
-  const issues = petClipIssues(c.animations, references, bodyClips, multiActTrick, rank);
+  const tricks = !!c.behavior.tricks;
+  const rank = c.behavior.lifeAttacks || tricks ? c.rarity : undefined;
+  const issues = petClipIssues(c.animations, references, bodyClips, multiActTrick, rank, tricks);
   if (!validateSchema(c.behavior))
     issues.push(...(validateSchema.errors ?? []).map(err => 'behavior.json ' + err.instancePath + ' ' + err.message));
   issues.push(...validateBehavior(c.behavior, c.animations));
@@ -107,7 +118,7 @@ export function petGate(painting: Painting, references: string[], hatchKeys: num
   let minimum = 1, count = 0;
   for (const [name, clip] of Object.entries(c.animations)) {
     if (clip.loop) continue;
-    if (rank === 'mythic' && name === 'show') {
+    if ((rank === 'mythic' || rank === 'secret') && name === 'show') {
       // A decoy opens the show. The revealed body holds its own presentation pose.
       const end = frameCount(clip.seconds) - 1;
       const held = compose(c, s, b, name, end / 24).layers.body;
@@ -120,9 +131,11 @@ export function petGate(painting: Painting, references: string[], hatchKeys: num
     for (const n of [0, frameCount(clip.seconds) - 1]) {
       const rendered = compose(c, s, b, name, n / 24);
       const sleepSeam = asleep && joinsSleep(name, n === 0);
-      const phaseSeam = name === 'phase' && n > 0 && second;
+      // Second-form clips start and end in the second-form rest; the phase ends there.
+      const phaseSeam = ((name === 'phase' && n > 0) || name.endsWith('-f2')) && second;
       const target = phaseSeam || (sleepSeam ? asleep : resting);
       const iou = maskOverlap(target, rendered.layers.body);
+      if (tricks && name === 'hatch' && n === 0 && !rendered.layers.body.data.some((v, i) => i % 4 === 3 && v >= 128)) continue;
       if (rank && name === 'hatch' && n === 0 && iou < 0.9) {
         // A birth image is calibrated to its own sheet, which gateExtras measures with ws ref.
         if (!hatchKeys.includes(0)) issues.push('hatch frame 0 birth pose needs its own registered sheet key');

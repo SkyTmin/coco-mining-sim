@@ -66,7 +66,7 @@ export async function verifyRelease(
     assert.equal(Object.keys(meta.motion.directions).length, 8);
     assert.ok(c.animations.life);
   }
-  const frameLoop = join(assetRoot, 'frames', c.rarity, 'loop'),
+  const frameLoop = join(assetRoot, 'frames', c.border ?? c.rarity, 'loop'),
     bgLoop = join(output, 'bg', 'loop');
   const thickness = meta.thickness;
   const objects: { id: string; depth: number; pixels: Px }[] = JSON.parse(

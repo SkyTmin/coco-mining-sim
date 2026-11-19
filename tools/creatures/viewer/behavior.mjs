@@ -34,6 +34,16 @@ function attackFits(bounds, at) {
   return left <= at[0] && at[0] <= right && top <= at[1] && at[1] <= bottom;
 }
 
+// Paintings with tricks instead of attacks (TZ-B10): one trick of the first form at the stops,
+// then the transformation, a trick of the second form, and the way back.
+const lifeMoves = config => config.lifeAttacks ?? (config.tricks ? config.tricks.f1.slice(0, 1) : undefined);
+const finale = config => (config.tricks ? config.tricks.f2.slice(0, 1) : []);
+function validTricks(data, animations) {
+  const t = data.tricks;
+  return t && typeof t === 'object' && ['f1', 'f2'].every(k => Array.isArray(t[k]) && t[k].length >= 1 &&
+    new Set(t[k]).size === t[k].length && t[k].every(name => typeof name === 'string' && animations?.[name]));
+}
+
 export function validateBehavior(data, animations) {
   if (!data || typeof data !== 'object') return ['expected a behavior object'];
   const issues = [];
@@ -41,7 +51,13 @@ export function validateBehavior(data, animations) {
   if (!pair(data.field, n => Number.isInteger(n) && n > 0) || !positive(data.stride) ||
       !Number.isFinite(data.yaw) || !positive(data.depthScale)) issues.push('field/stride/depthScale');
   if (!interval(data.walkShare, 0.35, 0.50)) issues.push('walkShare must be within 35–50%');
-  if ((!data.lifeAttacks || data.attackInterval !== undefined) && !interval(data.attackInterval, 30, 45))
+  const tricky = data.tricks !== undefined;
+  if (tricky) {
+    if (!validTricks(data, animations)) issues.push('tricks must name existing clips of both forms');
+    for (const clip of ['phase', 'idle-f2', 'happy-f2']) if (!animations?.[clip]) issues.push('missing ' + clip);
+    if (Object.keys(animations ?? {}).some(a => a.startsWith('tech_'))) issues.push('paintings with tricks have no tech_ clips');
+  }
+  if (!tricky && (!data.lifeAttacks || data.attackInterval !== undefined) && !interval(data.attackInterval, 30, 45))
     issues.push('attackInterval must be within 30–45 s');
   if (!Array.isArray(data.stops) || data.stops.length < 3 ||
       !data.stops.every(stop => pair(stop, n => Number.isFinite(n) && n >= 0 && n <= 1)) ||
@@ -51,9 +67,9 @@ export function validateBehavior(data, animations) {
       Object.entries(weights).some(([k,v]) => !positive(v) || !animations?.[k]))
     issues.push('positive weights for ambient clips');
   const attacks = data.attacks;
-  if (!Array.isArray(attacks) || !attacks.length || new Set(attacks).size !== attacks.length ||
+  if (!tricky && (!Array.isArray(attacks) || !attacks.length || new Set(attacks).size !== attacks.length ||
       !attacks.every(a => typeof a === 'string' && a.startsWith('tech_') && animations?.[a]) ||
-      Object.keys(animations ?? {}).some(a => a.startsWith('tech_') && !attacks.includes(a)))
+      Object.keys(animations ?? {}).some(a => a.startsWith('tech_') && !attacks.includes(a))))
     issues.push('attacks must name all authored techniques');
   if (data.attackBounds !== undefined) {
     const bounds = data.attackBounds;
@@ -76,6 +92,7 @@ export function validateBehavior(data, animations) {
     for (const clip of ['phase', 'idle-f2']) if (!animations?.[clip]) issues.push('missing ' + clip);
   }
   for (const [event, expected] of Object.entries(requiredEvents)) {
+    if (tricky && event === 'skill_ready') continue;
     if (JSON.stringify(data.events?.[event]) !== JSON.stringify(expected)) issues.push('event ' + event);
   }
   for (const [event, sequence] of Object.entries(data.events ?? {})) {
@@ -93,7 +110,7 @@ export function validateBehavior(data, animations) {
         marks.some((t,i) => !Number.isInteger(t) || (i && (t <= marks[i-1] || t - marks[i-1] > 7))))
       issues.push('invalid interrupt marks ' + clip);
   }
-  if (!issues.length && data.lifeAttacks) {
+  if (!issues.length && lifeMoves(data)) {
     const score = performancePlan(data, animations);
     if (score.maxWalk < Math.round(ticks(data.previewSeconds) * data.walkShare[0]))
       issues.push('lifeAttacks, turns and phase leave too little time for the minimum walking share');
@@ -159,7 +176,7 @@ function walkingLeg(config, from, to, bearings) {
 function performancePlan(config, animations) {
   const home = config.stops[0], stops = [{ at: home, actions: [] }];
   let previous = 0;
-  for (const name of config.lifeAttacks) {
+  for (const name of lifeMoves(config)) {
     for (let step = 1; step <= config.stops.length; step++) {
       const index = (previous + step) % config.stops.length, at = config.stops[index];
       if (!attackFits(config.attackBounds?.[name], at)) continue;
@@ -173,7 +190,7 @@ function performancePlan(config, animations) {
   if (stops.at(-1).at !== home) stops.push({ at: home, actions: [] });
   const bearings = turnBearings(config, animations);
   const legs = stops.slice(1).map((next, i) => walkingLeg(config, stops[i].at, next.at, bearings));
-  const actions = config.lifeAttacks.reduce((sum, name) => sum + length(animations, name), 0);
+  const actions = [...lifeMoves(config), ...finale(config)].reduce((sum, name) => sum + length(animations, name), 0);
   const turns = legs.reduce((sum, leg) => sum + leg.departing.length + leg.entering.length, 0);
   // One regular idle frame at each seam, plus both directions of the actual phase clip.
   const fixed = 2 + actions + turns + 2 * length(animations, 'phase') + length(animations, 'idle-f2');
@@ -187,12 +204,12 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   const window = ticks(config.previewSeconds);
   const idleFrames = length(animations, 'idle');
   const bearings = turnBearings(config, animations);
-  const score = config.lifeAttacks ? performancePlan(config, animations) : undefined;
+  const score = lifeMoves(config) ? performancePlan(config, animations) : undefined;
   const home = config.stops[0];
   const canAttack = (name, at) => attackFits(config.attackBounds?.[name], at);
   const pickAttack = at => choose(at && config.attackBounds
     ? config.attacks.filter(name => canAttack(name, at)) : config.attacks);
-  const longestAttack = Math.max(...config.attacks.map(name => length(animations, name)));
+  const longestAttack = Math.max(0, ...(config.attacks ?? []).map(name => length(animations, name)));
   // Reserve complete clips on either side of the preview seam while preserving
   // the data's interval between *starts*, even when the cooldown spans a cycle.
   function nextAttackAfter(start) {
@@ -283,6 +300,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
       }
       play('phase', home);
       play('idle-f2', home);
+      for (const name of finale(config)) play(name, home);
       play('phase', home, true);
       rows.push(sampleAt('idle', 0, home));
       return rows;

@@ -76,7 +76,7 @@
       "items": {
         "$ref": "#/definitions/move"
       },
-      "minItems": 2
+      "minItems": 0
     },
     "life": {
       "$ref": "#/definitions/life"
@@ -450,8 +450,10 @@
             "minItems": 50
           },
           "moves": {
-            "minItems": 5,
-            "maxItems": 6
+            "anyOf": [
+              { "maxItems": 0 },
+              { "minItems": 5, "maxItems": 6 }
+            ]
           }
         }
       }

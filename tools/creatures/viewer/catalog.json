@@ -1699,6 +1699,175 @@
     ]
   },
   {
+    "id": "moon_magician",
+    "name": "Мурлен, лунный фокусник",
+    "section": "ours",
+    "rarity": "secret",
+    "color": "#3b3560",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 84
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Радость",
+        "frames": 48
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Появление из дыма",
+        "frames": 48
+      },
+      {
+        "id": "fidget_a",
+        "name": "Крутит палочку",
+        "frames": 48
+      },
+      {
+        "id": "fidget_b",
+        "name": "Карта между пальцев",
+        "frames": 48
+      },
+      {
+        "id": "happy-f2",
+        "name": "Радость в лунном облике",
+        "frames": 48
+      },
+      {
+        "id": "trick",
+        "name": "Трюк: голуби из цилиндра",
+        "frames": 132
+      },
+      {
+        "id": "trick_b",
+        "name": "Трюк: карта-дверь",
+        "frames": 144
+      },
+      {
+        "id": "phase",
+        "name": "Лунный выход",
+        "frames": 48
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой в лунном облике",
+        "frames": 60
+      },
+      {
+        "id": "trick-f2",
+        "name": "Трюк: левитация",
+        "frames": 132
+      },
+      {
+        "id": "trick_b-f2",
+        "name": "Трюк: исчезновение",
+        "frames": 144
+      },
+      {
+        "id": "show",
+        "name": "Представление: шляпа на сцене",
+        "frames": 132
+      },
+      {
+        "id": "peek",
+        "name": "Приподнимает цилиндр над рамой",
+        "frames": 60
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1866
+      }
+    ]
+  },
+  {
     "id": "bramble_warden",
     "name": "Ежевичный страж",
     "section": "ours",

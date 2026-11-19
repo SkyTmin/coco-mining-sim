@@ -44,7 +44,7 @@ export async function loadPainting(id: string) {
   if (c.id !== id) throw new Error('Creature id mismatch');
   const s: Scene = (await import('./scenes/' + safeID(c.theme) + '.ts'))
     .default;
-  const b: Border = (await import('./frames/' + safeID(c.rarity) + '.ts'))
+  const b: Border = (await import('./frames/' + safeID(c.border ?? c.rarity) + '.ts'))
     .default;
   const lifeFile = join(tools, 'c', id + '-life.ts');
   if (existsSync(lifeFile)) {
@@ -221,7 +221,7 @@ export function writePaintingMaterials(
     blit(framed, bg, thickness, thickness);
     savePNG(join(output, 'bg', 'loop', file), framed);
     const border = frameImage(b, w, h, thickness, t),
-      frameDir = join(dirname(output), 'frames', c.rarity);
+      frameDir = join(dirname(output), 'frames', c.border ?? c.rarity);
     savePNG(join(frameDir, 'loop', file), border);
     if (f === 0) {
       savePNG(join(output, 'bg', 'base.png'), framed);
@@ -247,7 +247,7 @@ export async function render(
     !name ||
     name === 'idle' ||
     !existsSync(join(output, 'bg', 'base.png')) ||
-    !existsSync(join(assetRoot, 'frames', c.rarity, 'base.png'))
+    !existsSync(join(assetRoot, 'frames', c.border ?? c.rarity, 'base.png'))
   )
     writePaintingMaterials(c, s, b, output);
   for (const anim of names) {
@@ -263,6 +263,7 @@ export async function render(
   const meta = {
     id: c.id,
     rarity: c.rarity,
+    ...(c.border ? { frame: c.border } : {}),
     theme: c.theme,
     fps: 24,
     scale,

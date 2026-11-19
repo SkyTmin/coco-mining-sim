@@ -46,8 +46,10 @@ export function reelChapters(c: Creature) {
   const names = c.behavior
     ? ['hatch','turn','idle','fidget_a','fidget_b', ...directions.map(d => 'walk_' + d),
        'look','happy','trick', ...Object.keys(c.animations).filter(key => c.animations[key].companion),
-       ...c.behavior.attacks,'tired','sleep_in','sleep','wake_startled','sleep_out',
-       ...['phase', 'idle-f2', 'show'].filter(name => c.animations[name])]
+       ...(c.behavior.tricks ? ['trick_b'].filter(name => c.animations[name]) : []),
+       ...(c.behavior.attacks ?? []),'tired','sleep_in','sleep','wake_startled','sleep_out',
+       ...(c.behavior.tricks ? ['phase', 'idle-f2', 'happy-f2', 'trick-f2', 'trick_b-f2', 'show', 'peek']
+         : ['phase', 'idle-f2', 'show']).filter(name => c.animations[name])]
     : Object.keys(c.animations).filter(name => name.startsWith('tech_'));
   return names.map(name => {
     const frames = Math.round(c.animations[name].seconds * 24);
