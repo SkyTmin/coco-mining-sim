@@ -28,6 +28,8 @@ export interface Finding {
   note: string;
 }
 export interface StudioConfig {
+  /** Movement supplied by the body family, without an authored character sheet. */
+  bodyClips?: string[];
   contactAllow?: ContactException[];
   /** Designed overlaps, matched by tag or label substring: e.g. { a: 'tongue', b: 'head' }. */
   clipAllow?: ClipAllow[];

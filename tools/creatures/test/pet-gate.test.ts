@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Px } from '../rig/px';
-import { maskOverlap, petClipIssues } from '../studio/pet-gate';
+import { joinsSleep, maskOverlap, petClipIssues } from '../studio/pet-gate';
 
 test('a displaced one-shot cannot pass by registering its silhouette back to idle', () => {
   const idle = new Px(12, 12), offset = new Px(12, 12);
@@ -24,4 +24,21 @@ test('new clips need independent sheets and the declared pet timing', () => {
   assert.ok(issues.some(s => s.includes('happy duration')));
   assert.ok(issues.some(s => s.includes('tech_stamp has no registered')));
   assert.ok(!issues.some(s => s.startsWith('showreel') || s.startsWith('walk_ne')));
+});
+
+test('only family motions can be supplied without a character sheet', () => {
+  const clips = { walk_n: { seconds: 1, loop: true }, sleep: { seconds: 3, loop: true }, trick: { seconds: 2 } };
+  const issues = petClipIssues(clips, [], ['walk_n', 'sleep', 'trick']);
+  assert.ok(issues.includes('invalid body-derived clip trick'));
+  assert.ok(issues.includes('trick has no registered sheet'));
+  assert.ok(!issues.includes('walk_n has no registered sheet'));
+  assert.ok(!issues.includes('sleep has no registered sheet'));
+  assert.ok(issues.includes('missing walk_ne'));
+});
+
+test('a derived sleep loop shares its pose with the three sleeping endpoints', () => {
+  for (const name of ['sleep_in', 'sleep_out', 'wake_startled', 'happy', 'tech_stamp']) {
+    assert.equal(joinsSleep(name, true), name === 'sleep_out' || name === 'wake_startled');
+    assert.equal(joinsSleep(name, false), name === 'sleep_in');
+  }
 });

@@ -5,6 +5,7 @@ import { compose, frameCount } from '../engine';
 import { readCreatureCard } from '../bodies/card-data';
 import schema from '../bodies/behavior.schema.json' with { type: 'json' };
 import { validateBehavior } from '../viewer/behavior.mjs';
+import { studioConfig } from './checks';
 import type { Px } from '../rig/px';
 import type { loadPainting } from '../render';
 import type { Animation } from '../types';
@@ -20,9 +21,16 @@ const rules: Record<string, [number, number, boolean]> = {
   sleep_in: [1, 1.5, false], sleep: [3, 4, true], sleep_out: [1, 1.5, false],
   wake_startled: [0.8, 1.2, false],
 };
-export function petClipIssues(animations: Record<string, Animation>, references: string[]) {
+export function petClipIssues(animations: Record<string, Animation>, references: string[], bodyClips: string[] = []) {
   const issues: string[] = [];
   const angles = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'].map(d => 'walk_' + d);
+  const inherited = new Set<string>();
+  if (!Array.isArray(bodyClips)) issues.push('bodyClips must be an array of clip names');
+  else for (const name of bodyClips) {
+    if (![...angles, 'turn', 'tired', 'sleep'].includes(name) || !animations[name])
+      issues.push('invalid body-derived clip ' + name);
+    else inherited.add(name);
+  }
   for (const name of [...Object.keys(rules), ...angles, 'hatch', 'turn', 'tired']) {
     const clip = animations[name];
     if (!clip) { issues.push('missing ' + name); continue; }
@@ -33,7 +41,7 @@ export function petClipIssues(animations: Record<string, Animation>, references:
   for (const name of Object.keys(animations)) {
     // Walk is the native southeast track that the eight camera headings project.
     if (['life', 'showreel', 'walk'].includes(name)) continue;
-    if (!references.includes(name)) issues.push(name + ' has no registered sheet');
+    if (!references.includes(name) && !inherited.has(name)) issues.push(name + ' has no registered sheet');
     if (name.startsWith('tech_') && animations[name].loop) issues.push(name + ' must be a one-shot');
   }
   return issues;
@@ -51,12 +59,17 @@ export function maskOverlap(a: Px, b: Px) {
   return either ? both / either : 0;
 }
 
+export function joinsSleep(name: string, first: boolean) {
+  return first ? name === 'sleep_out' || name === 'wake_startled' : name === 'sleep_in';
+}
+
 type Painting = Awaited<ReturnType<typeof loadPainting>>;
 export function petGate(painting: Painting, references: string[]) {
   const { c, s, b } = painting;
   if (approvedBeforePets.has(c.id) && !c.behavior) return [];
   if (!c.behavior) return ['new paintings require behavior.json'];
-  const issues = petClipIssues(c.animations, references);
+  const { bodyClips } = studioConfig(c.id);
+  const issues = petClipIssues(c.animations, references, bodyClips);
   if (!validateSchema(c.behavior))
     issues.push(...(validateSchema.errors ?? []).map(err => 'behavior.json ' + err.instancePath + ' ' + err.message));
   issues.push(...validateBehavior(c.behavior, c.animations));
@@ -76,17 +89,20 @@ export function petGate(painting: Painting, references: string[]) {
   }
   if (!c.animations.idle) return issues;
   const resting = compose(c, s, b, 'idle', 0).layers.body;
+  const asleep = Array.isArray(bodyClips) && bodyClips.includes('sleep') && c.animations.sleep
+    ? compose(c, s, b, 'sleep', 0).layers.body : undefined;
   let minimum = 1, count = 0;
   for (const [name, clip] of Object.entries(c.animations)) {
     if (clip.loop) continue;
     for (const n of [0, frameCount(clip.seconds) - 1]) {
       const rendered = compose(c, s, b, name, n / 24);
-      const iou = maskOverlap(resting, rendered.layers.body);
+      const sleepSeam = asleep && joinsSleep(name, n === 0);
+      const iou = maskOverlap(sleepSeam ? asleep : resting, rendered.layers.body);
       minimum = Math.min(minimum, iou);
       count++;
-      if (iou < 0.9) issues.push(name + ' frame ' + n + ' vs idle IoU ' + iou.toFixed(3) + ' < 0.900');
+      if (iou < 0.9) issues.push(name + ' frame ' + n + ' vs ' + (sleepSeam ? 'sleep' : 'idle') + ' IoU ' + iou.toFixed(3) + ' < 0.900');
     }
   }
-  console.log('  ' + c.id + ': ' + count + ' one-shot endpoints, lowest idle IoU ' + minimum.toFixed(3));
+  console.log('  ' + c.id + ': ' + count + ' one-shot endpoints, lowest endpoint IoU ' + minimum.toFixed(3));
   return issues;
 }

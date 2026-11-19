@@ -67,6 +67,15 @@ test('a real painted contact matches its control sheet and diverges from a wrong
     const spec = { sheet: path, grid: [1, 1] as XY, frames: [n], keys: [{ ground: hit.feet }],
       idleHeight: measureDetail(c.frame('idle', 0, 0, 'normal').px).height, captionHeight: 0 };
     assert.equal(measureRef(painting, anim, spec)[0].iou, 1);
+    const twoRows = magenta(body.w, 2 * body.h);
+    sheet.data.copy(twoRows.data, sheet.data.length);
+    const shared = join(dir, 'two-rows.png');
+    writeFileSync(shared, PNG.sync.write(twoRows));
+    const lastRow = { ...spec, sheet: shared, grid: [1, 2] as XY, cells: [1] };
+    assert.equal(measureRef(painting, anim, lastRow)[0].iou, 1);
+    assert.throws(() => measureRef(painting, anim, { ...lastRow, cells: [2] }), /distinct grid cell/);
+    assert.throws(() => measureRef(painting, anim, { ...lastRow, cells: [1, 1] }), /distinct grid cell/);
+
     const wrong = measureRef(painting, anim, { ...spec, frames: [0] })[0];
     assert.ok(wrong.iou < 0.85, 'wrong key unexpectedly overlaps contact: ' + wrong.iou);
     assert.throws(() => measureRef(painting, anim, { ...spec, frames: [10000] }), /between 0 and/);

@@ -1,6 +1,9 @@
 import {createPetBehavior} from './behavior.mjs';
 
+const initial = document.querySelector('.feature-painting').dataset.id;
 const works = [
+  [initial, 'Луговой исполин', 'Необычная', '#374638'],
+  ['penguin_marshal', 'Пингвин-маршал', 'Обычная', '#435565'],
   ['bramble_warden', 'Ежевичный страж', 'Обычная', '#56644b'],
   ['gem_beetle', 'Самоцветный жук', 'Необычная', '#504b63'],
   ['storm_ram', 'Грозовой баран', 'Обычная', '#485c68'],
@@ -17,20 +20,30 @@ const moods = {
   hatch: 'Появляется', turn: 'Поворачивается',
 };
 
+function setCaption(work, id) {
+  const [, name, rarity, color] = works.find(([key]) => key === id);
+  work.style.setProperty('--wall', color);
+  const select = work.querySelector('.select-work');
+  select.textContent = name;
+  select.setAttribute('aria-label', 'Выбрать главную картину «' + name + '»');
+  work.querySelector('small').textContent = rarity;
+}
+
 function archive() {
   const gallery = document.querySelector('#paintings');
-  for (const [id, name, rarity, color] of works) {
+  document.querySelector('#work-count').textContent = (works.length - 1) + ' картин';
+  for (const [id, name] of works) {
+    if (id === initial) continue;
     const work = document.createElement('figure');
     work.className = 'work';
-    work.style.setProperty('--wall', color);
     work.innerHTML = '<div class="work-wall"><button type="button" class="painting" aria-busy="true">'
-      + '<canvas width="180" height="148"></canvas></button></div><figcaption><h3></h3><small></small></figcaption>';
+      + '<canvas width="180" height="148"></canvas></button></div><figcaption><h3><button type="button" class="select-work"></button></h3><small></small></figcaption>';
     const button = work.querySelector('button');
     button.dataset.id = id;
     button.setAttribute('aria-label', name + ' — коснуться картины');
     work.querySelector('canvas').textContent = name;
-    work.querySelector('h3').textContent = name;
-    work.querySelector('small').textContent = rarity;
+    setCaption(work, id);
+    work.querySelector('.select-work').addEventListener('click', () => selectPainting(work));
     gallery.append(work);
   }
 }
@@ -113,10 +126,7 @@ async function loadPainting(player) {
   if (behavior && !player.pet) player.pet = createPetBehavior(behavior, data.animations);
   player.surface = {data, scene, border, actor, ctx: canvas.getContext('2d')};
   player.button.setAttribute('aria-busy', 'false');
-  if (behavior) {
-    document.querySelector('#leave').disabled = false;
-    document.querySelector('#skill').disabled = false;
-  }
+  if (player === featured) updateControls();
   if (player.pendingEvent) {
     player.interact(player.pendingEvent);
     player.pendingEvent = null;
@@ -143,6 +153,8 @@ class Painting {
     this.age = 0;
     this.happyAge = null;
     this.visible = false;
+    this.away = false;
+    this.sleepAt = null;
     this.lastTap = -Infinity;
     button.addEventListener('click', () => {
       const now = performance.now();
@@ -155,7 +167,7 @@ class Painting {
       } else this.interact(event);
     });
     button.addEventListener('focus', () => {
-      if (this.pet && !away && button.matches(':focus-visible')) this.pet.event('approach');
+      if (this.pet && !this.away && button.matches(':focus-visible')) this.pet.event('approach');
     });
     button.addEventListener('keydown', event => {
       if (event.key === '2' && this.pet) {
@@ -167,14 +179,14 @@ class Painting {
   ensure() {
     if (this.surface || this.loading) return;
     this.loading = loadPainting(this).catch(error => {
-      if (this.id === 'meadow_colossus') setMood('Не удалось загрузить. Коснитесь картины для повтора.');
+      if (this === featured) setMood('Не удалось загрузить. Коснитесь картины для повтора.');
       console.error('Не удалось загрузить картину', this.id, error);
     }).finally(() => { this.loading = null; });
   }
   interact(name) {
     if (this.pet) {
       synchronize(performance.now());
-      if (away) setAway(false, false);
+      if (this.away) setAway(this, false, false);
       this.pet.event(name);
     } else if (this.surface?.data.clips.happy) {
       this.happyAge = 0;
@@ -232,7 +244,7 @@ class Painting {
     border.paint(ctx, phase);
     if (this.button.dataset.clip !== state.anim) {
       this.button.dataset.clip = state.anim;
-      if (live) setMood(moods[state.anim] ?? (state.anim.startsWith('walk_') ? 'Гуляет' : 'Показывает приём'));
+      if (this === featured) updateMood();
     }
   }
 }
@@ -240,27 +252,64 @@ class Painting {
 const mood = document.querySelector('#mood');
 function setMood(text) { if (mood.textContent !== text) mood.textContent = text; }
 
-let away = false, sleepTimer, sleepAt = null;
-function setAway(leaving, notify = true) {
-  synchronize(performance.now());
-  away = leaving;
-  clearTimeout(sleepTimer);
-  sleepAt = null;
-  document.querySelector('#leave').textContent = away ? 'Вернуться' : 'Уйти';
-  const presence = document.querySelector('#presence');
-  presence.textContent = away ? 'Вы отошли. Через 5 секунд исполин начнёт укладываться.' : '';
-  if (away) {
-    sleepAt = performance.now() + 5000;
-    sleepTimer = setTimeout(() => synchronize(performance.now()), 5000);
-  } else if (notify) featured.pet.event('owner_back');
+function updateMood() {
+  const clip = featured.button.dataset.clip;
+  setMood(clip ? moods[clip] ?? (clip === 'life' || clip.startsWith('walk_') ? 'Гуляет' : 'Показывает приём')
+    : 'Загрузка картины…');
+}
+
+function updateControls() {
+  const legacy = featured.surface && !featured.pet;
+  document.querySelector('#touch-hint').textContent = legacy ? 'Касание — радость.' : 'Одно касание — радость, два — трюк.';
+  document.querySelector('.keyboard-hint').textContent = legacy ? 'С клавиатуры используйте Enter.' : 'С клавиатуры используйте Enter и клавишу 2.';
+  const leave = document.querySelector('#leave');
+  leave.disabled = !featured.pet;
+  document.querySelector('#skill').disabled = !featured.pet;
+  leave.textContent = featured.away ? 'Вернуться' : 'Уйти';
+  document.querySelector('#presence').textContent = !featured.away ? ''
+    : featured.sleepAt === null ? 'Вы отошли. Питомец отдыхает.' : 'Вы отошли. Через 5 секунд питомец начнёт укладываться.';
+  updateMood();
+}
+
+function setAway(player, leaving, notify = true) {
+  const now = performance.now();
+  synchronize(now);
+  player.away = leaving;
+  clearTimeout(player.sleepTimer);
+  player.sleepAt = leaving ? now + 5000 : null;
+  if (leaving) player.sleepTimer = setTimeout(() => synchronize(performance.now()), 5000);
+  else if (notify) player.pet.event('owner_back');
+  if (player === featured) updateControls();
 }
 
 archive();
-const players = new Map([...document.querySelectorAll('[data-id]')].map(button => [button, new Painting(button)]));
-const featured = players.get(document.querySelector('.feature-painting'));
-document.querySelector('#leave').addEventListener('click', () => setAway(!away));
+const players = new Map([...document.querySelectorAll('.painting')].map(button => [button, new Painting(button)]));
+let featured = players.get(document.querySelector('.feature-painting'));
+
+function selectPainting(work) {
+  const button = work.querySelector('.painting'), previous = featured;
+  const wall = document.querySelector('.feature .wall');
+  featured = players.get(button);
+  previous.button.classList.remove('feature-painting');
+  previous.button.removeAttribute('aria-describedby');
+  work.querySelector('.work-wall').append(previous.button);
+  button.classList.add('feature-painting');
+  button.setAttribute('aria-describedby', 'gestures');
+  wall.append(button);
+  setCaption(work, previous.id);
+  const [, name, rarity] = works.find(([id]) => id === featured.id);
+  document.querySelector('#feature-title').textContent = name;
+  document.querySelector('.feature .rarity').textContent = rarity + ' картина';
+  updateControls();
+  clearTimeout(featured.releaseTimer);
+  featured.ensure();
+  button.focus({preventScroll: true});
+  document.querySelector('.feature').scrollIntoView({block: 'start'});
+}
+
+document.querySelector('#leave').addEventListener('click', () => setAway(featured, !featured.away));
 document.querySelector('#skill').addEventListener('click', () => {
-  if (away) setAway(false);
+  if (featured.away) setAway(featured, false);
   featured.pet.event('skill_ready');
 });
 
@@ -270,7 +319,7 @@ const observer = new IntersectionObserver(entries => {
     player.visible = entry.isIntersecting;
     clearTimeout(player.releaseTimer);
     if (player.visible) {
-      if (player.pet && !away) player.pet.event('approach');
+      if (player.pet && !player.away) player.pet.event('approach');
       player.ensure();
     } else if (player !== featured) {
       // The last frame stays on canvas. Release decoded sprite sheets after scrolling away.
@@ -281,23 +330,23 @@ const observer = new IntersectionObserver(entries => {
 players.forEach(player => observer.observe(player.button));
 
 let previousTime;
-function stepUntil(now) {
-  const seconds = previousTime === undefined ? 0 : Math.max(0, (now - previousTime) / 1000);
-  previousTime = Math.max(previousTime ?? now, now);
-  for (const player of players.values()) {
-    // After a suspended tab, a minute covers every sleep/return transition.
-    if (player.surface || player.pet) player.draw(Math.min(seconds, player.pet ? 60 : .5));
-  }
-}
-
 function synchronize(now) {
-  if (sleepAt !== null && now >= sleepAt) {
-    stepUntil(sleepAt);
-    featured.pet.event('idle_owner');
-    sleepAt = null;
-    document.querySelector('#presence').textContent = 'Вы отошли. Исполин отдыхает.';
+  const start = previousTime ?? now;
+  if (now < start) return;
+  previousTime = now;
+  for (const player of players.values()) {
+    if (!player.surface && !player.pet) continue;
+    let from = start;
+    if (player.sleepAt !== null && now >= player.sleepAt) {
+      from = Math.max(start, player.sleepAt);
+      player.draw(Math.min((from - start) / 1000, 60));
+      player.pet.event('idle_owner');
+      player.sleepAt = null;
+      if (player === featured) updateControls();
+    }
+    // After a suspended tab, a minute covers every sleep/return transition.
+    player.draw(Math.min((now - from) / 1000, player.pet ? 60 : .5));
   }
-  stepUntil(now);
 }
 document.addEventListener('visibilitychange', () => synchronize(performance.now()));
 function animate(now) {

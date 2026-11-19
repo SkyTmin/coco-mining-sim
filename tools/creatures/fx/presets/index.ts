@@ -190,7 +190,7 @@ function ringOrBreath(f: FxInput, stage: Stage, material: Material, origin: XY, 
       const lift = Math.max(0, (22 + Math.abs(i) * 8) * u * (1 - u));
       material.fragment(f.above, [origin[0] + i * u * 8 * range, origin[1] - lift], 2, i * 0.8, alpha);
     }
-  } else if (move.template === 'sweep') {
+  } else if (move.template === 'sweep' || move.template === 'slide') {
     // The blade leaves a gouge widening in the direction of its real follow-through.
     const follow = f.pointAt(Math.min(f.duration, f.t - age + 0.12), stage.spec.weapon);
     const dx = follow[0] - origin[0],
@@ -282,6 +282,16 @@ export function buildEffects(
             alpha: 1 - progress(age, 0.02, 0.09),
           });
         missiles(f, stage, material, hooks, n, wave);
+      }
+      if (move.template === 'slide' && f.t*24>=27 && f.t*24<=42) {
+        const contact=f.points.torsoGround??f.feet;
+        const age=(f.t*24-27)/15;
+        for(let i=0;i<5;i++) {
+          const slip=(age+i*.19)%1;
+          const x=contact[0]-9-22*slip;
+          const y=contact[1]-2-4*Math.sin(Math.PI*slip)+i*.6;
+          f.under.lineS(x,y,x+2+3*slip,y-.8,material.light,(1-slip)*.8);
+        }
       }
       settle(f);
     },

@@ -12,7 +12,7 @@ import type { XY } from '../types';
 
 const root = join(import.meta.dirname, '..');
 type Anchor = { ground: XY; points?: Record<string, XY> };
-type RefSpec = { sheet: string; study?: string; grid: XY; frames: number[]; idleHeight?: number; captionHeight?: number; keys?: Anchor[] };
+type RefSpec = { sheet: string; study?: string; grid: XY; frames: number[]; cells?: number[]; idleHeight?: number; captionHeight?: number; keys?: Anchor[] };
 type Painting = Awaited<ReturnType<typeof loadPainting>>;
 type Frame = ReturnType<typeof compose>;
 type Distance = { name: string; target: XY; actual?: XY; error?: number };
@@ -30,6 +30,10 @@ function validate(spec: RefSpec, where: string) {
   if (!xy(spec.grid) || !spec.grid.every(n => int(n) && n > 0)) fail('grid must be [positive columns, positive rows]');
   if (!Array.isArray(spec.frames) || !spec.frames.length || spec.frames.length > spec.grid[0] * spec.grid[1] ||
       !spec.frames.every(n => int(n) && n >= 0)) fail('frames must fit the grid and be nonnegative integers');
+  if (spec.cells !== undefined && (!Array.isArray(spec.cells) || spec.cells.length !== spec.frames.length ||
+      new Set(spec.cells).size !== spec.cells.length ||
+      !spec.cells.every(i => int(i) && i >= 0 && i < spec.grid[0] * spec.grid[1])))
+    fail('cells must select a distinct grid cell for each frame (zero-based)');
   if (spec.idleHeight !== undefined && (!finite(spec.idleHeight) || spec.idleHeight <= 0)) fail('idleHeight must be positive');
   if (spec.captionHeight !== undefined && (!int(spec.captionHeight) || spec.captionHeight < 0)) fail('invalid captionHeight');
   if (spec.keys !== undefined) {
@@ -161,7 +165,7 @@ export function measureRef({ c, s, b }: Painting, anim: string, spec: RefSpec): 
   const count = frameCount(animation.seconds);
   if (spec.frames.some(n => n >= count)) throw new Error(anim + ': frames must be between 0 and ' + (count - 1));
   const png = PNG.sync.read(readFileSync(spec.sheet));
-  const cells = spec.frames.map((_, i) => extractCell(png, spec.grid, i, spec.captionHeight));
+  const cells = spec.frames.map((_, i) => extractCell(png, spec.grid, spec.cells?.[i] ?? i, spec.captionHeight));
   const first = cells[0];
   const scale = measureDetail(c.frame('idle', 0, 0, 'normal').px).height / (spec.idleHeight ?? first.box[3] - first.box[1]);
   const defaultGround = inferredGround(first);
@@ -295,7 +299,7 @@ export async function refCommand([id, anim, ...args]: string[]) {
   if (!grid || !frames) throw new Error('a new sheet requires both --grid and --frames');
   const sameCells = sameSheet && grid[0] === sameSheet.grid[0] && grid[1] === sameSheet.grid[1] ? sameSheet : undefined;
   if (sameCells?.keys && frames.length > sameCells.keys.length) throw new Error('more frames than annotated cells');
-  const spec = { ...sameCells, sheet, grid, frames, keys: sameCells?.keys?.slice(0, frames.length) };
+  const spec = { ...sameCells, sheet, grid, frames, cells: sameCells?.cells?.slice(0, frames.length), keys: sameCells?.keys?.slice(0, frames.length) };
   const rows = measureRef(await loadPainting(id), anim, spec);
   for (const row of rows)
     console.log('f' + row.n + ' IoU ' + row.iou.toFixed(3) + '  ' + row.distances.map(describe).join('  '));

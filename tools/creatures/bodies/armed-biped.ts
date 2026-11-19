@@ -19,7 +19,16 @@ import { tn, TAU } from '../kit/f11-mobkit';
 import { life, projectFigure, scaleFigure } from '../rig/figure';
 import { sizes, type BodyFrame, type Creature, type MotionPlan, type Variant } from '../types';
 
+// Alternate birds and other bipeds share foot planting, weight transfer, tiredness
+// and the sleeping breath, while defining their own proportions and feathered limbs.
+export interface BipedSupport {
+  feet: [ReturnType<typeof strideFoot>, ReturnType<typeof strideFoot>];
+  roll: number;
+  tired: number;
+  breath: number;
+}
 export interface ArmedAppearance {
+  figure?: (anim: string, t: number, side: number, variant: Variant, pose: FrostPose, support: BipedSupport) => BodyFrame;
   pose?: (anim: string, t: number) => FrostPose;
   presentation?: (anim: string, t: number) => Partial<BodyFrame>;
   decorate?: (rig: Rig, basis: F3, sockets: Record<string, V3>, pose: JointPose) => void;
@@ -540,6 +549,19 @@ export function armedFrame(
   return (anim, t, side, variant, motion) => {
     const keyed = motion?.techniquePose;
     const pose = keyed ? { ...keyed, keyRig: 1 } : (appearance.pose?.(anim, t) ?? {});
+    if (appearance.figure) {
+      const phase = motion?.gaitPhase ?? t;
+      const resting = { forward: 0, lift: 0, planted: true };
+      const walking = anim === 'walk';
+      const foot = (offset: number) => walking ? strideFoot(phase, offset, route.stride) : resting;
+      const support = {
+        feet: [foot(0), foot(.5)] as BipedSupport['feet'],
+        roll: walking ? Math.sin(phase * TAU) * (card.proportions.waddle ?? 0) * Math.PI / 180 : 0,
+        tired: life(anim,t,0).tired,
+        breath: anim === 'sleep' ? (1-Math.cos(t * TAU / 3.5)) * .5 : 0,
+      };
+      return appearance.figure(anim,t,side,variant,pose,support);
+    }
     // Common root controls are transverse/vertical joint movements of this body.
     const fr = bodyFrame(anim, t, side, variant, pose, motion?.headSide, card, route, appearance);
     return keyed ? fr : Object.assign(fr, appearance.presentation?.(anim, t));

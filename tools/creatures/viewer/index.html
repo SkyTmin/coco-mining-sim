@@ -11,7 +11,7 @@
 <body>
   <header class="masthead">
     <a href="#ispolin" class="wordmark"><span class="mark" aria-hidden="true">◈</span> Галерея существ</a>
-    <nav aria-label="Разделы галереи"><a href="#ispolin">Исполин</a><a href="#collection">Коллекция</a></nav>
+    <nav aria-label="Разделы галереи"><a href="#ispolin">Главная картина</a><a href="#collection">Коллекция</a></nav>
   </header>
   <main>
     <header class="title"><h1>Живые картины</h1></header>
@@ -25,7 +25,7 @@
         <span class="rarity">Необычная картина</span>
         <h2 id="feature-title">Луговой исполин</h2>
         <p class="live"><span aria-hidden="true"></span><output id="mood">Загрузка картины…</output></p>
-        <p id="gestures">Одно касание — радость, два — трюк. <span class="keyboard-hint">С клавиатуры используйте Enter и клавишу 2.</span></p>
+        <p id="gestures"><span id="touch-hint">Одно касание — радость, два — трюк.</span> <span class="keyboard-hint">С клавиатуры используйте Enter и клавишу 2.</span></p>
         <div class="actions">
           <button type="button" id="leave" disabled>Уйти</button>
           <button type="button" id="skill" disabled>Показать приём</button>
@@ -34,7 +34,7 @@
       </div>
     </section>
     <section id="collection" aria-labelledby="collection-title">
-      <div class="section-title"><h2 id="collection-title">Коллекция</h2><span>8 картин</span></div>
+      <div class="section-title"><h2 id="collection-title">Коллекция</h2><span id="work-count"></span></div>
       <div id="paintings" class="collection"></div>
     </section>
   </main>

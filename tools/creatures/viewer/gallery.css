@@ -69,9 +69,12 @@ h1 { font-size: clamp(44px, 6.2vw, 92px); line-height: 1.05; letter-spacing: -.0
 .work { min-width: 0; margin: 0; }
 .work-wall { aspect-ratio: 1.28; padding: 6%; background: var(--wall); }
 .work .painting { width: 100%; filter: drop-shadow(0 4px 4px #10131060); }
-.work figcaption { padding-top: 12px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+.work figcaption { position: relative; padding-top: 12px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
 .work h3 { font-size: clamp(18px, 1.7vw, 25px); line-height: 1.15; margin: 3px 0; }
 .work figcaption small { font-size: 12px; }
+.select-work { padding: 0; border: 0; color: inherit; background: transparent; text-align: left; cursor: pointer; }
+.select-work::after { content: ""; position: absolute; inset: 0; }
+.select-work:hover { text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 900px) {
   .feature { grid-template-columns: minmax(0, 1.2fr) minmax(240px, 1fr); }
   .wall { min-height: 260px; }

@@ -125,7 +125,7 @@ function bodyPose(
 
 /** Horn rams and tail sweeps have no striking wrist. A staff, fist or claw does. */
 function drivingHand(move: CardMove, body: BodyType): 'L' | 'R' | undefined {
-  if (!['sweep', 'overhead', 'ram', 'thrust'].includes(move.template)) return;
+  if (!['sweep', 'overhead', 'ram', 'thrust', 'slide'].includes(move.template)) return;
   if (/^(arm|hand|fore)[LR]$/.test(move.weapon)) return move.weapon.endsWith('L') ? 'L' : 'R';
   if (move.weapon === 'weaponTip' && ['armed-biped', 'squat-mage', 'giant', 'winged-dragon'].includes(body))
     return 'R';

@@ -68,6 +68,7 @@ const titles: Record<TemplateId, string> = {
   overhead: 'Удар сверху',
   ram: 'Таран',
   sweep: 'Размашистый удар',
+  slide: 'Скольжение',
   volley: 'Залп',
   breath: 'Дыхание',
   leap: 'Прыжок с ударом',

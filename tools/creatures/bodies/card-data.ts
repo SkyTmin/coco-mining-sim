@@ -16,6 +16,7 @@ export type TemplateId =
   | 'overhead'
   | 'ram'
   | 'sweep'
+  | 'slide'
   | 'volley'
   | 'breath'
   | 'leap'

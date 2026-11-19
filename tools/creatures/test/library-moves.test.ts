@@ -53,7 +53,7 @@ function field(t: number, move: CardMove, book: TechniqueBook): FxInput {
   };
 }
 
-test('all ten library actions use the six timings and benchmark of their real pilot', async () => {
+test('all library actions use the six timings and benchmark of their real pilot', async () => {
   const poses = new Set<string>();
   for (const id of Object.keys(moveTemplates) as MoveId[]) {
     const template = moveTemplates[id],
@@ -73,7 +73,7 @@ test('all ten library actions use the six timings and benchmark of their real pi
     assert.ok(goalAt(spec.keys[3].pose, action.weapon), id);
     poses.add(JSON.stringify(spec.keys.slice(1, -1).map((k) => k.pose)));
   }
-  assert.equal(poses.size, 10);
+  assert.equal(poses.size, Object.keys(moveTemplates).length);
 });
 
 test('card parameters change goals, recoil, actual playback of repeated strikes, and the working socket', () => {
