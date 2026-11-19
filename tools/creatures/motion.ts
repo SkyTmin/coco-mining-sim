@@ -137,11 +137,16 @@ export function attachMotion(c: Creature, plan: MotionPlan): Creature {
 // The viewer uses this same clock for its live events; baking only caches the
 // first fixed-seed excursion so a render may seek backwards or sample in parallel.
 const previews = new WeakMap<Creature, PetSample[]>();
+export function lifeCycleCount(c: Creature) {
+  const tricks = c.behavior?.tricks;
+  return tricks ? Math.max(tricks.f1.length, tricks.f2.length) : 1;
+}
+
 function petPreview(c: Creature) {
   let rows = previews.get(c);
   if (!rows) {
     const machine = createPetBehavior(c.behavior!, c.animations);
-    rows = Array.from({ length: c.behavior!.previewSeconds * 24 }, (_, i) =>
+    rows = Array.from({ length: c.behavior!.previewSeconds * 24 * lifeCycleCount(c) }, (_, i) =>
       i ? machine.advance(1 / 24) : machine.sample());
     previews.set(c, rows);
   }
@@ -161,7 +166,13 @@ export function attachPetBehavior(raw: Creature, plan: MotionPlan, behavior: Beh
     throw Error(c.id + ' behavior coordinate system differs from the card');
   if (behavior.stops.some(p => !plan.beats.some(b => b.at[0] === p[0] && b.at[1] === p[1])))
     throw Error(c.id + ' behavior stop is missing from card beats');
-  const preview = petPreview(c);
+  if (behavior.tricks) {
+    const home: XY = [behavior.stops[0][0] * width, behavior.stops[0][1] * height];
+    if (c.portraitOrigin?.some((value, i) => Math.abs(value - home[i]) > 1e-8))
+      throw Error(c.id + ' trick scenery and walking route must share the same home');
+    c.portraitOrigin = home;
+  }
+  const preview = petPreview(c).slice(0, behavior.previewSeconds * 24);
   const chapters = reelChapters(c);
   const reelTicks = chapters.at(-1)!.end;
   c.animations.life = {

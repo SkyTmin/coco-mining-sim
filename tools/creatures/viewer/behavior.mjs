@@ -21,6 +21,7 @@ const requiredClips = ['idle', 'fidget_a', 'fidget_b', 'look', 'happy', 'trick',
   'sleep_in', 'sleep', 'sleep_out', 'wake_startled', 'hatch', 'turn', 'tired',
   ...petDirections.map(dir => 'walk_' + dir)];
 const trickClips = { f1: ['trick', 'trick_b'], f2: ['trick-f2', 'trick_b-f2'] };
+const ambientClips = ['idle', 'fidget_a', 'fidget_b', 'look'];
 const pair = (v, check) => Array.isArray(v) && v.length === 2 && v.every(check);
 const positive = v => Number.isFinite(v) && v > 0;
 function interval(v, min, max) {
@@ -49,7 +50,7 @@ export function validateBehavior(data, animations) {
       !data.stops.every(stop => pair(stop, n => Number.isFinite(n) && n >= 0 && n <= 1)) ||
       new Set(data.stops.map(String)).size !== data.stops.length) issues.push('distinct floor stops');
   const weights = data.weights ?? {};
-  if (!['idle', 'fidget_a', 'fidget_b', 'look', ...(hasTricks ? [] : ['trick'])].every(k => positive(weights[k])) ||
+  if (![...ambientClips, ...(hasTricks ? [] : ['trick'])].every(k => positive(weights[k])) ||
       Object.entries(weights).some(([k,v]) => !positive(v) || !animations?.[k]))
     issues.push('positive weights for ambient clips');
   const attacks = data.attacks;
@@ -208,13 +209,16 @@ function trickPlan(config, animations, bearings = turnBearings(config, animation
     leg.departing = turnFramesFor(bearings, legs[i - 1]?.angle ?? config.yaw, leg.angle);
     leg.entering = i === legs.length - 1 ? turnFramesFor(bearings, leg.angle, config.yaw) : [];
   }
-  const selected = list => cycle === undefined
-    ? Math.max(...list.map(name => length(animations, name)))
-    : length(animations, list[cycle % list.length]);
+  const { f1, f2 } = config.tricks;
+  const clipAt = (list, index) => list[index % list.length];
+  const duration = index => length(animations, clipAt(f1, index)) + length(animations, clipAt(f2, index));
+  const actions = cycle === undefined
+    ? Math.max(...Array.from({ length: Math.max(f1.length, f2.length) }, (_, index) => duration(index)))
+    : duration(cycle);
   const turns = legs.reduce((sum, leg) => sum + leg.departing.length + leg.entering.length, 0);
-  const fixed = 2 + selected(config.tricks.f1) + selected(config.tricks.f2) + turns +
+  const fixed = 2 + actions + turns +
     2 * length(animations, 'phase') + length(animations, 'idle-f2');
-  if (cycle !== undefined) stops.at(-1).actions.push(config.tricks.f1[cycle % config.tricks.f1.length]);
+  if (cycle !== undefined) stops.at(-1).actions.push(clipAt(f1, cycle));
   return { stops, legs, maxWalk: ticks(config.previewSeconds) - fixed };
 }
 
@@ -251,6 +255,17 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   let path = [], pending, reaction, held;
   const sampleAt = (anim, frame, at, direction = 'se') => ({anim, frame, at, direction, elapsed: frame / petFPS});
 
+  function walk(rows, leg) {
+    const name = 'walk_' + leg.direction;
+    const strideFrames = length(animations, name);
+    for (let f = 0; f < leg.count; f++) {
+      const u = f / leg.count;
+      const at = leg.from.map((v,j) => v + (leg.to[j] - v) * u);
+      const frame = Math.floor(leg.distance * u / config.stride * strideFrames) % strideFrames;
+      rows.push(sampleAt(name, frame, at, leg.direction));
+    }
+  }
+
   // Plan a closed excursion. Spend the walk budget in proportion to the actual
   // three floor distances. The planted-foot phase depends on distance travelled.
   function planCycle() {
@@ -278,7 +293,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
       };
       while (frames) {
         const options = Object.entries(config.weights).filter(([name]) =>
-          (!tricks || !tricks.f1.includes(name) && !tricks.f2.includes(name)) && length(animations, name) <= frames);
+          (!tricks || ambientClips.includes(name)) && length(animations, name) <= frames);
         if (!options.length || first) {
           const count = first ? Math.min(idleFrames, frames) : frames;
           fillIdle(count, last ? (idleFrames - count % idleFrames) % idleFrames : 0);
@@ -297,16 +312,6 @@ export function createPetBehavior(config, animations, seed = config.seed) {
       leg.movingTicks = leg.count + leg.departing.length + leg.entering.length;
       used = end;
     }
-    function walk(leg) {
-      const name = 'walk_' + leg.direction;
-      const strideFrames = length(animations, name);
-      for (let f = 0; f < leg.count; f++) {
-        const u = f / leg.count;
-        const at = leg.from.map((v,j) => v + (leg.to[j] - v) * u);
-        const frame = Math.floor(leg.distance * u / config.stride * strideFrames) % strideFrames;
-        rows.push(sampleAt(name, frame, at, leg.direction));
-      }
-    }
     if (score) {
       const play = (name, at, reverse = false, form = 'f1') => {
         const count = length(animations, name);
@@ -319,8 +324,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
       rows.push(sampleAt('idle', 0, home));
       for (const [i, stop] of score.stops.entries()) {
         if (tricks) {
-          if (i === 0 || i === legs.length)
-            rest(stop.at, i === 0 ? Math.ceil(spare / 2) : Math.floor(spare / 2), false, false);
+          if (i === legs.length) rest(stop.at, spare, false, false);
         } else {
           const before = Math.floor(spare * i / score.stops.length);
           rest(stop.at, Math.floor(spare * (i + 1) / score.stops.length) - before, false, false);
@@ -329,7 +333,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
         const leg = legs[i];
         if (!leg) continue;
         for (const frame of leg.departing) rows.push(sampleAt('turn', frame, leg.from));
-        walk(leg);
+        walk(rows, leg);
         for (const frame of leg.entering) rows.push(sampleAt('turn', frame, leg.to));
       }
       play('phase', home);
@@ -357,7 +361,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
         rest(via[i], pause, !rows.length, i === end);
         if (i < end)
           for (const f of legs[i].departing) rows.push(sampleAt('turn', f, via[i]));
-        if (i < end) walk(legs[i]);
+        if (i < end) walk(rows, legs[i]);
       }
     }
     if (attacks.length) {
@@ -393,6 +397,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
     if (!reaction && held)
       return { ...sampleAt(held.anim, held.frame, held.at), form: held.form };
     if (!reaction) return path[cursor];
+    if (reaction.approach?.length) return reaction.approach[reaction.approachFrame];
     const {anim, age, at, form, reverse} = reaction;
     const count = length(animations, anim);
     const row = sampleAt(anim, reverse ? count - age - 1 : age % count, at);
@@ -402,24 +407,41 @@ export function createPetBehavior(config, animations, seed = config.seed) {
     const [first, ...rest] = sequence;
     reaction = {anim: first === 'attack' ? pickAttack(at) : first, age: 0, rest, at, form};
   }
+  function stageAtHome(state) {
+    if (state.at[0] === home[0] && state.at[1] === home[1]) return;
+    const leg = walkingLeg(config, state.at, home, bearings);
+    const from = state.anim.startsWith('walk_') ? petDirections.indexOf(state.direction) * Math.PI / 4
+      : state.anim === 'turn' ? bearings[state.frame] : config.yaw;
+    const rows = turnFramesFor(bearings, from, leg.angle).map(frame => sampleAt('turn', frame, state.at));
+    leg.count = Math.max(1, Math.round(petFPS * leg.distance / (config.stride * 1.5)));
+    walk(rows, leg);
+    for (const frame of leg.entering) rows.push(sampleAt('turn', frame, home));
+    reaction.at = home;
+    reaction.approach = rows;
+    reaction.approachFrame = 0;
+    cursor = 0;
+  }
   function sleeping() {
     return reaction && ['sleep_in', 'sleep'].includes(reaction.anim);
   }
   function dispatch() {
     if (!pending) return false;
     const state = current();
-    if (tricks && state.anim === 'phase') return false;
+    if (tricks && (state.anim === 'phase' || reaction?.approach?.length)) return false;
     if (!animations[state.anim].interrupt.includes(state.frame)) return false;
     const event = pending;
     pending = undefined;
     if ((event === 'owner_back' && !sleeping()) || (event === 'idle_owner' && sleeping())) return false;
     const form = state.form ?? 'f1';
+    if (tricks && form === 'f2' && ['approach', 'idle_owner'].includes(event)) return false;
     if (tricks && event === 'change_form') {
       reaction = { anim: 'phase', age: 0, at: state.at, rest: [], form,
         reverse: form === 'f2', toggle: true };
+      stageAtHome(state);
     } else if (tricks && ['double_tap', 'skill_ready', 'like'].includes(event)) {
       const list = tricks[form];
       begin([list[trickIndex[form]++ % list.length]], state.at, form);
+      stageAtHome(state);
     } else {
       const sequence = config.events[event === 'tap' && sleeping() ? 'tap_asleep' : event];
       begin(form === 'f2' ? sequence.map(name => name === 'happy' ? 'happy-f2' : name) : sequence, state.at, form);
@@ -429,13 +451,17 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   function step() {
     absolute++;
     if (reaction) {
+      if (reaction.approach?.length) {
+        if (++reaction.approachFrame === reaction.approach.length) reaction.approach = undefined;
+        return;
+      }
       reaction.age++;
       if (reaction.age === length(animations, reaction.anim) && reaction.anim !== 'sleep') {
         if (reaction.rest.length) begin(reaction.rest, reaction.at, reaction.form);
         else {
           if (reaction.toggle) {
-            const form = reaction.reverse ? 'f1' : 'f2';
-            held = { form, at: reaction.at, frame: 0, anim: form === 'f2' ? 'idle-f2' : 'idle' };
+            held = reaction.reverse ? undefined : { form: 'f2', at: reaction.at, frame: 0, anim: 'idle-f2' };
+            if (reaction.reverse) cursor = 0;
           }
           reaction = undefined;
         }

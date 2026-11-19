@@ -5,7 +5,7 @@ import { createPetBehavior, interruptFrames, petDirections, validateBehavior, ty
 const config: BehaviorConfig = {
   seed: 12, previewSeconds: 30, field: [256, 208], stride: 20, yaw: Math.PI / 4, depthScale: 0.5,
   stops: [[0.5, 0.82], [0.46, 0.8], [0.55, 0.87]], walkShare: [0.35, 0.42],
-  weights: { idle: 1, look: 1, fidget_a: 1, fidget_b: 1, trick: 100 },
+  weights: { idle: 1, look: 1, fidget_a: 1, fidget_b: 1, trick: 100, phase: 100 },
   tricks: { f1: ['trick', 'trick_b'], f2: ['trick-f2', 'trick_b-f2'] },
   events: { tap: ['happy'], tap_asleep: ['wake_startled', 'happy'], like: ['trick'],
     idle_owner: ['sleep_in', 'sleep'], owner_back: ['sleep_out'] },
@@ -74,10 +74,32 @@ test('controls share a trick cursor per form and hold selection after a full tra
   assert.equal(pet.sample().form, 'f1');
 });
 
+test('a trick requested during a walk returns to its scenery before it performs', () => {
+  const pet = createPetBehavior(config, clips);
+  while (pet.sample().tick < 300) {
+    const row = pet.advance(1 / 24);
+    if (row.anim.startsWith('walk_') && row.at[0] !== config.stops[0][0]) break;
+  }
+  const start = pet.sample();
+  assert.notDeepEqual(start.at, config.stops[0]);
+  assert.ok(pet.event('double_tap'));
+  assert.deepEqual(pet.sample().at, start.at);
+  for (let i = 0; i < 100 && pet.sample().anim !== 'trick'; i++) pet.advance(1 / 24);
+  assert.equal(pet.sample().anim, 'trick');
+  assert.equal(pet.sample().frame, 0);
+  assert.deepEqual(pet.sample().at, config.stops[0]);
+});
+
 test('tricks validation rejects stray techniques, missing form clips and oversized scores', () => {
   assert.match(validateBehavior(config, { ...clips, tech_example: clips.trick }).join(), /tech_\*/);
   const { 'happy-f2': happy, ...incomplete } = clips;
   assert.match(validateBehavior(config, incomplete).join(), /happy-f2/);
   assert.match(validateBehavior(config, { ...clips, trick_b: { seconds: 15, interrupt: interruptFrames(360) } }).join(), /walking share/);
   assert.match(validateBehavior({ ...config, attacks: [] }, clips).join(), /attack fields/);
+});
+
+test('walking budget measures paired cycle durations', () => {
+  const clip = (seconds: number) => ({ seconds, interrupt: interruptFrames(seconds * 24) });
+  const balanced = { ...clips, trick: clip(6.5), 'trick_b-f2': clip(6.5), 'idle-f2': clip(1.5) };
+  assert.deepEqual(validateBehavior(config, balanced), []);
 });

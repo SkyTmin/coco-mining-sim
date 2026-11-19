@@ -10,6 +10,7 @@ import { cpus } from 'node:os';
 import { join } from 'node:path';
 import { loadPainting } from '../render';
 import { compose, frameCount } from '../engine';
+import { lifeCycleCount } from '../motion';
 
 const tools = join(import.meta.dirname, '..');
 const goldenDir = join(tools, 'golden');
@@ -32,7 +33,7 @@ export async function hashCreature(id: string, only: string[] = []): Promise<Gol
   const out: Golden = {};
   for (const anim of Object.keys(c.animations)) {
     if (only.length && !only.includes(anim)) continue;
-    const n = frameCount(c.animations[anim].seconds);
+    const n = frameCount(c.animations[anim].seconds) * (anim === 'life' ? lifeCycleCount(c) : 1);
     const list: string[] = [];
     for (let i = 0; i < n; i++) {
       const f = compose(c, s, b, anim, i / 24);

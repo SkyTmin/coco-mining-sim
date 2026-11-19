@@ -102,6 +102,8 @@ export function petGate(painting: Painting, references: string[], hatchKeys: num
   if (!c.behavior) return ['new paintings require behavior.json'];
   const { bodyClips, multiActTrick } = studioConfig(c.id);
   const tricks = c.behavior.tricks;
+  if (c.rarity === 'secret' && !tricks && c.id !== 'rat_king')
+    return ['a secret painting needs two tricks in each form'];
   const rank = c.behavior.lifeAttacks || tricks ? c.rarity : undefined;
   const issues = petClipIssues(c.animations, references, bodyClips, multiActTrick, rank, tricks);
   if (tricks && Object.keys(c.techniques ?? {}).some(name => name.startsWith('tech_')))
@@ -145,7 +147,7 @@ export function petGate(painting: Painting, references: string[], hatchKeys: num
       const rendered = compose(c, s, b, name, n / 24);
       const sleepSeam = asleep && joinsSleep(name, n === 0);
       const secondSeam = second && ((name === 'phase' && n > 0) || (tricks && name.endsWith('-f2')));
-      const target = secondSeam || (sleepSeam ? asleep : resting);
+      const target = secondSeam ? second : sleepSeam ? asleep : resting;
       const iou = maskOverlap(target, rendered.layers.body);
       if (rank && name === 'hatch' && n === 0 && iou < 0.9) {
         // A birth image is calibrated to its own sheet, which gateExtras measures with ws ref.
