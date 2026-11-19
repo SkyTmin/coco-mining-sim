@@ -4,13 +4,13 @@ import { drawSprite, imagePage, json, material, sharedMaterial } from './materia
 
 // Some boss atlases contain hundreds of MB of decoded pixels. A thumbnail needs
 // only the pages for its current pose. Keep a small working set and prefetch the next pose.
-function actorPages(root, atlas) {
+function actorPages(root, atlas, priority) {
   const pages = new Map();
   function touch(id) {
     let page = pages.get(id);
     if (!page) {
       page = {};
-      imagePage(root + atlas.pages[id]).then(
+      imagePage(root + atlas.pages[id], priority).then(
         (image) => {
           page.image = image;
         },
@@ -51,7 +51,7 @@ function actorPages(root, atlas) {
   };
 }
 
-async function loadArtwork(id, runtime) {
+async function loadArtwork(id, runtime, priority) {
   if (runtime === 'f1') {
     const { loadKingPainting } = await import('./king-painting.mjs');
     return loadKingPainting();
@@ -61,9 +61,9 @@ async function loadArtwork(id, runtime) {
   const [scene, border, actor, behavior] = await Promise.all([
     typeof data.scene === 'string'
       ? sharedMaterial(new URL(root + data.scene, document.baseURI).href, ...data.canvas)
-      : material(root, data.scene, ...data.canvas),
+      : material(root, data.scene, ...data.canvas, priority),
     sharedMaterial('./atlases/frames/' + data.rarity + '/atlas.json', ...(data.borderCanvas ?? data.canvas)),
-    actorPages(root, data.actors),
+    actorPages(root, data.actors, priority),
     data.behavior ? json(root + 'behavior.json') : null,
   ]);
   return { data, scene, border, actor, behavior };
@@ -162,13 +162,17 @@ class Painting {
   has(id) {
     return this.entry.clips.some((clip) => clip.id === id);
   }
+  /** Download order: the opened painting, then paintings on screen, then the rest. */
+  get priority() {
+    return this === featured ? 0 : this.visible ? 1 : 2;
+  }
   async ensure() {
     if (this.surface || this.busy) return;
     this.busy = true;
     this.failed = false;
     const ticket = this.ticket;
     try {
-      const art = await loadArtwork(this.atlasId, this.entry.runtime);
+      const art = await loadArtwork(this.atlasId, this.entry.runtime, () => this.priority);
       if (ticket !== this.ticket) return;
       this.surface = art;
       if (!this.pet && art.createBattle) this.pet = art.createBattle();

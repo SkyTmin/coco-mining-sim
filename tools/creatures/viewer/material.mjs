@@ -4,11 +4,39 @@ export async function json(url) {
   return response.json();
 }
 
-export async function imagePage(url) {
-  const image = new Image();
-  image.src = url;
-  await image.decode();
-  return image;
+// One queue for every sprite page: the painting the viewer opened goes first (priority 0), paintings on screen
+// next (1), the rest last. Six downloads at a time, so a newly opened painting never waits behind a whole wall.
+const pending = [];
+let running = 0;
+function pump() {
+  while (running < 6 && pending.length) {
+    let best = 0;
+    for (let i = 1; i < pending.length; i++) if (pending[i].priority() < pending[best].priority()) best = i;
+    const [job] = pending.splice(best, 1);
+    running++;
+    job.run().finally(() => {
+      running--;
+      pump();
+    });
+  }
+}
+export function imagePage(url, priority = () => 1) {
+  return new Promise((resolve, reject) => {
+    pending.push({
+      priority,
+      run: async () => {
+        try {
+          const image = new Image();
+          image.src = url;
+          await image.decode();
+          resolve(image);
+        } catch (error) {
+          reject(error);
+        }
+      },
+    });
+    pump();
+  });
 }
 
 export function drawSprite(ctx, image, rect, x, y) {
@@ -16,8 +44,8 @@ export function drawSprite(ctx, image, rect, x, y) {
   ctx.drawImage(image, sx, sy, width, height, x, y, width, height);
 }
 
-async function textures(root, atlas) {
-  const pages = await Promise.all(atlas.pages.map((name) => imagePage(root + name)));
+async function textures(root, atlas, priority) {
+  const pages = await Promise.all(atlas.pages.map((name) => imagePage(root + name, priority)));
   return (ctx, index, x, y) => {
     if (index < 0) return;
     const rect = atlas.rects[index];
@@ -33,8 +61,8 @@ function buffer(width, height) {
 }
 
 // Unchanged tiles are shared by all 72 phases. Keep only a base and the current composite in memory.
-export async function material(root, atlas, width, height) {
-  const stamp = await textures(root, atlas);
+export async function material(root, atlas, width, height, priority) {
+  const stamp = await textures(root, atlas, priority);
   const base = buffer(width, height),
     active = buffer(width, height);
   const tile = atlas.tile,
