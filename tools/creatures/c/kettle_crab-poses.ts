@@ -37,7 +37,7 @@ const size = (x: number, y = x) => ({ sx: x - 1, sy: y - 1 });
 /** Effect beats shared with the painter of effects. */
 export const beats = {
   // Steam rocket: spits water on the sun-hot helmet, steam, hides, rattles, launches through the top rail, falls back.
-  trick: { spit: 6, splash: 14, hide: 26, rattle: 30, launch: 52, gone: 58, fall: 72, land: 80, out: 90, tada: 104 },
+  trick: { spit: 6, splash: 14, hide: 26, rattle: 30, launch: 52, gone: 58, fall: 68, land: 76, out: 86, tada: 100 },
   // Bubbles: blows a stream of bubbles, pops them one by one, a big one swallows it and lifts it, pop, fall, flip.
   trick_b: { blow: 4, pop1: 22, pop2: 30, pop3: 38, pop4: 46, big: 54, lift: 66, poke: 84, fall: 86, land: 94 },
   fidget_a: { huff: 8, wipe: 14, shine: 36 },
@@ -51,7 +51,7 @@ function wipe(start: number, turns: number, period: number, [f, r, u]: [number, 
   const keys: Key[] = [];
   for (let i = 1; i <= turns * 4; i++) {
     const a = (i / 4) * TAU;
-    keys.push([start + (i * period) / 4, { ...extra, ...R(f, r + Math.cos(a) * 2.2, u + Math.sin(a) * 1.8, 0.1) }, 'l']);
+    keys.push([start + (i * period) / 4, { ...extra, ...R(f, r + Math.cos(a) * 3.2, u + Math.sin(a) * 2.2, 0.1) }, 'l']);
   }
   return keys;
 }
@@ -107,7 +107,7 @@ export const tracks: Record<string, Track> = {
     [8, { lean: 0.6, pitch: 0.08, helmetPitch: 0.3, mouth: 1.5, eyePitch: -0.3, stalk: 1.5, eyeR: 0.5 }, 'o'],
     [10, { lean: 0.4, helmetPitch: 0.3, mouth: 0.2, eyePitch: -0.3, stalk: 1.5, eyeR: 0.5 }],
     [13, { helmetPitch: 0.3, eyePitch: 0.1, stalk: 0.5, eyeL: -0.7, eyeR: -0.35, clawRYaw: 1.5, clawRPitch: -0.2, ...R(10.5, 9.2, 22.5, 0.1) }, 'b'],
-    ...wipe(13, 3, 7, [10.5, 7.2, 22], { helmetPitch: 0.3, eyePitch: 0.1, stalk: 0.5, eyeL: -0.7, eyeR: -0.35, clawRYaw: 1.5, clawRPitch: -0.2, sway: 0.4 }),
+    ...wipe(13, 3, 7, [10.5, 7.6, 23.2], { helmetPitch: 0.3, eyePitch: 0.1, stalk: 0.5, eyeL: -0.7, eyeR: -0.35, clawRYaw: 1.5, clawRPitch: -0.2, sway: 0.4 }),
     [36, { stalk: 2.8, lookUp: 0.2, lean: 0.5, ...R(17, 9, 15, 0.8) }, 'o'],
     [38, { stalk: 2.8, lookUp: 0.2, lean: 0.5, clawROpen: 0 }, 'o'],
     [42, { stalk: 2, lean: 0.3 }],
@@ -234,21 +234,23 @@ export const tracks: Record<string, Track> = {
     [55, { hide: 1, overAll: 1, noShadow: 1, dy: -100, jet: 1, ...size(0.82, 1.32) }, 'l'],
     [58, { hide: 1, overAll: 1, noShadow: 1, dy: -200, jet: 1, ...size(0.85, 1.3) }, 'l'],
     [59, { hidden: 1, hide: 1, dy: -200 }],
-    [71, { hidden: 1, hide: 1, dy: -200 }],
-    [72, { hide: 1, overAll: 1, noShadow: 1, dy: -140, rot: 0.4, ...size(0.95, 1.05) }, 'l'],
-    [76, { hide: 1, overAll: 1, noShadow: 1, dy: -100, rot: 2.6, ...size(0.94, 1.06) }, 'i'],
-    [79, { hide: 1, overAll: 1, noShadow: 1, dy: -9, rot: TAU, ...size(0.92, 1.08) }, 'i'],
-    [80, { hide: 1, ...size(1.25, 0.76) }, 'i'],
-    [84, { hide: 1, dy: -10, ...size(0.93, 1.09) }, 'o'],
-    [88, { hide: 1, ...size(1.07, 0.94) }, 'i'],
-    [90, { eyeSpin: 1, stalk: 2, sway: 0.8, ...size(0.97, 1.04) }, 'b'],
-    [94, { eyeSpin: 1, stalk: 2, sway: -0.8, roll: 0.1 }],
-    [98, { eyeSpin: 1, stalk: 2, sway: 0.6, roll: -0.08 }],
-    [100, { rattle: 1.2, stalk: 2 }, 'o'],
-    [103, { stalk: 2.5 }],
-    [104, { ...R(16, 9, 25, 1), clawRPitch: -0.7, ...L(15, -8, 18, 0.8), clawLPitch: -0.3, lift: 3, stalk: 3, ...size(0.95, 1.06) }, 'b'],
-    [110, { ...R(16, 9, 24.5, 1), clawRPitch: -0.7, ...L(15, -8, 17.5, 0.8), clawLPitch: -0.3, lift: 2, stalk: 3 }],
-    [112, { ...R(16, 9, 24.5, 0), clawRPitch: -0.7, ...L(15, -8, 17.5, 0), clawLPitch: -0.3, lift: 2, stalk: 3 }, 'o'],
+    [67, { hidden: 1, hide: 1, dy: -200 }],
+    [68, { hide: 1, overAll: 1, noShadow: 1, dy: -140, rot: 0.4, ...size(0.95, 1.05) }, 'l'],
+    [72, { hide: 1, overAll: 1, noShadow: 1, dy: -100, rot: 2.6, ...size(0.94, 1.06) }, 'i'],
+    [75, { hide: 1, overAll: 1, noShadow: 1, dy: -9, rot: TAU, ...size(0.92, 1.08) }, 'i'],
+    [76, { hide: 1, ...size(1.25, 0.76) }, 'i'],
+    [80, { hide: 1, dy: -10, ...size(0.93, 1.09) }, 'o'],
+    [84, { hide: 1, ...size(1.07, 0.94) }, 'i'],
+    [86, { eyeSpin: 1, stalk: 2, sway: 0.8, ...size(0.97, 1.04) }, 'b'],
+    [90, { eyeSpin: 1, stalk: 2, sway: -0.8, roll: 0.1 }],
+    [94, { eyeSpin: 1, stalk: 2, sway: 0.6, roll: -0.08 }],
+    [96, { rattle: 1.2, stalk: 2 }, 'o'],
+    [99, { stalk: 2.5 }],
+    [100, { ...R(16, 9, 25, 1), clawRPitch: -0.7, ...L(15, -8, 18, 0.8), clawLPitch: -0.3, lift: 3, stalk: 3, ...size(0.95, 1.06) }, 'b'],
+    [106, { ...R(16, 9, 24.5, 1), clawRPitch: -0.7, ...L(15, -8, 17.5, 0.8), clawLPitch: -0.3, lift: 2, stalk: 3 }],
+    [108, { ...R(16, 9, 24.5, 0), clawRPitch: -0.7, ...L(15, -8, 17.5, 0), clawLPitch: -0.3, lift: 2, stalk: 3 }, 'o'],
+    [110, { ...R(16, 9, 24.5, 0.9), clawRPitch: -0.7, lift: 1.5, stalk: 3 }, 'o'],
+    [112, { ...R(16, 9, 24.5, 0), clawRPitch: -0.7, lift: 1.5, stalk: 3 }, 'o'],
     [120, {}],
   ],
   // Bubbles: blows a stream, pops them with fast sideways scuttles and a jump, a big one swallows it and floats it up
@@ -286,7 +288,9 @@ export const tracks: Record<string, Track> = {
     [82, { stalk: 3, bubble: 1, overAll: 1, noShadow: 1, dy: -55, lift: 3, ...R(17, 9, 28, 0.2), clawRPitch: -0.9 }],
     [84, { stalk: 5, overAll: 1, noShadow: 1, dy: -56, lift: 3, ...claws(1), ...size(1.05, 0.95) }, 'l'],
     [86, { stalk: 5.5, overAll: 1, noShadow: 1, dy: -52, lift: 3, ...claws(1), ...size(0.95, 1.06) }, 'o'],
-    [93, { stalk: 4, overAll: 1, noShadow: 1, dy: -4, rot: TAU, ...claws(1), ...size(0.95, 1.06) }, 'i'],
+    [89, { stalk: 4.5, overAll: 1, noShadow: 1, dy: -40, rot: 2.1, ...claws(1), ...size(0.95, 1.06) }, 'i'],
+    [91, { stalk: 4, overAll: 1, noShadow: 1, dy: -24, rot: 4.0, ...claws(1), ...size(0.95, 1.06) }],
+    [93, { stalk: 4, overAll: 1, noShadow: 1, dy: -4, rot: TAU, ...claws(1), ...size(0.95, 1.06) }],
     [94, { crouch: 2.5, stalk: 1.5, ...claws(0.5), ...size(1.2, 0.8) }, 'i'],
     [98, { dy: -5, stalk: 2.5, ...size(0.96, 1.05) }, 'o'],
     [101, { rattle: 1.2, stalk: 2 }, 'i'],

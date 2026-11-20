@@ -321,7 +321,7 @@ function steamRocket(f: FxInput, frame: number) {
   spray(f.above, [home[0], home[1] - 3], lift, 18, 22, 80, sand, 47, -0.85, 150, 1.2);
   steamCloud(f.under, [home[0], home[1] - 4], lift, 22, 8, 12, 30, 49, 1.4);
   // A spark of the rocket high up in the sky while it is away.
-  if (frame >= 60 && frame < 70) sparkle(f.above, [home[0] + 18, 8 + (frame - 60) * 0.4], 2.5 - (frame - 60) * 0.15, 1 - progress(frame, 66, 70), gold);
+  if (frame >= 59 && frame < 67) sparkle(f.above, [home[0] + 18, 8 + (frame - 59) * 0.4], 2.5 - (frame - 59) * 0.15, 1 - progress(frame, 63, 67), gold);
   // The fall: a growing shadow marks the spot, whistle lines above it.
   if (frame >= b.fall && frame < b.land) {
     const k = (frame - b.fall) / (b.land - b.fall);
@@ -331,10 +331,10 @@ function steamRocket(f: FxInput, frame: number) {
   spray(f.above, [home[0], home[1] - 2], frame - b.land, 14, 20, 60, sand, 53, -0.6, 140, 1.6);
   steamCloud(f.under, [home[0], home[1] - 3], frame - b.land, 14, 6, 6, 26, 55, 1.1);
   const eyes = pt(f, 'eyeR');
-  if (eyes && frame >= b.out && frame < 100)
+  if (eyes && frame >= b.out && frame < b.out + 10)
     for (let i = 0; i < 3; i++) {
       const a = (frame - b.out) * 0.45 + (i * TAU) / 3;
-      sparkle(f.above, [eyes[0] - 4 + Math.cos(a) * 11, eyes[1] - 8 + Math.sin(a) * 3.5], 2.4, 1 - progress(frame, 97, 100), gold);
+      sparkle(f.above, [eyes[0] - 4 + Math.cos(a) * 11, eyes[1] - 8 + Math.sin(a) * 3.5], 2.4, 1 - progress(frame, b.out + 7, b.out + 10), gold);
     }
   const tip = pt(f, 'clawRTip');
   if (tip && frame >= b.tada && frame < b.tada + 10) sparkle(f.above, [tip[0], tip[1] - 3], 5 - (frame - b.tada) * 0.4, 1 - (frame - b.tada) / 10);
