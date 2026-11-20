@@ -71,7 +71,7 @@ export function crabFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
     const gaitPhase = steer?.gaitPhase ?? t;
     const lead = steer ? ((((steer.headSide - side + 24) % 16) - 8) * Math.PI) / 8 : 0;
     // Hide: everything soft goes into the helmet. Tuck folds the legs under the breastplate.
-    const hide = saturate(get('hide') + (anim === 'sleep' ? 0.82 : 0));
+    const hide = saturate(get('hide') + (anim === 'sleep' ? 1 : 0));
     const tuck = saturate(get('tuck') + hide * 0.9 + l.tired * 0.25);
     const sub = turning && Number.isInteger(side) ? (t * 4) % 1 : 0;
     const face = F3.yaw(route.yaw + ((side + sub) * Math.PI) / 8);
@@ -91,9 +91,11 @@ export function crabFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
       .pitch(get('helmetPitch') - 0.08)
       .roll(get('helmetRoll') + shake[1] * 0.04);
     const points: Record<string, V3> = { floor: [0, 0, 0], body: body.o, helmet: helmet.o };
+    // Goals and the feet's floor frame turn with a whole-body spin (`yaw`), so a pirouette carries the claws along.
+    const spun = face.turn(get('yaw'));
     const goal = (key: string, rest: V3) => {
-      const at = goalAt(pose, key, toLocal(face, rest));
-      return at ? face.p(...at) : rest;
+      const at = goalAt(pose, key, toLocal(spun, rest));
+      return at ? spun.p(...at) : rest;
     };
 
     // ---- skeleton: legs --------------------------------------------------------------------------------------
@@ -104,7 +106,7 @@ export function crabFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
         const name = 'foot' + suffix + i;
         const offset = ((i + (sign > 0 ? 0 : 1)) % 2) * 0.5 + (i - 1) * 0.04;
         const step = strideFoot(walking ? gaitPhase * 2 : 2 * t, offset, walking ? route.stride / scale / 2 : Math.PI / 4);
-        const floorFrame = turning ? face.turn(step.forward * 0.6) : face;
+        const floorFrame = turning ? spun.turn(step.forward * 0.6) : spun;
         const tap = get('tap' + suffix + i);
         const natural = floorFrame.p(
           [11, 2, -7][i] + (walking ? step.forward : 0) - 4 * tuck * (i - 1),
@@ -198,7 +200,7 @@ export function crabFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
     if (!hidden) {
       drawHelmet(r, helmet, M, get, t, late);
       if (hide < 0.97) drawCrab(r, body, legs, claws, eyes, antennae, M, get, l.blink, hide, late);
-      else if (get('peekPort') > 0.5) peekingEyes(r, helmet, M, get, l.blink);
+      else if (get('peekPort') > 0.5 || anim === 'sleep') peekingEyes(r, helmet, M, get, l.blink);
     }
     for (const [k, v] of Object.entries(points)) points[k + 'Ground'] = [v[0], v[1], 0];
     finishSurfaces(r, face, [
@@ -215,6 +217,10 @@ export function crabFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
       [M.claw, 'lacquer'],
     ], 'skin');
     for (const draw of late) draw();
+    // Translucent things go last, after the surface finish: a steam jet under the helmet and the big soap bubble.
+    // Their pixels stay see-through and the outline pass leaves them unringed.
+    if (!hidden && get('jet') > 0.01) steamJet(r, helmet, get('jet'), t);
+    if (get('bubble') > 0.01) soapBubble(r, body.p(3, 0, 9.5), get('bubble'), t);
     scaleFigure(r, points, scale, scale);
     const size = sizes[card.rarity][2];
     const ink = '#24120e';
@@ -397,16 +403,67 @@ function drawHelmet(r: Rig, H: F3, M: Palette, get: Get, t: number, late: (() =>
   for (let i = 1; i < weed.length; i++) r.cap(weed[i - 1], weed[i], 0.7 - i * 0.1, 0.6 - i * 0.1, M.patina);
 }
 
+/** Steam blasting from under the helmet: soft puffs growing and fading downwards, in world axes. */
+function steamJet(r: Rig, H: F3, power: number, t: number) {
+  r.tag = 'jet';
+  const base = H.p(0, 0, -13);
+  for (let i = 0; i < 7; i++) {
+    const u = i / 6,
+      wob = Math.sin(t * 24 * 1.7 + i * 2.1);
+    const at: V3 = [base[0] + wob * 1.6 * u, base[1] + wob * 0.8 * u, base[2] - power * (3 + 30 * u)];
+    const radius = (2.6 + 6 * u) * Math.min(1, power * 1.4);
+    const alpha = Math.round(235 - 120 * u);
+    r.ball(at, radius, {
+      T: [hx('#a8b4c0', alpha), hx('#d4dce4', alpha), hx('#eef2f6', alpha), hx('#ffffff', alpha)] as Mat['T'],
+      soft: true,
+    });
+  }
+}
+
+/** A soap bubble round the crab: only the rim and two highlights are drawn, so the crab shows through. */
+function soapBubble(r: Rig, center: V3, size: number, t: number) {
+  r.tag = 'bubble';
+  const R = 33 * size,
+    wobble = 1 + 0.04 * Math.sin(t * 24 * 0.9);
+  const frame = new F3(center, [wobble, 0, 0], [0, 1 / wobble, 0], [0, 0, 1]);
+  const view: V3 = [0, 0.8, 0.6];
+  const rim = (q: V3) => Math.abs(q[0] * view[0] + q[1] * view[1] + q[2] * view[2]) > 0.3;
+  r.ell(
+    frame,
+    [0, 0, 0],
+    [R, R, R],
+    {
+      T: [hx('#6a88c8', 190), hx('#9ad0f0', 200), hx('#e8c4f4', 210), hx('#ffffff', 230)] as Mat['T'],
+      soft: true,
+    },
+    rim,
+  );
+  // A curved glint near the upper left of the rim and a small one below it: directions on the screen circle
+  // (right = world x, up = [0, -0.6, 0.8]) pushed a little towards the viewer so they sit on the front surface.
+  const on = (angle: number, inset: number) => {
+    const edge: V3 = [Math.cos(angle), -0.6 * Math.sin(angle), 0.8 * Math.sin(angle)];
+    const k = Math.sqrt(1 - inset * inset);
+    return vadd(center, vmul(vadd(vmul(edge, k), vmul([0, 0.8, 0.6], inset)), R));
+  };
+  r.line(on(2.75, 0.3), on(2.35, 0.3), hx('#ffffff'), 0, 1);
+  r.line(on(2.35, 0.3), on(1.95, 0.3), hx('#ffffff'), 0, 1);
+  r.dot(on(3.05, 0.35), hx('#ffffff'), 0, 1, 1);
+}
+
 function peekingEyes(r: Rig, H: F3, M: Palette, get: Get, blink: number) {
-  // Hidden inside: two eyes look out through the front glass.
+  // Hidden inside: two eyes look out through the front glass (closed while asleep).
   r.tag = 'faceplate';
-  const port = H.at(12.0, 0, 0.8);
+  const port = H.at(13.0, 0, 0.8);
   for (const s of [-1, 1]) {
-    const e = port.p(0.2, s * 1.9 + get('eyes') * 1.2, -0.4 + get('lookUp') * 1.2);
-    if (blink > 0.5 || get('blink') > 0.5) r.line(vadd(e, port.v(0, -1, 0)), vadd(e, port.v(0, 1, 0)), hx('#2a1a1a'), 0, 1);
-    else {
-      r.ball(e, 1.35, M.sclera);
-      r.dot(port.p(0.9, s * 1.9 + get('eyes') * 1.6, -0.5 + get('lookUp') * 1.4), hx('#08080c'), 0, 1, 1);
+    const e = port.p(0.2, s * 2.7 + get('eyes') * 1.2, -0.3 + s * 0.25 + get('lookUp') * 1.2);
+    if (blink > 0.5 || get('blink') > 0.5) {
+      r.line(vadd(e, port.v(0, -1.3, 0.2)), vadd(e, port.v(0, 0, -0.3)), hx('#1a0e0e'), 0, 1);
+      r.line(vadd(e, port.v(0, 0, -0.3)), vadd(e, port.v(0, 1.3, 0.2)), hx('#1a0e0e'), 0, 1);
+    } else {
+      r.ball(e, 1.8, M.sclera);
+      // Pupils turn towards the viewer, nudged by `eyes` (sideways) and `lookUp`.
+      const gaze = vnorm(vadd(vadd(port.v(0.6, get('eyes') * 0.8, get('lookUp') * 0.8), [0, 0.8, 0.6]), [0, 0, 0]));
+      r.ball(vadd(e, vmul(gaze, 1.25)), 0.85, M.pupil);
     }
   }
 }
