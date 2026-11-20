@@ -121,7 +121,7 @@ function giraffe(p: Px, x: number, y: number, dip: number, c: RGBA) {
 function farLand(p: Px, t: number) {
   // Low hills on the horizon, then the trees and giraffes against the glow.
   for (let x = 0; x < W; x++) {
-    const h = 2 + Math.round(2 * Math.sin(x * 0.07) + Math.sin(x * 0.19 + 1));
+    const h = Math.max(1, 2 + Math.round(2 * Math.sin(x * 0.07) + Math.sin(x * 0.19 + 1)));
     for (let y = HORIZON - h; y < HORIZON + 2; y++) put(p, x, y, y < HORIZON ? far[1] : far[2]);
   }
   acacia(p, 30, HORIZON, 1);
