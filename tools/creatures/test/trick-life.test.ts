@@ -103,3 +103,29 @@ test('walking budget measures paired cycle durations', () => {
   const balanced = { ...clips, trick: clip(6.5), 'trick_b-f2': clip(6.5), 'idle-f2': clip(1.5) };
   assert.deepEqual(validateBehavior(config, balanced), []);
 });
+
+test('one-form tricks (below legendary) play in life without phase, idle-f2 or happy-f2', () => {
+  const { phase, 'idle-f2': idleF2, 'happy-f2': happyF2, 'trick-f2': trickF2, 'trick_b-f2': trickBF2, ...single } = clips;
+  const oneForm: BehaviorConfig = { ...config, weights: { idle: 1, look: 1, fidget_a: 1, fidget_b: 1, trick: 100 },
+    tricks: { f1: ['trick', 'trick_b'] } };
+  assert.deepEqual(validateBehavior(oneForm, single), []);
+  const pet = createPetBehavior(oneForm, single);
+  for (let cycle = 0; cycle < 3; cycle++) {
+    const frames = Array.from({ length: 720 }, () => {
+      const row = pet.sample();
+      pet.advance(1 / 24);
+      return row;
+    });
+    const starts = frames.filter(row => row.anim.startsWith('trick') && row.frame === 0);
+    assert.deepEqual(starts.map(row => row.anim), [oneForm.tricks!.f1[cycle % 2]]);
+    assert.ok(frames.every(row => !['phase', 'idle-f2', 'happy-f2'].includes(row.anim)));
+    assert.equal(frames.at(-1)!.anim, 'idle');
+    assert.deepEqual(frames.at(-1)!.at, frames[0].at);
+  }
+  assert.ok(pet.event('change_form'));
+  for (let i = 0; i < 8; i++) {
+    assert.notEqual(pet.sample().anim, 'phase');
+    pet.advance(1 / 24);
+  }
+  assert.match(validateBehavior({ ...oneForm, tricks: { f1: ['trick_b'] } }, single).join(), /tricks\.f1/);
+});

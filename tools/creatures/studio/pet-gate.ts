@@ -27,9 +27,12 @@ export function petClipIssues(animations: Record<string, Animation>, references:
   const limits = { ...rules };
   const secretTricks = tricks && performanceRarity === 'secret';
   if (tricks) {
-    limits['happy-f2'] = [0, Infinity, false];
-    limits['idle-f2'] = [0, Infinity, true];
-    limits.phase = secretTricks ? [2, 3, false] : [0, Infinity, false];
+    // One-form paintings (below legendary) have no phase, idle-f2 or happy-f2.
+    if (tricks.f2 || secretTricks) {
+      limits['happy-f2'] = [0, Infinity, false];
+      limits['idle-f2'] = [0, Infinity, true];
+      limits.phase = secretTricks ? [2, 3, false] : [0, Infinity, false];
+    }
     for (const name of ['trick', 'trick_b', 'trick-f2', 'trick_b-f2']) {
       if (secretTricks || animations[name])
         limits[name] = secretTricks ? [5, 7, false] : [0, Infinity, false];

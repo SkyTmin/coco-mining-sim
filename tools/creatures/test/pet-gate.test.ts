@@ -58,7 +58,7 @@ test('multi-act tricks require three to four seconds and an ending', () => {
   assert.equal(trickIssues(3.5, true, true).length, 1);
 });
 
-test('the behavior schema accepts either legacy attacks or tricks for both forms', () => {
+test('the behavior schema accepts either legacy attacks or tricks for one or both forms', () => {
   const validate = new Ajv().compile(behaviorSchema);
   const { attacks, attackInterval, ...shared } = legacyBehavior;
   const { skill_ready, ...events } = shared.events;
@@ -71,13 +71,15 @@ test('the behavior schema accepts either legacy attacks or tricks for both forms
     events: { ...events, skill_ready: ['trick'] },
     tricks: { f1: ['trick_b', 'trick'], f2: ['trick_b-f2', 'trick-f2'] },
   }));
+  // Below legendary there is no second form.
+  assert.ok(validate({ ...behavior, tricks: { f1: ['trick', 'trick_b'] } }));
   for (const invalid of [
     { ...behavior, attacks },
     { ...behavior, attackInterval },
     { ...behavior, lifeAttacks: attacks },
     { ...behavior, attackBounds: {} },
     { ...behavior, events: { ...events, skill_ready } },
-    { ...behavior, tricks: { f1: ['trick'] } },
+    { ...behavior, tricks: { f2: ['trick-f2'] } },
     { ...behavior, tricks: { f1: ['trick_b'], f2: ['trick-f2'] } },
     { ...behavior, tricks: { f1: ['trick'], f2: ['trick-f2', 'trick-f2'] } },
   ]) assert.equal(validate(invalid), false);

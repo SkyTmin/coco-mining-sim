@@ -59,14 +59,17 @@ export function validateBehavior(data, animations) {
       issues.push('tricks cannot be combined with attack fields');
     if (Object.keys(animations ?? {}).some(name => name.startsWith('tech_')))
       issues.push('tricks cannot have tech_* clips');
-    for (const [form, allowed] of Object.entries(trickClips)) {
+    // Rarities below legendary have one form: tricks.f2 is then absent, and so are phase, idle-f2 and happy-f2.
+    const forms = data.tricks?.f2 === undefined ? ['f1'] : ['f1', 'f2'];
+    for (const [form, allowed] of Object.entries(trickClips).filter(([form]) => forms.includes(form))) {
       const list = data.tricks?.[form];
       if (!Array.isArray(list) || !list.includes(allowed[0]) || new Set(list).size !== list.length ||
           !list.every(name => allowed.includes(name) && animations?.[name]))
         issues.push('tricks.' + form + ' must name distinct authored tricks for that form');
     }
-    for (const name of ['phase', 'idle-f2', 'happy-f2'])
-      if (!animations?.[name]) issues.push('missing clip ' + name);
+    if (forms.length === 2)
+      for (const name of ['phase', 'idle-f2', 'happy-f2'])
+        if (!animations?.[name]) issues.push('missing clip ' + name);
   } else if (!Array.isArray(attacks) || !attacks.length || new Set(attacks).size !== attacks.length ||
       !attacks.every(a => typeof a === 'string' && a.startsWith('tech_') && animations?.[a]) ||
       Object.keys(animations ?? {}).some(a => a.startsWith('tech_') && !attacks.includes(a)))
@@ -209,15 +212,15 @@ function trickPlan(config, animations, bearings = turnBearings(config, animation
     leg.departing = turnFramesFor(bearings, legs[i - 1]?.angle ?? config.yaw, leg.angle);
     leg.entering = i === legs.length - 1 ? turnFramesFor(bearings, leg.angle, config.yaw) : [];
   }
-  const { f1, f2 } = config.tricks;
+  const { f1, f2 = [] } = config.tricks;
   const clipAt = (list, index) => list[index % list.length];
-  const duration = index => length(animations, clipAt(f1, index)) + length(animations, clipAt(f2, index));
+  const duration = index => length(animations, clipAt(f1, index)) + (f2.length ? length(animations, clipAt(f2, index)) : 0);
   const actions = cycle === undefined
     ? Math.max(...Array.from({ length: Math.max(f1.length, f2.length) }, (_, index) => duration(index)))
     : duration(cycle);
   const turns = legs.reduce((sum, leg) => sum + leg.departing.length + leg.entering.length, 0);
   const fixed = 2 + actions + turns +
-    2 * length(animations, 'phase') + length(animations, 'idle-f2');
+    (f2.length ? 2 * length(animations, 'phase') + length(animations, 'idle-f2') : 0);
   if (cycle !== undefined) stops.at(-1).actions.push(clipAt(f1, cycle));
   return { stops, legs, maxWalk: ticks(config.previewSeconds) - fixed };
 }
@@ -336,10 +339,12 @@ export function createPetBehavior(config, animations, seed = config.seed) {
         walk(rows, leg);
         for (const frame of leg.entering) rows.push(sampleAt('turn', frame, leg.to));
       }
-      play('phase', home);
-      play('idle-f2', home, false, 'f2');
-      if (tricks) play(tricks.f2[cycle % tricks.f2.length], home, false, 'f2');
-      play('phase', home, true, 'f2');
+      if (!tricks || tricks.f2) {
+        play('phase', home);
+        play('idle-f2', home, false, 'f2');
+        if (tricks) play(tricks.f2[cycle % tricks.f2.length], home, false, 'f2');
+        play('phase', home, true, 'f2');
+      }
       rows.push(sampleAt('idle', 0, home));
       return rows;
     }
@@ -434,6 +439,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
     if ((event === 'owner_back' && !sleeping()) || (event === 'idle_owner' && sleeping())) return false;
     const form = state.form ?? 'f1';
     if (tricks && form === 'f2' && ['approach', 'idle_owner'].includes(event)) return false;
+    if (tricks && event === 'change_form' && !tricks.f2) return true;
     if (tricks && event === 'change_form') {
       reaction = { anim: 'phase', age: 0, at: state.at, rest: [], form,
         reverse: form === 'f2', toggle: true };

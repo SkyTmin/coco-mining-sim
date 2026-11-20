@@ -129,7 +129,7 @@
     },
     "tricks": {
       "type": "object",
-      "required": ["f1", "f2"],
+      "required": ["f1"],
       "additionalProperties": false,
       "properties": {
         "f1": {

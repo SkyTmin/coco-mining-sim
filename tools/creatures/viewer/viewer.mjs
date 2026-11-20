@@ -165,6 +165,9 @@ class Painting {
   get hasTricks() {
     return Boolean(this.surface?.behavior?.tricks);
   }
+  get hasForms() {
+    return Boolean(this.surface?.behavior?.tricks?.f2);
+  }
   has(id) {
     return this.entry.clips.some((clip) => clip.id === id);
   }
@@ -488,7 +491,7 @@ function refreshControls() {
   $('#leave').disabled = $('#skill').disabled = !featured.pet;
   $('#skill').hidden = featured.entry.runtime === 'f1';
   $('#skill').textContent = featured.hasTricks ? 'Показать трюк' : 'Показать приём';
-  $('#change-form').hidden = $('#change-form').disabled = !featured.hasTricks;
+  $('#change-form').hidden = $('#change-form').disabled = !featured.hasForms;
   $('#leave').textContent = featured.away ? 'Вернуться' : 'Уйти';
   $('#presence').textContent = !featured.away
     ? ''
