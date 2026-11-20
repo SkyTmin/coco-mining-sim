@@ -22,9 +22,14 @@ const rules: Record<string, [number, number, boolean]> = {
   sleep_in: [1, 1.5, false], sleep: [3, 4, true], sleep_out: [1, 1.5, false],
   wake_startled: [0.8, 1.2, false],
 };
+/** Trick clips: trick, trick_b … trick_f, each optionally in the second form (-f2). */
+const isTrick = (name: string) => /^trick(_[b-f])?(-f2)?$/.test(name);
+
 export function petClipIssues(animations: Record<string, Animation>, references: string[], bodyClips: string[] = [], multiActTrick = false, performanceRarity?: Rarity, tricks?: NonNullable<BehaviorConfig['tricks']>) {
   const issues: string[] = [];
   const limits = { ...rules };
+  // A creature's own extra gestures (fidget_c…) follow the rule of the first two.
+  for (const name of Object.keys(animations).filter(n => /^fidget_[c-h]$/.test(n))) limits[name] = rules.fidget_a;
   const secretTricks = tricks && performanceRarity === 'secret';
   if (tricks) {
     // One-form paintings (below legendary) have no phase, idle-f2 or happy-f2.
@@ -33,12 +38,13 @@ export function petClipIssues(animations: Record<string, Animation>, references:
       limits['idle-f2'] = [0, Infinity, true];
       limits.phase = secretTricks ? [2, 3, false] : [0, Infinity, false];
     }
-    for (const name of ['trick', 'trick_b', 'trick-f2', 'trick_b-f2']) {
+    const secretPairs = secretTricks ? ['trick', 'trick_b', 'trick-f2', 'trick_b-f2'] : [];
+    for (const name of new Set([...secretPairs, ...Object.keys(animations).filter(isTrick)])) {
       if (secretTricks || animations[name])
         limits[name] = secretTricks ? [5, 7, false] : [0, Infinity, false];
     }
     if (secretTricks) {
-      if (tricks.f1?.length !== 2 || tricks.f2?.length !== 2)
+      if ((tricks.f1?.length ?? 0) < 2 || (tricks.f2?.length ?? 0) < 2)
         issues.push('a secret painting needs two tricks in each form');
       limits.show = [5, 6, false];
       limits.peek = [0, Infinity, false];

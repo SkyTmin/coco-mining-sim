@@ -55,6 +55,10 @@ const TAIL_REST = [0.5, 0.82, 1.12, 1.38, 1.6, 1.84, 2.12, 2.46, 2.82];
 /** The rotor: a mast straight up over the head (four segments), then a flat blade; the hub is the mast's top. */
 const TAIL_ROTOR = [1.1, 1.45, 1.57, 1.57, 0.08, 0, 0.02, 0.06, 0.1];
 const HUB = 4;
+/** The umbrella: the tail rises behind the back and arches forward over the head, the tip drooping in front. */
+const TAIL_UMBRELLA = [1.25, 1.45, 1.7, 1.95, 2.3, 2.65, 3.0, 3.4, 3.85];
+/** Soaked fur: locks lie flat and short (set per frame before drawing). */
+let WET = 0;
 
 interface Palette {
   rust: Mat;
@@ -76,20 +80,26 @@ interface Palette {
 export function pandaFrame(card: CreatureCard, route: MotionPlan, sample: PoseSample, loops: Record<string, number>): Creature['frame'] {
   const scale = card.proportions.scale ?? 1;
   const gold = (tones: string[], warm: number) => tones.map((c) => mixc(hx(c), hx('#e8b84a'), warm)) as Mat['T'];
-  const palettes = (variant: Variant): Palette => {
+  // Soaked fur darkens and cools; a lightning zap chars the whole silhouette for a frame (eye glints stay bright).
+  const soak = (t: Mat['T'], wet: number, zap = 0) => {
+    let o = wet > 0 ? (t.map((c) => mixc(c, hx('#1c2430'), 0.32 * wet)) as Mat['T']) : t;
+    if (zap > 0) o = o.map((c) => mixc(c, hx('#16121c'), 0.78 * zap)) as Mat['T'];
+    return o;
+  };
+  const palettes = (variant: Variant, wet = 0, zap = 0): Palette => {
     const g = variant === 'gold';
-    const pick = (name: string, warm = 0.5) => (g ? gold(card4(card, name), warm) : T(card4(card, name)));
+    const pick = (name: string, warm = 0.5) => soak(g ? gold(card4(card, name), warm) : T(card4(card, name)), wet, zap);
     return {
       rust: { T: pick('rust') },
       rustSmooth: { T: [...pick('rust')] as Mat['T'] },
-      rustDeep: { T: g ? gold(['#3a1008', '#5e1c0c', '#8a2e12', '#a83e16'], 0.4) : T(['#3a1008', '#5e1c0c', '#8a2e12', '#a83e16']) },
+      rustDeep: { T: soak(g ? gold(['#3a1008', '#5e1c0c', '#8a2e12', '#a83e16'], 0.4) : T(['#3a1008', '#5e1c0c', '#8a2e12', '#a83e16']), wet, zap) },
       dark: { T: pick('dark', 0.3) },
       white: { T: pick('white', 0.25), bias: 0.06 },
       ring: { T: pick('ring', 0.4) },
       nose: { T: T(['#08060a', '#14101a', '#2a2430', '#4a4250']) },
       eye: { T: T(['#050304', '#120a08', '#24140e', '#3a2418']), flat: 1 },
-      claw: { T: T(['#6a5a4a', '#a8988a', '#d8ccbc', '#f4ece0']) },
-      mouth: { T: T(['#3a0c14', '#6a1e2a', '#a8445a', '#d87088']) },
+      claw: { T: soak(T(['#6a5a4a', '#a8988a', '#d8ccbc', '#f4ece0']), 0, zap) },
+      mouth: { T: soak(T(['#3a0c14', '#6a1e2a', '#a8445a', '#d87088']), 0, zap) },
       ink: hx('#1a0c08'),
       pale: g ? hx('#fff4c8') : hx('#fff6e8'),
       tear: g ? hx('#a86a18') : hx('#7a2a12'),
@@ -99,7 +109,9 @@ export function pandaFrame(card: CreatureCard, route: MotionPlan, sample: PoseSa
   return (anim, t, side, variant, steer) => {
     const pose: JointPose = { ...sample(anim, t), ...steer?.techniquePose };
     const get = (k: string) => pose[k] ?? 0;
-    const M = palettes(variant);
+    const wet = saturate(get('wet'));
+    WET = wet;
+    const M = palettes(variant, wet, saturate(get('zap')));
     const l = life(anim, t, 0);
     const walking = anim === 'walk',
       turning = anim === 'turn';
@@ -111,7 +123,7 @@ export function pandaFrame(card: CreatureCard, route: MotionPlan, sample: PoseSa
     const gait = walking ? Math.sin(cycle * 2) : 0;
     const breathe = anim === 'idle' || anim === 'sleep' ? Math.sin(l.q) : 0;
     const fluff = get('fluff');
-    const puff = 1 + 0.12 * fluff;
+    const puff = 1 + 0.12 * fluff - 0.07 * wet;
 
     // ---- the spring --------------------------------------------------------------------------------------------
     const hist: JointPose[] = Array.from({ length: LAG_K + 1 }, (_, k) => {
@@ -222,6 +234,7 @@ export function pandaFrame(card: CreatureCard, route: MotionPlan, sample: PoseSa
 
     // ---- the tail ---------------------------------------------------------------------------------------------
     const rotor = saturate(get('tailRotor'));
+    const umbrella = saturate(get('tailUmbrella'));
     const wrapK = saturate(get('tailWrap'));
     const tailBase = torso.p(-3.3, 0, 1.1);
     const level = F3.yaw(yawB);
@@ -234,6 +247,7 @@ export function pandaFrame(card: CreatureCard, route: MotionPlan, sample: PoseSa
         const u = (k + 1) / TAIL_LEN.length;
         let theta = TAIL_REST[k] + get('tailUp') * 0.3 + get('tailCurl') * 0.16 * k + springUp * u * 2;
         theta = theta * (1 - rotor) + TAIL_ROTOR[k] * rotor;
+        theta = theta * (1 - umbrella) + TAIL_UMBRELLA[k] * umbrella;
         phi += (get('tailWag') * 0.22 + springSide * 0.3) * (1 - rotor);
         let d = vadd(vmul(torso.f, -Math.cos(theta)), vmul(torso.u, Math.sin(theta)));
         d = rotate(d, torso.u, phi);
@@ -243,7 +257,7 @@ export function pandaFrame(card: CreatureCard, route: MotionPlan, sample: PoseSa
           const ww = rotate(vadd(vmul(level.f, -Math.cos(0.12 - 0.02 * k)), vmul(level.u, Math.sin(0.12 - 0.02 * k))), level.u, -0.36 * (k + 1) + 0.2);
           d = vnorm(vlerp(d, ww, wrapK));
         }
-        tail.push(vadd(tail[k], vmul(vnorm(d), TAIL_LEN[k] * (1 + 0.04 * fluff))));
+        tail.push(vadd(tail[k], vmul(vnorm(d), TAIL_LEN[k] * (1 + 0.04 * fluff + 0.22 * umbrella - 0.1 * wet))));
       }
       points.tailTip = tail[tail.length - 1];
       points.tailMid = tail[4];
@@ -278,8 +292,8 @@ export function pandaFrame(card: CreatureCard, route: MotionPlan, sample: PoseSa
     const late: (() => void)[] = [];
     const blink = l.blink > 0.5 || get('blink') > 0.5;
     if (!hidden) {
-      drawTrunk(r, torso, masses, neckBase, headBase, M, fluff, t, late);
-      drawTail(r, tail, torso, M, fluff, late);
+      drawTrunk(r, torso, masses, neckBase, headBase, M, fluff - 0.6 * wet, t, late);
+      drawTail(r, tail, torso, M, fluff - 0.9 * wet, late);
       for (const leg of legs) drawLeg(r, leg, legFloor, M, late);
       drawHead(r, headF, eyes, ears, M, get, blink, late);
     }
@@ -338,7 +352,7 @@ type Get = (k: string) => number;
 
 /** A lock of fur: a tapering capsule from `at` along `dir`. */
 function lock(r: Rig, at: V3, dir: V3, len: number, w: number, mat: Mat) {
-  r.cap(at, vadd(at, vmul(dir, len)), w, w * 0.25, mat);
+  r.cap(at, vadd(at, vmul(dir, len * (1 - 0.45 * WET))), w * (1 - 0.2 * WET), w * 0.25, mat);
 }
 
 function drawTrunk(r: Rig, torso: F3, masses: { c: V3; r: V3 }[], neckBase: V3, headBase: V3, M: Palette, fluff: number, t: number, late: (() => void)[]) {

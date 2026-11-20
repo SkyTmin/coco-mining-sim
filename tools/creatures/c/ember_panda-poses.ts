@@ -17,6 +17,8 @@ export const clips: Record<string, { seconds: number; loop?: boolean }> = {
   happy: { seconds: 1.75 },
   trick: { seconds: 5 },
   trick_b: { seconds: 4.5 },
+  trick_c: { seconds: 5 },
+  fidget_c: { seconds: 2.5 },
   hatch: { seconds: 2 },
   sleep: { seconds: 3, loop: true },
   sleep_in: { seconds: 1.25 },
@@ -37,6 +39,8 @@ export const goalOf = (name: string, f: number, r: number, u: number) => reach(n
 const paw = (side: 'L' | 'R', f: number, r: number, u: number) => reach('paw' + side, [f, r, u]);
 /** On its haunches like a cat. */
 const SIT: JointPose = { sit: 1 };
+/** Sitting up with the bamboo shoot held in both paws at the mouth (Грызёт бамбук). */
+const HOLD: JointPose = { ...SIT, ...paw('L', 4.6, 1.0, 10.2), ...paw('R', 3.2, 3.6, 10.2) };
 /** Asleep: lying curled on the tucked legs, the head sunk, the tail wrapped round. */
 export const SLEEP: JointPose = { crouch: 3.3, tuck: 1, tailWrap: 1, nod: 0.6, blink: 1, headRoll: 0.25, fluff: 0.5, headYaw: -0.2 };
 /** The red panda's threat display: up on the hind legs, turned to the viewer, arms spread high, claws and mouth open,
@@ -65,6 +69,12 @@ export const beats = {
   // rotor; amazed, it lifts off over the frame, the torque turns it round, the rotor sputters, a beat in the air, it
   // drops into a pile of leaves, pops out with leaves on its ears and shakes them off.
   trick_b: { swish: 2, mast: 24, spin: 27, lift: 34, takeoff: 40, fly: 50, sputter: 66, hang: 70, fall: 73, pile: 80, pop: 88, shake: 95, done: 102 },
+  // Хвост-зонтик: a drop on the nose, a little rain cloud overhead; it raises its tail as an umbrella and struts under
+  // it, smug; lightning strikes the tail, fur on end; the downpour soaks it; it runs away and back, the cloud follows;
+  // a last bucket; a mighty dog-shake, and it ends puffed up into a ball; a rainbow.
+  trick_c: { cloud: 0, drop: 6, umbrella: 14, strut: 18, uhoh: 40, bolt: 42, soak: 47, sit: 50, runL: 60, look: 70, runR: 74, bucket: 84, shake: 86, ball: 98, settle: 106 },
+  // Грызёт бамбук: sniffs the ground, digs, pulls out a shoot, sits and munches it down, licks its lips, pats its belly.
+  fidget_c: { sniff: 3, dig: 6, pull: 14, munch: 17, pause: 28, chew: 36, done: 46, pat: 48 },
   fidget_a: { sit: 4, lick: 6, wipe: 16, shake: 32 },
   fidget_b: { spot: 2, chase: 11, catch: 30 },
   hatch: { rustle: 0, slip: 6, land: 14, bounce: 17, dizzy: 22, shake: 35 },
@@ -261,6 +271,90 @@ export const tracks: Record<string, Track> = {
     [18, { headRoll: 0.2, blush: 1, ears: -0.2 }, 's'],
     [24, {}],
   ],
+  // Хвост-зонтик (see the beats).
+  trick_c: [
+    [0, {}],
+    [6, { nod: -0.3, lookY: 0.8, ears: 0.6, blink: 1 }, 'o'],
+    [8, { nod: -0.45, lookY: 1, ears: 0.6, browUp: 1 }, 'o'],
+    [12, { nod: -0.5, lookY: 1, ears: -0.3, browUp: 1, mouth: 0.3 }],
+    [14, { tailUmbrella: 0.45, crouch: 0.5, nod: -0.3, lookY: 0.6, joy: 1 }, 'o'],
+    [17, { tailUmbrella: 1, crouch: 0.9, nod: -0.1, headYaw: -0.3, joy: 1, ...size(1.05, 0.95) }, 'b'],
+    [18, { tailUmbrella: 1, crouch: 0.6, lift: 0.7, dx: 2.2, headYaw: -0.35, headRoll: -0.12, joy: 1, ears: 0.4, ...patter(0) }, 'o'],
+    [20, { tailUmbrella: 1, crouch: 0.9, lift: 0, dx: 4.4, headYaw: -0.35, headRoll: 0.12, joy: 1, ears: 0.4, ...patter(1) }, 'o'],
+    [22, { tailUmbrella: 1, crouch: 0.6, lift: 0.7, dx: 6.6, headYaw: -0.35, headRoll: -0.12, joy: 1, ears: 0.4, ...patter(2) }, 'o'],
+    [24, { tailUmbrella: 1, crouch: 0.9, lift: 0, dx: 8.8, headYaw: -0.35, headRoll: 0.12, joy: 1, ears: 0.4, ...patter(3) }, 'o'],
+    [26, { tailUmbrella: 1, crouch: 0.6, lift: 0.7, dx: 11.0, headYaw: -0.35, headRoll: -0.12, joy: 1, ears: 0.4, ...patter(4) }, 'o'],
+    [28, { tailUmbrella: 1, crouch: 0.9, lift: 0, dx: 13.2, headYaw: -0.35, headRoll: 0.12, joy: 1, ears: 0.4, ...patter(5) }, 'o'],
+    [30, { tailUmbrella: 1, crouch: 0.6, lift: 0.7, dx: 15.4, headYaw: -0.35, headRoll: -0.12, joy: 1, ears: 0.4, ...patter(6) }, 'o'],
+    [32, { tailUmbrella: 1, crouch: 0.9, lift: 0, dx: 17.6, headYaw: -0.35, headRoll: 0.12, joy: 1, ears: 0.4, ...patter(7) }, 'o'],
+    [34, { tailUmbrella: 1, crouch: 0.6, lift: 0.7, dx: 19.8, headYaw: -0.35, headRoll: -0.12, joy: 1, ears: 0.4, ...patter(8) }, 'o'],
+    [36, { tailUmbrella: 1, crouch: 0.9, lift: 0, dx: 22.0, headYaw: -0.35, headRoll: 0.12, joy: 1, ears: 0.4, ...patter(9) }, 'o'],
+    [38, { tailUmbrella: 1, crouch: 0.8, dx: 22, headYaw: -0.45, headRoll: 0.2, joy: 1, ears: 0.4 }, 'io'],
+    [40, { tailUmbrella: 1, crouch: 0.9, dx: 22, nod: -0.45, lookY: 1, browUp: 1, ears: 0.8 }, 'o'],
+    // The strike flickers like a cartoon zap: bright, charred silhouette, bright, half-charred, itself again.
+    [42, { flash: 0.4, lift: 5, dx: 22, fluff: 1.6, tailUmbrella: 0, tailUp: 1.5, tailCurl: -0.5, ears: 1, browUp: 1, mouth: 1, claws: 1, ...size(0.94, 1.1) }, 's'],
+    [43, { zap: 1, lift: 5.3, dx: 22, fluff: 1.7, tailUp: 1.5, tailCurl: -0.5, ears: 1, browUp: 1, mouth: 1, claws: 1, ...size(0.96, 1.08) }, 's'],
+    [44, { flash: 0.25, lift: 5.5, dx: 22, fluff: 1.6, tailUp: 1.5, tailCurl: -0.5, ears: 1, browUp: 1, mouth: 1, claws: 1 }, 's'],
+    [45, { zap: 0.55, lift: 5, dx: 22, fluff: 1.6, tailUp: 1.4, tailCurl: -0.4, ears: 1, browUp: 1, mouth: 1, claws: 1 }, 's'],
+    [47, { crouch: 1.4, dx: 22, fluff: 1.3, tailUp: 1.1, ears: 0.6, mouth: 0.5, wet: 0.3, ...size(1.1, 0.9) }, 'i'],
+    [50, { ...SIT, dx: 22, wet: 0.9, ears: -0.9, lid: 0.5, nod: 0.3, tailUp: -0.4 }, 'io'],
+    [58, { ...SIT, dx: 22, wet: 1, ears: -1, lid: 0.55, nod: 0.36, tailUp: -0.5, headRoll: 0.12 }],
+    [60, { dx: 20, wet: 1, yaw: Math.PI / 2, ears: -0.6, ...patter(0) }, 'o'],
+    [62, { dx: 11, wet: 1, yaw: Math.PI, lift: 1.2, ears: -0.6, ...patter(1) }, 'o'],
+    [64, { dx: 0, wet: 1, yaw: Math.PI, lift: 0, ears: -0.6, ...patter(2) }, 'l'],
+    [66, { dx: -11, wet: 1, yaw: Math.PI, lift: 1.2, ears: -0.6, ...patter(3) }, 'l'],
+    [68, { dx: -22, wet: 1, yaw: Math.PI, lift: 0, ears: -0.6, ...patter(0) }, 'l'],
+    [70, { dx: -28, wet: 1, yaw: 0.6 * Math.PI, headYaw: 0.4, nod: -0.5, lookY: 1, ears: -0.2, browUp: 1 }, 'o'],
+    [73, { dx: -28, wet: 1, yaw: 0.6 * Math.PI, headYaw: 0.4, nod: -0.55, lookY: 1, ears: -0.2, browUp: 1, mouth: 0.6 }],
+    [74, { dx: -24, wet: 1, yaw: Math.PI / 4, ears: -0.6, lift: 1, ...patter(1) }, 'o'],
+    [76, { dx: -13, wet: 1, yaw: 0, ears: -0.6, lift: 0, ...patter(2) }, 'l'],
+    [78, { dx: -2, wet: 1, yaw: 0, ears: -0.6, lift: 1.2, ...patter(3) }, 'l'],
+    [80, { dx: 6, wet: 1, yaw: 0, ears: -0.6, lift: 0, ...patter(0) }, 'l'],
+    [82, { ...SIT, dx: 6, wet: 1, ears: -0.8, nod: -0.4, lookY: 1, lid: 0.3 }, 'o'],
+    [84, { ...SIT, dx: 5, wet: 1, ears: -1, nod: 0.25, lid: 1, crouch: 0.6, ...size(1.08, 0.92) }, 'i'],
+    [86, { roll: 0.34, headRoll: 0.42, sway: 0.5, wet: 1.0, fluff: 0.0, ears: 0.6, lid: 1, dx: 4.0, ...size(1.0) }, 'o'],
+    [87, { roll: -0.34, headRoll: -0.42, sway: -0.5, wet: 0.89, fluff: 0.15, ears: 0.6, lid: 1, dx: 3.87, ...size(1.015) }, 'o'],
+    [88, { roll: 0.34, headRoll: 0.42, sway: 0.5, wet: 0.78, fluff: 0.29, ears: 0.6, lid: 1, dx: 3.73, ...size(1.029) }, 'o'],
+    [89, { roll: -0.34, headRoll: -0.42, sway: -0.5, wet: 0.67, fluff: 0.44, ears: 0.6, lid: 1, dx: 3.6, ...size(1.044) }, 'o'],
+    [90, { roll: 0.34, headRoll: 0.42, sway: 0.5, wet: 0.56, fluff: 0.58, ears: 0.6, lid: 1, dx: 3.47, ...size(1.058) }, 'o'],
+    [91, { roll: -0.34, headRoll: -0.42, sway: -0.5, wet: 0.44, fluff: 0.73, ears: 0.6, lid: 1, dx: 3.33, ...size(1.073) }, 'o'],
+    [92, { roll: 0.34, headRoll: 0.42, sway: 0.5, wet: 0.33, fluff: 0.87, ears: 0.6, lid: 1, dx: 3.2, ...size(1.087) }, 'o'],
+    [93, { roll: -0.34, headRoll: -0.42, sway: -0.5, wet: 0.22, fluff: 1.02, ears: 0.6, lid: 1, dx: 3.07, ...size(1.102) }, 'o'],
+    [94, { roll: 0.34, headRoll: 0.42, sway: 0.5, wet: 0.11, fluff: 1.16, ears: 0.6, lid: 1, dx: 2.93, ...size(1.116) }, 'o'],
+    [95, { roll: -0.34, headRoll: -0.42, sway: -0.5, wet: 0, fluff: 1.31, ears: 0.6, lid: 1, dx: 2.8, ...size(1.131) }, 'o'],
+    [96, { roll: 0.34, headRoll: 0.42, sway: 0.5, wet: 0, fluff: 1.45, ears: 0.6, lid: 1, dx: 2.67, ...size(1.145) }, 'o'],
+    [97, { roll: -0.34, headRoll: -0.42, sway: -0.5, wet: 0, fluff: 1.6, ears: 0.6, lid: 1, dx: 2.53, ...size(1.16) }, 'o'],
+    [98, { fluff: 1.6, dx: 3, browUp: 1, blush: 1, ears: 0.8, tailUp: 0.6, ...size(1.18) }, 'o'],
+    [104, { fluff: 1.6, dx: 2.5, browUp: 1, blush: 1, ears: 0.8, lookX: -0.5, tailUp: 0.6, ...size(1.17) }],
+    [106, { fluff: 0.2, dx: 2, ears: 0.4, blink: 1, ...size(0.97, 1.03) }, 'o'],
+    [110, { dx: 1, joy: 1, blush: 0.6, headRoll: 0.25, tailWag: 0.5 }, 'b'],
+    [120, {}],
+  ],
+  // Грызёт бамбук (see the beats).
+  fidget_c: [
+    [0, {}],
+    [3, { crouch: 0.9, nod: 0.55, stretch: -0.3, lookY: -0.8, ears: 0.5, pitch: 0.12 }, 'o'],
+    [5, { crouch: 0.9, nod: 0.62, stretch: -0.3, lookY: -0.8, ears: 0.5, pitch: 0.12 }, 'o'],
+    ...[0, 1, 2, 3].map((k): Key => [6 + k * 2, { crouch: 0.9, nod: 0.55, lookY: -0.8, ears: 0.5, pitch: 0.12, tapRF: k % 2 ? 0 : 1, tapLF: k % 2 ? 0.6 : 0 }, 'o']),
+    [14, { ...HOLD, joy: 1, ears: 0.6, ...size(0.96, 1.04) }, 'o'],
+    [16, { ...HOLD, joy: 1, ears: 0.5 }, 'b'],
+    // Munches with a sway and a swishing tail; stops dead, an ear flicks, a glance at the viewer («это моё»); a happy
+    // wiggle of the whole body; munches on faster.
+    ...Array.from({ length: 6 }, (_, k): Key => [17 + k * 2, { ...HOLD, mouth: k % 2 ? 0.1 : 0.7, nod: k % 2 ? 0.08 : 0.2, headRoll: k % 2 ? 0.1 : -0.06, lid: 0.6, ears: 0.3, tailWag: k % 4 < 2 ? 0.35 : -0.35 }, 'o']),
+    [28, { ...HOLD, nod: 0.04, lookX: 0.7, earL: 1, earR: -0.3, browUp: 0.7 }, 'o'],
+    [30, { ...HOLD, nod: 0.04, lookX: 0.7, earL: -0.2, earR: 0.5, browUp: 0.7 }, 'o'],
+    [32, { ...HOLD, joy: 1, blush: 0.6, mouth: 0.3, ears: 0.6, tailWag: 0.9, ...size(1.06, 0.94) }, 'o'],
+    [33, { ...HOLD, joy: 1, blush: 0.6, ears: 0.6, tailWag: -0.9, headRoll: 0.18, ...size(0.95, 1.06) }, 'o'],
+    [34, { ...HOLD, joy: 1, blush: 0.6, ears: 0.6, tailWag: 0.9, headRoll: -0.18, ...size(1.05, 0.95) }, 'o'],
+    [35, { ...HOLD, joy: 1, ears: 0.5, tailWag: -0.6, headRoll: 0.12, ...size(0.97, 1.03) }, 'o'],
+    ...Array.from({ length: 4 }, (_, k): Key => [36 + k * 2, { ...HOLD, mouth: k % 2 ? 0.1 : 0.8, nod: k % 2 ? 0.04 : 0.24, headRoll: k % 2 ? 0.08 : -0.08, lid: 0.4, ears: 0.4, tailWag: k % 2 ? 0.3 : -0.3 }, 'o']),
+    [46, { ...SIT, mouth: 0.3, nod: -0.2, lookY: 0.6, joy: 1, ears: 0.4 }, 'o'],
+    [48, { ...SIT, ...paw('R', 3.6, 3.0, 6.6), joy: 1, blush: 1, ears: 0.4 }, 'o'],
+    [50, { ...SIT, ...paw('R', 3.6, 3.0, 7.2), joy: 1, blush: 1, ears: 0.4 }, 'o'],
+    [52, { ...SIT, ...paw('R', 3.6, 3.0, 6.6), joy: 1, blush: 1, ears: 0.4 }, 'o'],
+    [56, { ears: 0.3, blush: 0.5 }, 'io'],
+    [60, {}],
+  ],
   trick: [
     [0, {}],
     [3, { headYaw: -0.6, nod: -0.45, lookY: 0.8, lookX: -0.3, ears: 0.8 }, 'o'],
@@ -360,7 +454,9 @@ export function gesture(anim: string, t: number): JointPose {
           : ease === 'l'
             ? x
             : ease === 's'
-              ? 0
+              ? x >= 1
+                ? 1
+                : 0
               : x * x * (3 - 2 * x);
   const pose: JointPose = {};
   for (const name of new Set([...Object.keys(a), ...Object.keys(b)])) {

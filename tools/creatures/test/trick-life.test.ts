@@ -129,3 +129,31 @@ test('one-form tricks (below legendary) play in life without phase, idle-f2 or h
   }
   assert.match(validateBehavior({ ...oneForm, tricks: { f1: ['trick_b'] } }, single).join(), /tricks\.f1/);
 });
+
+test('a rare pet cycles three tricks in life and its own extra gesture joins the ambient rotation', () => {
+  const { phase, 'idle-f2': idleF2, 'happy-f2': happyF2, 'trick-f2': trickF2, 'trick_b-f2': trickBF2, ...single } = clips;
+  const extra = { ...single,
+    trick_c: { seconds: 5, interrupt: interruptFrames(120, 'trick_c') },
+    fidget_c: { seconds: 2.5, interrupt: interruptFrames(60, 'fidget_c') } };
+  const rare: BehaviorConfig = { ...config, weights: { idle: 1, look: 1, fidget_a: 1, fidget_b: 1, fidget_c: 4, trick: 100 },
+    tricks: { f1: ['trick', 'trick_b', 'trick_c'] } };
+  assert.deepEqual(validateBehavior(rare, extra), []);
+  const pet = createPetBehavior(rare, extra);
+  const seen: string[] = [];
+  let gestures = 0;
+  for (let cycle = 0; cycle < 3; cycle++) {
+    const frames = Array.from({ length: 720 }, () => {
+      const row = pet.sample();
+      pet.advance(1 / 24);
+      return row;
+    });
+    seen.push(...frames.filter(row => row.anim.startsWith('trick') && row.frame === 0).map(row => row.anim));
+    gestures += frames.filter(row => row.anim === 'fidget_c' && row.frame === 0).length;
+    assert.equal(frames.at(-1)!.anim, 'idle');
+  }
+  assert.deepEqual(seen, rare.tricks!.f1);
+  assert.ok(gestures > 0, 'fidget_c never played');
+  assert.match(validateBehavior({ ...rare, tricks: { f1: ['trick', 'trick_c', 'trick_c'] } }, extra).join(), /tricks\.f1/);
+  const { trick_c, ...missing } = extra;
+  assert.match(validateBehavior(rare, missing).join(), /tricks\.f1/);
+});

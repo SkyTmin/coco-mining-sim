@@ -20,8 +20,12 @@ const requiredEvents = {
 const requiredClips = ['idle', 'fidget_a', 'fidget_b', 'look', 'happy', 'trick',
   'sleep_in', 'sleep', 'sleep_out', 'wake_startled', 'hatch', 'turn', 'tired',
   ...petDirections.map(dir => 'walk_' + dir)];
-const trickClips = { f1: ['trick', 'trick_b'], f2: ['trick-f2', 'trick_b-f2'] };
+// Up to six tricks a form (the count grows with rarity, each creature may have its own number), played in turn.
+const trickNames = ['trick', 'trick_b', 'trick_c', 'trick_d', 'trick_e', 'trick_f'];
+const trickClips = { f1: trickNames, f2: trickNames.map(name => name + '-f2') };
+// Every pet has two gestures; a creature may add its own (fidget_c, fidget_d…) and they join the ambient rotation.
 const ambientClips = ['idle', 'fidget_a', 'fidget_b', 'look'];
+const isAmbient = name => ambientClips.includes(name) || /^fidget_[c-h]$/.test(name);
 const pair = (v, check) => Array.isArray(v) && v.length === 2 && v.every(check);
 const positive = v => Number.isFinite(v) && v > 0;
 function interval(v, min, max) {
@@ -296,7 +300,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
       };
       while (frames) {
         const options = Object.entries(config.weights).filter(([name]) =>
-          (!tricks || ambientClips.includes(name)) && length(animations, name) <= frames);
+          (!tricks || isAmbient(name)) && length(animations, name) <= frames);
         if (!options.length || first) {
           const count = first ? Math.min(idleFrames, frames) : frames;
           fillIdle(count, last ? (idleFrames - count % idleFrames) % idleFrames : 0);

@@ -2511,6 +2511,16 @@
         "frames": 108
       },
       {
+        "id": "trick_c",
+        "name": "Трюк: хвост-зонтик",
+        "frames": 120
+      },
+      {
+        "id": "fidget_c",
+        "name": "Грызёт бамбук",
+        "frames": 60
+      },
+      {
         "id": "sleep_in",
         "name": "Засыпание",
         "frames": 30
@@ -2568,7 +2578,7 @@
       {
         "id": "showreel",
         "name": "Все анимации",
-        "frames": 1134
+        "frames": 1260
       }
     ]
   },

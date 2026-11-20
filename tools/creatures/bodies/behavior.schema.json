@@ -135,13 +135,13 @@
         "f1": {
           "type": "array",
           "uniqueItems": true,
-          "items": { "enum": ["trick", "trick_b"] },
+          "items": { "enum": ["trick", "trick_b", "trick_c", "trick_d", "trick_e", "trick_f"] },
           "contains": { "const": "trick" }
         },
         "f2": {
           "type": "array",
           "uniqueItems": true,
-          "items": { "enum": ["trick-f2", "trick_b-f2"] },
+          "items": { "enum": ["trick-f2", "trick_b-f2", "trick_c-f2", "trick_d-f2", "trick_e-f2", "trick_f-f2"] },
           "contains": { "const": "trick-f2" }
         }
       }

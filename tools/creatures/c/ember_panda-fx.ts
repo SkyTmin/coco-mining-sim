@@ -401,6 +401,109 @@ function strangerLeaf(p: Pen, f: FxInput, frame: number) {
   }
 }
 
+
+/** A little rain cloud: grey puffs with a lighter top, a dark belly; `dark` deepens it before the bolt. */
+function rainCloud(p: Pen, [x, y]: XY, s: number, a: number, dark = 0) {
+  if (a <= 0 || s <= 0) return;
+  const base = dark > 0.5 ? ['#3a4050', '#565e70', '#7a8296'] : ['#6a7284', '#9aa2b4', '#d0d6e2'];
+  const puffs: [number, number, number][] = [[-10, 1, 6], [-3, -3, 8], [6, -1, 7], [12, 2, 5], [1, 3, 7]];
+  for (const [dx, dy, r] of puffs) ellFill(p, [x + dx * s, y + dy * s + 1.5], r * s, r * s * 0.7, base[0], a);
+  for (const [dx, dy, r] of puffs) ellFill(p, [x + dx * s, y + dy * s], r * s * 0.9, r * s * 0.65, base[1], a);
+  for (const [dx, dy, r] of puffs.slice(1, 3)) ellFill(p, [x + dx * s - 1.5, y + dy * s - 2], r * s * 0.5, r * s * 0.35, base[2], a);
+}
+/** Rain from a cloud: short slanted streaks falling to a floor line; `stop(x)` returns a y where a drop hits something
+ * first (the tail umbrella, the head) or null. Each hit leaves a splash. */
+function rain(p: Pen, [cx, cy]: XY, w: number, floor: number, frame: number, n: number, seed: number, a: number, stop: (x: number) => number | null) {
+  if (a <= 0) return;
+  for (let i = 0; i < n; i++) {
+    const x = cx + (hash(i, seed, 1) - 0.5) * w;
+    const len = floor - cy;
+    const k = (((frame * 0.22 + hash(i, seed, 2)) % 1) + 1) % 1;
+    const hit = stop(x);
+    const end = hit ?? floor;
+    const y = cy + 4 + k * (len + 6);
+    if (y > end) {
+      // The splash where it landed, for a frame or two.
+      if (y < end + 7) {
+        p.col(water[2], a * 0.9);
+        p.rect(Math.round(x) - 2, Math.round(end) - 1, 1, 1);
+        p.rect(Math.round(x) + 2, Math.round(end) - 1, 1, 1);
+        p.rect(Math.round(x) - 1, Math.round(end) - 2, 1, 1);
+        p.rect(Math.round(x) + 1, Math.round(end) - 2, 1, 1);
+      }
+      continue;
+    }
+    // Two tones, so a streak reads on the pale mist and on the grass alike.
+    p.col('#3e6a88', a * 0.95);
+    p.line(Math.round(x), Math.round(y), Math.round(x - 1), Math.round(y + 4));
+    p.col(water[3], a);
+    p.rect(Math.round(x - 1), Math.round(y + 5), 1, 1);
+  }
+}
+/** A lightning bolt from a point to a point: a jagged white-yellow line with a glow and branches. */
+function bolt(p: Pen, from: XY, to: XY, seed: number, a: number) {
+  if (a <= 0) return;
+  const pts: XY[] = [from];
+  const n = 6;
+  for (let i = 1; i < n; i++) {
+    const k = i / n;
+    pts.push([from[0] + (to[0] - from[0]) * k + (hash(i, seed, 1) - 0.5) * 12, from[1] + (to[1] - from[1]) * k]);
+  }
+  pts.push(to);
+  for (const [w, col, al] of [[5, '#ffe48a', 0.45], [3, '#fff6c8', 0.8], [1, '#ffffff', 1]] as const)
+    for (let i = 1; i < pts.length; i++) {
+      p.col(col, a * al);
+      for (let o = -Math.floor(w / 2); o <= Math.floor(w / 2); o++)
+        p.line(Math.round(pts[i - 1][0] + o), Math.round(pts[i - 1][1]), Math.round(pts[i][0] + o), Math.round(pts[i][1]));
+    }
+  const b = pts[3];
+  p.col('#fff6c8', a);
+  p.line(Math.round(b[0]), Math.round(b[1]), Math.round(b[0] + 7), Math.round(b[1] + 6));
+}
+/** A puddle growing under the panda: a flat water ellipse with a pale rim and rings from the drops. */
+function puddle(p: Pen, [x, y]: XY, r: number, frame: number, a: number) {
+  if (a <= 0 || r < 1) return;
+  ellFill(p, [x, y + 1], r + 1, (r + 1) * 0.3, water[0], a * 0.7);
+  ellFill(p, [x, y + 1], r, r * 0.28, water[1], a * 0.6);
+  for (let k = 0; k < 2; k++) {
+    const age = ((frame / 8 + k * 0.5) % 1 + 1) % 1;
+    oval(p, [x + (k ? r * 0.4 : -r * 0.3), y + 1], 1 + age * r * 0.4, (1 + age * r * 0.4) * 0.3, water[3], a * (1 - age) * 0.8);
+  }
+}
+/** A small rainbow: five arcs over a point. */
+function rainbow(p: Pen, [x, y]: XY, r: number, a: number) {
+  if (a <= 0) return;
+  ['#e85a5a', '#f0a040', '#f0e060', '#60c070', '#5a8ae0'].forEach((col, i) => oval(p, [x, y], r - i, (r - i) * 0.6, col, a * 0.75, Math.PI, TAU));
+}
+/** A bamboo shoot held in the paws: a short green stalk from `base` towards `tip`, nodes, leaves until it is bitten. */
+function shoot(p: Pen, base: XY, dir: XY, len: number, leaves: boolean, a: number) {
+  if (a <= 0 || len <= 0) return;
+  const l = Math.hypot(dir[0], dir[1]) || 1,
+    ux = dir[0] / l,
+    uy = dir[1] / l;
+  for (let i = 0; i <= len; i++) {
+    const x = base[0] + ux * i,
+      y = base[1] + uy * i;
+    p.col(bamboo[0], a);
+    p.rect(Math.round(x) - 2, Math.round(y), 5, 1);
+    p.col(bamboo[1], a);
+    p.rect(Math.round(x) - 1, Math.round(y), 3, 1);
+    p.col(i % 5 === 4 ? bamboo[0] : bamboo[3], a);
+    p.rect(Math.round(x), Math.round(y), 1, 1);
+  }
+  const tip: XY = [base[0] + ux * len, base[1] + uy * len];
+  if (leaves) {
+    blade(p, [tip[0] + 2, tip[1] - 1], -0.6, 8, a);
+    blade(p, [tip[0] - 2, tip[1] - 1], -2.5, 8, a);
+    blade(p, [tip[0], tip[1] - 2], -1.57, 6, a);
+  } else {
+    p.col(straw[3], a);
+    p.rect(Math.round(tip[0]) - 2, Math.round(tip[1]), 5, 1);
+    p.col(straw[2], a);
+    p.rect(Math.round(tip[0]) - 1, Math.round(tip[1]) + 1, 3, 1);
+  }
+}
+
 export function pandaEffects(f: FxInput) {
   const frame = frameOf(f);
   const home = f.feet;
@@ -500,6 +603,120 @@ export function pandaEffects(f: FxInput) {
         spray(f.above, body, frame - b.shake, 12, 10, 50, fur, 27, -0.3, 80, 1.6);
       }
       if (head && frame >= b.done && frame < 108) sparkle(f.above, [head[0] + 18, head[1] - 12], 3.2 * (1 - progress(frame, b.done + 2, 108)), 1);
+      break;
+    }
+    case 'trick_c': {
+      const b = beats.trick_c;
+      const crown = pt(f, 'crown');
+      // The cloud follows the head with a lag, never above the top of the field; it darkens before the bolt and melts
+      // away after the bucket.
+      const lagged = pt(f, 'crown', frame - 5) ?? crown;
+      const enter = progress(frame, 0, 6);
+      const gone = progress(frame, b.shake, b.shake + 6);
+      // For the bolt it climbs to the top of the field, so the strike into the tail is long enough to read.
+      const climb = progress(frame, b.uhoh - 8, b.uhoh) * (1 - progress(frame, b.soak, b.soak + 8));
+      const cloudAt: XY | null = lagged
+        ? [lagged[0] - 30 * (1 - enter), Math.max(16, lagged[1] - 50) - 16 * (1 - enter) + (17 - Math.max(16, lagged[1] - 50)) * climb]
+        : null;
+      const heavy = frame >= b.soak && frame < b.bucket + 2;
+      if (cloudAt && gone < 1) {
+        const size = (frame >= b.bolt - 2 && frame < b.soak ? 1.75 : 1.45) * (1 - 0.6 * gone);
+        rainCloud(f.above, cloudAt, size, enter * (1 - gone), frame >= b.uhoh && frame < b.soak ? 1 : 0);
+        // Rain: a few drops first, steady under the umbrella, a downpour after the bolt.
+        const tm = pt(f, 'tailMid'),
+          tt = pt(f, 'tailTip'),
+          head = pt(f, 'head');
+        const umbrella = frame >= b.umbrella + 2 && frame < b.bolt;
+        const stop = (x: number): number | null => {
+          if (umbrella && tm && tt) {
+            const lo = Math.min(tm[0], tt[0]) - 4,
+              hi = Math.max(tm[0], tt[0]) + 6;
+            if (x >= lo && x <= hi) return Math.min(tm[1], tt[1]) + 2;
+          }
+          if (heavy && head && Math.abs(x - head[0]) < 12) return head[1] - 14;
+          return null;
+        };
+        const n = frame < b.umbrella ? 5 : heavy ? 30 : 20;
+        rain(f.above, cloudAt, heavy ? 62 : 58, home[1] + 2, frame, n, 41, (1 - gone) * enter, stop);
+      }
+      const nose = pt(f, 'nose', b.drop);
+      if (nose) drop(f.above, [nose[0], nose[1] - 6 + Math.min(0, frame - b.drop) * 4], frame <= b.drop + 1 && frame >= b.drop - 3 ? 1 : 0);
+      if (frame >= b.drop && frame < b.drop + 3 && nose) burst(f.above, [nose[0], nose[1] - 4], frame - b.drop, 3, 3, 2, water[3], 2);
+      // The bolt into the tail, sparks, a puff of smoke; the frizz.
+      const tip = pt(f, 'tailTip', b.bolt - 1),
+        tipNow = pt(f, 'tailTip');
+      if (cloudAt && tipNow && frame >= b.bolt && frame < b.bolt + 3) bolt(f.above, [cloudAt[0] + 2, cloudAt[1] + 6], tipNow, 47 + (frame - b.bolt), 1 - (frame - b.bolt) / 4);
+      if (tip) {
+        spray(f.above, tip, frame - b.bolt, 10, 10, 50, gold, 48, -0.4, 60, 1.8);
+        dustCloud(f.above, tip, frame - b.bolt - 1, 12, 4, 10, 8, 49, 0.8);
+      }
+      if (crown && frame >= b.bolt && frame < b.soak) burst(f.above, [crown[0], crown[1] - 2], frame - b.bolt, 5, 7, 6, '#fff6c8', 3, 0.5);
+      // The puddle, drips while soaked, the last bucket.
+      const g = pt(f, 'floor');
+      if (g) puddle(f.under, g, 6 + 12 * progress(frame, b.soak, b.sit + 6), frame, progress(frame, b.soak, b.sit) * (1 - progress(frame, b.ball, b.settle + 8)));
+      const body = pt(f, 'body'),
+        chin = pt(f, 'mouth');
+      if (body && frame >= b.soak && frame < b.shake)
+        for (let i = 0; i < 3; i++) {
+          const k = ((frame * 0.18 + i / 3) % 1 + 1) % 1;
+          const from = i === 0 && chin ? chin : body;
+          drop(f.above, [from[0] + (i - 1) * 7, from[1] + 6 + k * 18], 1 - k);
+        }
+      if (cloudAt && frame >= b.bucket - 1 && frame < b.bucket + 2 && crown) {
+        f.above.col(water[1], 0.8);
+        f.above.rect(Math.round(crown[0]) - 10, Math.round(cloudAt[1] + 4), 20, Math.max(1, Math.round(crown[1] - cloudAt[1] - 4)));
+        f.above.col(water[3], 0.9);
+        f.above.rect(Math.round(crown[0]) - 6, Math.round(cloudAt[1] + 4), 3, Math.max(1, Math.round(crown[1] - cloudAt[1] - 4)));
+      }
+      const head2 = pt(f, 'head', b.bucket);
+      if (head2) drops(f.above, [head2[0], head2[1] - 10], frame - b.bucket, 10, 8, 51, 50);
+      // The mighty shake: drops flung all round, three bursts; then the puff into a ball, a rainbow, a sparkle.
+      for (const [k, at] of [[0, b.shake], [1, b.shake + 4], [2, b.shake + 8]] as const) {
+        const c = pt(f, 'body', at);
+        if (c) {
+          drops(f.above, [c[0], c[1] - 6], frame - at, 10, 10, 52 + k, 70);
+          spray(f.above, [c[0], c[1] - 6], frame - at, 10, 12, 80, water, 55 + k, -0.2, 100, 2);
+        }
+      }
+      const ball = pt(f, 'body', b.ball);
+      if (ball) {
+        sparkleRing(f.above, [ball[0], ball[1] - 10], frame - b.ball, 12, 8, 16, 38, 0.3);
+        spray(f.above, ball, frame - b.settle, 12, 10, 40, fur, 57, -0.6, 60, 1.6);
+      }
+      if (frame >= b.shake + 2) rainbow(f.under, [home[0] - 10, home[1] - 56], 58, progress(frame, b.shake + 2, b.ball) * (1 - progress(frame, 112, 120)));
+      if (crown && frame >= b.settle + 4 && frame < 118) sparkle(f.above, [crown[0] + 16, crown[1] + 4], 3.2 * (1 - progress(frame, 112, 118)), 1);
+      // Footfalls while it runs.
+      if (frame >= b.runL && frame < b.bucket && frame % 4 === 0) dustCloud(f.under, pt(f, 'floor') ?? home, 1, 6, 2, 2, 6, 58 + frame, 0.5);
+      break;
+    }
+    case 'fidget_c': {
+      const b = beats.fidget_c;
+      const dig = pt(f, 'pawRGround', b.dig + 2) ?? home;
+      dustCloud(f.under, dig, frame - b.dig, 8, 3, 2, 8, 101, 0.6);
+      dustCloud(f.under, dig, frame - b.dig - 4, 8, 3, 2, 8, 102, 0.6);
+      // The shoot comes out of the ground, then rides in the paws and gets shorter with every bite.
+      if (frame >= b.dig + 4 && frame < b.pull) {
+        const up = progress(frame, b.dig + 4, b.pull);
+        shoot(f.above, [dig[0] + 2, dig[1]], [0.2, -1], 5 + 11 * up, true, 1);
+      }
+      const L = pt(f, 'pawL'),
+        R = pt(f, 'pawR'),
+        mouth = pt(f, 'mouth');
+      if (L && R && mouth && frame >= b.pull && frame < b.done) {
+        const base: XY = [(L[0] + R[0]) / 2, (L[1] + R[1]) / 2 + 2];
+        // Chewing time stops during the pause and the wiggle.
+        const chew = Math.max(0, Math.min(frame, b.pause) - b.munch) + Math.max(0, frame - b.chew);
+        const chewing = frame >= b.munch && (frame < b.pause || frame >= b.chew);
+        const bites = Math.floor(chew / 4);
+        const len = Math.max(2, 17 - bites * 2.4);
+        shoot(f.above, base, [mouth[0] - base[0] + 2, mouth[1] - base[1] - 2], len, bites === 0, 1);
+        if (chewing && chew % 4 < 2) spray(f.above, mouth, chew % 4, 4, 3, 30, bamboo, 103 + bites, -0.6, 60, 1.6);
+      }
+      const head = pt(f, 'head');
+      if (head) hearts(f.above, [head[0] + 4, head[1] - 20], frame - b.pat, 12, 1);
+      // The happy wiggle: a sparkle of delight.
+      const wiggle = pt(f, 'head', b.pause + 4);
+      if (wiggle && frame >= b.pause + 4 && frame < b.chew + 4) sparkle(f.above, [wiggle[0] + 16, wiggle[1] - 14], 3 * (1 - progress(frame, b.chew, b.chew + 4)), 1);
       break;
     }
     case 'hatch': {

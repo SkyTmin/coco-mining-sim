@@ -32,12 +32,14 @@
     "fidget_a": 2,
     "fidget_b": 2,
     "look": 2,
-    "trick": 1
+    "trick": 1,
+    "fidget_c": 2
   },
   "tricks": {
     "f1": [
       "trick",
-      "trick_b"
+      "trick_b",
+      "trick_c"
     ]
   },
   "events": {
