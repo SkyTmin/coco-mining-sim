@@ -13,11 +13,12 @@ import { F3, Rig, renderRig, vadd, vcross, vdot, vlerp, vmul, vnorm, vsub, type 
 import { projectFigure, scaleFigure } from '../rig/figure';
 import type { JointPose } from '../technique';
 import { finishSurfaces } from './surface-work';
+import { clips } from './astral_seer-poses';
 
 const card = readCreatureCard('astral_seer');
-export const portraitScale = 1.75;
+export const portraitScale = 1.98;
 /** Height of the pelvis above the grass at rest, rig units. */
-export const HOVER = 36;
+export const HOVER = 22;
 const tones = (name: string) => card.materials.find((m) => m.name === name)!.tones;
 const sw = (name: string, idx: number[], glow = 0): Mat => {
   const t = tones(name);
@@ -103,7 +104,7 @@ function prism(r: Rig, c: V3, axis: V3, side: V3, length: number, radius: number
 }
 
 // ---- head -----------------------------------------------------------------------------------------
-function ear(r: Rig, H: F3, s: number, droop: number, flick: number, form: number, t: number, j: Record<string, V3>) {
+function ear(r: Rig, H: F3, s: number, droop: number, flick: number, form: number, flame: (k: number) => number, j: Record<string, V3>) {
   const name = s < 0 ? 'L' : 'R';
   r.tag = 'ear' + name;
   const E = H.at(-1.6, s * 4.9, 5.2)
@@ -139,7 +140,7 @@ function ear(r: Rig, H: F3, s: number, droop: number, flick: number, form: numbe
   if (form > 0.3) {
     const flame = vadd(end, E.v(0, 0, 1.5));
     for (let k = 0; k < 3; k++) {
-      const f = vadd(end, E.v(-0.8 + 0.8 * k, s * (0.2 * k), 3.2 + Math.sin(t * 17 + k + s) * 0.9 - Math.abs(k - 1)));
+      const f = vadd(end, E.v(-0.8 + 0.8 * k, s * (0.2 * k), 3.2 + flame(k + s) * 0.9 - Math.abs(k - 1)));
       r.cap(vlerp(end, flame, 0.3), f, 1.1 * form, 0.15, crystal);
     }
   }
@@ -407,7 +408,7 @@ function leg(r: Rig, hips: F3, s: number, foot: V3, lotus: number, j: Record<str
   const name = s < 0 ? 'L' : 'R',
     hip = hips.p(0.4, s * 3.4, -1.2);
   const pole = vnorm(vlerp(hips.v(0.6, s * 1, 0.5), hips.v(1, 0, 0.1), 1 - lotus));
-  const knee = ik(hip, foot, 14.2, 14.6, pole);
+  const knee = ik(hip, foot, 11.0, 11.6, pole);
   r.tag = 'thigh' + name;
   limb(r, hip, knee, 3.0, 2.8, pearl, hips.f);
   for (let k = 0; k < 3; k++) {
@@ -502,14 +503,74 @@ function tail(r: Rig, F: F3, base: V3, hover: number, sway: number, lagSway: num
   prism(r, vadd(tip, vmul(dir, 2.0)), dir, side, 6.0 + form, 1.6, 0.3, crystal, crystalDeep);
   j.tailTip = vadd(tip, vmul(dir, 5.2));
 }
-function orbit(r: Rig, center: V3, F: F3, count: number, phase: number, radius: number, tilt: number, lagOffset: V3, j: Record<string, V3>) {
+function orbit(r: Rig, center: V3, F: F3, count: number, split: number, phase: number, radius: number, tilt: number, lagOffset: V3, j: Record<string, V3>) {
   const plane = F.roll(tilt).pitch(0.25);
   for (let k = 0; k < count; k++) {
-    const a = phase + (k / count) * TAU;
+    // Six crystals start as three pairs and fan apart while `split` runs to 1.
+    const a = count === 6 ? phase + Math.floor(k / 2) * (TAU / 3) + (k % 2) * (TAU / 6) * split : phase + (k / count) * TAU;
     r.tag = ['crystalA', 'crystalB', 'crystalC'][k % 3];
     const c = vadd(vadd(center, vadd(vmul(plane.f, Math.cos(a) * radius), vmul(plane.s, Math.sin(a) * radius))), vmul(lagOffset, 0.4 + 0.2 * k));
     prism(r, c, vadd(plane.u, vmul(plane.f, 0.2 * Math.sin(a))), plane.f, 7.6, 2.2, a * 1.5, crystal, crystalDeep);
     j['crystal' + k] = c;
+  }
+}
+
+// ---- props ----------------------------------------------------------------------------------------
+const rockMat = sw('pearl', [0, 0, 1, 2]),
+  rockLit = sw('pearl', [0, 1, 2, 3]),
+  dirt: Mat = { T: [hx('#140f12'), hx('#241a1c'), hx('#3a2a26'), hx('#4e3a30')] },
+  mossy: Mat = { T: [hx('#10241c'), hx('#1a3a2a'), hx('#285238'), hx('#3a6a48')] },
+  crack = hx('#9af8ee');
+/** A lumpy boulder torn out of the meadow: faceted stone, a cap of moss and earth clinging underneath; cracks glow
+ * as it is squeezed, and inside sits a crystal that shows once the shell bursts. */
+function rock(r: Rig, c: V3, size: number, spin: number, cracks: number, inside: number) {
+  r.tag = 'rock';
+  const F = F3.yaw(spin).pitch(0.25 * Math.sin(spin * 0.7));
+  const R = new F3(c, F.f, F.s, F.u);
+  if (inside > 0.5) {
+    prism(r, c, R.u, R.f, 9 * size, 3.4 * size, spin, crystal, crystalDeep);
+    r.ball(c, 1.6 * size, aura);
+    return;
+  }
+  const ring = (z: number, rad: number, n: number, off: number) =>
+    Array.from({ length: n }, (_, k) => {
+      const a = off + (k / n) * TAU,
+        w = rad * (0.82 + 0.3 * Math.sin(k * 2.3 + off * 5));
+      return R.p(Math.cos(a) * w * size, Math.sin(a) * w * size, z * size);
+    });
+  const top = R.p(0.6 * size, 0.4 * size, 5.6 * size),
+    bottom = R.p(-0.4 * size, 0, -4.8 * size);
+  const upper = ring(2.4, 5.4, 7, 0.2),
+    lower = ring(-2.2, 5.0, 7, 0.6);
+  for (let k = 0; k < 7; k++) {
+    const a = upper[k],
+      b = upper[(k + 1) % 7],
+      d = lower[k],
+      e = lower[(k + 1) % 7];
+    r.poly([top, a, b], k % 3 === 0 ? mossy : rockLit);
+    r.poly([a, d, e, b], k % 2 ? rockMat : rockLit);
+    r.poly([d, bottom, e], dirt);
+  }
+  for (let k = 0; k < 5; k++) r.dot(R.p(Math.cos(k * 1.7) * 4 * size, Math.sin(k * 1.7) * 4 * size, -3.8 * size), hx('#5a4436'), 0, 0.6);
+  // Glowing cracks run from the top as the seer squeezes it.
+  if (cracks > 0.05)
+    for (let k = 0; k < 4; k++) {
+      const a = (k / 4) * TAU + 0.4;
+      const pts = [top, R.p(Math.cos(a) * 2.6 * size, Math.sin(a) * 2.6 * size, 3.2 * size), R.p(Math.cos(a + 0.4) * 4.6 * size, Math.sin(a + 0.4) * 4.6 * size, 0.6 * size), R.p(Math.cos(a + 0.2) * 5 * size, Math.sin(a + 0.2) * 5 * size, -2 * size)];
+      const n = Math.max(1, Math.round(cracks * 3));
+      for (let i = 0; i < n; i++) r.line(pts[i], pts[i + 1], crack, 0.9, 0.2);
+    }
+}
+/** The storm's star ball: a white-hot core in a turquoise corona with rays. */
+function starBall(r: Rig, c: V3, radius: number, spin: number) {
+  r.tag = 'star';
+  r.ball(c, radius * 1.25, sw('aura', [0, 1, 2, 3], 0.6));
+  r.ball(c, radius, sw('aura', [2, 3, 4, 4], 0.95));
+  const F = F3.yaw(spin);
+  for (let k = 0; k < 8; k++) {
+    const a = (k / 8) * TAU;
+    const tip = vadd(c, vmul(vadd(vmul(F.f, Math.cos(a)), vmul(F.u, Math.sin(a))), radius * (k % 2 ? 1.7 : 2.4)));
+    r.line(c, tip, k % 2 ? spark : white, 1, 0.1);
   }
 }
 
@@ -523,6 +584,11 @@ export function seerFigure(sample: PoseSample): Figure {
       A = pose as JointPose;
     const period = loopPeriods[anim] ?? 0;
     const q = period ? (t * TAU) / period : 0;
+    // Every oscillation makes whole cycles over the clip: loops close and one-shot clips end on idle frame 0.
+    const D = clips[anim]?.seconds ?? 2;
+    const cycles = (perSecond: number) => Math.max(1, Math.round(D * perSecond));
+    const osc = (perSecond: number, phase = 0) => Math.sin((TAU * cycles(perSecond) * t) / D + phase) - Math.sin(phase);
+    const turn = (perSecond: number) => (TAU * cycles(perSecond) * t) / D;
     const previous = (frames: number) => {
       const time = t - frames / 24;
       return sample(anim, period ? ((time % period) + period) % period : Math.max(0, time));
@@ -534,7 +600,7 @@ export function seerFigure(sample: PoseSample): Figure {
     const form = get('form'),
       sleep = get('sleep');
     const bob = period ? 1.3 * Math.sin(q) : 0;
-    const lotus = saturate(get('lotus') + sleep);
+    const lotus = saturate(1 - get('unfold') + sleep);
     const hover = HOVER + get('hover') - get('squat') + bob - sleep * 6;
     const hips = F.at(get('lean') - sleep * 1.5, get('drift'), hover)
       .pitch(get('pitch') + sleep * 0.35)
@@ -548,7 +614,7 @@ export function seerFigure(sample: PoseSample): Figure {
     // Parts that cross the frame in peek / overAll go into a separate rig drawn over the painting frame.
     const overAll = get('overAll') > 0.5,
       peek = get('peekFront') > 0.5;
-    const front = overAll || peek ? new Rig() : null;
+    const front = overAll || peek || get('starOver') > 0.5 ? new Rig() : null;
     const pick = (part: string) => (overAll ? front! : peek && ['head', 'ear', 'armL', 'armR', 'torc'].includes(part) ? front! : r);
     if (get('hidden') < 0.5) {
       // Lagged copies drive the secondary motion: tail, ears, tassels, ruff, torc and orbit.
@@ -561,28 +627,28 @@ export function seerFigure(sample: PoseSample): Figure {
         F,
         hips.p(-4.4, 0, 0.6),
         hover,
-        0.25 * Math.sin(t * 1.9) + get('tailSway'),
+        0.25 * osc(0.33) + get('tailSway'),
         lag(tailLag, 'tailSway') - get('tailSway') + 0.5 * (lag(tailLag, 'twist') - get('twist')) + 0.04 * (lag(tailLag, 'dx') - get('dx')),
         get('tailCurl') + sleep * 0.6,
         form,
         j,
       );
-      torso(overAll ? front! : r, body, form, 0.6 * Math.sin(t * 2.3) + 2 * (lag(ruffLag, 'nod') - get('nod')));
+      torso(overAll ? front! : r, body, form, 0.6 * osc(0.36, 0.7) + 2 * (lag(ruffLag, 'nod') - get('nod')));
       for (let index = 0; index < 2; index++) {
         const s = index ? 1 : -1,
           name = s < 0 ? 'L' : 'R';
         const lotusFoot = hips.p(6.6, -s * 2.6, -5.6);
-        const hanging = hips.p((s < 0 ? 3.6 : 0.4) + get('stride') * s, s * (s < 0 ? 2.8 : 3.4), s < 0 ? -26.4 : -27.8);
+        const hanging = hips.p((s < 0 ? 3.0 : 0.4) + get('stride') * s, s * (s < 0 ? 2.8 : 3.4), s < 0 ? -20.4 : -21.6);
         const rest = vlerp(hanging, lotusFoot, lotus);
         leg(overAll ? front! : r, hips, s, target('foot' + name, rest), lotus, j);
       }
       // Neck and head.
       const headF = body
-        .at(1.2 + sleep * 1.4, 0, 26.6 - sleep * 4.4)
+        .at(1.3 + sleep * 1.4, 0, 25.8 - sleep * 4.4)
         .turn(get('gaze'))
         .roll(get('tilt'))
         .pitch(get('nod') + sleep * 0.45)
-        .scale(1.1);
+        .scale(1.25);
       const neckRig = pick('head');
       neckRig.tag = 'neck';
       neckRig.cap(body.p(0.8, 0, 17.6), headF.p(-0.8, 0, -4.2), 3.6, 3.4, pearl);
@@ -592,17 +658,17 @@ export function seerFigure(sample: PoseSample): Figure {
         mouth: get('mouth'),
         form,
         gem: get('gemOpen'),
-        ruff: 0.8 * Math.sin(t * 2.1) + 3 * (lag(ruffLag, 'nod') - get('nod')),
-        mane: 0.9 * Math.sin(t * 1.7) + 4 * (lag(ruffLag, 'nod') - get('nod')) + 2.5 * (lag(ruffLag, 'hover') - get('hover')) * 0.3 + form * 1.5,
+        ruff: 0.8 * osc(0.33, 1.1) + 3 * (lag(ruffLag, 'nod') - get('nod')),
+        mane: 0.9 * osc(0.27, 0.4) + 4 * (lag(ruffLag, 'nod') - get('nod')) + 2.5 * (lag(ruffLag, 'hover') - get('hover')) * 0.3 + form * 1.5,
         t,
       });
       for (const s of [-1, 1]) {
         const droop = (s < 0 ? get('earL') : get('earR')) + sleep * 0.6 + (lag(earLag, 'nod') - get('nod')) * 0.8;
-        const flick = (lag(earLag, 'gaze') - get('gaze')) * 3 + 0.3 * Math.sin(t * 3 + s);
-        ear(pick('ear'), headF, s, droop, flick, form, t, j);
+        const flick = (lag(earLag, 'gaze') - get('gaze')) * 3 + 0.3 * osc(0.5, s);
+        ear(pick('ear'), headF, s, droop, flick, form, (k) => osc(3, k), j);
       }
       const torcC = vadd(vlerp(body.p(1.0, 0, 19.2), headF.p(-4.2, 0, 1.4), get('halo')), F.v(0, 0, 0.4 * (lag(torcLag, 'hover') - get('hover'))));
-      torc(pick('torc'), torcC, body, get('halo'), (t * TAU) / 6 + get('torcSpin'), form, j);
+      torc(pick('torc'), torcC, body, get('halo'), turn(1 / 6) + get('torcSpin'), form, j);
       // Arms: palms up on the knees at rest; goals move them for gestures.
       for (const s of [-1, 1]) {
         const name = s < 0 ? 'L' : 'R';
@@ -614,8 +680,18 @@ export function seerFigure(sample: PoseSample): Figure {
       if (get('crystalsHidden') < 0.5) {
         const orbitLag = previous(3);
         const lagOffset = F.v((lag(orbitLag, 'dx') - get('dx')) / portraitScale * 0.5, 0, -(lag(orbitLag, 'dy') - get('dy')) / portraitScale * 0.5);
-        orbit(overAll ? front! : r, hips.p(0.6, 0, 8 + get('orbitLift')), F, form > 0.5 ? 6 : 3, (t * TAU) / 3 + get('orbit'), 17 + get('orbitR'), 0.32 + get('orbitTilt'), lagOffset, j);
+        orbit(overAll ? front! : r, hips.p(0.6, 0, 8 + get('orbitLift')), F, get('split') > 0.01 ? 6 : 3, get('split'), turn(1 / 3) + get('orbit'), Math.max(0, 17 + get('orbitR')), 0.32 + get('orbitTilt'), lagOffset, j);
       }
+    }
+    if (get('rock') > 0.5) {
+      const at = F.p(get('rockX'), get('rockY'), get('rockZ'));
+      rock(r, at, Math.max(0.05, get('rockSize')), get('rockSpin'), get('rockCrack'), get('rockCrystal'));
+      j.rock = at;
+    }
+    if (get('star') > 0.02) {
+      const at = F.p(get('starX'), get('starY'), get('starZ'));
+      starBall(get('starOver') > 0.5 ? (front ?? r) : r, at, get('star'), turn(1));
+      j.star = at;
     }
     j.head = j.head ?? body.p(1.4, 0, 24.6);
     j.chest = body.p(1.0, 0, 11);
