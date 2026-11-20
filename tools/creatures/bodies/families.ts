@@ -18,7 +18,7 @@ import { aim, goalAt, toLocal } from './goals';
 import { clearGiantMuzzle } from './giant-head';
 import { poseMageGrip } from './mage-grip';
 
-export type PilotFamily = Exclude<BodyType, 'heavy-quadruped' | 'light-quadruped' | 'armed-biped' | 'cephalopod' | 'arachnid' | 'sky-swimmer' | 'winged-bird'>;
+export type PilotFamily = Exclude<BodyType, 'heavy-quadruped' | 'light-quadruped' | 'armed-biped' | 'cephalopod' | 'arachnid' | 'sky-swimmer'>;
 const families = {
   hexapod: { pilot: beetle, yaw: 0.5 },
   'long-flier': { pilot: silk, yaw: 0.36 },

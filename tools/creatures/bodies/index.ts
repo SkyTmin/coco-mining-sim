@@ -1,5 +1,4 @@
 import { armedFrame, type ArmedAppearance } from './armed-biped';
-import { wingedBirdFrame, type WingedBirdAppearance } from './winged-bird';
 import { skySwimmerFrame, type SkySwimmerAppearance } from './sky-swimmer';
 import { arachnidFrame, type ArachnidAppearance } from './arachnid';
 import { cephalopodFrame, type CephalopodAppearance } from './cephalopod';
@@ -19,7 +18,6 @@ export const bodyTypes = Object.keys(bodySources) as BodyType[];
 
 export interface BodyAppearance {
   skySwimmer?: SkySwimmerAppearance;
-  wingedBird?: WingedBirdAppearance;
   arachnid?: ArachnidAppearance;
   heavy?: HeavyAppearance;
   light?: LightAppearance;
@@ -31,7 +29,6 @@ export interface BodyAppearance {
 
 function frameFor(card: CreatureCard, route: MotionPlan, appearance: BodyAppearance): Creature['frame'] {
   switch (card.body) {
-    case 'winged-bird': return wingedBirdFrame(card, route, appearance.wingedBird);
     case 'sky-swimmer': return skySwimmerFrame(card, route, appearance.skySwimmer);
     case 'arachnid': return arachnidFrame(card, route, appearance.arachnid);
     case 'heavy-quadruped': return heavyFrame(card, route, appearance.heavy);
@@ -49,7 +46,7 @@ export function makeBodyCreature(
   appearance: BodyAppearance = {},
 ): Creature {
   const animations: Record<string, Animation> = { ...everyday };
-  if (card.body === 'long-flier' || card.body === 'winged-dragon' || card.body === 'winged-bird')
+  if (card.body === 'long-flier' || card.body === 'winged-dragon')
     animations.fly = { seconds: 1, loop: true };
   for (const [id, technique] of Object.entries(book)) {
     animations[id] = { seconds: technique.seconds ?? (technique.keys.at(-1)!.frame + 1) / 24 };

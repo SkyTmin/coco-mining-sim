@@ -15,8 +15,7 @@ export type BodyType =
   | 'armed-biped'
   | 'squat-mage'
   | 'giant'
-  | 'winged-dragon'
-  | 'winged-bird';
+  | 'winged-dragon';
 export type TemplateId =
   | 'overhead'
   | 'ram'

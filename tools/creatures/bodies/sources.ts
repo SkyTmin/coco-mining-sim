@@ -13,5 +13,4 @@ export const bodySources: Record<BodyType, string> = {
   'squat-mage': 'toad_shaman',
   giant: 'crater_titan',
   'winged-dragon': 'coin_dragon',
-  'winged-bird': 'druse_phoenix',
 };
