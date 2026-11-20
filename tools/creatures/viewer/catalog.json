@@ -2305,6 +2305,140 @@
     ]
   },
   {
+    "id": "tuft_owlet",
+    "name": "Совёнок Ушастик",
+    "section": "ours",
+    "rarity": "uncommon",
+    "color": "#5a4636",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Пух-пух",
+        "frames": 42
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Выскакивает из тыквы",
+        "frames": 48
+      },
+      {
+        "id": "fidget_a",
+        "name": "Чистит пёрышки",
+        "frames": 48
+      },
+      {
+        "id": "fidget_b",
+        "name": "Вертит головой",
+        "frames": 48
+      },
+      {
+        "id": "trick",
+        "name": "Трюк: мотылёк",
+        "frames": 120
+      },
+      {
+        "id": "trick_b",
+        "name": "Трюк: мёртвая петля",
+        "frames": 108
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1134
+      }
+    ]
+  },
+  {
     "id": "bramble_warden",
     "name": "Ежевичный страж",
     "section": "ours",
