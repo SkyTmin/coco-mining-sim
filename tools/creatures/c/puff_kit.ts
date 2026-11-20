@@ -12,6 +12,17 @@ const puff: Creature = {
   animations: { ...clips },
   frame: puffFrame(card, card.life, gesture, loops),
   effects: puffEffects,
-  titles: {},
+  overClips: ['trick_b'],
+  titles: {
+    trick: 'Трюк: детки-пушинки',
+    trick_b: 'Трюк: парашютик',
+    trick_c: 'Трюк: цветёт',
+    trick_d: 'Трюк: желание',
+    hatch: 'Из бутона',
+    fidget_a: 'Умывается',
+    fidget_b: 'Пушинка-беглянка',
+    fidget_c: 'Ловит ветер',
+    happy: 'Скачет',
+  },
 };
 export default puff;

@@ -184,7 +184,9 @@ export function puffFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
     // The mane sits behind the face; it lags the head on the spring and leans with the wind.
     const maneLagS = -0.05 * lagSide - 0.08 * lagHead,
       maneLagU = -0.04 * lagUp;
-    const maneC = vadd(headF.p(-2.6, 0, 1.3), vadd(vmul(headF.s, maneLagS), vmul(headF.u, maneLagU)));
+    // Parachute (`chute`): the mane rises over the head and opens into a wide flat dome, its face opening facing down.
+    const chute = saturate(get('chute'));
+    const maneC = vlerp(vadd(headF.p(-2.6, 0, 1.3), vadd(vmul(headF.s, maneLagS), vmul(headF.u, maneLagU))), vadd(headF.o, [0.6 * maneLagS, 0, 7.2 + maneLagU]), chute);
     const bald = saturate(get('bald'));
     const bloom = saturate(get('bloom'));
     const maneR = 7.6 * (1 + 0.1 * fluff + 0.05 * get('puff')) * (1 - 0.12 * bloom);
@@ -195,7 +197,7 @@ export function puffFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
       hips: masses[0].c,
       head: headF.o,
       mane: maneC,
-      crown: vadd(maneC, vmul(headF.u, maneR)),
+      crown: vlerp(vadd(maneC, vmul(headF.u, maneR)), vadd(maneC, [0, 0, maneR * 0.6]), chute),
       maneL: vadd(maneC, vmul(headF.s, -maneR)),
       maneR: vadd(maneC, vmul(headF.s, maneR)),
       maneBack: vadd(maneC, vmul(headF.f, -maneR)),
@@ -243,6 +245,9 @@ export function puffFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
     // ---- the tail -----------------------------------------------------------------------------------------------
     const tailBase = torso.p(-2.9, 0, 0.9);
     const tail: V3[] = [tailBase];
+    const front = saturate(get('tailFront'));
+    const level = F3.yaw(yawB);
+    const near = get('tailSide') ? Math.sign(get('tailSide')) : vdot3(level.s, VIEW) >= 0 ? 1 : -1;
     {
       const springUp = -0.08 * lagUp,
         springSide = -0.1 * lagSide;
@@ -254,6 +259,19 @@ export function puffFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
         let d = vadd(vmul(torso.f, -Math.cos(theta)), vmul(torso.u, Math.sin(theta)));
         d = rotate(d, torso.u, phi);
         tail.push(vadd(tail[k], vmul(vnorm(d), TAIL_LEN[k])));
+      }
+      if (front) {
+        // Brought round the near flank to the face (to blow on its little clock): the joints slide onto a curve from
+        // the root, out past the near hip and the chest, to a point just in front of the mouth. A stem can stretch.
+        const T = vadd(vadd(points.mouth, vmul(headF.f, 2.6)), vmul(headF.u, -0.6));
+        const P1 = vadd(tailBase, vadd(vmul(level.s, near * 4.5), vmul(level.f, -1.5)));
+        const P2 = vadd(torso.p(4.6, 0, -0.5), vmul(level.s, near * 5.2));
+        for (let k = 1; k < tail.length; k++) {
+          const u = k / (tail.length - 1),
+            v = 1 - u;
+          const B = vadd(vadd(vmul(tailBase, v * v * v), vmul(P1, 3 * v * v * u)), vadd(vmul(P2, 3 * v * u * u), vmul(T, u * u * u)));
+          tail[k] = vlerp(tail[k], B, front);
+        }
       }
       points.tailTip = tail[tail.length - 1];
       points.tailMid = tail[3];
@@ -274,7 +292,7 @@ export function puffFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
       const suffix = sign < 0 ? 'L' : 'R';
       const perk = get('ears') + get('ear' + suffix);
       const flutter = 0.06 * Math.sin(t * TAU * 2 + sign) * (0.4 + wind);
-      const out = 0.36 - 0.2 * perk + sign * 0.06 * lagHead - 0.05 * lagUp + flutter;
+      const out = 0.36 - 0.2 * perk + 0.6 * get('earSpread') + sign * 0.06 * lagHead - 0.05 * lagUp + flutter;
       const back = 0.05 + 0.5 * Math.max(0, -perk) + 0.1 * lagHead * sign + 0.25 * wind;
       const base = headF.p(-0.2, sign * 2.6, 4.6);
       const dir = vnorm(headF.v(-Math.sin(back), sign * Math.sin(out), Math.cos(out) * Math.cos(back)));
@@ -294,7 +312,7 @@ export function puffFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
       drawTrunk(r, torso, masses, neckBase, headBase, M);
       drawTail(r, tail, torso, M, saturate(get('tailBald')), late);
       for (const leg of legs) drawLeg(r, leg, legFloor, M, late);
-      drawMane(r, headF, maneC, maneR, M, bald, bloom, fluff, wind, late);
+      drawMane(r, headF, maneC, maneR, M, bald, bloom, saturate(get('bud')), fluff, wind, chute, late);
       drawHead(r, headF, eyes, ears, M, get, blink, late);
     }
     for (const [k, v] of Object.entries(points)) points[k + 'Ground'] = [v[0], v[1], 0];
@@ -451,8 +469,45 @@ function drawLeg(r: Rig, leg: { front: boolean; sign: number; suffix: string; en
 
 /** The dandelion mane: a bed in the middle, an inner ball of fluff (open at the face), stalks and parasols round it.
  * Seeds with hash < bald are gone; seeds with hash < bloom are yellow petals instead. */
-function drawMane(r: Rig, Hf: F3, c: V3, R: number, M: Palette, bald: number, bloom: number, fluff: number, wind: number, late: (() => void)[]) {
-  const F = new F3(c, Hf.f, Hf.s, Hf.u);
+function drawMane(r: Rig, Hf: F3, cIn: V3, R: number, M: Palette, baldIn: number, bloom: number, bud: number, fluff: number, wind: number, chute: number, late: (() => void)[]) {
+  // A mane puffed up bigger than its usual size grows backwards, up and to the sides: its centre moves back by what it
+  // gained, so its face opening stays where it is round the face (growing forward it closed round the cheeks and, with
+  // the head turned, its near side covered the face).
+  const fullIn = 1 - Math.max(baldIn, bud);
+  const grow = Math.max(0, (R - 1.0) * (0.45 + 0.55 * fullIn) * (1 - 0.3 * bloom) - (7.6 - 1.0));
+  const c = vsub(cIn, vmul(Hf.f, grow * (1 - chute)));
+  // As a parachute the ball turns its opening down onto the head and flattens into a dome: the frame blends toward
+  // «front = down», and every radius goes through `kf` (along the opening) and `kw` (across it).
+  const fC = vnorm(vlerp(Hf.f, [0, 0, -1], chute));
+  const sC = vnorm(vsub(Hf.s, vmul(fC, vdot3(Hf.s, fC))));
+  const hand = vdot3(vcross(Hf.s, Hf.f), Hf.u) >= 0 ? 1 : -1;
+  const F = chute > 0 ? new F3(c, fC, sC, vmul(vcross(sC, fC), hand)) : new F3(c, Hf.f, Hf.s, Hf.u);
+  const kf = 1 - 0.45 * chute,
+    kw = 1 + 0.22 * chute;
+  /** A point on the (flattened) mane in direction `dir` (unit, world) at distance `rr` from its centre. */
+  const E = (dir: V3, rr: number): V3 =>
+    chute > 0 ? vadd(c, vadd(vmul(F.f, vdot3(dir, F.f) * rr * kf), vadd(vmul(F.s, vdot3(dir, F.s) * rr * kw), vmul(F.u, vdot3(dir, F.u) * rr * kw)))) : vadd(c, vmul(dir, rr));
+  // Closing into a bud for the night (and when it hatches) hides the seeds the same way going bald does.
+  const bald = Math.max(baldIn, bud);
+  if (bud > 0.12) {
+    // The bud: a green teardrop leaning up and back behind the head, wrapped in sepals; a white tip of the clock peeks
+    // out of the top. While it opens (`bud` falls) the sepals fold out and shrink.
+    r.tag = 'mane';
+    const open = 1 - bud;
+    const rb = (R - 1.0) * 0.62;
+    const ax = vnorm(vadd(vmul(Hf.u, 0.85), vmul(Hf.f, -0.55)));
+    const bs = vnorm(vcross(ax, Hf.s));
+    const BF = new F3(c, bs, Hf.s, ax);
+    r.ell(BF, [0, 0, 0], [rb * 0.8 * bud, rb * 0.8 * bud, rb * 1.08 * (0.5 + 0.5 * bud)], M.leaf);
+    if (bud > 0.6) r.ball(vadd(c, vmul(ax, rb * 1.12)), 0.9, { ...M.seed, bias: 0.2 });
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * TAU + 0.2;
+      const radial = vnorm(vadd(vmul(bs, Math.cos(a)), vmul(Hf.s, Math.sin(a))));
+      const root = vadd(c, vadd(vmul(ax, -rb * 0.75), vmul(radial, rb * 0.55)));
+      const tip = vadd(c, vadd(vmul(ax, rb * (0.95 - 1.1 * open)), vmul(radial, rb * (0.3 + 1.3 * open))));
+      r.cap(root, tip, 0.75 * (0.4 + 0.6 * bud), 0.28, k % 2 ? M.leaf : { ...M.leaf, bias: -0.08 });
+    }
+  }
   r.tag = 'mane';
   // The bed: brown, dotted with seed scars; small while the mane is full, it shows when the seeds are gone.
   r.ell(F, [0, 0, 0], [2.6, 2.9, 2.9], { ...M.bed, pat: (q) => ((Math.floor(q[1] * 6) + Math.floor(q[2] * 6)) % 2 === 0 && q[0] < 0.6 ? M.bed.T[1] : null) });
@@ -477,10 +532,12 @@ function drawMane(r: Rig, Hf: F3, c: V3, R: number, M: Palette, bald: number, bl
   };
   const ballMat: Mat = bloom > 0.5 ? { ...M.petal, bias: -0.12 } : { ...M.seed, bias: 0.22, pat: rays };
   if (full > 0.12) {
-    r.ell(F, [0, 0, 0], [inner * 0.95, inner, inner], ballMat, (q) => q[0] > 0.62);
-    // The opening for the face is closed by a flat disc of the same fluff behind the head, so a turned head never
+    const cutK = Math.min(0.62, (0.95 * 0.6 * (7.6 - 1.0) + grow) / (inner * 0.95));
+    r.ell(F, [0, 0, 0], [inner * 0.95 * kf, inner * kw, inner * kw], ballMat, (q) => q[0] > cutK);
+    // The opening for the face is closed flush by a flat disc of the same fluff behind the head, so a turned head never
     // shows the inside of the ball.
-    r.ell(F, [inner * 0.95 * 0.6, 0, 0], [0.35, inner * 0.8, inner * 0.8], ballMat);
+    const discR = inner * Math.sqrt(1 - cutK * cutK);
+    r.ell(F, [inner * 0.95 * cutK * kf, 0, 0], [0.35, discR * kw, discR * kw], ballMat);
   }
   // Each seed: a parasol bump on the ball (they make the rim soft and scalloped, one silhouette, no specks), and on
   // the side facing us a fine pale stalk and a white sparkle — the grain of a dandelion clock. Petals instead are
@@ -496,15 +553,16 @@ function drawMane(r: Rig, Hf: F3, c: V3, R: number, M: Palette, bald: number, bl
       // Rays: a long light outer petal on every other seed, a shorter deeper one on the rest.
       const outer = sd.i % 2 === 0;
       const len = R * (outer ? 1.08 : 0.86) * (0.96 + 0.08 * hash(sd.i, 7)) * (1 + 0.06 * fluff);
-      if (outer || vdot3(dir, VIEW) < 0.6) r.cap(vadd(c, vmul(dir, inner * 0.7)), vadd(c, vmul(dir, len)), 0.62, 0.42, outer ? { ...M.petal, bias: 0.08 } : { ...M.petal, bias: -0.06 });
+      // A ray floret: narrow at the base, widening to a broad tip, like a dandelion's.
+      if (outer || vdot3(dir, VIEW) < 0.6) r.cap(E(dir, inner * 0.7), E(dir, len), 0.34, outer ? 0.74 : 0.6, outer ? { ...M.petal, bias: 0.08 } : { ...M.petal, bias: -0.06 });
       continue;
     }
     const rim = inner * (0.98 + 0.04 * sd.len) * (1 + 0.04 * fluff);
     const facing = vdot3(dir, VIEW);
     if (facing < 0.45) {
       // On the rim: a thin pointed parasol sticking out — a fine spiky edge.
-      r.cap(vadd(c, vmul(dir, rim - 0.4)), vadd(c, vmul(dir, rim + 0.9 + 0.4 * hash(sd.i, 5))), 0.42, 0.16, { ...M.seed, bias: 0.25 });
-    } else if (sd.i % 2 === 0) r.dot(vadd(c, vmul(dir, rim + 0.3)), M.pale, 0, 1, 0.8);
+      r.cap(E(dir, rim - 0.4), E(dir, rim + 0.9 + 0.4 * hash(sd.i, 5)), 0.42, 0.16, { ...M.seed, bias: 0.25 });
+    } else if (sd.i % 2 === 0) r.dot(E(dir, rim + 0.3), M.pale, 0, 1, 0.8);
   }
   void late;
 }
@@ -538,7 +596,8 @@ function drawHead(
   for (const e of eyes) {
     r.tag = 'eye' + e.suffix;
     const lid = Math.max(blink || joy ? 1 : 0, get('lid'), get('lid' + e.suffix));
-    const look = Hf.v(0, get('lookX') * 0.45, get('lookY') * 0.45);
+    const cross = get('cross');
+    const look = Hf.v(0, (get('lookX') - cross * e.sign * 0.9) * 0.45, (get('lookY') - 0.5 * cross) * 0.45);
     if (lid < 0.95) {
       r.ball(vadd(e.at, look), 1.6, M.eye);
       if (vdot3(e.out, VIEW) > -0.1)
@@ -570,14 +629,25 @@ function drawHead(
     const side = vnorm(vcross(ear.dir, Hf.f));
     const flat = vnorm(vcross(side, ear.dir));
     const mid = vlerp(ear.base, ear.tip, 0.5);
-    r.ell(new F3(mid, ear.dir, side, flat), [0, 0, 0], [ear.len * 0.5, 1.5, 0.4], M.leaf);
+    // Seen from behind (head bowed, the leaves tipping toward us) the blade's shaded back read as a dark hole in the
+    // mane; the back of a leaf is paler, so it gets a lighter material.
+    const front = vdot3(flat, Hf.f) >= 0 ? flat : vmul(flat, -1);
+    // Side veins run from the midrib toward the tip, like a dandelion leaf's (one flat green read as a dark patch).
+    const veins: Mat['pat'] = (q) => {
+      const a = Math.abs(q[1]);
+      if (a < 0.18) return null;
+      const ph = (((q[0] * 2.6 - a * 1.8) % 1) + 1) % 1;
+      return ph < 0.2 ? mixc(M.leaf.T[1], M.leaf.T[2], 0.55) : null;
+    };
+    const blade: Mat = vdot3(front, VIEW) < 0 ? { ...M.leaf, bias: 0.24, pat: veins } : { ...M.leaf, bias: 0.12, pat: veins };
+    r.ell(new F3(mid, ear.dir, side, flat), [0, 0, 0], [ear.len * 0.5, 1.5, 0.4], blade);
     // Teeth: three per edge, each a flat spike leaning back down the leaf, like a dandelion leaf's lobes.
     for (let k = 0; k < 3; k++)
       for (const e of [-1, 1]) {
         const along = 0.25 + k * 0.22;
         const w = 1.5 * Math.sqrt(Math.max(0, 1 - (2 * along - 1) ** 2));
         const at = vadd(vlerp(ear.base, ear.tip, along), vmul(side, e * w * 0.8));
-        r.spike(at, vadd(vmul(side, e * 0.85), vmul(ear.dir, -0.6)), 1.3, 0.42, M.leaf, 3);
+        r.spike(at, vadd(vmul(side, e * 0.85), vmul(ear.dir, -0.6)), 1.3, 0.42, blade, 3);
       }
     const tag = r.tag;
     late.push(() => {
