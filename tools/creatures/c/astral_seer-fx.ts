@@ -211,9 +211,9 @@ function stoneIntoStar(f: FxInput, frame: number) {
     const age = frame - B.starBorn;
     const settle = Math.max(0, 1 - age / 10);
     const tw = 0.5 + 0.5 * Math.sin(age * 0.7);
-    const late = 1 - 0.6 * progress(frame, 120, 131);
+    const late = 1 - progress(frame, 118, 131);
     sparkle(f.backdrop, sky, (3 + 1.5 * tw) * late + 10 * settle, 1, light);
-    if (age > 6) sparkle(f.backdrop, sky, 1.2 * late, 1, [gold[2], gold[3], '#ffffff']);
+    if (age > 6 && late > 0.15) sparkle(f.backdrop, sky, 1.2 * late, 1, [gold[2], gold[3], '#ffffff']);
     if (age < 12) oval(f.backdrop, sky, 4 + age * 2, 4 + age * 2, teal[2], 0.7 * (1 - age / 12));
   }
   // Healing: light rains from the palm, the hole closes, grass springs up.
