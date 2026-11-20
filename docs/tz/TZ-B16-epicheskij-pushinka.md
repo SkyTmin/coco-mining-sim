@@ -155,7 +155,7 @@
   разворот на бег, прыжок, приземление, прыжки домой, лопнувший бутон, чих).
 - Известное, как у Огонька, Ушастика и Клубка: «no registered sheet» и «hatch frame 0 birth pose needs its own registered
   sheet key» — эталонные листы Codex, в конвейере Claude их нет.
-- `snap puff_kit` — эталон 5758 кадров (`golden/puff_kit.json`); `npm test` 166/166.
+- `snap puff_kit` — эталон 5758 кадров (`golden/puff_kit.json`); `npm test` 166/166, `snap all --check` 28/28.
 - Галерея: атлас `viewer/atlases/puff_kit`, строка в `gallery-catalog.ts`.
 
 ## 6. Приёмка владельцем
