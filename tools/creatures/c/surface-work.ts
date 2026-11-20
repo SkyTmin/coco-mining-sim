@@ -35,7 +35,8 @@ export type Finish =
   | 'root'
   | 'cap'
   | 'gill'
-  | 'iris';
+  | 'iris'
+  | 'metal';
 type Mark = [number, Swatch];
 const fract = (t: number) => t - Math.floor(t);
 function mark(f: Finish, x: number, y: number): Mark {
@@ -165,6 +166,23 @@ function mark(f: Finish, x: number, y: number): Mark {
       }
       break;
     }
+    case 'metal': {
+      // Hammered metal: broad shallow facets catch the light a little differently and a rare one flashes, so the
+      // shading and the specular glint carry the form and the plate never turns into a flat poster colour.
+      const row = Math.floor(y / 3.4),
+        cell = Math.floor(x / 4.2 + (row & 1) * 0.5),
+        dent = fract(Math.sin(cell * 127.1 + row * 311.7) * 43758.5453);
+      const seam = fract(x / 4.2 + (row & 1) * 0.5) < 0.16 || fract(y / 3.4) < 0.16;
+      shift = (dent - 0.5) * 0.5 + 0.08 * Math.sin(y * 0.42 + 0.7 * Math.sin(x * 0.15));
+      if (seam && dent > 0.3) {
+        swatch = 'dark';
+        shift -= 0.1;
+      } else if (dent > 0.86) {
+        swatch = 'bright';
+        shift += 0.2;
+      } else if (dent < 0.12) swatch = 'dark';
+      break;
+    }
     case 'shell':
     case 'iris':
     case 'cap': {
@@ -256,13 +274,13 @@ export function finishSurfaces(rig: Rig, basis: F3, sets: [Mat, Finish][], fallb
           0,
           Math.min(
             6,
-            Math.max(0.67, Math.min(5.58, (L + 0.36) * 4.3)) + offset + (accent?.length ? -0.21 : 0),
+            Math.max(0.67, Math.min(5.58, f === 'metal' ? (L + 0.2) * 5.4 - 0.6 : (L + 0.36) * 4.3)) + offset + (accent?.length ? -0.21 : 0),
           ),
         );
         const base = Math.floor(value),
           parity = (Math.floor(x) + Math.floor(y)) & 1;
         const tick = (Math.floor(x * 0.5) - Math.floor(y * 0.5)) & 1;
-        const quiet = f === 'fur' || f === 'skin' || f === 'moss';
+        const quiet = f === 'fur' || f === 'skin' || f === 'moss' || f === 'metal';
         const cutoff = quiet
           ? parity
             ? 0.56

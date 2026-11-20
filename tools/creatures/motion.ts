@@ -50,7 +50,7 @@ export function reelChapters(c: Creature) {
        ...(c.behavior.attacks ?? []),'tired','sleep_in','sleep','wake_startled','sleep_out',
        ...['show', 'peek'].filter(name => tricks && c.animations[name]),
        ...['phase', 'idle-f2'].filter(name => c.animations[name]),
-       ...(tricks ? ['happy-f2', ...tricks.f2] : ['show'].filter(name => c.animations[name]))]
+       ...(tricks ? (tricks.f2 ? ['happy-f2', ...tricks.f2] : []) : ['show'].filter(name => c.animations[name]))]
     : Object.keys(c.animations).filter(name => name.startsWith('tech_'));
   return names.map(name => {
     const frames = Math.round(c.animations[name].seconds * 24);
@@ -139,7 +139,7 @@ export function attachMotion(c: Creature, plan: MotionPlan): Creature {
 const previews = new WeakMap<Creature, PetSample[]>();
 export function lifeCycleCount(c: Creature) {
   const tricks = c.behavior?.tricks;
-  return tricks ? Math.max(tricks.f1.length, tricks.f2.length) : 1;
+  return tricks ? Math.max(tricks.f1.length, tricks.f2?.length ?? 0) : 1;
 }
 
 function petPreview(c: Creature) {
