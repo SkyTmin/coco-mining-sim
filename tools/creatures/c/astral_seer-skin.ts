@@ -793,7 +793,7 @@ export function seerFigure(sample: PoseSample): Figure {
     if (get('sx')) frame.sx = 1 + get('sx');
     if (get('sy')) frame.sy = 1 + get('sy');
     if (get('flash')) frame.flash = get('flash');
-    if (get('ghostA') > 0.01) frame.ghost = { dx: Math.round(get('ghostX')), dy: Math.round(get('ghostY')), alpha: get('ghostA') };
+    if (get('ghostA') > 0.01) frame.ghost = { dx: Math.round(get('ghostX')), dy: Math.round(get('ghostY')), alpha: get('ghostA'), front: get('ghostY') > 0.5 };
     frame.planted = [];
     return frame;
   };

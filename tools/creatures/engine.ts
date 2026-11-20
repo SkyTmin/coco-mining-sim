@@ -420,15 +420,10 @@ export function compose(
     blit(layers.fxu, asPx(under), b + dx, b + dy, clip);
     blit(layers.fxo, asPx(above), b + dx, b + dy, clip);
   }
-  if (body.ghost)
-    sprite(
-      layers.body,
-      body.px,
-      body,
-      [fullFeet[0] + body.ghost.dx, fullFeet[1] + body.ghost.dy],
-      clip,
-      body.ghost.alpha,
-    );
+  // A ghost twin is drawn behind the body, or in front of it when it is nearer the viewer (`front`).
+  const drawGhost = (ghost: NonNullable<typeof body.ghost>) =>
+    sprite(layers.body, body.px, body, [fullFeet[0] + ghost.dx, fullFeet[1] + ghost.dy], clip, ghost.alpha);
+  if (body.ghost && !body.ghost.front) drawGhost(body.ghost);
   const flash =
     body.flash ??
     (!finalFrame && hits.length === 1 && since < 0.1
@@ -441,6 +436,7 @@ export function compose(
     fullFeet,
     clip,
   );
+  if (body.ghost?.front) drawGhost(body.ghost);
   if (body.lit) sprite(layers.lit, body.lit, body, fullFeet, clip);
   if (body.over && overAllowed(c, anim))
     sprite(layers.over, body.over, body, fullFeet, [0, 0, W, H]);

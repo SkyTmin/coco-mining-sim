@@ -206,8 +206,8 @@ function stoneIntoStar(f: FxInput, frame: number) {
   }
   // A new star is born in the sky where the crystal flew.
   if (frame >= B.starBorn) {
-    const exit = pt(f, 'rock', B.gone - 3) ?? [f.feet[0] + 30, 0];
-    const sky: XY = [Math.max(16, Math.min(f.w - 16, exit[0] + 18)), 22];
+    const exit = pt(f, 'rock', B.gone - 4) ?? [f.feet[0] + 30, 0];
+    const sky: XY = [Math.max(16, Math.min(f.w - 16, exit[0] + 4)), 22];
     const age = frame - B.starBorn;
     const settle = Math.max(0, 1 - age / 10);
     const tw = 0.5 + 0.5 * Math.sin(age * 0.7);
@@ -217,11 +217,11 @@ function stoneIntoStar(f: FxInput, frame: number) {
     if (age < 12) oval(f.backdrop, sky, 4 + age * 2, 4 + age * 2, teal[2], 0.7 * (1 - age / 12));
   }
   // Healing: light rains from the palm, the hole closes, grass springs up.
-  if (frame >= B.healStart && frame < B.healEnd + 8) {
+  if (frame >= B.healStart) {
     const palm = pt(f, 'lightL') ?? pt(f, 'handL') ?? f.feet;
     const k = progress(frame, B.healStart, B.healEnd),
       fade = 1 - progress(frame, B.healEnd, B.healEnd + 8);
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 8 && fade > 0; i++) {
       const life = 8,
         age = (frame + i * 1.7) % life,
         q = age / life;
@@ -234,7 +234,8 @@ function stoneIntoStar(f: FxInput, frame: number) {
         y = hole[1] + (hash(i, 31) - 0.5) * 8,
         h = Math.round(Math.min(1, k * 1.5 - hash(i, 37) * 0.5) * (3 + 3 * hash(i, 33)));
       if (h <= 0) continue;
-      f.under.col(grass[3 + (i % 2)], 1);
+      // The new blades settle into the meadow by the end of the clip.
+      f.under.col(grass[3 + (i % 2)], 1 - progress(frame, B.healEnd, 131));
       f.under.line(Math.round(x), Math.round(y), Math.round(x + (i % 2 ? 1 : -1)), Math.round(y - h));
     }
     if (frame >= B.healEnd - 2 && frame < B.healEnd + 6) sparkle(f.above, [hole[0], hole[1] - 3], 5 - (frame - B.healEnd + 2) * 0.6, 1, teal);
@@ -269,8 +270,8 @@ function teleport(f: FxInput, frame: number) {
     if (age < 0 || age > 9) continue;
     const paw = pt(f, 'handR', tap) ?? f.feet;
     const k = age / 9;
-    oval(f.above, paw, 4 + 22 * k, 3 + 16 * k, light[1], 0.75 * (1 - k));
-    oval(f.above, paw, 2 + 12 * k, 1.5 + 9 * k, '#ffffff', 0.5 * (1 - k));
+    oval(f.above, paw, 6 + 44 * k, 5 + 34 * k, light[1], 0.75 * (1 - k));
+    oval(f.above, paw, 3 + 26 * k, 2.5 + 20 * k, '#ffffff', 0.55 * (1 - k));
     if (age < 3) sparkle(f.above, paw, 4 - age, 1, light);
   }
   // Landing: a puff of dust and a soft ring on the grass.
@@ -572,13 +573,14 @@ export function seerEffects(f: FxInput) {
       if (frame >= toss && frame <= caught) {
         const a = pt(f, 'lightR', toss) ?? f.feet,
           b = pt(f, 'lightL', caught) ?? f.feet;
-        const top: XY = [(a[0] + b[0]) / 2, Math.min(a[1], b[1]) - 46];
+        const top: XY = [(a[0] + b[0]) / 2, Math.min(a[1], b[1]) - 140];
         const at = (q: number): XY => [a[0] * (1 - q) ** 2 + 2 * top[0] * q * (1 - q) + b[0] * q * q, a[1] * (1 - q) ** 2 + 2 * top[1] * q * (1 - q) + b[1] * q * q];
         const k = (frame - toss) / (caught - toss);
-        for (let i = 4; i >= 0; i--) {
-          const p = at(Math.max(0, k - i * 0.05));
-          f.above.col(i ? teal[2] : light[2], 1 - i * 0.18);
-          disc(f.above, p[0], p[1], i ? 2.2 - i * 0.35 : 2.6);
+        ellFill(f.above, at(k), 6, 6, teal[1], 0.25);
+        for (let i = 5; i >= 0; i--) {
+          const p = at(Math.max(0, k - i * 0.04));
+          f.above.col(i ? teal[2] : light[2], 1 - i * 0.15);
+          disc(f.above, p[0], p[1], i ? 3 - i * 0.4 : 3.4);
         }
         flare(f.above, Math.round(at(k)[0]), Math.round(at(k)[1]), 3, '#ffffff', 0.9);
       }

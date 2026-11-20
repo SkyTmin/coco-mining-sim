@@ -44,7 +44,7 @@ export interface BodyFrame {
   sx?: number;
   sy?: number;
   rot?: number;
-  ghost?: { dx: number; dy: number; alpha: number };
+  ghost?: { dx: number; dy: number; alpha: number; front?: boolean };
   flash?: number; // 0..1
   over?: Px; // isolated foreground limb in local sprite coordinates
 }
