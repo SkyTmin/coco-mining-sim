@@ -52,19 +52,6 @@ export function studioConfig(id: string): StudioConfig {
   return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : {};
 }
 
-export function approvedLandmarksPath(id: string) {
-  return join(tools, 'studio', 'approved-landmarks', id + '.json');
-}
-
-export function approvedLandmarks(id: string): NonNullable<StudioConfig['keyframes']> {
-  const path = approvedLandmarksPath(id);
-  if (!existsSync(path)) return {};
-  const { sourceCommit, keyframes } = JSON.parse(readFileSync(path, 'utf8'));
-  if (!/^[a-f0-9]{40}$/.test(sourceCommit) || !keyframes)
-    throw Error(id + ' needs a source revision and approved pose targets');
-  return keyframes;
-}
-
 export function allowsOcclusion(cfg: StudioConfig, tag: string, anim: string, n: number) {
   return (cfg.partGone ?? []).some((rule) => {
     if (typeof rule === 'string') return tag.includes(rule);

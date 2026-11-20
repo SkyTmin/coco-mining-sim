@@ -27,7 +27,6 @@ const rigScale: Record<BodyType, number> = {
   'squat-mage': 1.2,
   giant: 1.45,
   'winged-dragon': 1.3,
-  'winged-bird': 1,
 };
 
 const firstTravel: Record<'volley' | 'summon' | 'pillars', number[]> = {

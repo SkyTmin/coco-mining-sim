@@ -386,7 +386,7 @@ class Painting {
     props(true);
     ctx.restore();
     border.paint(ctx, phase, cw, ch);
-    // Performers and lighting can cross onto the frame in any clip.
+    // Show/peek may reach over the painting frame in the original export.
     if (row[9]) actor.stamp(ctx, row[9][0], row[9][1] + x, row[9][2] + y);
     if (this.button.dataset.clip !== state.anim) {
       this.button.dataset.clip = state.anim;

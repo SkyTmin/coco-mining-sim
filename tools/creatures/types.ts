@@ -53,8 +53,6 @@ export type SceneryRay = [number, number, number, number, string, number];
 export interface FxInput {
   /** Effects anchored to the field rather than to the performer. */
   readonly backdrop: Pen;
-  /** Field coordinates with the surrounding frame available to the brush. */
-  readonly over?: Pen;
   sceneryRay(from: XY, to: XY, color: string, alpha: number): void;
   under: Pen;
   above: Pen;

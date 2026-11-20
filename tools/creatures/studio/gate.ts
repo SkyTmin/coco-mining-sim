@@ -4,7 +4,7 @@ import { loadPainting } from '../render';
 import { measureDetail, minimumColours } from '../detail';
 import { measureCreature, readReferences } from '../tech-metrics';
 import { cardRuntimeIssues } from './card';
-import { approvedLandmarks, studioConfig } from './checks';
+import { studioConfig } from './checks';
 import { measureRef, readPoseRefs, refIssues } from './ref';
 import { petGate } from './pet-gate';
 import { sizes } from '../types';
@@ -23,7 +23,7 @@ export async function gateExtras(ids: string[]) {
     const { c } = painting;
     const registered = readPoseRefs(id);
     const config = studioConfig(id);
-    const keys = { ...approvedLandmarks(id), ...config.keyframes };
+    const keys = config.keyframes ?? {};
     const petIssues = petGate(painting, [...Object.keys(registered), ...Object.keys(keys)],
       [...(registered.hatch?.frames ?? []), ...(keys.hatch ?? []).map(key => key.frame)]);
     for (const issue of petIssues) console.log('  ! ' + id + ' pet: ' + issue);

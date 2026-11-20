@@ -357,7 +357,6 @@ export function compose(
     ]),
   );
   let backdrop: Px | undefined;
-  let overFx: Canvas | undefined;
   const sceneryRays: SceneryRay[] = [];
   const techniqueTrace = emptyTechniqueTrace();
   if ((c.props || c.effects) && !(finalFrame && anim === 'away')) {
@@ -372,10 +371,6 @@ export function compose(
           fieldPen = new Pen(field.getContext('2d'), 0, 0, 0, 0);
         }
         return fieldPen;
-      },
-      get over() {
-        overFx ??= fieldCanvas(W, H, 'over');
-        return new Pen(overFx.getContext('2d'), b, b, 0, 0);
       },
       sceneryRay(from, to, color, alpha) {
         if (alpha > 0) sceneryRays.push([...from, ...to, color, Math.min(1, alpha)]);
@@ -443,8 +438,7 @@ export function compose(
     clip,
   );
   if (body.lit) sprite(layers.lit, body.lit, body, fullFeet, clip);
-  if (overFx) blit(layers.over, asPx(overFx));
-  if (body.over)
+  if (body.over && (anim === 'peek' || anim === 'show'))
     sprite(layers.over, body.over, body, fullFeet, [0, 0, W, H]);
   if (variant === 'gold' && visible) {
     const x = floorXY[0],

@@ -19,7 +19,6 @@ const works = [
   ['sky_whale', 'Небесный кит Алтан', '#475c7d'],
   ['nebula_squid', 'Кальмар Туманность', '#64567f'],
   ['moon_magician', 'Мурлен, лунный фокусник', '#3b3560'],
-  ['druse_phoenix', 'Феникс Друза', '#4d3e59'],
   ['bramble_warden', 'Ежевичный страж', '#56644b'],
   ['gem_beetle', 'Самоцветный жук', '#504b63'],
   ['storm_ram', 'Грозовой баран', '#485c68'],
@@ -66,18 +65,7 @@ const labels: Record<string, string> = {
   away: 'Уход',
   back: 'Возвращение',
 };
-const titles: Record<string, Record<string, string>> = {
-  druse_phoenix: {
-    phase: 'Огранка пламенем',
-    'idle-f2': 'Покой во втором облике',
-    trick: 'Корона из перьев-осколков',
-    trick_b: 'Кристальный ксилофон',
-    'trick-f2': 'Огненный обруч',
-    'trick_b-f2': 'Перерождение из жеоды',
-    show: 'Камень раскрывается',
-    peek: 'Перо поверх рамы',
-  },
-};
+const titles: Record<string, Record<string, string>> = {};
 type Clip = { id: string; name: string; frames?: number };
 type Entry = {
   id: string;
