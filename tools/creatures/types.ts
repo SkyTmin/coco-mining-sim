@@ -75,6 +75,8 @@ export interface Creature {
   theme: string;
   /** Gallery titles for clips whose generic label says too little (named tricks). */
   titles?: Record<string, string>;
+  /** Clips besides show and peek whose `over` layer is drawn over the painting frame (a secret trick round the frame). */
+  overClips?: string[];
   /** Standing position in field pixels for standalone clips and showreel chapters. */
   portraitOrigin?: XY;
   animations: Record<string, Animation>;

@@ -122,7 +122,7 @@ export async function verifyRelease(
       assert.equal(reader.numFrames(), count, gif);
       assert.equal(reader.width, w * meta.scale, gif);
       assert.equal(reader.height, h * meta.scale, gif);
-      const hasOver = ['show', 'peek'].includes(anim);
+      const hasOver = ['show', 'peek'].includes(anim) || !!c.overClips?.includes(anim);
       for (const key of [
         'fxu',
         'body',

@@ -20,6 +20,7 @@ import {
 } from './types';
 import {
   compose,
+  overAllowed,
   frameCount,
   hitFrame,
   layerNames,
@@ -157,7 +158,7 @@ function writePainting(
         r.layers[layer as keyof typeof r.layers],
       );
     }
-    if (['show', 'peek'].includes(name) || (r.body.over && ['show', 'peek'].includes(r.motion.anim))) {
+    if (overAllowed(c, name) || (r.body.over && overAllowed(c, r.motion.anim))) {
       savePNG(join(dir, 'over', file), r.layers.over);
       overFrames.add(file);
     }

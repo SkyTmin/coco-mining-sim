@@ -221,6 +221,10 @@ export function loopSample(t: number, anim: string, seconds: number) {
   const u = (anim === 'life' || anim === 'showreel') ? (t * 3 * Math.round(seconds / 3)) / seconds : t;
   return ((Math.round(u * fps) % 72) + 72) % 72;
 }
+/** Clips whose body may reach over the painting frame: show, peek and the ones a creature lists in `overClips`. */
+export function overAllowed(c: Creature, anim: string) {
+  return anim === 'peek' || anim === 'show' || !!c.overClips?.includes(anim);
+}
 export function compose(
   c: Creature,
   scene: Scene,
@@ -438,7 +442,7 @@ export function compose(
     clip,
   );
   if (body.lit) sprite(layers.lit, body.lit, body, fullFeet, clip);
-  if (body.over && (anim === 'peek' || anim === 'show'))
+  if (body.over && overAllowed(c, anim))
     sprite(layers.over, body.over, body, fullFeet, [0, 0, W, H]);
   if (variant === 'gold' && visible) {
     const x = floorXY[0],
