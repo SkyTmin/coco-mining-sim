@@ -13,12 +13,10 @@ import { F3, Rig, renderRig, vadd, vcross, vdot, vlerp, vmul, vnorm, vsub, type 
 import { projectFigure, scaleFigure } from '../rig/figure';
 import type { JointPose } from '../technique';
 import { finishSurfaces } from './surface-work';
-import { clips } from './astral_seer-poses';
+import { clips, HOVER } from './astral_seer-poses';
 
 const card = readCreatureCard('astral_seer');
 export const portraitScale = 1.98;
-/** Height of the pelvis above the grass at rest, rig units. */
-export const HOVER = 22;
 const tones = (name: string) => card.materials.find((m) => m.name === name)!.tones;
 const sw = (name: string, idx: number[], glow = 0): Mat => {
   const t = tones(name);
@@ -138,10 +136,10 @@ function ear(r: Rig, H: F3, s: number, droop: number, flick: number, form: numbe
     if (k === 2) end = b;
   }
   if (form > 0.3) {
-    const flame = vadd(end, E.v(0, 0, 1.5));
+    const base = vadd(end, E.v(0, 0, 1.5));
     for (let k = 0; k < 3; k++) {
       const f = vadd(end, E.v(-0.8 + 0.8 * k, s * (0.2 * k), 3.2 + flame(k + s) * 0.9 - Math.abs(k - 1)));
-      r.cap(vlerp(end, flame, 0.3), f, 1.1 * form, 0.15, crystal);
+      r.cap(vlerp(end, base, 0.3), f, 1.1 * form, 0.15, crystal);
     }
   }
   r.dot(end, spark, 0.9, 0.7);
@@ -254,17 +252,17 @@ function head(r: Rig, H: F3, j: Record<string, V3>, p: { blink: number; smile: n
     r.dot(H.p(4.6, s * 4.6, 5.0), runeMat.T[2], 0.4, 0.45);
   }
 }
-function torc(r: Rig, center: V3, B: F3, halo: number, spin: number, form: number, j: Record<string, V3>) {
+function torc(r: Rig, center: V3, B: F3, halo: number, spin: number, form: number, j: Record<string, V3>, shrink = 0) {
   // An open gold ring floating round the neck, knobbed ends with turquoise stones at the front.
   // Awakened, it rises behind the head and opens into a halo with runes.
   r.tag = 'torc';
-  const flat = B.turn(spin);
-  const up = flat.pitch(-Math.PI / 2 * halo);
+  // The ring turns in its own plane; as a halo that plane stands up behind the head, turned towards the viewer.
+  const up = B.turn(0.4 * halo).pitch(-Math.PI / 2 * halo);
   const C = new F3(center, up.f, up.s, up.u);
-  const radius = 7.4 + 4.6 * halo,
+  const radius = 7.4 + 4.6 * halo - shrink * (1 - halo),
     gap = 0.55 * (1 - halo);
   const n = 24;
-  const at = (a: number): V3 => C.p(Math.cos(a) * radius, Math.sin(a) * radius, 0);
+  const at = (a: number): V3 => C.p(Math.cos(a + spin) * radius, Math.sin(a + spin) * radius, 0);
   for (let k = 0; k < n; k++) {
     const a = gap + ((TAU - 2 * gap) * k) / n,
       b = gap + ((TAU - 2 * gap) * (k + 1)) / n;
@@ -334,7 +332,7 @@ function torso(r: Rig, B: F3, form: number, ruff: number) {
   for (let k = 1; k < pts.length; k++) r.line(pts[k - 1], pts[k], runeMat.T[form > 0.3 ? 3 : 2], (runeMat.glow ?? 0) * Math.max(0.3, form), 0.6);
   r.dot(B.p(4.7, 0, 7.2), form > 0.3 ? goldSpark : gold.T[3], 0.5, 0.6);
 }
-function arm(r: Rig, B: F3, s: number, hand: V3, palmUp: number, form: number, light: number, j: Record<string, V3>) {
+function arm(r: Rig, B: F3, s: number, hand: V3, palmUp: number, form: number, light: number, j: Record<string, V3>, handRig: Rig = r, curl = 0) {
   const name = s < 0 ? 'L' : 'R',
     shoulder = B.p(0.2, s * 6.2, 16.2);
   const elbow = ik(shoulder, hand, 9.8, 9.6, B.v(-0.5, s * 0.9, -0.6));
@@ -381,6 +379,7 @@ function arm(r: Rig, B: F3, s: number, hand: V3, palmUp: number, form: number, l
     r.ball(ring(ph + Math.PI / 2), 0.7, crystal);
   }
   // Hand: palm pad, four fingers, thumb; palm up shows the pads and the little light above it.
+  r = handRig;
   r.tag = 'hand' + name;
   const dir = vnorm(vsub(hand, elbow));
   const W = axisFrame(hand, B.u, dir).roll(-s * 0.2);
@@ -388,7 +387,8 @@ function arm(r: Rig, B: F3, s: number, hand: V3, palmUp: number, form: number, l
   r.ell(Wp, [0, 0, 0], [2.6, 2.3, 1.3], midnight);
   for (let k = 0; k < 4; k++) {
     const y = (k - 1.5) * 0.95;
-    r.cap(Wp.p(1.8, y, 0.2), Wp.p(3.4 - Math.abs(y) * 0.4, y * 1.2, 0.6), 0.62, 0.48, midnight);
+    // Curled fingers hook down over an edge (the painting rail while peeking).
+    r.cap(Wp.p(1.8, y, 0.2), Wp.p(3.4 - Math.abs(y) * 0.4 - curl * 1.2, y * 1.2, 0.6 - curl * 2.4), 0.62, 0.48, midnight);
     if (palmUp > 0.5) r.dot(Wp.p(3.2 - Math.abs(y) * 0.4, y * 1.2, 1.0), nose.T[2], 0, 0.35);
   }
   r.cap(Wp.p(0.4, -s * 2.0, 0.4), Wp.p(1.8, -s * 2.6, 0.8), 0.7, 0.5, midnight);
@@ -561,28 +561,49 @@ function rock(r: Rig, c: V3, size: number, spin: number, cracks: number, inside:
       for (let i = 0; i < n; i++) r.line(pts[i], pts[i + 1], crack, 0.9, 0.2);
     }
 }
-/** The storm's star ball: a white-hot core in a turquoise corona with rays. */
+const starCorona = sw('aura', [1, 2, 2, 3], 0.7),
+  starLight = sw('aura', [3, 3, 3, 4], 0.9),
+  starCore = sw('aura', [3, 4, 4, 4], 1);
+/** The storm's star: flat rays facing the viewer round a white-hot core. Drawn after the surface finish, so it
+ * stays clean light instead of fur. */
 function starBall(r: Rig, c: V3, radius: number, spin: number) {
   r.tag = 'star';
-  r.ball(c, radius * 1.25, sw('aura', [0, 1, 2, 3], 0.6));
-  r.ball(c, radius, sw('aura', [2, 3, 4, 4], 0.95));
-  const F = F3.yaw(spin);
-  for (let k = 0; k < 8; k++) {
-    const a = (k / 8) * TAU;
-    const tip = vadd(c, vmul(vadd(vmul(F.f, Math.cos(a)), vmul(F.u, Math.sin(a))), radius * (k % 2 ? 1.7 : 2.4)));
-    r.line(c, tip, k % 2 ? spark : white, 1, 0.1);
-  }
+  // Screen-aligned axes in world space: right, up, and towards the viewer.
+  const right: V3 = [1, 0, 0],
+    up: V3 = [0, -0.6, 0.8],
+    near: V3 = [0, 0.8, 0.6];
+  const at = (a: number, d: number, depth: number): V3 => vadd(c, vadd(vadd(vmul(right, Math.cos(a) * d), vmul(up, Math.sin(a) * d)), vmul(near, depth)));
+  const rays = (n: number, long: number, short: number, waist: number, rot: number, m: Mat, depth: number) => {
+    for (let k = 0; k < n; k++) {
+      const a = rot + (k / n) * TAU,
+        reach = (k % 2 ? short : long) * radius,
+        half = Math.PI / n;
+      r.poly([at(0, 0, depth), at(a - half, waist * radius, depth), at(a, reach, depth)], m);
+      r.poly([at(0, 0, depth), at(a, reach, depth), at(a + half, waist * radius, depth)], m);
+    }
+  };
+  rays(8, 2.7, 1.7, 0.55, spin, starCorona, -1.2);
+  rays(4, 1.9, 1.9, 0.5, spin + Math.PI / 4, starLight, -0.6);
+  r.ball(c, radius * 0.9, starCore);
+  for (let k = 0; k < 4; k++) r.line(at(spin + (k * Math.PI) / 2, radius * 1.2, 1), at(spin + (k * Math.PI) / 2, radius * 3.3, 1), white, 1, 0.4);
+}
+
+/** True when a layer's paint reaches the border of its canvas, i.e. it would be cut there. */
+function edgeTouched(p: { w: number; h: number; solid(x: number, y: number): boolean }) {
+  for (let x = 0; x < p.w; x++) if (p.solid(x, 0) || p.solid(x, p.h - 1)) return true;
+  for (let y = 0; y < p.h; y++) if (p.solid(0, y) || p.solid(p.w - 1, y)) return true;
+  return false;
 }
 
 // ---- assembly -------------------------------------------------------------------------------------
 type Figure = NonNullable<ArmedAppearance['figure']>;
 type PoseSample = (anim: string, time: number) => JointPose;
-export const loopPeriods: Record<string, number> = { idle: 3, walk: 1, sleep: 3.5, 'idle-f2': 3 };
+export const loopPeriods: Record<string, number> = { idle: 3, walk: 1, sleep: 3.5 };
 export function seerFigure(sample: PoseSample): Figure {
   return (anim, t, side, _variant, pose) => {
     const get = (key: string) => pose[key] ?? 0,
       A = pose as JointPose;
-    const period = loopPeriods[anim] ?? 0;
+    const period = clips[anim]?.loop ? clips[anim].seconds : (loopPeriods[anim] ?? 0);
     const q = period ? (t * TAU) / period : 0;
     // Every oscillation makes whole cycles over the clip: loops close and one-shot clips end on idle frame 0.
     const D = clips[anim]?.seconds ?? 2;
@@ -614,8 +635,10 @@ export function seerFigure(sample: PoseSample): Figure {
     // Parts that cross the frame in peek / overAll go into a separate rig drawn over the painting frame.
     const overAll = get('overAll') > 0.5,
       peek = get('peekFront') > 0.5;
-    const front = overAll || peek || get('starOver') > 0.5 ? new Rig() : null;
-    const pick = (part: string) => (overAll ? front! : peek && ['head', 'ear', 'armL', 'armR', 'torc'].includes(part) ? front! : r);
+    const rockOver = get('rockOver') > 0.5,
+      starOver = get('starOver') > 0.5;
+    const front = overAll || peek || rockOver || starOver || get('sparks') > 0.01 ? new Rig() : null;
+    const pick = (part: string) => (overAll ? front! : peek && part === 'hand' ? front! : r);
     if (get('hidden') < 0.5) {
       // Lagged copies drive the secondary motion: tail, ears, tassels, ruff, torc and orbit.
       const tailLag = previous(4),
@@ -667,15 +690,24 @@ export function seerFigure(sample: PoseSample): Figure {
         const flick = (lag(earLag, 'gaze') - get('gaze')) * 3 + 0.3 * osc(0.5, s);
         ear(pick('ear'), headF, s, droop, flick, form, (k) => osc(3, k), j);
       }
-      const torcC = vadd(vlerp(body.p(1.0, 0, 19.2), headF.p(-4.2, 0, 1.4), get('halo')), F.v(0, 0, 0.4 * (lag(torcLag, 'hover') - get('hover'))));
-      torc(pick('torc'), torcC, body, get('halo'), turn(1 / 6) + get('torcSpin'), form, j);
+      // The torc rides lower and tips forward like a collar when the head bows, so the jaw never meets it; it trails
+      // the body a little when the seer rises or sinks. As a halo it turns with the head.
+      // A bowed head or an open jaw makes the ring draw in round the neck (between the neck and the shoulders) and tip
+      // forward, so the chin never meets it; it trails the body a little when the seer rises or sinks.
+      const bow = Math.min(1, Math.max(0, get('nod') + sleep * 0.45) + 0.4 * get('mouth')),
+        halo = get('halo');
+      const trail = Math.max(-0.6, Math.min(0.6, 0.12 * (lag(torcLag, 'hover') - get('hover'))));
+      // At rest it hangs still like a necklace, lower at the front, below the jaw; only the halo turns.
+      const torcC = vlerp(body.p(-0.5 - 2 * bow, 0, 17.0 - 1.5 * bow + trail), headF.p(-7.2, 0, 2.6), halo);
+      torc(pick('torc'), torcC, body.turn(get('gaze') * halo).pitch((0.5 + 0.6 * bow) * (1 - halo)), halo, (turn(1 / 6) + get('torcSpin')) * halo, form, j, 1.5 * bow);
       // Arms: palms up on the knees at rest; goals move them for gestures.
       for (const s of [-1, 1]) {
         const name = s < 0 ? 'L' : 'R';
         const rest = vlerp(hips.p(6.4, s * 13.8, 7.6), hips.p(7.4, s * 9.0, -0.6), lotus);
         const hand = target('hand' + name, rest);
         const palm = 1 - get(s < 0 ? 'palmDownL' : 'palmDownR');
-        arm(pick('arm' + name), body, s, hand, palm, form, get(s < 0 ? 'lightL' : 'lightR') + (1 - sleep) * 0.35, j);
+        const light = peek ? 0 : get(s < 0 ? 'lightL' : 'lightR') + (1 - sleep) * 0.35;
+        arm(pick('arm' + name), body, s, hand, palm, form, light, j, pick('hand'), get('curl'));
       }
       if (get('crystalsHidden') < 0.5) {
         const orbitLag = previous(3);
@@ -685,13 +717,28 @@ export function seerFigure(sample: PoseSample): Figure {
     }
     if (get('rock') > 0.5) {
       const at = F.p(get('rockX'), get('rockY'), get('rockZ'));
-      rock(r, at, Math.max(0.05, get('rockSize')), get('rockSpin'), get('rockCrack'), get('rockCrystal'));
+      rock(rockOver ? front! : r, at, 1.4 * Math.max(0.05, get('rockSize')), get('rockSpin'), get('rockCrack'), get('rockCrystal'));
       j.rock = at;
     }
+    // Light that must stay clean is drawn after the surface finish.
+    const late: (() => void)[] = [];
     if (get('star') > 0.02) {
       const at = F.p(get('starX'), get('starY'), get('starZ'));
-      starBall(get('starOver') > 0.5 ? (front ?? r) : r, at, get('star'), turn(1));
+      late.push(() => starBall(starOver ? front! : r, at, get('star'), turn(1)));
       j.star = at;
+    }
+    // Sparks of a burst fly out over the frame: progress 0..1 from the burst point.
+    if (get('sparks') > 0.01) {
+      const k = get('sparks'),
+        c = F.p(get('sparkX'), get('sparkY'), get('sparkZ'));
+      front!.tag = 'sparks';
+      for (let i = 0; i < 18; i++) {
+        const a = (i / 18) * TAU + 0.37 * i,
+          d = (10 + 26 * ((i * 7) % 5) / 4) * k,
+          p = vadd(c, vadd(vmul(F.f, Math.cos(a) * d), vadd(vmul(F.s, Math.sin(a) * d), vmul(F.u, Math.sin(a * 2) * d * 0.5 - 8 * k * k))));
+        if (k > 0.97 - (i % 5) * 0.11) continue;
+        front!.dot(p, i % 3 ? spark : white, 1, k < 0.6 ? 2 : 1);
+      }
     }
     j.head = j.head ?? body.p(1.4, 0, 24.6);
     j.chest = body.p(1.0, 0, 11);
@@ -713,19 +760,38 @@ export function seerFigure(sample: PoseSample): Figure {
       [inner, 'skin'],
     ];
     finishSurfaces(r, F, finishes, 'skin');
+    if (front) finishSurfaces(front, F, finishes, 'skin');
+    for (const draw of late) draw();
     scaleFigure(r, j, portraitScale);
+    if (front) scaleFigure(front, {}, portraitScale);
     const frame = projectFigure(r, 160, [80, 150], j, '#141428', 4.4, true);
-    if (front) {
-      finishSurfaces(front, F, finishes, 'skin');
-      scaleFigure(front, {}, portraitScale);
-      frame.over = renderRig(front, frame.px.w, frame.px.h, ...frame.anchor, { outline: ink, inner: 4.4 }).p;
+    let wide = false;
+    const paint = { outline: ink, inner: 4.4 };
+    const over = front && renderRig(front, frame.px.w, frame.px.h, ...frame.anchor, paint).p;
+    if (front && over) frame.over = over;
+    // A prop flying over the frame can be wholly outside the portrait canvas, so those frames always widen.
+    if (front && over && (rockOver || starOver || get('sparks') > 0.01 || edgeTouched(over))) {
+      // Trick frames that reach far over the painting frame get a wide canvas for both layers; the floor reflection,
+      // sized from the canvas, is left out for those few frames.
+      const pad = 110,
+        size = frame.px.w + 2 * pad,
+        anchor: [number, number] = [frame.anchor[0] + pad, frame.anchor[1] + pad];
+      const body = renderRig(r, size, size, ...anchor, paint);
+      frame.px = body.p;
+      frame.lit = body.lit;
+      frame.eye = body.eye;
+      frame.anchor = anchor;
+      for (const key of Object.keys(frame.points)) frame.points[key] = [frame.points[key][0] + pad, frame.points[key][1] + pad];
+      frame.over = renderRig(front, size, size, ...anchor, paint).p;
+      wide = true;
     }
     const lift = Math.max(0, hover - HOVER);
-    frame.groundShadow = get('hidden') > 0.5 || overAll ? { radius: 0, opacity: 0 } : { radius: 160 * 0.13 / (1 + 0.02 * lift), opacity: 0.55 / (1 + 0.03 * lift) };
+    frame.groundShadow = get('hidden') > 0.5 || overAll || get('noShadow') > 0.5 ? { radius: 0, opacity: 0, reflectionOpacity: 0 } : { radius: 160 * 0.13 / (1 + 0.02 * lift), opacity: 0.55 / (1 + 0.03 * lift), reflectionOpacity: wide ? 0 : 1 };
     if (get('dx')) frame.dx = Math.round(get('dx'));
     if (get('dy')) frame.dy = Math.round(get('dy'));
-    if (get('sx')) frame.sx = get('sx');
-    if (get('sy')) frame.sy = get('sy');
+    // sx / sy are authored as offsets from 1 so a missing key means the natural size.
+    if (get('sx')) frame.sx = 1 + get('sx');
+    if (get('sy')) frame.sy = 1 + get('sy');
     if (get('flash')) frame.flash = get('flash');
     if (get('ghostA') > 0.01) frame.ghost = { dx: Math.round(get('ghostX')), dy: Math.round(get('ghostY')), alpha: get('ghostA') };
     frame.planted = [];
