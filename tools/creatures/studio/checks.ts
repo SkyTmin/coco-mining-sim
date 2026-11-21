@@ -81,7 +81,7 @@ function ranges(frames: number[]) {
   }
   return out.join(', ');
 }
-function skipped(cfg: StudioConfig, kind: Finding['kind'], anim: string, frame: number) {
+export function skipped(cfg: StudioConfig, kind: Finding['kind'], anim: string, frame: number) {
   return (cfg.skip?.[kind] ?? []).some((rule) => {
     const [a, span] = rule.split(':');
     if (a !== anim) return false;
@@ -130,7 +130,7 @@ function restNames(p: Painting, anim: string) {
   if (p.c.animations['idle-f2'] && (anim === 'phase' || anim === 'idle-f2' || anim === 'show')) names.push('idle-f2');
   return names;
 }
-function restBaselines(p: Painting, anim: string) {
+export function restBaselines(p: Painting, anim: string) {
   const names = ['idle', anim];
   if (p.c.animations['idle-f2'] && (anim === 'phase' || anim === 'idle-f2' || anim === 'show')) names.push('idle-f2');
   return names.map((a) => restPose(p, a)).filter((b): b is ClipBaseline => !!b);

@@ -5,14 +5,18 @@
 //   npm run ws -- sheet <id> <anim> [--frames 0,12,19] [--against <git-ref>] [--out file.png]
 //   npm run ws -- ref <id> <anim> [sheet.png --grid CxR --frames a,b] [--out file.png]
 //   npm run ws -- render [id...|all] [--jobs N] [--force]   cached, parallel render.ts
-//   npm run ws -- snap <id|all> [anim...] [--check]          golden frame hashes: write, or list changed frames
-// check/gate/snap on several creatures run in parallel child processes (--jobs N, default = cores);
+//   npm run ws -- snap <id|all> [anim...] [--check] [--force] golden frame hashes: write, or list changed frames;
+//                                                --check skips a creature whose inputs did not change since its last identical check
+//   npm run ws -- clip <id> <anim|all> [a-b] [--tag part] [-v]  limb-in-body on every frame of a clip, clearance of a part
+//   npm run ws -- seam <id> [anim...]            pet endpoints vs idle / idle-f2 / sleep in seconds, with the parts that drifted
+// check/gate/snap on several creatures run in parallel child processes (--jobs N, default = cores, at most one per 4.5 GB);
+// heavy runs (render, snap, check/gate of several) wait for each other instead of running out of memory together;
 // gate remembers a green result per creature and skips it while none of its inputs changed (--force re-runs).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { cpus } from 'node:os';
 import { join } from 'node:path';
 import { loadPainting } from '../render';
 import { checkCreature, defaultAnims, studioConfig } from './checks';
+import { defaultJobs, heavyLock } from './lock';
 
 export const pilotIds = [
   'bramble_warden',
@@ -34,7 +38,7 @@ async function ids(arg: string | undefined) {
 
 function jobsOf(args: string[]) {
   const i = args.indexOf('--jobs');
-  return i >= 0 ? Number(args[i + 1]) : Math.max(1, cpus().length);
+  return i >= 0 ? Number(args[i + 1]) : defaultJobs();
 }
 
 const tools = join(import.meta.dirname, '..');
@@ -55,9 +59,11 @@ async function check(args: string[], strict: boolean) {
   const jobs = jobsOf(args);
   if (list.length > 1 && jobs > 1) {
     const { pool } = await import('./snap');
+    const release = await heavyLock((strict ? 'gate ' : 'check ') + list.length + ' creatures');
     const t0 = Date.now();
     const rest = args.slice(1).filter((a, i, all) => a !== '--jobs' && all[i - 1] !== '--jobs');
     const bad = await pool(strict ? 'gate' : 'check', list, rest, jobs);
+    release();
     console.log(`${strict ? 'gate' : 'check'}: ${list.length - bad}/${list.length} green in ${((Date.now() - t0) / 1000).toFixed(0)} s with ${Math.min(jobs, list.length)} jobs`);
     if (bad) process.exitCode = 1;
     return;
@@ -162,12 +168,22 @@ switch (cmd) {
     await snapCommand(rest, await ids(rest[0]));
     break;
   }
+  case 'clip': {
+    const { clipCommand } = await import('./clipscan');
+    await clipCommand(rest);
+    break;
+  }
+  case 'seam': {
+    const { seamCommand } = await import('./seam');
+    await seamCommand(rest);
+    break;
+  }
   case 'render': {
     const { renderCommand } = await import('./cache');
     await renderCommand(rest);
     break;
   }
   default:
-    console.log('usage: npm run ws -- new|check|gate|probe|sheet|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
+    console.log('usage: npm run ws -- new|check|gate|probe|seam|clip|sheet|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
     process.exitCode = cmd ? 1 : 0;
 }

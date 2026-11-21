@@ -78,6 +78,14 @@ export async function gateExtras(ids: string[]) {
     if (extent < canvas * 0.8 || extent > canvas * 0.9) detail.push(`extent ${extent} not in 80–90% of ${canvas}`);
     if (m.height < fieldHeight * 0.55 || m.height > fieldHeight * 0.65)
       detail.push(`height ${m.height} not in 55–65% of field ${fieldHeight}`);
+    if (extent < canvas * 0.8 || extent > canvas * 0.9 || m.height < fieldHeight * 0.55 || m.height > fieldHeight * 0.65) {
+      // Both sizes scale with the figure: name the factor instead of leaving the author to guess [Раскат 21.11: 3.1 → 2.78].
+      const lo = Math.max((canvas * 0.8) / extent, (fieldHeight * 0.55) / m.height),
+        hi = Math.min((canvas * 0.9) / extent, (fieldHeight * 0.65) / m.height);
+      detail.push(lo <= hi
+        ? `scale the figure ×${((lo + hi) / 2).toFixed(3)} (any of ×${lo.toFixed(3)}–×${hi.toFixed(3)})`
+        : `no single scale fits both: the silhouette is too ${extent / canvas > m.height / fieldHeight ? 'wide' : 'tall'} for the frame`);
+    }
     console.log(
       `${detail.length ? '✗' : '✓'} ${id} detail: ${rest.primitives} primitives, ${m.colours} colours, edge ${m.edge.toFixed(2)}, flat ${(m.flat * 100).toFixed(1)}%` +
         (detail.length ? ' — ' + detail.join('; ') : ''),

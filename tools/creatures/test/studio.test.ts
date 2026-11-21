@@ -54,6 +54,17 @@ test('captureRig returns the largest rig built during a draw call', () => {
   assert.equal(rig?.prims.length, 3);
 });
 
+test('captureRig prefers the frame’s own body rig over a larger rig built by an effect', () => {
+  const { rig, rigs } = captureRig(() => {
+    const own = new Rig();
+    own.ball([0, 0, 0], 1, fur);
+    body([0, 26, 24]); // another frame posed for a socket lookup: bigger, but not this picture
+    return { body: { rig: own } };
+  });
+  assert.equal(rigs.length, 2);
+  assert.equal(rig?.prims.length, 1);
+});
+
 test('render cache inputs: own files and helpers in, other creatures out', async () => {
   const ids = creatureIds();
   assert.ok(ids.includes('frost_yeti') && !ids.includes('engraving'));
@@ -174,4 +185,28 @@ test('the contact eye is an open, visible surface at the final painting scale', 
   assert.equal(visibleEyePixels(rig, frame), 0, 'foreground completely covers the iris');
   rig.ball([0, 0, 10], 6, wood);
   assert.equal(visibleEyePixels(rig), 0, 'eye inside opaque head geometry');
+});
+
+test('clipClock: every motion is back at its start on the last moment of the clip', async () => {
+  const { clipClock } = await import('../kit/clock');
+  for (const D of [1.5, 2.25, 11.5]) {
+    const start = clipClock(D, 0),
+      end = clipClock(D, D);
+    for (const rate of [0.08, 0.27, 0.38, 1.7]) {
+      assert.ok(Math.abs(end.osc(rate, 0.9) - start.osc(rate, 0.9)) < 1e-9);
+      assert.ok(Math.abs(Math.sin(end.turn(rate)) - Math.sin(start.turn(rate))) < 1e-9);
+      // an 8-fold ring ends on a whole eighth, also when it stops early
+      const steps = (end.spin(rate, 8, D - 0.7) * 8) / (2 * Math.PI);
+      assert.ok(Math.abs(steps - Math.round(steps)) < 1e-9);
+    }
+  }
+});
+
+test('partShift names the tag that drifted', async () => {
+  const { partShift } = await import('../studio/seam');
+  const a = body([0, 26, 24]),
+    b = body([0, 26, 30]);
+  const [top] = partShift(a, b);
+  assert.equal(top.tag, 'arm');
+  assert.ok(Math.abs(top.shift - 3) < 1e-9);
 });

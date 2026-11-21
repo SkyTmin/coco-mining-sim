@@ -19,7 +19,17 @@ function patch() {
   }
 }
 
-/** Runs `draw` and returns the largest rig it built (the body), or null. */
+/** The rig a composed frame reports as its own body (`BodyFrame.rig`), if the draw result carries one. */
+function ownRig(result: unknown): Rig | null {
+  const body = (result as { body?: { rig?: unknown } } | null)?.body;
+  return body?.rig instanceof Rig ? body.rig : null;
+}
+
+/**
+ * Runs `draw` and returns the frame's own body rig, or the largest rig it built when the result does not name one.
+ * Effects sample sockets of other frames (`pointAt`) and every such call builds a whole rig, often a larger one:
+ * picking the largest checked a foreign pose in 28–42 % of the frames of the newest pets [21.11].
+ */
 export function captureRig<T>(draw: () => T): { result: T; rig: Rig | null; rigs: Rig[] } {
   patch();
   const seen: Rig[] = [];
@@ -27,7 +37,7 @@ export function captureRig<T>(draw: () => T): { result: T; rig: Rig | null; rigs
   active = seen;
   try {
     const result = draw();
-    const rig = seen.length ? [...seen].sort((a, b) => b.prims.length - a.prims.length)[0] : null;
+    const rig = ownRig(result) ?? (seen.length ? [...seen].sort((a, b) => b.prims.length - a.prims.length)[0] : null);
     return { result, rig, rigs: seen };
   } finally {
     active = outer;

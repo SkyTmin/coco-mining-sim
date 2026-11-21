@@ -17,7 +17,7 @@ from pathlib import Path
 
 from PIL import Image
 
-ATLASES = Path(__file__).resolve().parent / 'viewer' / 'atlases'
+ATLASES = Path(os.environ.get('ATLAS_DIR') or Path(__file__).resolve().parent / 'viewer' / 'atlases')  # ATLAS_DIR: repack a copy
 # 1024 gave 688 pages: over the 511 files an artifact version may hold. A long-clip atlas can take 4096
 # (ATLAS_SIDE=4096) so the gallery stays under that limit.
 SIDE = int(os.environ.get('ATLAS_SIDE', '2048'))

@@ -6,7 +6,6 @@
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { cpus } from 'node:os';
 import { join } from 'node:path';
 import { loadPainting } from '../render';
 import { compose, frameCount } from '../engine';
@@ -87,7 +86,28 @@ export function compareGolden(old: Golden, now: Golden, only: string[] = []) {
 }
 
 /** One creature in this process: used by the child workers and by tests. */
-export async function snapOne(id: string, check: boolean, only: string[]) {
+/** Render inputs of a creature plus its golden file and this hasher: a check stays valid while none of them change. */
+async function snapKey(id: string) {
+  const { inputsOf, inputHash } = await import('./cache');
+  const { c } = await loadPainting(id);
+  return inputHash([...inputsOf(id, c.theme, c.rarity), join(goldenDir, id + '.json'), join(tools, 'studio', 'snap.ts')].filter((f) => existsSync(f)));
+}
+const stampOf = (id: string) => join(tools, '.studio', 'snap-' + id + '.json');
+function remember(id: string, key: string) {
+  mkdirSync(join(tools, '.studio'), { recursive: true });
+  writeFileSync(stampOf(id), JSON.stringify({ key, at: new Date().toISOString().slice(0, 16) }) + '\n');
+}
+
+export async function snapOne(id: string, check: boolean, only: string[], force = false) {
+  // A full check of an unchanged creature is skipped: its own files, the shared pipeline and its golden are the same
+  // as at the last identical check. A shared change re-checks everyone; --force re-checks anyway.
+  if (check && !only.length && !force && existsSync(stampOf(id))) {
+    const old = JSON.parse(readFileSync(stampOf(id), 'utf8'));
+    if (old.key === (await snapKey(id))) {
+      console.log(`= ${id}: inputs unchanged since the identical check of ${old.at}, skipped (--force re-checks)`);
+      return 0;
+    }
+  }
   const t0 = Date.now();
   const now = await hashCreature(id, only);
   const file = join(goldenDir, id + '.json');
@@ -99,6 +119,7 @@ export async function snapOne(id: string, check: boolean, only: string[]) {
     const merged = only.length ? { ...old, ...now } : now;
     const body = '{\n' + Object.entries(merged).map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(',\n') + '\n}\n';
     writeFileSync(file, body);
+    if (!only.length) remember(id, await snapKey(id));
     console.log(`✓ ${id}: ${frames} frames written to golden/${id}.json (${sec} s)`);
     return 0;
   }
@@ -107,7 +128,10 @@ export async function snapOne(id: string, check: boolean, only: string[]) {
     return 1;
   }
   const diff = compareGolden(JSON.parse(readFileSync(file, 'utf8')), now, only);
-  if (!diff.length) console.log(`✓ ${id}: ${frames} frames identical (${sec} s)`);
+  if (!diff.length) {
+    if (!only.length) remember(id, await snapKey(id));
+    console.log(`✓ ${id}: ${frames} frames identical (${sec} s)`);
+  }
   else {
     console.log(`✗ ${id}: frames differ (${sec} s)`);
     for (const l of diff) console.log('  ' + l);
@@ -117,7 +141,11 @@ export async function snapOne(id: string, check: boolean, only: string[]) {
 
 function child(args: string[]) {
   return new Promise<{ code: number; out: string }>((done) => {
-    const p = spawn(process.execPath, ['--import', 'tsx', 'studio/ws.ts', ...args], { cwd: tools, stdio: ['ignore', 'pipe', 'pipe'] });
+    const p = spawn(process.execPath, ['--import', 'tsx', 'studio/ws.ts', ...args], {
+      cwd: tools,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, WS_CHILD: '1' },
+    });
     let out = '';
     p.stdout.on('data', (d) => (out += d));
     p.stderr.on('data', (d) => (out += d));
@@ -143,16 +171,20 @@ export async function pool(cmd: string, ids: string[], rest: string[], jobs: num
 
 export async function snapCommand(args: string[], ids: string[]) {
   const check = args.includes('--check');
+  const force = args.includes('--force');
   const jobsArg = args.indexOf('--jobs');
-  const jobs = jobsArg >= 0 ? Number(args[jobsArg + 1]) : Math.max(1, cpus().length);
+  const { defaultJobs, heavyLock } = await import('./lock');
+  const jobs = jobsArg >= 0 ? Number(args[jobsArg + 1]) : defaultJobs();
+  const release = await heavyLock('snap ' + (ids.length === 1 ? ids[0] : ids.length + ' creatures'));
   const only = args.slice(1).filter((a, i, all) => !a.startsWith('--') && all[i - 1] !== '--jobs');
   const t0 = Date.now();
   let failed = 0;
-  if (ids.length === 1) failed = await snapOne(ids[0], check, only);
+  if (ids.length === 1) failed = await snapOne(ids[0], check, only, force);
   else {
-    const rest = [...only, ...(check ? ['--check'] : [])];
+    const rest = [...only, ...(check ? ['--check'] : []), ...(force ? ['--force'] : [])];
     failed = await pool('snap', ids, rest, jobs);
     console.log(`${ids.length - failed}/${ids.length} ${check ? 'identical' : 'written'} in ${((Date.now() - t0) / 1000).toFixed(0)} s with ${Math.min(jobs, ids.length)} jobs`);
   }
+  release();
   if (failed) process.exitCode = 1;
 }

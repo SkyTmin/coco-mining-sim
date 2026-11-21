@@ -8,6 +8,7 @@ import { validateBehavior } from '../viewer/behavior.mjs';
 import type { BehaviorConfig } from '../viewer/behavior.mjs';
 import { studioConfig } from './checks';
 import type { Px } from '../rig/px';
+import type { Rig } from '../rig/f15-rig';
 import type { loadPainting } from '../render';
 import type { Animation, Rarity } from '../types';
 
@@ -106,8 +107,80 @@ export function joinsSleep(name: string, first: boolean) {
 }
 
 type Painting = Awaited<ReturnType<typeof loadPainting>>;
-export function petGate(painting: Painting, references: string[], hatchKeys: number[] = []) {
+
+export interface Seam {
+  clip: string;
+  frame: number;
+  /** The rest pose this end must meet: idle, idle-f2 (second form) or sleep. */
+  against: string;
+  iou: number;
+  /** hatch frame 0 of a performer: a birth image, measured against its own sheet instead. */
+  birth: boolean;
+  rig?: Rig;
+  againstRig?: Rig;
+  /** Shift of the body silhouette's centre against the rest pose, picture pixels. */
+  offset: [number, number];
+}
+function maskCentre(a: Px): [number, number] {
+  let x = 0, y = 0, n = 0;
+  for (let i = 3, k = 0; i < a.data.length; i += 4, k++)
+    if (a.data[i] >= 128) {
+      x += k % a.w;
+      y += Math.floor(k / a.w);
+      n++;
+    }
+  return n ? [x / n, y / n] : [0, 0];
+}
+/**
+ * Both ends of every one-shot clip against the rest pose they join, and the last 0.7 s of a performer's show against
+ * its final frame. `petGate` fails below IoU 0.9; `ws seam` prints the same numbers in seconds, with the parts that moved.
+ */
+export function endpointSeams(painting: Painting, only?: string[]) {
   const { c, s, b } = painting;
+  const tricks = c.behavior?.tricks;
+  const rank = c.behavior?.lifeAttacks || tricks ? c.rarity : undefined;
+  const { bodyClips } = studioConfig(c.id);
+  const seams: Seam[] = [];
+  const hold: { frame: number; iou: number }[] = [];
+  if (!c.animations.idle) return { seams, hold };
+  const rest = (name: string) => {
+    const f = compose(c, s, b, name, 0);
+    return { body: f.layers.body, rig: f.body.rig };
+  };
+  const resting = rest('idle');
+  const second = rank && c.animations['idle-f2'] ? rest('idle-f2') : undefined;
+  const asleep = Array.isArray(bodyClips) && bodyClips.includes('sleep') && c.animations.sleep ? rest('sleep') : undefined;
+  for (const [name, clip] of Object.entries(c.animations)) {
+    if (clip.loop || (only?.length && !only.includes(name))) continue;
+    if ((rank === 'mythic' || (tricks && rank === 'secret')) && name === 'show') {
+      // A decoy opens the show. The revealed body holds its own presentation pose.
+      const end = frameCount(clip.seconds) - 1;
+      const held = compose(c, s, b, name, end / 24).layers.body;
+      for (let f = Math.max(0, end - Math.ceil(0.7 * 24) + 1); f < end; f++)
+        hold.push({ frame: f, iou: maskOverlap(held, compose(c, s, b, name, f / 24).layers.body) });
+      continue;
+    }
+    for (const n of [0, frameCount(clip.seconds) - 1]) {
+      const rendered = compose(c, s, b, name, n / 24);
+      const sleepSeam = asleep && joinsSleep(name, n === 0);
+      const secondSeam = second && ((name === 'phase' && n > 0) || (tricks && name.endsWith('-f2')));
+      const target = secondSeam ? second : sleepSeam ? asleep : resting;
+      seams.push({
+        clip: name,
+        frame: n,
+        against: secondSeam ? 'idle-f2' : sleepSeam ? 'sleep' : 'idle',
+        iou: maskOverlap(target.body, rendered.layers.body),
+        birth: !!rank && name === 'hatch' && n === 0,
+        rig: rendered.body.rig,
+        againstRig: target.rig,
+        offset: ((p, q) => [p[0] - q[0], p[1] - q[1]] as [number, number])(maskCentre(rendered.layers.body), maskCentre(target.body)),
+      });
+    }
+  }
+  return { seams, hold };
+}
+export function petGate(painting: Painting, references: string[], hatchKeys: number[] = []) {
+  const { c } = painting;
   if (approvedBeforePets.has(c.id) && !c.behavior) return [];
   if (!c.behavior) return ['new paintings require behavior.json'];
   const { bodyClips, multiActTrick } = studioConfig(c.id);
@@ -136,38 +209,19 @@ export function petGate(painting: Painting, references: string[], hatchKeys: num
     }
   }
   if (!c.animations.idle) return issues;
-  const resting = compose(c, s, b, 'idle', 0).layers.body;
-  const second = rank && c.animations['idle-f2'] ? compose(c, s, b, 'idle-f2', 0).layers.body : undefined;
-  const asleep = Array.isArray(bodyClips) && bodyClips.includes('sleep') && c.animations.sleep
-    ? compose(c, s, b, 'sleep', 0).layers.body : undefined;
+  const { seams, hold } = endpointSeams(painting);
+  const broken = hold.find(h => h.iou < 0.9);
+  if (broken) issues.push('show must hold its final body pose for 0.7 s (frame ' + broken.frame + ')');
   let minimum = 1, count = 0;
-  for (const [name, clip] of Object.entries(c.animations)) {
-    if (clip.loop) continue;
-    if ((rank === 'mythic' || (tricks && rank === 'secret')) && name === 'show') {
-      // A decoy opens the show. The revealed body holds its own presentation pose.
-      const end = frameCount(clip.seconds) - 1;
-      const held = compose(c, s, b, name, end / 24).layers.body;
-      for (let f = Math.max(0, end - Math.ceil(0.7 * 24) + 1); f < end; f++) {
-        const iou = maskOverlap(held, compose(c, s, b, name, f / 24).layers.body);
-        if (iou < 0.9) { issues.push('show must hold its final body pose for 0.7 s (frame ' + f + ')'); break; }
-      }
+  for (const seam of seams) {
+    if (seam.birth && seam.iou < 0.9) {
+      // A birth image is calibrated to its own sheet, which gateExtras measures with ws ref.
+      if (!hatchKeys.includes(0)) issues.push('hatch frame 0 birth pose needs its own registered sheet key');
       continue;
     }
-    for (const n of [0, frameCount(clip.seconds) - 1]) {
-      const rendered = compose(c, s, b, name, n / 24);
-      const sleepSeam = asleep && joinsSleep(name, n === 0);
-      const secondSeam = second && ((name === 'phase' && n > 0) || (tricks && name.endsWith('-f2')));
-      const target = secondSeam ? second : sleepSeam ? asleep : resting;
-      const iou = maskOverlap(target, rendered.layers.body);
-      if (rank && name === 'hatch' && n === 0 && iou < 0.9) {
-        // A birth image is calibrated to its own sheet, which gateExtras measures with ws ref.
-        if (!hatchKeys.includes(0)) issues.push('hatch frame 0 birth pose needs its own registered sheet key');
-        continue;
-      }
-      minimum = Math.min(minimum, iou);
-      count++;
-      if (iou < 0.9) issues.push(name + ' frame ' + n + ' vs ' + (secondSeam ? 'idle-f2' : sleepSeam ? 'sleep' : 'idle') + ' IoU ' + iou.toFixed(3) + ' < 0.900');
-    }
+    minimum = Math.min(minimum, seam.iou);
+    count++;
+    if (seam.iou < 0.9) issues.push(seam.clip + ' frame ' + seam.frame + ' vs ' + seam.against + ' IoU ' + seam.iou.toFixed(3) + ' < 0.900');
   }
   console.log('  ' + c.id + ': ' + count + ' one-shot endpoints, lowest endpoint IoU ' + minimum.toFixed(3));
   return issues;

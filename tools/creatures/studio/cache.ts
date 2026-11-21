@@ -5,7 +5,6 @@ import { spawn } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
 import { bodySources } from '../bodies/sources';
 import type { CreatureCard } from './card';
-import { cpus } from 'node:os';
 import { join, relative } from 'node:path';
 
 const tools = join(import.meta.dirname, '..');
@@ -49,6 +48,8 @@ export function inputsOf(id: string, theme: string, rarity: string) {
   const others = creatureIds().filter((x) => x !== id && x !== parent);
   const own = readdirSync(join(tools, 'c'))
     .filter((f) => !others.some((o) => f === o + '.ts' || f.startsWith(o + '-') || f.startsWith(o + '.')))
+    // checker settings (clipAllow, skip) do not change a single pixel: the gate key adds them itself
+    .filter((f) => !f.endsWith('.studio.json'))
     .map((f) => join(tools, 'c', f));
   const files = [
     ...walk(tools),
@@ -88,7 +89,8 @@ function run(args: string[]) {
 export async function renderCommand(args: string[]) {
   const force = args.includes('--force');
   const jobsArg = args.indexOf('--jobs');
-  const jobs = jobsArg >= 0 ? Number(args[jobsArg + 1]) : Math.max(1, cpus().length);
+  const { defaultJobs, heavyLock } = await import('./lock');
+  const jobs = jobsArg >= 0 ? Number(args[jobsArg + 1]) : defaultJobs();
   const named = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--jobs');
   const list = !named.length || named[0] === 'all' ? creatureIds() : named.flatMap((a) => a.split(','));
   const { loadPainting } = await import('../render');
@@ -101,6 +103,7 @@ export async function renderCommand(args: string[]) {
     if (!force && old === hash) console.log(`= ${id}: unchanged, skipped`);
     else todo.push({ id, hash });
   }
+  const release = todo.length ? await heavyLock('render ' + todo.map((t) => t.id).join(',')) : () => {};
   const t0 = Date.now();
   let next = 0,
     failed = 0;
@@ -120,6 +123,7 @@ export async function renderCommand(args: string[]) {
     }
   }
   await Promise.all(Array.from({ length: Math.min(jobs, todo.length) }, worker));
+  release();
   if (todo.length) console.log(`rendered ${todo.length - failed}/${todo.length} in ${((Date.now() - t0) / 1000).toFixed(0)} s with ${jobs} jobs`);
   if (failed) process.exitCode = 1;
 }
