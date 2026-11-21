@@ -108,8 +108,10 @@ test('the secret clip gate requires two authored tricks in each form and disallo
     petClipIssues(animations, Object.keys(animations), [], false, 'secret', forms);
   assert.deepEqual(inspect(clips), []);
   assert.ok(inspect(clips, { ...tricks, f2: ['trick-f2'] }).includes('a secret painting needs two tricks in each form'));
-  for (const [name, seconds] of [['phase', 1.9], ['show', 6.1], ['trick_b-f2', 4.9]] as const)
+  for (const [name, seconds] of [['phase', 1.9], ['show', 4.9], ['trick_b-f2', 4.9]] as const)
     assert.ok(inspect({ ...clips, [name]: { seconds } }).some(issue => issue.startsWith(name + ' duration')));
+  // No upper cap: a secret's tricks, phase and show run as long as their story needs.
+  assert.deepEqual(inspect({ ...clips, trick: { seconds: 12 }, 'trick-f2': { seconds: 11 }, phase: { seconds: 4 }, show: { seconds: 9 } }), []);
   for (const name of ['tech_stamp', 'die'])
     assert.ok(inspect({ ...clips, [name]: { seconds: 2 } }).some(issue => issue.startsWith(name + ' is forbidden')));
 });

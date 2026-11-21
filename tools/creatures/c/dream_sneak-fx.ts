@@ -167,10 +167,11 @@ function second(f: FxInput) {
 function invisible(f: FxInput, frame: number) {
   const B = beats.trick;
   const home = pt(f, 'floor', 0) ?? f.feet;
-  // The spinning shield flings sand off its rim.
-  if (frame >= B.open && frame < B.poof) {
+  // The spinning shield flings sand off its rim, more and more as it speeds up.
+  if (frame >= B.spinStart && frame < B.poof) {
     const rim = pt(f, 'umbRim');
-    if (rim) for (let i = 0; i < 4; i++) {
+    const n = 2 + Math.round(6 * clamp01((frame - B.spinStart) / (B.poof - B.spinStart)));
+    if (rim) for (let i = 0; i < n; i++) {
       const a = frame * 0.9 + i * 1.6;
       const r = 4 + ((frame * 3 + i * 7) % 12);
       f.above.col(sand[i % 2 ? 2 : 3], 0.9);
@@ -183,9 +184,10 @@ function invisible(f: FxInput, frame: number) {
   sandPuff(f.above, mid, frame - B.poof, 22, 12, 22, 7);
   sandFall(f.above, mid, frame - B.poof, 30, 18, 20, 4, 9);
   if (frame >= B.eyesOn && frame < B.eyesOff) {
+    // Open, a blink, a look left, a look right, a slow double blink, a last look at the viewer.
     const k = frame - B.eyesOn;
-    const shut = (k > 6 && k < 8) || k > 14;
-    const look = k < 9 ? 0 : k < 12 ? -1 : 1;
+    const shut = (k >= 5 && k < 7) || (k >= 16 && k < 18) || (k >= 19 && k < 21) || k >= 23;
+    const look = k < 8 ? 0 : k < 12 ? -1 : k < 16 ? 1 : 0;
     for (const s of [-1, 1]) {
       const ex = Math.round(head[0] + s * 6),
         ey = Math.round(head[1] + 4);
@@ -206,10 +208,9 @@ function invisible(f: FxInput, frame: number) {
   }
   // Glowing paw prints hop toward the glass, each with a little puff, fading after a while.
   for (let n = 0; n < PRINTS.length; n++) {
-    const born = B.prints + n * B.printStep,
+    const [born, ox, oy] = PRINTS[n],
       age = frame - born;
     if (age < 0) continue;
-    const [ox, oy] = PRINTS[n];
     const at: XY = [home[0] + ox, home[1] + oy];
     const scale = 1 + oy / 60;
     const a = 1 - progress(age, 26, 44);
@@ -234,7 +235,11 @@ function invisible(f: FxInput, frame: number) {
     const h = pt(f, 'head');
     if (h) for (let i = 0; i < 3; i++) sparkle(f.above, [h[0] + (i - 1) * 28, h[1] - 40 - ((frame + i * 3) % 8) * 2], 2.5, 0.8);
   }
-  dustCloud(f.under, home, frame - B.land, 12, 6, 12, 31);
+  // Dust where each hop home lands.
+  for (const [i, at] of B.landings.entries()) {
+    const foot = pt(f, 'floor', at);
+    if (foot) dustCloud(f.under, foot, frame - at, 12, 6, i === B.landings.length - 1 ? 12 : 9, 31 + i);
+  }
 }
 function dreamSand(f: FxInput, frame: number) {
   const B = beats.trick_b;
@@ -313,9 +318,9 @@ function countingSheep(f: FxInput, frame: number) {
   const fence = frame >= B.selfOver - 1 ? f.above : f.under;
   // The fence grows post by post out of a stream of sand from his paw, stands, then crumbles back into sand.
   const posts = 5;
-  const crumble = clamp01((frame - B.crumble) / 10);
+  const crumble = clamp01((frame - B.crumble) / 16);
   for (let n = 0; n < posts; n++) {
-    const born = B.fenceStart + 4 + n * 3.5;
+    const born = B.fenceStart + 4 + n * B.postStep;
     const grow = clamp01((frame - born) / 4);
     if (grow <= 0 || crumble >= 1) continue;
     const k = n / (posts - 1);
@@ -330,10 +335,10 @@ function countingSheep(f: FxInput, frame: number) {
     fence.col(wood[3], 1);
     fence.rect(Math.round(x), Math.round(y - h), 1, Math.round(h));
     if (grow < 1) sandPuff(f.above, [x, y - h], (frame - born) * 2, 8, 4, 4, 60 + n);
-    if (crumble > 0) sandFall(f.above, [x, y], (frame - B.crumble) * 1.5, 20, 6, 4, 14, 70 + n);
+    if (crumble > 0) sandFall(f.above, [x, y], frame - B.crumble, 24, 6, 4, 14, 70 + n);
   }
   // Two rails once three posts stand.
-  if (frame >= B.fenceStart + 14 && crumble < 1) {
+  if (frame >= B.fenceStart + 4 + 2 * B.postStep + 4 && crumble < 1) {
     for (const h of [6, 12]) {
       const hk = h * (1 - crumble);
       fence.col(wood[1], 1);
@@ -355,12 +360,12 @@ function countingSheep(f: FxInput, frame: number) {
   }
   // Numbers over the fence for each jump, stars round the bonked sheep.
   const top: XY = [(near[0] + far[0]) / 2, Math.min(near[1], far[1]) - 34];
-  digit(f.above, top, 1, frame - (B.jump0 + 6), 16);
-  digit(f.above, top, 2, frame - (B.jump1 + 6), 16);
-  digit(f.above, top, 3, frame - (B.jump2b + 4), 16);
+  digit(f.above, top, 1, frame - (B.jump0 + 8), 20);
+  digit(f.above, top, 2, frame - (B.jump1 + 8), 20);
+  digit(f.above, top, 3, frame - (B.jump2b + 6), 20);
   // Number four is him: it pops up over his head once he has landed behind the fence.
   const head = pt(f, 'head', B.selfOver + 3);
-  if (head) digit(f.above, [head[0] + 17, head[1] - 20], 4, frame - (B.selfOver + 1), 20);
+  if (head) digit(f.above, [head[0] + 17, head[1] - 20], 4, frame - (B.selfOver + 1), 24);
   if (frame >= B.bonk && frame < B.jump2b) {
     const sh = pt(f, 'sheep2');
     if (sh) for (let i = 0; i < 3; i++) {
@@ -369,6 +374,7 @@ function countingSheep(f: FxInput, frame: number) {
     }
   }
   dustCloud(f.under, pt(f, 'floor', B.selfOver) ?? f.feet, frame - B.selfOver, 10, 6, 10, 77);
+  dustCloud(f.under, pt(f, 'floor', B.hopLand) ?? f.feet, frame - B.hopLand, 10, 5, 8, 79);
   dustCloud(f.under, pt(f, 'floor', B.home) ?? f.feet, frame - B.home, 10, 6, 10, 78);
   second(f);
 }
@@ -382,6 +388,11 @@ function umbrellaFlight(f: FxInput, frame: number) {
       sparkle(f.above, at, 3 - k * 0.4, 1 - k / 7);
     }
   }
+  // The boop on the glass: a little ring of light round his nose.
+  if (frame >= B.boop && frame < B.boop + 10) {
+    const nose = pt(f, 'nose', B.boop) ?? pt(f, 'head', B.boop);
+    if (nose) rays(f.above, nose, frame - B.boop, 10, 10, 10, '#fff6c2', 5);
+  }
   dustCloud(f.under, pt(f, 'floor', B.land) ?? f.feet, frame - B.land, 12, 6, 12, 81);
   second(f);
 }
@@ -392,7 +403,7 @@ function showFx(f: FxInput, frame: number) {
     if (rim) sparkle(f.above, [rim[0] + ((frame * 5) % 15) - 7, rim[1] + 4 + ((frame * 3) % 9)], 2, 0.75);
   }
   dustCloud(f.under, pt(f, 'floor', B.land) ?? f.feet, frame - B.land, 12, 7, 12, 91);
-  if (frame >= B.twirl && frame < B.twirl + 12) {
+  if (frame >= B.twirl && frame < B.twirl + 22) {
     const top = pt(f, 'umbTop');
     if (top) for (let i = 0; i < 4; i++) sparkle(f.above, [top[0] + Math.cos(frame * 0.6 + i * 1.6) * 8, top[1] + Math.sin(frame * 0.6 + i * 1.6) * 4], 2.2, 0.9);
   }

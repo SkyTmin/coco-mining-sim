@@ -2890,7 +2890,7 @@
       {
         "id": "life",
         "name": "Жизнь",
-        "frames": 720
+        "frames": 1440
       },
       {
         "id": "idle",
@@ -2950,17 +2950,17 @@
       {
         "id": "trick",
         "name": "Трюк: невидимка",
-        "frames": 132
+        "frames": 276
       },
       {
         "id": "trick_b",
         "name": "Трюк: сонный песок",
-        "frames": 132
+        "frames": 264
       },
       {
         "id": "phase",
         "name": "Сон наяву",
-        "frames": 60
+        "frames": 96
       },
       {
         "id": "idle-f2",
@@ -2970,17 +2970,17 @@
       {
         "id": "trick-f2",
         "name": "Трюк: счёт барашков",
-        "frames": 132
+        "frames": 252
       },
       {
         "id": "trick_b-f2",
         "name": "Трюк: полёт на зонтике",
-        "frames": 132
+        "frames": 264
       },
       {
         "id": "show",
         "name": "Появление: спуск на зонтике",
-        "frames": 120
+        "frames": 168
       },
       {
         "id": "peek",
@@ -3045,7 +3045,7 @@
       {
         "id": "showreel",
         "name": "Все анимации",
-        "frames": 1859
+        "frames": 2471
       }
     ]
   },

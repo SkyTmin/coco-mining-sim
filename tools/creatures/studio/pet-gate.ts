@@ -36,17 +36,18 @@ export function petClipIssues(animations: Record<string, Animation>, references:
     if (tricks.f2 || secretTricks) {
       limits['happy-f2'] = [0, Infinity, false];
       limits['idle-f2'] = [0, Infinity, true];
-      limits.phase = secretTricks ? [2, 3, false] : [0, Infinity, false];
+      // Minimums only: a secret's tricks, phase and show are as long as their story needs [владелец 21.11].
+      limits.phase = secretTricks ? [2, Infinity, false] : [0, Infinity, false];
     }
     const secretPairs = secretTricks ? ['trick', 'trick_b', 'trick-f2', 'trick_b-f2'] : [];
     for (const name of new Set([...secretPairs, ...Object.keys(animations).filter(isTrick)])) {
       if (secretTricks || animations[name])
-        limits[name] = secretTricks ? [5, 7, false] : [0, Infinity, false];
+        limits[name] = secretTricks ? [5, Infinity, false] : [0, Infinity, false];
     }
     if (secretTricks) {
       if ((tricks.f1?.length ?? 0) < 2 || (tricks.f2?.length ?? 0) < 2)
         issues.push('a secret painting needs two tricks in each form');
-      limits.show = [5, 6, false];
+      limits.show = [5, Infinity, false];
       limits.peek = [0, Infinity, false];
     }
   } else if (performanceRarity) {

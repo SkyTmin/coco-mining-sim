@@ -43,7 +43,9 @@ function attackFits(bounds, at) {
 export function validateBehavior(data, animations) {
   if (!data || typeof data !== 'object') return ['expected a behavior object'];
   const issues = [];
-  if (!Number.isInteger(data.seed) || data.previewSeconds !== 30) issues.push('seed/previewSeconds');
+  // The life window is at least 30 s and grows with the tricks: long tricks get a longer window, never a shorter trick.
+  if (!Number.isInteger(data.seed) || !Number.isInteger(data.previewSeconds) || data.previewSeconds < 30)
+    issues.push('seed/previewSeconds');
   if (!pair(data.field, n => Number.isInteger(n) && n > 0) || !positive(data.stride) ||
       !Number.isFinite(data.yaw) || !positive(data.depthScale)) issues.push('field/stride/depthScale');
   if (!interval(data.walkShare, 0.35, 0.50)) issues.push('walkShare must be within 35–50%');

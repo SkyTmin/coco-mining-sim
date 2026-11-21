@@ -820,9 +820,13 @@ export function sneakFigure(sample: PoseSample): Figure {
       .roll(get('roll'))
       .turn(get('twist'));
     const B = hips;
+    // A spin (`twist`) turns him round the hips' vertical axis: feet and paw goals go round with the body,
+    // otherwise the body pirouettes over feet that keep facing the viewer.
+    const twist = get('twist');
+    const FT = twist ? F.at(get('lean'), get('drift'), 0).turn(twist).at(-get('lean'), -get('drift'), 0) : F;
     const target = (key: string, rest: V3) => {
-      const g = goalAt(A, key, toLocal(F, rest));
-      return g ? F.p(...g) : rest;
+      const g = goalAt(A, key, toLocal(FT, rest));
+      return g ? FT.p(...g) : rest;
     };
     const overAll = get('overAll') > 0.5,
       peek = get('peekFront') > 0.5,
@@ -840,9 +844,9 @@ export function sneakFigure(sample: PoseSample): Figure {
       for (let index = 0; index < 2; index++) {
         const s = index ? 1 : -1,
           name = s < 0 ? 'L' : 'R';
-        const stand = F.p(-2.6 + get('stride') * s, s * 4.0, 1.5);
-        const air = vadd(stand, F.v(1.2 * tuckAll, 0, hopLift * 0.92 + 2.2 * tuckAll));
-        const curled = F.p(2.4, s * 3.4, 0.9);
+        const stand = FT.p(-2.6 + get('stride') * s, s * 4.0, 1.5);
+        const air = vadd(stand, FT.v(1.2 * tuckAll, 0, hopLift * 0.92 + 2.2 * tuckAll));
+        const curled = FT.p(2.4, s * 3.4, 0.9);
         // In a somersault the tucked feet turn with the body instead of staying under it in the world.
         const pk = ((get('pitch') % TAU) + TAU) % TAU;
         const flip = saturate((pk - 0.8) / 0.8) * saturate((5.9 - pk) / 0.8);
@@ -850,7 +854,7 @@ export function sneakFigure(sample: PoseSample): Figure {
         const rest = vlerp(vlerp(vlerp(stand, air, saturate(hopLift / 2 + tuckAll)), curled, saturate(sleep)), tucked, flip);
         const heel = target('foot' + name, rest);
         const point = saturate(tuckAll * 0.9 + get('point'));
-        const toeDir = vnorm(vlerp(F.v(1, s * 0.1, -0.13 - 1.1 * point), hips.v(1, s * 0.1, -0.3), flip));
+        const toeDir = vnorm(vlerp(FT.v(1, s * 0.1, -0.13 - 1.1 * point), hips.v(1, s * 0.1, -0.3), flip));
         leg(R0, hips, s, heel, toeDir, j);
       }
       const capeLift = 5 * saturate((lagJump(capeLag) - lagJump(A)) * 0.4) + get('capeLift') + tuckAll * 2.4;
@@ -897,8 +901,8 @@ export function sneakFigure(sample: PoseSample): Figure {
       const umbHeld = get('umbFree') < 0.5;
       const restL = B.p(5.4, -4.0, 8.0),
         restR = B.p(4.6, 5.2, 5.2);
-      const sleepR = F.p(6.0, 2.2, 6.0),
-        sleepL = F.p(6.2, -2.0, 5.8);
+      const sleepR = FT.p(6.0, 2.2, 6.0),
+        sleepL = FT.p(6.2, -2.0, 5.8);
       const handR = target('handR', vlerp(restR, sleepR, saturate(sleep))),
         handL = target('handL', vlerp(restL, sleepL, saturate(sleep)));
       const handRig = peek ? front! : R0;

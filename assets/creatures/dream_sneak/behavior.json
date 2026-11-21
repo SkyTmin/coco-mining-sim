@@ -1,7 +1,7 @@
 {
   "$schema": "../../../tools/creatures/bodies/behavior.schema.json",
   "seed": 7518,
-  "previewSeconds": 30,
+  "previewSeconds": 60,
   "field": [
     256,
     208

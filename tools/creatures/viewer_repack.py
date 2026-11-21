@@ -11,13 +11,16 @@ and clips stay as they are; only `actors.pages` and `actors.rects` change.
 """
 import argparse
 import json
+import os
 from collections import OrderedDict
 from pathlib import Path
 
 from PIL import Image
 
 ATLASES = Path(__file__).resolve().parent / 'viewer' / 'atlases'
-SIDE = 2048  # 1024 gave 688 pages: over the 511 files an artifact version may hold
+# 1024 gave 688 pages: over the 511 files an artifact version may hold. A long-clip atlas can take 4096
+# (ATLAS_SIDE=4096) so the gallery stays under that limit.
+SIDE = int(os.environ.get('ATLAS_SIDE', '2048'))
 FILL = 0.78  # take sprites for a page until this share of its area is claimed
 
 

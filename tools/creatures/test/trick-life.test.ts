@@ -157,3 +157,12 @@ test('a rare pet cycles three tricks in life and its own extra gesture joins the
   const { trick_c, ...missing } = extra;
   assert.match(validateBehavior(rare, missing).join(), /tricks\.f1/);
 });
+
+test('long tricks get a longer life window instead of being cut down', () => {
+  const long = Object.fromEntries(Object.entries({ ...durations, trick: 11.5, trick_b: 11, 'trick-f2': 10.5, 'trick_b-f2': 11, phase: 4 })
+    .map(([name, seconds]) => [name, { seconds, interrupt: interruptFrames(Math.round(seconds * 24), name) }]));
+  assert.ok(validateBehavior(config, long).some(issue => issue.includes('minimum walking share')));
+  assert.deepEqual(validateBehavior({ ...config, previewSeconds: 60 }, long), []);
+  assert.ok(validateBehavior({ ...config, previewSeconds: 29 }, clips).includes('seed/previewSeconds'));
+  assert.ok(validateBehavior({ ...config, previewSeconds: 45.5 }, clips).includes('seed/previewSeconds'));
+});
