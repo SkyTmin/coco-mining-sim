@@ -3050,6 +3050,185 @@
     ]
   },
   {
+    "id": "storm_lord",
+    "name": "Раскат, повелитель грозы",
+    "section": "ours",
+    "rarity": "secret",
+    "color": "#1f2350",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 1536
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Оглядывает вершину",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Громовое сальто",
+        "frames": 48
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупляется из грозового камня",
+        "frames": 72
+      },
+      {
+        "id": "fidget_a",
+        "name": "Разряд в когтях",
+        "frames": 60
+      },
+      {
+        "id": "fidget_b",
+        "name": "Встряхивается",
+        "frames": 60
+      },
+      {
+        "id": "happy-f2",
+        "name": "Радость Бури",
+        "frames": 48
+      },
+      {
+        "id": "trick",
+        "name": "Трюк: громовой рывок",
+        "frames": 264
+      },
+      {
+        "id": "trick_b",
+        "name": "Трюк: зов молнии",
+        "frames": 276
+      },
+      {
+        "id": "trick_c",
+        "name": "Трюк: барабаны войны",
+        "frames": 276
+      },
+      {
+        "id": "phase",
+        "name": "Пробуждение бури",
+        "frames": 120
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой Бури",
+        "frames": 48
+      },
+      {
+        "id": "trick-f2",
+        "name": "Трюк: ураган",
+        "frames": 288
+      },
+      {
+        "id": "trick_b-f2",
+        "name": "Трюк: шаровая молния",
+        "frames": 276
+      },
+      {
+        "id": "trick_c-f2",
+        "name": "Трюк: удар с неба",
+        "frames": 288
+      },
+      {
+        "id": "show",
+        "name": "Появление: удар молнии",
+        "frames": 168
+      },
+      {
+        "id": "peek",
+        "name": "Глаза из-за рамы",
+        "frames": 60
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 36
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 36
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 29
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 3143
+      }
+    ]
+  },
+  {
     "id": "bramble_warden",
     "name": "Ежевичный страж",
     "section": "ours",

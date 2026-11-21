@@ -23,7 +23,7 @@ import { finishSurfaces } from './surface-work';
 import { clips, HIP } from './storm_lord-poses';
 
 const card = readCreatureCard('storm_lord');
-export const portraitScale = 3.1;
+export const portraitScale = 2.78;
 const tones = (name: string) => card.materials.find((m) => m.name === name)!.tones;
 const sw = (name: string, idx: number[], glow = 0): Mat => {
   const t = tones(name);
@@ -52,6 +52,8 @@ const fur = sw('fur', [2, 3, 4, 5]),
   mouthMat = sw('mouth', [0, 0, 1, 2]),
   tongue = sw('mouth', [1, 2, 3, 3]),
   blazeMat = sw('blaze', [1, 2, 3, 4], 0.85),
+  rock: Mat = { T: [hx('#15161f'), hx('#262734'), hx('#3c3d4e'), hx('#5e6276')] },
+  rockDeep: Mat = { T: [hx('#0e0f16'), hx('#1d1e29'), hx('#303140'), hx('#4a4c5e')] },
   veinMat = sw('vein', [1, 2, 3, 4], 0.8);
 gold.spec = true;
 cloud.soft = true;
@@ -581,7 +583,8 @@ const MANE: Puff[] = (() => {
   }
   return out;
 })();
-function mane(r: Rig, B: F3, F: F3, lag: V3, lift: number, charge: number, t: number, j: Record<string, V3>) {
+/** `breathe` and `churn` are phases that make whole cycles over the clip, so a clip ends exactly as idle begins. */
+function mane(r: Rig, B: F3, F: F3, lag: V3, lift: number, charge: number, t: number, breathe: number, churn: number, j: Record<string, V3>) {
   r.tag = 'mane';
   const k = stormK;
   const centers: V3[] = [];
@@ -589,14 +592,14 @@ function mane(r: Rig, B: F3, F: F3, lag: V3, lift: number, charge: number, t: nu
     const p = MANE[i];
     const pos = vlerp(p.a, p.b, k);
     // Lower puffs trail further behind and lift with jumps; every puff breathes on its own beat.
-    const bob = 0.35 * Math.sin(t * 2.4 + i * 1.7);
+    const bob = 0.35 * Math.sin(breathe + i * 1.7);
     const at = vadd(B.p(pos[0], pos[1], pos[2] + bob + lift * p.u * (1 - k)), vmul(lag, p.u * (1 - 0.6 * k)));
     const rad = p.r + (p.r2 - p.r) * k;
     // Each puff: a body and three lumps; the outer and upper puffs catch the cold light, the inner ones stay dark.
     const outer = Math.abs(p.a[1]) / 7 + (p.u < 0.1 ? 0.4 : 0);
     r.ball(at, rad, outer > 0.55 ? cloud : cloudDeep);
     for (let n = 0; n < 3; n++) {
-      const a = (n / 3) * TAU + i * 1.3 + 0.25 * Math.sin(t * 1.7 + i);
+      const a = (n / 3) * TAU + i * 1.3 + 0.25 * Math.sin(churn + i);
       const up = Math.sin(a);
       const off = F.v(-0.3, Math.cos(a) * rad * 0.55, up * rad * 0.5);
       r.ball(vadd(at, off), rad * (0.55 + 0.1 * hash(i, n, 3)), up > 0.3 ? cloudLit : cloud);
@@ -620,13 +623,17 @@ function mane(r: Rig, B: F3, F: F3, lag: V3, lift: number, charge: number, t: nu
 
 // ---- the war drums --------------------------------------------------------------------------------
 export interface DrumRing {
+  up?: number;
+  back?: number;
   radius: number;
   tilt: number;
   spin: number;
   glow: number;
-  /** Per-drum offsets (index → world offset), and a per-drum pulse 0..1 for the hit flash. */
-  push?: (i: number) => V3;
-  pulse?: (i: number) => number;
+  /** The hit on the front drum (0..1) and a wave of flashes running round the ring (0..1 = once round, 0 = none). */
+  hit: number;
+  wave: number;
+  /** Extra drum size (0 = natural). */
+  big: number;
 }
 function drum(r: Rig, c: V3, axis: V3, ref: V3, glow: number, pulse: number, scale: number) {
   const ax = vnorm(axis);
@@ -676,22 +683,43 @@ function drum(r: Rig, c: V3, axis: V3, ref: V3, glow: number, pulse: number, sca
   for (let k = 0; k < zz.length - 1; k++) r.line(HF.p(0.18, zz[k][0] * headR, zz[k][1] * headR), HF.p(0.18, zz[k + 1][0] * headR, zz[k + 1][1] * headR), mark, saturate(glow * 0.5 + pulse), 0.9);
   return hc;
 }
+/** The drum ring of the current frame (centre, axes, radius, spin): the ball lightning flies round it. */
+let ringNow = { C: [0, 0, 0] as V3, e1: [0, 1, 0] as V3, e2: [0, 0, 1] as V3, radius: 16, spin: 0 };
 function drums(r: Rig, B: F3, ring: DrumRing, j: Record<string, V3>) {
   // The ring hangs behind his shoulders like a halo; tilting it lays it round him so drums pass in front and behind.
-  const C = B.p(-5.6 + 3.4 * Math.sin(ring.tilt) ** 2, 0, 16.4 - 7 * Math.sin(ring.tilt) ** 2);
+  // A ring round his waist cannot reach his back without passing through him: it is lifted over his head (`up`, `back`).
+  const C = B.p(-6.2 + 4 * Math.sin(ring.tilt) ** 2 - (ring.back ?? 0), 0, 17.4 - 8 * Math.sin(ring.tilt) ** 2 + (ring.up ?? 0));
   const e1 = B.s,
     e2 = vnorm(vadd(vmul(B.u, Math.cos(ring.tilt)), vmul(B.f, -Math.sin(ring.tilt))));
   const centers: V3[] = [];
-  const scale = 1 + 0.12 * stormK;
+  const scale = (1 + 0.12 * stormK) * (1 + ring.big);
+  ringNow = { C, e1, e2, radius: ring.radius, spin: ring.spin };
+  // The front drum is the one furthest forward of him: his fists land on it.
+  let front = 0,
+    best = -1e9;
+  for (let i = 0; i < 8; i++) {
+    const a = ring.spin + (i / 8) * TAU;
+    const d = vdot(vadd(vmul(e1, Math.cos(a)), vmul(e2, Math.sin(a))), B.f);
+    if (d > best) {
+      best = d;
+      front = i;
+    }
+  }
   for (let i = 0; i < 8; i++) {
     const a = ring.spin + (i / 8) * TAU;
     const radial = vadd(vmul(e1, Math.cos(a)), vmul(e2, Math.sin(a)));
-    const c = vadd(vadd(C, vmul(radial, ring.radius)), ring.push ? ring.push(i) : [0, 0, 0]);
+    const c = vadd(C, vmul(radial, ring.radius));
     centers.push(c);
     // The heads face out of the ring and a little forward, so the halo shows their lightning marks.
     const axis = vnorm(vadd(radial, vmul(vcross(e1, e2), -0.55)));
-    const head = drum(r, c, axis, vcross(e1, e2), ring.glow, ring.pulse ? ring.pulse(i) : 0, scale);
+    const wd = ring.wave > 0 ? Math.abs(((i - ring.wave * 8 + 12) % 8) - 4) : 9;
+    const pulse = (i === front ? ring.hit : 0) + Math.max(0, 1 - Math.abs(4 - wd));
+    const head = drum(r, c, axis, vcross(e1, e2), ring.glow, saturate(pulse), scale);
     j['drum' + i] = head;
+    if (i === front) {
+      j.drumFront = head;
+      j.drumHit = vadd(head, vmul(axis, 1.2));
+    }
   }
   // The gold rope frame that holds them on the ring.
   r.tag = 'drumHoops';
@@ -704,6 +732,134 @@ function drums(r: Rig, B: F3, ring: DrumRing, j: Record<string, V3>) {
     r.cap(p0, p1, 0.32, 0.32, k % 2 ? gold : goldDeep);
   }
   j.ring = C;
+}
+
+// ---- props ------------------------------------------------------------------------------------------
+/** The lightning spear: held at its middle in the right paw; a white-hot rod with lightning coiling round it and
+ * forked heads at both ends. `sink` drives it down into the stone (the part under the floor is not drawn). */
+function spear(r: Rig, B: F3, F: F3, hand: V3, pitch: number, yaw: number, sink: number, t: number, j: Record<string, V3>) {
+  r.tag = 'spear';
+  const d = vnorm(B.v(Math.cos(pitch) * Math.cos(yaw), Math.cos(pitch) * Math.sin(yaw), Math.sin(pitch)));
+  const c = vadd(hand, vmul(d, sink * 12));
+  const L = 17;
+  const a = vadd(c, vmul(d, -L)),
+    b = vadd(c, vmul(d, L));
+  const above = (p: V3) => p[2] > 0.3;
+  const clipTo = (p: V3, q: V3): V3 => {
+    if (above(p)) return p;
+    const k = (0.3 - q[2]) / (p[2] - q[2]);
+    return vlerp(q, p, saturate(k));
+  };
+  const a2 = clipTo(a, b),
+    b2 = clipTo(b, a);
+  if (!above(a) && !above(b)) return;
+  r.cap(a2, b2, 0.7, 0.7, blazeMat);
+  const seed = Math.floor(t * 16);
+  for (let n = 0; n < 3; n++) zigzag(r, a2, b2, seed * 3 + n, n ? blazeT[3] : veinT[3], 1, 1.3, 9, F.u);
+  // Forked heads.
+  for (const [end, dir] of [
+    [b, d],
+    [a, vmul(d, -1)],
+  ] as [V3, V3][]) {
+    if (!above(end)) continue;
+    const side = vnorm(vcross(dir, F.u));
+    r.spike(end, dir, 4.4, 1.0, blazeMat, 4);
+    for (const s of [-1, 1]) r.spike(vadd(end, vmul(dir, -1.6)), vnorm(vadd(dir, vmul(side, s * 0.75))), 2.8, 0.6, blazeMat, 3);
+  }
+  j.spearTip = b;
+  j.spearButt = a;
+  j.spear = c;
+}
+/** A box slab of stone (a torn-up floor slab), cracks glowing faintly. */
+function slab(r: Rig, c: V3, e1: V3, e2: V3, e3: V3, glowLine: ReturnType<typeof hx>) {
+  const P = (x: number, y: number, z: number) => vadd(c, vadd(vadd(vmul(e1, x), vmul(e2, y)), vmul(e3, z)));
+  const v = [P(-1, -1, -1), P(1, -1, -1), P(1, 1, -1), P(-1, 1, -1), P(-1, -1, 1), P(1, -1, 1), P(1, 1, 1), P(-1, 1, 1)];
+  for (const [i0, i1, i2, i3, m] of [
+    [4, 5, 6, 7, rock],
+    [0, 1, 5, 4, rockDeep],
+    [1, 2, 6, 5, rock],
+    [2, 3, 7, 6, rockDeep],
+    [3, 0, 4, 7, rock],
+    [0, 3, 2, 1, rockDeep],
+  ] as [number, number, number, number, Mat][])
+    r.poly([v[i0], v[i1], v[i2], v[i3]], m);
+  r.line(P(-0.8, -0.6, 1.05), P(0.1, 0.2, 1.05), glowLine, 0.6, 0.8);
+  r.line(P(0.1, 0.2, 1.05), P(0.7, -0.3, 1.05), glowLine, 0.6, 0.8);
+}
+/** Floor slabs torn up by the spear: they rise on a ring round him, tremble with static, close in and are crushed. */
+function stones(r: Rig, F: F3, up: number, close: number, t: number, j: Record<string, V3>) {
+  r.tag = 'charge';
+  const n = 10;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * TAU + 0.35 * up + t * 0.35;
+    const rad = 17 - 12 * close + hash(i, 3) * 2;
+    const h = up * (13 + hash(i, 4) * 15 + 4 * close) + 0.5 * Math.sin(t * 19 + i * 2.1) * up;
+    const c = F.p(Math.cos(a) * rad, Math.sin(a) * rad * 0.95, h);
+    const tw = hash(i, 5) * TAU + t * (0.6 + hash(i, 6)) + up * 1.5;
+    const big = 1 + 0.6 * (1 - close);
+    const e1 = vmul(F.v(Math.cos(tw), Math.sin(tw), 0.2), (1.8 + hash(i, 7) * 1.4) * big);
+    const e2 = vmul(F.v(-Math.sin(tw), Math.cos(tw), 0.3 * Math.sin(tw)), (1.3 + hash(i, 8) * 1.0) * big);
+    const e3 = vmul(F.v(0.15, -0.1, 1), (0.6 + hash(i, 9) * 0.4) * big);
+    slab(r, c, e1, e2, e3, veinT[2]);
+    j['stone' + i] = c;
+  }
+}
+/** The ball lightning: a plasma sphere between the paws, crackling; thrown at the glass it swells and bursts over the
+ * whole painting, discharges racing out across the frame. */
+function orb(r: Rig, F: F3, hands: V3, B: F3, size: number, fly: number, burst: number, lap: number, onRing: number, t: number, j: Record<string, V3>) {
+  r.tag = 'orb';
+  // Between the paws, or racing round the drum ring (lap = turns), or thrown at the glass (+y is toward the viewer).
+  const a = ringNow.spin + lap * TAU + 0.5;
+  const onTheRing = vadd(ringNow.C, vadd(vmul(ringNow.e1, Math.cos(a) * ringNow.radius), vmul(ringNow.e2, Math.sin(a) * ringNow.radius)));
+  const home = vlerp(vadd(hands, B.v(1.6, 0, 0.6)), onTheRing, onRing);
+  const at = vlerp(home, vadd(home, [0, 30, 6]), fly);
+  const rad = (1.2 + 2.6 * size) * (1 + 1.5 * fly * fly) * (1 - 0.8 * burst);
+  const seed = Math.floor(t * 18);
+  if (burst < 0.02) {
+    // A hot core (a big solid sphere would read as a ball, not plasma); its size beyond that is crackling discharge.
+    const core = Math.min(rad, 5);
+    r.ball(at, core, blazeMat);
+    r.ball(vadd(at, [-core * 0.25, core * 0.2, core * 0.25]), core * 0.6, { T: [hx('#fff2b0'), hx('#ffffff'), hx('#ffffff'), hx('#ffffff')], glow: 1 });
+    for (let n = 0; n < 6 + Math.round(10 * fly); n++) {
+      const a = hash(seed, n) * TAU,
+        b = hash(seed, n, 2) * TAU;
+      const out = vadd(at, vmul([Math.cos(a) * Math.cos(b), Math.sin(b), Math.sin(a) * Math.cos(b)], rad * (1.1 + hash(seed, n, 3) * 0.7)));
+      zigzag(r, vadd(at, vmul(vnorm(vsub(out, at)), core * 0.7)), out, seed * 7 + n, n % 2 ? veinT[3] : blazeT[3], 1, Math.min(2.2, rad * 0.25), 4 + Math.round(fly * 3));
+    }
+  } else {
+    // The burst: a flash ball that swells and fades, and long forked discharges out across the painting and its frame.
+    const k = burst;
+    if (k < 0.3) r.ball(at, Math.min(rad, 5) * (1 - k * 2), { T: [hx('#fff6d0'), hx('#fffbe8'), hx('#ffffff'), hx('#ffffff')], glow: 1 });
+    for (let n = 0; n < 14; n++) {
+      const a = (n / 14) * TAU + hash(n, 9) * 0.3;
+      const len = (40 + hash(n, 10) * 70) * Math.min(1, k * 2.2);
+      const end = vadd(at, [Math.cos(a) * len, 4, Math.sin(a) * len * 0.8]);
+      if (k > 0.2 && k < 0.85) zigzag(r, at, end, n * 31 + seed, n % 3 ? veinT[3] : blazeT[3], 1 - k * 0.6, 3 + len * 0.06, 9);
+      if (k > 0.2 && k < 0.6 && n % 2) zigzag(r, vlerp(at, end, 0.5), vadd(vlerp(at, end, 0.5), [Math.cos(a + 0.8) * len * 0.3, 4, Math.sin(a + 0.8) * len * 0.3]), n * 17 + seed, veinT[3], 1, 2, 5);
+    }
+  }
+  j.orb = at;
+  j.orbR = [rad, 0, 0];
+}
+/** Debris and rain from the thrown hurricane hitting the glass: big shards and drops in front of everything. */
+function glassDebris(r: Rig, F: F3, c: V3, k: number, t: number) {
+  r.tag = 'charge';
+  // Spread over the whole glass, big (they are right at the viewer), sliding down as they lose their grip.
+  for (let i = 0; i < 22; i++) {
+    const x = (hash(i, 41) - 0.5) * 100,
+      z = hash(i, 42) * 50 - 6;
+    const grow = Math.min(1, k * 4) * (1 - Math.max(0, (k - 0.7) / 0.3));
+    if (grow <= 0) continue;
+    const p = vadd(c, [x * (0.5 + 0.5 * Math.min(1, k * 3)), 20, z - k * k * 26 * hash(i, 43)]);
+    const sz = (2.6 + hash(i, 44) * 4.4) * grow;
+    if (i % 3) {
+      const tw = hash(i, 45) * TAU + t * 3;
+      slab(r, p, vmul([Math.cos(tw), 0, Math.sin(tw)], sz), vmul([0, 1, 0], sz * 0.6), vmul([-Math.sin(tw), 0, Math.cos(tw)], sz * 0.5), veinT[1]);
+    } else {
+      r.line(p, vadd(p, [-2.5, 0, -12 * grow]), hx('#c4d4f4'), 0.45, 0.9);
+      r.dot(vadd(p, [-2.5, 0, -12 * grow]), hx('#e8f0ff'), 0.9, 0.9);
+    }
+  }
 }
 
 // ---- assembly -------------------------------------------------------------------------------------
@@ -720,6 +876,10 @@ export function stormFigure(sample: PoseSample): Figure {
     const cycles = (perSecond: number) => Math.max(1, Math.round(D * perSecond));
     const osc = (perSecond: number, phase = 0) => Math.sin((TAU * cycles(perSecond) * t) / D + phase) - Math.sin(phase);
     const turn = (perSecond: number) => (TAU * cycles(perSecond) * t) / D;
+    // The drum ring is eight equal drums, so it only has to turn by whole eighths over a clip to end where idle starts.
+    // The show's ring finishes its turn by the final pose and then holds still with him.
+    const spinD = anim === 'show' ? D - 17 / 24 : D;
+    const ringTurn = (perSecond: number) => ((TAU / 8) * Math.max(1, Math.round(D * perSecond * 8)) * Math.min(t, spinD)) / spinD;
     const previous = (frames: number) => {
       const time = t - frames / 24;
       return sample(anim, period ? ((time % period) + period) % period : Math.max(0, time));
@@ -738,11 +898,15 @@ export function stormFigure(sample: PoseSample): Figure {
     const feet = support?.feet;
     const bob = walking ? 0.45 * Math.cos(t * TAU * 2) : 0;
     const breath = period && !walking ? 0.4 * Math.sin(q) : 0;
-    const hover = get('hover') + (stormK > 0.5 ? 0.6 * Math.sin(t * 2.6) : 0);
+    const hover = get('hover') + (stormK > 0.5 ? 0.6 * Math.sin(turn(0.41)) : 0);
     const hoverK = saturate(hover / 4);
     const crouch = get('crouch') + 1.0 * (1 - saturate(sleep)) * (1 - hoverK) + sleep * 7.4;
     const hipZ = HIP + get('lift') - crouch + get('jump') + hover + breath * 0.3 + bob;
-    const hips = F.at(get('lean'), get('drift'), hipZ)
+    // A somersault turns round his middle, not round the hips: the hips swing out and up as he turns over.
+    const P = get('pitch'),
+      Pw = Math.atan2(Math.sin(P), Math.cos(P)),
+      flipW = saturate((Math.abs(Pw) - 0.8) / 0.8) * 9;
+    const hips = F.at(get('lean') - flipW * Math.sin(P), get('drift'), hipZ + flipW * (1 - Math.cos(P)))
       .pitch(0.2 + get('pitch') + sleep * 0.9 + (walking ? 0.04 : 0))
       .roll(get('roll') + (walking ? 0.04 * Math.sin(t * TAU) : 0))
       .turn(get('twist'));
@@ -756,8 +920,9 @@ export function stormFigure(sample: PoseSample): Figure {
     };
     const overAll = get('overAll') > 0.5,
       peek = get('peekFront') > 0.5,
-      clawFront = get('clawFront') > 0.5;
-    const front = overAll || peek || clawFront ? new Rig() : null;
+      clawFront = get('clawFront') > 0.5,
+      orbFront = get('orbFront') > 0.5 || get('glassHit') > 0.001;
+    const front = overAll || peek || clawFront || orbFront ? new Rig() : null;
     const R0 = overAll ? front! : r;
     const maneLag = previous(3),
       tailLag = previous(4),
@@ -775,24 +940,32 @@ export function stormFigure(sample: PoseSample): Figure {
         const hang = hips.p(-2.6 + s * 1.2, s * 4.2, -9.4 + (s > 0 ? 1.2 : 0));
         const curled = FT.p(1.4, s * 3.6, 2.2);
         const air = vadd(stand, FT.v(0.8, 0, get('jump') * 0.85));
-        const rest = vlerp(vlerp(vlerp(stand, air, saturate(get('jump') / 3)), hang, hoverK), curled, saturate(sleep));
+        // In a somersault the tucked feet turn with the body instead of staying under it in the world.
+        const pk = ((((get('pitch') + 0.2) % TAU) + TAU) % TAU);
+        // Thrown back into a back somersault the knees come up at once (pk > π); a forward landing lean does not tuck.
+        const flip = Math.max(saturate((Math.min(pk, TAU - pk) - 1.3) / 0.6), pk > Math.PI ? saturate((TAU - pk - 0.5) / 0.5) : 0);
+        const tucked = hips.p(4.0, s * 4.0, -6.4);
+        const rest = vlerp(vlerp(vlerp(vlerp(stand, air, saturate(get('jump') / 3)), hang, hoverK), curled, saturate(sleep)), tucked, flip);
         const hock = target('foot' + name, rest);
         const point = saturate(get('point') + hoverK * 0.6 + (walking ? step.lift * 0.5 : 0));
-        const toeDir = vnorm(vlerp(FT.v(0.55, s * 0.08, -1), FT.v(0.25, s * 0.08, -1), point));
+        const toeDir = vnorm(vlerp(vlerp(FT.v(0.55, s * 0.08, -1), FT.v(0.25, s * 0.08, -1), point), hips.v(0.4, s * 0.08, -1), flip));
         leg(R0, hips, s, hock, toeDir, j, charge);
         if (walking && step.planted) planted.push('foot' + name);
       }
       // Drums orbit behind his shoulders (they go round with the hips' twist; ring keys reshape them).
       if (get('drumsHidden') < 0.5) {
         const radius = get('ringR') || 16;
+        const hit = Math.max(get('hitL'), get('hitR'));
         const tilt = get('ringTilt') || 0.22;
-        const spin = get('ringSpin') + turn(stormK > 0.5 ? 0.25 : 0.08) + 0.4 * (lag(maneLag, 'twist') - get('twist'));
-        drums(R0, B, { radius, tilt, spin, glow: saturate(0.2 + charge * 0.6 + stormK * 0.5) }, j);
+        const spin = get('ringSpin') + ringTurn(stormK > 0.5 ? 0.25 : 0.08) + 0.4 * (lag(maneLag, 'twist') - get('twist'));
+        drums(R0, B, { up: get('ringUp'), back: get('ringBack'), radius, tilt, spin, glow: saturate(0.2 + charge * 0.6 + stormK * 0.5), hit, wave: get('drumWave'), big: get('drumBig') }, j);
       }
       torso(R0, B, breath, charge, t, j);
       // The mane trails behind fast moves and lifts in jumps; in the storm it towers above him.
-      const maneTrail = F.v(-0.05 * (lag(maneLag, 'dx') - get('dx')) - 1.6 * (lag(maneLag, 'twist') - get('twist')), 0.3 * osc(0.5), 0);
-      mane(R0, B, F, maneTrail, 2.4 * saturate((lagJump(maneLag) - lagJump(A)) * 0.35) + get('maneLift'), charge, t, j);
+      // A dash throws the mane back, but never so far that it swings into the drum ring.
+      const dashTrail = Math.max(-1.6, Math.min(1.6, -0.05 * (lag(maneLag, 'dx') - get('dx'))));
+      const maneTrail = F.v(dashTrail - 1.6 * (lag(maneLag, 'twist') - get('twist')), 0.3 * osc(0.5), 0);
+      mane(R0, B, F, maneTrail, 2.4 * saturate((lagJump(maneLag) - lagJump(A)) * 0.35) + get('maneLift'), charge, t, turn(0.38), turn(0.27), j);
       tail(
         R0,
         F.pitch(get('pitch')).roll(get('roll')).turn(get('twist')),
@@ -841,11 +1014,23 @@ export function stormFigure(sample: PoseSample): Figure {
         restR = B.p(5.4, 6.6, 5.6);
       const sleepR = FT.p(5.6, 2.6, 2.2),
         sleepL = FT.p(6.0, -2.2, 2.0);
-      const handR = target('handR', vlerp(restR, sleepR, saturate(sleep))),
-        handL = target('handL', vlerp(restL, sleepL, saturate(sleep)));
+      // Walking: the paws swing against the legs.
+      const swing = walking ? Math.sin(t * TAU) : 0;
+      let handR = target('handR', vadd(vlerp(restR, sleepR, saturate(sleep)), B.v(-2.2 * swing, 0, 0.6 * Math.abs(swing)))),
+        handL = target('handL', vadd(vlerp(restL, sleepL, saturate(sleep)), B.v(2.2 * swing, 0, 0.6 * Math.abs(swing))));
+      // A drum hit snaps the fist onto the front drum's head.
+      if (j.drumHit) {
+        if (get('hitR') > 0) handR = vlerp(handR, vadd(j.drumHit, B.v(0, 1.4, 0.4)), saturate(get('hitR')));
+        if (get('hitL') > 0) handL = vlerp(handL, vadd(j.drumHit, B.v(0, -1.4, 0.4)), saturate(get('hitL')));
+      }
       const handRig = peek || clawFront ? front! : R0;
       arm(R0, B, 1, handR, j, 0.15 + get('fistR'), charge, handRig);
       arm(R0, B, -1, handL, j, 0.15 + get('fistL'), charge, handRig);
+      if (get('spearOn') > 0.5) spear(R0, B, F, handR, get('spearP'), get('spearY') + get('spearSpin'), get('spearSink'), t, j);
+      if (get('stonesUp') > 0.001 && get('stonesGone') < 0.5) stones(R0, F0, get('stonesUp'), get('stonesIn'), t, j);
+      if (get('orbOn') > 0.5)
+        orb(get('orbFront') > 0.5 ? front! : R0, F, vlerp(handL, handR, 0.5), B, get('orb'), get('orbFly'), get('orbBurst'), get('orbLap'), get('orbRing'), t, j);
+      if (get('glassHit') > 0.001) glassDebris(front!, F, j.body ?? B.p(0, 0, 8), get('glassHit'), t);
       // Discharges crackle between his hanging feet and the stone while he hovers.
       if (hoverK > 0.3) {
         R0.tag = 'charge';
@@ -879,6 +1064,8 @@ export function stormFigure(sample: PoseSample): Figure {
       [gold, 'metal'],
       [goldDeep, 'metal'],
       [claw, 'metal'],
+      [rock, 'granite'],
+      [rockDeep, 'granite'],
       [crystal, 'ice'],
       [crystalDeep, 'ice'],
       [eye, 'iris'],
@@ -893,7 +1080,7 @@ export function stormFigure(sample: PoseSample): Figure {
     const frame = projectFigure(r, 300, [150, 270], j, '#0a0a18', 4.4, true);
     const paint = { outline: ink, inner: 4.4 };
     if (front) {
-      const pad = 120,
+      const pad = orbFront ? 280 : 120,
         size = frame.px.w + 2 * pad,
         anchor: [number, number] = [frame.anchor[0] + pad, frame.anchor[1] + pad];
       const body = renderRig(r, size, size, ...anchor, paint);
@@ -913,7 +1100,8 @@ export function stormFigure(sample: PoseSample): Figure {
     if (get('dy')) frame.dy = Math.round(get('dy'));
     if (get('sx')) frame.sx = 1 + get('sx');
     if (get('sy')) frame.sy = 1 + get('sy');
-    if (get('flash')) frame.flash = get('flash');
+    if (get('flash')) frame.flash = Math.min(1, get('flash'));
+    if (get('ghostA') > 0.01) frame.ghost = { dx: Math.round(get('ghostDx')), dy: Math.round(get('ghostDy')), alpha: Math.min(0.85, get('ghostA')) };
     frame.planted = planted;
     return frame;
   };
