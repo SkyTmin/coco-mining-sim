@@ -1,0 +1,278 @@
+{
+  "source": "SkyTmin/coco-instruments@523bae1fdc0e06052648a3c3d09e9f1642ca615d",
+  "fps": 24,
+  "tipSampleHz": 48,
+  "alphaAbove": 200,
+  "origin": "same fixed world origin for all poses, camera and camera shake omitted, native body transform retained",
+  "references": {
+    "guardian-strike": {
+      "label": "Древний страж · кулаки в землю",
+      "socket": "ближний кулак, центр ударной площадки",
+      "prepFrame": 18,
+      "hitFrame": 22,
+      "followFrame": 24,
+      "returnFrame": 35,
+      "strikeFrame": 18,
+      "prepFraction": 0.5,
+      "attackFrames": 4,
+      "damageSeconds": 0.9,
+      "bodyHeight": 55,
+      "prepCentre": [
+        88.49553336836574,
+        75.15133998949028
+      ],
+      "hitCentre": [
+        93.01875901875901,
+        95.6017316017316
+      ],
+      "prepBounds": [
+        70,
+        39,
+        106,
+        112
+      ],
+      "hitBounds": [
+        74,
+        70,
+        112,
+        118
+      ],
+      "comRatio": 0.38081169827958333,
+      "iou": 0.35405516673528203,
+      "tipPath": 71.01529652775415,
+      "tipRatio": 1.29118720959553,
+      "contact": [
+        92.19509601203899,
+        114.37377492729007
+      ],
+      "birth": [
+        92.19509601203899,
+        116.17377492729007
+      ],
+      "birthError": 1.7999999999999972,
+      "floor": [
+        92.19509601203899,
+        117.24191236074981
+      ],
+      "floorError": 2.8681374334597365,
+      "trailPixels": 1122,
+      "trailMax": 5.898746576701931,
+      "worstTrailFrame": 22,
+      "fx": "f11_slam"
+    },
+    "mammoth-tusks": {
+      "label": "Ледниковый мамонт · бивни",
+      "socket": "середина концов бивней (mamPointPx)",
+      "prepFrame": 15,
+      "hitFrame": 21,
+      "followFrame": 24,
+      "returnFrame": 32,
+      "strikeFrame": 15,
+      "prepFraction": 0.45454545454545453,
+      "attackFrames": 6,
+      "damageSeconds": 0.85,
+      "bodyHeight": 78,
+      "prepCentre": [
+        92.18994800693241,
+        97.49220103986136
+      ],
+      "hitCentre": [
+        92.57348029392118,
+        95.25050100200401
+      ],
+      "prepBounds": [
+        61,
+        59,
+        135,
+        134
+      ],
+      "hitBounds": [
+        59,
+        54,
+        135,
+        130
+      ],
+      "comRatio": 0.02915734163384248,
+      "iou": 0.7734539969834088,
+      "tipPath": 23.364063138493766,
+      "tipRatio": 0.2995392710063303,
+      "contact": [
+        123.35010406246352,
+        106.63138049826635
+      ],
+      "birth": [
+        114.60731598529185,
+        128.60731598529185
+      ],
+      "birthError": 23.65117510594857,
+      "floor": null,
+      "floorError": null,
+      "trailPixels": 1268,
+      "trailMax": 11.22008958621148,
+      "worstTrailFrame": 19,
+      "fx": "f12_tuskhit"
+    },
+    "mammoth-stomp": {
+      "label": "Ледниковый мамонт · топот",
+      "socket": "переднее копыто, центр подошвы",
+      "prepFrame": 21,
+      "hitFrame": 24,
+      "followFrame": 26,
+      "returnFrame": 37,
+      "strikeFrame": 21,
+      "prepFraction": 0.5526315789473685,
+      "attackFrames": 3,
+      "damageSeconds": 1,
+      "bodyHeight": 78,
+      "prepCentre": [
+        84.37904761904763,
+        79.29333333333334
+      ],
+      "hitCentre": [
+        91.28197381671701,
+        96.88620342396777
+      ],
+      "prepBounds": [
+        57,
+        38,
+        120,
+        111
+      ],
+      "hitBounds": [
+        55,
+        63,
+        139,
+        129
+      ],
+      "comRatio": 0.24229055295386978,
+      "iou": 0.45294270158154004,
+      "tipPath": 21.488650372074027,
+      "tipRatio": 0.27549551759069263,
+      "contact": [
+        108.76129652969645,
+        111.80350978654178
+      ],
+      "birth": [
+        90,
+        106
+      ],
+      "birthError": 19.638405569640483,
+      "floor": [
+        108.76129652969645,
+        111.80350978654178
+      ],
+      "floorError": 0,
+      "trailPixels": 0,
+      "trailMax": null,
+      "worstTrailFrame": null,
+      "fx": "f12_stompring"
+    },
+    "hourlord-hour": {
+      "label": "Повелитель часа · часовая стрелка",
+      "socket": "остриё часовой стрелки (lordPointPx)",
+      "prepFrame": 17,
+      "hitFrame": 19,
+      "followFrame": 21,
+      "returnFrame": 32,
+      "strikeFrame": 17,
+      "prepFraction": 0.5151515151515151,
+      "attackFrames": 2,
+      "damageSeconds": 0.8,
+      "bodyHeight": 73,
+      "prepCentre": [
+        88.88150684931507,
+        80.97465753424657
+      ],
+      "hitCentre": [
+        90.98190675017398,
+        88.58246346555323
+      ],
+      "prepBounds": [
+        75,
+        40,
+        114,
+        112
+      ],
+      "hitBounds": [
+        73,
+        59,
+        110,
+        120
+      ],
+      "comRatio": 0.10811542697159329,
+      "iou": 0.5541845493562232,
+      "tipPath": 83.79650288486701,
+      "tipRatio": 1.1478972997926988,
+      "contact": [
+        108.63106444137867,
+        108.58080024249192
+      ],
+      "birth": [
+        108.63106444137867,
+        108.58080024249192
+      ],
+      "birthError": 0,
+      "floor": null,
+      "floorError": null,
+      "trailPixels": 1299,
+      "trailMax": 12.261881401662768,
+      "worstTrailFrame": 18,
+      "fx": "f14b_hourfx"
+    },
+    "puppeteer-cut": {
+      "label": "Кукловод · рубка вагой и укол",
+      "socket": "дальний конец ваги (vg.tip)",
+      "prepFrame": 14,
+      "hitFrame": 17,
+      "followFrame": 19,
+      "returnFrame": 48,
+      "strikeFrame": 14,
+      "prepFraction": 0.5384615384615384,
+      "attackFrames": 3,
+      "damageSeconds": 0.7,
+      "bodyHeight": 63,
+      "prepCentre": [
+        87.37421383647799,
+        80.02620545073376
+      ],
+      "hitCentre": [
+        91.25028058361391,
+        83.43883277216611
+      ],
+      "prepBounds": [
+        62,
+        51,
+        108,
+        115
+      ],
+      "hitBounds": [
+        78,
+        55,
+        113,
+        115
+      ],
+      "comRatio": 0.08197289934219563,
+      "iou": 0.6212653778558875,
+      "tipPath": 19.58403533467303,
+      "tipRatio": 0.31085770372496874,
+      "contact": [
+        80.79681942848606,
+        77.75291138075067
+      ],
+      "birth": [
+        123.97492408860262,
+        94.79432060227548
+      ],
+      "birthError": 46.41937472969073,
+      "floor": null,
+      "floorError": null,
+      "trailPixels": 426,
+      "trailMax": 25.36514170678002,
+      "worstTrailFrame": 17,
+      "fx": "f13_v_cut"
+    }
+  },
+  "contactPairs": {
+    "mammoth-tusks/mammoth-stomp": 0.7333139872315728
+  }
+}

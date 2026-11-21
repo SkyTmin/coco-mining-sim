@@ -1,0 +1,1292 @@
+{
+  "idle": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/rest-watch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      0,
+      17,
+      38
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            153.6,
+            124.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.3
+          ],
+          "beak": [
+            154.2,
+            121.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            111
+          ],
+          "beak": [
+            150.1,
+            127.8
+          ]
+        }
+      }
+    ]
+  },
+  "look": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/rest-watch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      6,
+      15,
+      25
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            151.2,
+            122.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            154.3,
+            124.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            129.3,
+            112.3
+          ],
+          "beak": [
+            129,
+            135.2
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_a": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/preen-bag.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      9,
+      21,
+      30
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            143,
+            130.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            127.8,
+            137.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            129.5,
+            136.4
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_b": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/preen-bag.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      10,
+      20,
+      29
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            138.7,
+            135.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            115.7
+          ],
+          "beak": [
+            141.6,
+            136
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            144.7,
+            130.3
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_in": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/sleep.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      8,
+      17,
+      29
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            131.9,
+            117.9
+          ],
+          "beak": [
+            151.9,
+            132.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            128.3,
+            146.4
+          ],
+          "beak": [
+            114.8,
+            170.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            122.3,
+            159.6
+          ],
+          "beak": [
+            109.6,
+            183
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_out": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/sleep.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      0,
+      17,
+      24
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            122.3,
+            159.6
+          ],
+          "beak": [
+            109.6,
+            183
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            132.2,
+            126.7
+          ],
+          "beak": [
+            145.5,
+            148.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.8,
+            111.7
+          ],
+          "beak": [
+            148.1,
+            130
+          ]
+        }
+      }
+    ]
+  },
+  "wake_startled": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/wake-hatch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      0,
+      9,
+      16
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            122.3,
+            159.6
+          ],
+          "beak": [
+            109.6,
+            183
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            102.2
+          ],
+          "beak": [
+            154.1,
+            114
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            115.7
+          ],
+          "beak": [
+            157.3,
+            119.7
+          ]
+        }
+      }
+    ]
+  },
+  "hatch": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/wake-hatch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      0,
+      15,
+      23
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            153.6,
+            124.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            136.5,
+            119.9
+          ],
+          "beak": [
+            156,
+            137.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.7,
+            111
+          ],
+          "beak": [
+            154.4,
+            118.6
+          ]
+        }
+      }
+    ]
+  },
+  "happy": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/salute.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      4,
+      9,
+      16,
+      23,
+      31,
+      39
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            133.3,
+            108.6
+          ],
+          "beak": [
+            156.7,
+            119.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            124.8,
+            103.9
+          ],
+          "beak": [
+            141.8,
+            118.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            154.3,
+            117.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            129.6,
+            108.3
+          ],
+          "beak": [
+            152,
+            122.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.3,
+            114.8
+          ],
+          "beak": [
+            154,
+            127.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            115.7
+          ],
+          "beak": [
+            150.3,
+            135.2
+          ]
+        }
+      }
+    ]
+  },
+  "trick": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/loop.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      9,
+      23,
+      36,
+      52,
+      65,
+      79
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            129.1,
+            112.5
+          ],
+          "beak": [
+            131.5,
+            139.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            119.7,
+            80.6
+          ],
+          "beak": [
+            142.3,
+            82
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            69.3,
+            115
+          ],
+          "beak": [
+            46.4,
+            101.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            134.6,
+            103.8
+          ],
+          "beak": [
+            155.9,
+            121.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            137.1,
+            115.2
+          ],
+          "beak": [
+            139.8,
+            142.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            139.9,
+            137.9
+          ],
+          "beak": [
+            145.8,
+            161.5
+          ]
+        }
+      }
+    ]
+  },
+  "tech_great_seal": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/tech_great_seal.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      0,
+      24,
+      35,
+      39,
+      46,
+      59
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "stamp": [
+            101.9,
+            152.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            105.4,
+            100.7
+          ],
+          "stamp": [
+            84.7,
+            113.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            138.1,
+            119.8
+          ],
+          "stamp": [
+            128.4,
+            148.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            148.8,
+            124.4
+          ],
+          "stamp": [
+            137.5,
+            181.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            151,
+            136
+          ],
+          "stamp": [
+            137.5,
+            171.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "stamp": [
+            101.9,
+            152.3
+          ]
+        }
+      }
+    ]
+  },
+  "tech_post_dive": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/tech_post_dive.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      0,
+      17,
+      22,
+      26,
+      32,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            153.6,
+            124.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            113.4,
+            85.9
+          ],
+          "beak": [
+            137.2,
+            95.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            137.1,
+            120.9
+          ],
+          "beak": [
+            137.6,
+            143.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            153,
+            144.4
+          ],
+          "beak": [
+            159,
+            169.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            157.8,
+            152.5
+          ],
+          "beak": [
+            162.8,
+            177
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "beak": [
+            153.6,
+            124.9
+          ]
+        }
+      }
+    ]
+  },
+  "tech_talon": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/tech_talon.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      0,
+      17,
+      22,
+      25,
+      31,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "foreR": [
+            113.3,
+            170.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            98.7,
+            71.2
+          ],
+          "foreR": [
+            75.9,
+            100.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            134.2,
+            108.6
+          ],
+          "foreR": [
+            125.4,
+            136.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            157,
+            136.8
+          ],
+          "foreR": [
+            143.8,
+            181.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            157.7,
+            141
+          ],
+          "foreR": [
+            143.8,
+            181.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "foreR": [
+            113.3,
+            170.3
+          ]
+        }
+      }
+    ]
+  },
+  "tech_wing_fan": {
+    "sheet": "../../../docs/reports/creatures/b8/references/herald_griffin/tech_wing_fan.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 95,
+    "frames": [
+      0,
+      17,
+      21,
+      25,
+      31,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "wingTipR": [
+            46.9,
+            125.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            135.9,
+            99.3
+          ],
+          "wingTipR": [
+            61.9,
+            99.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            134,
+            106.4
+          ],
+          "wingTipR": [
+            74.9,
+            124.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            118.5,
+            125.2
+          ],
+          "wingTipR": [
+            113.5,
+            152.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            116.6,
+            122.8
+          ],
+          "wingTipR": [
+            123.4,
+            166.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.6,
+            110.9
+          ],
+          "wingTipR": [
+            46.9,
+            125.1
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,1352 @@
+{
+  "idle": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/idle-look.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      12,
+      31,
+      54
+    ],
+    "keys": [
+      {
+        "ground": [
+          119,
+          148
+        ],
+        "points": {
+          "nape": [
+            115,
+            58
+          ]
+        }
+      },
+      {
+        "ground": [
+          116,
+          148
+        ],
+        "points": {
+          "nape": [
+            111,
+            66
+          ]
+        }
+      },
+      {
+        "ground": [
+          115,
+          148
+        ],
+        "points": {
+          "nape": [
+            112,
+            65
+          ]
+        }
+      }
+    ],
+    "idleHeight": 124,
+    "captionHeight": 0
+  },
+  "look": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/idle-look.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      8,
+      17,
+      27
+    ],
+    "keys": [
+      {
+        "ground": [
+          113,
+          148
+        ],
+        "points": {
+          "nape": [
+            123,
+            77
+          ]
+        }
+      },
+      {
+        "ground": [
+          114,
+          148
+        ],
+        "points": {
+          "nape": [
+            115,
+            56
+          ]
+        }
+      },
+      {
+        "ground": [
+          113,
+          148
+        ],
+        "points": {
+          "nape": [
+            119,
+            59
+          ]
+        }
+      }
+    ],
+    "idleHeight": 124,
+    "captionHeight": 0
+  },
+  "fidget_a": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/fidgets.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      8,
+      22,
+      38
+    ],
+    "keys": [
+      {
+        "ground": [
+          112,
+          147
+        ],
+        "points": {
+          "nape": [
+            111,
+            65
+          ]
+        }
+      },
+      {
+        "ground": [
+          111,
+          147
+        ],
+        "points": {
+          "nape": [
+            115,
+            64
+          ]
+        }
+      },
+      {
+        "ground": [
+          114,
+          148
+        ],
+        "points": {
+          "nape": [
+            109,
+            61
+          ]
+        }
+      }
+    ],
+    "idleHeight": 122,
+    "captionHeight": 0
+  },
+  "fidget_b": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/fidgets.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      9,
+      24,
+      37
+    ],
+    "keys": [
+      {
+        "ground": [
+          112,
+          148
+        ],
+        "points": {
+          "nape": [
+            103,
+            77
+          ]
+        }
+      },
+      {
+        "ground": [
+          113,
+          147
+        ],
+        "points": {
+          "nape": [
+            107,
+            58
+          ]
+        }
+      },
+      {
+        "ground": [
+          114,
+          147
+        ],
+        "points": {
+          "nape": [
+            107,
+            58
+          ]
+        }
+      }
+    ],
+    "idleHeight": 122,
+    "captionHeight": 0
+  },
+  "happy": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/happy-trick.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      8,
+      17,
+      34
+    ],
+    "keys": [
+      {
+        "ground": [
+          106,
+          149
+        ],
+        "points": {
+          "nape": [
+            103,
+            71
+          ]
+        }
+      },
+      {
+        "ground": [
+          112,
+          149
+        ],
+        "points": {
+          "nape": [
+            95,
+            55
+          ]
+        }
+      },
+      {
+        "ground": [
+          109,
+          150
+        ],
+        "points": {
+          "nape": [
+            101,
+            72
+          ]
+        }
+      }
+    ],
+    "idleHeight": 124,
+    "captionHeight": 0
+  },
+  "trick": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/happy-trick.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      12,
+      28,
+      46
+    ],
+    "keys": [
+      {
+        "ground": [
+          104,
+          145
+        ],
+        "points": {
+          "nape": [
+            97,
+            62
+          ]
+        }
+      },
+      {
+        "ground": [
+          108,
+          145
+        ],
+        "points": {
+          "nape": [
+            93,
+            55
+          ]
+        }
+      },
+      {
+        "ground": [
+          102,
+          146
+        ],
+        "points": {
+          "nape": [
+            122,
+            75
+          ]
+        }
+      }
+    ],
+    "idleHeight": 124,
+    "captionHeight": 0
+  },
+  "sleep_in": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/sleep-io.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      6,
+      16,
+      29
+    ],
+    "keys": [
+      {
+        "ground": [
+          112,
+          147
+        ],
+        "points": {
+          "nape": [
+            105,
+            61
+          ]
+        }
+      },
+      {
+        "ground": [
+          111,
+          147
+        ],
+        "points": {
+          "nape": [
+            105,
+            83
+          ]
+        }
+      },
+      {
+        "ground": [
+          115,
+          147
+        ],
+        "points": {
+          "nape": [
+            113,
+            87
+          ]
+        }
+      }
+    ],
+    "idleHeight": 126,
+    "captionHeight": 0
+  },
+  "sleep_out": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/sleep-io.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      13,
+      24
+    ],
+    "keys": [
+      {
+        "ground": [
+          113,
+          149
+        ],
+        "points": {
+          "nape": [
+            117,
+            90
+          ]
+        }
+      },
+      {
+        "ground": [
+          113,
+          149
+        ],
+        "points": {
+          "nape": [
+            110,
+            80
+          ]
+        }
+      },
+      {
+        "ground": [
+          113,
+          149
+        ],
+        "points": {
+          "nape": [
+            105,
+            58
+          ]
+        }
+      }
+    ],
+    "idleHeight": 126,
+    "captionHeight": 0
+  },
+  "wake_startled": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/wake-hatch.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      0,
+      8,
+      15
+    ],
+    "keys": [
+      {
+        "ground": [
+          115,
+          147
+        ],
+        "points": {
+          "nape": [
+            113,
+            87
+          ]
+        }
+      },
+      {
+        "ground": [
+          116,
+          153
+        ],
+        "points": {
+          "nape": [
+            104,
+            63
+          ]
+        }
+      },
+      {
+        "ground": [
+          114,
+          154
+        ],
+        "points": {
+          "nape": [
+            107,
+            86
+          ]
+        }
+      }
+    ],
+    "idleHeight": 131,
+    "captionHeight": 0
+  },
+  "hatch": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/wake-hatch.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      7,
+      17,
+      27
+    ],
+    "keys": [
+      {
+        "ground": [
+          106,
+          154
+        ],
+        "points": {
+          "nape": [
+            110,
+            106
+          ]
+        }
+      },
+      {
+        "ground": [
+          103,
+          154
+        ],
+        "points": {
+          "nape": [
+            103,
+            63
+          ]
+        }
+      },
+      {
+        "ground": [
+          107,
+          154
+        ],
+        "points": {
+          "nape": [
+            101,
+            64
+          ]
+        }
+      }
+    ],
+    "idleHeight": 131,
+    "captionHeight": 0
+  },
+  "tech_cleave": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/tech_cleave.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      14,
+      16,
+      19,
+      23,
+      30
+    ],
+    "keys": [
+      {
+        "ground": [
+          105,
+          148
+        ],
+        "points": {
+          "nape": [
+            103,
+            64
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          148
+        ],
+        "points": {
+          "nape": [
+            106,
+            64
+          ]
+        }
+      },
+      {
+        "ground": [
+          87,
+          148
+        ],
+        "points": {
+          "nape": [
+            110,
+            78
+          ]
+        }
+      },
+      {
+        "ground": [
+          78,
+          146
+        ],
+        "points": {
+          "nape": [
+            116,
+            75
+          ],
+          "weaponTip": [
+            165,
+            151
+          ]
+        }
+      },
+      {
+        "ground": [
+          91,
+          146
+        ],
+        "points": {
+          "nape": [
+            114,
+            75
+          ]
+        }
+      },
+      {
+        "ground": [
+          112,
+          146
+        ],
+        "points": {
+          "nape": [
+            109,
+            63
+          ]
+        }
+      }
+    ],
+    "idleHeight": 119,
+    "captionHeight": 0
+  },
+  "tech_whip": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/tech_whip.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      9,
+      10,
+      13,
+      16,
+      21
+    ],
+    "keys": [
+      {
+        "ground": [
+          110,
+          147
+        ],
+        "points": {
+          "nape": [
+            110,
+            64
+          ]
+        }
+      },
+      {
+        "ground": [
+          103,
+          147
+        ],
+        "points": {
+          "nape": [
+            109,
+            74
+          ]
+        }
+      },
+      {
+        "ground": [
+          114,
+          148
+        ],
+        "points": {
+          "nape": [
+            109,
+            65
+          ]
+        }
+      },
+      {
+        "ground": [
+          113,
+          147
+        ],
+        "points": {
+          "nape": [
+            118,
+            59
+          ],
+          "tailTip": [
+            31,
+            144
+          ]
+        }
+      },
+      {
+        "ground": [
+          99,
+          147
+        ],
+        "points": {
+          "nape": [
+            106,
+            76
+          ]
+        }
+      },
+      {
+        "ground": [
+          113,
+          147
+        ],
+        "points": {
+          "nape": [
+            111,
+            64
+          ]
+        }
+      }
+    ],
+    "idleHeight": 118,
+    "captionHeight": 0
+  },
+  "tech_roll": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/tech_roll.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      16,
+      18,
+      21,
+      26,
+      37
+    ],
+    "keys": [
+      {
+        "ground": [
+          113,
+          148
+        ],
+        "points": {
+          "nape": [
+            112,
+            66
+          ]
+        }
+      },
+      {
+        "ground": [
+          107,
+          148
+        ],
+        "points": {
+          "nape": [
+            124,
+            90
+          ]
+        }
+      },
+      {
+        "ground": [
+          104,
+          150
+        ],
+        "points": {
+          "nape": [
+            122,
+            90
+          ]
+        }
+      },
+      {
+        "ground": [
+          110,
+          149
+        ],
+        "points": {
+          "nape": [
+            123,
+            119
+          ],
+          "shoulderR": [
+            98,
+            134
+          ]
+        }
+      },
+      {
+        "ground": [
+          111,
+          149
+        ],
+        "points": {
+          "nape": [
+            120,
+            75
+          ]
+        }
+      },
+      {
+        "ground": [
+          114,
+          149
+        ],
+        "points": {
+          "nape": [
+            110,
+            66
+          ]
+        }
+      }
+    ],
+    "idleHeight": 116,
+    "captionHeight": 0
+  },
+  "tech_summon": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/tech_summon.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      17,
+      18,
+      21,
+      31,
+      42
+    ],
+    "keys": [
+      {
+        "ground": [
+          115,
+          155
+        ],
+        "points": {
+          "nape": [
+            114,
+            66
+          ]
+        }
+      },
+      {
+        "ground": [
+          108,
+          154
+        ],
+        "points": {
+          "nape": [
+            104,
+            65
+          ]
+        }
+      },
+      {
+        "ground": [
+          106,
+          156
+        ],
+        "points": {
+          "nape": [
+            110,
+            67
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          151
+        ],
+        "points": {
+          "nape": [
+            124,
+            80
+          ],
+          "handL": [
+            155,
+            123
+          ]
+        }
+      },
+      {
+        "ground": [
+          95,
+          150
+        ],
+        "points": {
+          "nape": [
+            112,
+            75
+          ]
+        }
+      },
+      {
+        "ground": [
+          108,
+          151
+        ],
+        "points": {
+          "nape": [
+            108,
+            67
+          ]
+        }
+      }
+    ],
+    "idleHeight": 126,
+    "captionHeight": 0
+  },
+  "tech_sweep": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/tech_sweep.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      24,
+      25,
+      28,
+      31,
+      56
+    ],
+    "keys": [
+      {
+        "ground": [
+          109,
+          151
+        ],
+        "points": {
+          "nape": [
+            108,
+            68
+          ]
+        }
+      },
+      {
+        "ground": [
+          108,
+          151
+        ],
+        "points": {
+          "nape": [
+            106,
+            63
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          151
+        ],
+        "points": {
+          "nape": [
+            111,
+            72
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          150
+        ],
+        "points": {
+          "nape": [
+            110,
+            76
+          ],
+          "weaponTip": [
+            167,
+            154
+          ]
+        }
+      },
+      {
+        "ground": [
+          98,
+          151
+        ],
+        "points": {
+          "nape": [
+            109,
+            75
+          ]
+        }
+      },
+      {
+        "ground": [
+          112,
+          151
+        ],
+        "points": {
+          "nape": [
+            107,
+            72
+          ]
+        }
+      }
+    ],
+    "idleHeight": 119,
+    "captionHeight": 0
+  },
+  "tech_leap": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/tech_leap.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      17,
+      24,
+      27,
+      33,
+      47
+    ],
+    "keys": [
+      {
+        "ground": [
+          111,
+          152
+        ],
+        "points": {
+          "nape": [
+            108,
+            63
+          ]
+        }
+      },
+      {
+        "ground": [
+          110,
+          152
+        ],
+        "points": {
+          "nape": [
+            107,
+            86
+          ]
+        }
+      },
+      {
+        "ground": [
+          115,
+          151
+        ],
+        "points": {
+          "nape": [
+            109,
+            54
+          ]
+        }
+      },
+      {
+        "ground": [
+          112,
+          152
+        ],
+        "points": {
+          "nape": [
+            129,
+            86
+          ],
+          "footL": [
+            133,
+            151
+          ]
+        }
+      },
+      {
+        "ground": [
+          102,
+          152
+        ],
+        "points": {
+          "nape": [
+            115,
+            91
+          ]
+        }
+      },
+      {
+        "ground": [
+          110,
+          152
+        ],
+        "points": {
+          "nape": [
+            108,
+            64
+          ]
+        }
+      }
+    ],
+    "idleHeight": 126,
+    "captionHeight": 0
+  },
+  "phase": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/phase-show.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      11,
+      24,
+      40
+    ],
+    "keys": [
+      {
+        "ground": [
+          111,
+          155
+        ],
+        "points": {
+          "nape": [
+            106,
+            66
+          ]
+        }
+      },
+      {
+        "ground": [
+          110,
+          155
+        ],
+        "points": {
+          "nape": [
+            103,
+            65
+          ]
+        }
+      },
+      {
+        "ground": [
+          104,
+          154
+        ],
+        "points": {
+          "nape": [
+            103,
+            62
+          ]
+        }
+      }
+    ],
+    "idleHeight": 129,
+    "captionHeight": 0
+  },
+  "show": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/phase-show.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      24,
+      62,
+      90
+    ],
+    "keys": [
+      {
+        "ground": [
+          109,
+          155
+        ],
+        "points": {
+          "nape": [
+            124,
+            91
+          ]
+        }
+      },
+      {
+        "ground": [
+          110,
+          154
+        ],
+        "points": {
+          "nape": [
+            95,
+            56
+          ]
+        }
+      },
+      {
+        "ground": [
+          111,
+          155
+        ],
+        "points": {
+          "nape": [
+            102,
+            59
+          ]
+        }
+      }
+    ],
+    "idleHeight": 129,
+    "captionHeight": 0
+  },
+  "idle-f2": {
+    "sheet": "../../../docs/reports/creatures/b5/references/rat_king/phase-show.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      2
+    ],
+    "frames": [
+      0
+    ],
+    "keys": [
+      {
+        "ground": [
+          104,
+          154
+        ],
+        "points": {
+          "nape": [
+            103,
+            62
+          ]
+        }
+      }
+    ],
+    "idleHeight": 129,
+    "captionHeight": 0
+  }
+}

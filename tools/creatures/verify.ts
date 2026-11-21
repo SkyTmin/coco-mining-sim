@@ -1,0 +1,302 @@
+// Check the published files as a player would load them, independently of the encoder.
+import assert from 'node:assert/strict';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import omggif from 'omggif';
+import { PNG } from 'pngjs';
+import {
+  compose,
+  compositeSceneryRays,
+  blit,
+  splitForeground,
+  frameCount,
+  hitFrame,
+  layerNames,
+  stack,
+  type Layers,
+} from './engine';
+import { indexed } from './render-io';
+import { loadPainting, paintingFrameDir } from './render';
+import { lifeCycleCount } from './motion';
+import { Px } from './rig/px';
+
+const here = dirname(fileURLToPath(import.meta.url)),
+  root = resolve(here, '../../assets/creatures');
+function pixels(file: string, w: number, h: number) {
+  const src = PNG.sync.read(readFileSync(file));
+  assert.equal(src.width, w, file);
+  assert.equal(src.height, h, file);
+  const result = new Px(w, h);
+  result.data.set(src.data);
+  return result;
+}
+const frameName = (n: number) => String(n).padStart(3, '0') + '.png';
+function imageFiles(dir: string, count: number) {
+  const files = new Set(readdirSync(dir));
+  assert.equal(files.size, count, dir);
+  for (let n = 0; n < count; n++)
+    assert.ok(files.has(frameName(n)), join(dir, frameName(n)));
+}
+export async function verifyRelease(
+  id: string,
+  assetRoot = root,
+  allFrames = false,
+) {
+  const { c, s, b } = await loadPainting(id);
+  const output = join(assetRoot, id),
+    meta = JSON.parse(readFileSync(join(output, 'meta.json'), 'utf8'));
+  const [w, h] = meta.canvas;
+  assert.equal(meta.id, id);
+  assert.equal(meta.fps, 24);
+  if (c.motion) {
+    if (c.behavior) {
+      assert.deepEqual(meta.motion.life, {
+        behavior: 'behavior.json',
+        seed: c.behavior.seed,
+        seconds: c.behavior.previewSeconds,
+      });
+      assert.deepEqual(
+        JSON.parse(readFileSync(join(output, 'behavior.json'), 'utf8')),
+        c.behavior,
+        id + ' exported behavior',
+      );
+    } else {
+      assert.equal(meta.motion.life.stride, c.motion.stride);
+    }
+    assert.equal(Object.keys(meta.motion.directions).length, 8);
+    assert.ok(c.animations.life);
+  }
+  const frameLoop = join(paintingFrameDir(c, output), 'loop'),
+    bgLoop = join(output, 'bg', 'loop');
+  const thickness = meta.thickness;
+  const objects: { id: string; depth: number; pixels: Px }[] = JSON.parse(
+    readFileSync(join(output, 'bg', 'front-depth.json'), 'utf8'),
+  ).map((item: { id: string; depth: number }) => {
+    const framed = pixels(join(output, 'bg', 'front', item.id + '.png'), w, h);
+    const field = new Px(w - 2 * thickness, h - 2 * thickness);
+    blit(field, framed, -thickness, -thickness);
+    return { ...item, pixels: field };
+  });
+  const front = pixels(join(output, 'bg', 'front.png'), w, h),
+    combined = new Px(w, h);
+  for (const o of objects) blit(combined, o.pixels, thickness, thickness);
+  assert.deepEqual(
+    Buffer.from(front.data),
+    Buffer.from(combined.data),
+    id + ' foreground atlas',
+  );
+  if (c.motion) {
+    assert.ok(objects.length, id + ' requires foreground depth');
+    const exported = objects.map(({ id, depth }) => ({ id, depth }));
+    const declared = (s.front ?? [])
+      .map(({ id, depth }) => ({ id, depth }))
+      .sort((a, b) => a.depth - b.depth);
+    assert.deepEqual(exported, declared, id + ' foreground depth order');
+  }
+  imageFiles(frameLoop, 72);
+  imageFiles(bgLoop, 72);
+  const main = Object.keys(c.animations).find((name) =>
+    name.startsWith('tech_'),
+  );
+  let gifCount = 0,
+    checkedFrames = 0;
+  for (const [anim, spec] of Object.entries(c.animations)) {
+    const count = frameCount(spec.seconds),
+      contacts = (spec.hits ?? []).map(hitFrame);
+    assert.equal(meta.animations[anim].frames, count, anim);
+    assert.deepEqual(meta.animations[anim].hit, contacts, anim);
+    if (anim.startsWith('tech_'))
+      assert.ok(contacts.length, anim + ' must declare a contact');
+    for (const n of contacts)
+      assert.ok(n >= 0 && n < count, anim + ' contact outside animation');
+    for (const suffix of anim === 'idle' || anim === main
+      ? [anim, anim + '-gold']
+      : [anim]) {
+      const dir = join(output, 'frames', suffix),
+        gif = join(output, 'gif', 'painting-' + suffix + '.gif');
+      const track = JSON.parse(readFileSync(join(dir, 'motion.json'), 'utf8'));
+      assert.equal(track.length, count, dir + ' motion');
+      const reader = new omggif.GifReader(readFileSync(gif));
+      gifCount++;
+      assert.equal(reader.numFrames(), count, gif);
+      assert.equal(reader.width, w * meta.scale, gif);
+      assert.equal(reader.height, h * meta.scale, gif);
+      const hasOver = ['show', 'peek'].includes(anim) || !!c.overClips?.includes(anim);
+      for (const key of [
+        'fxu',
+        'body',
+        'lit',
+        'fxo',
+        ...(hasOver ? ['over'] : []),
+      ])
+        imageFiles(join(dir, key), count);
+      for (let n = 0; n < count; n++)
+        assert.equal(
+          reader.frameInfo(n).delay,
+          Math.round(((n + 1) * 100) / 24) - Math.round((n * 100) / 24),
+          gif,
+        );
+      // The contact and release frames catch accidental layer offsets, shake and stale variant exports.
+      const sample = new Set([
+        0,
+        Math.floor(count / 2),
+        count - 1,
+        ...contacts,
+        ...contacts.map((n) => Math.min(count - 1, n + 1)),
+      ]);
+      const raw = new Uint8Array(reader.width * reader.height * 4);
+      const frames = allFrames
+        ? Array.from({ length: count }, (_, i) => i)
+        : Array.from(sample).sort((a, b) => a - b);
+      let decoded = -1;
+      for (const n of frames) {
+        const file = frameName(n),
+          loopFile = frameName(track[n].backgroundFrame),
+          layers = {} as Layers;
+        const moved = join(dir, 'bg', file);
+        layers.bgf = new Px(w, h);
+        layers.bgfBack = new Px(w, h);
+        splitForeground(
+          objects,
+          layers,
+          track[n].feet[1],
+          thickness,
+          track[n].camera[0],
+          track[n].camera[1],
+        );
+        const backdrop = join(dir, 'backdrop', file);
+        if (existsSync(backdrop)) blit(layers.bgfBack, pixels(backdrop, w, h));
+        compositeSceneryRays(layers.bgfBack, track[n].sceneryRays ?? [],
+          w - thickness * 2, h - thickness * 2, thickness, track[n].camera[0], track[n].camera[1]);
+        for (const key of layerNames) {
+          if (key === 'bgf' || key === 'bgfBack') continue;
+          if (key === 'over' && !hasOver && !existsSync(join(dir, key, file))) {
+            layers.over = new Px(w, h);
+            continue;
+          }
+          const source =
+            key === 'bg'
+              ? existsSync(moved)
+                ? moved
+                : join(bgLoop, loopFile)
+              : key === 'frame'
+                ? join(frameLoop, loopFile)
+                : join(dir, key, file);
+          layers[key] = pixels(source, w, h);
+        }
+        if (allFrames) {
+          const current = compose(
+            c,
+            s,
+            b,
+            anim,
+            n / 24,
+            0,
+            suffix === anim ? 'normal' : 'gold',
+          );
+          assert.deepEqual(
+            track[n].feet,
+            current.worldFeet,
+            id + '/' + suffix + ' floor at ' + n,
+          );
+          assert.deepEqual(
+            track[n].camera,
+            current.camera,
+            id + '/' + suffix + ' camera at ' + n,
+          );
+          assert.deepEqual(
+            track[n].contacts,
+            current.contact,
+            id + '/' + suffix + ' contacts at ' + n,
+          );
+          for (const key of layerNames) {
+            const actual = Buffer.from(layers[key].data.buffer);
+            const expected = Buffer.from(current.layers[key].data.buffer);
+            if (!actual.equals(expected))
+              assert.fail(
+                id +
+                  '/' +
+                  suffix +
+                  ' ' +
+                  key +
+                  ' frame ' +
+                  n +
+                  ' differs from current sources',
+              );
+          }
+        }
+        const p = stack(layers),
+          table = indexed(p);
+        while (decoded < n) {
+          if (decoded >= 0 && reader.frameInfo(decoded).disposal === 2)
+            raw.fill(0);
+          reader.decodeAndBlitFrameRGBA(++decoded, raw);
+        }
+        for (let y = 0; y < h; y++)
+          for (let x = 0; x < w; x++) {
+            const i = y * w + x,
+              k = table.indices[i];
+            const j = (y * meta.scale * reader.width + x * meta.scale) * 4;
+            if (table.transparent && k === table.transparentIndex) {
+              assert.equal(raw[j + 3], 0, gif);
+              continue;
+            }
+            const color = table.palette[k];
+            if (
+              raw[j] !== color[0] ||
+              raw[j + 1] !== color[1] ||
+              raw[j + 2] !== color[2] ||
+              raw[j + 3] !== 255
+            )
+              assert.fail(
+                gif +
+                  ' differs from its PNG layers at frame ' +
+                  n +
+                  ' pixel ' +
+                  x +
+                  ',' +
+                  y,
+              );
+          }
+        checkedFrames++;
+      }
+    }
+  }
+  if (c.behavior) {
+    const preview = readFileSync(join(output, 'gif', 'paintings.gif'));
+    const cycles = lifeCycleCount(c);
+    if (cycles > 1) {
+      const reader = new omggif.GifReader(preview);
+      assert.equal(reader.numFrames(), cycles * meta.animations.life.frames, id + ' alternating life cycles');
+      assert.equal(reader.width, w * meta.scale);
+      assert.equal(reader.height, h * meta.scale);
+    } else {
+      const life = readFileSync(join(output, 'gif', 'painting-life.gif'));
+      assert.ok(life.equals(preview), id + ' seeded preview');
+    }
+    gifCount++;
+  }
+  const turn = new omggif.GifReader(
+    readFileSync(join(output, 'gif', 'turn.gif')),
+  );
+  assert.equal(turn.numFrames(), 96);
+  assert.equal(turn.width, meta.bodySize * meta.scale);
+  assert.equal(turn.height, turn.width);
+  return {
+    id,
+    animations: Object.keys(c.animations).length,
+    gifs: gifCount + 1,
+    comparedFrames: checkedFrames,
+  };
+}
+if (
+  process.argv[1] &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
+  const allFrames = process.argv.includes('--all-frames');
+  const ids = process.argv.slice(2).filter((id) => id !== '--all-frames');
+  if (!ids.length)
+    throw new Error('Usage: npm run verify -- [--all-frames] <id> [id ...]');
+  for (const id of ids) console.log(await verifyRelease(id, root, allFrames));
+}

@@ -1,0 +1,1883 @@
+{
+  "idle": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/watch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      0,
+      18,
+      38
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            125.2
+          ],
+          "hollow": [
+            130.7,
+            166.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126.1
+          ],
+          "hollow": [
+            130.7,
+            167.1
+          ]
+        }
+      }
+    ]
+  },
+  "look": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/watch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      8,
+      16,
+      25
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            132.7,
+            166.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_a": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/groom.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      10,
+      23,
+      31
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_b": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/groom.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      10,
+      21,
+      29
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            125.6,
+            125
+          ],
+          "hollow": [
+            130.1,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_in": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/rest.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      8,
+      18,
+      29
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122.6,
+            131.2
+          ],
+          "hollow": [
+            130.3,
+            170.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            123.6,
+            142.9
+          ],
+          "hollow": [
+            129.4,
+            179.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            124.2,
+            151.8
+          ],
+          "hollow": [
+            128.6,
+            185.6
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_out": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/rest.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      0,
+      18,
+      24
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            124.2,
+            151.8
+          ],
+          "hollow": [
+            128.6,
+            185.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122.8,
+            133.3
+          ],
+          "hollow": [
+            130.2,
+            172.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122.1,
+            127.2
+          ],
+          "hollow": [
+            130.6,
+            167.9
+          ]
+        }
+      }
+    ]
+  },
+  "wake_startled": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/wake-grow.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      4,
+      9,
+      16
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            123.5,
+            141.6
+          ],
+          "hollow": [
+            129.5,
+            178.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            117.8,
+            121.6
+          ],
+          "hollow": [
+            129.5,
+            162.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            128.6
+          ],
+          "hollow": [
+            130.7,
+            169.6
+          ]
+        }
+      }
+    ]
+  },
+  "hatch": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/wake-grow.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      0,
+      18,
+      28
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            123.5,
+            181.1
+          ],
+          "hollow": [
+            121.8,
+            192.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            121.7,
+            132.1
+          ],
+          "hollow": [
+            131,
+            171.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            128.6
+          ],
+          "hollow": [
+            130.7,
+            169.6
+          ]
+        }
+      }
+    ]
+  },
+  "squirrel_peek": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/companion-a.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      12,
+      32,
+      49
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "squirrelPaw": [
+            129.3,
+            163.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "squirrelPaw": [
+            129.4,
+            164
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "squirrelPaw": [
+            129.6,
+            167.2
+          ]
+        }
+      }
+    ]
+  },
+  "squirrel_throw": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/companion-a.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      7,
+      16,
+      21
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "squirrelPaw": [
+            129.4,
+            164.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            136.6
+          ],
+          "squirrelPaw": [
+            128.7,
+            175
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            143.6
+          ],
+          "squirrelPaw": [
+            133.4,
+            191.2
+          ]
+        }
+      }
+    ]
+  },
+  "squirrel_cheer": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/companion-b.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      5,
+      14,
+      30
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "squirrelPaw": [
+            128.4,
+            159.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "squirrelPaw": [
+            127.9,
+            155.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "squirrelPaw": [
+            128.2,
+            157.4
+          ]
+        }
+      }
+    ]
+  },
+  "squirrel_sleep": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/companion-b.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      0,
+      28,
+      57
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "squirrelPaw": [
+            130,
+            169
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "squirrelPaw": [
+            130,
+            168.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "squirrelPaw": [
+            130.1,
+            169.2
+          ]
+        }
+      }
+    ]
+  },
+  "phase": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/spring.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      8,
+      16,
+      24,
+      33,
+      39,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            124.2,
+            135.8
+          ],
+          "hollow": [
+            130.2,
+            175.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            118.6,
+            132.5
+          ],
+          "hollow": [
+            131.3,
+            172.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122.5,
+            126.6
+          ],
+          "hollow": [
+            131.2,
+            167.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      }
+    ]
+  },
+  "idle-f2": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/spring-idle.png",
+    "grid": [
+      3,
+      1
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      0,
+      22,
+      45
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            125.3
+          ],
+          "hollow": [
+            130.7,
+            166.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126.6
+          ],
+          "hollow": [
+            130.7,
+            167.5
+          ]
+        }
+      }
+    ]
+  },
+  "happy": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/applause.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      4,
+      9,
+      16,
+      23,
+      31,
+      39
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            126.5,
+            124.9
+          ],
+          "hollow": [
+            129.9,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            118,
+            130
+          ],
+          "hollow": [
+            133.3,
+            168.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "hollow": [
+            130.7,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            131.3
+          ],
+          "hollow": [
+            125.5,
+            173.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            126.8,
+            124.8
+          ],
+          "hollow": [
+            129.9,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            129.5
+          ],
+          "hollow": [
+            130.7,
+            170.5
+          ]
+        }
+      }
+    ]
+  },
+  "trick": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/planting.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      10,
+      23,
+      42,
+      63,
+      78,
+      94
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            134.8
+          ],
+          "hollow": [
+            130.7,
+            175.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            145.4
+          ],
+          "hollow": [
+            130.7,
+            186.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            123.8,
+            147.6
+          ],
+          "hollow": [
+            130.3,
+            187.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            123.8,
+            135.6
+          ],
+          "hollow": [
+            132.3,
+            175.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            127.6,
+            151.7
+          ],
+          "hollow": [
+            129,
+            188.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126.9
+          ],
+          "hollow": [
+            130.7,
+            167.8
+          ]
+        }
+      }
+    ]
+  },
+  "tech_sap_breath": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/tech_sap_breath.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      0,
+      18,
+      22,
+      25,
+      31,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "mouth": [
+            127.6,
+            135.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            83.6,
+            108.6
+          ],
+          "mouth": [
+            89.3,
+            112
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            126.3,
+            133.9
+          ],
+          "mouth": [
+            130.8,
+            145.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            148.1,
+            155.9
+          ],
+          "mouth": [
+            151.7,
+            168.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            151.3,
+            160.8
+          ],
+          "mouth": [
+            154.7,
+            173.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "mouth": [
+            127.6,
+            135.9
+          ]
+        }
+      }
+    ]
+  },
+  "tech_catkin_cast": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/tech_catkin_cast.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      0,
+      18,
+      22,
+      25,
+      31,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "boughTipR": [
+            93.3,
+            171.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            103,
+            129.5
+          ],
+          "boughTipR": [
+            62.7,
+            126.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            116.4,
+            127
+          ],
+          "boughTipR": [
+            85,
+            161
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            138.5,
+            135.6
+          ],
+          "boughTipR": [
+            133.1,
+            184.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            139.9,
+            136.9
+          ],
+          "boughTipR": [
+            138.7,
+            189.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "boughTipR": [
+            93.3,
+            171.2
+          ]
+        }
+      }
+    ]
+  },
+  "tech_acorn_quake": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/tech_acorn_quake.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      0,
+      25,
+      35,
+      39,
+      44,
+      69
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "handR": [
+            100.5,
+            175.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            109.3,
+            121.3
+          ],
+          "handR": [
+            81,
+            111.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            125.3,
+            136.2
+          ],
+          "handR": [
+            105.3,
+            169.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            138,
+            155.5
+          ],
+          "handR": [
+            122.3,
+            219.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            135.2,
+            148.5
+          ],
+          "handR": [
+            120.9,
+            206.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "handR": [
+            100.5,
+            175.7
+          ]
+        }
+      }
+    ]
+  },
+  "tech_branch_hook": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/tech_branch_hook.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      0,
+      17,
+      21,
+      24,
+      30,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "handL": [
+            152.9,
+            158.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            99.8,
+            125
+          ],
+          "handL": [
+            120.8,
+            110.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            123.6,
+            130.4
+          ],
+          "handL": [
+            160.6,
+            143.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            136.1,
+            136.5
+          ],
+          "handL": [
+            177.9,
+            176.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            139.7,
+            138.3
+          ],
+          "handL": [
+            173.9,
+            185.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "handL": [
+            152.9,
+            158.9
+          ]
+        }
+      }
+    ]
+  },
+  "tech_root_step": {
+    "sheet": "../../../docs/reports/creatures/b9/references/grove_lord/tech_root_step.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 134,
+    "frames": [
+      0,
+      18,
+      22,
+      25,
+      31,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "footR": [
+            112.4,
+            198.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            94.9,
+            103.5
+          ],
+          "footR": [
+            74.8,
+            148.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            126.7,
+            129
+          ],
+          "footR": [
+            117.5,
+            192.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            136.5,
+            137.9
+          ],
+          "footR": [
+            129.5,
+            215
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            138.2,
+            150.9
+          ],
+          "footR": [
+            129.5,
+            215
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          192
+        ],
+        "points": {
+          "head": [
+            122,
+            126
+          ],
+          "footR": [
+            112.4,
+            198.1
+          ]
+        }
+      }
+    ]
+  }
+}

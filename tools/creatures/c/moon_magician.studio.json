@@ -1,0 +1,23 @@
+{
+  "minPrimitives": 900,
+  "multiActTrick": true,
+  "bodyClips": [
+    "walk_n",
+    "walk_ne",
+    "walk_e",
+    "walk_se",
+    "walk_s",
+    "walk_sw",
+    "walk_w",
+    "walk_nw",
+    "turn",
+    "tired",
+    "sleep"
+  ],
+  "skip": {
+    "clip": [
+      "trick_b-f2:6-13",
+      "trick_b-f2:42"
+    ]
+  }
+}

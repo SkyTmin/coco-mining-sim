@@ -1,0 +1,2037 @@
+{
+  "idle": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/stargazer.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      18,
+      40
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "nucleus": [
+            127.8,
+            148.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            174.7
+          ],
+          "nucleus": [
+            127.2,
+            148
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.7
+          ],
+          "nucleus": [
+            128.8,
+            149.4
+          ]
+        }
+      }
+    ]
+  },
+  "look": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/stargazer.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      8,
+      15,
+      26
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            148.3,
+            176.4
+          ],
+          "clubL": [
+            204.8,
+            147.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.6,
+            175
+          ],
+          "clubL": [
+            204.8,
+            146.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.1,
+            175.7
+          ],
+          "clubL": [
+            206.2,
+            143.3
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_a": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/curiosity.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      9,
+      20,
+      31
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.8,
+            175.6
+          ],
+          "star4": [
+            110.7,
+            198.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.2,
+            175.7
+          ],
+          "star4": [
+            157.4,
+            179.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.7,
+            175.6
+          ],
+          "star4": [
+            161.6,
+            185.2
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_b": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/curiosity.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      10,
+      23,
+      35
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "funnel": [
+            149.5,
+            192.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.6,
+            175.8
+          ],
+          "funnel": [
+            149.6,
+            193.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "funnel": [
+            149.5,
+            192.4
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_in": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/dreams.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      8,
+      17,
+      29
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146,
+            179.4
+          ],
+          "mantleTip": [
+            132.6,
+            103.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.4,
+            189.3
+          ],
+          "mantleTip": [
+            138.4,
+            115.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            144.9,
+            194.5
+          ],
+          "mantleTip": [
+            141.5,
+            122.3
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_out": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/dreams.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      17,
+      23
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            144.9,
+            194.5
+          ],
+          "mantleTip": [
+            141.5,
+            122.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146,
+            180
+          ],
+          "mantleTip": [
+            132.9,
+            104.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            148,
+            177
+          ],
+          "mantleTip": [
+            125.2,
+            100.7
+          ]
+        }
+      }
+    ]
+  },
+  "wake_startled": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/wake.png",
+    "grid": [
+      3,
+      1
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      9,
+      17
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            144.9,
+            194.5
+          ],
+          "clubL": [
+            207.6,
+            169.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.8,
+            175.2
+          ],
+          "clubL": [
+            208.1,
+            152.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.4,
+            175.7
+          ],
+          "clubL": [
+            204.8,
+            147.3
+          ]
+        }
+      }
+    ]
+  },
+  "hatch": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/pearl.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      6,
+      12,
+      21,
+      29,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.4,
+            204.1
+          ],
+          "clubL": [
+            200.8,
+            180.1
+          ],
+          "clubR": [
+            102.7,
+            193.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.1,
+            211.4
+          ],
+          "clubL": [
+            202,
+            187.8
+          ],
+          "clubR": [
+            103,
+            199.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.6,
+            201.1
+          ],
+          "clubL": [
+            194.2,
+            206.5
+          ],
+          "clubR": [
+            154.3,
+            223.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            147,
+            170.8
+          ],
+          "clubL": [
+            208.5,
+            173.9
+          ],
+          "clubR": [
+            142.6,
+            219.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.7,
+            168.7
+          ],
+          "clubL": [
+            204.6,
+            131.4
+          ],
+          "clubR": [
+            89.3,
+            165.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "clubL": [
+            204.8,
+            148.1
+          ],
+          "clubR": [
+            95.6,
+            168.1
+          ]
+        }
+      }
+    ]
+  },
+  "happy": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/dance.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      4,
+      9,
+      16,
+      24,
+      31,
+      39
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.8,
+            181
+          ],
+          "clubL": [
+            181.8,
+            123.8
+          ],
+          "clubR": [
+            99.7,
+            165.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            147.2,
+            168
+          ],
+          "clubL": [
+            173.7,
+            100
+          ],
+          "clubR": [
+            155.1,
+            197.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.2,
+            170.2
+          ],
+          "clubL": [
+            198.2,
+            135
+          ],
+          "clubR": [
+            105.2,
+            144.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            147,
+            175.1
+          ],
+          "clubL": [
+            214.7,
+            149.4
+          ],
+          "clubR": [
+            96.5,
+            154.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.5,
+            172.3
+          ],
+          "clubL": [
+            199.9,
+            135.9
+          ],
+          "clubR": [
+            91.7,
+            169
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            180.1
+          ],
+          "clubL": [
+            204.8,
+            147.5
+          ],
+          "clubR": [
+            95.6,
+            169.1
+          ]
+        }
+      }
+    ]
+  },
+  "trick": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/armillary.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      18,
+      28,
+      51,
+      78,
+      99,
+      110
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            147.9,
+            176.3
+          ],
+          "clubL": [
+            203.1,
+            167.2
+          ],
+          "clubR": [
+            95.6,
+            164.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.8,
+            178.7
+          ],
+          "clubL": [
+            194.7,
+            135.5
+          ],
+          "clubR": [
+            100.6,
+            158
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            147,
+            175.1
+          ],
+          "clubL": [
+            199.8,
+            140.3
+          ],
+          "clubR": [
+            103.8,
+            151
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            144.6,
+            176.5
+          ],
+          "clubL": [
+            178.4,
+            124.9
+          ],
+          "clubR": [
+            88.8,
+            183.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.6,
+            175.8
+          ],
+          "clubL": [
+            196.1,
+            135.9
+          ],
+          "clubR": [
+            150.7,
+            200.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            143.2,
+            179.1
+          ],
+          "clubL": [
+            204.8,
+            148.6
+          ],
+          "clubR": [
+            153,
+            207.1
+          ]
+        }
+      }
+    ]
+  },
+  "show": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/single-star.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      50,
+      62,
+      76,
+      89,
+      101,
+      131
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      }
+    ]
+  },
+  "phase": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/aurora.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      8,
+      16,
+      26,
+      36,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "star6": [
+            128.5,
+            178.4
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            178.9
+          ],
+          "star6": [
+            128.5,
+            182.7
+          ],
+          "mantleTip": [
+            130.3,
+            102.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.8,
+            175.2
+          ],
+          "star6": [
+            125.9,
+            180.4
+          ],
+          "mantleTip": [
+            139.7,
+            96.2
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "star6": [
+            128.5,
+            176.3
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "star6": [
+            128.5,
+            173.8
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "star6": [
+            128.5,
+            178.4
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      }
+    ]
+  },
+  "idle-f2": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/constellations.png",
+    "grid": [
+      2,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      21,
+      43,
+      71
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "star6": [
+            128.5,
+            178.4
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            174.7
+          ],
+          "star6": [
+            128.5,
+            176.8
+          ],
+          "mantleTip": [
+            130.3,
+            98.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145.9,
+            176
+          ],
+          "star6": [
+            128.5,
+            173.4
+          ],
+          "mantleTip": [
+            135,
+            98.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.5
+          ],
+          "star6": [
+            128.5,
+            178.2
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      }
+    ]
+  },
+  "tech_star_spiral": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/tech_star_spiral.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      32,
+      41,
+      45,
+      54,
+      77
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "funnel": [
+            149.5,
+            192.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            111.6,
+            188
+          ],
+          "funnel": [
+            103.3,
+            198.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            155.2,
+            164
+          ],
+          "funnel": [
+            184.5,
+            157.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            167.3,
+            182.3
+          ],
+          "funnel": [
+            207.9,
+            195.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            170.7,
+            185.5
+          ],
+          "funnel": [
+            217,
+            202.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "funnel": [
+            149.5,
+            192.4
+          ]
+        }
+      }
+    ]
+  },
+  "tech_lunar_hook": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/tech_lunar_hook.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      17,
+      21,
+      25,
+      31,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "star2": [
+            147.8,
+            217.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            122.3,
+            177.3
+          ],
+          "star2": [
+            74.6,
+            196.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            144.8,
+            175.1
+          ],
+          "star2": [
+            154.9,
+            201.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            156.1,
+            176
+          ],
+          "star2": [
+            218.5,
+            193.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            165.5,
+            172
+          ],
+          "star2": [
+            245,
+            185.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "star2": [
+            147.8,
+            217.7
+          ]
+        }
+      }
+    ]
+  },
+  "tech_tidal_club": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/tech_tidal_club.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      18,
+      23,
+      27,
+      34,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "clubL": [
+            204.8,
+            148.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            126.4,
+            164
+          ],
+          "clubL": [
+            134.4,
+            83.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            147.6,
+            175.9
+          ],
+          "clubL": [
+            198.4,
+            162.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            159.4,
+            191.2
+          ],
+          "clubL": [
+            216.2,
+            234.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            161.9,
+            184.1
+          ],
+          "clubL": [
+            218.9,
+            212.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "clubL": [
+            204.8,
+            148.1
+          ]
+        }
+      }
+    ]
+  },
+  "tech_long_cast": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/tech_long_cast.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      17,
+      22,
+      26,
+      32,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "clubR": [
+            95.6,
+            168.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            121,
+            178.4
+          ],
+          "clubR": [
+            92.5,
+            182.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            145,
+            174.3
+          ],
+          "clubR": [
+            150.3,
+            202.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            161.1,
+            172.7
+          ],
+          "clubR": [
+            195.6,
+            204.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            166.8,
+            170.1
+          ],
+          "clubR": [
+            205.7,
+            200.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "clubR": [
+            95.6,
+            168.1
+          ]
+        }
+      }
+    ]
+  },
+  "tech_orbit_chimes": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/tech_orbit_chimes.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      27,
+      31,
+      35,
+      42,
+      65
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "star6": [
+            128.5,
+            178.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            162.6,
+            164.5
+          ],
+          "star6": [
+            133.1,
+            140.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            147.7,
+            173.7
+          ],
+          "star6": [
+            135.2,
+            201.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            134.7,
+            188
+          ],
+          "star6": [
+            140,
+            248.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            128.3,
+            177
+          ],
+          "star6": [
+            134.7,
+            228.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "star6": [
+            128.5,
+            178.4
+          ]
+        }
+      }
+    ]
+  },
+  "tech_comet_form": {
+    "sheet": "../../../docs/reports/creatures/b9/references/nebula_squid/tech_comet_form.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 124,
+    "frames": [
+      0,
+      21,
+      26,
+      30,
+      37,
+      53
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            172.3,
+            171.9
+          ],
+          "mantleTip": [
+            210.6,
+            115.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            144.1,
+            166.4
+          ],
+          "mantleTip": [
+            113.2,
+            110.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            121.5,
+            169
+          ],
+          "mantleTip": [
+            42.8,
+            134.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            118.1,
+            171.4
+          ],
+          "mantleTip": [
+            30.6,
+            140.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          145,
+          207
+        ],
+        "points": {
+          "head": [
+            146.1,
+            175.4
+          ],
+          "mantleTip": [
+            130.3,
+            99.3
+          ]
+        }
+      }
+    ]
+  }
+}

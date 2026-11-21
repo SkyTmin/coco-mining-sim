@@ -1,0 +1,121 @@
+{
+  "id": "meadow_colossus",
+  "seed": 271119,
+  "seconds": 30,
+  "walkTicks": 303,
+  "walkShare": 0.42083333333333334,
+  "fieldDistance": [
+    35.2,
+    14.079999999999998
+  ],
+  "maxPixelsPerTick": 0.44456052905761134,
+  "first30s": [
+    [
+      0,
+      "idle"
+    ],
+    [
+      59,
+      "turn"
+    ],
+    [
+      60,
+      "walk_e"
+    ],
+    [
+      148,
+      "turn"
+    ],
+    [
+      149,
+      "look"
+    ],
+    [
+      185,
+      "turn"
+    ],
+    [
+      191,
+      "walk_s"
+    ],
+    [
+      276,
+      "turn"
+    ],
+    [
+      282,
+      "fidget_b"
+    ],
+    [
+      330,
+      "idle"
+    ],
+    [
+      348,
+      "tech_forefall"
+    ],
+    [
+      390,
+      "fidget_b"
+    ],
+    [
+      438,
+      "look"
+    ],
+    [
+      474,
+      "idle"
+    ],
+    [
+      483,
+      "turn"
+    ],
+    [
+      493,
+      "walk_nw"
+    ],
+    [
+      623,
+      "turn"
+    ],
+    [
+      633,
+      "look"
+    ],
+    [
+      705,
+      "idle"
+    ]
+  ],
+  "autonomousAttackGaps600s": {
+    "starts": 17,
+    "min": 31.083333333333332,
+    "max": 43.416666666666664
+  },
+  "reelSeconds": 44.708333333333336,
+  "clips": [
+    "hatch",
+    "turn",
+    "idle",
+    "fidget_a",
+    "fidget_b",
+    "walk_n",
+    "walk_ne",
+    "walk_e",
+    "walk_se",
+    "walk_s",
+    "walk_sw",
+    "walk_w",
+    "walk_nw",
+    "look",
+    "happy",
+    "trick",
+    "tech_forefall",
+    "tech_heelwave",
+    "tired",
+    "sleep_in",
+    "sleep",
+    "wake_startled",
+    "sleep_out"
+  ]
+}

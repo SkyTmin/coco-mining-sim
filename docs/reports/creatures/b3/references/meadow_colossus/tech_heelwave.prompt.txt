@@ -1,0 +1,22 @@
+REFERENCE SHEET — Meadow Colossus, animation "tech_heelwave". A hind foot thumps the earth, sending a widening ring from that heel to the meadow.
+
+LAYOUT
+One wide 1536×1024 image divided invisibly into three columns and two rows of six equal 512×512 cells. Read top left to bottom right. Six drawings only. Fill all background with perfectly flat solid #FF00FF. No cast shadows, ground, scenery, vignette, grids, strokes across gutters, text, digits, labels, arrows, logos, or captions. Separate six fully contained, horizontally centred figures, at least 8% clear margin on EVERY side per cell. Standing creature takes 66% cell height; invisible baseline under its near feet at 84%, camera remains tripod-fixed across all cells.
+
+CHARACTER LOCK
+Use ONLY the LEFT three-quarter model in the attached identity reference: one ancient wide, low tortoise, one domed shell, ochre angular scute rim, olive grassy meadow growing on top, three stones in the same order (two angular bedrocks next to the one crooked tree, one smaller rounded loose pebble at the FRONT lip). One tree with three rounded crowns; its visible roots cling to the shell. Four short stocky column legs, three blunt ochre claws per foot including near hind, two amber eyes (far eye partly occluded), one cream hooked beak without teeth, one pointed short tail projecting behind the shell. Keep leg identities and overlap consistent. Total standing height 100 units, shell body before tree 58, head height 22, legs 24. Locked colours olive moss #86982c, rim ochre #d49c4f, shadowed earth #715432, granite #988b6b, near-black brown outline #30291d, eyes #e5a03b. Light upper left. Simplify texture into readable hard-edged pixel clusters while preserving the character. No extra stones, feet, tree or animals.
+
+CAMERA AND STYLE
+Static front-right 3/4 view at ~35° elevation, turtle facing screen right; see its near cheek continuously, far forefoot at extreme right and near forefoot lower and more central. Pixel-art cel shading: dark single-pixel contours, four discrete light values, absolutely crisp transitions to magenta. It is ONE image with SIX different acting beats, never two turnarounds. No motion blur, FX, debris or ground lines. The animation will add effects from physical contacts later.
+
+AVOID
+Extra limbs, fingers, claws, trees, rocks, stray particles, heads hidden by props, floating feet on contacts, fused front and hind feet, generic brown turtles without the meadow, fake shadows, outlines around cells, cropping, anti-alias fringing, copying the right-hand lateral view from the identity reference.
+
+PROP: all three stones stay on the shell. No drawn ripple, no dust; the moving foot is always the SAME near hind foot under the tail on the LEFT of the image.
+POSES
+1 REST. Tortoise at neutral looking right, four contact soles on projected ground, tail visible at left, rigid tree on split trunk.
+2 LOAD. Flat-eyed concentration. BOTH forefeet + the FAR hind foot plant. Chest lowers and shifts forward onto the forelegs. The NEAR hind leg on the far LEFT of the silhouette folds through the knee; its visible sole rises toward the outer lip of the shell. Leave a magenta window behind the raised heel, and do not replace it with another foot. Tree shifts to the right with the mass.
+3 DESCEND. Keep those SAME three planted feet at identical ground points. The raised near hind leg now straightens DOWN AND OUT to the left, sole two claw thicknesses above its mark. The three pale toes remain visible and move with it. Face glances down and back slightly without turning the body.
+4 CONTACT. The near hind heel has dropped squarely onto the imaginary ground just OUTSIDE the leftmost edge of the shell at the rear. Three-quarter camera sees the three claws and whole broad pad rim as it hits. The other three feet still planted. The shell lowers over the striking rear pad; tree starting to lag behind. Contact is left of the silhouette's center, never at the front/head.
+5 FOLLOW-THROUGH. Rear knee bends to arrest impact without lifting stamped sole. Hindquarter crouches toward the newly planted hind foot, torso rolls gently toward viewer, head lifts against the roll and tail flicks. Front supports visible, no ring yet painted.
+6 RETURN. Weight distributes over four columns again. Hind leg slides back beneath hip, beak returns to forward gaze, tail and leafy crowns settle. Same scale and ground.

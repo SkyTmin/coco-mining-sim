@@ -1,0 +1,219 @@
+{
+  "sizes": {
+    "bramble_warden": {
+      "bytes_including_border": 1394960,
+      "clip_count": 2,
+      "native_frames": 386
+    },
+    "coin_dragon": {
+      "bytes_including_border": 4052644,
+      "clip_count": 2,
+      "native_frames": 429
+    },
+    "crater_titan": {
+      "bytes_including_border": 5040971,
+      "clip_count": 2,
+      "native_frames": 434
+    },
+    "frost_yeti": {
+      "bytes_including_border": 3143316,
+      "clip_count": 2,
+      "native_frames": 443
+    },
+    "gem_beetle": {
+      "bytes_including_border": 1275131,
+      "clip_count": 2,
+      "native_frames": 362
+    },
+    "meadow_colossus": {
+      "bytes_including_border": 2987645,
+      "clip_count": 23,
+      "native_frames": 935
+    },
+    "silk_dragon": {
+      "bytes_including_border": 2142167,
+      "clip_count": 2,
+      "native_frames": 385
+    },
+    "storm_ram": {
+      "bytes_including_border": 2019033,
+      "clip_count": 2,
+      "native_frames": 490
+    },
+    "toad_shaman": {
+      "bytes_including_border": 4474013,
+      "clip_count": 2,
+      "native_frames": 427
+    }
+  },
+  "max_browser_file": [
+    "atlases/crater_titan/sprites-3.png",
+    805769
+  ],
+  "gallery_bytes": 26561348,
+  "online_offline": {
+    "ticks": 720,
+    "pose_matches": 720,
+    "max_pixel_fraction_with_channel_delta_over_12": 0.00908,
+    "mean_pixel_fraction_with_channel_delta_over_12": 0.0009224,
+    "floor_feet_bounds_native_px": [
+      [
+        54.4,
+        95.38
+      ],
+      [
+        87.04,
+        101.93
+      ]
+    ],
+    "turn_bearings": 96
+  },
+  "mobile_and_desktop": {
+    "run": "final",
+    "device": "Pixel 7",
+    "viewport": {
+      "width": 412,
+      "height": 839
+    },
+    "events": [
+      [
+        "happy",
+        1967
+      ],
+      [
+        "tap latency ms",
+        74
+      ],
+      [
+        "trick",
+        2976
+      ],
+      [
+        "second tap latency ms",
+        183
+      ],
+      [
+        "skill_ready",
+        "tech_forefall"
+      ],
+      [
+        "sleep_in",
+        8407
+      ],
+      [
+        "leave delay ms",
+        5205
+      ],
+      [
+        "sleep",
+        9649
+      ],
+      [
+        "wake_startled",
+        9883
+      ],
+      [
+        "sleeping tap latency ms",
+        62
+      ],
+      [
+        "happy",
+        10878
+      ],
+      [
+        "sleep",
+        17447
+      ],
+      [
+        "sleep_out",
+        17666
+      ],
+      [
+        "desktop",
+        "1440×1000 Enter → happy, 2 → trick"
+      ]
+    ],
+    "clip_changes": [
+      [
+        "happy",
+        1946
+      ],
+      [
+        "trick",
+        2938
+      ],
+      [
+        "tech_forefall",
+        3178
+      ],
+      [
+        "idle",
+        4935
+      ],
+      [
+        "turn",
+        6893
+      ],
+      [
+        "walk_e",
+        6946
+      ],
+      [
+        "sleep_in",
+        8369
+      ],
+      [
+        "sleep",
+        9610
+      ],
+      [
+        "wake_startled",
+        9862
+      ],
+      [
+        "happy",
+        10863
+      ],
+      [
+        "walk_e",
+        12860
+      ],
+      [
+        "turn",
+        15109
+      ],
+      [
+        "look",
+        15148
+      ],
+      [
+        "sleep_in",
+        16247
+      ],
+      [
+        "sleep",
+        17394
+      ],
+      [
+        "sleep_out",
+        17650
+      ],
+      [
+        "look",
+        19009
+      ],
+      [
+        "turn",
+        19445
+      ]
+    ],
+    "http_errors": [],
+    "errors": []
+  },
+  "frozen_tab": "Returning after freezing the page for 8.1s showed sleep within one second.",
+  "legacy_browser_comparisons": {
+    "sampled_native_frames": 32,
+    "shaken_samples": 8,
+    "pixels_off_by_more_than_four": 0
+  }
+}
