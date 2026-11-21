@@ -44,7 +44,7 @@ const UP = { umbF: 0.3, umbS: 0.55 };
 const AT_VIEWER = { umbF: 1.1, umbS: 1.27 };
 const DOWN = { umbF: Math.PI + 0.3, umbS: 0.55 };
 /** The second form: the cape inside out, the full moon on the tail, the umbrella open and floating overhead. */
-const F2 = { form: 1, umbFree: 1, umbOpen: 1, umbX: 1.6, umbY: 0, umbZ: 42, umbF: 0.42, umbS: 0.55, sand: 0.6 };
+const F2 = { form: 1, umbFree: 1, umbOpen: 1, umbX: 1.6, umbY: 0, umbZ: 50, umbF: 0.42, umbS: 0.55, sand: 0.6 };
 const f2 = (p: JointPose): JointPose => ({ ...F2, ...p });
 /** Asleep: curled up on the grass under the open umbrella laid over him like a tent. */
 export const asleep: JointPose = { sleep: 1, blink: 1, tailCurl: 0.2, umbFree: 1, umbOpen: 1, umbX: 7, umbY: 5, umbZ: 1.2, umbF: -0.65, umbS: 0.55 };
@@ -344,12 +344,12 @@ export const tracks: Record<string, Track> = {
     [46, { tailCurl: 0.6, lift: 2.6, ...R(3, 10, 15, 2.6), ...L(3, -10, 15, 2.6), umbFree: 1, umbX: 1, umbY: 0, umbZ: 45, umbOpen: 0.4, ...UP, blink: 1, smile: 1, capeLift: 2.6, flare: 1 }],
     [52, { tailCurl: 0.6, lift: 3.6, ...R(3, 10, 15, 3.6), ...L(3, -10, 15, 3.6), umbFree: 1, umbX: 0, umbY: 0, umbZ: 46, umbOpen: 0.8, umbF: 0.42, umbS: 0.55, blink: 1, capeLift: 3.6, flare: 1.8 }],
     [57, { tailCurl: 0.6, lift: 4.2, form: 0.2, ...R(3, 10, 15, 4.2), ...L(3, -10, 15, 4.2), umbFree: 1, umbX: -1, umbY: 0, umbZ: 46.5, umbOpen: 1, umbF: 0.42, umbS: 0.55, blink: 1, capeLift: 4.2, flare: 2.2 }],
-    [61, { tailCurl: 0.6, lift: 4.5, form: 0.42, ...R(3, 10, 15, 4.5), ...L(3, -10, 15, 4.5), umbFree: 1, umbX: -1, umbY: 0, umbZ: 46.5, umbOpen: 1, umbF: 0.42, umbS: 0.55, blink: 1, capeLift: 4.5, flare: 2.4, sheepR: -1 }],
-    [64, { tailCurl: 0.6, lift: 4.6, form: 0.62, ...R(3, 10, 15, 4.6), ...L(3, -10, 15, 4.6), umbFree: 1, umbX: -1, umbY: 0, umbZ: 46.5, umbOpen: 1, umbF: 0.42, umbS: 0.55, blink: 1, capeLift: 4.6, flare: 2.4, sheepR: -5 }],
-    [67, { tailCurl: 0.6, lift: 4.6, form: 0.8, ...R(3, 10, 15, 4.6), ...L(3, -10, 15, 4.6), umbFree: 1, umbX: -1, umbY: 0, umbZ: 46.5, umbOpen: 1, umbF: 0.42, umbS: 0.55, blink: 1, capeLift: 4.6, flare: 2.4, sheepR: -6 }],
-    [70, { tailCurl: 0.6, lift: 4.4, form: 0.93, ...R(3, 10, 15, 4.4), ...L(3, -10, 15, 4.4), umbFree: 1, umbX: -1, umbY: 0, umbZ: 46, umbOpen: 1, umbF: 0.42, umbS: 0.55, capeLift: 4.4, flare: 2, sheepR: -3, wide: 0.5 }],
-    [72, f2({ umbZ: 45, lift: 3, ...R(4, 12, 16, 3), ...L(4, -12, 16, 3), wide: 1, mouth: 0.6, earL: -0.5, earR: -0.5, flash: 0.25, sheepR: 4, sheepZ: 4, capeLift: 3, flare: 1.4 })],
-    [76, f2({ umbZ: 44, lift: 2, ...R(4, 12, 15, 2), ...L(4, -12, 15, 2), wide: 1, mouth: 0.4, earL: -0.45, earR: -0.45, sheepR: 2, sheepZ: 2, capeLift: 2 })],
+    [61, { tailCurl: 0.6, lift: 4.5, form: 0.42, ...R(3, 10, 15, 4.5), ...L(3, -10, 15, 4.5), umbFree: 1, umbX: -1, umbY: 0, umbZ: 47.5, umbOpen: 1, umbF: 0.42, umbS: 0.55, blink: 1, capeLift: 4.5, flare: 2.4, sheepR: -1 }],
+    [64, { tailCurl: 0.6, lift: 4.6, form: 0.62, ...R(3, 10, 15, 4.6), ...L(3, -10, 15, 4.6), umbFree: 1, umbX: -1, umbY: 0, umbZ: 49, umbOpen: 1, umbF: 0.42, umbS: 0.55, blink: 1, capeLift: 4.6, flare: 2.4, sheepR: -5 }],
+    [67, { tailCurl: 0.6, lift: 4.6, form: 0.8, ...R(3, 10, 15, 4.6), ...L(3, -10, 15, 4.6), umbFree: 1, umbX: -1, umbY: 0, umbZ: 50.5, umbOpen: 1, umbF: 0.42, umbS: 0.55, blink: 1, capeLift: 4.6, flare: 2.4, sheepR: -6 }],
+    [70, { tailCurl: 0.6, lift: 4.4, form: 0.93, ...R(3, 10, 15, 4.4), ...L(3, -10, 15, 4.4), umbFree: 1, umbX: -1, umbY: 0, umbZ: 52, umbOpen: 1, umbF: 0.42, umbS: 0.55, capeLift: 4.4, flare: 2, sheepR: -3, wide: 0.5 }],
+    [72, f2({ umbZ: 53, lift: 3, ...R(4, 12, 16, 3), ...L(4, -12, 16, 3), wide: 1, mouth: 0.6, earL: -0.5, earR: -0.5, flash: 0.25, sheepR: 4, sheepZ: 4, capeLift: 3, flare: 1.4 })],
+    [76, f2({ umbZ: 52, lift: 2, ...R(4, 12, 15, 2), ...L(4, -12, 15, 2), wide: 1, mouth: 0.4, earL: -0.45, earR: -0.45, sheepR: 2, sheepZ: 2, capeLift: 2 })],
     [82, f2({ ...R(5, 8, 12), ...L(5, -8, 12), smile: 1, sheepR: 0 })],
     [88, f2({ smile: 0.6 })],
     [96, f2({})]],
@@ -389,7 +389,7 @@ export const tracks: Record<string, Track> = {
     [118, f2({ crouch: 1.2, nod: 0.32, blink: 1, earL: 0.8, earR: 0.8, drift: 0.6, roll: 0.05, tailCurl: 0.3 })],
     [122, f2({ crouch: 1.4, nod: 0.36, blink: 1, earL: 0.85, earR: 0.85, drift: -0.5, roll: -0.04, tailCurl: 0.3 })],
     [126, f2({ crouch: 1.3, nod: 0.3, blink: 1, earL: 0.8, earR: 0.8, drift: 0.4, roll: 0.03, tailCurl: 0.3 })],
-    [129, f2({ umbZ: 44.4, jump: 2.4, gaze: -0.5, lookX: -0.8, wide: 1, mouth: 0.6, earL: -0.3, earR: -0.3, ...L(6, -9, 16), ...R(6, 9, 16), tailCurl: 0.6, puff: 1 })],
+    [129, f2({ umbZ: 52.4, jump: 2.4, gaze: -0.5, lookX: -0.8, wide: 1, mouth: 0.6, earL: -0.3, earR: -0.3, ...L(6, -9, 16), ...R(6, 9, 16), tailCurl: 0.6, puff: 1 })],
     [133, f2({ crouch: 0.6, gaze: -0.45, lookX: -0.8, wide: 0.6, earL: -0.4, earR: -0.4, mouth: 0.3 })],
     [137, f2({ ...R(7.6, 2.6, 17), blink: 1, smile: 1, gaze: 0.1, tilt: 0.1, lift: 0.4, earL: 0.1, earR: 0.1 })],
     [139, f2({ ...R(7.6, 2.6, 16.6), blink: 1, smile: 1, gaze: 0.1, tilt: -0.08, lift: -0.2 })],
@@ -409,9 +409,9 @@ export const tracks: Record<string, Track> = {
     [172, f2({ yaw: -0.7, crouch: 3.2, ...size(1.1, 0.9), lean: -0.6, ...L(-2, -7, 8), ...R(-2, 7, 8), smile: 1, earL: 0.4, earR: 0.4, tailSway: 0.3 })],
     [176, f2({ yaw: -0.7, crouch: 3.3, ...size(1.11, 0.89), lean: -0.65, ...L(-2.5, -7, 7.5), ...R(-2.5, 7, 7.5), smile: 1, earL: 0.45, earR: 0.4, tailSway: -0.4, drift: -0.5 })],
     [179, f2({ yaw: -0.7, crouch: 3.4, ...size(1.12, 0.88), lean: -0.7, ...L(-3, -7, 7), ...R(-3, 7, 7), smile: 1, earL: 0.45, earR: 0.45, tailSway: 0.4, drift: 0.4 })],
-    [182, f2({ umbZ: 50, yaw: -0.7, jump: 8, tuck: 0.5, ...size(0.92, 1.12), pitch: 0.2, ...L(6, -9, 14, 8), ...R(6, 9, 14, 8), earL: -0.6, earR: -0.6, mouth: 0.5, smile: 1, capeLift: 2 })],
-    [185, f2({ umbZ: 59, yaw: -0.7, jump: 17, tuck: 1, pitch: 0.35, ...L(5, -10, 12, 17), ...R(5, 10, 12, 17), earL: -0.5, earR: -0.5, mouth: 0.6, smile: 1, capeLift: 3 })],
-    [188, f2({ umbZ: 49, yaw: -0.7, jump: 7, tuck: 0.6, pitch: 0.1, ...L(5, -9.5, 12, 7), ...R(5, 9.5, 12, 7), earL: -0.2, earR: -0.2, smile: 1, capeLift: 2 })],
+    [182, f2({ umbZ: 53, yaw: -0.7, jump: 8, tuck: 0.5, ...size(0.92, 1.12), pitch: 0.2, ...L(6, -9, 14, 8), ...R(6, 9, 14, 8), earL: -0.6, earR: -0.6, mouth: 0.5, smile: 1, capeLift: 2 })],
+    [185, f2({ umbZ: 56, yaw: -0.7, jump: 17, tuck: 1, pitch: 0.35, ...L(5, -10, 12, 17), ...R(5, 10, 12, 17), earL: -0.5, earR: -0.5, mouth: 0.6, smile: 1, capeLift: 3 })],
+    [188, f2({ umbZ: 54, yaw: -0.7, jump: 7, tuck: 0.6, pitch: 0.1, ...L(5, -9.5, 12, 7), ...R(5, 9.5, 12, 7), earL: -0.2, earR: -0.2, smile: 1, capeLift: 2 })],
     [190, f2({ yaw: -0.4, crouch: 3, ...size(1.14, 0.86), earL: 0.55, earR: 0.55, smile: 1, capeLift: 1 })],
     [193, f2({ yaw: -0.1, lift: 0.8, ...L(5, -11, 21, 0.8), ...R(5, 11, 21, 0.8), smile: 1, mouth: 0.6, earL: -0.4, earR: -0.4, ...size(0.97, 1.04) })],
     [197, f2({ yaw: 0.1, ...L(5, -11, 20), ...R(5, 11, 20), smile: 1, mouth: 0.4, gaze: 0.25, lookX: 0.6, earL: -0.35, earR: -0.35 })],
@@ -421,10 +421,10 @@ export const tracks: Record<string, Track> = {
     [211, f2({ yaw: 0.3, crouch: 1.6, ...L(6, -9, 12), ...R(6, 9, 12), gaze: -0.5, lookY: -0.6, lookX: -0.5, earL: 0.3, earR: 0.3, smile: 0.6, mouth: 0.3 })],
     [217, f2({ yaw: 0.3, lift: 0.6, ...L(5, -10, 15, 0.6), ...R(5, 10, 15, 0.6), gaze: 0.2, lookX: 0.4, tilt: 0.12, smile: 1, mouth: 0.3, earL: 0.1, earR: 0.3 })],
     [222, f2({ yaw: 0.5, crouch: 2.2, ...size(1.08, 0.92), smile: 1, earL: 0.4, earR: 0.4 })],
-    [226, f2({ umbZ: 50, yaw: 0.5, jump: 8, tuck: 0.8, smile: 1, earL: -0.3, earR: -0.3, capeLift: 1.5 })],
+    [226, f2({ umbZ: 58, yaw: 0.5, jump: 8, tuck: 0.8, smile: 1, earL: -0.3, earR: -0.3, capeLift: 1.5 })],
     [229, f2({ yaw: 0.5, crouch: 2.2, ...size(1.08, 0.92), smile: 1, earL: 0.4, earR: 0.4 })],
     [232, f2({ yaw: 0.45, crouch: 2.0, ...size(1.06, 0.94), smile: 1, earL: 0.35, earR: 0.35 })],
-    [235, f2({ umbZ: 50, yaw: 0.4, jump: 8, tuck: 0.8, smile: 1, earL: -0.3, earR: -0.3, capeLift: 1.5 })],
+    [235, f2({ umbZ: 58, yaw: 0.4, jump: 8, tuck: 0.8, smile: 1, earL: -0.3, earR: -0.3, capeLift: 1.5 })],
     [238, f2({ yaw: 0.2, crouch: 2.4, ...size(1.1, 0.9), smile: 1, earL: 0.45, earR: 0.45 })],
     [244, f2({ ...size(0.98, 1.03), smile: 0.6, lid: 0.2 })], [252, f2({})]],
   // Umbrella flight: eyes the floating umbrella, bounces, jumps and grabs it, kicks his feet as it lifts him, flies off

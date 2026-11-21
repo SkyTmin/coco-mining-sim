@@ -4,16 +4,19 @@
 // short patchwork cape (blue, teal and plum patches cross-stitched in gold, a night-sky lining, the hood bunched on the
 // shoulders, a gold crescent clasp), a leather strap with a pouch of glowing dream sand, and carries a dream umbrella
 // (eight violet gores painted with moons, a scalloped hem, gold beads, a wooden crook) furled on his shoulder.
-// The awakened form wears the cape inside out (a twinkling night sky), the tuft becomes a full moon, the umbrella opens
-// and floats over his head, and three cloud sheep hop round him on a ring, in front and behind.
+// The awakened form «Сон наяву» is a different look, not a recolour of a detail: his fur becomes a piece of the night
+// sky (deep blue strewn with twinkling stars), cheeks, muzzle and soles turn moonlight silver, the ear dishes glow, the
+// sleepy eyes open wide; a long striped nightcap with a cloud brim and a glowing moon pompom grows on his crown, cloud
+// slippers puff up round his feet, the cape turns inside out (a twinkling night sky), the tuft becomes a full moon, the
+// umbrella opens and floats over his head, and three cloud sheep hop round him on a ring, in front and behind.
 // The skeleton is its own: hips over two Z-shaped jerboa legs (thigh forward, shin back, long foot), IK arms, a hop
 // cycle for walking; the umbrella is a prop held in the right paw or left standing free.
 import { readCreatureCard } from '../bodies/card-data';
 import type { ArmedAppearance } from '../bodies/armed-biped';
 import { goalAt, toLocal } from '../bodies/goals';
 import { furLock, stitchedStrap } from '../bodies/kits/tailoring';
-import { hx, ik, TAU } from '../kit/f11-mobkit';
-import { F3, Rig, renderRig, vadd, vcross, vdot, vlerp, vmul, vnorm, vsub, type Mat, type V3 } from '../rig/f15-rig';
+import { hx, ik, mixc, TAU } from '../kit/f11-mobkit';
+import { F3, Rig, renderRig, vadd, vcross, vdot, vlerp, vmul, vnorm, vsub, type Mat, type Tones, type V3 } from '../rig/f15-rig';
 import { projectFigure, scaleFigure } from '../rig/figure';
 import type { JointPose } from '../technique';
 import { finishSurfaces } from './surface-work';
@@ -68,9 +71,46 @@ const ink = hx('#120e26'),
   starC = hx('#fff6c2'),
   spark = hx('#ffe9a0'),
   whisker = hx('#9a8cc8');
-// Short strands keep the lilac masses readable.
+// ---- the dream form («Сон наяву») ------------------------------------------------------------------------------
+// The tones blend with `form`, so the night sky sweeps over him in the sand whirl of the phase instead of popping in.
+const toneSet = (name: string, idx: number[]) => idx.map((i) => hx(tones(name)[i])) as Tones;
+const DREAM: { m: Mat; day: Tones; dayGlow: number; night: Tones; glow: number }[] = (
+  [
+    [fur, toneSet('dream', [2, 3, 4, 5]), 0.05],
+    [furSoft, toneSet('dream', [3, 4, 4, 5]), 0.06],
+    [furShade, toneSet('dream', [0, 1, 2, 4]), 0.02],
+    [cream, toneSet('moonfur', [1, 2, 3, 4]), 0.22],
+    [creamSoft, toneSet('moonfur', [2, 3, 4, 4]), 0.28],
+    [creamShade, toneSet('moonfur', [0, 1, 2, 3]), 0.1],
+    [indigo, toneSet('night', [0, 0, 1, 3]), 0],
+    [inner, toneSet('inner', [2, 3, 4, 4]), 0.6],
+    [innerDeep, toneSet('inner', [1, 2, 3, 4]), 0.4],
+  ] as [Mat, Tones, number][]
+).map(([m, night, glow]) => ({ m, day: m.T, dayGlow: m.glow ?? 0, night, glow }));
+/** How far the dream has spread over him (0 = the day look, 1 = the night sky) and the clock for the twinkle. */
+let dreamK = 0,
+  dreamT = 0;
+function dreamLook(form: number, t: number) {
+  dreamK = saturate((form - 0.12) / 0.8);
+  dreamK = dreamK * dreamK * (3 - 2 * dreamK);
+  dreamT = t;
+  for (const d of DREAM) {
+    d.m.T = dreamK <= 0 ? d.day : dreamK >= 1 ? d.night : (d.day.map((c, i) => mixc(c, d.night[i], dreamK)) as Tones);
+    d.m.glow = d.dayGlow + (d.glow - d.dayGlow) * dreamK;
+  }
+}
+/** Stars strewn over the dream fur; each twinkles on its own beat. */
+function furStar(q: V3): ReturnType<typeof hx> | null {
+  if (dreamK < 0.05) return null;
+  const n = Math.sin(q[0] * 37.1 + q[1] * 53.7 + q[2] * 29.3) * Math.sin(q[0] * 23.9 - q[1] * 31.3 + q[2] * 47.9);
+  const beat = 0.5 + 0.5 * Math.sin(dreamT * 4.2 + q[0] * 11 + q[1] * 7 + q[2] * 5);
+  return n > 1 - 0.07 * dreamK * (0.45 + 0.55 * beat) ? (n > 0.985 && beat > 0.6 ? white : starC) : null;
+}
+// Short strands keep the lilac masses readable; in the dream form stars twinkle between them.
 for (const m of [fur, furSoft]) {
   m.pat = (q, light) => {
+    const st = furStar(q);
+    if (st) return st;
     const strand = Math.sin(q[0] * 21 + q[1] * 15 + q[2] * 6.5) * Math.cos(q[2] * 10 - q[1] * 8);
     return strand > 0.82 ? m.T[light > 0.74 ? 2 : light > 0.25 ? 1 : 0] : null;
   };
@@ -313,6 +353,71 @@ function head(r: Rig, Hd: F3, j: Record<string, V3>, p: HeadState) {
   j.crown = H(Hd, 0, 0, 7.8);
 }
 const H = (F: F3, x: number, y: number, z: number) => F.p(x, y, z);
+/** The dream nightcap: a big striped violet-and-white cap pulled over the crown (the ears come out through it), a
+ *  cloud brim in front and behind, a long cone that rises between the ears and flops over to his right in front of
+ *  the ear, a glowing moon pompom dangling by the temple, above the eye. `grow` scales it in with the dream; `sway` and `droop` are the lagged
+ *  head motion, so the tip swings after turns and flops after jumps. */
+function nightcap(r: Rig, Hd: F3, grow: number, sway: number, droop: number, t: number, j: Record<string, V3>) {
+  if (grow < 0.02) return;
+  const k = grow,
+    C = Hd.at(-0.8, 0, 6.0),
+    swing = sway + 0.14 * Math.sin(t * 1.9);
+  // Knots of the cone in the cap's frame with their radii.
+  const knots: [number, number, number, number][] = [
+    [0, 0, 0, 4.6],
+    [0.3, 0, 3.6, 3.8],
+    [1.2, 0.8 + swing * 0.3, 6.6, 2.9],
+    [2.8, 2.8 + swing * 0.8, 8.0 - droop * 0.3, 2.2],
+    [4.4, 5.4 + swing * 1.4, 7.0 - droop * 0.7, 1.6],
+    [5.2, 7.4 + swing * 1.8, 4.6 - droop * 1.0, 1.1],
+    [5.4, 8.4 + swing * 2.0, 1.8 - droop * 1.1, 0.7],
+  ];
+  const spine = knots.map(([x, y, z]) => C.p(x * k, y * k, z * k)),
+    radii = knots.map(([, , , rad]) => [rad * k, 0, 0] as V3);
+  const N = 16;
+  r.tag = 'cap';
+  for (let i = 0; i < N; i++) {
+    const u0 = i / N,
+      u1 = (i + 1) / N;
+    r.cap(catmull(spine, u0), catmull(spine, u1), catmull(radii, u0)[0], catmull(radii, u1)[0], i % 4 < 2 ? canopyLight : wool);
+  }
+  // Little gold stars on the violet stripes, on the side that faces forward and out.
+  for (let i = 0; i < N; i += 4) {
+    const u = (i + 1) / N,
+      at = catmull(spine, u),
+      out = vnorm(vadd(Hd.f, Hd.v(0, 0.6, 0.5)));
+    r.dot(vadd(at, vmul(out, catmull(radii, u)[0] * 0.95)), gold.T[3], 0.5, 0.6 * k + 0.15);
+  }
+  // The cloud brim: puffs over the forehead and the nape (the ears stand at the sides).
+  r.tag = 'capBrim';
+  for (const a of [-0.75, -0.38, 0, 0.38, 0.75, Math.PI - 0.6, Math.PI - 0.2, Math.PI + 0.2, Math.PI + 0.6])
+    r.ball(Hd.p(-0.8 + Math.cos(a) * 4.9 * k, Math.sin(a) * 5.2 * k, 5.3), (1.15 + 0.15 * Math.cos(a * 3)) * k, Math.cos(a) > 0 ? wool : woolShade);
+  // The moon pompom glows, and two sparks circle it.
+  r.tag = 'pompom';
+  const tip = catmull(spine, 1);
+  r.ball(tip, 1.6 * k, moonMat);
+  r.ball(vadd(tip, Hd.v(0.45, 0.25, 0.5)), 0.7 * k, sandGlow);
+  for (let n = 0; n < 2; n++) {
+    const a = t * 3.1 + n * Math.PI;
+    r.dot(vadd(tip, Hd.v(Math.cos(a) * 2.8 * k, Math.sin(a) * 2.8 * k, 0.7 * Math.sin(a * 2))), n ? spark : white, 0.9, 0.5);
+  }
+  j.capTip = tip;
+}
+/** Cloud slippers: puffs of sheep wool round the heel and arch, the toes peep out in front. */
+function cloudSlipper(r: Rig, heel: V3, toes: V3, side: V3, down: V3, grow: number, name: string) {
+  if (grow < 0.02) return;
+  r.tag = 'cloud' + name;
+  for (const [u, y, z, rad] of [
+    [0.0, 0, 0.5, 1.55],
+    [0.22, 1, 0.15, 1.45],
+    [0.22, -1, 0.15, 1.45],
+    [0.48, 0.9, 0.0, 1.4],
+    [0.48, -0.9, 0.0, 1.4],
+    [0.7, 0, 0.35, 1.3],
+    [0.3, 0, -0.75, 1.35],
+  ] as const)
+    r.ball(vadd(vadd(vlerp(heel, toes, u), vmul(side, y * 1.25)), vmul(down, 0.35 - z)), rad * grow, z > 0.2 ? wool : woolShade);
+}
 
 // ---- body -----------------------------------------------------------------------------------------
 function torso(r: Rig, B: F3, puff: number) {
@@ -395,7 +500,7 @@ function arm(r: Rig, B: F3, s: number, hand: V3, j: Record<string, V3>, grip: nu
   j['elbow' + name] = elbow;
   j['hand' + name] = hand;
 }
-function leg(r: Rig, hips: F3, s: number, heel: V3, toeDir: V3, j: Record<string, V3>) {
+function leg(r: Rig, hips: F3, s: number, heel: V3, toeDir: V3, j: Record<string, V3>, cloud = 0) {
   const name = s < 0 ? 'L' : 'R',
     hip = hips.p(0.2, s * 3.4, -0.4);
   // Z-shaped jerboa leg: the thigh runs forward and down, the shin back to a raised heel, the long foot forward.
@@ -434,6 +539,7 @@ function leg(r: Rig, hips: F3, s: number, heel: V3, toeDir: V3, j: Record<string
     r.dot(vadd(tip, vmul(down, -0.35)), nose.T[2], 0, 0.35);
     r.dot(vadd(tip, vmul(toeDir, 0.5)), creamShade.T[3], 0, 0.3);
   }
+  cloudSlipper(r, heel, toes, side, down, cloud, name);
   j['knee' + name] = knee;
   j['heel' + name] = heel;
   j['foot' + name] = toes;
@@ -797,6 +903,7 @@ export function sneakFigure(sample: PoseSample): Figure {
       F = F0.turn(get('yaw'));
     const form = get('form'),
       sleep = get('sleep');
+    dreamLook(form, t);
     // Walking is hopping: a short crouch on landing, a long arc with the feet tucked.
     let hop = 0,
       squash = 0,
@@ -855,7 +962,7 @@ export function sneakFigure(sample: PoseSample): Figure {
         const heel = target('foot' + name, rest);
         const point = saturate(tuckAll * 0.9 + get('point'));
         const toeDir = vnorm(vlerp(FT.v(1, s * 0.1, -0.13 - 1.1 * point), hips.v(1, s * 0.1, -0.3), flip));
-        leg(R0, hips, s, heel, toeDir, j);
+        leg(R0, hips, s, heel, toeDir, j, dreamK);
       }
       const capeLift = 5 * saturate((lagJump(capeLag) - lagJump(A)) * 0.4) + get('capeLift') + tuckAll * 2.4;
       const capeTrail = F.v(-0.06 * (lag(capeLag, 'dx') - get('dx')) - 2 * (lag(capeLag, 'twist') - get('twist')), 0.4 * osc(0.5), 0);
@@ -883,7 +990,7 @@ export function sneakFigure(sample: PoseSample): Figure {
       const sleepy = 0.26 + get('lid');
       head(R0, Hd, j, {
         blink: Math.max(get('blink'), sleep > 0.6 ? 1 : 0, period && ((q % TAU) + TAU) % TAU > 5.9 ? 1 : 0),
-        lid: get('wide') > 0.3 ? saturate(sleepy - get('wide')) : form > 0.5 ? saturate(sleepy - 0.3) : saturate(sleepy),
+        lid: get('wide') > 0.3 ? saturate(sleepy - get('wide')) : saturate(sleepy - 0.3 * dreamK),
         smile: get('smile') + 0.35,
         mouth: get('mouth'),
         form,
@@ -893,10 +1000,21 @@ export function sneakFigure(sample: PoseSample): Figure {
         wide: get('wide'),
       });
       for (const s of [-1, 1]) {
-        const droop = (s < 0 ? get('earL') : get('earR')) + sleep * 0.75 + (lag(earLag, 'nod') - get('nod')) * 0.8 + 0.25 * tuckAll + 0.12 * squash;
+        const perk = (s < 0 ? get('earL') : get('earR')) + sleep * 0.75 + (lag(earLag, 'nod') - get('nod')) * 0.8 + 0.25 * tuckAll + 0.12 * squash;
+        // Under the nightcap the ears perk up but do not lean in over the crown (the floating umbrella hangs there).
+        const droop = dreamK > 0 ? Math.max(perk, -1 + 0.8 * dreamK) : perk;
         const flick = s * ((lag(earLag, 'gaze') - get('gaze')) * 1.4 + 0.05 * osc(0.5, s));
         ear(R0, Hd, s, droop, flick, form, j);
       }
+      nightcap(
+        R0,
+        Hd,
+        dreamK,
+        (lag(earLag, 'gaze') - get('gaze')) * 1.4 + 0.5 * (lag(earLag, 'twist') - get('twist')) - get('tilt') * 2,
+        Math.max(-1, Math.min(1.6, 0.35 * (lagJump(A) - lagJump(earLag)) + (get('nod') - lag(earLag, 'nod')) * 1.5)),
+        t,
+        j,
+      );
       // Arms: the right paw holds the furled umbrella on the shoulder; the left rests by the pouch.
       const umbHeld = get('umbFree') < 0.5;
       const restL = B.p(5.4, -4.0, 8.0),
