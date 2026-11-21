@@ -1,0 +1,30 @@
+{
+  "minPrimitives": 900,
+  "multiActTrick": true,
+  "bodyClips": [
+    "walk_n",
+    "walk_ne",
+    "walk_e",
+    "walk_se",
+    "walk_s",
+    "walk_sw",
+    "walk_w",
+    "walk_nw",
+    "turn",
+    "tired",
+    "sleep"
+  ],
+  "skip": {
+    "foot-slide": [
+      "walk_e",
+      "walk_w"
+    ]
+  },
+  "clipAllow": [
+    {
+      "a": "sheep",
+      "b": "tail",
+      "reason": "Облачные барашки второго облика скачут вокруг Шмыга по кольцу, впереди и позади него; длинный хвост лежит на том же кольце, и барашек на 1–3 кадра проходит сквозь кончик хвоста. Это отдельные лёгкие облачка, не части тела."
+    }
+  ]
+}
