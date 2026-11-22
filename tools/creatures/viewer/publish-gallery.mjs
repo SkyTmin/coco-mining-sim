@@ -30,7 +30,8 @@ function walk(dir, out = []) {
 function desired() {
   const map = new Map();
   for (const name of readdirSync(here))
-    if (name.endsWith('.mjs') && name !== 'publish-gallery.mjs') map.set(name, join(here, name));
+    // Node scripts of this folder (publishing, covers) are not part of the page.
+    if (name.endsWith('.mjs') && !['publish-gallery.mjs', 'make-posters.mjs'].includes(name)) map.set(name, join(here, name));
   map.set('catalog.json', join(here, 'catalog.json'));
   for (const f of walk(join(here, 'atlases'))) map.set(relative(here, f), f);
   map.set('index.html', join(here, 'artifact', 'index.html'));

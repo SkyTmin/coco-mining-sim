@@ -97,6 +97,19 @@ const moods = {
   wake_startled: 'Вздрогнул',
   tired: 'Устал',
 };
+// The wall shows still covers from one sheet; only the opened painting loads its atlas. A living wall decoded
+// ~1.1 GB of sprite pages on a phone and Safari closed the tab [22.11, owner: «не открывается галерея»].
+// The sheet is made by make-posters.mjs.
+let posterSheet = null;
+const posterReady = json('./atlases/posters/posters.json')
+  .then(async (sheet) => {
+    const image = new Image();
+    image.src = './atlases/posters/' + sheet.file;
+    await image.decode();
+    posterSheet = { ...sheet, image };
+  })
+  .catch((error) => console.warn('Обложки не загрузились', error));
+
 function homeClip(entry) {
   return ['life', 'idle'].find((id) => entry.clips.some((c) => c.id === id)) ?? entry.clips[0].id;
 }
@@ -114,9 +127,12 @@ class Painting {
     this.ctx = button.querySelector('canvas').getContext('2d');
     this.visible = false;
     this.assign(entry);
-    button.addEventListener('click', () => this.tap());
+    button.addEventListener('click', () => {
+      if (this === featured) this.tap();
+      else openFeatured(this);
+    });
     button.addEventListener('keydown', (event) => {
-      if (event.key === '2' && this.trickClip) {
+      if (event.key === '2' && this === featured && this.trickClip) {
         event.preventDefault();
         this.interact('like');
       }
@@ -151,6 +167,22 @@ class Painting {
     this.button.setAttribute('aria-label', entry.name + ' — коснуться картины');
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     this.ctx.canvas.textContent = entry.name;
+  }
+  /** The still cover while the painting is closed; nothing to download but the shared sheet. */
+  showPoster() {
+    if (this.surface || !posterSheet) return;
+    const rect = posterSheet.rects[this.entry.id];
+    if (!rect) return;
+    const [x, y, w, h] = rect,
+      canvas = this.ctx.canvas;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+    this.ctx.clearRect(0, 0, w, h);
+    this.ctx.drawImage(posterSheet.image, x, y, w, h, 0, 0, w, h);
+    this.button.setAttribute('aria-busy', 'false');
+    if (this === featured && heroVisible) copyToHero();
   }
   tap() {
     const now = performance.now(),
@@ -424,18 +456,29 @@ function copyToHero() {
     }
   }
 }
+function release(player) {
+  clearTimeout(player.releaseTimer);
+  player.ticket = {};
+  player.busy = false;
+  player.surface = null;
+  player.previous = null;
+  player.showPoster();
+}
 function releaseLater(player) {
   clearTimeout(player.releaseTimer);
   player.releaseTimer = setTimeout(() => {
-    if (player.visible || (player === featured && heroVisible)) return;
-    player.ticket = {};
-    player.busy = false;
-    player.surface = null;
-    player.previous = null;
+    if (player === featured && heroVisible) return;
+    release(player);
   }, 6000);
 }
+function openFeatured(player) {
+  selectFeatured(player);
+  hero.focus({ preventScroll: true });
+  $('.feature').scrollIntoView({ block: 'start' });
+}
 function selectFeatured(player, open = true) {
-  if (featured && featured !== player && !featured.visible) releaseLater(featured);
+  // Only one painting holds sprite pages: the one that was open goes back to its cover at once.
+  if (featured && featured !== player) release(featured);
   featured = player;
   clearTimeout(player.releaseTimer);
   hero.dataset.id = player.entry.id;
@@ -559,11 +602,7 @@ function archive(catalog) {
         '<canvas width="180" height="148"></canvas></button></div><figcaption><h3></h3><small></small></figcaption>';
       const painting = new Painting(work.querySelector('button'), entry);
       players.push(painting);
-      const select = buttonFor(entry.name, () => {
-        selectFeatured(painting);
-        hero.focus({ preventScroll: true });
-        $('.feature').scrollIntoView({ block: 'start' });
-      });
+      const select = buttonFor(entry.name, () => openFeatured(painting));
       select.className = 'select-work';
       select.dataset.select = entry.id;
       select.setAttribute('aria-label', 'Выбрать главную картину «' + entry.name + '»');
@@ -634,16 +673,20 @@ async function start() {
         if (isHero) heroVisible = entry.isIntersecting;
         else player.visible = entry.isIntersecting;
         clearTimeout(player.releaseTimer);
-        if (player.visible || (player === featured && heroVisible)) {
+        if (player === featured && (heroVisible || player.visible)) {
           if (isHero && heroVisible && player.surface) copyToHero();
           player.ensure();
-        } else releaseLater(player);
+        } else if (player === featured) releaseLater(player);
+        else if (player.visible) player.showPoster();
       }
     },
     { rootMargin: '64px' },
   );
   observer.observe(hero);
   players.forEach((player) => observer.observe(player.button));
+  posterReady.then(() => {
+    for (const player of players) player.showPoster();
+  });
   for (const [index, name] of directions.entries()) {
     const button = buttonFor('', () => featured.face(index));
     const arrow = document.createElement('span');
