@@ -87,7 +87,7 @@ export interface Creature {
     t: number,
     side: number,
     variant: Variant,
-    motion?: { headSide: number; gaitPhase: number; techniquePose?: JointPose },
+    motion?: { headSide: number; gaitPhase: number; techniquePose?: JointPose; pointsOnly?: boolean },
   ) => BodyFrame; // side 0..15; default 0 = artist's 3/4
   props?: (input: FxInput) => void; // physical targets shown during both held keys and playback
   effects?: (input: FxInput) => void;

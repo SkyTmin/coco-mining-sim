@@ -22,7 +22,7 @@ import { hash, hx, ik, mixc, TAU } from '../kit/f11-mobkit';
 import { flipTuck, pivotLift } from '../kit/pet-moves';
 import { strideFoot } from '../motion';
 import { F3, Rig, renderRig, vadd, vcross, vdot, vlen, vlerp, vmul, vnorm, vsub, type Mat, type Tones, type V3 } from '../rig/f15-rig';
-import { projectFigure, scaleFigure } from '../rig/figure';
+import { pointsOnlyActive, projectFigure, scaleFigure } from '../rig/figure';
 import type { JointPose } from '../technique';
 import type { BodyFrame, Creature } from '../types';
 import { finishSurfaces } from './surface-work';
@@ -1157,13 +1157,16 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       const pad = 240,
         size = frame.px.w + 2 * pad,
         anchor: [number, number] = [frame.anchor[0] + pad, frame.anchor[1] + pad];
-      const body = renderRig(r, size, size, ...anchor, paint);
-      frame.px = body.p;
-      frame.lit = body.lit;
-      frame.eye = body.eye;
+      // An earlier pose asked only for its sockets skips both pictures; the sockets move exactly as with them.
+      if (!pointsOnlyActive()) {
+        const body = renderRig(r, size, size, ...anchor, paint);
+        frame.px = body.p;
+        frame.lit = body.lit;
+        frame.eye = body.eye;
+      }
       frame.anchor = anchor;
       for (const key of Object.keys(frame.points)) frame.points[key] = [frame.points[key][0] + pad, frame.points[key][1] + pad];
-      frame.over = renderRig(front, size, size, ...anchor, paint).p;
+      if (!pointsOnlyActive()) frame.over = renderRig(front, size, size, ...anchor, paint).p;
     }
     const up = Math.max(0, hipZ - HIP);
     frame.groundShadow =

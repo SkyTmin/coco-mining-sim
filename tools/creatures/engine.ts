@@ -5,6 +5,7 @@ import { paintSceneryRays } from './viewer/scenery.mjs';
 import { Pen } from './fx/pen';
 import { emptyTechniqueTrace } from './technique-fx';
 import { frameImage } from './frame-kit';
+import { withPointsOnly } from './rig/figure';
 import {
   sizeOf,
   type Creature,
@@ -286,14 +287,18 @@ export function compose(
         : 'idle'
       : anim;
   const poseTime = finalFrame ? (anim === 'away' ? spec.seconds : 0) : sample;
-  const projected = (time: number, position = at): BodyFrame => {
-    const body = c.frame(
+  // Earlier poses serve effects only through their sockets: they are built without a picture.
+  const projected = (time: number, position = at, pointsOnly = false): BodyFrame => {
+    const pose = () => c.frame(
       poseAnim,
       time,
       position === at ? dir : position.side,
       variant,
-      { headSide: position.headSide, gaitPhase: position.t },
+      pointsOnly
+        ? { headSide: position.headSide, gaitPhase: position.t, pointsOnly }
+        : { headSide: position.headSide, gaitPhase: position.t },
     );
+    const body = pointsOnly ? withPointsOnly(pose) : pose();
     return position.lift
       ? { ...body, dy: (body.dy ?? 0) - position.lift }
       : body;
@@ -398,7 +403,7 @@ export function compose(
             : at;
         let fr = historical.get(when);
         if (!fr) {
-          fr = projected(when, source);
+          fr = projected(when, source, true);
           historical.set(when, fr);
         }
         if (!fr.points[name])

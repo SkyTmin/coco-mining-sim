@@ -31,7 +31,7 @@ function reuseTrickPoses(c: Creature): Creature {
     ...c,
     frame(anim, time, side, variant, motion) {
       if (motion?.techniquePose) return c.frame(anim, time, side, variant, motion);
-      const key = [anim, time, side, variant, motion?.headSide, motion?.gaitPhase].join('/');
+      const key = [anim, time, side, variant, motion?.headSide, motion?.gaitPhase, motion?.pointsOnly ? 'p' : ''].join('/');
       const existing = poses.get(key);
       if (existing) {
         poses.delete(key); // least recently used goes first

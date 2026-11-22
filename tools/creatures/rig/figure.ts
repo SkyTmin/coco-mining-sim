@@ -107,6 +107,22 @@ export type FigureSetup = (
   anchor: XY,
 ) => { size: number; anchor: XY } | void;
 let activeSetup: FigureSetup | undefined;
+let pointsOnly = false;
+
+/** Build frames whose pictures nobody looks at: compose asks earlier poses only for socket positions (effect
+ * trails), and rasterizing each of them took ~70% of a trick frame [22.11, Zenit]. Sockets, anchor and the
+ * post-raster offsets stay exact; the picture is left empty. */
+export function withPointsOnly<T>(build: () => T): T {
+  const previous = pointsOnly;
+  pointsOnly = true;
+  try {
+    return build();
+  } finally {
+    pointsOnly = previous;
+  }
+}
+/** True inside withPointsOnly: a skin may skip its own extra rasters (front layers) but must keep points exact. */
+export const pointsOnlyActive = () => pointsOnly;
 
 /** Configure a borrowed, articulated rig once it has all of its sockets, before rasterization.
  * Frame builds are synchronous. Nested builds restore their caller's setup even on errors. */
@@ -134,8 +150,8 @@ export function projectFigure(
   const canvas = activeSetup?.(rig, sockets, size, anchor);
   if (canvas) ({ size, anchor } = canvas);
   const paint = { outline: ink ? hx(ink) : undefined, inner };
-  let image: RigOut = renderRig(rig, size, size, ...anchor, paint);
-  if (touchesEdge(image.p)) {
+  let image: RigOut = pointsOnly ? { p: new Px(size, size), lit: null, eye: null } : renderRig(rig, size, size, ...anchor, paint);
+  if (!pointsOnly && touchesEdge(image.p)) {
     const pad = expandForAction ? size : Math.ceil(size / 2),
       big = size + 2 * pad;
     const full = renderRig(
