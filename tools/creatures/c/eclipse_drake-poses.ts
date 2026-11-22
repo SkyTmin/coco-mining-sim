@@ -121,7 +121,7 @@ export const beats = {
   // above with open wings, lands hind feet first and slams both wrists down wide (ring, dust, cracks), rises on the
   // hind legs with the wings thrown wide, the pearl flares; a roar to the sun with a column of flame and a smoke
   // ring; the heraldic pose — reared, the wings raised behind his back — held still.
-  show: { cross: [4, 18], shadow: [0, 30], scale: [22, 46], back: [30, 50], beat: [40, 52], descend: [52, 66], drop: 60, land: 66, rise: [72, 100], flare: 88, roar: [100, 130], ring: 124, pose: [130, 150], hold: 150 },
+  show: { cross: [4, 18], shadow: [0, 30], scale: [22, 46], back: [30, 50], beat: [40, 52], descend: [52, 66], drop: 60, land: 66, rise: [72, 100], flare: 88, roar: [100, 130], ring: 124, pose: [132, 144], hold: 144 },
 };
 
 // ---- helpers -------------------------------------------------------------------------------------------------------
@@ -395,18 +395,21 @@ function phaseTrack(): { keys: Track; lanes: Record<string, Lane> } {
 function trickF2Track(): { keys: Track; lanes: Record<string, Lane> } {
   // the wings spread (the eclipse form adds 0.62 to wingOpen), the claws closed on the ribbons
   const whirl = (p: JointPose = {}): JointPose => f2({ wingOpen: 0.4, wingBeat: 0.1, fistR: 0.7, fistL: 0.7, snarl: 0.6, charge: 1.2, ...p });
-  const toSun = (p: JointPose = {}): JointPose => f2({ ...R(13, 6, 24), ...L(13, -5, 25), neckUp: 2, nod: -0.5, lookY: 0.8, gaze: 0.2, ...p });
+  const toSun = (p: JointPose = {}): JointPose => f2({ ...R(13, 7.5, 24), ...L(13, -7.5, 25), neckUp: 2, nod: -0.5, lookY: 0.8, gaze: 0.2, ...p });
   const keys: Track = [
     [0, f2({})],
     // Both wing-hands up to the black sun; with the wings up he cannot beat, so he sinks a little.
+    // the hands go up round the sides, wide of the crown
+    [5, f2({ ...R(9, 11, 15), ...L(9, -11, 16), fistR: -0.5, fistL: -0.5, neckUp: 1, nod: -0.25, lookY: 0.5, hover: 4.5 })],
     [10, toSun({ fistR: -0.7, fistL: -0.7, charge: 0.9, hover: 4 })],
-    [26, toSun({ ...R(13, 6.5, 24.5), ...L(13, -5.5, 25.5), fistR: 0.6, fistL: 0.6, neckUp: 2.2, charge: 1.2, hover: 3.2 })],
+    [26, toSun({ ...R(13, 8, 24.5), ...L(13, -8, 25.5), fistR: 0.6, fistL: 0.6, neckUp: 2.2, charge: 1.2, hover: 3.2 })],
     // The whips burst out; one slow turn with the wings spread.
     [30, whirl({ flash: 0.06, roar: 0.6 })],
     [60, whirl({ roar: 0, nod: 0.05 })],
     // Faster: the wings drawn in like a skater's arms.
     [100, whirl({ wingOpen: -0.25, fistR: 0.9, fistL: 0.9, snarl: 0.9, charge: 1.4, nod: 0.1 })],
-    [138, whirl({ wingOpen: -0.5, fistR: 1, fistL: 1, snarl: 1, charge: 1.5, nod: 0.12 })],
+    [137, whirl({ wingOpen: -0.5, fistR: 1, fistL: 1, snarl: 1, charge: 1.5, nod: 0.12 })],
+    [138, whirl({ wingOpen: -0.5, wrap: 0.45, fistR: 1, fistL: 1, snarl: 1, charge: 1.5, nod: 0.12 })],
     // The dead stop: wings and whips wrap him.
     [140, whirl({ wingOpen: -0.5, wrap: 1, fistR: 1, fistL: 1, snarl: 1, charge: 1.5, ...size(1.04, 0.96) })],
     // The wings burst open; the lunge at the glass and the roar.
@@ -417,8 +420,8 @@ function trickF2Track(): { keys: Track; lanes: Record<string, Lane> } {
     [200, f2({ gaze: 0.2, snarl: 0.4, lid: 0.3, charge: 0.8 })],
     // He gives the corona back: fists up to the black sun, the claws open, the ribbons fly home, the corona flares.
     [208, toSun({ fistR: 0.8, fistL: 0.8, charge: 1, hover: 4 })],
-    [212, toSun({ ...R(13, 6, 24.5), ...L(13, -5, 25.5), fistR: 0.9, fistL: 0.9, neckUp: 2.1, lookY: 0.85, charge: 1.1, crouch: 0.8, hover: 3.6 })],
-    [214, toSun({ ...R(13.5, 6.5, 26), ...L(13.5, -5.5, 27), fistR: -0.9, fistL: -0.9, neckUp: 2.4, nod: -0.6, lookY: 0.9, lift: 0.6, charge: 1.3, flash: 0.03, hover: 4 })],
+    [212, toSun({ ...R(13, 7.5, 24.5), ...L(13, -7.5, 25.5), fistR: 0.9, fistL: 0.9, neckUp: 2.1, lookY: 0.85, charge: 1.1, crouch: 0.8, hover: 3.6 })],
+    [214, toSun({ ...R(13.5, 8, 26), ...L(13.5, -8, 27), fistR: -0.9, fistL: -0.9, neckUp: 2.4, nod: -0.6, lookY: 0.9, lift: 0.6, charge: 1.3, flash: 0.03, hover: 4 })],
     [224, f2({ wingBeat: -0.6, neckUp: 2.2, nod: -0.55, lookY: 0.9, gaze: 0.2, charge: 0.9 })],
     [232, f2({ gaze: 0.1, nod: 0.1, snarl: 0.3, lid: 0.25, charge: 0.6 })],
     // Looks over the silver arcs going out on the stone.
@@ -453,7 +456,7 @@ function trickBF2Track(): { keys: Track; lanes: Record<string, Lane> } {
     [10, f2({ nod: 0.6, lookY: -0.8, gaze: -0.1, neckReach: 1, charge: 0.7 })],
     [24, f2({ nod: 0.65, lookY: -0.8, gaze: 0.1, neckReach: 1.5, snarl: 0.5, charge: 0.9, wingBeat: 0.6 })],
     // Up a beat, then the stoop: the wings folded, head first.
-    [28, f2({ nod: 0.3, wingOpen: 0.4, wingBeat: 0.9, point: 1, hover: 7 })],
+    [28, f2({ nod: 0.3, wingOpen: 0.4, wingBeat: 0.68, point: 1, hover: 7 })],
     [31, f2({ pitch: 1.1, nod: 0.5, wingOpen: -0.5, wingBeat: -0.3, point: 1, tuck: 0.6, hover: 3, ...size(0.9, 1.15) })],
     [33, f2({ pitch: 1.5, nod: 0.6, wingOpen: -0.62, point: 1, tuck: 0.8, hover: -2, ...size(0.75, 1.35) })],
     [34, { hidden: 1, form: 1 }],
@@ -527,11 +530,11 @@ function trickCF2Track(): { keys: Track; lanes: Record<string, Lane> } {
     [90, f2({ hover: 0, rear: 1, wingOpen: -0.62, ...R(14, 3.2, 10.5), ...L(14, -3.2, 11), fistR: -0.5, fistL: -0.5, nod: 0.3, charge: 1.6, snarl: 0.4, crouch: 1.2, ...size(1.03, 0.97) })],
     [94, f2({ hover: 0, rear: 1, wingOpen: -0.62, ...R(14, 3.2, 10.5), ...L(14, -3.2, 11), fistR: -0.5, fistL: -0.5, nod: 0.3, charge: 1.6, snarl: 0.4 })],
     // Lifts it overhead and turns with it.
-    [100, f2({ hover: 0, rear: 1, wingOpen: -0.4, ...R(10, 3.5, 26), ...L(10, -3.5, 26.5), fistR: -0.8, fistL: -0.8, neckUp: 2, nod: -0.5, lookY: 0.8, charge: 1.6 })],
-    [118, f2({ hover: 0, rear: 1, wingOpen: -0.4, ...R(10, 3.5, 26.5), ...L(10, -3.5, 27), fistR: -0.8, fistL: -0.8, neckUp: 2, nod: -0.5, lookY: 0.8, charge: 1.7 })],
+    [100, f2({ hover: 0, rear: 1, wingOpen: -0.4, ...R(15, 5.2, 22), ...L(15, -5.2, 22.5), fistR: -0.8, fistL: -0.8, neckReach: -2.2, neckUp: 0.6, nod: -0.45, lookY: 0.8, charge: 1.6 })],
+    [118, f2({ hover: 0, rear: 1, wingOpen: -0.4, ...R(15, 5.2, 22.5), ...L(15, -5.2, 23), fistR: -0.8, fistL: -0.8, neckReach: -2.2, neckUp: 0.6, nod: -0.45, lookY: 0.8, charge: 1.7 })],
     // The throw up out of the picture: the same downstroke lifts him off the dial again.
-    [120, f2({ hover: 0, rear: 1, wingOpen: -0.4, ...R(9, 3.5, 22), ...L(9, -3.5, 22.5), fistR: -0.8, fistL: -0.8, crouch: 2, neckUp: 1, nod: -0.3, charge: 1.7, wingBeat: 0.7 })],
-    [122, f2({ hover: 1.5, rear: 0.6, wingOpen: 0.3, wingBeat: -0.8, ...R(12, 3.5, 28), ...L(12, -3.5, 28.5), fistR: -0.9, fistL: -0.9, crouch: -1, neckUp: 3, nod: -0.7, roar: 0.8, charge: 1.8, flash: 0.06 })],
+    [120, f2({ hover: 0, rear: 1, wingOpen: -0.4, ...R(14, 5.2, 19), ...L(14, -5.2, 19.5), fistR: -0.8, fistL: -0.8, crouch: 1.6, neckReach: -2.2, neckUp: 0.9, nod: -0.3, charge: 1.7, wingBeat: 0.7 })],
+    [122, f2({ hover: 1.5, rear: 0.6, wingOpen: 0.3, wingBeat: -0.8, ...R(12, 3.5, 28), ...L(12, -3.5, 28.5), fistR: -0.9, fistL: -0.9, crouch: -1, neckReach: -1.2, neckUp: 3, nod: -0.7, roar: 0.8, charge: 1.8, flash: 0.06 })],
     [132, f2({ wingBeat: 0.4, neckUp: 2.5, nod: -0.6, lookY: 0.9, charge: 1.2 })],
     // The starfall: he watches it come down round him.
     [150, f2({ gaze: -0.3, lookX: -0.6, nod: 0.2, charge: 1 })],
@@ -582,9 +585,9 @@ function showTrack(): Track {
     [122, { rear: 1, ...WIDE, wingOpen: 1.1, bodyPitch: -0.17, lift: 1.5, neckUp: 3.6, nod: -0.85, fire: 1, fistR: 0.8, fistL: 0.8, charge: 1.6 }],
     [126, { rear: 1, ...WIDE, lift: 0.8, neckUp: 2.4, nod: -0.4, fire: 0, roar: 0.3, charge: 1 }],
     // The heraldic pose: reared, the wings raised behind his back, the head high; held still, then he settles.
-    [134, heraldic],
-    [150, heraldic],
-    [160, { wingOpen: 0.1, nod: 0.02, lid: 0.15, charge: 0.4 }],
+    [132, heraldic],
+    [144, heraldic],
+    [151, {}],
     [168, {}],
   ];
 }
@@ -779,8 +782,8 @@ for (const [name, build] of [
 tracks['happy-f2'] = [
   [0, f2({})],
   [8, f2({ wingBeat: 0.8, crouch: 1, snarl: 0.4, fistR: 0.6, fistL: 0.6 })],
-  [12, f2({ wingBeat: -0.7, point: 1, hover: 8, tuck: 0.5 })],
-  [22, f2({ wingOpen: -0.3, point: 1, hover: 9, tuck: 0.8 })],
+  [12, f2({ wingBeat: -0.7, point: 1, hover: 8, tuck: 0.35 })],
+  [22, f2({ wingOpen: -0.3, point: 1, hover: 9, tuck: 0.35 })],
   [34, f2({ wingBeat: 0.6, point: 0.6, hover: 6, tuck: 0.3 })],
   [37, f2({ roar: 1, nod: -0.35, neckUp: 1.5, wingBeat: 0.3 })],
   [44, f2({ roar: 0.1 })],

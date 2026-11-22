@@ -10,7 +10,7 @@ const drake: Creature = {
   rarity: card.rarity,
   theme: card.theme,
   animations: { ...clips },
-  size: [384, 312, 240, 27],
+  size: [384, 312, 288, 27],
   frame: drakeFrame(gesture),
   effects: drakeEffects,
   overClips: ['trick_b', 'trick-f2', 'trick_b-f2', 'trick_c-f2'],

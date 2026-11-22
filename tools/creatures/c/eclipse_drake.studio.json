@@ -20,5 +20,22 @@
       "walk_w"
     ]
   },
-  "clipAllow": []
+  "clipAllow": [
+    {
+      "a": "membrane",
+      "b": "thigh"
+    },
+    {
+      "a": "membrane",
+      "b": "shin"
+    },
+    {
+      "a": "arm",
+      "b": "egg"
+    },
+    {
+      "a": "horn",
+      "b": "egg"
+    }
+  ]
 }

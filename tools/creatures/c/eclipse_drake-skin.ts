@@ -334,8 +334,9 @@ function head(r: Rig, Hd: F3, j: Record<string, V3>, p: HeadState) {
   for (const s of [-1, 1])
     for (let k = 0; k < 3; k++) {
       const base = Hd.p(-1.4 - k * 0.6, s * (1.4 + k * 0.8), 2.4 - k * 1.1);
-      const len = (k === 0 ? 9.2 : k === 1 ? 6.4 : 4.8) * (1 - 0.3 * p.fold);
-      const dir = vnorm(Hd.v(-1.0, s * (0.25 + k * 0.32) * (1 - 0.2 * p.fold), (0.95 - k * 0.55) * (1 - 0.9 * p.fold) - 0.1 * p.fold));
+      const len = (k === 0 ? 9.2 : k === 1 ? 6.4 : 4.8) * (1 - 0.5 * p.fold);
+      // folded (asleep) the rays lie back and splay out to the sides of the neck, like a lizard laying its frill
+      const dir = vnorm(Hd.v(-1.0, s * (0.25 + k * 0.32 + 0.35 * p.fold), (0.95 - k * 0.55) * (1 - 0.9 * p.fold) + 0.7 * p.fold));
       const tip = vadd(base, vmul(dir, len));
       rays.push({ base, tip, s });
       r.tag = k === 0 ? (s < 0 ? 'hornL' : 'hornR') : 'crown';
@@ -630,6 +631,10 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
   const reachV = vsub(wrist, shoulder),
     reachL = vlen(reachV);
   if (reachL > (HUM + FORE) * 0.985) wrist = vadd(shoulder, vmul(reachV, ((HUM + FORE) * 0.985) / reachL));
+  // and never nearer than the folded arm allows (the forearm is twice the humerus): a closer goal used to push the
+  // forearm through the shoulder; the tightest elbow is ~26°
+  const nearest = (FORE - HUM) * 1.15;
+  if (reachL < nearest) wrist = vadd(shoulder, vmul(reachL > 1e-3 ? vmul(reachV, 1 / reachL) : BU.f, nearest));
   const pole = vnorm(vlerp(vlerp(BU.v(-1.0, s * 0.35, 0.6), BU.v(-0.5, s * 0.25, 1.0), u), BU.v(-0.6, s * 1, -0.3), smooth(saturate(st.wrap))));
   const elbow = ik(shoulder, wrist, HUM, FORE, pole);
   const fd = vnorm(vsub(wrist, elbow));
@@ -916,10 +921,11 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
         const st = step(s < 0 ? 'footL' : 'footR');
         const fwd = walking ? st.forward / portraitScale : 0;
         const stand = FT.p(STANCE.hock[0] + fwd + get('stride') * s, s * STANCE.hock[1], STANCE.hock[2] + st.lift * 2.8);
-        const hang = BU.p(-4.6 + s * 0.8, s * 3.8, -8.6 + (s > 0 ? 1.0 : 0));
+        // in flight the thighs are spread out to the sides [вики: Pterosaur — abducted thighbone, legs spread]
+        const hang = BU.p(-4.6 + s * 0.8, s * 4.9, -8.6 + (s > 0 ? 1.0 : 0));
         const curled = FT.p(1.4, s * 4.4, 1.6);
         const air = vadd(stand, FT.v(0.6, 0, get('jump') * 0.85));
-        const tucked = BU.p(2.6, s * 4.0, -5.2);
+        const tucked = BU.p(2.6, s * 4.8, -5.2);
         const rest = vlerp(vlerp(vlerp(vlerp(stand, air, saturate(get('jump') / 3)), hang, hoverK), curled, sl), tucked, tuck);
         const hock = target('foot' + name, rest);
         const point = saturate(get('point') + hoverK * 0.6 + (walking ? st.lift * 0.5 : 0));
