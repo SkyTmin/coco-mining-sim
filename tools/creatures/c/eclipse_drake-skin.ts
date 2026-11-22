@@ -515,8 +515,11 @@ function pearl(r: Rig, PF: F3, glow: number, ph: number, j: Record<string, V3>) 
     r.ell(PF, [0.1, 0, 0], [1.2, 2.3, 2.3], obsidianShade);
     for (let k = 0; k < 10; k++) {
       const a = (k / 10) * TAU + ph * 0.25;
-      const out = PF.v(0, Math.cos(a), Math.sin(a));
-      tongueOfFire(r, vadd(PF.p(0.8, 0, 0), vmul(out, 2.2)), vnorm(vadd(out, PF.v(0.4, 0, 0))), PF.f, 1.2 + 0.4 * Math.sin(ph + k), 0.35, ph + k * 1.7, coronaMat);
+      // no tongues on the upper arc (they would lick into the neck), shorter ones toward it
+      const up = Math.sin(a);
+      if (up > 0.45) continue;
+      const out = PF.v(0, Math.cos(a), up);
+      tongueOfFire(r, vadd(PF.p(0.8, 0, 0), vmul(out, 2.2)), vnorm(vadd(out, PF.v(0.4, 0, 0))), PF.f, (1.2 + 0.4 * Math.sin(ph + k)) * (up > 0 ? 1 - up : 1), 0.35, ph + k * 1.7, coronaMat);
     }
   }
   j.chest = PF.p(0, 0, 0);
