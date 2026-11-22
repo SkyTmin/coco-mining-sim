@@ -77,6 +77,8 @@ export interface Creature {
   titles?: Record<string, string>;
   /** Clips besides show and peek whose `over` layer is drawn over the painting frame (a secret trick round the frame). */
   overClips?: string[];
+  /** Its own painting size instead of the rarity's (field w, h, body frame, border). */
+  size?: PaintingSize;
   /** Standing position in field pixels for standalone clips and showreel chapters. */
   portraitOrigin?: XY;
   animations: Record<string, Animation>;
@@ -118,7 +120,9 @@ export interface Border {
   // decorate on top of common profile; opening starts at (b,b), transparent within
   decorate?: (p: Px, b: number, t: number) => void;
 }
-export const sizes: Record<Rarity, [number, number, number, number]> = {
+/** Field width, height, body frame, border thickness, in painting pixels. */
+export type PaintingSize = [number, number, number, number];
+export const sizes: Record<Rarity, PaintingSize> = {
   common: [160, 128, 96, 8],
   uncommon: [160, 128, 96, 10],
   rare: [208, 160, 128, 12],
@@ -127,3 +131,5 @@ export const sizes: Record<Rarity, [number, number, number, number]> = {
   mythic: [256, 208, 160, 18],
   secret: [256, 208, 160, 18],
 };
+/** A creature's painting size: its own `size` when it has one (a secret may take a larger field), else its rarity's. */
+export const sizeOf = (c: { rarity: Rarity; size?: PaintingSize }): PaintingSize => c.size ?? sizes[c.rarity];

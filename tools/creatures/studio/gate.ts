@@ -7,7 +7,7 @@ import { cardRuntimeIssues } from './card';
 import { studioConfig } from './checks';
 import { measureRef, readPoseRefs, refIssues } from './ref';
 import { petGate } from './pet-gate';
-import { sizes } from '../types';
+import { sizeOf } from '../types';
 import { compose, frameCount } from '../engine';
 
 export async function gateExtras(ids: string[]) {
@@ -64,7 +64,7 @@ export async function gateExtras(ids: string[]) {
       for (const issue of cards) console.log('  ! ' + id + ' card: ' + issue);
       failed++;
     }
-    const [, fieldHeight, canvas] = sizes[c.rarity];
+    const [, fieldHeight, canvas] = sizeOf(c);
     const rest = c.frame('idle', 0, 0, 'normal');
     const m = measureDetail(rest.px);
     const secretTricks = c.rarity === 'secret' && c.behavior?.tricks;

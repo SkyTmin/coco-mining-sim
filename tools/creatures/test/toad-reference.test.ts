@@ -3,7 +3,7 @@ import test from 'node:test';
 import { compose, ground } from '../engine';
 import { placement, reelChapters } from '../motion';
 import { loadPainting } from '../render';
-import { sizes } from '../types';
+import { sizeOf } from '../types';
 
 const painting = loadPainting('toad_shaman');
 test('a staff step keeps the weight-bearing toes planted on the painting floor', async () => {
@@ -24,7 +24,7 @@ test('a staff step keeps the weight-bearing toes planted on the painting floor',
 
 test('both frog attacks make contact on their life beat and showreel chapter', async () => {
   const { c, s, b } = await painting;
-  const [w, h] = sizes[c.rarity],
+  const [w, h] = sizeOf(c),
     origin = ground(w, h);
   for (const anim of ['tech_staff', 'tech_leap']) {
     const direct = c.animations[anim],

@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { blit, compose, frameCount } from './engine';
 import { loadPainting } from './render';
 import { Px } from './rig/px';
-import { sizes, type Creature, type XY } from './types';
+import { sizeOf, type Creature, type XY } from './types';
 import { techniqueContacts, type Technique } from './technique';
 
 const tools = dirname(fileURLToPath(import.meta.url));
@@ -128,7 +128,7 @@ function posePanel(
 ): Panel {
   const { c, s, b } = painting,
     t = k.frame / 24,
-    border = sizes[c.rarity][3];
+    border = sizeOf(c)[3];
   let actor = c;
   if (keysOnly) {
     // Freeze the exact authored key. The normal compositor still performs the same squash,

@@ -7,28 +7,43 @@
 // right a bronze armillary sphere on a pedestal, its rings turning slowly; a low balustrade along the far edge with the
 // cloud sea showing between its posts. Front plan: broken balustrade in both corners, a bronze brazier with embers.
 // Loops every 3 s.
+// Зенит's painting is larger than the secret canon (384 × 312 instead of 256 × 208, owner 22.11): the design is laid
+// out in the canon's units and sampled at K = 1.5 output pixels per unit — every pixel is evaluated on its own (one
+// pixel size in the whole painting; dithering and grain stay one output pixel), only the shapes are 1.5× larger.
 import { hash, hx, mixc, TAU } from '../kit/f11-mobkit';
 import type { RGBA } from '../rig/f15-rig';
 import type { Px } from '../rig/px';
 import type { Scene } from '../types';
 
-const W = 256,
-  H = 208;
-export const HORIZON = 100;
+/** Output pixels per design unit. */
+const K = 1.5;
+const W = 384,
+  H = 312;
+/** Design units (the 256 × 208 layout). */
+const D = {
+  horizon: 100,
+  sun: { x: 196, y: 90, r: 22 },
+  terraceTop: 124,
+  dial: { cx: 128, cy: 170, rx: 112, ry: 29 },
+  gnomon: { x0: 34, x1: 58, foot: 141, apex: [40, 54] as [number, number] },
+  armillary: { x: 222, y: 98, r: 15, foot: 136 },
+};
+// Exported in output pixels (the effects draw in the painting's own pixels).
+export const HORIZON = D.horizon * K;
 /** The low sun (fx: light motes come from here, the eclipse covers it). */
-export const SUN = { x: 196, y: 90, r: 22 };
+export const SUN = { x: D.sun.x * K, y: D.sun.y * K, r: D.sun.r * K };
 /** The terrace edge and the sundial (the creature's home is near its centre). */
-export const TERRACE_TOP = 124;
-export const DIAL = { cx: 128, cy: 170, rx: 112, ry: 29 };
+export const TERRACE_TOP = D.terraceTop * K;
+export const DIAL = { cx: D.dial.cx * K, cy: D.dial.cy * K, rx: D.dial.rx * K, ry: D.dial.ry * K };
 /** Twelve hour glyphs on the dial, screen positions (index 0 = far centre, clockwise seen from above). */
 export const HOURS: [number, number][] = Array.from({ length: 12 }, (_, i) => {
   const a = -Math.PI / 2 + (i / 12) * TAU;
   return [DIAL.cx + Math.cos(a) * DIAL.rx * 0.86, DIAL.cy + Math.sin(a) * DIAL.ry * 0.86];
 });
 /** The gnomon blade: its foot (left, right) and apex. */
-export const GNOMON = { x0: 34, x1: 58, foot: 141, apex: [40, 54] as [number, number] };
+export const GNOMON = { x0: D.gnomon.x0 * K, x1: D.gnomon.x1 * K, foot: D.gnomon.foot * K, apex: [D.gnomon.apex[0] * K, D.gnomon.apex[1] * K] as [number, number] };
 /** The armillary sphere: centre and radius, pedestal foot. */
-export const ARMILLARY = { x: 222, y: 98, r: 15, foot: 136 };
+export const ARMILLARY = { x: D.armillary.x * K, y: D.armillary.y * K, r: D.armillary.r * K, foot: D.armillary.foot * K };
 
 const skyC = ['#10142e', '#161a3a', '#1e2046', '#282650', '#362c5a', '#48325e', '#5e3a60', '#78425e', '#94505a', '#ae6052', '#c4724a', '#d48a50'].map((c) => hx(c));
 const cirrusC = ['#5a3a62', '#8a4e64', '#c27064', '#e8a07a'].map((c) => hx(c));
@@ -44,6 +59,7 @@ const patinaC = ['#1e3a34', '#2c5448', '#3e6e5c'].map((c) => hx(c));
 const emberC = ['#5a1408', '#a02c0c', '#e05a14', '#ff9a30', '#ffd870'].map((c) => hx(c));
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+/** Output-pixel put / get. */
 function put(p: Px, x: number, y: number, c: RGBA) {
   const X = Math.round(x),
     Y = Math.round(y);
@@ -59,11 +75,14 @@ function tint(p: Px, x: number, y: number, c: RGBA, a: number) {
   if (a <= 0.02) return;
   put(p, x, y, mixc(get(p, x, y), c, a > bay(x, y) ? Math.min(1, a + 0.2) : a * 0.5));
 }
+/** A line between output-pixel points. */
 function line(p: Px, x0: number, y0: number, x1: number, y1: number, c: RGBA) {
   const n = Math.max(1, Math.ceil(Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0))));
   for (let i = 0; i <= n; i++) put(p, x0 + ((x1 - x0) * i) / n, y0 + ((y1 - y0) * i) / n, c);
 }
-/** Dithered pick from a ramp at a fractional index. */
+/** A line between design-unit points. */
+const lineD = (p: Px, x0: number, y0: number, x1: number, y1: number, c: RGBA) => line(p, x0 * K, y0 * K, x1 * K, y1 * K, c);
+/** Dithered pick from a ramp at a fractional index, at an output pixel. */
 function ramp(p: Px, x: number, y: number, c: RGBA[], s: number) {
   const i = clamp(s, 0, c.length - 1);
   const lo = Math.floor(i);
@@ -91,52 +110,61 @@ function vnoise(x: number, y: number, seed: number, s: number) {
     d = hash(X + 1, Y + 1, seed);
   return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy;
 }
+/** Texture noise in design units with a finer octave in output pixels, so the larger painting carries more grain. */
 function fbm(x: number, y: number, seed: number) {
-  return vnoise(x, y, seed, 16) * 0.55 + vnoise(x, y, seed + 1, 7) * 0.3 + vnoise(x, y, seed + 2, 3) * 0.15;
+  return vnoise(x, y, seed, 16) * 0.5 + vnoise(x, y, seed + 1, 7) * 0.28 + vnoise(x, y, seed + 2, 3) * 0.14 + vnoise(x * K, y * K, seed + 3, 2) * 0.08;
+}
+/** Every output pixel of a design-unit box: (output x, output y, design x, design y). */
+function eachPixel(x0: number, y0: number, x1: number, y1: number, fn: (x: number, y: number, xd: number, yd: number) => void) {
+  for (let y = Math.max(0, Math.floor(y0 * K)); y <= Math.min(H - 1, Math.ceil(y1 * K)); y++)
+    for (let x = Math.max(0, Math.floor(x0 * K)); x <= Math.min(W - 1, Math.ceil(x1 * K)); x++) fn(x, y, x / K, y / K);
 }
 
 /** Sky: banded gradient, warmer and brighter toward the sun; thin cirrus lit from below. */
 function sky(p: Px, t: number) {
   const k = loopK(t);
-  for (let y = 0; y < HORIZON + 6; y++)
-    for (let x = 0; x < W; x++) {
-      const d = Math.hypot((x - SUN.x) / 1.6, y - SUN.y);
-      const glow = Math.max(0, 1 - d / 150);
-      ramp(p, x, y, skyC, (y / (HORIZON + 6)) * 9.2 + glow * 2.6);
-    }
+  eachPixel(0, 0, 256, D.horizon + 6, (x, y, xd, yd) => {
+    const d = Math.hypot((xd - D.sun.x) / 1.6, yd - D.sun.y);
+    const glow = Math.max(0, 1 - d / 150);
+    ramp(p, x, y, skyC, (yd / (D.horizon + 6)) * 9.2 + glow * 2.6);
+  });
   // Cirrus: long thin streaks, pink-gold where they face the sun, drifting a little each loop and back.
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 11; i++) {
     const y0 = 14 + hash(i, 11) * 54;
     const x0 = hash(i, 13) * 300 - 40 + Math.sin(k * TAU + i) * 2;
     const len = 50 + hash(i, 15) * 90;
-    for (let s = 0; s < len; s++) {
-      const x = x0 + s,
-        y = y0 + Math.sin(s / 23 + i) * 2.5 - s * 0.06;
+    for (let s = 0; s < len; s += 1 / K) {
+      const xd = x0 + s,
+        yd = y0 + Math.sin(s / 23 + i) * 2.5 - s * 0.06;
       const thick = Math.sin((s / len) * Math.PI);
-      const lit = clamp(1 - Math.hypot(x - SUN.x, y - SUN.y) / 170, 0, 1);
+      const lit = clamp(1 - Math.hypot(xd - D.sun.x, yd - D.sun.y) / 170, 0, 1);
       const c = cirrusC[clamp(Math.floor(lit * 3.6 + thick * 0.4), 0, 3)];
+      const x = xd * K,
+        y = yd * K;
       tint(p, x, y, c, 0.55 * thick);
-      if (thick > 0.6) tint(p, x, y + 1, c, 0.25 * thick);
+      if (thick > 0.4) tint(p, x, y + 1, c, 0.3 * thick);
+      if (thick > 0.8) tint(p, x, y - 1, c, 0.2 * thick);
     }
   }
   // The sun: a big soft disk with banded glow, its lower half sinking into the cloud sea (drawn over it later).
-  for (let y = SUN.y - SUN.r - 18; y <= SUN.y + SUN.r; y++)
-    for (let x = SUN.x - SUN.r - 26; x <= SUN.x + SUN.r + 26; x++) {
-      const d = Math.hypot(x - SUN.x, y - SUN.y) / SUN.r;
-      if (d < 1) ramp(p, x, y, sunC, 4.2 - d * d * 2.4 - (y - SUN.y) / SUN.r * 0.5);
-      else if (d < 1.9) tint(p, x, y, sunC[2], 0.35 * (1.9 - d));
-    }
+  const { x: sx, y: sy, r } = D.sun;
+  eachPixel(sx - r - 26, sy - r - 18, sx + r + 26, sy + r, (x, y, xd, yd) => {
+    const d = Math.hypot(xd - sx, yd - sy) / r;
+    if (d < 1) ramp(p, x, y, sunC, 4.2 - d * d * 2.4 - ((yd - sy) / r) * 0.5);
+    else if (d < 1.9) tint(p, x, y, sunC[2], 0.35 * (1.9 - d));
+  });
   // Two distant birds gliding on a closed loop path.
   for (let b = 0; b < 2; b++) {
     const a = k * TAU + b * 2.4;
-    const bx = 70 + b * 50 + Math.cos(a) * 24,
-      by = 34 + b * 10 + Math.sin(a * 2) * 4;
+    const bx = (70 + b * 50 + Math.cos(a) * 24) * K,
+      by = (34 + b * 10 + Math.sin(a * 2) * 4) * K;
     const flap = Math.sin(a * 6 + b) > 0 ? -1 : 0;
     put(p, bx, by, peakC[0]);
-    put(p, bx - 1, by + flap, peakC[0]);
-    put(p, bx + 1, by + flap, peakC[0]);
-    put(p, bx - 2, by + flap * 2, peakC[1]);
-    put(p, bx + 2, by + flap * 2, peakC[1]);
+    for (const sd of [-1, 1]) {
+      put(p, bx + sd, by + flap, peakC[0]);
+      put(p, bx + sd * 2, by + flap * 1.5, peakC[0]);
+      put(p, bx + sd * 3, by + flap * 2, peakC[1]);
+    }
   }
 }
 
@@ -149,17 +177,19 @@ function peaks(p: Px) {
       88 + Math.abs(x - 248) * 0.7 + (smooth(x, 25, 6) - 0.5) * 4,
     );
   for (let x = 0; x < W; x++) {
-    const top = ridge(x);
-    const slope = ridge(x + 1) - ridge(x - 1);
-    for (let y = Math.floor(top); y < HORIZON + 4; y++) {
-      const depth = (y - top) / 30;
+    const xd = x / K;
+    const top = ridge(xd);
+    const slope = ridge(xd + 1) - ridge(xd - 1);
+    for (let y = Math.floor(top * K); y < (D.horizon + 4) * K; y++) {
+      const yd = y / K;
+      const depth = (yd - top) / 30;
       // the face turned to the sun (slope down to the right = rising left) is lit
-      let s = 2.2 - depth * 1.4 + (slope > 0 ? 1.4 : -0.3) + (fbm(x * 2, y * 2, 27) - 0.5) * 1.2;
-      const snow = y - top < 9 - (fbm(x, y, 29) * 6) && top < 84;
+      const s = 2.2 - depth * 1.4 + (slope > 0 ? 1.4 : -0.3) + (fbm(xd * 2, yd * 2, 27) - 0.5) * 1.2;
+      const snow = yd - top < 9 - fbm(xd, yd, 29) * 6 && top < 84;
       if (snow) ramp(p, x, y, snowC, clamp(1.4 + (slope > 0 ? 1.6 : -0.6) - depth * 2, 0, 3));
       else ramp(p, x, y, peakC, clamp(s, 0, 4));
     }
-    if (slope > 0) put(p, x, top, peakC[6]);
+    if (slope > 0) put(p, x, top * K, peakC[6]);
   }
 }
 
@@ -167,26 +197,27 @@ function peaks(p: Px) {
 function cloudSea(p: Px, t: number) {
   const k = loopK(t);
   for (let x = 0; x < W; x++) {
-    const top = HORIZON - 2 + (smooth(x, 31, 9) - 0.5) * 7 + (smooth(x, 33, 3.5) - 0.5) * 3;
-    for (let y = Math.floor(top); y < TERRACE_TOP + 2; y++) {
-      const puff = fbm(x * 1.4, y * 2.6, 35);
-      const toSun = clamp(1 - Math.abs(x - SUN.x) / 160, 0, 1);
-      const depth = (y - top) / 24;
-      const s = 3.4 + toSun * 3.6 - depth * 3 + (puff - 0.5) * 2.4 + Math.sin(k * TAU + x * 0.07) * 0.25 * toSun;
+    const xd = x / K;
+    const top = D.horizon - 2 + (smooth(xd, 31, 9) - 0.5) * 7 + (smooth(xd, 33, 3.5) - 0.5) * 3;
+    for (let y = Math.floor(top * K); y < (D.terraceTop + 2) * K; y++) {
+      const yd = y / K;
+      const puff = fbm(xd * 1.4, yd * 2.6, 35);
+      const toSun = clamp(1 - Math.abs(xd - D.sun.x) / 160, 0, 1);
+      const depth = (yd - top) / 24;
+      const s = 3.4 + toSun * 3.6 - depth * 3 + (puff - 0.5) * 2.4 + Math.sin(k * TAU + xd * 0.07) * 0.25 * toSun;
       ramp(p, x, y, seaC, s);
     }
-    put(p, x, top, seaC[clamp(Math.floor(5 + clamp(1 - Math.abs(x - SUN.x) / 120, 0, 1) * 3.5), 0, 8)]);
+    put(p, x, top * K, seaC[clamp(Math.floor(5 + clamp(1 - Math.abs(xd - D.sun.x) / 120, 0, 1) * 3.5), 0, 8)]);
   }
   // Puffs rising out of the sea in front of the lower sun half.
   for (let i = 0; i < 7; i++) {
-    const cx = SUN.x - 40 + i * 14 + hash(i, 37) * 6,
-      cy = HORIZON + 2 + hash(i, 39) * 6,
+    const cx = D.sun.x - 40 + i * 14 + hash(i, 37) * 6,
+      cy = D.horizon + 2 + hash(i, 39) * 6,
       r = 6 + hash(i, 41) * 6;
-    for (let y = cy - r; y <= cy + r * 0.4; y++)
-      for (let x = cx - r * 1.5; x <= cx + r * 1.5; x++) {
-        const d = Math.hypot((x - cx) / 1.5, y - cy) / r;
-        if (d < 1) ramp(p, x, y, seaC, 6.4 - d * 2 - (y - cy + r) / r * 1.2 + (x - cx) / r * 0.6);
-      }
+    eachPixel(cx - r * 1.5, cy - r, cx + r * 1.5, cy + r * 0.4, (x, y, xd, yd) => {
+      const d = Math.hypot((xd - cx) / 1.5, yd - cy) / r;
+      if (d < 1) ramp(p, x, y, seaC, 6.4 - d * 2 - ((yd - cy + r) / r) * 1.2 + ((xd - cx) / r) * 0.6);
+    });
   }
 }
 
@@ -195,21 +226,25 @@ const VY = 98;
 const slabU = (x: number, y: number) => (x - 128) / ((y - VY) * 0.36);
 const slabV = (y: number) => 260 / (y - VY);
 function terrace(p: Px) {
-  for (let y = TERRACE_TOP; y < H; y++) {
-    const v = slabV(y);
+  for (let y = Math.floor(D.terraceTop * K); y < H; y++) {
+    const yd = y / K;
+    const v = slabV(yd);
     const row = Math.floor(v);
-    const seamV = Math.floor(slabV(y - 1)) !== row;
+    const seamV = Math.floor(slabV(yd - 1 / K)) !== row;
     const fv = v - row;
     const stag = (row % 2) * 0.5;
     for (let x = 0; x < W; x++) {
-      const u = slabU(x, y) + stag;
+      const xd = x / K;
+      const u = slabU(xd, yd) + stag;
       const col = Math.floor(u);
-      const seamU = Math.floor(slabU(x - 1, y) + stag) !== col;
+      const seamU = Math.floor(slabU(xd - 1 / K, yd) + stag) !== col;
       const fu = u - col;
-      const warm = clamp((x - 40) / 260, 0, 1);
-      let s = 3 + fbm(x * 1.3, y * 2.4, 43 + row) * 1.6 + hash(col, row, 45) * 1 + warm * 1.6 + ((y - TERRACE_TOP) / 84) * 0.6;
+      const warm = clamp((xd - 40) / 260, 0, 1);
+      let s = 3 + fbm(xd * 1.3, yd * 2.4, 43 + row) * 1.6 + hash(col, row, 45) * 1 + warm * 1.6 + ((yd - D.terraceTop) / 84) * 0.6;
       if (fv > 0.84) s += 0.7;
       if (fu < 0.07) s += 0.5;
+      // small chips and cracks in the slabs, one output pixel wide
+      if (hash(x, y, 47) > 0.985) s -= 1.1;
       if (seamU || seamV) s = 1.2;
       ramp(p, x, y, stoneC, s);
     }
@@ -219,38 +254,39 @@ function terrace(p: Px) {
 /** The sundial: pale disc, bronze rim, hour lines, glyphs, and the gnomon's long shadow across it. */
 function sundial(p: Px, t: number) {
   const k = loopK(t);
-  const inside = (x: number, y: number, s = 1) => ((x - DIAL.cx) / (DIAL.rx * s)) ** 2 + ((y - DIAL.cy) / (DIAL.ry * s)) ** 2;
-  for (let y = DIAL.cy - DIAL.ry - 1; y <= DIAL.cy + DIAL.ry + 1; y++)
-    for (let x = DIAL.cx - DIAL.rx - 1; x <= DIAL.cx + DIAL.rx + 1; x++) {
-      const d = inside(x, y);
-      if (d > 1) continue;
-      const warm = clamp((x - 50) / 220, 0, 1);
-      ramp(p, x, y, dialC, 2.6 + warm * 2.2 + (fbm(x * 1.6, y * 3, 51) - 0.5) * 1.2 - d * 0.6 + ((y - DIAL.cy) / DIAL.ry) * 0.5);
-    }
+  const { cx, cy, rx, ry } = D.dial;
+  const inside = (x: number, y: number, s = 1) => ((x - cx) / (rx * s)) ** 2 + ((y - cy) / (ry * s)) ** 2;
+  eachPixel(cx - rx - 1, cy - ry - 1, cx + rx + 1, cy + ry + 1, (x, y, xd, yd) => {
+    const d = inside(xd, yd);
+    if (d > 1) return;
+    const warm = clamp((xd - 50) / 220, 0, 1);
+    ramp(p, x, y, dialC, 2.6 + warm * 2.2 + (fbm(xd * 1.6, yd * 3, 51) - 0.5) * 1.2 - d * 0.6 + ((yd - cy) / ry) * 0.5);
+  });
   // Bronze rim: two rings with patina specks and a bright sun-side edge.
   for (const s of [1, 0.94]) {
-    for (let a = 0; a < TAU; a += 0.0025) {
-      const x = DIAL.cx + Math.cos(a) * DIAL.rx * s,
-        y = DIAL.cy + Math.sin(a) * DIAL.ry * s;
+    for (let a = 0; a < TAU; a += 0.0025 / K) {
+      const x = (cx + Math.cos(a) * rx * s) * K,
+        y = (cy + Math.sin(a) * ry * s) * K;
       const lit = clamp(0.5 + Math.cos(a) * 0.5, 0, 1);
       put(p, x, y + 1, bronzeC[1]);
       put(p, x, y, bronzeC[clamp(Math.round(3 + lit * 3), 0, 7)]);
+      if (Math.sin(a) > 0) put(p, x, y + 2, bronzeC[0]);
       if (hash(Math.round(x), Math.round(y), 53) > 0.93) put(p, x, y, patinaC[1]);
     }
   }
   // Hour lines from the centre to the inner rim.
   for (let i = 0; i < 12; i++) {
     const a = -Math.PI / 2 + (i / 12) * TAU;
-    for (let r = 0.16; r < 0.92; r += 0.004) {
-      const x = DIAL.cx + Math.cos(a) * DIAL.rx * r,
-        y = DIAL.cy + Math.sin(a) * DIAL.ry * r;
+    for (let r = 0.16; r < 0.92; r += 0.004 / K) {
+      const x = (cx + Math.cos(a) * rx * r) * K,
+        y = (cy + Math.sin(a) * ry * r) * K;
       put(p, x, y, r > 0.7 ? bronzeC[4] : bronzeC[3]);
     }
   }
   // Twelve hour glyphs: our own marks — a dot, a bar, a chevron, a cross, an arc, repeated in a cycle of five.
   HOURS.forEach(([x, y], i) => {
-    const near = (y - (DIAL.cy - DIAL.ry)) / (2 * DIAL.ry);
-    const s = 1.3 + near * 1.6;
+    const near = (y / K - (cy - ry)) / (2 * ry);
+    const s = (1.3 + near * 1.6) * K;
     const g = bronzeC[5],
       d = bronzeC[1];
     const shape = i % 5;
@@ -268,85 +304,93 @@ function sundial(p: Px, t: number) {
     } else if (shape === 3) {
       mark(x - s * 0.7, y - s * 0.4, x + s * 0.7, y + s * 0.4);
       mark(x - s * 0.7, y + s * 0.4, x + s * 0.7, y - s * 0.4);
-    } else
-      for (let a = Math.PI; a <= TAU; a += 0.2) put(p, x + Math.cos(a) * s, y + Math.sin(a) * s * 0.6, g);
+    } else for (let a = Math.PI; a <= TAU; a += 0.12) put(p, x + Math.cos(a) * s, y + Math.sin(a) * s * 0.6, g);
   });
   // Centre boss: a small bronze sun.
-  for (let a = 0; a < TAU; a += 0.02) {
-    put(p, DIAL.cx + Math.cos(a) * 9, DIAL.cy + Math.sin(a) * 2.4, bronzeC[4]);
-    if (Math.round(a * 8 / TAU * 2) % 2 === 0) put(p, DIAL.cx + Math.cos(a) * 12, DIAL.cy + Math.sin(a) * 3.2, bronzeC[3]);
+  for (let a = 0; a < TAU; a += 0.012) {
+    put(p, (cx + Math.cos(a) * 9) * K, (cy + Math.sin(a) * 2.4) * K, bronzeC[4]);
+    if (Math.round(((a * 8) / TAU) * 2) % 2 === 0) put(p, (cx + Math.cos(a) * 12) * K, (cy + Math.sin(a) * 3.2) * K, bronzeC[3]);
   }
   // The gnomon's shadow: a long dark wedge from its foot across the dial toward the front left, breathing faintly as
   // thin clouds pass the sun.
   const pass = 0.85 + 0.15 * Math.sin(k * TAU);
-  const foot = [(GNOMON.x0 + GNOMON.x1) / 2, GNOMON.foot] as const;
+  const g = D.gnomon;
+  const foot = [(g.x0 + g.x1) / 2, g.foot] as const;
   const tip = [foot[0] - 30, foot[1] + 50] as const;
-  for (let y = foot[1]; y < H; y++)
-    for (let x = 0; x < W; x++) {
-      const u = (y - foot[1]) / (tip[1] - foot[1]);
-      if (u > 1) continue;
-      const cx = foot[0] + (tip[0] - foot[0]) * u;
-      const half = (GNOMON.x1 - GNOMON.x0) * 0.5 * (1 - u) + 1;
-      if (Math.abs(x - cx) < half) tint(p, x, y, stoneC[0], 0.42 * pass * (1 - u * 0.5));
-    }
+  eachPixel(0, foot[1], 256, 208, (x, y, xd, yd) => {
+    const u = (yd - foot[1]) / (tip[1] - foot[1]);
+    if (u > 1) return;
+    const mid = foot[0] + (tip[0] - foot[0]) * u;
+    const half = (g.x1 - g.x0) * 0.5 * (1 - u) + 1;
+    if (Math.abs(xd - mid) < half) tint(p, x, y, stoneC[0], 0.42 * pass * (1 - u * 0.5));
+  });
 }
 
 /** Balustrade along the far terrace edge: posts with rounded caps and a rail; cloud sea between them. */
 function balustrade(p: Px) {
-  const rail = TERRACE_TOP - 12;
-  for (let x = 0; x < W; x++) {
-    for (let y = rail; y < rail + 3; y++) ramp(p, x, y, stoneC, 5 + (y === rail ? 1.5 : 0) + clamp((x - 60) / 200, 0, 1) * 1.6);
-    put(p, x, rail + 3, stoneC[1]);
+  const rail = D.terraceTop - 12;
+  eachPixel(0, rail, 256, rail + 3, (x, y, xd, yd) => {
+    ramp(p, x, y, stoneC, 5 + (yd < rail + 1 ? 1.5 : 0) + clamp((xd - 60) / 200, 0, 1) * 1.6);
+  });
+  for (let x = 0; x < W; x++) put(p, x, (rail + 3) * K + 1, stoneC[1]);
+  for (let pxD = 6; pxD < 256; pxD += 11) {
+    if (pxD > D.gnomon.x0 - 6 && pxD < D.gnomon.x1 + 4) continue;
+    eachPixel(pxD - 4, rail + 3, pxD + 4, D.terraceTop, (x, y, xd, yd) => {
+      const bulge = Math.sin(((yd - rail - 3) / (D.terraceTop - rail - 3)) * Math.PI) * 1.4;
+      if (Math.abs(xd - pxD) > 1.5 + bulge) return;
+      ramp(p, x, y, stoneC, 3.6 + (xd - pxD) * 0.7 + clamp((pxD - 60) / 200, 0, 1) * 1.4);
+    });
   }
-  for (let px = 6; px < W; px += 11) {
-    if (px > GNOMON.x0 - 6 && px < GNOMON.x1 + 4) continue;
-    for (let y = rail + 3; y < TERRACE_TOP; y++) {
-      const bulge = Math.sin(((y - rail - 3) / (TERRACE_TOP - rail - 3)) * Math.PI) * 1.4;
-      for (let x = px - 1.5 - bulge; x <= px + 1.5 + bulge; x++) ramp(p, x, y, stoneC, 3.6 + (x - px) * 0.7 + clamp((px - 60) / 200, 0, 1) * 1.4);
-    }
-  }
-  for (let x = 0; x < W; x++) put(p, x, TERRACE_TOP, stoneC[2]);
+  for (let x = 0; x < W; x++) put(p, x, D.terraceTop * K, stoneC[2]);
 }
 
 /** The gnomon: a tall bronze blade, patina on the shadow side, a bright sun-side edge, engraved hour ticks. */
 function gnomon(p: Px) {
-  const [ax, ay] = GNOMON.apex;
-  for (let y = ay; y <= GNOMON.foot; y++) {
-    const u = (y - ay) / (GNOMON.foot - ay);
-    const left = ax + (GNOMON.x0 - ax) * u,
-      right = ax + (GNOMON.x1 - ax) * u;
-    for (let x = Math.floor(left); x <= right; x++) {
-      const across = (x - left) / Math.max(1, right - left);
-      let s = 2 + across * 3.6 + (fbm(x * 3, y * 1.5, 61) - 0.5) * 1;
+  const g = D.gnomon;
+  const [ax, ay] = g.apex;
+  let lastTick = -1;
+  for (let y = Math.floor(ay * K); y <= g.foot * K; y++) {
+    const yd = y / K;
+    const u = (yd - ay) / (g.foot - ay);
+    const left = ax + (g.x0 - ax) * u,
+      right = ax + (g.x1 - ax) * u;
+    for (let x = Math.floor(left * K); x <= right * K; x++) {
+      const xd = x / K;
+      const across = (xd - left) / Math.max(1, right - left);
+      const s = 2 + across * 3.6 + (fbm(xd * 3, yd * 1.5, 61) - 0.5) * 1;
       put(p, x, y, bronzeC[clamp(Math.round(s), 0, 7)]);
       if (across < 0.3 && hash(x, y, 63) > 0.7) put(p, x, y, patinaC[hash(x, y, 65) > 0.5 ? 1 : 0]);
     }
-    put(p, right, y, bronzeC[7]);
-    if (y % 7 === 0 && u > 0.2) line(p, left + 2, y, right - 3, y, bronzeC[2]);
+    put(p, right * K, y, bronzeC[7]);
+    const tick = Math.floor(yd / 7);
+    if (tick !== lastTick && u > 0.2) line(p, (left + 2) * K, y, (right - 3) * K, y, bronzeC[2]);
+    lastTick = tick;
   }
   // plinth
-  for (let y = GNOMON.foot; y < GNOMON.foot + 5; y++)
-    for (let x = GNOMON.x0 - 4; x <= GNOMON.x1 + 4; x++) ramp(p, x, y, stoneC, 4 + (x - GNOMON.x0) / 18 + (y === GNOMON.foot ? 1.5 : 0));
+  eachPixel(g.x0 - 4, g.foot, g.x1 + 4, g.foot + 5, (x, y, xd, yd) => {
+    ramp(p, x, y, stoneC, 4 + (xd - g.x0) / 18 + (yd < g.foot + 1 ? 1.5 : 0));
+  });
 }
 
 /** The armillary sphere on its pedestal: rings turn slowly over the loop; silhouetted against the sun's glow. */
 function armillary(p: Px, t: number) {
   const k = loopK(t);
-  const { x: cx, y: cy, r } = ARMILLARY;
+  const { x: cx, y: cy, r, foot } = D.armillary;
   // pedestal
-  for (let y = cy + r; y < ARMILLARY.foot; y++) {
-    const w = 2.5 + (y > ARMILLARY.foot - 6 ? 4 : 0) + (y < cy + r + 3 ? 2 : 0);
-    for (let x = cx - w; x <= cx + w; x++) ramp(p, x, y, stoneC, 3.4 + (x - cx) / w * 1.6);
-  }
+  eachPixel(cx - 7, cy + r, cx + 7, foot, (x, y, xd, yd) => {
+    const w = 2.5 + (yd > foot - 6 ? 4 : 0) + (yd < cy + r + 3 ? 2 : 0);
+    if (Math.abs(xd - cx) > w) return;
+    ramp(p, x, y, stoneC, 3.4 + ((xd - cx) / w) * 1.6);
+  });
   const ring = (tilt: number, spin: number, col: number) => {
-    for (let a = 0; a < TAU; a += 0.012) {
+    for (let a = 0; a < TAU; a += 0.012 / K) {
       const X = Math.cos(a) * r,
         Y = Math.sin(a) * r;
       const x1 = X * Math.cos(spin),
         z1 = X * Math.sin(spin);
       const y2 = Y * Math.cos(tilt) - z1 * Math.sin(tilt);
       const z2 = Y * Math.sin(tilt) + z1 * Math.cos(tilt);
-      put(p, cx + x1, cy + y2, bronzeC[clamp(col + (z2 > 0 ? 2 : 0) + (x1 > 0 ? 1 : 0), 0, 7)]);
+      put(p, (cx + x1) * K, (cy + y2) * K, bronzeC[clamp(col + (z2 > 0 ? 2 : 0) + (x1 > 0 ? 1 : 0), 0, 7)]);
     }
   };
   ring(Math.PI / 2, 0, 2); // horizon
@@ -354,8 +398,8 @@ function armillary(p: Px, t: number) {
   ring(0, Math.PI / 2 + k * TAU * 0.5, 3); // meridian
   ring(1.1, 0.9 - k * TAU * 0.5, 2);
   // the axis rod and the small sun at the heart
-  line(p, cx - r * 0.5, cy + r * 0.9, cx + r * 0.5, cy - r * 0.9, bronzeC[5]);
-  for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) if (x * x + y * y <= 4) put(p, cx + x, cy + y, sunC[clamp(4 - (x * x + y * y), 1, 4)]);
+  lineD(p, cx - r * 0.5, cy + r * 0.9, cx + r * 0.5, cy - r * 0.9, bronzeC[5]);
+  for (let y = -3; y <= 3; y++) for (let x = -3; x <= 3; x++) if (x * x + y * y <= 9) put(p, cx * K + x, cy * K + y, sunC[clamp(4 - Math.round((x * x + y * y) / 2), 1, 4)]);
 }
 
 const scene: Scene = (p: Px, t: number) => {
@@ -371,46 +415,49 @@ const scene: Scene = (p: Px, t: number) => {
 scene.front = [
   {
     id: 'balustrade-ruins',
-    depth: 198,
+    depth: 198 * K,
     paint(p: Px) {
       // Broken balustrade blocks in the bottom corners: square-cut, lit on the sun side, a fallen post.
       const block = (x0: number, w: number, top: number, seed: number) => {
-        for (let x = x0; x < x0 + w; x++) {
-          const chip = (smooth(x, seed, 3) - 0.5) * 4;
-          for (let y = Math.floor(top + chip); y < H; y++) {
-            const u = (x - x0) / w;
-            put(p, x, y, stoneC[clamp(Math.floor(2.6 + u * 2.4 + (fbm(x * 2, y * 2, seed) - 0.5) * 1.6 - (y - top) / 20), 0, 7)]);
+        for (let x = Math.floor(x0 * K); x < (x0 + w) * K; x++) {
+          const xd = x / K;
+          const chip = (smooth(xd, seed, 3) - 0.5) * 4;
+          for (let y = Math.floor((top + chip) * K); y < H; y++) {
+            const yd = y / K;
+            const u = (xd - x0) / w;
+            put(p, x, y, stoneC[clamp(Math.floor(2.6 + u * 2.4 + (fbm(xd * 2, yd * 2, seed) - 0.5) * 1.6 - (yd - top) / 20), 0, 7)]);
           }
-          put(p, x, top + chip, stoneC[7]);
+          put(p, x, (top + chip) * K, stoneC[7]);
         }
       };
-      block(-6, 34, H - 22, 71);
-      block(26, 16, H - 11, 73);
-      block(216, 46, H - 26, 75);
-      block(204, 14, H - 10, 77);
+      block(-6, 34, 208 - 22, 71);
+      block(26, 16, 208 - 11, 73);
+      block(216, 46, 208 - 26, 75);
+      block(204, 14, 208 - 10, 77);
     },
   },
   {
     id: 'brazier',
-    depth: 199,
+    depth: 199 * K,
     paint(p: Px) {
       // A bronze brazier on a tripod, bottom left: a shallow bowl of glowing embers (front props are still).
       const k = 0.3;
       const bx = 16,
-        by = H - 30;
+        by = 208 - 30;
       for (const [x0, x1] of [
         [bx - 9, bx - 12],
         [bx + 9, bx + 12],
         [bx, bx],
       ])
-        line(p, x0, by + 2, x1, H - 1, bronzeC[2]);
-      for (let y = by - 3; y <= by + 2; y++) {
-        const w = 11 - (by + 2 - y) * 0.4;
-        for (let x = bx - w; x <= bx + w; x++) put(p, x, y, bronzeC[clamp(Math.round(3 + (x - bx) / w * 2 + (y === by - 3 ? 2 : 0)), 0, 7)]);
-      }
-      for (let i = 0; i < 18; i++) {
-        const x = bx - 9 + hash(i, 81) * 18,
-          y = by - 4 - hash(i, 83) * 2;
+        lineD(p, x0, by + 2, x1, 208, bronzeC[2]);
+      eachPixel(bx - 11, by - 3, bx + 11, by + 2, (x, y, xd, yd) => {
+        const w = 11 - (by + 2 - yd) * 0.4;
+        if (Math.abs(xd - bx) > w) return;
+        put(p, x, y, bronzeC[clamp(Math.round(3 + ((xd - bx) / w) * 2 + (yd < by - 2 ? 2 : 0)), 0, 7)]);
+      });
+      for (let i = 0; i < 26; i++) {
+        const x = (bx - 9 + hash(i, 81) * 18) * K,
+          y = (by - 4 - hash(i, 83) * 2) * K;
         const f = 0.5 + 0.5 * Math.sin(k * TAU * (1 + (i % 3)) + i);
         put(p, x, y, emberC[clamp(Math.round(1 + f * 3), 0, 4)]);
       }

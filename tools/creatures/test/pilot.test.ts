@@ -3,7 +3,7 @@ import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { loadPainting } from '../render';
 import { compose, frameCount, hitFrame } from '../engine';
-import { sizes, type BodyFrame } from '../types';
+import { sizeOf, type BodyFrame } from '../types';
 
 const pilot = [
   ['bramble_warden', 2],
@@ -29,7 +29,7 @@ for (const [id, techniques] of pilot) {
     id + ' has its pilot techniques, closed idle and framed presentations',
     async () => {
       const { c, s, b } = await loadPainting(id);
-      const [, , size] = sizes[c.rarity];
+      const [, , size] = sizeOf(c);
       const idle = c.frame('idle', 0, 0, 'normal');
       assert.equal(idle.px.w, size);
       assert.equal(idle.px.h, size);

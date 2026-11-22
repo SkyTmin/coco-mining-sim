@@ -12,7 +12,7 @@ import {
 import { Px } from '../rig/px';
 import { loadPainting } from '../render';
 import {
-  sizes,
+  sizeOf,
   type Creature,
   type MotionPlan,
   type Scene,
@@ -114,7 +114,7 @@ for (const id of ids) {
       assert.ok(c.motion, id + ' missing life route');
       const spec = c.animations.life;
       assert.ok(spec.seconds >= 12 && spec.seconds <= 20);
-      const [w, h] = sizes[c.rarity],
+      const [w, h] = sizeOf(c),
         origin = ground(w, h);
       const route: Array<XY> = [];
       const skills = new Set<string>();

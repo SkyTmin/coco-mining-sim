@@ -7,7 +7,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compose, frameCount, ground, hitFrame, screenPoint } from './engine';
 import { loadPainting } from './render';
-import { sizes, type Creature, type XY } from './types';
+import { sizeOf, type Creature, type XY } from './types';
 
 import {
   playbackKeys, techniqueContacts,
@@ -138,7 +138,7 @@ function registeredMask(frame: Composite) {
   return maskOf(frame.layers.body, [-frame.camera[0], -frame.camera[1]]);
 }
 function socketSampler(c: Creature, anim: string) {
-  const [w, h] = sizes[c.rarity],
+  const [w, h] = sizeOf(c),
     feet = ground(w, h);
   const cache = new Map<number, Record<string, XY>>();
   return (t: number, name: string): XY => {

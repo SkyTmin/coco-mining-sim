@@ -10,7 +10,7 @@ import { compose } from './engine';
 import { indexed } from './render-io';
 import gifenc from 'gifenc';
 import { loadPainting } from './render';
-import { sizes } from './types';
+import { sizeOf } from './types';
 import type { RGBA } from './rig/f15-rig';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -111,7 +111,7 @@ function reelCaption(
   return p;
 }
 function writeReel({ c, s, b }: Awaited<ReturnType<typeof loadPainting>>) {
-  const [w, , , border] = sizes[c.rarity];
+  const [w, , , border] = sizeOf(c);
   const width = w + 2 * border;
   const dir = join(output, c.id);
   mkdirSync(dir, { recursive: true });
@@ -150,7 +150,7 @@ async function main() {
   const gap = 15,
     margin = 20;
   const widths = subjects.map(({ c: creature }) => {
-    const [w, , , b] = sizes[creature.rarity];
+    const [w, , , b] = sizeOf(creature);
     return w + 2 * b;
   });
   const sum = (a: number[]) => a.reduce((s, n) => s + n, 0);

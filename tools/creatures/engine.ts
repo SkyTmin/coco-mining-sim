@@ -6,7 +6,7 @@ import { Pen } from './fx/pen';
 import { emptyTechniqueTrace } from './technique-fx';
 import { frameImage } from './frame-kit';
 import {
-  sizes,
+  sizeOf,
   type Creature,
   type FxInput,
   type Scene,
@@ -238,7 +238,7 @@ export function compose(
     clock = t,
     outer = c.animations[anim];
   if (!outer) throw new Error('Unknown animation ' + c.id + '/' + anim);
-  const [w, h, , b] = sizes[c.rarity],
+  const [w, h, , b] = sizeOf(c),
     W = w + b * 2,
     H = h + b * 2;
   const at = placement(c, requested, t, side, ground(w, h));

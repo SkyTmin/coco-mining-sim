@@ -64,8 +64,8 @@ function rails(p: Px, b: number) {
 }
 
 /** The measuring scale: ticks every 3 px along the outer third, every tenth longer; lit as the glint passes. */
-function scale(p: Px, b: number, near: (s: number) => number, keepOut: (x: number, y: number) => boolean) {
-  const o = 3;
+function scale(p: Px, b: number, near: (s: number) => number, keepOut: (x: number, y: number) => boolean, k = 1) {
+  const o = Math.round(3 * k);
   let n = 0;
   const tick = (x: number, y: number, dx: number, dy: number, len: number, s: number) => {
     const light = near(s);
@@ -73,24 +73,24 @@ function scale(p: Px, b: number, near: (s: number) => number, keepOut: (x: numbe
     if (light > 0.2) set(p, x + dx * (len - 1), y + dy * (len - 1), mixc(bronze[6], glint, light));
   };
   for (let x = b; x < p.w - b; x += 3, n++) {
-    const len = n % 10 === 0 ? 6 : n % 5 === 0 ? 4 : 3;
+    const len = Math.round((n % 10 === 0 ? 6 : n % 5 === 0 ? 4 : 3) * k);
     if (!keepOut(x, o)) tick(x, o, 0, 1, len, x);
     if (!keepOut(x, p.h - 1 - o)) tick(x, p.h - 1 - o, 0, -1, len, p.w + p.h + (p.w - x));
   }
   n = 0;
   for (let y = b; y < p.h - b; y += 3, n++) {
-    const len = n % 10 === 0 ? 6 : n % 5 === 0 ? 4 : 3;
+    const len = Math.round((n % 10 === 0 ? 6 : n % 5 === 0 ? 4 : 3) * k);
     tick(o, y, 1, 0, len, 2 * p.w + p.h + (p.h - y));
     tick(p.w - 1 - o, y, -1, 0, len, p.w + y);
   }
 }
 
 /** A small armillary sphere: three crossed rings round a bright bead. */
-function cornerSphere(p: Px, cx: number, cy: number, light: number) {
-  const r = 6;
+function cornerSphere(p: Px, cx: number, cy: number, light: number, k = 1) {
+  const r = Math.round(6 * k);
   for (let y = -r - 1; y <= r + 1; y++) for (let x = -r - 1; x <= r + 1; x++) if (x * x + y * y <= (r + 1) * (r + 1)) set(p, cx + x, cy + y, bronze[1]);
   const ring = (tilt: number, spin: number) => {
-    for (let a = 0; a < Math.PI * 2; a += 0.05) {
+    for (let a = 0; a < Math.PI * 2; a += 0.05 / k) {
       const X = Math.cos(a) * r,
         Y = Math.sin(a) * r;
       const x1 = X * Math.cos(spin),
@@ -109,48 +109,53 @@ function cornerSphere(p: Px, cx: number, cy: number, light: number) {
 }
 
 /** Sun medallion on the top rail: a raised disc with sixteen rays, a dark moon disc resting on its lower left rim. */
-function medallion(p: Px, cx: number, cy: number, light: number) {
+function medallion(p: Px, cx: number, cy: number, light: number, k = 1) {
   for (let a = 0; a < 16; a++) {
     const ang = (a / 16) * Math.PI * 2;
-    const len = a % 2 ? 11 : 15;
-    for (let r = 7; r < len; r++) set(p, cx + Math.cos(ang) * r, cy + Math.sin(ang) * r * 0.72, bronze[a % 2 ? 4 : 6]);
+    const len = (a % 2 ? 11 : 15) * k;
+    for (let r = 7 * k; r < len; r += 0.7) set(p, cx + Math.cos(ang) * r, cy + Math.sin(ang) * r * 0.72, bronze[a % 2 ? 4 : 6]);
   }
-  for (let y = -8; y <= 8; y++)
-    for (let x = -9; x <= 9; x++) {
-      const d = Math.hypot(x / 9, y / 8);
+  const rx = Math.round(9 * k),
+    ry = Math.round(8 * k);
+  for (let y = -ry; y <= ry; y++)
+    for (let x = -rx; x <= rx; x++) {
+      const d = Math.hypot(x / rx, y / ry);
       if (d > 1) continue;
-      const v = 3.6 - d * 2 - (x + y) / 14 + light;
+      const v = 3.6 - d * 2 - (x + y) / (14 * k) + light;
       set(p, cx + x, cy + y, sun[Math.max(0, Math.min(4, Math.round(v)))]);
     }
   set(p, cx, cy, sun[4]);
   // the moon disc: dark, a thin cold rim — the eclipse to come
-  const mx = cx - 8,
-    my = cy + 4;
-  for (let y = -5; y <= 5; y++)
-    for (let x = -5; x <= 5; x++) {
-      const d = Math.hypot(x, y) / 5;
+  const mx = cx - Math.round(8 * k),
+    my = cy + Math.round(4 * k),
+    mr = Math.round(5 * k);
+  for (let y = -mr; y <= mr; y++)
+    for (let x = -mr; x <= mr; x++) {
+      const d = Math.hypot(x, y) / mr;
       if (d > 1) continue;
       set(p, mx + x, my + y, moon[d > 0.8 ? (x + y < 0 ? 3 : 2) : d > 0.5 ? 1 : 0]);
     }
 }
 
 /** A small sundial plate with its triangular gnomon, for the bottom rail. */
-function dialPlate(p: Px, cx: number, cy: number) {
-  for (let y = -4; y <= 4; y++)
-    for (let x = -10; x <= 10; x++) {
-      const d = Math.hypot(x / 10, y / 4);
+function dialPlate(p: Px, cx: number, cy: number, k = 1) {
+  const rx = Math.round(10 * k),
+    ry = Math.round(4 * k);
+  for (let y = -ry; y <= ry; y++)
+    for (let x = -rx; x <= rx; x++) {
+      const d = Math.hypot(x / rx, y / ry);
       if (d > 1) continue;
       set(p, cx + x, cy + y, bronze[d > 0.82 ? 6 : 3 + Math.round((1 - d) * 1.4)]);
     }
   for (let a = 0; a < 7; a++) {
     const ang = Math.PI + (a / 6) * Math.PI;
-    set(p, cx + Math.cos(ang) * 8, cy + Math.sin(ang) * 3, bronze[1]);
+    set(p, cx + Math.cos(ang) * 8 * k, cy + Math.sin(ang) * 3 * k, bronze[1]);
   }
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < Math.round(6 * k); i++) {
     set(p, cx + i, cy - i, bronze[7]);
     for (let y = cy - i + 1; y <= cy; y++) set(p, cx + i, y, bronze[5]);
   }
-  for (let x = cx - 9; x < cx; x++) set(p, x, cy + 1, patina[1]);
+  for (let x = cx - Math.round(9 * k); x < cx; x++) set(p, x, cy + 1, patina[1]);
 }
 
 const observatory: Border = {
@@ -158,24 +163,26 @@ const observatory: Border = {
   accent: '#d6aa58',
   decorate(p, b, t) {
     rails(p, b);
+    // ornaments are drawn for the canon's 18 px rail and grow with a thicker one (Зенит's larger painting: 27 px)
+    const k = b / 18;
     const m = Math.floor(b / 2),
       cx = p.w >> 1;
     const perimeter = 2 * (p.w + p.h);
     const wave = ((((t / 3) % 1) + 1) % 1) * perimeter;
     const near = (s: number) => {
       const d = Math.abs((((s - wave) % perimeter) + perimeter) % perimeter);
-      return Math.max(0, 1 - Math.min(d, perimeter - d) / 40);
+      return Math.max(0, 1 - Math.min(d, perimeter - d) / (40 * k));
     };
     const keepOut = (x: number, y: number) =>
-      (y < b && Math.abs(x - cx) < 22) || (y >= p.h - b && (Math.abs(x - cx) < 34 || Math.abs(Math.abs(x - cx) - 52) < 13)) || x < b + 6 || x > p.w - b - 6;
-    scale(p, b, near, keepOut);
-    cornerSphere(p, m, m, near(0));
-    cornerSphere(p, p.w - 1 - m, m, near(p.w));
-    cornerSphere(p, p.w - 1 - m, p.h - 1 - m, near(p.w + p.h));
-    cornerSphere(p, m, p.h - 1 - m, near(2 * p.w + p.h));
-    medallion(p, cx, m, near(cx) * 0.8);
-    dialPlate(p, cx - 52, p.h - 1 - m);
-    dialPlate(p, cx + 52, p.h - 1 - m);
+      (y < b && Math.abs(x - cx) < 22 * k) || (y >= p.h - b && (Math.abs(x - cx) < 34 * k || Math.abs(Math.abs(x - cx) - 52 * k) < 13 * k)) || x < b + 6 * k || x > p.w - b - 6 * k;
+    scale(p, b, near, keepOut, k);
+    cornerSphere(p, m, m, near(0), k);
+    cornerSphere(p, p.w - 1 - m, m, near(p.w), k);
+    cornerSphere(p, p.w - 1 - m, p.h - 1 - m, near(p.w + p.h), k);
+    cornerSphere(p, m, p.h - 1 - m, near(2 * p.w + p.h), k);
+    medallion(p, cx, m, near(cx) * 0.8, k);
+    dialPlate(p, cx - Math.round(52 * k), p.h - 1 - m, k);
+    dialPlate(p, cx + Math.round(52 * k), p.h - 1 - m, k);
   },
 };
 export default observatory;

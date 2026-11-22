@@ -1,7 +1,7 @@
 import { createPetBehavior, interruptFrames, validateBehavior,
   type BehaviorConfig, type PetSample } from './viewer/behavior.mjs';
 import { SE } from './rig/f15-rig';
-import { sizes, type Creature, type MotionPlan, type XY } from './types';
+import { sizeOf, type Creature, type MotionPlan, type XY } from './types';
 
 export const directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'] as const;
 export type Direction = (typeof directions)[number];
@@ -160,7 +160,7 @@ export function attachPetBehavior(raw: Creature, plan: MotionPlan, behavior: Beh
     c.animations[name] = { ...spec, interrupt: interruptFrames(Math.round(spec.seconds * 24), name) };
   const problems = validateBehavior(behavior, c.animations);
   if (problems.length) throw Error(c.id + ' behavior: ' + problems.join(', '));
-  const [width, height] = sizes[c.rarity];
+  const [width, height] = sizeOf(c);
   if (behavior.field[0] !== width || behavior.field[1] !== height ||
       behavior.depthScale !== SE || behavior.stride !== plan.stride || behavior.yaw !== plan.yaw)
     throw Error(c.id + ' behavior coordinate system differs from the card');
@@ -210,7 +210,7 @@ function routePlacement(
   side: number,
   origin: XY,
 ): Placement {
-  const [w, h] = sizes[c.rarity],
+  const [w, h] = sizeOf(c),
     plan = c.motion;
   const facing = anim === 'turn' ? turnSide(c,t) : side;
   const fixed = {

@@ -289,7 +289,7 @@
   "effects": "lava",
   "moves": [],
   "life": {
-    "stride": 26,
+    "stride": 40,
     "yaw": 0.62,
     "beats": [
       {

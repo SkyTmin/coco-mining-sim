@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { measureDetail, minimumColours } from '../detail';
 import { Px } from '../rig/px';
 import { loadPainting } from '../render';
-import { sizes } from '../types';
+import { sizeOf } from '../types';
 
 test('native metrics distinguish four-connected islands and exclude the transparent boundary', () => {
   const p = new Px(4, 3);
@@ -29,7 +29,7 @@ for (const id of [
 ]) {
   test(id + ' meets the native painting detail bar', async () => {
     const { c } = await loadPainting(id);
-    const [, fieldHeight, canvas] = sizes[c.rarity];
+    const [, fieldHeight, canvas] = sizeOf(c);
     const body = c.frame('idle', 0, 0, 'normal').px;
     const m = measureDetail(body),
       diagnostic = JSON.stringify(m);

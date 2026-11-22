@@ -7,7 +7,7 @@ import { everyday } from '../rig/figure';
 import type { JointPose } from '../technique';
 
 /** Height of the hip joint above the stone at rest, rig units. */
-export const HIP = 16.5;
+export const HIP = 14;
 
 export const clips: Record<string, { seconds: number; loop?: boolean }> = {
   ...everyday,

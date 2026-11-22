@@ -1,29 +1,33 @@
-// Зенит, дракон затмения: an invented legendary dragon standing on two powerful digitigrade legs (a thick thigh, a
-// long raised foot, three claws forward and a spur back), the body leaning forward, a long S-shaped neck, the head held
-// high. Sunset-copper scales in rows with lighter rims, ivory belly plates with gold edges, a ring of bone plates in
-// the chest holding the sun pearl (a glowing disc). A long snout, heavy jaw, slit nostrils, brow plates, amber eyes with
-// a slit pupil; a crown of six bone rays fanning back from the skull (the two long ones are horns) with gold webs between
-// them. Big membranous wings: ivory finger bones, membranes saffron at the bone and scarlet at the edge with gold veins,
-// translucent like stained glass; folded along his back like a cape at rest. Short strong arms with gold bangles
-// engraved with degree marks. A long tail with a row of spikes ending in a crescent blade of pale moon metal.
-// The eclipse form «Затмение» is a transformation, not a recolour: the scales flip in a wave from the chest — copper
-// becomes indigo with silver rims, the belly obsidian, the membranes black with silver constellation veins and a white
-// corona burning along the trailing edge, the pearl a black disc ringed by silver flames, white-hot tips on the crown
-// rays with corona tongues between them, white eyes; he flies on slow wing beats, ×1.12.
+// Зенит, дракон затмения — his own skeleton, made for him alone (no shared body template). A wyvern: no spare limbs.
+// The fore limbs ARE the wings: a strong arm (humerus, forearm) with a three-clawed hand at the wrist and three long
+// ivory wing fingers behind it. On the ground he walks on four like a bat or a pterosaur — on the hind feet and on the
+// folded wrists, the knuckle pads on the stone, the folded fingers rising past the elbows like the ribs of a closed
+// umbrella; he rears on the hind legs to open the wings, and the hands at the wrists catch, hold and draw.
+// The body is ONE line from the skull to the crescent: a spline through throat, chest, belly, pelvis and tail, a
+// cross-section that swells from the neck into a deep keeled chest, narrows at the waist, widens at the hips and runs
+// on without a step into the tail — the tail grows out of the pelvis, it is not attached to it. A dorsal ridge of
+// bone spikes and a strip of ivory belly plates run the whole line.
+// Sunset-copper scales in rows with lighter rims, ivory belly plates with gold seams, a ring of bone plates in the
+// chest round the sun pearl. A long snout, heavy jaw, amber eyes with a slit pupil; a crown of six bone rays fanning
+// back from the skull with gold webs between them; two barbels trail from the lip. Membranes saffron at the bone and
+// scarlet at the edge, leaded like stained glass. Gold bangles with degree marks on the forearms. The tail ends in a
+// crescent blade of pale moon metal.
+// The eclipse form «Затмение» is a transformation: the scales flip in a wave from the chest — copper becomes indigo
+// with silver rims, the belly obsidian, the membranes black with silver constellation veins and a white corona along
+// the trailing edge, the pearl a black disc ringed by silver flames; he flies on slow wing beats, ×1.12.
 import { readCreatureCard } from '../bodies/card-data';
-import type { ArmedAppearance } from '../bodies/armed-biped';
 import { goalAt, toLocal } from '../bodies/goals';
 import { clipClock } from '../kit/clock';
 import { hash, hx, ik, mixc, TAU } from '../kit/f11-mobkit';
 import { flipTuck, pivotLift } from '../kit/pet-moves';
-import { F3, Rig, renderRig, vadd, vcross, vlerp, vmul, vnorm, vsub, type Mat, type Tones, type V3 } from '../rig/f15-rig';
+import { strideFoot } from '../motion';
+import { F3, Rig, renderRig, vadd, vcross, vdot, vlen, vlerp, vmul, vnorm, vsub, type Mat, type Tones, type V3 } from '../rig/f15-rig';
 import { projectFigure, scaleFigure } from '../rig/figure';
 import type { JointPose } from '../technique';
+import type { BodyFrame, Creature } from '../types';
 import { finishSurfaces } from './surface-work';
 import { clips, HIP } from './eclipse_drake-poses';
-
 const card = readCreatureCard('eclipse_drake');
-export const portraitScale = 2.6;
 const tones = (name: string) => card.materials.find((m) => m.name === name)!.tones;
 const sw = (name: string, idx: number[], glow = 0): Mat => {
   const t = tones(name);
@@ -33,8 +37,6 @@ const toneSet = (name: string, idx: number[]) => idx.map((i) => hx(tones(name)[i
 const saturate = (x: number) => Math.max(0, Math.min(1, x));
 const smooth = (x: number) => x * x * (3 - 2 * x);
 const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
-/** Forward lean of the body at rest (rad): a raptor's stance, the neck rising from the chest. */
-const LEAN = 0.45;
 
 // ---- materials: day (Зенит) and night (Затмение) pairs ---------------------------------------------------------
 const scale = sw('scale', [2, 3, 4, 5]),
@@ -217,37 +219,39 @@ interface HeadState {
 function head(r: Rig, Hd: F3, j: Record<string, V3>, p: HeadState) {
   const d = 0.75;
   r.tag = 'head';
-  // Cranium and the heavy brow; cheek plates sweep back to the jaw hinge.
-  r.ell(Hd, [-0.6, 0, 0.7], [4.0, 3.3, 3.1], S(d));
-  r.ell(Hd, [1.6, 0, 1.6], [2.6, 2.6, 1.4], SS(d));
+  // Cranium: a broad flat skull behind the eyes; heavy jaw muscles sweep back to the hinge.
+  r.ell(Hd, [-0.5, 0, 0.8], [3.7, 3.1, 2.7], S(d));
+  r.ell(Hd, [1.4, 0, 1.5], [2.6, 2.4, 1.2], SS(d));
   for (const s of [-1, 1]) {
-    r.ell(Hd.at(0.6, s * 2.7, -0.8).turn(s * 0.35), [0, 0, 0], [2.6, 1.3, 1.8], S(d));
-    r.ell(Hd.at(-1.6, s * 2.6, -1.6).turn(s * 0.5), [0, 0, 0], [1.6, 1.0, 1.3], SH(d));
+    r.ell(Hd.at(0.6, s * 2.6, -0.8).turn(s * 0.35), [0, 0, 0], [2.6, 1.3, 1.8], S(d));
+    r.ell(Hd.at(-1.6, s * 2.5, -1.6).turn(s * 0.5), [0, 0, 0], [1.6, 1.0, 1.3], SH(d));
   }
   // Cheek scales and a frill of small spikes along the back of the jaw.
   for (const s of [-1, 1]) {
     for (let k = 0; k < 6; k++)
-      r.ell(axisFrame(Hd.p(1.6 - (k % 3) * 1.3, s * (2.9 - (k > 2 ? 0.25 : 0)), -0.2 - (k > 2 ? 1.1 : 0)), Hd.v(0, s, 0), Hd.f), [0, 0, 0], [0.75, 0.65, 0.35], k % 2 ? SS(d) : SH(d));
-    for (let k = 0; k < 4; k++) r.spike(Hd.p(-1.2 - k * 0.7, s * (2.6 - k * 0.15), -1.4 - k * 0.5), Hd.v(-0.8, s * 0.6, -0.2), 1.3 - k * 0.15, 0.32, bone, 3);
+      r.ell(axisFrame(Hd.p(1.6 - (k % 3) * 1.3, s * (2.8 - (k > 2 ? 0.25 : 0)), -0.2 - (k > 2 ? 1.1 : 0)), Hd.v(0, s, 0), Hd.f), [0, 0, 0], [0.75, 0.65, 0.35], k % 2 ? SS(d) : SH(d));
+    for (let k = 0; k < 4; k++) r.spike(Hd.p(-1.2 - k * 0.7, s * (2.5 - k * 0.15), -1.4 - k * 0.5), Hd.v(-0.8, s * 0.6, -0.2), 1.4 - k * 0.15, 0.34, bone, 3);
   }
-  // The long snout with a ridge of small plates, the nose tip and slit nostrils.
+  // The snout: a wedge, broad at the eyes and narrowing to the nose, flat on top with a ridge of bone plates, the
+  // upper lip a hard edge over the teeth.
   r.tag = 'snout';
-  r.ell(Hd, [5.4, 0, -0.5], [4.9, 1.95, 1.65], S(d));
-  r.ell(Hd, [5.2, 0, 0.6], [4.2, 1.2, 0.9], SS(d));
-  for (let k = 0; k < 4; k++) r.ell(Hd.at(3.0 + k * 1.6, 0, 1.15 - k * 0.18).pitch(-0.15), [0, 0, 0], [0.7, 0.55, 0.32], M(bone, bone, d));
-  for (const s of [-1, 1]) for (let k = 0; k < 4; k++) r.ell(axisFrame(Hd.p(3.4 + k * 1.5, s * 1.65, -0.1), Hd.v(0, s, 0.3), Hd.f), [0, 0, 0], [0.6, 0.5, 0.3], k % 2 ? SS(d) : S(d));
-  // Two long barbels from the upper lip: they hang and trail behind every move of the head.
-  r.tag = 'barbels';
+  r.ell(Hd, [3.6, 0, 0.0], [3.0, 2.25, 1.85], S(d));
+  r.ell(Hd, [6.1, 0, -0.35], [2.7, 1.8, 1.45], S(d));
+  r.ell(Hd, [8.4, 0, -0.6], [1.9, 1.4, 1.15], SS(d));
+  r.ell(Hd, [5.6, 0, 0.75], [3.6, 1.15, 0.6], SS(d));
+  for (let k = 0; k < 5; k++) r.ell(Hd.at(2.6 + k * 1.45, 0, 1.35 - k * 0.24).pitch(-0.18), [0, 0, 0], [0.62, 0.5, 0.3], M(bone, bone, d));
+  for (const s of [-1, 1]) for (let k = 0; k < 4; k++) r.ell(axisFrame(Hd.p(3.6 + k * 1.45, s * (1.95 - k * 0.16), -0.15 - k * 0.12), Hd.v(0, s, 0.3), Hd.f), [0, 0, 0], [0.6, 0.5, 0.3], k % 2 ? SS(d) : S(d));
+  // the brow: a hard ridge over each eye sloping down to the snout, the socket dark under it
+  r.tag = 'brow';
   for (const s of [-1, 1]) {
-    const root = Hd.p(8.4, s * 1.6, -1.0);
-    const sag = p.barbel;
-    const pts: V3[] = [root, Hd.p(7.6, s * 3.0, -2.4), vadd(Hd.p(5.6, s * 3.8, -4.4), [sag[0] * 0.4, sag[1] * 0.4, -1.0]), vadd(Hd.p(3.2, s * 4.1, -6.0), [sag[0], sag[1], -2.2])];
-    for (let k = 0; k < 6; k++) r.cap(catmull(pts, k / 6), catmull(pts, (k + 1) / 6), 0.36 - k * 0.04, 0.32 - k * 0.04, k % 2 ? SS(d) : S(d));
-    r.dot(catmull(pts, 0.999), eclipseK > 0.5 ? coronaT[3] : sunT[2], 0.5, 0.5);
+    r.ell(Hd.at(2.3, s * 1.95, 1.05).turn(s * 0.42), [0, 0, 0], [1.7, 0.65, 0.55], SD(d));
+    r.ell(Hd.at(2.5, s * 2.05, 2.05).turn(s * 0.42).roll(s * 0.3).pitch(-0.32 + p.snarl * 0.2), [0, 0, 0], [2.5, 0.85, 0.55], S(d));
+    r.spike(Hd.p(1.0, s * 2.4, 2.2), Hd.v(-0.9, s * 0.5, 0.25), 1.5, 0.4, bone, 3);
   }
+  void catmull;
   r.tag = 'nose';
-  r.ell(Hd, [9.7, 0, -0.3], [1.1, 1.5, 1.0], S(d));
-  for (const s of [-1, 1]) r.line(Hd.p(10.3, s * 0.6, 0.0), Hd.p(9.6, s * 1.05, 0.25), ink, 0, 0.8);
+  r.ell(Hd, [9.8, 0, -0.45], [1.0, 1.3, 0.95], S(d));
+  for (const s of [-1, 1]) r.line(Hd.p(10.4, s * 0.55, -0.1), Hd.p(9.7, s * 0.95, 0.2), ink, 0, 0.8);
   // The jaw hinges open with a roar or a breath of fire; the throat glows when he breathes.
   const open = saturate(p.roar + p.snarl * 0.3 + p.fire * 0.9);
   const J = Hd.at(1.2, 0, -1.9).pitch(open * 0.62);
@@ -277,13 +281,13 @@ function head(r: Rig, Hd: F3, j: Record<string, V3>, p: HeadState) {
   const eyeMat = eclipseK > 0.5 ? eyeNight : eyeDay;
   for (const s of [-1, 1]) {
     r.tag = s < 0 ? 'eyeL' : 'eyeR';
-    const e = Hd.at(2.4, s * 2.3, 0.9).turn(s * 0.6).roll(s * -0.2);
+    const e = Hd.at(2.35, s * 2.32, 0.78).turn(s * 0.6).roll(s * -0.2);
     const P = (x: number, y: number, z: number) => e.p(x, s * y, z);
     const start = r.size;
     const opened = p.blink < 0.5;
     if (opened) {
-      const ry = 1.35 + p.wide * 0.25,
-        rz = 0.62 + p.wide * 0.45 - p.lid * 0.3;
+      const ry = 1.05 + p.wide * 0.25,
+        rz = 0.46 + p.wide * 0.45 - p.lid * 0.22;
       r.ell(e, [0.2, 0, 0], [0.55, ry, rz], inkMat);
       r.ell(e, [0.35, 0, 0], [0.5, ry * 0.88, rz * 0.82], eyeMat);
       if (eclipseK < 0.5) r.ell(e, [0.75, p.lookX * 0.45, p.lookY * 0.2], [0.22, 0.26, rz * 0.82], inkMat);
@@ -295,9 +299,6 @@ function head(r: Rig, Hd: F3, j: Record<string, V3>, p: HeadState) {
     r.markEye(start, s, opened);
     if (s > 0) j.eyeR = r.eye = P(0.6, 0.3, 0.2);
     else j.eyeL = P(0.6, 0.3, 0.2);
-    // The brow plate: a bony ridge angled down toward the snout — the proud, fierce look.
-    r.tag = 'brow';
-    r.ell(Hd.at(2.9, s * 2.2, 1.6).turn(s * 0.5).roll(s * 0.35).pitch(-0.3 + p.snarl * 0.2), [0, 0, 0], [2.0, 0.8, 0.55], M(bone, bone, d));
   }
   // The crown: six bone rays fanning back from the skull, the upper pair long horns; gold webs between them; in the
   // eclipse the tips burn white and corona tongues lick between the rays.
@@ -344,151 +345,180 @@ function head(r: Rig, Hd: F3, j: Record<string, V3>, p: HeadState) {
   j.snout = Hd.p(6.0, 0, 0);
 }
 
-// ---- body -------------------------------------------------------------------------------------------------------
-function torso(r: Rig, B: F3, breath: number, glow: number, ph: number, j: Record<string, V3>) {
-  const parts: [V3, V3][] = [
-    [[-0.8, 0, 0.6], [3.7, 4.0, 3.5]],
-    [[0.4, 0, 4.8], [3.0, 3.4, 3.6]],
-    [[1.6, 0, 10.2], [4.7 + breath * 0.3, 5.1 + breath * 0.2, 6.0]],
-  ];
-  /** The front of the torso at height z (where the belly plates and the pearl sit). */
-  const frontAt = (z: number) =>
-    Math.max(...parts.map(([c, rr]) => (Math.abs(z - c[2]) < rr[2] ? c[0] + rr[0] * Math.sqrt(1 - ((z - c[2]) / rr[2]) ** 2) : -9)));
-  r.tag = 'pelvis';
-  r.ell(B, parts[0][0], parts[0][1], S(0.35));
-  r.tag = 'waist';
-  r.ell(B, parts[1][0], parts[1][1], S(0.2));
-  r.tag = 'chest';
-  r.ell(B, parts[2][0], parts[2][1], S(0.05));
-  for (const s of [-1, 1]) r.ell(B.at(0.2, s * 3.6, 12.4).turn(s * 0.5), [0, 0, 0], [3.0, 2.0, 2.6], SS(0.12));
-  // Scale rows on the flanks of the chest, the waist and the hips; darker plates down the spine.
-  r.tag = 'scales';
-  for (const s of [-1, 1]) {
-    const az: [number, number] = s > 0 ? [0.7, 2.5] : [-2.5, -0.7];
-    scutes(r, B, parts[2][0], parts[2][1], az, [-0.5, 0.8], 6, 5, 0.72, (k) => (k % 3 ? SS(0.08) : S(0.08)));
-    scutes(r, B, parts[1][0], parts[1][1], az, [-0.4, 0.5], 5, 2, 0.7, (k) => (k % 2 ? SS(0.2) : S(0.2)));
-    scutes(r, B, parts[0][0], parts[0][1], az, [-0.2, 0.7], 5, 3, 0.72, (k) => (k % 2 ? SS(0.33) : S(0.33)));
+// ---- frames -----------------------------------------------------------------------------------------------------
+/** A frame whose forward axis is `fwd`, its up as close to `upHint` as the forward allows. */
+function frameF(o: V3, fwd: V3, upHint: V3): F3 {
+  const f = vnorm(fwd);
+  let s = vcross(upHint, f);
+  if (vlen(s) < 1e-4) s = vcross([0, 0, 1], f);
+  s = vnorm(s);
+  return new F3(o, f, s, vcross(f, s));
+}
+/** Frames along points, the up vector carried from `start` both ways so the back stays the back through every bend. */
+function lineFrames(P: V3[], start: number, up0: V3): F3[] {
+  const n = P.length;
+  const tan = (i: number) => vnorm(vsub(P[Math.min(n - 1, i + 1)], P[Math.max(0, i - 1)]));
+  const make = (i: number, upPrev: V3) => {
+    const f = tan(i);
+    let u = vsub(upPrev, vmul(f, vdot(upPrev, f)));
+    if (vlen(u) < 1e-4) u = vcross(f, [0, 1, 0]);
+    u = vnorm(u);
+    return new F3(P[i], f, vcross(u, f), u);
+  };
+  const out: F3[] = new Array(n);
+  out[start] = make(start, up0);
+  for (let i = start + 1; i < n; i++) out[i] = make(i, out[i - 1].u);
+  for (let i = start - 1; i >= 0; i--) out[i] = make(i, out[i + 1].u);
+  return out;
+}
+
+// ---- the body line: from the crescent to the skull --------------------------------------------------------------
+/** A knot of the body line: position, half width and half height of the cross-section, flip distance, part. */
+interface Knot {
+  p: V3;
+  w: number;
+  h: number;
+  d: number;
+  tag: string;
+}
+/** Samples along the line (the more, the smoother the silhouette). */
+const LINE_N = 76;
+/**
+ * The whole body as one spline: overlapping cross-section ellipsoids that swell and narrow without a step, scale
+ * rows down both flanks, a strip of belly plates underneath, a ridge of bone spikes along the top from the nape to
+ * the tail tip. Returns the samples so the caller can hang the pearl, the shoulders and the crescent on them.
+ */
+function bodyLine(r: Rig, K: Knot[], start: number, up0: V3) {
+  const pts = K.map((k) => k.p);
+  const n = K.length - 1;
+  const P: V3[] = [],
+    W: number[] = [],
+    H: number[] = [],
+    D: number[] = [],
+    T: string[] = [];
+  for (let i = 0; i <= LINE_N; i++) {
+    const u = i / LINE_N;
+    P.push(catmull(pts, u));
+    const x = u * n,
+      a = Math.min(n - 1, Math.floor(x)),
+      f = x - a;
+    W.push(lerp(K[a].w, K[a + 1].w, f));
+    H.push(lerp(K[a].h, K[a + 1].h, f));
+    D.push(lerp(K[a].d, K[a + 1].d, f));
+    T.push(K[Math.round(x)].tag);
   }
-  for (let k = 0; k < 9; k++) {
-    const z = 0.2 + k * 1.75;
-    const back = -Math.max(...parts.map(([c, rr]) => (Math.abs(z - c[2]) < rr[2] ? -c[0] + rr[0] * Math.sqrt(1 - ((z - c[2]) / rr[2]) ** 2) : -9)));
-    r.ell(B.at(back + 0.35, 0, z).pitch(0.2), [0, 0, 0], [0.9, 1.7, 1.0], SD(0.1 + k * 0.03));
+  const Fr = lineFrames(P, Math.round((start / n) * LINE_N), up0);
+  const seg = (i: number) => 0.5 * vlen(vsub(P[Math.min(LINE_N, i + 1)], P[Math.max(0, i - 1)]));
+  for (let i = 0; i <= LINE_N; i++) {
+    const F = Fr[i],
+      w = W[i],
+      h = H[i],
+      d = D[i],
+      L = seg(i);
+    r.tag = T[i];
+    r.ell(F, [0, 0, 0], [L * 1.05 + 0.25 * Math.min(w, h), w, h], i % 6 === 5 ? SS(d) : S(d));
+    // belly plates, gold-seamed, from the throat to the last third of the tail
+    if (i % 2 === 0 && h > 0.85)
+      r.ell(axisFrame(F.p(0, 0, -h * 0.9), F.v(0, 0, -1), F.f), [0, 0, 0], [L * 1.0 + 0.12, w * 0.6, 0.5 + 0.06 * h], i % 4 ? BL(d) : BS(d));
+    // scale rows down both flanks: raised plates, rows offset by half a plate
+    const dense = T[i] === 'chest' || T[i] === 'belly' || T[i] === 'pelvis';
+    if (dense || i % 2 === 0) {
+      const rows = h > 2.6 ? [-0.38, 0.12, 0.6] : [-0.15, 0.55];
+      for (const sg of [-1, 1])
+        rows.forEach((el0, row) => {
+          const el = el0 + (i % 2 ? 0.14 : 0);
+          const c = Math.cos(el),
+            sn = Math.sin(el);
+          const at = F.p(0, sg * w * c * 0.97, h * sn * 0.97);
+          const nrm = vnorm(F.v(0, (sg * c) / w, sn / h));
+          const pw = Math.min(1.05, 0.3 + 0.2 * Math.min(w, h));
+          r.ell(axisFrame(at, nrm, F.f), [0, 0, 0], [L * 0.62 + 0.12, pw, 0.3], row === rows.length - 1 ? SH(d) : row === 0 && rows.length > 2 ? SS(d) : S(d));
+        });
+    }
   }
-  // Dorsal spikes between the wings, down the back to the tail root.
-  r.tag = 'neckSpikes';
-  for (let k = 0; k < 6; k++) r.spike(B.p(-4.2 + k * 0.15, 0, 14 - k * 2.4), B.v(-0.8, 0, 0.6), 2.2 - k * 0.2, 0.7, bone, 4);
-  // Belly plates: bands from the throat to the groin, gold-seamed.
-  r.tag = 'belly';
-  for (let k = 0; k < 10; k++) {
-    const z = -0.6 + k * 1.2;
-    r.ell(B.at(frontAt(z) - 0.5, 0, z).pitch(-0.2), [0, 0, 0], [1.3, 3.0 - Math.abs(k - 4.5) * 0.14, 0.72], k % 2 ? BS(0.05 + k * 0.02) : BL(0.05 + k * 0.02));
+  // the dorsal ridge: one row of bone spikes the whole length, tallest over the shoulders and the hips
+  r.tag = 'ridge';
+  for (let i = 2; i < LINE_N - 1; i += 2) {
+    const F = Fr[i],
+      h = H[i];
+    if (h < 0.5) continue;
+    const big = (i / 2) % 2 === 0;
+    const len = (0.45 + 0.42 * h) * (big ? 1 : 0.62);
+    r.spike(F.p(0, 0, h * 0.9), vnorm(vadd(F.u, vmul(F.f, -0.78))), len, 0.24 + 0.1 * h, big ? bone : boneDeep, 4);
   }
-  // The pearl ring: eight bone plates round the sun pearl in the chest.
+  return { P, W, H, D, Fr };
+}
+
+/** The crescent blade at the tail tip: a curved plate of moon metal in the plane of the tip, horns back and up. */
+function crescent(r: Rig, tip: V3, dirT: V3, side: V3, j: Record<string, V3>) {
+  r.tag = 'crescent';
+  const upT = vnorm(vcross(side, dirT));
+  const blade = eclipseK > 0.5 ? moonGlow : moon;
+  const C = (a: number, rad: number, off: number): V3 => vadd(tip, vadd(vmul(dirT, Math.cos(a) * rad + off), vmul(upT, Math.sin(a) * rad)));
+  const N = 16;
+  for (let k = 0; k < N; k++) {
+    const a0 = -2.0 + (k / N) * 4.0,
+      a1 = -2.0 + ((k + 1) / N) * 4.0;
+    r.poly([C(a0, 5.8, 1.6), C(a1, 5.8, 1.6), C(a1, 3.9, 3.0), C(a0, 3.9, 3.0)], blade, 0.3);
+  }
+  for (let k = 0; k < 4; k++) r.line(C(-2.0 + k, 5.8, 1.6), C(-1.0 + k, 5.8, 1.6), moon.T[3], eclipseK * 0.8, 0.8);
+  // the socket the blade grows from: a ring of bone at the tip
+  r.cap(vadd(tip, vmul(dirT, -0.6)), vadd(tip, vmul(dirT, 1.0)), 0.7, 0.55, M(bone, boneDeep, 1));
+  j.tailTip = tip;
+  j.crescent = C(0, 5.8, 1.6);
+  j.crescentA = C(-2.0, 4.8, 2.3);
+  j.crescentB = C(2.0, 4.8, 2.3);
+}
+
+/** The sun pearl in a ring of bone plates on the front of the chest; `PF` faces out of the chest. */
+function pearl(r: Rig, PF: F3, glow: number, ph: number, j: Record<string, V3>) {
   r.tag = 'pearlRing';
-  const P = B.at(frontAt(12.0) - 0.3, 0, 12.0).pitch(-0.85);
   for (let k = 0; k < 12; k++) {
     const a = (k / 12) * TAU;
-    r.ell(P.at(-0.2, Math.cos(a) * 2.9, Math.sin(a) * 2.9).roll(a), [0, 0, 0], [0.8, 0.95, 0.75], M(bone, boneDeep, 0));
-    r.ell(P.at(0.35, Math.cos(a + 0.26) * 2.35, Math.sin(a + 0.26) * 2.35), [0, 0, 0], [0.32, 0.32, 0.32], M(gold, coronaMat, 0));
+    r.ell(PF.at(-0.2, Math.cos(a) * 2.9, Math.sin(a) * 2.9).roll(a), [0, 0, 0], [0.8, 0.95, 0.75], M(bone, boneDeep, 0));
+    r.ell(PF.at(0.35, Math.cos(a + 0.26) * 2.35, Math.sin(a + 0.26) * 2.35), [0, 0, 0], [0.32, 0.32, 0.32], M(gold, coronaMat, 0));
   }
   r.tag = 'pearl';
   if (eclipseK < 0.5 && !pearlNight) {
-    r.ell(P, [0.1, 0, 0], [1.2, 2.3 + glow * 0.15, 2.3 + glow * 0.15], sunMat);
-    r.ell(P, [0.6, 0, 0], [0.9, 1.2, 1.2], sunCore);
+    r.ell(PF, [0.1, 0, 0], [1.2, 2.3 + glow * 0.15, 2.3 + glow * 0.15], sunMat);
+    r.ell(PF, [0.6, 0, 0], [0.9, 1.2, 1.2], sunCore);
   } else {
-    // The black sun: an obsidian disc with silver flames licking round its rim.
-    r.ell(P, [0.1, 0, 0], [1.2, 2.3, 2.3], obsidianShade);
+    // the black sun: an obsidian disc with silver flames licking round its rim
+    r.ell(PF, [0.1, 0, 0], [1.2, 2.3, 2.3], obsidianShade);
     for (let k = 0; k < 10; k++) {
       const a = (k / 10) * TAU + ph * 0.25;
-      const out = P.v(0, Math.cos(a), Math.sin(a));
-      // the upper tongues stay short: the throat hangs right above the pearl
-      const up = Math.max(0, Math.sin(a));
-      if (up > 0.45) continue;
-      tongueOfFire(r, vadd(P.p(0.8, 0, 0), vmul(out, 2.2)), vnorm(vadd(out, P.v(0.5 * up, 0, 0))), P.f, (1.2 + 0.4 * Math.sin(ph + k)) * (1 - 0.65 * up), 0.35, ph + k * 1.7, coronaMat);
+      const out = PF.v(0, Math.cos(a), Math.sin(a));
+      tongueOfFire(r, vadd(PF.p(0.8, 0, 0), vmul(out, 2.2)), vnorm(vadd(out, PF.v(0.4, 0, 0))), PF.f, 1.2 + 0.4 * Math.sin(ph + k), 0.35, ph + k * 1.7, coronaMat);
     }
   }
-  j.chest = P.p(0, 0, 0);
-  j.pearl = P.p(1.3, 0, 0);
+  j.chest = PF.p(0, 0, 0);
+  j.pearl = PF.p(1.3, 0, 0);
 }
-function arm(r: Rig, B: F3, s: number, hand: V3, j: Record<string, V3>, fist: number, handRig: Rig = r) {
+
+// ---- hind legs --------------------------------------------------------------------------------------------------
+/** A powerful digitigrade leg: thick thigh grown out of the hip, a long raised foot, three claws forward, a spur. */
+function leg(r: Rig, Pv: F3, BU: F3, s: number, hock: V3, toeDir: V3, j: Record<string, V3>) {
   const name = s < 0 ? 'L' : 'R',
-    shoulder = B.p(2.4, s * 5.0, 13.2);
-  const elbow = ik(shoulder, hand, 5.4, 5.2, B.v(-0.7, s * 0.7, -0.9));
-  r.tag = 'shoulder' + name;
-  r.ell(B.at(2.0, s * 4.8, 13.4).turn(s * 0.4), [0, 0, 0], [2.2, 2.1, 2.1], S(0.15));
-  scutes(r, B.at(2.0, s * 4.8, 13.4).turn(s * 0.4), [0, 0, 0], [2.2, 2.1, 2.1], s > 0 ? [0.4, 2.2] : [-2.2, -0.4], [0.0, 1.1], 3, 2, 0.7, (k) => (k % 2 ? SS(0.15) : S(0.15)));
-  r.tag = 'arm' + name;
-  limb(r, shoulder, elbow, 1.6, 1.5, S(0.28), B.f, 0.45, 0.6);
-  const wrist = vlerp(elbow, hand, 0.84);
-  r.cap(elbow, wrist, 1.35, 1.1, S(0.4));
-  for (let k = 0; k < 3; k++) tubeScutes(r, vlerp(shoulder, elbow, 0.15 + k * 0.28), vlerp(shoulder, elbow, 0.3 + k * 0.28), 1.5, B.s, 0.7, k % 2 ? SS(0.3) : S(0.3));
-  for (let k = 0; k < 2; k++) tubeScutes(r, vlerp(elbow, wrist, 0.1 + k * 0.3), vlerp(elbow, wrist, 0.25 + k * 0.3), 1.2, B.s, 0.6, k % 2 ? SS(0.4) : S(0.4));
-  // A row of small spikes down the outer forearm.
-  for (let k = 0; k < 3; k++) {
-    const at = vlerp(elbow, wrist, 0.15 + k * 0.25);
-    const out = vnorm(vcross(vsub(wrist, elbow), B.u));
-    r.spike(vadd(at, vmul(out, s * 1.1)), vadd(vmul(out, s), vmul(vnorm(vsub(elbow, wrist)), 0.6)), 0.9, 0.3, bone, 3);
-  }
-  r.spike(elbow, vnorm(vadd(vsub(elbow, wrist), vmul(B.u, -0.3))), 1.4, 0.4, bone, 3);
-  r.tag = 'bangle' + name;
-  const b0 = vlerp(elbow, wrist, 0.72),
-    b1 = vlerp(elbow, wrist, 0.98);
-  r.cap(b0, b1, 1.45, 1.3, gold);
-  r.cap(vlerp(b0, b1, -0.05), vlerp(b0, b1, 0.08), 1.6, 1.6, goldDeep);
-  r.cap(vlerp(b0, b1, 0.92), vlerp(b0, b1, 1.05), 1.5, 1.5, goldDeep);
-  const out = vnorm(vcross(vsub(b1, b0), B.f));
-  // degree marks engraved round the bangle
-  for (let k = 0; k < 9; k++) {
-    const a = (k / 9) * Math.PI - Math.PI / 2;
-    const rim = vadd(vmul(out, s * Math.cos(a) * 1.5), vmul(B.u, Math.sin(a) * 1.4));
-    r.line(vadd(vlerp(b0, b1, 0.3), rim), vadd(vlerp(b0, b1, k % 3 ? 0.55 : 0.7), rim), goldDeep.T[0], 0, 0.5);
-  }
-  r = handRig;
-  r.tag = 'hand' + name;
-  const dir = vnorm(vsub(hand, elbow));
-  const Wp = new F3(hand, dir, vnorm(vcross(B.u, dir)), B.u).roll(s * 0.6);
-  r.ell(Wp, [0.1, 0, 0], [1.5, 1.45, 1.0], S(0.5));
-  r.tag = 'claw' + name;
-  for (let k = 0; k < 3; k++) {
-    const y = (k - 1) * 0.85;
-    const k1 = Wp.p(1.1, y, 0.1),
-      k2 = Wp.p(2.1 - Math.abs(y) * 0.2 - fist * 1.2, y * 1.15, 0.2 - fist * 1.3);
-    const kn = vlerp(k1, k2, 0.5);
-    r.cap(k1, kn, 0.5, 0.44, S(0.55));
-    r.cap(kn, k2, 0.44, 0.4, SS(0.55));
-    const tipDir = vnorm(vadd(vnorm(vsub(k2, k1)), vmul(Wp.u, -0.6 - fist * 0.6)));
-    r.spike(k2, tipDir, 1.2, 0.3, claw, 3);
-  }
-  const thumbTip = Wp.p(0.9, -s * 1.8, 0.5 - fist * 0.8);
-  r.cap(Wp.p(0.2, -s * 1.2, 0.3), thumbTip, 0.5, 0.4, S(0.55));
-  r.spike(thumbTip, Wp.v(0.6, -s * 0.4, -0.4), 0.9, 0.26, claw, 3);
-  j['shoulder' + name] = shoulder;
-  j['elbow' + name] = elbow;
-  j['hand' + name] = hand;
-}
-function leg(r: Rig, hips: F3, s: number, hock: V3, toeDir: V3, j: Record<string, V3>) {
-  const name = s < 0 ? 'L' : 'R',
-    hip = hips.p(-0.4, s * 4.0, -0.6);
-  const knee = ik(hip, hock, 6.9, 6.1, hips.v(1, s * 0.22, 0.12));
+    hip = Pv.p(-0.9, s * 3.2, -1.2);
+  const knee = ik(hip, hock, 7.6, 7.0, BU.v(1, s * 0.25, 0.1));
   r.tag = 'thigh' + name;
-  r.ell(axisFrame(vlerp(hip, knee, 0.42), vsub(hip, knee), hips.f), [0, 0, 0], [2.8, 2.5, 4.0], S(0.42));
-  r.ell(axisFrame(vlerp(hip, knee, 0.5), vsub(hip, knee), hips.f), [0.9, s * 0.5, 0], [1.6, 1.5, 2.8], SS(0.45));
-  for (let k = 0; k < 3; k++) tubeScutes(r, vlerp(hip, knee, 0.12 + k * 0.26), vlerp(hip, knee, 0.3 + k * 0.26), 2.4 - k * 0.2, hips.s, 0.95, k % 2 ? SS(0.42) : S(0.42));
+  // the haunch: a big muscle that fills the flank above the hip, so the leg grows out of the body
+  r.ell(axisFrame(vlerp(hip, knee, 0.3), vsub(hip, knee), Pv.f), [0, s * 0.3, 0], [3.2, 2.7, 4.4], S(0.4));
+  r.ell(axisFrame(vlerp(hip, knee, 0.5), vsub(hip, knee), Pv.f), [1.0, s * 0.6, 0], [1.7, 1.6, 3.0], SS(0.44));
+  for (let k = 0; k < 3; k++) tubeScutes(r, vlerp(hip, knee, 0.12 + k * 0.26), vlerp(hip, knee, 0.3 + k * 0.26), 2.5 - k * 0.2, Pv.s, 0.95, k % 2 ? SS(0.42) : S(0.42));
   r.tag = 'shin' + name;
-  r.cap(knee, hock, 1.85, 1.2, S(0.6));
-  // a row of scutes down the front of the shin
+  r.cap(knee, hock, 1.9, 1.2, S(0.6));
   for (let k = 0; k < 4; k++) {
     const at = vlerp(knee, hock, 0.18 + k * 0.22),
       dd = vnorm(vsub(hock, knee));
-    const frontV = vnorm(vcross(vcross(dd, hips.f), dd));
+    const frontV = vnorm(vcross(vcross(dd, Pv.f), dd));
     r.ell(axisFrame(vadd(at, vmul(frontV, -(1.6 - k * 0.12))), vmul(frontV, -1), dd), [0, 0, 0], [0.75, 0.9, 0.38], M(bone, boneDeep, 0.6));
   }
-  tubeScutes(r, vlerp(knee, hock, 0.3), vlerp(knee, hock, 0.6), 1.5, hips.s, 0.65, SS(0.62));
-  // knee plate with a spike
-  r.ell(axisFrame(knee, vsub(hock, knee), hips.f), [0.9, 0, 0], [1.1, 1.3, 1.1], M(bone, bone, 0.6));
-  r.spike(vadd(knee, vmul(hips.f, 1.4)), vnorm(vadd(hips.f, vmul(vnorm(vsub(knee, hock)), 0.6))), 1.2, 0.38, bone, 3);
+  tubeScutes(r, vlerp(knee, hock, 0.3), vlerp(knee, hock, 0.6), 1.5, Pv.s, 0.65, SS(0.62));
+  r.ell(axisFrame(knee, vsub(hock, knee), Pv.f), [0.9, 0, 0], [1.1, 1.3, 1.1], M(bone, bone, 0.6));
+  r.spike(vadd(knee, vmul(Pv.f, 1.4)), vnorm(vadd(Pv.f, vmul(vnorm(vsub(knee, hock)), 0.6))), 1.2, 0.38, bone, 3);
   r.tag = 'foot' + name;
-  const ball = vadd(hock, vmul(toeDir, 5.6));
+  const ball = vadd(hock, vmul(toeDir, 5.0));
   r.cap(hock, ball, 1.2, 1.0, S(0.75));
   const fwd = vnorm([toeDir[0], toeDir[1], 0]);
   const side = vnorm(vcross([0, 0, 1], fwd));
@@ -508,70 +538,10 @@ function leg(r: Rig, hips: F3, s: number, hock: V3, toeDir: V3, j: Record<string
   j['heel' + name] = hock;
   j['foot' + name] = ball;
 }
-function tail(r: Rig, F: F3, base: V3, sway: number, lagK: number, curl: number, lift: number, ph: number, j: Record<string, V3>, wrap = 0) {
-  // Long and heavy: down behind the heels, a wave along the stone, the crescent blade raised at the end. Asleep
-  // (`wrap`) it lies along the dial and curls round his near side to the front, the crescent by his nose.
-  const w = (k: number) => (sway + lagK * k) * k * (1 - wrap * 0.8);
-  const T = (x: number, y: number, z: number, k: number, wx: number, wy: number, wz: number): V3 =>
-    vadd(base, F.v(lerp(x, wx, wrap), lerp(y, wy, wrap) + w(k) * 7, lerp(z, wz, wrap) + lift * k * k * 8));
-  const pts: V3[] = [
-    base,
-    T(-4.4, 0.4, -4.6, 0.12, -4.0, 1.6, -4.8),
-    T(-10.4, 1.4, -8.6 + curl * 2, 0.28, -9.0, 5.0, -6.6),
-    T(-17.0, 2.6, -8.4 + curl * 5, 0.45, -11.6, 10.0, -6.8),
-    T(-22.4, 3.8, -4.6 + curl * 8, 0.62, -9.4, 15.0, -6.7),
-    T(-25.6 + curl * 5, 4.6, 0.4 + curl * 7, 0.78, -3.0, 17.6, -6.5),
-    T(-26.4 + curl * 8, 5.0, 4.6 + curl * 4, 0.9, 4.0, 17.4, -6.0),
-    T(-25.0 + curl * 10, 5.2, 8.0 + curl * 2, 1, 9.0, 15.6, -4.6),
-  ];
-  r.tag = 'tail';
-  const n = 30;
-  for (let k = 0; k < n; k++) {
-    const a = catmull(pts, k / n),
-      b = catmull(pts, (k + 1) / n);
-    const t0 = k / n;
-    r.cap(a, b, 2.9 - 2.2 * t0, 2.9 - 2.2 * (t0 + 1 / n), k % 4 === 3 ? SS(0.45 + t0 * 0.5) : S(0.45 + t0 * 0.5));
-    if (k < 26) tubeScutes(r, a, b, 2.9 - 2.2 * t0, F.s, 1.05 - t0 * 0.7, k % 2 ? SS(0.45 + t0 * 0.5) : SH(0.45 + t0 * 0.5));
-    // belly scutes underneath
-    if (k % 2 === 0 && k < 24) {
-      const c = vlerp(a, b, 0.5),
-        dd = vnorm(vsub(b, a));
-      const down = vnorm(vcross(dd, F.s));
-      r.ell(axisFrame(vadd(c, vmul(down, -(2.2 - 1.6 * t0))), dd, F.s), [0, 0, 0], [1.4 - t0, 1.4 - t0, 0.7], BL(0.45 + t0 * 0.5));
-    }
-  }
-  r.tag = 'tailSpikes';
-  for (let k = 1; k < 27; k++) {
-    const t0 = k / n,
-      c = catmull(pts, t0),
-      dd = vnorm(vsub(catmull(pts, t0 + 0.02), c));
-    const up = vnorm(vcross(F.s, dd));
-    const big = k % 2 === 1;
-    r.spike(vadd(c, vmul(up, 2.6 - 2 * t0)), vnorm(vadd(up, vmul(dd, -0.7))), (big ? 1.9 : 1.1) - t0 * (big ? 1.2 : 0.6), (big ? 0.6 : 0.4) - t0 * 0.25, big ? bone : boneDeep, 4);
-  }
-  // The crescent blade: a curved plate of moon metal in the plane of the tail tip, its horns pointing back and up.
-  r.tag = 'crescent';
-  const tip = catmull(pts, 0.999),
-    dirT = vnorm(vsub(tip, catmull(pts, 0.94)));
-  const upT = vnorm(vcross(F.s, dirT));
-  const blade = eclipseK > 0.5 ? moonGlow : moon;
-  const C = (a: number, rad: number, off: number): V3 => vadd(tip, vadd(vmul(dirT, Math.cos(a) * rad + off), vmul(upT, Math.sin(a) * rad)));
-  const N = 14;
-  for (let k = 0; k < N; k++) {
-    const a0 = -2.0 + (k / N) * 4.0,
-      a1 = -2.0 + ((k + 1) / N) * 4.0;
-    r.poly([C(a0, 5.6, 1.6), C(a1, 5.6, 1.6), C(a1, 3.8, 3.0), C(a0, 3.8, 3.0)], blade, 0.3);
-  }
-  for (let k = 0; k < 4; k++) r.line(C(-2.0 + k, 5.6, 1.6), C(-1.0 + k, 5.6, 1.6), moon.T[3], eclipseK * 0.8, 0.8);
-  void ph;
-  j.tailTip = tip;
-  j.crescent = C(0, 5.6, 1.6);
-  j.crescentA = C(-2.0, 4.7, 2.3);
-  j.crescentB = C(2.0, 4.7, 2.3);
-}
 
-// ---- wings ------------------------------------------------------------------------------------------------------
+// ---- wings: the fore limbs --------------------------------------------------------------------------------------
 export interface WingState {
+  /** 0 folded (umbrella), 1 spread. */
   open: number;
   beat: number;
   sweep: number;
@@ -579,44 +549,69 @@ export interface WingState {
   glow: number;
   /** Sunlight soaked into the membranes: 0 none, 1 every band glowing (from the edge in). */
   heat: number;
+  /** Hand curl: 0 open claws, 1 a fist. */
+  fist: number;
+  /** 0..1 how much the wrist stands on the stone (walking on four). */
+  ground: number;
+  /** The wrist on the stone (world). */
+  foot: V3;
+  /** The wrist when the wing is not on the stone: pose-authored goal or the wing's own air position (world). */
+  air: V3;
 }
-const rotX = (v: V3, a: number): V3 => [v[0], v[1] * Math.cos(a) - v[2] * Math.sin(a), v[1] * Math.sin(a) + v[2] * Math.cos(a)];
-const rotZ = (v: V3, a: number): V3 => [v[0] * Math.cos(a) - v[1] * Math.sin(a), v[0] * Math.sin(a) + v[1] * Math.cos(a), v[2]];
-const dirMix = (a: V3, b: V3, u: number) => vnorm(vlerp(vnorm(a), vnorm(b), u));
-/** Bones (folded → open direction, length): humerus, forearm and three fingers from the wrist (lead, middle, trail). */
-const WING = {
-  // directions in the leaning body frame (LEAN 0.6): open = up and back in the world, spread outward
-  hum: { fold: [-0.75, 0.3, 0.45] as V3, open: [-0.55, 0.55, 0.62] as V3, len: 6.6 },
-  fore: { fold: [0.55, 0.2, 0.8] as V3, open: [-0.85, 0.12, 0.5] as V3, len: 7.6 },
-  fingers: [
-    { fold: [-0.95, 0.12, -0.15] as V3, open: [-0.25, 0.1, 0.96] as V3, len: 15.0 },
-    { fold: [-0.72, 0.16, -0.66] as V3, open: [-0.95, 0.08, 0.3] as V3, len: 13.5 },
-    { fold: [-0.38, 0.18, -0.9] as V3, open: [-0.8, 0.06, -0.6] as V3, len: 12.0 },
-  ],
-};
-function wing(r: Rig, B: F3, s: number, st: WingState, j: Record<string, V3>, wingRig: Rig = r) {
+/** Bone lengths: humerus, forearm; wing fingers (lead, middle, trail); the membrane reaches the flank over the hip. */
+const HUM = 7.0,
+  FORE = 15.0,
+  FINGERS = [26, 22, 17.5];
+/** Wing finger directions when spread, in the upright frame (forward, outward, up). */
+const OPEN_DIRS: V3[] = [
+  [-0.12, 0.72, 0.68],
+  [-0.6, 0.66, 0.16],
+  [-0.88, 0.34, -0.36],
+];
+/** The wing's own wrist position relative to the shoulder (forward, outward, up): folded in front of the chest, spread. */
+const WRIST_FOLD: V3 = [3.0, 3.6, -8.0];
+const WRIST_OPEN: V3 = [-2.4, 15.0, 7.2];
+/** Rotate a local (forward, outward, up) vector by the wing beat (round the forward axis) and sweep (round up). */
+function beatSweep(v: V3, beat: number, sweep: number): V3 {
+  const y1 = v[1] * Math.cos(beat) - v[2] * Math.sin(beat),
+    z1 = v[1] * Math.sin(beat) + v[2] * Math.cos(beat);
+  const x2 = v[0] * Math.cos(sweep) - y1 * Math.sin(sweep),
+    y2 = v[0] * Math.sin(sweep) + y1 * Math.cos(sweep);
+  return [x2, y2, z1];
+}
+/** The wing's own wrist (world) for a spread / beat / sweep, from the shoulder in the upright frame BU. */
+function wingWrist(BU: F3, shoulder: V3, s: number, open: number, beat: number, sweep: number): V3 {
+  const u = smooth(saturate(open));
+  const v = beatSweep(vlerp(WRIST_FOLD, WRIST_OPEN, u), beat * u, sweep);
+  return vadd(shoulder, BU.v(v[0], s * v[1], v[2]));
+}
+function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j: Record<string, V3>) {
   const name = s < 0 ? 'L' : 'R';
-  const root = B.p(-1.6, s * 3.0, 14.2);
   const u = smooth(saturate(st.open));
+  // the wrist: on the stone, or where the wing puts it; never further than the arm reaches
+  let wrist = vlerp(st.air, st.foot, st.ground);
+  const reachV = vsub(wrist, shoulder),
+    reachL = vlen(reachV);
+  if (reachL > (HUM + FORE) * 0.985) wrist = vadd(shoulder, vmul(reachV, ((HUM + FORE) * 0.985) / reachL));
+  const pole = vnorm(vlerp(BU.v(-1.0, s * 0.35, 0.6), BU.v(-0.5, s * 0.25, 1.0), u));
+  const elbow = ik(shoulder, wrist, HUM, FORE, pole);
+  const fd = vnorm(vsub(wrist, elbow));
   const place = (v: V3): V3 => {
-    // local wing space: x forward, y outward (mirrored by s), z up; beat raises the wing round the root, sweep
-    // swings it forward and back
-    const lv: V3 = [v[0], v[1], v[2]];
-    const r1 = rotX(lv, st.beat);
-    const r2 = rotZ(r1, st.sweep);
-    return B.v(r2[0], s * r2[1], r2[2]);
+    const w = beatSweep(v, st.beat * u, st.sweep);
+    return BU.v(w[0], s * w[1], w[2]);
   };
-  const boneAt = (from: V3, b: { fold: V3; open: V3; len: number }, extra = 0): V3 => {
-    const d = dirMix(b.fold, b.open, u);
-    return vadd(from, vmul(place(d), b.len * (1 + extra)));
-  };
-  const elbow = boneAt(root, WING.hum);
-  const wrist = boneAt(elbow, WING.fore);
-  const tips = WING.fingers.map((f) => boneAt(wrist, f));
-  const trail = vadd(B.p(-3.8, s * 3.4, 3.6), place([0, 0, 0]));
-  r = wingRig;
+  // folded: the fingers lie up along the forearm and run on past the elbow, three points behind the shoulder, the
+  // membrane furled between them like a closed umbrella; spread: out of the wrist into the wing
+  const back = vmul(fd, -1);
+  const FOLD: V3[] = [
+    vnorm(vadd(vmul(back, 0.6), BU.v(-0.28, s * 0.1, 0.75))),
+    vnorm(vadd(vmul(back, 0.6), BU.v(-0.55, s * 0.16, 0.5))),
+    vnorm(vadd(vmul(back, 0.6), BU.v(-0.85, s * 0.22, 0.22))),
+  ];
+  const tips = FINGERS.map((len, k) => vadd(wrist, vmul(vnorm(vlerp(FOLD[k], vnorm(place(OPEN_DIRS[k])), u)), len * (0.92 + 0.08 * u))));
+  const trail = Pv.p(-1.6, s * 3.3, 1.6);
   // Membranes first (behind the bones in depth bias), scalloped between the finger tips.
-  r.tag = 'membrane';
+  r.tag = 'membrane' + name;
   const memIn = (d: number) => M(membrane, voidwing, d),
     memEdge = (d: number) => M(membraneEdge, voidwingEdge, d);
   const memGlow = (d: number) => M(membraneGlow, voidwingGlow, d);
@@ -645,10 +640,11 @@ function wing(r: Rig, B: F3, s: number, st: WingState, j: Record<string, V3>, wi
   panel(tips[2], sc2, 0.9);
   panel(sc2, trail, 0.7);
   r.poly([wrist, trail, elbow], memIn(0.62), -0.2);
-  r.poly([elbow, trail, root], memIn(0.55), -0.2);
-  r.poly([root, elbow, wrist], memEdge(0.58), -0.2);
+  r.poly([elbow, trail, shoulder], memIn(0.55), -0.2);
+  // the leading membrane from the shoulder to the wrist, in front of the arm
+  r.poly([shoulder, elbow, wrist], memEdge(0.58), -0.2);
   edges.push([tips[2], sc2, trail]);
-  // Veins: gold lines from the wrist into each membrane; silver constellations in the eclipse.
+  // veins: gold lines from the wrist into each membrane; silver constellations in the eclipse
   for (let k = 0; k < 3; k++) {
     const a = tips[k],
       b = k < 2 ? tips[k + 1] : trail;
@@ -663,32 +659,72 @@ function wing(r: Rig, B: F3, s: number, st: WingState, j: Record<string, V3>, wi
         }
     }
   }
-  // The corona along the trailing edge in the eclipse: soft flame tongues in the plane of the wing.
-  if (eclipseK > 0.05)
+  // the corona along the trailing edge in the eclipse: soft flame tongues in the plane of the wing
+  if (eclipseK > 0.05 && u > 0.2)
     for (const [a, sc, b] of edges)
       for (let q = 0; q < 4; q++) {
         const pt = q < 2 ? vlerp(a, sc, (q + 0.5) / 2) : vlerp(sc, b, (q - 1.5) / 2);
         const out = vnorm(vsub(pt, wrist));
-        tongueOfFire(r, pt, out, place([0, 0, 1]), (1.4 + 0.8 * Math.sin(st.ph * 1 + q * 1.9)) * eclipseK, 0.4, st.ph + q, coronaMat);
+        tongueOfFire(r, pt, out, place([0, 0, 1]), (1.4 + 0.8 * Math.sin(st.ph * 1 + q * 1.9)) * eclipseK * u, 0.4, st.ph + q, coronaMat);
       }
-  // Bones: the arm of the wing in scales, the fingers in ivory, a claw on the wrist.
-  r.tag = 'wing' + name;
-  r.cap(root, elbow, 1.55, 1.25, S(0.5));
-  r.cap(elbow, wrist, 1.2, 0.95, S(0.6));
-  r.ell(axisFrame(elbow, vsub(wrist, elbow), B.u), [0, 0, 0], [1.3, 1.3, 1.3], SS(0.55));
-  r.spike(wrist, vnorm(vadd(place([0.4, 0.2, 1]), vmul(vsub(wrist, elbow), 0.05))), 1.8, 0.45, claw, 3);
-  r.tag = 'wingBone';
+  // The arm: a scaled humerus out of a shoulder muscle, the elbow knob with a spike, the forearm with a gold bangle.
+  r.tag = 'shoulder' + name;
+  r.ell(axisFrame(shoulder, vsub(shoulder, elbow), BU.f), [0, 0, 0], [2.7, 2.5, 2.9], S(0.15));
+  r.tag = 'arm' + name;
+  r.cap(shoulder, elbow, 1.8, 1.4, S(0.45));
+  for (let k = 0; k < 3; k++) tubeScutes(r, vlerp(shoulder, elbow, 0.15 + k * 0.28), vlerp(shoulder, elbow, 0.3 + k * 0.28), 1.6, BU.s, 0.7, k % 2 ? SS(0.45) : S(0.45));
+  r.ell(axisFrame(elbow, vsub(wrist, elbow), BU.u), [0, 0, 0], [1.45, 1.45, 1.45], SS(0.55));
+  r.spike(elbow, vnorm(vadd(vsub(elbow, wrist), vmul(vsub(elbow, shoulder), 0.6))), 1.8, 0.45, bone, 3);
+  r.cap(elbow, wrist, 1.4, 1.1, S(0.6));
+  for (let k = 0; k < 2; k++) tubeScutes(r, vlerp(elbow, wrist, 0.1 + k * 0.3), vlerp(elbow, wrist, 0.25 + k * 0.3), 1.25, BU.s, 0.6, k % 2 ? SS(0.6) : S(0.6));
+  r.tag = 'bangle' + name;
+  const b0 = vlerp(elbow, wrist, 0.7),
+    b1 = vlerp(elbow, wrist, 0.86);
+  r.cap(b0, b1, 1.45, 1.35, gold);
+  r.cap(vlerp(b0, b1, -0.05), vlerp(b0, b1, 0.08), 1.58, 1.58, goldDeep);
+  r.cap(vlerp(b0, b1, 0.92), vlerp(b0, b1, 1.05), 1.5, 1.5, goldDeep);
+  const outB = vnorm(vcross(vsub(b1, b0), BU.u));
+  for (let k = 0; k < 9; k++) {
+    const a = (k / 9) * Math.PI - Math.PI / 2;
+    const rim = vadd(vmul(outB, s * Math.cos(a) * 1.5), vmul(vnorm(vcross(outB, vsub(b1, b0))), Math.sin(a) * 1.45));
+    r.line(vadd(vlerp(b0, b1, 0.3), rim), vadd(vlerp(b0, b1, k % 3 ? 0.55 : 0.7), rim), goldDeep.T[0], 0, 0.5);
+  }
+  // Wing fingers: ivory bones with a knuckle.
+  r.tag = 'wingBone' + name;
   tips.forEach((tip, k) => {
     const knuckle = vlerp(wrist, tip, 0.45);
-    r.cap(wrist, knuckle, 0.62 - k * 0.05, 0.48, M(bone, boneDeep, 0.8));
-    r.ell(axisFrame(knuckle, vsub(tip, wrist), B.u), [0, 0, 0], [0.62, 0.62, 0.5], M(boneDeep, boneDeep, 0.85));
-    r.cap(knuckle, tip, 0.48, 0.18, M(bone, boneDeep, 0.9));
+    r.cap(wrist, knuckle, 0.66 - k * 0.05, 0.5, M(bone, boneDeep, 0.8));
+    r.ell(axisFrame(knuckle, vsub(tip, wrist), BU.u), [0, 0, 0], [0.64, 0.64, 0.52], M(boneDeep, boneDeep, 0.85));
+    r.cap(knuckle, tip, 0.5, 0.18, M(bone, boneDeep, 0.9));
   });
-  j['wingRoot' + name] = root;
+  // The hand at the wrist: a knuckle pad he walks on, three clawed fingers forward. On the stone the claws grip
+  // the dial; in the air they point along the forearm and curl into a fist.
+  r.tag = 'hand' + name;
+  const handF = vnorm(vlerp(vnorm(vadd(fd, BU.v(0.35, 0, 0))), FTdir(BU, s), st.ground));
+  const Wp = frameF(wrist, handF, BU.u);
+  r.ell(Wp, [0.2, 0, -0.2], [1.6, 1.45, 1.2], S(0.62));
+  r.tag = 'claw' + name;
+  const fist = saturate(st.fist);
+  for (let k = 0; k < 3; k++) {
+    const y = (k - 1) * 0.85;
+    const k1 = Wp.p(1.2, y, -0.3),
+      k2 = Wp.p(2.4 - Math.abs(y) * 0.25 - fist * 1.3, y * 1.2, -0.5 - fist * 1.2 - st.ground * 0.4);
+    const kn = vlerp(k1, k2, 0.5);
+    r.cap(k1, kn, 0.52, 0.45, S(0.66));
+    r.cap(kn, k2, 0.45, 0.4, SS(0.66));
+    const tipDir = vnorm(vadd(vnorm(vsub(k2, k1)), vmul(Wp.u, -0.7 - fist * 0.6)));
+    r.spike(k2, tipDir, 1.25, 0.3, claw, 3);
+  }
+  j['wingRoot' + name] = shoulder;
+  j['elbow' + name] = elbow;
   j['wingWrist' + name] = wrist;
   j['wingTip' + name] = tips[0];
   j['wingTrail' + name] = tips[2];
+  j['hand' + name] = Wp.p(2.4, 0, -0.4);
+  j['fore' + name] = [wrist[0], wrist[1], Math.max(0, wrist[2] - 1.4)];
 }
+/** On the stone the hand points forward and a little out. */
+const FTdir = (BU: F3, s: number): V3 => vnorm([BU.f[0] + BU.s[0] * s * 0.3, BU.f[1] + BU.s[1] * s * 0.3, -0.15]);
 
 /** Mirror spots in the facing frame (forward, right): front-near, back-near, front-far. */
 export const MIRRORS: [number, number][] = [
@@ -749,13 +785,21 @@ function egg(r: Rig, F: F3, crack: number, open: number, j: Record<string, V3>) 
 }
 
 // ---- assembly ---------------------------------------------------------------------------------------------------
-type Figure = NonNullable<ArmedAppearance['figure']>;
 type PoseSample = (anim: string, time: number) => JointPose;
 export const loopPeriods: Record<string, number> = { idle: 3, walk: 1, sleep: 3, 'idle-f2': 2, turn: 4 };
-export function drakeFigure(sample: PoseSample): Figure {
-  return (anim, t, side, _variant, pose, support) => {
+/** Rig units → painting pixels before the depth scale of the life engine. */
+export const portraitScale = 4.6;
+/** Rest stance in the feet frame: hind hocks and the wrists on the stone (forward, outward, up). */
+export const STANCE = { hock: [-2.8, 4.3, 4.8] as V3, wrist: [13.4, 6.0, 1.8] as V3 };
+/** Gait offsets of the four contacts (a lateral walk: left hind, left fore, right hind, right fore). */
+const GAIT = { footL: 0, foreL: 0.25, footR: 0.5, foreR: 0.75 };
+export function drakeFrame(sample: PoseSample): Creature['frame'] {
+  const route = card.life;
+  return (anim, t, side, _variant, motion) => {
+    const keyed = motion?.techniquePose;
+    const pose: JointPose = keyed ? { ...keyed } : sample(anim, t);
     const get = (key: string) => pose[key] ?? 0,
-      A = pose as JointPose;
+      A = pose;
     const period = clips[anim]?.loop ? clips[anim].seconds : (loopPeriods[anim] ?? 0);
     const q = period ? (t * TAU) / period : 0;
     const clock = clipClock(clips[anim]?.seconds ?? 2, t);
@@ -766,31 +810,34 @@ export function drakeFigure(sample: PoseSample): Figure {
     const lag = (p: JointPose, k: string) => p[k] ?? 0;
     const r = new Rig(),
       j: Record<string, V3> = {};
-    const F0 = F3.yaw(card.life.yaw + (side * Math.PI) / 8),
+    const F0 = F3.yaw(route.yaw + (side * Math.PI) / 8),
       F = F0.turn(get('yaw'));
     const form = get('form'),
-      sleep = get('sleep');
+      sleep = get('sleep'),
+      sl = saturate(sleep);
     eclipseLook(form);
     pearlNight = get('pearlDark') > 0.5;
     const ph = clock.turn(1.5);
     const glow = saturate(get('charge') + 0.25 + 0.15 * clock.osc(0.5));
     const walking = anim === 'walk';
-    const feet = support?.feet;
-    const bob = walking ? 0.5 * Math.cos(t * TAU * 2) : 0;
+    const gait = motion?.gaitPhase ?? t;
+    const step = (key: keyof typeof GAIT) => (walking ? strideFoot(gait, GAIT[key], route.stride) : { forward: 0, lift: 0, planted: true });
+    const bob = walking ? 0.35 * Math.cos(t * TAU * 2) : 0;
     const breath = period && !walking ? 0.4 * Math.sin(q) : 0;
     const hover = get('hover') + (eclipseK > 0.5 ? 0.7 * Math.sin(clock.turn(1)) : 0);
     const hoverK = saturate(hover / 4);
-    const crouch = get('crouch') + 0.3 * (1 - saturate(sleep)) * (1 - hoverK) + sleep * 9.2;
-    const hipZ = HIP + get('lift') - crouch + get('jump') + hover + breath * 0.3 + bob;
+    const rear = get('rear');
+    const crouch = get('crouch') + sl * 7.4;
+    const hipZ = HIP + get('lift') - crouch + get('jump') + hover + breath * 0.25 + bob;
     // A flip turns round his middle, not round the hips (kit/pet-moves).
-    const [pivotX, pivotZ] = pivotLift(get('pitch'), 0, 9);
-    // BU: the hip frame upright (it follows flips, rolls and spins); B: the body leaning forward like a raptor.
+    const [pivotX, pivotZ] = pivotLift(get('pitch'), 0, 8);
+    // BU: upright at the hips (it follows flips, rolls and spins); Pv: the body axis, level on four, raised when he
+    // rears on the hind legs, level again in flight.
     const BU = F.at(get('lean') + pivotX, get('drift'), hipZ + pivotZ)
       .pitch(get('pitch'))
-      .roll(get('roll') + (walking ? 0.04 * Math.sin(t * TAU) : 0))
+      .roll(get('roll') + (walking ? 0.03 * Math.sin(t * TAU) : 0))
       .turn(get('twist'));
-    const hips = BU.pitch(LEAN + sleep * 1.0 + get('bodyPitch') + (walking ? 0.04 : 0));
-    const B = hips;
+    const Pv = BU.pitch(-0.12 * (1 - sl) - rear * 0.95 * (1 - hoverK * 0.7) + get('bodyPitch') + (walking ? 0.02 : 0));
     // A spin (`twist`) turns feet and hand goals with the body.
     const twist = get('twist');
     const FT = twist ? F.at(get('lean'), get('drift'), 0).turn(twist).at(-get('lean'), -get('drift'), 0) : F;
@@ -808,90 +855,98 @@ export function drakeFigure(sample: PoseSample): Figure {
     const lagJump = (p: JointPose) => lag(p, 'jump') + lag(p, 'lift') - lag(p, 'crouch') + lag(p, 'hover');
     const planted: string[] = [];
     if (get('hidden') < 0.5) {
-      // Legs: stand on the dial, or tuck under him in flight.
       const tuck = Math.max(flipTuck(get('pitch')), saturate(get('tuck')));
-      for (let index = 0; index < 2; index++) {
-        const s = index ? 1 : -1,
-          name = s < 0 ? 'L' : 'R';
-        const step = feet ? feet[index] : { forward: 0, lift: 0, planted: true };
-        const fwd = walking ? step.forward / portraitScale : 0;
-        const stand = FT.p(-3.0 + fwd + (get('stride') + (walking ? 0 : 1.0)) * s, s * 4.6, 5.4 + step.lift * 3.2);
-        const hang = BU.p(-5.6 + s * 1.2, s * 4.0, -9.4 + (s > 0 ? 1.2 : 0));
-        const curled = FT.p(1.6, s * 4.0, 2.4);
-        const air = vadd(stand, FT.v(0.8, 0, get('jump') * 0.85));
-        const tucked = BU.p(3.4, s * 4.2, -6.0);
-        const rest = vlerp(vlerp(vlerp(vlerp(stand, air, saturate(get('jump') / 3)), hang, hoverK), curled, saturate(sleep)), tucked, tuck);
-        const hock = target('foot' + name, rest);
-        const point = saturate(get('point') + hoverK * 0.6 + (walking ? step.lift * 0.5 : 0));
-        const toeDir = vnorm(vlerp(vlerp(FT.v(0.55, s * 0.08, -1), FT.v(0.25, s * 0.08, -1), point), hips.v(0.4, s * 0.08, -1), tuck));
-        leg(R0, hips, s, hock, toeDir, j);
-        if (walking && step.planted) planted.push('foot' + name);
-      }
-      torso(R0, B, breath, glow, ph, j);
-      // Wings: folded like a cape at rest (a slow breath in the membranes), opened and beating in tricks and flight.
-      const openBase = get('wingOpen') + (eclipseK > 0.5 ? 0.62 : 0) * (1 - saturate(sleep));
-      const beatBase = get('wingBeat') + (eclipseK > 0.5 ? 0.42 * Math.sin(clock.turn(1)) : 0.03 * clock.osc(0.33));
-      const lagBeat = 0.5 * (lag(wingLag, 'jump') - get('jump')) * 0.05 + 0.6 * (lag(wingLag, 'twist') - get('twist'));
+      // ---- hind legs: stand on the dial, hang in flight, fold under him asleep, tuck in a flip
       for (const s of [-1, 1]) {
-        const k = s < 0 ? 'L' : 'R';
-        wing(R0, B, s, {
-          open: saturate(openBase + get('wingOpen' + k)),
-          beat: beatBase + get('wingBeat' + k) + s * lagBeat * 0.3,
-          sweep: get('wingSweep') + get('wingSweep' + k),
-          ph: ph + s,
-          glow,
-          heat: get('wingHeat'),
-        }, j);
+        const name = s < 0 ? 'L' : 'R';
+        const st = step(s < 0 ? 'footL' : 'footR');
+        const fwd = walking ? st.forward / portraitScale : 0;
+        const stand = FT.p(STANCE.hock[0] + fwd + get('stride') * s, s * STANCE.hock[1], STANCE.hock[2] + st.lift * 2.8);
+        const hang = BU.p(-4.6 + s * 0.8, s * 3.8, -8.6 + (s > 0 ? 1.0 : 0));
+        const curled = FT.p(1.4, s * 4.4, 1.6);
+        const air = vadd(stand, FT.v(0.6, 0, get('jump') * 0.85));
+        const tucked = BU.p(2.6, s * 4.0, -5.2);
+        const rest = vlerp(vlerp(vlerp(vlerp(stand, air, saturate(get('jump') / 3)), hang, hoverK), curled, sl), tucked, tuck);
+        const hock = target('foot' + name, rest);
+        const point = saturate(get('point') + hoverK * 0.6 + (walking ? st.lift * 0.5 : 0));
+        const toeDir = vnorm(vlerp(vlerp(FT.v(0.5, s * 0.08, -1), FT.v(0.25, s * 0.08, -1), point), Pv.v(0.4, s * 0.08, -1), tuck));
+        leg(R0, Pv, BU, s, hock, toeDir, j);
+        if (walking && st.planted) planted.push('foot' + name);
       }
-      tail(
-        R0,
-        F.pitch(get('pitch')).roll(get('roll')).turn(get('twist')),
-        hips.p(-4.6, 0, 0.8),
-        0.12 * clock.osc(0.33) + get('tailSway'),
-        lag(tailLag, 'tailSway') - get('tailSway') + 0.5 * (lag(tailLag, 'twist') - get('twist')) + 0.05 * (lagJump(tailLag) - lagJump(A)),
-        get('tailCurl') + hoverK * 0.3,
-        get('tailLift'),
-        ph,
-        j,
-        saturate(sleep),
-      );
-      // Neck: an S from the chest up to the head; `coil` pulls the head back and down (before a breath of fire).
+      // ---- the head: high over the chest on four, higher when he rears; coiled back before a breath
+      const chestC = Pv.p(8.0, 0, 0.8);
+      const CU = new F3(chestC, BU.f, BU.s, BU.u);
       const coil = get('coil');
       const neckLagN = 0.6 * (lag(neckLag, 'nod') - get('nod')) + 0.08 * (lagJump(neckLag) - lagJump(A));
-      const sl = saturate(sleep),
-        reachN = get('neckReach'),
+      const reachN = get('neckReach'),
         rise = get('neckUp');
-      // lying down the head swings out in front of the chest (an arc), never straight down through it
-      const arcOut = Math.sin(Math.PI * sl);
-      // asleep he lies on his belly, the head on the dial in front of the near paw, turned to us, eyes shut
-      const Hd = BU.at(lerp(14.2 - coil * 5.0 + reachN, 19.5, sl) + 4 * arcOut, lerp(0, 6.0, sl), lerp(24.0 - coil * 3.5 + rise + neckLagN, -5.6, sl))
-        .turn(0.32 * (1 - sl) + get('gaze') + sl * 1.5)
-        .roll(get('tilt') - sl * 0.15)
-        .pitch(0.06 + get('nod') + coil * 0.35 + sl * 0.08);
-      const neckPts: V3[] = [
-        B.p(2.6, 0, 13.6),
-        BU.p(lerp(13.4 - coil * 2.6 + reachN * 0.3, 15.0, sl) + 2 * arcOut, lerp(0, 1.0, sl), lerp(13.6 - coil * 1.2 + rise * 0.3, 1.8, sl)),
-        BU.p(lerp(11.2 - coil * 4.4 + reachN * 0.7, 18.4, sl) + 3.5 * arcOut, lerp(0, 2.8, sl), lerp(18.8 - coil * 2.6 + rise * 0.7, -2.6, sl)),
-        Hd.p(-2.6, 0, -1.4),
+      const rearK = saturate(rear);
+      const hx0 = lerp(8.8, 6.0, rearK) - coil * 4.6 + reachN,
+        hz0 = lerp(13.4, 12.6, rearK) - coil * 3.4 + rise + neckLagN;
+      const awake = CU.at(hx0, 0, hz0)
+        .turn(0.3 + get('gaze'))
+        .roll(get('tilt'))
+        .pitch(0.04 + get('nod') + coil * 0.35);
+      // asleep the head lies on the dial in front of the near wrist, turned to us, the eyes shut
+      const asleepH = FT.at(17.4, 6.2, 2.5).turn(1.35).roll(-0.12).pitch(0.08);
+      const Hd = (sl > 0 ? blendFrame(awake, asleepH, smooth(sl)) : awake).scale(HEAD_SCALE);
+      // ---- the one line: crescent → tail → pelvis → belly → chest → neck → skull
+      const sway = 0.12 * clock.osc(0.33) + get('tailSway');
+      const lagT = lag(tailLag, 'tailSway') - get('tailSway') + 0.5 * (lag(tailLag, 'twist') - get('twist')) + 0.05 * (lagJump(tailLag) - lagJump(A));
+      const curl = get('tailCurl') + hoverK * 0.3,
+        lift = get('tailLift');
+      const root = Pv.p(-3.8, 0, 0.1),
+        r1 = Pv.p(-7.8, sway * 1.2, -0.7);
+      const wsk = (k: number) => (sway + lagT * k) * k * (1 - sl * 0.8);
+      const TW = [3.4, 2.95, 2.45, 2.0, 1.6, 1.25, 0.95, 0.7, 0.48];
+      // in flight the tail streams back instead of lying on the stone
+      const flyK = Math.max(hoverK, saturate(get('jump') / 4));
+      const tailPt = (n: number, x: number, y: number, z: number, wx: number, wy: number, wz: number, rad: number): V3 => {
+        const k = n / 7;
+        const p = vadd(r1, FT.v(lerp(x * (1 + 0.15 * flyK), wx, sl), lerp(y, wy, sl) + wsk(k) * 7, lerp(z * (1 - 0.7 * flyK), wz, sl) + lift * k * k * 8 + curl * k * k * 6));
+        return [p[0], p[1], Math.max(p[2], rad + 0.25)];
+      };
+      const tailPts: V3[] = [
+        tailPt(1, -3.74, 0.42, -4.2, -3.6, 1.8, -3.4, TW[2]),
+        tailPt(2, -8.16, 1.36, -8.6, -7.4, 5.4, -4.6, TW[3]),
+        tailPt(3, -12.58, 2.38, -11, -8.6, 10.6, -4.8, TW[4]),
+        tailPt(4, -16.83, 3.31, -11.6, -5.6, 15.6, -4.8, TW[5]),
+        tailPt(5, -20.06, 3.91, -10.6, 0.2, 18.2, -4.7, TW[6]),
+        tailPt(6, -21.76, 4.25, -8.2, 6.4, 18.0, -4.4, TW[7]),
+        tailPt(7, -21.93, 4.42, -4.6, 11.2, 15.8, -3.4, TW[8]),
       ];
-      R0.tag = 'neck';
-      const NS = 16;
-      for (let k = 0; k < NS; k++) {
-        const a = catmull(neckPts, k / NS),
-          b = catmull(neckPts, (k + 1) / NS);
-        const t0 = k / NS;
-        R0.cap(a, b, 2.9 - t0 * 1.1, 2.9 - (t0 + 1 / NS) * 1.1, S(0.4 + t0 * 0.3));
-        tubeScutes(R0, a, b, 2.9 - t0 * 1.1, B.s, 0.85 - t0 * 0.25, k % 2 ? SS(0.4 + t0 * 0.3) : SH(0.4 + t0 * 0.3));
-        const dd = vnorm(vsub(b, a));
-        const fwdN = vnorm(vcross(vcross(dd, B.f), dd));
-        // throat scutes and a row of spikes down the back of the neck
-        if (k % 2 === 0) R0.ell(axisFrame(vadd(vlerp(a, b, 0.5), vmul(B.f, 1.9 - t0 * 0.8)), dd, B.s), [0, 0, 0], [1.4, 1.6 - t0 * 0.5, 0.7], BL(0.4 + t0 * 0.3));
-        if (k % 2 === 1) {
-          R0.tag = 'neckSpikes';
-          R0.spike(vadd(vlerp(a, b, 0.5), vmul(B.f, -(2.4 - t0 * 0.9))), vnorm(vadd(vmul(B.f, -1), vmul(fwdN, -0.2))), 1.6 - t0 * 0.4, 0.5, bone, 4);
-          R0.tag = 'neck';
-        }
-      }
+      const neckBase = Pv.p(11.2, 0, 2.6);
+      const headBase = Hd.p(-2.6, 0, -1.4);
+      const n1 = vadd(vlerp(neckBase, headBase, 0.34), CU.v(1.5 - coil * 1.4 + 2.2 * sl, 0, 0.4));
+      const n2 = vadd(vlerp(neckBase, headBase, 0.7), CU.v(-1.2 - coil * 0.8 + 1.2 * sl, 0, 0.6 - 0.8 * sl));
+      const knots: Knot[] = [
+        ...tailPts
+          .slice()
+          .reverse()
+          .map((p, k) => ({ p, w: TW[8 - k], h: TW[8 - k], d: 1 - k * 0.075, tag: 'tail' })),
+        { p: r1, w: TW[1], h: TW[1] * 0.98, d: 0.46, tag: 'tail' },
+        { p: root, w: TW[0], h: TW[0] * 0.98, d: 0.4, tag: 'pelvis' },
+        { p: Pv.p(-0.6, 0, 0.2), w: 3.9, h: 3.75, d: 0.32, tag: 'pelvis' },
+        { p: Pv.p(3.6, 0, -0.1), w: 4.15 + breath * 0.2, h: 4.35 + breath * 0.15, d: 0.18, tag: 'belly' },
+        { p: chestC, w: 4.6 + breath * 0.25, h: 5.2 + breath * 0.2, d: 0.05, tag: 'chest' },
+        { p: neckBase, w: 3.5, h: 3.8, d: 0.12, tag: 'neck' },
+        { p: n1, w: 2.9, h: 3.05, d: 0.3, tag: 'neck' },
+        { p: n2, w: 2.5, h: 2.6, d: 0.5, tag: 'neck' },
+        { p: headBase, w: 2.3, h: 2.4, d: 0.68, tag: 'neck' },
+      ];
+      const pelvisKnot = 9;
+      const line = bodyLine(R0, knots, pelvisKnot, Pv.u);
+      const tipI = 0;
+      crescent(R0, line.P[tipI], vnorm(vsub(line.P[tipI], line.P[tipI + 2])), FT.s, j);
+      j.tailMid = line.P[Math.round(LINE_N * 0.22)];
+      j.body = Pv.p(3.6, 0, -0.1);
+      j.neck = n1;
+      // the pearl on the front of the chest, facing forward and down
+      const chestI = Math.round((11 / (knots.length - 1)) * LINE_N);
+      const CF = line.Fr[chestI];
+      const nOut = vnorm(CF.v(0.55, 0, -0.84));
+      pearl(R0, frameF(vadd(chestC, vmul(nOut, line.H[chestI] * 0.94)), nOut, CF.u), glow, ph, j);
+      // ---- the head
       const fire = get('fire');
       const barbel = F.v(
         0.6 * (lag(tailLag, 'lean') - get('lean')) + 0.4 * (lag(tailLag, 'nod') - get('nod')) * 6,
@@ -912,36 +967,60 @@ export function drakeFigure(sample: PoseSample): Figure {
         ph,
         fold: saturate(sleep * 1.6),
       });
-      // Arms: claws half-closed in front of the chest, the near one a little higher.
-      const restL = BU.p(13.4, -3.8, 3.4),
-        restR = BU.p(12.8, 5.6, 0.6);
-      const sleepR = FT.p(13.2, 3.0, 1.0),
-        sleepL = FT.p(14.6, -4.0, 1.0);
-      const swing = walking ? Math.sin(t * TAU) : 0;
-      const handR = target('handR', vadd(vlerp(restR, sleepR, saturate(sleep)), B.v(-1.6 * swing, 0, 0.5 * Math.abs(swing)))),
-        handL = target('handL', vadd(vlerp(restL, sleepL, saturate(sleep)), B.v(1.6 * swing, 0, 0.5 * Math.abs(swing))));
-      arm(R0, B, 1, handR, j, 0.2 + get('fistR'), R0);
-      arm(R0, B, -1, handL, j, 0.2 + get('fistL'), R0);
+      // ---- wings: on the stone when he walks on four, folded in front of the chest when he rears, spread in flight
+      const openBase = get('wingOpen') + (eclipseK > 0.5 ? 0.62 : 0) * (1 - sl);
+      const beatBase = get('wingBeat') + (eclipseK > 0.5 ? 0.42 * Math.sin(clock.turn(1)) : 0.03 * clock.osc(0.33));
+      const lagBeat = 0.5 * (lag(wingLag, 'jump') - get('jump')) * 0.05 + 0.6 * (lag(wingLag, 'twist') - get('twist'));
+      for (const s of [-1, 1]) {
+        const k = s < 0 ? 'L' : 'R';
+        const open = saturate(openBase + get('wingOpen' + k));
+        const beat = beatBase + get('wingBeat' + k) + s * lagBeat * 0.3;
+        const sweep = get('wingSweep') + get('wingSweep' + k);
+        const shoulder = Pv.p(9.0, s * 3.3, 3.6);
+        const st = step(s < 0 ? 'foreL' : 'foreR');
+        const fwd = walking ? st.forward / portraitScale : 0;
+        const foot = vlerp(
+          FT.p(STANCE.wrist[0] + fwd - get('stride') * s * 0.6, s * STANCE.wrist[1], STANCE.wrist[2] + st.lift * 2.6),
+          FT.p(10.6, s * 6.4, 1.3),
+          sl,
+        );
+        // the wrist stands on the stone unless he rears, flies, jumps or opens the wing
+        const ground = saturate(1 - 2.2 * rearK) * (1 - hoverK) * (1 - saturate(get('jump') / 2.5)) * (1 - smooth(open)) * (1 - tuck) * (1 - saturate(get('lift') / 4));
+        const air = target('hand' + k, wingWrist(BU, shoulder, s, open, beat, sweep));
+        const handGoal = goalAt(A, 'hand' + k);
+        wing(R0, BU, Pv, shoulder, s, {
+          open,
+          beat,
+          sweep,
+          ph: ph + s,
+          glow,
+          heat: get('wingHeat'),
+          fist: 0.15 + get('fist' + k),
+          ground: handGoal ? 0 : ground,
+          foot: target('fore' + k, foot),
+          air,
+        }, j);
+        if (walking && st.planted && ground > 0.9) planted.push('fore' + k);
+      }
       // Mirrors of the observatory: they stand still in the world while he turns among them.
       if (get('mirrors') > 0.001) {
         const spots: V3[] = MIRRORS.map(([x, y]) => F0.p(x, y, 0));
-        // each lens turns half toward him, half toward the viewer, so it reads as a glowing disc
         const viewer = F0.v(0.57, 0.82, 0);
         spots.forEach((at, k) => mirror(R0, at, vadd(vnorm(vsub(F0.p(0, 0, 0), at)), vmul(viewer, 1.3)), get('mirrors'), get('mirrorCrack'), get('mirrorLit' + k), j, 'mirror' + k));
       }
     } else if (peek) {
       // Peeking from above the frame: only the neck and the upside-down head hang down into the picture.
       const hang = get('peekHang');
-      const top = F.p(4.0, 0, 92);
-      const Hd = F.at(4.0, 0, 92 - hang * 48).pitch(Math.PI * 0.92).roll(get('tilt')).turn(get('gaze'));
+      const top = F.p(4.0, 0, PEEK_TOP);
+      const Hd = F.at(4.0, 0, PEEK_TOP - hang * 26).pitch(Math.PI * 0.92).roll(get('tilt')).turn(get('gaze')).scale(HEAD_SCALE);
       front!.tag = 'neck';
-      const pts: V3[] = [top, F.p(4.6, 0, 92 - hang * 20), F.p(3.4, 0, 92 - hang * 36), Hd.p(-2.6, 0, -1.4)];
-      for (let k = 0; k < 14; k++) front!.cap(catmull(pts, k / 14), catmull(pts, (k + 1) / 14), 2.5, 2.4, S(0.5));
+      const pts: V3[] = [top, F.p(4.6, 0, PEEK_TOP - hang * 10), F.p(3.4, 0, PEEK_TOP - hang * 19), Hd.p(-2.6, 0, -1.4)];
+      for (let k = 0; k < 14; k++) front!.cap(catmull(pts, k / 14), catmull(pts, (k + 1) / 14), 2.6, 2.4, S(0.5));
       head(front!, Hd, j, { barbel: F.v(0, 0, 0), blink: get('blink'), lid: 0, snarl: get('snarl'), roar: 0, lookX: get('lookX'), lookY: 0, wide: get('wide'), fire: 0, flame: 0, ph, fold: 0 });
     }
     if (get('egg') > 0.5) egg(r, F0.roll(get('eggRock')), get('eggCrack'), get('eggOpen'), j);
-    j.body = B.p(0, 0, 8);
-    j.head = j.head ?? B.p(6.6, 0, 25.6);
+    j.body = j.body ?? F.p(3.6, 0, HIP);
+    j.head = j.head ?? F.p(15, 0, HIP + 12);
     j.floor = F.p(0, 0, 0);
     for (const [k, v] of Object.entries(j)) j[k + 'Ground'] = [v[0], v[1], 0];
     const finishes: Parameters<typeof finishSurfaces>[2] = [
@@ -982,13 +1061,14 @@ export function drakeFigure(sample: PoseSample): Figure {
     ];
     finishSurfaces(r, F, finishes, 'skin');
     if (front) finishSurfaces(front, F, finishes, 'skin');
+    for (const [k, v] of Object.entries(j)) debugWorld[k] = [...v];
     const sc = portraitScale * (1 + 0.12 * eclipseK) * (1 + get('grow'));
     scaleFigure(r, j, sc);
     if (front) scaleFigure(front, {}, sc);
-    const frame = projectFigure(r, 300, [150, 270], j, '#120a08', 4.4, true);
+    const frame: BodyFrame = projectFigure(r, FIGURE, ANCHOR, j, '#120a08', 4.4, true);
     const paint = { outline: ink, inner: 4.4 };
     if (front) {
-      const pad = 160,
+      const pad = 240,
         size = frame.px.w + 2 * pad,
         anchor: [number, number] = [frame.anchor[0] + pad, frame.anchor[1] + pad];
       const body = renderRig(r, size, size, ...anchor, paint);
@@ -999,11 +1079,11 @@ export function drakeFigure(sample: PoseSample): Figure {
       for (const key of Object.keys(frame.points)) frame.points[key] = [frame.points[key][0] + pad, frame.points[key][1] + pad];
       frame.over = renderRig(front, size, size, ...anchor, paint).p;
     }
-    const lift = Math.max(0, hipZ - HIP);
+    const up = Math.max(0, hipZ - HIP);
     frame.groundShadow =
       get('hidden') > 0.5 || overAll || get('noShadow') > 0.5
         ? { radius: 0, opacity: 0, reflectionOpacity: 0 }
-        : { radius: (300 * 0.11) / (1 + 0.03 * lift), opacity: 0.55 / (1 + 0.05 * lift), reflectionOpacity: front ? 0 : 1 };
+        : { radius: (FIGURE * 0.16) / (1 + 0.03 * up), opacity: 0.55 / (1 + 0.05 * up), reflectionOpacity: front ? 0 : 1 };
     if (get('dx')) frame.dx = Math.round(get('dx'));
     if (get('dy')) frame.dy = Math.round(get('dy'));
     if (get('sx')) frame.sx = 1 + get('sx');
@@ -1014,7 +1094,23 @@ export function drakeFigure(sample: PoseSample): Figure {
     return frame;
   };
 }
+/** World sockets of the last frame, before scaling (debugging). */
+export const debugWorld: Record<string, V3> = {};
+/** The head is drawn larger than the body template would give it: a dragon's head, not a lizard's. */
+const HEAD_SCALE = 1.15;
+/** Height of the frame top above the stone for the peek, rig units. */
+const PEEK_TOP = 52;
+/** The figure's own canvas and the anchor of the floor point in it, pixels. */
+const FIGURE = 460,
+  ANCHOR: [number, number] = [230, 400];
+/** Blend two frames (positions and axes), for lying down. */
+function blendFrame(a: F3, b: F3, u: number): F3 {
+  const f = vnorm(vlerp(a.f, b.f, u)),
+    up = vnorm(vlerp(a.u, b.u, u));
+  return frameF(vlerp(a.o, b.o, u), f, up);
+}
 /** For the effects file: the corona and sun ramps. */
 export const ramps = { sun: sunT, corona: coronaT };
 export const eclipseOf = (form: number) => smooth(saturate((form - 0.05) / 0.9));
 void mixc;
+void hash;

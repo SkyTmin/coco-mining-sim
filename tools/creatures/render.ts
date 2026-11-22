@@ -11,7 +11,7 @@ import {
   renameSync,
 } from 'node:fs';
 import {
-  sizes,
+  sizeOf,
   type Creature,
   type Border,
   type Scene,
@@ -120,7 +120,7 @@ function writePainting(
       name === 'turn' && variant === 'normal'
         ? new GifWriter(scale, true)
         : null;
-  const [, , size] = sizes[c.rarity];
+  const [, , size] = sizeOf(c);
   const pivots = turn ? turnPivots(c, size, frames) : [];
   const dir = join(output, 'frames', suffix),
     movedFrames = new Set<string>(),
@@ -211,7 +211,7 @@ export function writePaintingMaterials(
   b: Border,
   output: string,
 ) {
-  const [w, h, , thickness] = sizes[c.rarity];
+  const [w, h, , thickness] = sizeOf(c);
   const objects = foregroundObjects(s, w, h),
     front = new Px(w + 2 * thickness, h + 2 * thickness);
   for (const obj of objects) {
@@ -275,7 +275,7 @@ export async function render(
     if (anim === 'idle' || anim === main)
       writePainting(c, s, b, anim, 'gold', scale, output);
   }
-  const [w, h, bodySize, thickness] = sizes[c.rarity],
+  const [w, h, bodySize, thickness] = sizeOf(c),
     idle = c.frame('idle', 0, 0, 'normal');
   const meta = {
     id: c.id,
