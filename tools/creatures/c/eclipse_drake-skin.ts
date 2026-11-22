@@ -581,34 +581,37 @@ export interface PawState {
   /** 0..1 how much the paw stands on the stone. */
   ground: number;
 }
-const UPPER = 7.2,
-  LOWER = 6.9;
+const UPPER = 7.4,
+  LOWER = 7.0;
 function foreleg(r: Rig, Pv: F3, BU: F3, s: number, paw: V3, st: PawState, j: Record<string, V3>) {
   const name = s < 0 ? 'L' : 'R';
-  const shoulder = Pv.p(8.4, s * 3.5, -1.2);
+  // at the side of the chest, so the arm hangs outside the body and the pearl stays in sight between the paws
+  const shoulder = Pv.p(8.6, s * 3.9, -1.0);
   // never further than the leg reaches, never closer than the folded leg allows
   let to = paw;
   const d = vsub(to, shoulder),
     L = vlen(d);
   if (L > (UPPER + LOWER) * 0.995) to = vadd(shoulder, vmul(d, ((UPPER + LOWER) * 0.995) / L));
   if (L < 3.2) to = vadd(shoulder, vmul(L > 1e-3 ? vmul(d, 1 / L) : Pv.f, 3.2));
-  // the elbow points back and a little out, like a lizard's or a cat's
-  const elbow = ik(shoulder, to, UPPER, LOWER, vnorm(BU.v(-1, s * 0.35, 0.05)));
+  // The elbow points down the body (toward the tail on four, toward the ground when he rears) and out, never into
+  // the chest [owner 22.11: «локти перевёрнуты» — with the pole in the upright frame a reared elbow went back
+  // into the body and the forearm came out of the chest].
+  const elbow = ik(shoulder, to, UPPER, LOWER, vnorm(Pv.v(-1, s * 0.3, 0.35)));
   r.tag = 'shoulder' + name;
-  r.ell(axisFrame(shoulder, vsub(shoulder, elbow), BU.f), [0, s * 0.2, 0], [2.6, 2.3, 3.0], S(0.2));
+  r.ell(axisFrame(shoulder, vsub(shoulder, elbow), Pv.f), [0, s * 0.3, 0], [2.1, 1.9, 2.4], S(0.2));
   r.tag = 'arm' + name;
-  r.cap(shoulder, elbow, 1.75, 1.35, S(0.4));
-  for (let k = 0; k < 3; k++) tubeScutes(r, vlerp(shoulder, elbow, 0.12 + k * 0.28), vlerp(shoulder, elbow, 0.28 + k * 0.28), 1.7, BU.s, 0.75, k % 2 ? SS(0.42) : S(0.42));
-  r.ell(axisFrame(elbow, vsub(to, elbow), BU.u), [0, 0, 0], [1.4, 1.4, 1.4], SS(0.5));
-  r.spike(elbow, vnorm(vadd(vsub(elbow, to), vmul(vsub(elbow, shoulder), 0.5))), 1.3, 0.38, bone, 3);
-  r.cap(elbow, to, 1.3, 1.0, S(0.55));
-  tubeScutes(r, vlerp(elbow, to, 0.15), vlerp(elbow, to, 0.4), 1.25, BU.s, 0.6, SS(0.55));
+  r.cap(shoulder, elbow, 1.45, 1.15, S(0.4));
+  for (let k = 0; k < 3; k++) tubeScutes(r, vlerp(shoulder, elbow, 0.15 + k * 0.27), vlerp(shoulder, elbow, 0.3 + k * 0.27), 1.4, Pv.s, 0.62, k % 2 ? SS(0.42) : S(0.42));
+  r.ell(axisFrame(elbow, vsub(to, elbow), BU.u), [0, 0, 0], [1.2, 1.2, 1.2], SS(0.5));
+  r.spike(elbow, vnorm(vadd(vsub(elbow, to), vmul(vsub(elbow, shoulder), 0.5))), 1.2, 0.34, bone, 3);
+  r.cap(elbow, to, 1.12, 0.9, S(0.55));
+  tubeScutes(r, vlerp(elbow, to, 0.12), vlerp(elbow, to, 0.36), 1.05, Pv.s, 0.5, SS(0.55));
   r.tag = 'bangle' + name;
   const b0 = vlerp(elbow, to, 0.58),
     b1 = vlerp(elbow, to, 0.76);
-  r.cap(b0, b1, 1.3, 1.22, gold);
-  r.cap(vlerp(b0, b1, -0.05), vlerp(b0, b1, 0.1), 1.42, 1.42, goldDeep);
-  r.cap(vlerp(b0, b1, 0.9), vlerp(b0, b1, 1.05), 1.36, 1.36, goldDeep);
+  r.cap(b0, b1, 1.1, 1.04, gold);
+  r.cap(vlerp(b0, b1, -0.05), vlerp(b0, b1, 0.1), 1.2, 1.2, goldDeep);
+  r.cap(vlerp(b0, b1, 0.9), vlerp(b0, b1, 1.05), 1.15, 1.15, goldDeep);
   // the paw: on the stone the fingers point forward and grip the dial; in the air they follow the forearm and curl
   r.tag = 'paw' + name;
   const fd = vnorm(vsub(to, elbow));
@@ -681,6 +684,8 @@ const MANTLE_DIRS: V3[] = [
 /** The wing's own wrist position relative to the shoulder (forward, outward, up): folded up on the back (the wrist
  * just ahead of and above the shoulder, the elbow back over the hips, the fingers along the flank), spread. */
 const WRIST_FOLD: V3 = [3.0, 2.4, 2.2];
+/** Halfway open: the wrist raised over the back (the control point of the opening curve). */
+const WRIST_LIFT: V3 = [0.5, 6.0, 12.0];
 // spread, the arm is straight [owner's references 22.11: the elbow does not bend in flight]
 const WRIST_OPEN: V3 = vmul(SPAR, (HUM + FORE) * 0.998);
 /** Rotate a local (forward, outward, up) vector by the wing beat (round the forward axis) and sweep (round up). */
@@ -710,10 +715,16 @@ const liftBeat = (beat: number, u: number, near = 0, edge = 0.7) => {
 };
 const edgeOn = (BU: F3) => Math.atan2(0.75, Math.max(0.3, Math.abs(BU.s[1])));
 /** The wing's own wrist (world) for a spread / beat / sweep, from the shoulder in the upright frame BU. */
-function wingWrist(BU: F3, shoulder: V3, s: number, open: number, beat: number, sweep: number, near: number): V3 {
+function wingWrist(BU: F3, Pv: F3, shoulder: V3, s: number, open: number, beat: number, sweep: number, near: number): V3 {
   const u = smooth(saturate(open));
-  const v = beatSweep(vlerp(WRIST_FOLD, WRIST_OPEN, u), liftBeat(beat, u, near, edgeOn(BU)), sweep);
-  return vadd(shoulder, BU.v(v[0], s * v[1], v[2]));
+  // folded, the wing lies along the body (it follows him up when he rears); spread, it stands in the upright frame
+  // Opening, the wrist goes up over the back first and then out (a curve through WRIST_LIFT), so a half-open wing
+  // stands raised behind him instead of stabbing down past his side.
+  const v = beatSweep(WRIST_OPEN, liftBeat(beat, u, near, edgeOn(BU)), sweep);
+  const fold = Pv.v(WRIST_FOLD[0], s * WRIST_FOLD[1], WRIST_FOLD[2]),
+    lift = BU.v(WRIST_LIFT[0], s * WRIST_LIFT[1], WRIST_LIFT[2]),
+    out = BU.v(v[0], s * v[1], v[2]);
+  return vadd(shoulder, vadd(vadd(vmul(fold, (1 - u) * (1 - u)), vmul(lift, 2 * u * (1 - u))), vmul(out, u * u)));
 }
 function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j: Record<string, V3>) {
   const name = s < 0 ? 'L' : 'R';
@@ -729,7 +740,7 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
   const nearest = (FORE - HUM) * 1.15;
   if (reachL < nearest) wrist = vadd(shoulder, vmul(reachL > 1e-3 ? vmul(reachV, 1 / reachL) : BU.f, nearest));
   // the elbow points back: over the hips when folded, back and a little down when spread
-  const pole = vnorm(vlerp(vlerp(BU.v(-1.0, s * 0.25, 0.35), BU.v(-1.0, s * 0.3, -0.25), u), BU.v(-0.6, s * 1, -0.3), smooth(saturate(st.wrap))));
+  const pole = vnorm(vlerp(vlerp(Pv.v(-1.0, s * 0.25, 0.35), BU.v(-1.0, s * 0.3, -0.25), u), BU.v(-0.6, s * 1, -0.3), smooth(saturate(st.wrap))));
   const elbow = ik(shoulder, wrist, HUM, FORE, pole);
   const fd = vnorm(vsub(wrist, elbow));
   const place = (v: V3, lagBy = 0): V3 => {
@@ -752,7 +763,10 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
   };
   const spread = (k: number) => vnorm(vlerp(place(fan(k), st.tipLag * LAG[k]), BU.v(MANTLE_DIRS[k][0], s * MANTLE_DIRS[k][1] * mOut, MANTLE_DIRS[k][2]), st.mantle));
   // folded, the fingers lie close together and reach back to the root of the tail
-  const tips = FINGERS.map((len, k) => vadd(wrist, vmul(vnorm(vlerp(vlerp(FOLD[k], spread(k), u), WRAP[k], wr)), len * (0.52 + 0.48 * Math.max(u, wr) - 0.22 * wr))));
+  // half open the fingers stand up and back over him (the same curve as the wrist)
+  const RAISED: V3[] = [vnorm(BU.v(-0.15, s * 0.3, 0.95)), vnorm(BU.v(-0.5, s * 0.32, 0.8)), vnorm(BU.v(-0.85, s * 0.3, 0.45))];
+  const opening = (k: number): V3 => vadd(vadd(vmul(FOLD[k], (1 - u) * (1 - u)), vmul(RAISED[k], 2 * u * (1 - u))), vmul(spread(k), u * u));
+  const tips = FINGERS.map((len, k) => vadd(wrist, vmul(vnorm(vlerp(opening(k), WRAP[k], wr)), len * (0.52 + 0.48 * Math.max(u, wr) - 0.22 * wr))));
   // The membrane's root runs along the back from the shoulder over the hips to the root of the tail.
   const hipF = Pv.p(-0.8, s * 2.4, 3.4);
   const trail = Pv.p(-5.2, s * 1.7, 2.4);
@@ -1137,13 +1151,15 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
         const upK = saturate(beatVel * 3) * smooth(open);
         const sweep = get('wingSweep') + get('wingSweep' + k);
         // the wing grows out of the back, over the shoulder blade
-        const shoulder = Pv.p(6.4, s * 2.3, 5.2);
+        // high on the back near the spine, behind the shoulders, so seen from the front the wing rises from behind
+        // him and never reads as a second arm lifted from the shoulder
+        const shoulder = Pv.p(5.0, s * 1.5, 5.8);
         const wrapWrist = vadd(shoulder, BU.v(6.5, s * 3.0, 4.5));
         // mantling: the wrists up and out, the fingers arch back over him like a hood
         const hoodWrist = vadd(shoulder, BU.v(1.5, s * 7.5, 7.5));
         // the wing whose side faces the viewer (0, 0.8, 0.6 — towards the camera)
         const near = saturate((s * vdot(BU.s, [0, 0.8, 0.6]) - 0.1) / 0.4);
-        const own = vlerp(vlerp(wingWrist(BU, shoulder, s, open, beat, sweep, near), hoodWrist, brace * (1 - smooth(open) * 0.5)), wrapWrist, smooth(wrapK));
+        const own = vlerp(vlerp(wingWrist(BU, Pv, shoulder, s, open, beat, sweep, near), hoodWrist, brace * (1 - smooth(open) * 0.5)), wrapWrist, smooth(wrapK));
         wing(R0, BU, Pv, shoulder, s, {
           open,
           beat,
@@ -1173,9 +1189,12 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
         const handW = Math.min(1, A['goal.hand' + k + '.weight'] ?? 0);
         // `vault`: the hind legs throw the body forward over the planted paws, which give the last push
         const ground = Math.max(saturate(1 - 2.2 * rearK) * airborne * (1 - handW), Math.max(saturate(get('vault')), brace) * (1 - handW));
-        // in the air: curled at the chest when he rears, tucked under him in flight
-        const atChest = Pv.p(12.6, s * 3.0, -4.2);
-        const tucked = Pv.p(11.2, s * 3.4, -6.2);
+        // in the air: reared, the paws held up at the sides of the chest, claws forward (the belly and the pearl
+        // between them); in flight tucked up against the chest
+        // (the paw about two thirds of the leg's length from the shoulder: a paw near the shoulder folds the leg
+        // like a chicken wing and throws the elbow out)
+        const atChest = Pv.p(14.6, s * 5.4, -6.4);
+        const tucked = Pv.p(11.0, s * 4.6, -9.4);
         const air = target('hand' + k, vlerp(atChest, tucked, Math.max(hoverK, tuck, saturate(get('jump') / 3))));
         foreleg(R0, Pv, BU, s, vlerp(air, target('fore' + k, foot), ground), { fist: 0.15 + get('fist' + k), ground }, j);
         if (walking && st.planted && ground > 0.9) planted.push('fore' + k);
