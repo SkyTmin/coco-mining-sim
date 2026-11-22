@@ -205,6 +205,13 @@ python -m http.server 8000 --directory tools/creatures/viewer
 2. Публикация: `file_path <папка>/index.html`, `root <папка>`, `files` из `.files.json`.
 3. `node viewer/publish-gallery.mjs done <папка>` — запомнить опубликованное, следующий `prepare` пойдёт от него.
 
+**GitHub Pages** [владелец 22.11: артефакт на телефоне открылся пустым]: та же галерея — сайт
+https://skytmin.github.io/coco-mining-sim/ из ветки `gh-pages` (Settings → Pages → Deploy from a branch → `gh-pages`,
+`/ (root)`). В ветке только сайт: `viewer/index.html`, `gallery.css`, `catalog.json`, модули `viewer/*.mjs` (без
+`publish-gallery.mjs` и `make-posters.mjs`), `atlases/**` и пустой `.nojekyll`. Обновление — отдельной папкой-веткой:
+`git worktree add <папка> gh-pages`, заменить там эти файлы свежими из `tools/creatures/viewer`, коммит, `git push origin
+gh-pages`. Атласы уже лежат в истории репозитория, поэтому пуш почти ничего не весит.
+
 Версия артефакта держит не больше 511 файлов. Атлас, которого нет в этой ветке (картина собрана из генератора и не
 закоммичена, как Саламандр этапа ChatGPT), из галереи не удаляется. Длинные атласы упаковываются листами 4096
 (`ATLAS_SIDE=4096 python3 viewer_repack.py <id>`, так сделаны `f15boss` и `f12boss`), иначе не влезают в лимит.
