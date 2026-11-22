@@ -3,9 +3,13 @@
 // ("the library draws bramble_warden pixel for pixel like the pilot") in one command, without old checkouts.
 //   npm run ws -- snap <id|all> [anim…] [--jobs N]          write the golden hashes
 //   npm run ws -- snap <id|all> [anim…] --check [--jobs N]  compare, exit 1 when a frame changed
+// One creature is hashed by --jobs worker processes (default: one per core, at most one per 3 GB), each taking frame
+// ranges in turn; several creatures run one process each. Every worker keeps at most SNAP_CACHE_MB (default 512) of
+// reused poses [22.11: a count limit of 2000 poses grew to 9.7 GB on Zenit's 288-px canvas and was killed].
 import { createHash } from 'node:crypto';
-import { spawn } from 'node:child_process';
+import { fork, spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpus, totalmem } from 'node:os';
 import { join } from 'node:path';
 import { loadPainting } from '../render';
 import { compose, frameCount } from '../engine';
@@ -16,21 +20,34 @@ const tools = join(import.meta.dirname, '..');
 const goldenDir = join(tools, 'golden');
 type Golden = Record<string, string[]>;
 
+const cacheBytes = (Number(process.env.SNAP_CACHE_MB) || 512) * 2 ** 20;
+const rasterBytes = (f: BodyFrame) => f.px.data.byteLength + (f.lit?.data.byteLength ?? 0) + (f.over?.data.byteLength ?? 0);
+
 function reuseTrickPoses(c: Creature): Creature {
   if (!c.behavior?.tricks) return c;
   const poses = new Map<string, BodyFrame>();
+  let bytes = 0;
   return {
     ...c,
     frame(anim, time, side, variant, motion) {
       if (motion?.techniquePose) return c.frame(anim, time, side, variant, motion);
       const key = [anim, time, side, variant, motion?.headSide, motion?.gaitPhase].join('/');
       const existing = poses.get(key);
-      if (existing) return existing;
+      if (existing) {
+        poses.delete(key); // least recently used goes first
+        poses.set(key, existing);
+        return existing;
+      }
       // Life and showreel reuse local poses at different positions and on different
       // scenery frames. Keep their rasters, but release the geometry diagnostics.
       const { rig, joints, ...raster } = c.frame(anim, time, side, variant, motion);
-      if (poses.size >= 2000) poses.delete(poses.keys().next().value!);
       poses.set(key, raster);
+      bytes += rasterBytes(raster);
+      while (bytes > cacheBytes && poses.size > 1) {
+        const [oldest, frame] = poses.entries().next().value!;
+        poses.delete(oldest);
+        bytes -= rasterBytes(frame);
+      }
       return raster;
     },
   };
@@ -47,21 +64,86 @@ function ranges(frames: number[]) {
   return out.join(', ');
 }
 
-/** Hashes of the final picture of every frame (life and showreel included: they are what the owner sees). */
-export async function hashCreature(id: string, only: string[] = []): Promise<Golden> {
-  const { c: original, s, b } = await loadPainting(id);
-  const c = reuseTrickPoses(original);
-  const out: Golden = {};
-  for (const anim of Object.keys(c.animations)) {
-    if (only.length && !only.includes(anim)) continue;
-    const n = frameCount(c.animations[anim].seconds) * (anim === 'life' ? lifeCycleCount(c) : 1);
-    const list: string[] = [];
-    for (let i = 0; i < n; i++) {
-      const f = compose(c, s, b, anim, i / 24);
-      list.push(createHash('sha1').update(f.picture.data).digest('hex').slice(0, 10));
-    }
-    out[anim] = list;
+/** The painting as snap hashes it: poses reused through the memory-capped cache. */
+export async function loadForHash(id: string) {
+  const { c, s, b } = await loadPainting(id);
+  return { c: reuseTrickPoses(c), s, b };
+}
+type ForHash = Awaited<ReturnType<typeof loadForHash>>;
+
+const framesOf = (c: Creature, anim: string) => frameCount(c.animations[anim].seconds) * (anim === 'life' ? lifeCycleCount(c) : 1);
+
+/** Hashes of frames [from, to) of one animation. */
+export function hashRange({ c, s, b }: ForHash, anim: string, from: number, to: number) {
+  const list: string[] = [];
+  for (let i = from; i < to; i++) {
+    const f = compose(c, s, b, anim, i / 24);
+    list.push(createHash('sha1').update(f.picture.data).digest('hex').slice(0, 10));
   }
+  return list;
+}
+
+/** Worker processes for one creature: one per core, but no more than one per 3 GB of memory. */
+export function snapJobs() {
+  return Math.max(1, Math.min(cpus().length, Math.floor(totalmem() / (3 * 2 ** 30))));
+}
+
+/** Hashes frame ranges in `jobs` worker processes; each takes the next range when it is free. */
+async function hashParallel(id: string, chunks: { anim: string; from: number; to: number }[], jobs: number) {
+  const results: string[][] = new Array(chunks.length);
+  let next = 0;
+  async function worker() {
+    const child = fork(join(import.meta.dirname, 'snap-worker.ts'), [], {
+      cwd: tools,
+      execArgv: ['--import', 'tsx'],
+      env: { ...process.env, WS_CHILD: '1' },
+      stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
+    });
+    const ask = (msg: object) =>
+      new Promise<{ hashes?: string[]; error?: string }>((done, fail) => {
+        const onExit = (code: number | null) => fail(new Error(`snap worker for ${id} exited with code ${code}`));
+        child.once('exit', onExit);
+        child.once('message', (reply: { hashes?: string[]; error?: string }) => {
+          child.off('exit', onExit);
+          done(reply);
+        });
+        child.send(msg);
+      });
+    try {
+      const ready = await ask({ id });
+      if (ready.error) throw new Error(ready.error);
+      while (next < chunks.length) {
+        const k = next++;
+        const reply = await ask(chunks[k]);
+        if (reply.error || !reply.hashes) throw new Error(reply.error ?? 'snap worker sent no hashes');
+        results[k] = reply.hashes;
+      }
+    } finally {
+      child.kill();
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(jobs, chunks.length) }, worker));
+  return results;
+}
+
+/** Hashes of the final picture of every frame (life and showreel included: they are what the owner sees). */
+export async function hashCreature(id: string, only: string[] = [], jobs = 1): Promise<Golden> {
+  const painting = await loadForHash(id);
+  const anims = Object.keys(painting.c.animations).filter((anim) => !only.length || only.includes(anim));
+  const out: Golden = {};
+  if (jobs <= 1) {
+    for (const anim of anims) out[anim] = hashRange(painting, anim, 0, framesOf(painting.c, anim));
+    return out;
+  }
+  // Ranges long enough to keep a worker's pose cache useful, short enough to share the long clips (life, showreel).
+  const total = anims.reduce((sum, anim) => sum + framesOf(painting.c, anim), 0);
+  const size = Math.max(48, Math.ceil(total / (jobs * 6)));
+  const chunks: { anim: string; from: number; to: number }[] = [];
+  for (const anim of anims)
+    for (let from = 0, n = framesOf(painting.c, anim); from < n; from += size) chunks.push({ anim, from, to: Math.min(n, from + size) });
+  const results = await hashParallel(id, chunks, jobs);
+  for (const anim of anims) out[anim] = [];
+  chunks.forEach((chunk, k) => out[chunk.anim].push(...results[k]));
   return out;
 }
 
@@ -98,7 +180,7 @@ function remember(id: string, key: string) {
   writeFileSync(stampOf(id), JSON.stringify({ key, at: new Date().toISOString().slice(0, 16) }) + '\n');
 }
 
-export async function snapOne(id: string, check: boolean, only: string[], force = false) {
+export async function snapOne(id: string, check: boolean, only: string[], force = false, jobs = 1) {
   // A full check of an unchanged creature is skipped: its own files, the shared pipeline and its golden are the same
   // as at the last identical check. A shared change re-checks everyone; --force re-checks anyway.
   if (check && !only.length && !force && existsSync(stampOf(id))) {
@@ -109,7 +191,7 @@ export async function snapOne(id: string, check: boolean, only: string[], force 
     }
   }
   const t0 = Date.now();
-  const now = await hashCreature(id, only);
+  const now = await hashCreature(id, only, jobs);
   const file = join(goldenDir, id + '.json');
   const sec = ((Date.now() - t0) / 1000).toFixed(0);
   const frames = Object.values(now).reduce((a, l) => a + l.length, 0);
@@ -120,7 +202,7 @@ export async function snapOne(id: string, check: boolean, only: string[], force 
     const body = '{\n' + Object.entries(merged).map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(',\n') + '\n}\n';
     writeFileSync(file, body);
     if (!only.length) remember(id, await snapKey(id));
-    console.log(`✓ ${id}: ${frames} frames written to golden/${id}.json (${sec} s)`);
+    console.log(`✓ ${id}: ${frames} frames written to golden/${id}.json (${sec} s${jobs > 1 ? `, ${jobs} jobs` : ''})`);
     return 0;
   }
   if (!existsSync(file)) {
@@ -130,7 +212,7 @@ export async function snapOne(id: string, check: boolean, only: string[], force 
   const diff = compareGolden(JSON.parse(readFileSync(file, 'utf8')), now, only);
   if (!diff.length) {
     if (!only.length) remember(id, await snapKey(id));
-    console.log(`✓ ${id}: ${frames} frames identical (${sec} s)`);
+    console.log(`✓ ${id}: ${frames} frames identical (${sec} s${jobs > 1 ? `, ${jobs} jobs` : ''})`);
   }
   else {
     console.log(`✗ ${id}: frames differ (${sec} s)`);
@@ -179,7 +261,8 @@ export async function snapCommand(args: string[], ids: string[]) {
   const only = args.slice(1).filter((a, i, all) => !a.startsWith('--') && all[i - 1] !== '--jobs');
   const t0 = Date.now();
   let failed = 0;
-  if (ids.length === 1) failed = await snapOne(ids[0], check, only, force);
+  // A single creature splits its frames over worker processes; inside a pool child (WS_CHILD) it runs alone.
+  if (ids.length === 1) failed = await snapOne(ids[0], check, only, force, process.env.WS_CHILD ? 1 : jobsArg >= 0 ? jobs : snapJobs());
   else {
     const rest = [...only, ...(check ? ['--check'] : []), ...(force ? ['--force'] : [])];
     failed = await pool('snap', ids, rest, jobs);

@@ -93,6 +93,15 @@ test('golden comparison names the changed frames and nothing else', async () => 
   assert.deepEqual(compareGolden(old, { idle: ['a', 'b', 'c', 'd'] }), ['tech_x: animation removed']);
 });
 
+test('a snap split over worker processes hashes every frame like one process', async () => {
+  const { hashCreature } = await import('../studio/snap');
+  // 72 idle frames → two 48-frame ranges → two workers, joined back in order.
+  const alone = await hashCreature('bramble_warden', ['idle'], 1);
+  const split = await hashCreature('bramble_warden', ['idle'], 2);
+  assert.equal(split.idle.length, alone.idle.length);
+  assert.deepEqual(split, alone);
+});
+
 test('foot sockets are recognised and the pilot walks keep planted feet still', async () => {
   const { FOOT_SOCKET, footSlide, slides } = await import('../studio/checks');
   // footL planted on y = 50 for frames 0–3 but drags 2 px at frame 2; footR swings in the air.
