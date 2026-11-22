@@ -3229,6 +3229,185 @@
     ]
   },
   {
+    "id": "eclipse_drake",
+    "name": "Зенит, дракон затмения",
+    "section": "ours",
+    "rarity": "secret",
+    "color": "#82381a",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 1536
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Смотрит вдаль из-под крыла",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Оборот в воздухе",
+        "frames": 48
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупляется из солнечного яйца",
+        "frames": 72
+      },
+      {
+        "id": "fidget_a",
+        "name": "Чистит крыло",
+        "frames": 60
+      },
+      {
+        "id": "fidget_b",
+        "name": "Зевок",
+        "frames": 60
+      },
+      {
+        "id": "happy-f2",
+        "name": "Радость Затмения",
+        "frames": 48
+      },
+      {
+        "id": "trick",
+        "name": "Трюк: солнечный луч",
+        "frames": 264
+      },
+      {
+        "id": "trick_b",
+        "name": "Трюк: к зениту",
+        "frames": 276
+      },
+      {
+        "id": "trick_c",
+        "name": "Трюк: зеркала зенита",
+        "frames": 276
+      },
+      {
+        "id": "phase",
+        "name": "Затмение",
+        "frames": 120
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой Затмения",
+        "frames": 48
+      },
+      {
+        "id": "trick-f2",
+        "name": "Трюк: вихрь короны",
+        "frames": 288
+      },
+      {
+        "id": "trick_b-f2",
+        "name": "Трюк: лунная тень",
+        "frames": 276
+      },
+      {
+        "id": "trick_c-f2",
+        "name": "Трюк: звездопад",
+        "frames": 288
+      },
+      {
+        "id": "show",
+        "name": "Появление: восход",
+        "frames": 168
+      },
+      {
+        "id": "peek",
+        "name": "Голова сверху",
+        "frames": 60
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 36
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 36
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 29
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 3143
+      }
+    ]
+  },
+  {
     "id": "bramble_warden",
     "name": "Ежевичный страж",
     "section": "ours",

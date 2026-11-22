@@ -1,0 +1,3 @@
+import { readCreatureCard } from '../bodies/card-data';
+
+export default readCreatureCard('eclipse_drake').life;
