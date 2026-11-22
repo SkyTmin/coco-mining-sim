@@ -109,6 +109,36 @@ function beam(p: Pen, a: XY, b: XY, width: number, alpha: number, seed: number) 
     p.rect(Math.round(q[0]), Math.round(q[1]), 2, 1);
   }
 }
+/** A roiling jet of flame from `from` along the unit screen direction `dir`: it widens from w0 to w1, wavers side to
+ * side, a red rim, an orange-gold body and a white-hot core near the jaws. */
+function flameJet(p: Pen, from: XY, dir: XY, len: number, w0: number, w1: number, alpha: number, frame: number) {
+  if (alpha <= 0.02 || len < 2) return;
+  const nx = -dir[1],
+    ny = dir[0];
+  const n = Math.max(2, Math.ceil(len / 3));
+  const at = (i: number) => {
+    const u = i / n;
+    const wob = Math.sin(frame * 0.5 + i * 0.7) * 3 * K * u;
+    const w = w0 + (w1 - w0) * u + Math.sin(frame * 0.9 + i * 0.9) * 2.5 * K;
+    return { c: [from[0] + dir[0] * len * u + nx * wob, from[1] + dir[1] * len * u + ny * wob] as XY, w, u };
+  };
+  for (const [extra, core] of [
+    [6 * K, 0],
+    [0, 0],
+    [0, 1],
+  ] as const) {
+    for (let i = 0; i < n; i++) {
+      const A = at(i),
+        B = at(i + 1);
+      const wa = core ? A.w * 0.36 : A.w + extra,
+        wb = core ? B.w * 0.36 : B.w + extra;
+      if (extra) p.col(C.red, 0.55 * alpha);
+      else if (core) p.col(A.u < 0.5 ? C.white : C.hot, alpha);
+      else p.col(A.u < 0.25 ? C.gold : A.u < 0.6 ? C.orange : C.red, alpha * (1 - A.u * 0.3));
+      fillPoly(p, [A.c[0] + (nx * wa) / 2, A.c[1] + (ny * wa) / 2, B.c[0] + (nx * wb) / 2, B.c[1] + (ny * wb) / 2, B.c[0] - (nx * wb) / 2, B.c[1] - (ny * wb) / 2, A.c[0] - (nx * wa) / 2, A.c[1] - (ny * wa) / 2]);
+    }
+  }
+}
 /** Ballistic droplets/sparks with short tails; `dir` is the launch direction (screen radians), `spread` the fan. */
 function sparks(p: Pen, at: XY, age: number, life: number, n: number, speed: number, seed: number, palette: string[], dir = -Math.PI / 2, spread = 1.2, grav = 140, floorY = Infinity) {
   if (age < 0 || age > life) return;
@@ -1383,27 +1413,25 @@ function showFx(f: FxInput, frame: number) {
     }
     glow(f.above, pearl, 18, 16, C.hot, 0.5 * k, 4);
   }
-  // The column of flame to the sun, then a smoke ring.
-  const m = pt(f, 'mouth');
-  if (m && frame >= b.roar[0] + 4 && frame < b.ring) {
+  // The column of flame to the sun, then a smoke ring. It leaves the jaws along the snout (head → nose), so the
+  // face always looks where the fire goes [owner 22.11].
+  const m = pt(f, 'mouth'),
+    nose = pt(f, 'nose'),
+    head = pt(f, 'head');
+  if (m && nose && head && frame >= b.roar[0] + 4 && frame < b.ring) {
     const a = 1 - progress(frame, b.ring - 3, b.ring);
-    // grows up from the jaws in 4 frames, a fat roiling column with a red rim and a white-hot core
-    const reach = m[1] + 6 * K - (m[1] + 10 * K) * progress(frame, b.roar[0] + 4, b.roar[0] + 8);
-    for (let y = m[1]; y > reach; y -= 2) {
-      const u = (m[1] - y) / Math.max(1, m[1]);
-      const w = (7 + u * 12 + Math.sin(frame * 0.9 + y * 0.3) * 2.5) * K;
-      const x = m[0] + Math.sin(frame * 0.5 + y * 0.12) * 3 * K * u;
-      f.above.col(C.red, 0.55 * a);
-      f.above.rect(Math.round(x - w / 2 - 3), Math.round(y), Math.round(w + 6), 2);
-      f.above.col(u < 0.25 ? C.gold : u < 0.6 ? C.orange : C.red, a * (1 - u * 0.3));
-      f.above.rect(Math.round(x - w / 2), Math.round(y), Math.round(w), 2);
-      f.above.col(u < 0.5 ? C.white : C.hot, a);
-      f.above.rect(Math.round(x - w * 0.18), Math.round(y), Math.max(2, Math.round(w * 0.36)), 2);
-    }
-    glow(f.above, m, 14, 14, C.hot, 0.6 * a, 4);
+    const dl = Math.hypot(nose[0] - head[0], nose[1] - head[1]) || 1;
+    const dir: XY = [(nose[0] - head[0]) / dl, (nose[1] - head[1]) / dl];
+    const from: XY = [(nose[0] + m[0]) / 2 + dir[0] * 2 * K, (nose[1] + m[1]) / 2 + dir[1] * 2 * K];
+    // grows from the jaws in 4 frames to past the top of the painting
+    const full = (from[1] + 10 * K) / Math.max(0.35, -dir[1]);
+    const len = full * progress(frame, b.roar[0] + 4, b.roar[0] + 8);
+    flameJet(f.above, from, dir, len, 7 * K, 19 * K, a, frame);
+    glow(f.above, from, 14, 14, C.hot, 0.6 * a, 4);
     // the light of it on the stone and a few embers drifting down beside it
     glow(f.under, fl, 40, 10, C.gold, 0.35 * a, 4);
-    sparks(f.above, [m[0], Math.max(6, reach)], (frame - b.roar[0]) % 10, 10, 6, 40, Math.floor(frame / 10), [C.hot, C.gold, C.orange], Math.PI / 2, 2.4, 60);
+    const end: XY = [from[0] + dir[0] * len, from[1] + dir[1] * len];
+    sparks(f.above, [end[0], Math.max(6, end[1])], (frame - b.roar[0]) % 10, 10, 6, 40, Math.floor(frame / 10), [C.hot, C.gold, C.orange], Math.atan2(-dir[1], dir[0]), 2.4, 60);
   }
   const m0 = pt(f, 'mouth', b.ring);
   if (m0) smokeRing(f.above, m0, frame - b.ring, 24);

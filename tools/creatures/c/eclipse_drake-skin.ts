@@ -918,10 +918,19 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
     pearlNight = get('pearlDark') > 0.5;
     const ph = clock.turn(1.5);
     const glow = saturate(get('charge') + 0.25 + 0.15 * clock.osc(0.5));
-    const walking = anim === 'walk';
-    const gait = motion?.gaitPhase ?? t;
-    const step = (key: keyof typeof GAIT) => (walking ? strideFoot(gait, GAIT[key], route.stride) : { forward: 0, lift: 0, planted: true });
-    const bob = walking ? 0.35 * Math.cos(t * TAU * 2) : 0;
+    // The life walk, and the same gait inside a clip (`gait` weight, `gaitT` cycles): each foot stays planted while
+    // the body passes over it, so the clip's screen lane must carry him one stride per cycle (poses: walkHome)
+    // [owner 22.11: the old trick steps marched on the spot while the body slid].
+    const lifeWalk = anim === 'walk';
+    const gaitW = lifeWalk ? 1 : saturate(get('gait'));
+    const walking = gaitW > 0.001;
+    const gait = lifeWalk ? (motion?.gaitPhase ?? t) : get('gaitT');
+    const step = (key: keyof typeof GAIT) => {
+      if (!walking) return { forward: 0, lift: 0, planted: true };
+      const st = strideFoot(gait, GAIT[key], route.stride);
+      return { forward: st.forward * gaitW, lift: st.lift * gaitW, planted: st.planted };
+    };
+    const bob = walking ? 0.35 * gaitW * Math.cos((lifeWalk ? t : gait) * TAU * 2) : 0;
     const breath = period && !walking ? 0.4 * Math.sin(q) : 0;
     // hovering, the body rises on the downstroke and sinks on the upstroke, a little after the wings
     const hover = get('hover') + (eclipseK > 0.5 ? -0.7 * Math.sin(clock.turn(1) - 0.6) : 0);
@@ -939,9 +948,9 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
     // rears on the hind legs, level again in flight.
     const BU = F.at(get('lean') + pivotX, get('drift'), hipZ + pivotZ)
       .pitch(get('pitch'))
-      .roll(get('roll') + (walking ? 0.03 * Math.sin(t * TAU) : 0))
+      .roll(get('roll') + (walking ? 0.03 * gaitW * Math.sin((lifeWalk ? t : gait) * TAU) : 0))
       .turn(get('twist'));
-    const Pv = BU.pitch(-0.12 * (1 - sl) - rear * 0.95 * (1 - hoverK * 0.7) + get('bodyPitch') + (walking ? 0.02 : 0));
+    const Pv = BU.pitch(-0.12 * (1 - sl) - rear * 0.95 * (1 - hoverK * 0.7) + get('bodyPitch') + 0.02 * gaitW);
     // A spin (`twist`) turns feet and hand goals with the body.
     const twist = get('twist');
     const FT = twist ? F.at(get('lean'), get('drift'), 0).turn(twist).at(-get('lean'), -get('drift'), 0) : F;
@@ -1006,9 +1015,11 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       const TW = [3.4, 2.95, 2.45, 2.0, 1.6, 1.25, 0.95, 0.7, 0.48];
       // in flight the tail streams back instead of lying on the stone
       const flyK = Math.max(hoverK, saturate(get('jump') / 4));
+      // In a flip the tail turns with the body, a little behind it [owner 22.11: it stayed level and broke at the hips].
+      const TF = get('pitch') || lag(tailLag, 'pitch') ? FT.pitch(lerp(get('pitch'), lag(tailLag, 'pitch'), 0.45)) : FT;
       const tailPt = (n: number, x: number, y: number, z: number, wx: number, wy: number, wz: number, rad: number): V3 => {
         const k = n / 7;
-        const p = vadd(r1, FT.v(lerp(x * (1 + 0.15 * flyK), wx, sl), lerp(y, wy, sl) + wsk(k) * 7, lerp(z * (1 - 0.7 * flyK), wz, sl) + lift * k * k * 8 + curl * k * k * 6));
+        const p = vadd(r1, TF.v(lerp(x * (1 + 0.15 * flyK), wx, sl), lerp(y, wy, sl) + wsk(k) * 7, lerp(z * (1 - 0.7 * flyK), wz, sl) + lift * k * k * 8 + curl * k * k * 6));
         return [p[0], p[1], Math.max(p[2], rad + 0.25)];
       };
       const tailPts: V3[] = [
@@ -1143,9 +1154,10 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       const hang = get('peekHang');
       const top = F.p(4.0, 0, PEEK_TOP);
       // only the head and a short length of neck come down below the top of the frame
-      const Hd = F.at(4.0, 0, PEEK_TOP - hang * 14).pitch(Math.PI * 0.92).roll(get('tilt')).turn(get('gaze')).scale(HEAD_SCALE);
+      // [owner 22.11: the neck was too long] the head hangs just under the frame on a short bend of neck
+      const Hd = F.at(4.0, 0, PEEK_TOP - hang * 8).pitch(Math.PI * 0.92).roll(get('tilt')).turn(get('gaze')).scale(HEAD_SCALE);
       front!.tag = 'neck';
-      const pts: V3[] = [F.p(4.0, 0, PEEK_TOP + 10), top, F.p(4.5, 0, PEEK_TOP - hang * 6), Hd.p(-2.6, 0, -1.4)];
+      const pts: V3[] = [F.p(4.0, 0, PEEK_TOP + 10), top, F.p(4.3, 0, PEEK_TOP - hang * 3), Hd.p(-2.6, 0, -1.4)];
       for (let k = 0; k < 14; k++) front!.cap(catmull(pts, k / 14), catmull(pts, (k + 1) / 14), 2.9 - k * 0.04, 2.8 - k * 0.04, S(0.5));
       for (let k = 0; k < 6; k++) tubeScutes(front!, catmull(pts, 0.08 + k * 0.14), catmull(pts, 0.16 + k * 0.14), 2.7, F.s, 0.6, k % 2 ? SS(0.5) : S(0.5));
       head(front!, Hd, j, { barbel: F.v(0, 0, 0), blink: get('blink'), lid: 0, snarl: get('snarl'), roar: 0, lookX: get('lookX'), lookY: 0, wide: get('wide'), fire: 0, flame: 0, ph, fold: 0 });

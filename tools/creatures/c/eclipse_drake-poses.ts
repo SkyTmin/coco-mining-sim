@@ -29,7 +29,7 @@ export const clips: Record<string, { seconds: number; loop?: boolean }> = {
   'trick_b-f2': { seconds: 11.5 },
   'trick_c-f2': { seconds: 12 },
   show: { seconds: 7 },
-  peek: { seconds: 2.5 },
+  peek: { seconds: 4.5 },
   hatch: { seconds: 3 },
   sleep: { seconds: 3, loop: true },
   sleep_in: { seconds: 1.5 },
@@ -55,10 +55,11 @@ export const asleep: JointPose = { sleep: 1, blink: 1 };
 /** Keys that switch at the key instead of fading. */
 export const SWITCHES = new Set(['hidden', 'overAll', 'blink', 'noShadow', 'egg', 'mirrorsOn', 'pearlDark']);
 /** Lane keys that run linearly (positions in flight, spins). */
-export const LINEAR = new Set(['dx', 'dy', 'twist', 'pitch']);
+export const LINEAR = new Set(['dx', 'dy', 'twist', 'pitch', 'gaitT']);
 
 /** Wings thrown wide (on the ground this rears him on the hind legs). */
-const WIDE: JointPose = { wingOpen: 1, wingBeat: 0.25 };
+// raised high: in the 3/4 ground view a level near wing lies across the picture like a stick (owner 22.11)
+const WIDE: JointPose = { wingOpen: 1, wingBeat: 1.1 };
 /** Braced on the wrists, claws in the stone, the wings up behind him as a hood. */
 const braced = (p: JointPose = {}): JointPose => ({ brace: 1, wingOpen: 0.8, fistR: 0.7, fistL: 0.7, ...p });
 /** Rest contacts in the feet frame (match the skin's STANCE): the raised hock and the wrist on the stone. */
@@ -74,7 +75,9 @@ export const beats = {
   wake_startled: { flash: 8 },
   sleep_out: { stretch: 22 },
   hatch: { crack: 8, rock: [14, 32], burst: 38, gone: 43, wings: 46, puff: 54 },
-  peek: { flap: 5, gone: 9, hang: [18, 24], blink: 30, grin: 36, puff: 40, up: [46, 50], land: 54 },
+  // Голова сверху [owner 22.11: a short neck, slow, the head turns]: the snout slides down under the frame, he looks
+  // left, right, at us with his head on one side, grins, puffs smoke, and is pulled back up.
+  peek: { flap: 5, gone: 9, hang: [23, 36], blink: 64, grin: 74, puff: 82, up: [92, 96], land: 100 },
   // Солнечный луч: he rears and throws the wings open to the sun, sunlight runs into the membranes in two gulps; he
   // settles low on the hind legs, claws in the stone, draws the neck back, the beam strikes the stone and is led in an
   // arc across the dial to the viewer and up into the glass; the recoil drives him back over the stone, the hind claws
@@ -146,6 +149,27 @@ function walkSteps(keys: Track, from: number, every: number, n: number, dx0: num
     dxLane.push([f, dx0 + ((dx1 - dx0) * i) / n], [f + every, dx0 + ((dx1 - dx0) * (i + 1)) / n]);
   }
   keys.push([from + n * every, base]);
+}
+/** Screen pixels one gait cycle carries him along his facing: the card's life stride 40 px over portraitScale 4.6 is
+ * 8.7 rig units, drawn at 4.71 px a unit. */
+const STRIDE_PX = 41;
+/**
+ * Walks on four with the skin's own gait (the life walk) from screen offset dx0 to dx1 between frames `from` and `to`
+ * [owner 22.11: the old steps marched on the spot while the body slid]. Each foot stays planted while he passes over
+ * it, so the screen lane must move exactly one stride per gait cycle: he turns side on (`yaw` −0.62: his facing runs
+ * along the screen x) for the walk, and the lane is linear. Returns the keys of the walk; the caller blends in and out
+ * with its own neighbouring keys (yaw 0, gait 0 there), and adds the `gaitT` lane from `lane`.
+ */
+function walkHome(from: number, to: number, dx0: number, dx1: number, base: JointPose, every = 8): { keys: Track; dx: Lane; gaitT: Lane } {
+  if (dx1 <= dx0) throw new Error('walkHome walks to the right (towards his facing turned side on)');
+  const cycles = Math.abs(dx1 - dx0) / STRIDE_PX;
+  const keys: Track = [];
+  for (let f = from; f <= to; f += every) {
+    const u = (f - from) / (to - from);
+    keys.push([f, { ...base, yaw: -0.62, gait: 1, nod: (base.nod ?? 0) + 0.04 * Math.sin(u * cycles * TAU * 2) }]);
+  }
+  if (keys[keys.length - 1][0] !== to) keys.push([to, { ...base, yaw: -0.62, gait: 1 }]);
+  return { keys, dx: [[from, dx0], [to, dx1]], gaitT: [[from, 0], [to, cycles]] };
 }
 function shakeHead(keys: Track, from: number, to: number, step: number, amp: number, base: JointPose = {}) {
   for (let f = from, i = 0; f <= to; f += step, i++) {
@@ -287,15 +311,16 @@ function trickBTrack(): { keys: Track; lanes: Record<string, Lane> } {
     [201, { brace: 0.3, wingOpen: -0.06, nod: 0.2, gaze: -0.3, lookX: -0.5 }],
     [204, { wingOpen: 0, nod: 0.3, gaze: -0.3, lookX: -0.5 }],
   ];
-  const back: Lane = [[0, 0], [123, 0], [124, -144], [128, -75], [130, -51], [136, -39], [206, -39]];
-  walkSteps(keys, 206, 10, 4, -39, 0, { nod: 0.25, gaze: -0.1 }, back);
-  keys.push([256, { nod: 0, snarl: 0.3, lid: 0.25 }], [276, {}]);
-  back.push([276, 0]);
+  // turns side on, walks home with planted feet, turns back to us
+  const home = walkHome(210, 242, -39, 0, { nod: 0.25, gaze: 0.35, lookX: 0.3 });
+  keys.push(...home.keys, [250, { nod: 0.15, gaze: 0, lookX: 0 }], [256, { nod: 0, snarl: 0.3, lid: 0.25 }], [276, {}]);
+  const back: Lane = [[0, 0], [123, 0], [124, -144], [128, -75], [130, -51], [136, -39], ...home.dx, [276, 0]];
   keys.sort((a, b) => a[0] - b[0]);
   return {
     keys,
     lanes: {
       dx: [[0, 0], [99, 0], [100, -285], [111, 285], [112, 0], [123, 0], ...back.slice(2)],
+      gaitT: home.gaitT,
       dy: [[0, 0], [22, 0], [26, -36], [30, -105], [36, -240], [39, -345], [40, 0], [99, 0], [100, 45], [111, 78], [112, 0], [123, 0], [124, -225], [128, -60], [130, 0], [276, 0]],
     },
   };
@@ -562,7 +587,7 @@ function trickCF2Track(): { keys: Track; lanes: Record<string, Lane> } {
 // ---- show, peek, hatch, everyday ------------------------------------------------------------------------------
 function showTrack(): Track {
   // the wings straight and raised high behind him (a half-open wing hung the wrist at his hip, the fingers up — owner 22.11)
-  const heraldic: JointPose = { rear: 0.95, wingOpen: 1, wingBeat: 1.3, wingSweep: 0.3, neckUp: 1.3, nod: -0.06, gaze: 0.2, snarl: 0.25, lid: 0.15, charge: 0.8, fistR: -0.3, fistL: -0.3 };
+  const heraldic: JointPose = { rear: 0.95, wingOpen: 1, wingBeat: 1.3, wingSweep: 0.6, neckUp: 1.3, nod: -0.06, gaze: 0.2, snarl: 0.25, lid: 0.15, charge: 0.8, fistR: -0.3, fistL: -0.3 };
   const slam = { ...foreR(15.5, 7.5, 1.8), ...foreL(15.5, -7.5, 1.8) };
   return [
     [0, { hidden: 1 }],
@@ -579,11 +604,11 @@ function showTrack(): Track {
     [66, braced({ wingOpen: 0.95, wingBeat: 0.5, crouch: 6.5, lean: 0.6, bodyPitch: 0.35, nod: 0.45, snarl: 0.8, flash: 0.12, fistR: 0.9, fistL: 0.9, ...slam, ...size(1.08, 0.92) })],
     [72, braced({ wingOpen: 0.85, wingBeat: 0.35, crouch: 6, lean: 0.5, bodyPitch: 0.3, nod: 0.45, snarl: 0.6, fistR: 0.9, fistL: 0.9, ...slam })],
     // Rises on the hind legs, the wings thrown wide; the pearl flares.
-    [86, { rear: 1, ...WIDE, wingOpen: 1.15, wingBeat: 0.3, crouch: 1, lift: 0.6, neckUp: 1.5, nod: -0.1, fistR: -0.6, fistL: -0.6, charge: 1.8 }],
-    [98, { rear: 1, ...WIDE, wingOpen: 1.1, wingBeat: 0.25, crouch: 0.6, lift: 0.5, neckUp: 1.5, nod: -0.05, fistR: -0.6, fistL: -0.6, charge: 1.4 }],
+    [86, { rear: 1, ...WIDE, wingOpen: 1.15, wingBeat: 0.95, crouch: 1, lift: 0.6, neckUp: 1.5, nod: -0.1, fistR: -0.6, fistL: -0.6, charge: 1.8 }],
+    [98, { rear: 1, ...WIDE, wingOpen: 1.1, wingBeat: 1.2, wingSweep: 0.35, crouch: 0.6, lift: 0.5, neckUp: 1.5, nod: -0.05, fistR: -0.6, fistL: -0.6, charge: 1.4 }],
     // The roar to the sun with a column of flame.
-    [104, { rear: 1, ...WIDE, wingOpen: 1.1, bodyPitch: -0.15, lift: 1.4, neckUp: 3.6, nod: -0.85, fire: 1, fistR: 0.8, fistL: 0.8, charge: 1.6 }],
-    [122, { rear: 1, ...WIDE, wingOpen: 1.1, bodyPitch: -0.17, lift: 1.5, neckUp: 3.6, nod: -0.85, fire: 1, fistR: 0.8, fistL: 0.8, charge: 1.6 }],
+    [104, { rear: 1, ...WIDE, wingOpen: 1.1, wingBeat: 1.25, wingSweep: 0.6, bodyPitch: -0.15, lift: 1.4, neckUp: 3.6, nod: -1.45, fire: 1, fistR: 0.8, fistL: 0.8, charge: 1.6 }],
+    [122, { rear: 1, ...WIDE, wingOpen: 1.1, wingBeat: 1.3, wingSweep: 0.6, bodyPitch: -0.17, lift: 1.5, neckUp: 3.6, nod: -1.45, fire: 1, fistR: 0.8, fistL: 0.8, charge: 1.6 }],
     [126, { rear: 1, ...WIDE, lift: 0.8, neckUp: 2.4, nod: -0.4, fire: 0, roar: 0.3, charge: 1 }],
     // The heraldic pose: reared, the wings raised behind his back, the head high; held still, then he settles.
     [132, heraldic],
@@ -734,22 +759,30 @@ export const tracks: Record<string, Track> = {
     [7, { ...WIDE, wingBeat: -0.7, point: 1, jump: 8, tuck: 0.4, ...size(0.86, 1.22) }],
     [8, { ...WIDE, wingBeat: 0.4, point: 1, jump: 10, tuck: 0.4, ...size(0.85, 1.25) }],
     [9, { hidden: 1, noShadow: 1 }],
-    [17, { hidden: 1, noShadow: 1 }],
-    // The head hangs down from above the frame, upside down.
-    [18, peekHang({ peekHang: 0.15, wide: 0.6 })],
-    [24, peekHang({ peekHang: 1, wide: 0.3 })],
-    [29, peekHang({ peekHang: 0.96, lookX: -0.4 })],
-    [30, peekHang({ peekHang: 0.96, lookX: -0.4, blink: 1 })],
-    [32, peekHang({ peekHang: 0.96, lookX: 0.4 })],
-    [36, peekHang({ peekHang: 0.98, snarl: 0.8, tilt: 0.2, lookX: 0.2 })],
-    [42, peekHang({ peekHang: 0.98, snarl: 0.6, tilt: 0.24 })],
-    [46, peekHang({ peekHang: 1, snarl: 0.3, tilt: 0.1 })],
-    [50, peekHang({ peekHang: 0.001 })],
+    [22, { hidden: 1, noShadow: 1 }],
+    // The head slides down from above the frame, upside down, slowly, nose first.
+    [23, peekHang({ peekHang: 0.04, wide: 0.6, gaze: 0.1 })],
+    [32, peekHang({ peekHang: 0.75, wide: 0.5, gaze: 0.05 })],
+    [36, peekHang({ peekHang: 0.82, wide: 0.3 })],
+    // looks along the painting to the left, then to the right
+    [42, peekHang({ peekHang: 0.85, gaze: -0.55, lookX: -0.6, tilt: -0.05 })],
+    [50, peekHang({ peekHang: 0.86, gaze: -0.6, lookX: -0.5, tilt: -0.08 })],
+    [56, peekHang({ peekHang: 0.86, gaze: 0.5, lookX: 0.6, tilt: 0.05 })],
+    [62, peekHang({ peekHang: 0.87, gaze: 0.55, lookX: 0.5 })],
+    [64, peekHang({ peekHang: 0.87, gaze: 0.55, lookX: 0.5, blink: 1 })],
+    // at us, the head on one side, a grin, two puffs of smoke
+    [66, peekHang({ peekHang: 0.88, gaze: 0.15, lookX: 0, tilt: 0.12 })],
+    [70, peekHang({ peekHang: 0.9, gaze: 0.12, tilt: 0.3, wide: 0.4 })],
+    [74, peekHang({ peekHang: 0.92, gaze: 0.1, tilt: 0.32, snarl: 0.85 })],
+    [84, peekHang({ peekHang: 0.92, gaze: 0.1, tilt: 0.3, snarl: 0.6 })],
+    [90, peekHang({ peekHang: 0.95, gaze: 0, tilt: 0.1, snarl: 0.3 })],
+    [92, peekHang({ peekHang: 0.97, gaze: 0, tilt: 0.05 })],
+    [96, peekHang({ peekHang: 0.001 })],
     // Drops home, lands on all four.
-    [51, { ...WIDE, wingBeat: 0.5, point: 1, jump: 6 }],
-    [54, braced({ wingOpen: 0.5, crouch: 3, flash: 0.04, fistR: 0.3, fistL: 0.3, ...size(1.05, 0.95) })],
-    [58, {}],
-    [60, {}],
+    [97, { ...WIDE, wingBeat: 0.5, point: 1, jump: 6 }],
+    [100, braced({ wingOpen: 0.5, crouch: 3, flash: 0.04, fistR: 0.3, fistL: 0.3, ...size(1.05, 0.95) })],
+    [104, {}],
+    [108, {}],
   ],
   show: showTrack(),
 };
