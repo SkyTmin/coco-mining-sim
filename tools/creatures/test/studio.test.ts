@@ -96,7 +96,7 @@ test('golden comparison names the changed frames and nothing else', async () => 
 test('a snap split over worker processes hashes every frame like one process', async () => {
   const { hashCreature } = await import('../studio/snap');
   // 72 idle frames → two 48-frame ranges → two workers, joined back in order.
-  const alone = await hashCreature('bramble_warden', ['idle'], 1);
+  const alone = await hashCreature('bramble_warden', ['idle'], 1, true);
   const split = await hashCreature('bramble_warden', ['idle'], 2);
   assert.equal(split.idle.length, alone.idle.length);
   assert.deepEqual(split, alone);

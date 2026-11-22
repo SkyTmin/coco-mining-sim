@@ -4,8 +4,10 @@
 //   npm run ws -- snap <id|all> [anim…] [--jobs N]          write the golden hashes
 //   npm run ws -- snap <id|all> [anim…] --check [--jobs N]  compare, exit 1 when a frame changed
 // One creature is hashed by --jobs worker processes (default: one per core, at most one per 3 GB), each taking frame
-// ranges in turn; several creatures run one process each. Every worker keeps at most SNAP_CACHE_MB (default 512) of
-// reused poses [22.11: a count limit of 2000 poses grew to 9.7 GB on Zenit's 288-px canvas and was killed].
+// ranges in turn; several creatures run one coordinator each with one worker. Every worker keeps at most SNAP_CACHE_MB
+// (default 512) of reused poses, and is replaced by a fresh one between ranges once it passes SNAP_WORKER_MB (default
+// 2048): native canvas memory grows ~120 MB per 100 Zenit frames whatever the GC does, and one process for all of
+// Zenit's 10 732 frames was killed at 8.4–13.9 GB [22.11].
 import { createHash } from 'node:crypto';
 import { fork, spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -88,60 +90,80 @@ export function snapJobs() {
   return Math.max(1, Math.min(cpus().length, Math.floor(totalmem() / (3 * 2 ** 30))));
 }
 
+type Reply = { hashes?: string[]; error?: string; rss?: number };
+const workerLimit = (Number(process.env.SNAP_WORKER_MB) || 2048) * 2 ** 20;
+
+/** A worker process with the painting loaded; `ask` sends one message and waits for its reply. */
+async function startWorker(id: string) {
+  const child = fork(join(import.meta.dirname, 'snap-worker.ts'), [], {
+    cwd: tools,
+    execArgv: ['--import', 'tsx'],
+    env: { ...process.env, WS_CHILD: '1' },
+    stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
+  });
+  const ask = (msg: object) =>
+    new Promise<Reply>((done, fail) => {
+      const onExit = (code: number | null, signal: string | null) =>
+        fail(new Error(`snap worker for ${id} exited (${signal ?? 'code ' + code})`));
+      child.once('exit', onExit);
+      child.once('message', (reply: Reply) => {
+        child.off('exit', onExit);
+        done(reply);
+      });
+      child.send(msg);
+    });
+  const ready = await ask({ id });
+  if (ready.error) {
+    child.kill();
+    throw new Error(ready.error);
+  }
+  return { ask, stop: () => child.kill() };
+}
+
 /** Hashes frame ranges in `jobs` worker processes; each takes the next range when it is free. */
 async function hashParallel(id: string, chunks: { anim: string; from: number; to: number }[], jobs: number) {
   const results: string[][] = new Array(chunks.length);
   let next = 0;
-  async function worker() {
-    const child = fork(join(import.meta.dirname, 'snap-worker.ts'), [], {
-      cwd: tools,
-      execArgv: ['--import', 'tsx'],
-      env: { ...process.env, WS_CHILD: '1' },
-      stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
-    });
-    const ask = (msg: object) =>
-      new Promise<{ hashes?: string[]; error?: string }>((done, fail) => {
-        const onExit = (code: number | null) => fail(new Error(`snap worker for ${id} exited with code ${code}`));
-        child.once('exit', onExit);
-        child.once('message', (reply: { hashes?: string[]; error?: string }) => {
-          child.off('exit', onExit);
-          done(reply);
-        });
-        child.send(msg);
-      });
+  async function lane() {
+    let worker: Awaited<ReturnType<typeof startWorker>> | null = null;
     try {
-      const ready = await ask({ id });
-      if (ready.error) throw new Error(ready.error);
       while (next < chunks.length) {
         const k = next++;
-        const reply = await ask(chunks[k]);
+        worker ??= await startWorker(id);
+        const reply = await worker.ask(chunks[k]);
         if (reply.error || !reply.hashes) throw new Error(reply.error ?? 'snap worker sent no hashes');
         results[k] = reply.hashes;
+        if ((reply.rss ?? 0) > workerLimit) {
+          worker.stop();
+          worker = null;
+        }
       }
     } finally {
-      child.kill();
+      worker?.stop();
     }
   }
-  await Promise.all(Array.from({ length: Math.min(jobs, chunks.length) }, worker));
+  await Promise.all(Array.from({ length: Math.min(jobs, chunks.length) }, lane));
   return results;
 }
 
-/** Hashes of the final picture of every frame (life and showreel included: they are what the owner sees). */
-export async function hashCreature(id: string, only: string[] = [], jobs = 1): Promise<Golden> {
+/** Hashes of the final picture of every frame (life and showreel included: they are what the owner sees).
+ * `jobs` worker processes do the drawing; `inline` draws in this process (tests, small subsets). */
+export async function hashCreature(id: string, only: string[] = [], jobs = 1, inline = false): Promise<Golden> {
   const painting = await loadForHash(id);
   const anims = Object.keys(painting.c.animations).filter((anim) => !only.length || only.includes(anim));
   const out: Golden = {};
-  if (jobs <= 1) {
+  if (inline) {
     for (const anim of anims) out[anim] = hashRange(painting, anim, 0, framesOf(painting.c, anim));
     return out;
   }
-  // Ranges long enough to keep a worker's pose cache useful, short enough to share the long clips (life, showreel).
+  // Ranges long enough to keep a worker's pose cache useful, short enough to share the long clips (life, showreel)
+  // and to let a grown worker be replaced often enough.
   const total = anims.reduce((sum, anim) => sum + framesOf(painting.c, anim), 0);
-  const size = Math.max(48, Math.ceil(total / (jobs * 6)));
+  const size = Math.min(400, Math.max(48, Math.ceil(total / (Math.max(1, jobs) * 6))));
   const chunks: { anim: string; from: number; to: number }[] = [];
   for (const anim of anims)
     for (let from = 0, n = framesOf(painting.c, anim); from < n; from += size) chunks.push({ anim, from, to: Math.min(n, from + size) });
-  const results = await hashParallel(id, chunks, jobs);
+  const results = await hashParallel(id, chunks, Math.max(1, jobs));
   for (const anim of anims) out[anim] = [];
   chunks.forEach((chunk, k) => out[chunk.anim].push(...results[k]));
   return out;

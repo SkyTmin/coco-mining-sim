@@ -1,5 +1,6 @@
 // One worker of a parallel snap: loads the painting once, then hashes the frame ranges the parent sends.
-// Message in: { id } once, then { anim, from, to } per chunk; message out: { hashes } per chunk.
+// Message in: { id } once, then { anim, from, to } per chunk; message out: { hashes, rss } per chunk (the parent
+// replaces a worker whose memory has grown past SNAP_WORKER_MB).
 // Frames are independent (compose is a pure function of the time), so any split gives the same hashes.
 import { hashRange, loadForHash } from './snap';
 
@@ -13,7 +14,8 @@ process.on('message', async (msg: { id?: string; anim?: string; from?: number; t
       return;
     }
     if (!painting) throw new Error('snap worker: painting not loaded');
-    process.send!({ hashes: hashRange(painting, msg.anim!, msg.from!, msg.to!) });
+    const hashes = hashRange(painting, msg.anim!, msg.from!, msg.to!);
+    process.send!({ hashes, rss: process.memoryUsage().rss });
   } catch (e) {
     process.send!({ error: e instanceof Error ? e.stack ?? e.message : String(e) });
   }
