@@ -37,6 +37,8 @@ const toneSet = (name: string, idx: number[]) => idx.map((i) => hx(tones(name)[i
 const saturate = (x: number) => Math.max(0, Math.min(1, x));
 const smooth = (x: number) => x * x * (3 - 2 * x);
 const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
+/** Idle blink at the end of each loop: the third eyelid sweeps across first, then the lids shut. */
+const blinkAt = (a: number) => (a > 6.04 ? 1 : a > 5.86 ? 0.36 : 0);
 
 // ---- materials: day (Зенит) and night (Затмение) pairs ---------------------------------------------------------
 const scale = sw('scale', [2, 3, 4, 5]),
@@ -67,7 +69,7 @@ const scale = sw('scale', [2, 3, 4, 5]),
   sunCore = sw('sun', [2, 3, 4, 4], 1),
   coronaMat = sw('corona', [1, 2, 3, 4], 0.85),
   coronaHot = sw('corona', [2, 3, 4, 4], 1),
-  eyeDay = sw('eyes', [0, 1, 2, 3], 0.45),
+  eyeDay = sw('eyes', [1, 2, 3, 4], 0.5),
   eyeNight = sw('corona', [2, 3, 4, 4], 1),
   claw = sw('claw', [0, 1, 2, 3]),
   mouthMat = sw('mouth', [0, 0, 1, 2]),
@@ -89,7 +91,8 @@ const ink = hx('#120a08'),
   fang = hx('#f6efe0'),
   noseMat: Mat = { T: [hx('#1a0a06'), hx('#2c140c'), hx('#4a2414'), hx('#6c3a22')] },
   sunT = toneSet('sun', [1, 2, 3, 4]),
-  coronaT = toneSet('corona', [1, 2, 3, 4]);
+  coronaT = toneSet('corona', [1, 2, 3, 4]),
+  eyeT = [0, 1, 2, 3, 4].map((i) => hx(tones('eyes')[i]));
 
 /** Overlapping scale rows: a dark lower arc and a lit upper rim on every scale, rows offset by half a scale. */
 function scalePattern(m: Mat) {
@@ -277,24 +280,48 @@ function head(r: Rig, Hd: F3, j: Record<string, V3>, p: HeadState) {
       r.spike(Hd.p(6.2, s * 1.55, -1.85), Hd.v(0, 0, -1), 0.9, 0.28, fangMat, 3);
       if (open > 0.1) r.spike(J.p(7.2, s * 1.0, -0.2), J.v(0, 0, 1), 1.0, 0.3, fangMat, 3);
     }
-  // Eyes under brow plates: amber with a slit pupil; white and pupil-less in the eclipse.
+  // Eyes, from reptiles [вики: Sclera, Crocodile, Nictitating membrane, Palpebral (bone)]: the eye sits on the SIDE of
+  // the skull looking out and a little forward; what shows is almost all iris (no white, the sclera stays under the
+  // lids); a vertical slit pupil as in crocodiles; a bony palpebral under the brow hoods the upper lid, so its margin
+  // is a hard dark line across the top of the iris; the light pools in the lower iris. A third eyelid sweeps across
+  // from the front corner before the lids shut. In the eclipse — a white glow with no pupil.
+  // (Before 22.11 the eye faced forward along the snout: its almond stood across the head and read as a dot.)
   const eyeMat = eclipseK > 0.5 ? eyeNight : eyeDay;
+  const irisLow: Mat = eclipseK > 0.5 ? { T: [coronaT[2], coronaT[3], white, white], glow: 1 } : { T: [eyeT[2], eyeT[3], eyeT[4], eyeT[4]], glow: 0.75 };
   for (const s of [-1, 1]) {
     r.tag = s < 0 ? 'eyeL' : 'eyeR';
-    const e = Hd.at(2.35, s * 2.32, 0.78).turn(s * 0.6).roll(s * -0.2);
+    // +y in P runs back along the head, -y to the front corner by the snout
+    const e = Hd.at(2.55, s * 2.32, 0.7).turn(s * 1.12).roll(s * 0.1);
     const P = (x: number, y: number, z: number) => e.p(x, s * y, z);
-    const start = r.size;
     const opened = p.blink < 0.5;
+    const ry = 1.95 + p.wide * 0.15,
+      rz = 0.98 + p.wide * 0.3 - p.lid * 0.3;
+    // the lid rims: dark scaled skin, thick above (in the shadow of the brow), thin below
+    r.tag = 'lid' + (s < 0 ? 'L' : 'R');
+    r.ell(e, [0.05, 0, 0.12], [0.5, ry * 1.07, rz * 1.1 + 0.1], SD(d));
     if (opened) {
-      const ry = 1.05 + p.wide * 0.25,
-        rz = 0.46 + p.wide * 0.45 - p.lid * 0.22;
-      r.ell(e, [0.2, 0, 0], [0.55, ry, rz], inkMat);
-      r.ell(e, [0.35, 0, 0], [0.5, ry * 0.88, rz * 0.82], eyeMat);
-      if (eclipseK < 0.5) r.ell(e, [0.75, p.lookX * 0.45, p.lookY * 0.2], [0.22, 0.26, rz * 0.82], inkMat);
-      r.dot(P(0.9, -0.55, 0.2), white, 0.4, 0.38);
+      // the upper lid: a hood of scale from the palpebral over the top of the iris, its margin a hard line
+      r.ell(e, [0.3, 0.05, rz * 1.3], [0.55, ry * 1.06, rz * 0.5], S(d));
+      r.line(P(0.8, -ry * 0.98, rz * 0.3), P(0.84, -ry * 0.25, rz * 0.78), ink, 0, 0.85);
+      r.line(P(0.84, -ry * 0.25, rz * 0.78), P(0.8, ry * 0.96, rz * 0.5), ink, 0, 0.85);
+      // the lower lid: a light rim of small scales
+      r.ell(e, [0.28, 0.05, -rz * 1.02], [0.45, ry * 0.86, rz * 0.24], SS(d));
     } else {
-      r.ell(e, [0.3, 0, 0], [0.55, 1.55, 0.7], S(d));
-      r.line(P(0.8, -1.4, -0.1), P(0.9, 1.3, 0.15), ink, 0, 0.8);
+      // shut: the lower lid rises (lizards blink upward) and meets the hood
+      r.ell(e, [0.3, 0, -0.05], [0.55, ry * 1.02, rz * 0.9], S(d));
+      r.line(P(0.8, -ry * 0.98, 0.15), P(0.84, ry * 0.95, rz * 0.42), ink, 0, 0.8);
+    }
+    r.tag = s < 0 ? 'eyeL' : 'eyeR';
+    const start = r.size;
+    if (opened) {
+      r.ell(e, [0.24, 0, 0], [0.5, ry, rz], eyeMat);
+      r.ell(e, [0.3, 0.1, -rz * 0.4], [0.46, ry * 0.74, rz * 0.5], irisLow);
+      if (eclipseK < 0.5) r.ell(e, [0.6, -0.05 + p.lookX * 0.5, -rz * 0.05], [0.2, 0.2 + p.wide * 0.12, rz * 0.92], inkMat);
+      // the third eyelid: a pale film drawn back from the front corner
+      const nict = saturate((p.blink - 0.22) / 0.26);
+      if (nict > 0.02) r.ell(e, [0.62, -ry + ry * nict, 0], [0.2, ry * nict, rz * 0.98], { T: [hx('#8a7a66'), hx('#b4a88c'), hx('#d8ceb4'), hx('#efe6cc')] });
+      // a glint high on the cornea, toward the light
+      r.dot(P(0.86, -ry * 0.38, rz * 0.2), white, 0.45, 0.4);
     }
     r.markEye(start, s, opened);
     if (s > 0) j.eyeR = r.eye = P(0.6, 0.3, 0.2);
@@ -553,6 +580,10 @@ export interface WingState {
   fist: number;
   /** 0..1 how much the wrist stands on the stone (walking on four). */
   ground: number;
+  /** 0..1 the wing wrapped round the body like a cloak: the wrist up by the head, the fingers down round the flank. */
+  wrap: number;
+  /** 0..1 mantling: braced on the wrists, the fingers arch up and back over him like a hood. */
+  mantle: number;
   /** The wrist on the stone (world). */
   foot: V3;
   /** The wrist when the wing is not on the stone: pose-authored goal or the wing's own air position (world). */
@@ -567,6 +598,12 @@ const OPEN_DIRS: V3[] = [
   [-0.12, 0.72, 0.68],
   [-0.6, 0.66, 0.16],
   [-0.88, 0.34, -0.36],
+];
+/** Mantling (braced on the wrists): the fingers rise from the planted wrist up, out and back over him. */
+const MANTLE_DIRS: V3[] = [
+  [-0.1, 0.14, 0.98],
+  [-0.55, 0.16, 0.82],
+  [-0.9, 0.12, 0.42],
 ];
 /** The wing's own wrist position relative to the shoulder (forward, outward, up): folded in front of the chest, spread. */
 const WRIST_FOLD: V3 = [3.0, 3.6, -8.0];
@@ -593,7 +630,7 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
   const reachV = vsub(wrist, shoulder),
     reachL = vlen(reachV);
   if (reachL > (HUM + FORE) * 0.985) wrist = vadd(shoulder, vmul(reachV, ((HUM + FORE) * 0.985) / reachL));
-  const pole = vnorm(vlerp(BU.v(-1.0, s * 0.35, 0.6), BU.v(-0.5, s * 0.25, 1.0), u));
+  const pole = vnorm(vlerp(vlerp(BU.v(-1.0, s * 0.35, 0.6), BU.v(-0.5, s * 0.25, 1.0), u), BU.v(-0.6, s * 1, -0.3), smooth(saturate(st.wrap))));
   const elbow = ik(shoulder, wrist, HUM, FORE, pole);
   const fd = vnorm(vsub(wrist, elbow));
   const place = (v: V3): V3 => {
@@ -608,8 +645,20 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
     vnorm(vadd(vmul(back, 0.6), BU.v(-0.55, s * 0.16, 0.5))),
     vnorm(vadd(vmul(back, 0.6), BU.v(-0.85, s * 0.22, 0.22))),
   ];
-  const tips = FINGERS.map((len, k) => vadd(wrist, vmul(vnorm(vlerp(FOLD[k], vnorm(place(OPEN_DIRS[k])), u)), len * (0.92 + 0.08 * u))));
-  const trail = Pv.p(-1.6, s * 3.3, 1.6);
+  // wrapped: the fingers hang from the raised wrist down and forward round the flank, the membrane a cloak
+  const WRAP: V3[] = [vnorm(BU.v(0.62, -s * 0.18, -0.78)), vnorm(BU.v(0.12, -s * 0.05, -1)), vnorm(BU.v(-0.42, s * 0.08, -0.9))];
+  const wr = smooth(saturate(st.wrap));
+  // the far wing of a mantle leans out so it stands above his back; the near one rises straight beside him
+  const mOut = s > 0 ? 1 : 3.6;
+  const spread = (k: number) => vnorm(vlerp(place(OPEN_DIRS[k]), BU.v(MANTLE_DIRS[k][0], s * MANTLE_DIRS[k][1] * mOut, MANTLE_DIRS[k][2]), st.mantle));
+  const tips = FINGERS.map((len, k) => vadd(wrist, vmul(vnorm(vlerp(vlerp(FOLD[k], spread(k), u), WRAP[k], wr)), len * (0.92 + 0.08 * Math.max(u, wr) - 0.22 * wr))));
+  // The main membrane runs back to the hind leg [вики: Patagium, Pterosaur — bats to the ankle, pterosaurs to the
+  // hind limb], not to the flank: here to the shin just under the knee, so the leg still reads on the stone. Its root
+  // runs along the flank from the shoulder over the hip to that point, and it stretches and slackens as he walks.
+  const hipF = Pv.p(-1.6, s * 3.3, 1.6);
+  const kneeJ = j['knee' + name],
+    heelJ = j['heel' + name];
+  const trail = kneeJ && heelJ ? vadd(vlerp(kneeJ, heelJ, 0.3), vmul(Pv.s, s * 0.7)) : hipF;
   // Membranes first (behind the bones in depth bias), scalloped between the finger tips.
   r.tag = 'membrane' + name;
   const memIn = (d: number) => M(membrane, voidwing, d),
@@ -640,7 +689,8 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
   panel(tips[2], sc2, 0.9);
   panel(sc2, trail, 0.7);
   r.poly([wrist, trail, elbow], memIn(0.62), -0.2);
-  r.poly([elbow, trail, shoulder], memIn(0.55), -0.2);
+  r.poly([elbow, trail, hipF], memIn(0.58), -0.2);
+  r.poly([elbow, hipF, shoulder], memIn(0.55), -0.2);
   // the leading membrane from the shoulder to the wrist, in front of the arm
   r.poly([shoulder, elbow, wrist], memEdge(0.58), -0.2);
   edges.push([tips[2], sc2, trail]);
@@ -728,9 +778,9 @@ const FTdir = (BU: F3, s: number): V3 => vnorm([BU.f[0] + BU.s[0] * s * 0.3, BU.
 
 /** Mirror spots in the facing frame (forward, right): front-near, back-near, front-far. */
 export const MIRRORS: [number, number][] = [
-  [21, 11],
-  [-14, 17],
-  [19, -11],
+  [25, 14],
+  [-16, 20],
+  [22, -14],
 ];
 // ---- props: mirrors, egg ----------------------------------------------------------------------------------------
 /** A crystal mirror in a bronze ring: a lens standing on edge, facing `face`. `up` 0..1 rises it out of the floor. */
@@ -739,36 +789,36 @@ function mirror(r: Rig, base: V3, face: V3, up: number, crack: number, lit: numb
   const n = vnorm([face[0], face[1], 0]);
   const side = vnorm(vcross([0, 0, 1], n));
   // it grows up out of the hour mark: small and low at first, full size on its stem
-  const R = 5.0 * (0.25 + 0.75 * smooth(up));
-  const c = vadd(base, [0, 0, (R * 1.15 + 0.6) + 4.5 * smooth(up)]);
+  const R = 7.4 * (0.25 + 0.75 * smooth(up));
+  const c = vadd(base, [0, 0, (R * 1.15 + 0.6) + 6.5 * smooth(up)]);
   const ring: V3[] = [];
   for (let k = 0; k < 12; k++) {
     const a = (k / 12) * TAU;
     ring.push(vadd(c, vadd(vmul(side, Math.cos(a) * R), [0, 0, Math.sin(a) * R * 1.15])));
   }
-  for (let k = 0; k < 12; k++) r.cap(ring[k], ring[(k + 1) % 12], 0.55, 0.55, k % 3 ? gold : goldDeep);
+  for (let k = 0; k < 12; k++) r.cap(ring[k], ring[(k + 1) % 12], 0.8, 0.8, k % 3 ? gold : goldDeep);
   // degree ticks on the ring and a sun boss at the top
-  for (let k = 0; k < 12; k += 2) r.spike(ring[k], vnorm(vsub(ring[k], c)), 0.9, 0.3, goldDeep, 3);
-  r.ell(axisFrame(ring[3], [0, 0, 1], n), [0, 0, 0.6], [0.8, 0.8, 0.8], gold);
+  for (let k = 0; k < 12; k += 2) r.spike(ring[k], vnorm(vsub(ring[k], c)), 1.3, 0.45, goldDeep, 3);
+  r.ell(axisFrame(ring[3], [0, 0, 1], n), [0, 0, 0.9], [1.2, 1.2, 1.2], gold);
   const lens = lit > 0.3 ? crystal : crystalDeep;
   for (let k = 0; k < 12; k++) {
     if (crack > 0 && hash(k, 5) < crack) continue;
     r.poly([c, ring[k], ring[(k + 1) % 12]], lens, 0.1);
   }
   // the stem down into the dial
-  r.cap(vadd(c, [0, 0, -R * 1.15]), vadd(base, [0, 0, -1]), 0.55, 0.7, goldDeep);
+  r.cap(vadd(c, [0, 0, -R * 1.15]), vadd(base, [0, 0, -1]), 0.8, 1.0, goldDeep);
   j[key] = c;
 }
 function egg(r: Rig, F: F3, crack: number, open: number, j: Record<string, V3>) {
   r.tag = 'egg';
-  const c = F.p(0.5, 0, 7.5);
+  const cl: V3 = [0.5, 0, 7.5];
+  const c = F.p(...cl);
   // A golden egg like a small sun with a crescent pattern; the top half lifts away when it bursts.
-  const lid = vmul(F.u, open * 14);
   for (let k = 0; k < 14; k++) {
     const a = (k / 14) * TAU;
-    const out = F.v(Math.cos(a), Math.sin(a), 0);
-    r.ell(F.at(...vadd(vsub(c, F.p(0, 0, 0)), vmul(out, 0.2))).turn(a), [0, 0, -1.6], [5.2, 5.2, 4.6], k % 2 ? shellMat : shellDeep, (q) => q[2] > 0.1);
-    if (open < 1) r.ell(F.at(...vadd(vadd(vsub(c, F.p(0, 0, 0)), lid), vmul(out, 0.2 + open * 4))).turn(a), [0, 0, 1.4], [4.8, 4.8, 5.4], k % 2 ? shellMat : shellDeep, (q) => q[2] < 0.05);
+    const out: V3 = [Math.cos(a), Math.sin(a), 0];
+    r.ell(F.at(...vadd(cl, vmul(out, 0.2))).turn(a), [0, 0, -1.6], [5.2, 5.2, 4.6], k % 2 ? shellMat : shellDeep, (q) => q[2] > 0.1);
+    if (open < 1) r.ell(F.at(...vadd(vadd(cl, [0, 0, open * 14]), vmul(out, 0.2 + open * 4))).turn(a), [0, 0, 1.4], [4.8, 4.8, 5.4], k % 2 ? shellMat : shellDeep, (q) => q[2] < 0.05);
   }
   // cracks of light
   const lines = Math.floor(crack * 7);
@@ -826,7 +876,11 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
     const breath = period && !walking ? 0.4 * Math.sin(q) : 0;
     const hover = get('hover') + (eclipseK > 0.5 ? 0.7 * Math.sin(clock.turn(1)) : 0);
     const hoverK = saturate(hover / 4);
-    const rear = get('rear');
+    // opening the wings on the ground means rearing up on the hind legs (the wrists leave the stone)
+    const openNow = Math.max(get('wingOpen') + get('wingOpenL'), get('wingOpen') + get('wingOpenR'));
+    const brace = saturate(get('brace')),
+      wrapK = saturate(get('wrap'));
+    const rear = Math.max(get('rear'), 0.8 * smooth(saturate((openNow - 0.15) / 0.6)) * (1 - saturate(get('hover') / 4)) * (1 - saturate(get('sleep'))) * (1 - brace));
     const crouch = get('crouch') + sl * 7.4;
     const hipZ = HIP + get('lift') - crouch + get('jump') + hover + breath * 0.25 + bob;
     // A flip turns round his middle, not round the hips (kit/pet-moves).
@@ -955,7 +1009,7 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       );
       head(R0, Hd, j, {
         barbel,
-        blink: Math.max(get('blink'), sleep > 0.6 ? 1 : 0, period && ((q % TAU) + TAU) % TAU > 5.95 ? 1 : 0),
+        blink: Math.max(get('blink'), sleep > 0.6 ? 1 : 0, period ? blinkAt(((q % TAU) + TAU) % TAU) : 0),
         lid: get('lid'),
         snarl: get('snarl'),
         roar: get('roar'),
@@ -971,10 +1025,17 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       const openBase = get('wingOpen') + (eclipseK > 0.5 ? 0.62 : 0) * (1 - sl);
       const beatBase = get('wingBeat') + (eclipseK > 0.5 ? 0.42 * Math.sin(clock.turn(1)) : 0.03 * clock.osc(0.33));
       const lagBeat = 0.5 * (lag(wingLag, 'jump') - get('jump')) * 0.05 + 0.6 * (lag(wingLag, 'twist') - get('twist'));
+      // Bats fold the wings in toward the body on the upstroke [вики: Bat — saves 35% of the energy]: a rising beat
+      // (positive = up) flexes elbow, wrist and fingers, the downstroke spreads them full.
+      const prev1 = previous(1),
+        clockPrev = clipClock(clips[anim]?.seconds ?? 2, Math.max(0, t - 1 / 24));
+      const beatPrevBase = lag(prev1, 'wingBeat') + (eclipseK > 0.5 ? 0.42 * Math.sin(clockPrev.turn(1)) : 0.03 * clockPrev.osc(0.33));
       for (const s of [-1, 1]) {
         const k = s < 0 ? 'L' : 'R';
         const open = saturate(openBase + get('wingOpen' + k));
         const beat = beatBase + get('wingBeat' + k) + s * lagBeat * 0.3;
+        const upK = saturate((beat - (beatPrevBase + lag(prev1, 'wingBeat' + k) + s * lagBeat * 0.3)) * 3) * smooth(open);
+        const openFlex = open * (1 - 0.32 * upK);
         const sweep = get('wingSweep') + get('wingSweep' + k);
         const shoulder = Pv.p(9.0, s * 3.3, 3.6);
         const st = step(s < 0 ? 'foreL' : 'foreR');
@@ -984,19 +1045,30 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
           FT.p(10.6, s * 6.4, 1.3),
           sl,
         );
-        // the wrist stands on the stone unless he rears, flies, jumps or opens the wing
-        const ground = saturate(1 - 2.2 * rearK) * (1 - hoverK) * (1 - saturate(get('jump') / 2.5)) * (1 - smooth(open)) * (1 - tuck) * (1 - saturate(get('lift') / 4));
-        const air = target('hand' + k, wingWrist(BU, shoulder, s, open, beat, sweep));
-        const handGoal = goalAt(A, 'hand' + k);
+        // the wrist stands on the stone unless he rears, flies, jumps or opens the wing; braced, it stays planted with
+        // the wing half open like a cape; a hand goal (catch, hold, draw) lifts it in proportion to its weight
+        const airborne = (1 - hoverK) * (1 - saturate(get('jump') / 2.5)) * (1 - tuck) * (1 - saturate(get('lift') / 4));
+        const handW = Math.min(1, A['goal.hand' + k + '.weight'] ?? 0);
+        // `vault`: the quad launch of pterosaurs [вики: Pterosaur — Habib, Witton]: the hind legs throw the body
+        // forward over the planted wrists and the fore limbs give the main push, so the wrists stay on the stone while
+        // the body rises; the wings open only once they leave it.
+        const ground = Math.max(
+          Math.max(saturate(1 - 2.2 * rearK) * (1 - smooth(open)), brace) * airborne * (1 - handW) * (1 - smooth(wrapK)),
+          saturate(get('vault')) * (1 - handW),
+        );
+        const wrapWrist = vadd(shoulder, BU.v(3.4, s * 2.6, 10.5));
+        const air = target('hand' + k, vlerp(wingWrist(BU, shoulder, s, openFlex, beat, sweep), wrapWrist, smooth(wrapK)));
         wing(R0, BU, Pv, shoulder, s, {
-          open,
+          open: openFlex,
           beat,
           sweep,
           ph: ph + s,
           glow,
           heat: get('wingHeat'),
           fist: 0.15 + get('fist' + k),
-          ground: handGoal ? 0 : ground,
+          ground,
+          wrap: wrapK * (1 - handW * 0.6),
+          mantle: brace * ground,
           foot: target('fore' + k, foot),
           air,
         }, j);
@@ -1012,13 +1084,16 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       // Peeking from above the frame: only the neck and the upside-down head hang down into the picture.
       const hang = get('peekHang');
       const top = F.p(4.0, 0, PEEK_TOP);
-      const Hd = F.at(4.0, 0, PEEK_TOP - hang * 26).pitch(Math.PI * 0.92).roll(get('tilt')).turn(get('gaze')).scale(HEAD_SCALE);
+      // only the head and a short length of neck come down below the top of the frame
+      const Hd = F.at(4.0, 0, PEEK_TOP - hang * 14).pitch(Math.PI * 0.92).roll(get('tilt')).turn(get('gaze')).scale(HEAD_SCALE);
       front!.tag = 'neck';
-      const pts: V3[] = [top, F.p(4.6, 0, PEEK_TOP - hang * 10), F.p(3.4, 0, PEEK_TOP - hang * 19), Hd.p(-2.6, 0, -1.4)];
-      for (let k = 0; k < 14; k++) front!.cap(catmull(pts, k / 14), catmull(pts, (k + 1) / 14), 2.6, 2.4, S(0.5));
+      const pts: V3[] = [F.p(4.0, 0, PEEK_TOP + 10), top, F.p(4.5, 0, PEEK_TOP - hang * 6), Hd.p(-2.6, 0, -1.4)];
+      for (let k = 0; k < 14; k++) front!.cap(catmull(pts, k / 14), catmull(pts, (k + 1) / 14), 2.9 - k * 0.04, 2.8 - k * 0.04, S(0.5));
+      for (let k = 0; k < 6; k++) tubeScutes(front!, catmull(pts, 0.08 + k * 0.14), catmull(pts, 0.16 + k * 0.14), 2.7, F.s, 0.6, k % 2 ? SS(0.5) : S(0.5));
       head(front!, Hd, j, { barbel: F.v(0, 0, 0), blink: get('blink'), lid: 0, snarl: get('snarl'), roar: 0, lookX: get('lookX'), lookY: 0, wide: get('wide'), fire: 0, flame: 0, ph, fold: 0 });
     }
-    if (get('egg') > 0.5) egg(r, F0.roll(get('eggRock')), get('eggCrack'), get('eggOpen'), j);
+    // the egg is big enough to hold him curled up (he comes out at 0.7 of his size)
+    if (get('egg') > 0.5) egg(r, F0.roll(get('eggRock')).scale(EGG_SCALE), get('eggCrack'), get('eggOpen'), j);
     j.body = j.body ?? F.p(3.6, 0, HIP);
     j.head = j.head ?? F.p(15, 0, HIP + 12);
     j.floor = F.p(0, 0, 0);
@@ -1062,6 +1137,8 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
     finishSurfaces(r, F, finishes, 'skin');
     if (front) finishSurfaces(front, F, finishes, 'skin');
     for (const [k, v] of Object.entries(j)) debugWorld[k] = [...v];
+    debugWorld['F.f'] = [...FT.f];
+    debugWorld['F.s'] = [...FT.s];
     const sc = portraitScale * (1 + 0.12 * eclipseK) * (1 + get('grow'));
     scaleFigure(r, j, sc);
     if (front) scaleFigure(front, {}, sc);
@@ -1099,7 +1176,8 @@ export const debugWorld: Record<string, V3> = {};
 /** The head is drawn larger than the body template would give it: a dragon's head, not a lizard's. */
 const HEAD_SCALE = 1.15;
 /** Height of the frame top above the stone for the peek, rig units. */
-const PEEK_TOP = 52;
+const PEEK_TOP = 70;
+const EGG_SCALE = 1.8;
 /** The figure's own canvas and the anchor of the floor point in it, pixels. */
 const FIGURE = 460,
   ANCHOR: [number, number] = [230, 400];

@@ -37,6 +37,9 @@ const C = {
 const goldDust = ['#fff0b0', '#ffd060', '#e8a634', '#bc701c'];
 
 const frameOf = (f: FxInput) => f.t * 24;
+/** Effects were drawn for a 256×208 field; the painting is 384×312 now. Helper sizes are in those design units and
+ * are scaled here, so every stroke stays one output pixel wide while the shapes grow with the picture. */
+const K = 1.5;
 const mid = (a: XY, b: XY, k = 0.5): XY => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
 const add = (a: XY, x: number, y: number): XY => [a[0] + x, a[1] + y];
 const smooth = (x: number) => x * x * (3 - 2 * x);
@@ -55,12 +58,13 @@ function glow(p: Pen, at: XY, rx: number, ry: number, color: string, a: number, 
   if (a <= 0) return;
   for (let i = bands; i >= 1; i--) {
     const k = i / bands;
-    ellFill(p, at, rx * k, ry * k, color, (a / bands) * (1.2 - k * 0.4));
+    ellFill(p, at, rx * k * K, ry * k * K, color, (a / bands) * (1.2 - k * 0.4));
   }
 }
 function line(p: Pen, a: XY, b: XY, c: string, alpha: number, w = 1) {
   if (alpha <= 0.01) return;
   p.col(c, Math.min(1, alpha));
+  if (w > 1) w = Math.round(w * K);
   const flat = Math.abs(b[0] - a[0]) > Math.abs(b[1] - a[1]);
   for (let k = 0; k < w; k++) {
     const o = Math.round(k - (w - 1) / 2);
@@ -79,13 +83,14 @@ function wash(p: Pen, f: FxInput, c: string, a: number) {
 /** A beam of sunlight from a to b: orange edge, gold body, white core, a shiver of heat along it. */
 function beam(p: Pen, a: XY, b: XY, width: number, alpha: number, seed: number) {
   if (alpha <= 0.02) return;
+  width *= K;
   const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1,
     nx = -(b[1] - a[1]) / L,
     ny = (b[0] - a[0]) / L;
   const side = (k: number, w: number): number[] => [a[0] + nx * w * k * 0.6, a[1] + ny * w * k * 0.6, b[0] + nx * w * k, b[1] + ny * w * k];
   for (const [w, c, al] of [
-    [width + 3, C.red, 0.45],
-    [width + 1.5, C.orange, 0.8],
+    [width + 3 * K, C.red, 0.45],
+    [width + 1.5 * K, C.orange, 0.8],
     [width, C.gold, 0.95],
     [Math.max(1, width * 0.45), C.hot, 1],
   ] as const) {
@@ -107,6 +112,8 @@ function beam(p: Pen, a: XY, b: XY, width: number, alpha: number, seed: number) 
 /** Ballistic droplets/sparks with short tails; `dir` is the launch direction (screen radians), `spread` the fan. */
 function sparks(p: Pen, at: XY, age: number, life: number, n: number, speed: number, seed: number, palette: string[], dir = -Math.PI / 2, spread = 1.2, grav = 140, floorY = Infinity) {
   if (age < 0 || age > life) return;
+  speed *= K;
+  grav *= K;
   for (let i = 0; i < n; i++) {
     const th = dir + (hash(i, seed, 1) - 0.5) * spread * Math.PI,
       v = speed * (0.45 + 0.55 * hash(i, seed, 2));
@@ -127,10 +134,12 @@ function sparks(p: Pen, at: XY, age: number, life: number, n: number, speed: num
 function motes(p: Pen, at: XY, age: number, life: number, n: number, out: number, seed: number, palette: string[], fall = 26, floorY = Infinity) {
   if (age < 0 || age > life) return;
   const k = age / life;
+  out *= K;
+  fall *= K;
   for (let i = 0; i < n; i++) {
     const th = hash(i, seed, 1) * TAU,
       d = out * Math.sqrt(hash(i, seed, 2)) * (1 - Math.exp(-age / 6));
-    const x = at[0] + Math.cos(th) * d + Math.sin(age * 0.2 + i) * 1.5,
+    const x = at[0] + Math.cos(th) * d + Math.sin(age * 0.2 + i) * 1.5 * K,
       y = Math.min(floorY, at[1] + Math.sin(th) * d * 0.7 + fall * k * k * (0.5 + hash(i, seed, 3)));
     const a = (1 - k) * (0.6 + 0.4 * Math.sin(age * 0.7 + i * 2));
     p.col(palette[i % palette.length], Math.max(0, a));
@@ -140,13 +149,15 @@ function motes(p: Pen, at: XY, age: number, life: number, n: number, out: number
 /** A shock ring on the stone (squashed by the high view). */
 function shock(p: Pen, at: XY, r: number, a: number, c: string = C.gold, squash = 0.3) {
   if (a <= 0 || r < 1) return;
+  r *= K;
   oval(p, add(at, 0, 1), r * 0.96, r * squash * 0.92, C.ember, a * 0.45);
   oval(p, at, r, r * squash, c, a);
-  if (r > 10) oval(p, add(at, 0, -1), r * 1.02, r * squash, C.hot, a * 0.5);
+  if (r > 10 * K) oval(p, add(at, 0, -1), r * 1.02, r * squash, C.hot, a * 0.5);
 }
 /** A ring in the air (a roar, a flash): round, not squashed. */
 function airRing(p: Pen, at: XY, r: number, a: number, c: string = C.hot, edge: string = C.orange) {
   if (a <= 0 || r < 1) return;
+  r *= K;
   oval(p, at, r * 1.04, r * 0.84, edge, a * 0.5);
   oval(p, at, r, r * 0.8, c, a);
 }
@@ -156,18 +167,18 @@ function dust(p: Pen, at: XY, age: number, life: number, n: number, out: number,
   const k = age / life;
   for (let i = 0; i < n; i++) {
     const s = hash(i, seed, 1) > 0.5 ? 1 : -1;
-    const d = out * (0.3 + 0.7 * hash(i, seed, 2)) * (1 - Math.exp(-age / 4));
+    const d = out * K * (0.3 + 0.7 * hash(i, seed, 2)) * (1 - Math.exp(-age / 4));
     const x = at[0] + s * d,
-      y = at[1] - 2 - 5 * k * hash(i, seed, 3);
-    ellFill(p, [x, y], 2 + 3 * k, 1.4 + 2 * k, i % 2 ? C.dust : C.dustL, 0.55 * (1 - k));
+      y = at[1] - (2 + 5 * k * hash(i, seed, 3)) * K;
+    ellFill(p, [x, y], (2 + 3 * k) * K, (1.4 + 2 * k) * K, i % 2 ? C.dust : C.dustL, 0.55 * (1 - k));
   }
 }
 /** A smoke puff that rises, swells and thins. */
 function puff(p: Pen, at: XY, age: number, life: number, seed: number, r0 = 1.5, rise = 18) {
   if (age < 0 || age > life) return;
   const k = age / life;
-  const c: XY = [at[0] + Math.sin(k * 4 + seed) * 2, at[1] - rise * k];
-  const r = r0 + 4 * k;
+  const c: XY = [at[0] + Math.sin(k * 4 + seed) * 2 * K, at[1] - rise * k * K];
+  const r = (r0 + 4 * k) * K;
   ellFill(p, c, r, r * 0.8, C.smoke, 0.6 * (1 - k));
   ellFill(p, add(c, -r * 0.25, -r * 0.25), r * 0.6, r * 0.45, C.smokeL, 0.5 * (1 - k));
 }
@@ -175,19 +186,20 @@ function puff(p: Pen, at: XY, age: number, life: number, seed: number, r0 = 1.5,
 function smokeRing(p: Pen, at: XY, age: number, life: number) {
   if (age < 0 || age > life) return;
   const k = age / life;
-  const c: XY = [at[0], at[1] - 26 * k];
-  const r = 2 + 7 * smooth(k);
+  const c: XY = [at[0], at[1] - 26 * k * K];
+  const r = (2 + 7 * smooth(k)) * K;
   oval(p, c, r, r * 0.45, C.smokeL, 0.8 * (1 - k));
   oval(p, add(c, 0, 1), r * 0.9, r * 0.38, C.smoke, 0.7 * (1 - k));
 }
 /** A tongue of flame from the jaws along `dir` (screen radians). */
 function flame(p: Pen, at: XY, dir: number, len: number, a: number, seed: number) {
   if (a <= 0.02) return;
+  len *= K;
   for (let i = 0; i < 9; i++) {
     const u = i / 8,
-      wob = Math.sin(seed * 1.7 + i * 1.3) * 2 * u;
+      wob = Math.sin(seed * 1.7 + i * 1.3) * 2 * u * K;
     const q: XY = [at[0] + Math.cos(dir) * len * u - Math.sin(dir) * wob, at[1] + Math.sin(dir) * len * u + Math.cos(dir) * wob];
-    const r = (1 - u) * 3.6 + 1;
+    const r = ((1 - u) * 3.6 + 1) * K;
     ellFill(p, q, r, r * 0.85, u < 0.3 ? C.hot : u < 0.6 ? C.gold : u < 0.85 ? C.orange : C.red, a * (1 - u * 0.6));
   }
 }
@@ -195,7 +207,7 @@ function flame(p: Pen, at: XY, dir: number, len: number, a: number, seed: number
 function starSpark(p: Pen, at: XY, r: number, a: number, c: string = C.silver) {
   if (a <= 0.02) return;
   p.col(c, Math.min(1, a));
-  star(p, at[0], at[1], r, 4, Math.PI / 4);
+  star(p, at[0], at[1], r * K, 4, Math.PI / 4);
   p.col(C.white, Math.min(1, a));
   p.rect(Math.round(at[0]), Math.round(at[1]), 1, 1);
 }
@@ -204,11 +216,11 @@ function cracks(p: Pen, at: XY, n: number, len: number, heat: number, seed: numb
   if (a <= 0 || reach <= 0) return;
   for (let i = 0; i < n; i++) {
     const ang = (i / n) * TAU + (hash(i, seed) - 0.5) * 0.6,
-      Lc = len * (0.6 + 0.6 * hash(i, seed, 2)) * reach;
+      Lc = len * K * (0.6 + 0.6 * hash(i, seed, 2)) * reach;
     const pts: XY[] = [at];
     for (let k = 1; k <= 4; k++) {
       const u = k / 4,
-        o = (hash(i, seed, k + 3) - 0.5) * 3;
+        o = (hash(i, seed, k + 3) - 0.5) * 3 * K;
       pts.push([at[0] + Math.cos(ang) * Lc * u - Math.sin(ang) * o, at[1] + (Math.sin(ang) * Lc * u + Math.cos(ang) * o) * 0.32]);
     }
     polyline(p, pts, C.ink, 0.85 * a, 2);
@@ -227,14 +239,14 @@ function aura(f: FxInput, frame: number, form: number, charge: number) {
     pearl = pt(f, 'pearl');
   if (!body) return;
   const pulse = 0.85 + 0.15 * Math.sin((frame / 24) * TAU * 0.5);
-  if (form < 0.5) glow(f.under, add(body, 0, -6), 40, 46, '#ffb050', 0.1 * pulse, 4);
+  if (form < 0.5) glow(f.under, add(body, 0, -6 * K), 40, 46, '#ffb050', 0.1 * pulse, 4);
   else {
-    glow(f.under, add(body, 0, -6), 44, 50, '#6a5ad0', 0.16 * pulse, 4);
+    glow(f.under, add(body, 0, -6 * K), 44, 50, '#6a5ad0', 0.16 * pulse, 4);
     for (let i = 0; i < 10; i++) {
       const life = 30,
         age = (frame + i * 9) % life,
         a = hash(i, Math.floor((frame + i * 9) / life)) * TAU;
-      const q: XY = [body[0] + Math.cos(a) * 30, body[1] + Math.sin(a) * 24 - age * 0.9];
+      const q: XY = [body[0] + Math.cos(a) * 30 * K, body[1] + (Math.sin(a) * 24 - age * 0.9) * K];
       f.under.col(i % 3 ? C.silver : C.corona, 0.7 * (1 - age / life));
       f.under.dot(Math.round(q[0]), Math.round(q[1]));
     }
@@ -250,10 +262,10 @@ function eclipseSky(f: FxInput, frame: number, k: number, moon = 1) {
   if (k > 0.01) {
     // night: a violet wash over the scene, deeper in the sky
     p.col('#0a0820', 0.42 * k);
-    p.rect(0, 0, f.w, HORIZON + 24);
+    p.rect(0, 0, f.w, HORIZON + 24 * K);
     p.col('#0a0820', 0.26 * k);
-    p.rect(0, HORIZON + 24, f.w, f.h);
-    for (let i = 0; i < 26; i++) {
+    p.rect(0, HORIZON + 24 * K, f.w, f.h);
+    for (let i = 0; i < 40; i++) {
       const x = Math.floor(hash(i, 3) * f.w),
         y = Math.floor(hash(i, 5) * (HORIZON - 6));
       const tw = 0.5 + 0.5 * Math.sin((frame / 24) * TAU * (0.5 + hash(i, 7)) + i);
@@ -265,7 +277,7 @@ function eclipseSky(f: FxInput, frame: number, k: number, moon = 1) {
   if (moon > 0.001) {
     // the moon slides in from the left over the sun; at full cover the corona ring
     const mx = SUN.x - 2.1 * SUN.r * (1 - moon),
-      my = SUN.y + 3 * (1 - moon);
+      my = SUN.y + 3 * K * (1 - moon);
     const total = moon >= 0.999;
     if (total) {
       for (let i = 0; i < 16; i++) {
@@ -273,7 +285,7 @@ function eclipseSky(f: FxInput, frame: number, k: number, moon = 1) {
           L = SUN.r * (1.3 + 0.35 * Math.sin((frame / 24) * TAU * 0.5 + i * 1.7));
         line(p, [SUN.x + Math.cos(a) * SUN.r, SUN.y + Math.sin(a) * SUN.r], [SUN.x + Math.cos(a) * L, SUN.y + Math.sin(a) * L], i % 2 ? C.corona : C.silver, 0.55);
       }
-      glow(p, [SUN.x, SUN.y], SUN.r * 1.6, SUN.r * 1.6, C.corona, 0.22, 4);
+      glow(p, [SUN.x, SUN.y], (SUN.r * 1.6) / K, (SUN.r * 1.6) / K, C.corona, 0.22, 4);
       oval(p, [SUN.x, SUN.y], SUN.r + 1, SUN.r + 1, C.white, 0.9);
       oval(p, [SUN.x, SUN.y], SUN.r + 2, SUN.r + 2, C.silver, 0.6);
     }
@@ -287,11 +299,27 @@ function walkFx(f: FxInput, frame: number) {
   const fl = frame % 24;
   for (const [name, at] of [
     ['footL', 0],
+    ['foreL', 6],
     ['footR', 12],
+    ['foreR', 18],
   ] as const) {
     const age = fl - at;
     const foot = pt(f, name + 'Ground');
     if (foot && age >= 0 && age < 8) dust(f.under, foot, age, 8, 3, 6, at + Math.floor(frame / 24) * 7);
+  }
+}
+/** Dust under the four contacts of a walk home (walkSteps in the pose book): hind foot, then the wrist, one side then
+ * the other. */
+function stepDust(f: FxInput, frame: number, from: number, every: number, n: number, seed: number) {
+  for (let i = 0; i < n; i++) {
+    const side = i % 2 ? 'L' : 'R';
+    for (const [name, at] of [
+      ['foot' + side, from + i * every + every * 0.5],
+      ['fore' + side, from + (i + 1) * every],
+    ] as const) {
+      const q = pt(f, name + 'Ground', at);
+      if (q) dust(f.under, q, frame - at, 8, 3, 6, seed + i * 2 + (name[1] === 'o' ? 1 : 0));
+    }
   }
 }
 function lookFx(f: FxInput, frame: number) {
@@ -300,8 +328,8 @@ function lookFx(f: FxInput, frame: number) {
   const k = progress(frame, b.shade - 4, b.shade) * (1 - progress(frame, b.glance - 4, b.glance));
   if (k > 0) {
     glow(f.backdrop, [SUN.x, SUN.y], 30, 30, C.hot, 0.25 * k, 4);
-    line(f.backdrop, [SUN.x - 30 * k, SUN.y], [SUN.x + 30 * k, SUN.y], C.hot, 0.6 * k);
-    line(f.backdrop, [SUN.x, SUN.y - 18 * k], [SUN.x, SUN.y + 18 * k], C.hot, 0.5 * k);
+    line(f.backdrop, [SUN.x - 30 * K * k, SUN.y], [SUN.x + 30 * K * k, SUN.y], C.hot, 0.6 * k);
+    line(f.backdrop, [SUN.x, SUN.y - 18 * K * k], [SUN.x, SUN.y + 18 * K * k], C.hot, 0.5 * k);
   }
 }
 function fidgetAFx(f: FxInput, frame: number) {
@@ -315,12 +343,12 @@ function fidgetAFx(f: FxInput, frame: number) {
     floor = pt(f, 'floor');
   if (from && floor && frame >= b.scale) {
     const u = progress(frame, b.scale, b.clink);
-    const land: XY = [from[0] + 10, floor[1] + 3];
-    const q: XY = [from[0] + (land[0] - from[0]) * u + Math.sin(u * 9) * 3, from[1] + (land[1] - from[1]) * u * u];
+    const land: XY = [from[0] + 10 * K, floor[1] + 3 * K];
+    const q: XY = [from[0] + (land[0] - from[0]) * u + Math.sin(u * 9) * 3 * K, from[1] + (land[1] - from[1]) * u * u];
     const heat = 1 - progress(frame, b.clink, 60);
     const spin = u < 1 ? Math.sin(frame * 0.9) : 0.2;
     f.above.col(heat > 0.5 ? C.gold : C.orange, 0.95);
-    fillPoly(f.above, [q[0] - 2, q[1], q[0], q[1] - 1.5 * Math.abs(spin) - 0.5, q[0] + 2, q[1], q[0], q[1] + 1.5 * Math.abs(spin) + 0.5]);
+    fillPoly(f.above, [q[0] - 3, q[1], q[0], q[1] - 2.2 * Math.abs(spin) - 0.8, q[0] + 3, q[1], q[0], q[1] + 2.2 * Math.abs(spin) + 0.8]);
     glow(f.above, q, 4, 4, C.gold, 0.3 * heat, 3);
     if (frame >= b.clink) sparks(f.above, land, frame - b.clink, 6, 6, 30, 7, [C.hot, C.gold, C.orange], -Math.PI / 2, 1.2, 160, land[1]);
   }
@@ -380,7 +408,7 @@ function hatchFx(f: FxInput, frame: number) {
     const k = 1 - progress(frame, b.burst, b.burst + 12);
     for (let i = 0; i < 10; i++) {
       const a = (i / 10) * TAU;
-      f.sceneryRay(egg, [egg[0] + Math.cos(a) * 140, egg[1] + Math.sin(a) * 90], C.hot, 0.35 * k);
+      f.sceneryRay(egg, [egg[0] + Math.cos(a) * 140 * K, egg[1] + Math.sin(a) * 90 * K], C.hot, 0.35 * k);
     }
     glow(f.above, egg, 30, 26, C.hot, 0.55 * k, 4);
   }
@@ -389,13 +417,13 @@ function hatchFx(f: FxInput, frame: number) {
     const age = frame - b.gone;
     if (age < 0) break;
     const a = -Math.PI / 2 + (hash(i, 4) - 0.5) * 2.6,
-      v = 40 + 40 * hash(i, 5);
+      v = (40 + 40 * hash(i, 5)) * K;
     const tt = Math.min(age, 14) / 24;
-    const land = floor[1] + (hash(i, 6) - 0.4) * 12;
-    const q: XY = [egg[0] + Math.cos(a) * v * tt, Math.min(land, egg[1] + Math.sin(a) * v * tt + 120 * tt * tt)];
+    const land = floor[1] + (hash(i, 6) - 0.4) * 12 * K;
+    const q: XY = [egg[0] + Math.cos(a) * v * tt, Math.min(land, egg[1] + Math.sin(a) * v * tt + 120 * K * tt * tt)];
     const fade = 1 - progress(frame, 60, 72);
     f.above.col(i % 2 ? '#f0c45a' : '#c48a2c', fade);
-    fillPoly(f.above, [q[0] - 2, q[1], q[0], q[1] - 2, q[0] + 2.5, q[1] + 0.5, q[0], q[1] + 1]);
+    fillPoly(f.above, [q[0] - 3, q[1], q[0], q[1] - 3, q[0] + 3.6, q[1] + 0.7, q[0], q[1] + 1.5]);
     if (age > 14 && (frame + i) % 6 < 2) {
       f.above.col(C.white, fade);
       f.above.rect(Math.round(q[0]), Math.round(q[1]) - 1, 1, 1);
@@ -415,7 +443,7 @@ function peekFx(f: FxInput, frame: number) {
   }
   // two puffs of smoke from the nostrils of the upside-down head
   const nose = pt(f, 'nose', b.puff);
-  if (nose) for (const s of [-1, 1]) puff(f.above, add(nose, s * 2, 0), frame - b.puff, 16, s, 1, -10);
+  if (nose) for (const s of [-1, 1]) puff(f.above, add(nose, s * 2 * K, 0), frame - b.puff, 16, s, 1, -10);
   const land = pt(f, 'floor', b.land);
   if (land) dust(f.under, land, frame - b.land, 10, 5, 14, 6);
 }
@@ -423,11 +451,11 @@ function peekFx(f: FxInput, frame: number) {
 // ---- first form tricks ----------------------------------------------------------------------------------------
 /** The beam's end over the sweep: an arc across the dial in front of him (far side → ahead → near side), then up to
  * the glass in front of the painting, low and to his front. */
-const GLASS_SPOT: XY = [40, 14];
+const GLASS_SPOT: XY = [40 * K, 14 * K];
 function beamTarget(feet: XY, frame: number): { at: XY; glass: number } {
   const u = smooth(progress(frame, 56, 108));
   const a = -1.25 + 3.5 * u;
-  const onStone: XY = [feet[0] + 26 + 64 * Math.cos(a), feet[1] + 4 + 22 * Math.sin(a)];
+  const onStone: XY = [feet[0] + (26 + 64 * Math.cos(a)) * K, feet[1] + (4 + 22 * Math.sin(a)) * K];
   if (frame <= 108) return { at: onStone, glass: 0 };
   const g = progress(frame, 108, 116);
   return { at: [onStone[0] + (feet[0] + GLASS_SPOT[0] - onStone[0]) * g, onStone[1] + (feet[1] + GLASS_SPOT[1] - onStone[1]) * g], glass: g };
@@ -448,7 +476,7 @@ function trickFx(f: FxInput, frame: number) {
       const nx = -dy / L,
         ny = dx / L,
         w0 = SUN.r * 0.5,
-        w1 = 5 + pulse * 3;
+        w1 = (5 + pulse * 3) * K;
       for (const [k, c, al] of [
         [1, C.orange, 0.12],
         [0.55, C.gold, 0.18],
@@ -466,11 +494,11 @@ function trickFx(f: FxInput, frame: number) {
       if (u < 0 || u > 1) continue;
       const target = pt(f, i % 3 === 0 ? 'wingTipL' : i % 3 === 1 ? 'wingTipR' : 'wingTrailR');
       if (!target) continue;
-      const q: XY = [SUN.x + (target[0] - SUN.x) * u + Math.sin(u * 6 + i) * 6 * (1 - u), SUN.y + (target[1] - SUN.y) * u - 14 * Math.sin(u * Math.PI)];
+      const q: XY = [SUN.x + (target[0] - SUN.x) * u + Math.sin(u * 6 + i) * 6 * K * (1 - u), SUN.y + (target[1] - SUN.y) * u - 14 * K * Math.sin(u * Math.PI)];
       f.above.col(C.orange, 0.5);
-      f.above.rect(Math.round(q[0] - 3), Math.round(q[1]), 3, 2);
+      f.above.rect(Math.round(q[0] - 4), Math.round(q[1]), 4, 3);
       f.above.col(u > 0.7 ? C.hot : C.gold, 0.95);
-      f.above.rect(Math.round(q[0]), Math.round(q[1]), 2, 2);
+      f.above.rect(Math.round(q[0]), Math.round(q[1]), 3, 3);
     }
   }
   // The ball of light at the jaws.
@@ -478,7 +506,7 @@ function trickFx(f: FxInput, frame: number) {
   if (mouth && frame >= b.rear[0] && frame < b.shot) {
     const k = progress(frame, b.rear[0], b.shot);
     glow(f.above, mouth, 4 + 6 * k, 4 + 6 * k, C.gold, 0.4 + 0.4 * k, 4);
-    ellFill(f.above, mouth, 1 + 2.5 * k, 1 + 2.5 * k, C.hot, 0.9);
+    ellFill(f.above, mouth, (1 + 2.5 * k) * K, (1 + 2.5 * k) * K, C.hot, 0.9);
   }
   // The furrow: every frame of the sweep leaves molten stone that cools to dark glass, gone by the end.
   const fade = 1 - progress(frame, 236, 252);
@@ -497,25 +525,36 @@ function trickFx(f: FxInput, frame: number) {
       if (heat > 0.4 && i % 4 === 0) glow(f.under, pts[i].q, 5, 2.5, C.orange, 0.25 * heat * fade, 3);
     }
   }
-  // Claw scrapes where the recoil pushed his feet back.
-  if (frame > b.sweep[0] + 4) {
+  // Claw grooves where the recoil drove his hind feet back over the stone: hot scratches that darken.
+  if (frame > b.scrape[0] + 2) {
+    const heat = 1 - progress(frame, b.scrape[1], b.scrape[1] + 40);
     for (const s of ['L', 'R']) {
-      const a = pt(f, 'foot' + s + 'Ground', b.sweep[0]),
-        c = pt(f, 'foot' + s + 'Ground', Math.min(frame, b.glass[0]));
-      if (a && c) for (let k = -1; k <= 1; k++) line(f.under, add(a, 2, k * 1.5), add(c, 0, k * 1.5), '#1a1424', 0.6 * fade);
+      const a = pt(f, 'foot' + s + 'Ground', b.scrape[0]),
+        c = pt(f, 'foot' + s + 'Ground', Math.min(frame, b.scrape[1]));
+      if (a && c)
+        for (let k = -1; k <= 1; k++) {
+          line(f.under, add(a, 2 * K, k * 2), add(c, 0, k * 2), '#1a1424', 0.65 * fade);
+          if (heat > 0) line(f.under, add(a, 2 * K, k * 2 - 1), add(c, 0, k * 2 - 1), heat > 0.5 ? C.orange : C.red, 0.5 * heat * fade);
+        }
+      if (a && c && frame < b.scrape[1] && frame % 3 === 0) sparks(f.above, c, 1, 4, 3, 26, frame + (s === 'L' ? 0 : 50), [C.hot, C.gold, C.orange], -Math.PI / 2 + 0.6, 0.6, 160, c[1]);
     }
+  }
+  // The last shove drops him onto his wrists: dust at both.
+  for (const s of ['L', 'R']) {
+    const w = pt(f, 'fore' + s + 'Ground', b.drop);
+    if (w) dust(f.under, w, frame - b.drop, 10, 4, 10, s === 'L' ? 21 : 22);
   }
   // The beam itself, with molten splashes at the contact.
   if (mouth && frame >= b.shot && frame < b.off + 3) {
     const { at, glass } = beamTarget(feet, frame);
     const a = frame < b.off ? 1 : 1 - progress(frame, b.off, b.off + 3);
     if (frame < b.shot + 3) wash(f.above, f, C.hot, 0.18 * (1 - progress(frame, b.shot, b.shot + 3)));
-    glow(f.above, mid(mouth, at), Math.abs(at[0] - mouth[0]) * 0.5 + 6, Math.abs(at[1] - mouth[1]) * 0.5 + 6, C.gold, 0.12 * a, 3);
+    glow(f.above, mid(mouth, at), Math.abs(at[0] - mouth[0]) * 0.5 / K + 6, Math.abs(at[1] - mouth[1]) * 0.5 / K + 6, C.gold, 0.12 * a, 3);
     beam(f.above, mouth, at, 5 + glass * 9, a, frame);
     glow(f.above, mouth, 7, 7, C.hot, 0.6 * a, 4);
     if (glass < 0.05) {
       glow(f.above, at, 14, 6, C.orange, 0.55 * a, 4);
-      ellFill(f.above, at, 4, 2, C.hot, a);
+      ellFill(f.above, at, 4 * K, 2 * K, C.hot, a);
       sparks(f.above, at, frame % 6, 6, 9, 46, Math.floor(frame / 6), [C.hot, C.gold, C.orange, C.red], -Math.PI / 2, 1.3, 200, at[1] + 2);
     }
   }
@@ -526,12 +565,12 @@ function trickFx(f: FxInput, frame: number) {
     const heat = 1 - progress(frame, b.off, b.spotCool);
     const out = 1 - progress(frame, b.spotCool, b.spotCool + 20);
     if (out > 0) {
-      ellFill(f.above, g, 4 + 8 * grow, 4 + 8 * grow, heat > 0.5 ? C.hot : heat > 0.2 ? C.orange : C.red, 0.85 * out);
-      oval(f.above, g, 6 + 9 * grow, 6 + 9 * grow, C.red, 0.7 * out);
+      ellFill(f.above, g, (4 + 8 * grow) * K, (4 + 8 * grow) * K, heat > 0.5 ? C.hot : heat > 0.2 ? C.orange : C.red, 0.85 * out);
+      oval(f.above, g, (6 + 9 * grow) * K, (6 + 9 * grow) * K, C.red, 0.7 * out);
       glow(f.above, g, 22 * grow, 22 * grow, C.gold, 0.4 * heat * out, 4);
       for (let i = 0; i < 6; i++) {
         const a = (i / 6) * TAU + 0.4;
-        line(f.above, add(g, Math.cos(a) * 8 * grow, Math.sin(a) * 8 * grow), add(g, Math.cos(a) * (14 + 6 * hash(i, 2)) * grow, Math.sin(a) * (14 + 6 * hash(i, 2)) * grow), heat > 0.3 ? C.gold : C.red, 0.7 * out);
+        line(f.above, add(g, Math.cos(a) * 8 * K * grow, Math.sin(a) * 8 * K * grow), add(g, Math.cos(a) * (14 + 6 * hash(i, 2)) * K * grow, Math.sin(a) * (14 + 6 * hash(i, 2)) * K * grow), heat > 0.3 ? C.gold : C.red, 0.7 * out, 2);
       }
     }
   }
@@ -544,9 +583,9 @@ function trickFx(f: FxInput, frame: number) {
       const k = progress(frame, b.snort, b.snort + 5);
       flame(f.above, nose, 0.25, 17 * (1 - k * 0.4), 1 - k * 0.8, frame);
     }
-    smokeRing(f.above, add(nose, 3, -2), frame - b.snort - 2, 22);
-    puff(f.above, add(nose, 2, 0), frame - b.snort - 4, 18, 3);
-    sparks(f.above, nose, frame - b.snort, 14, 7, 34, 11, [C.hot, C.gold, C.orange], 0.3, 0.9, 160, feet[1] + 3);
+    smokeRing(f.above, add(nose, 3 * K, -2 * K), frame - b.snort - 2, 22);
+    puff(f.above, add(nose, 2 * K, 0), frame - b.snort - 4, 18, 3);
+    sparks(f.above, nose, frame - b.snort, 14, 7, 34, 11, [C.hot, C.gold, C.orange], 0.3, 0.9, 160, feet[1] + 3 * K);
   }
   // The sun-dragon pose: the membranes flare with the low sun behind them.
   if (frame >= b.pose[0] && frame < b.pose[1]) {
@@ -568,13 +607,13 @@ function trickBFx(f: FxInput, frame: number) {
   if (frame >= b.far[0] && frame < b.comet[1]) {
     const u = progress(frame, b.far[0], 64);
     let q: XY;
-    if (frame < 64) q = [SUN.x - 50 + 80 * u, SUN.y + 6 - 14 * u];
+    if (frame < 64) q = [SUN.x + (-50 + 80 * u) * K, SUN.y + (6 - 14 * u) * K];
     else if (frame < 80) {
       const a = progress(frame, 64, 80) * TAU;
-      q = [SUN.x + 30 + Math.sin(a) * 10, SUN.y - 8 - (1 - Math.cos(a)) * 8];
-    } else q = [SUN.x + 30 - 20 * progress(frame, 80, 90), SUN.y - 8 - 22 * progress(frame, 80, 90)];
+      q = [SUN.x + (30 + Math.sin(a) * 10) * K, SUN.y - (8 + (1 - Math.cos(a)) * 8) * K];
+    } else q = [SUN.x + (30 - 20 * progress(frame, 80, 90)) * K, SUN.y - (8 + 22 * progress(frame, 80, 90)) * K];
     if (frame < 84) {
-      const s = 2 * (1 - progress(frame, 78, 84) * 0.6),
+      const s = 2 * K * (1 - progress(frame, 78, 84) * 0.6),
         flap = Math.sin(frame * 1.3) * 2.5 * s;
       f.backdrop.col('#140c10', 1);
       fillPoly(f.backdrop, [q[0] - 6 * s, q[1] - flap, q[0] - 1.5 * s, q[1] + 0.5 * s, q[0] + 1.5 * s, q[1] + 0.5 * s, q[0] + 6 * s, q[1] - flap, q[0], q[1] - 1 * s]);
@@ -586,17 +625,17 @@ function trickBFx(f: FxInput, frame: number) {
       const k = Math.sin(progress(frame, 48, 62) * Math.PI);
       for (let i = 0; i < 8; i++) {
         const a = (i / 8) * TAU + 0.2;
-        line(f.backdrop, [SUN.x + Math.cos(a) * (SUN.r + 2), SUN.y + Math.sin(a) * (SUN.r + 2)], [SUN.x + Math.cos(a) * (SUN.r + 8 + 6 * k), SUN.y + Math.sin(a) * (SUN.r + 8 + 6 * k)], C.hot, 0.5 * k);
+        line(f.backdrop, [SUN.x + Math.cos(a) * (SUN.r + 2 * K), SUN.y + Math.sin(a) * (SUN.r + 2 * K)], [SUN.x + Math.cos(a) * (SUN.r + (8 + 6 * k) * K), SUN.y + Math.sin(a) * (SUN.r + (8 + 6 * k) * K)], C.hot, 0.5 * k);
       }
       const fl = pt(f, 'floor', 0) ?? f.feet;
-      const x = f.w + 40 - progress(frame, 48, 62) * (f.w + 80);
-      wingShadow(f.under, [x, fl[1] - 2], 1.7, 0.45 * k + 0.15, Math.sin(frame * 1.3) * 6);
+      const x = f.w + 40 * K - progress(frame, 48, 62) * (f.w + 80 * K);
+      wingShadow(f.under, [x, fl[1] - 2 * K], 1.7, 0.45 * k + 0.15, Math.sin(frame * 1.3) * 6);
     }
     if (frame >= 80 && frame < b.comet[0]) starSpark(f.backdrop, q, 1.5 + progress(frame, 80, 90) * 2, 0.9, C.hot);
     // The comet dives at the viewer: the spark grows with a spiral fire tail.
     if (frame >= b.comet[0]) {
       const k = progress(frame, b.comet[0], b.comet[1]);
-      const from: XY = [SUN.x + 10, SUN.y - 30],
+      const from: XY = [SUN.x + 10 * K, SUN.y - 30 * K],
         to: XY = [f.w * 0.45, f.h * 0.45];
       const c: XY = [from[0] + (to[0] - from[0]) * k * k, from[1] + (to[1] - from[1]) * k * k];
       for (let i = 0; i < 18; i++) {
@@ -604,25 +643,25 @@ function trickBFx(f: FxInput, frame: number) {
           back = Math.max(0, k - u * 0.5);
         const q2: XY = [from[0] + (to[0] - from[0]) * back * back, from[1] + (to[1] - from[1]) * back * back];
         const a = u * 9 + frame * 0.8,
-          r = (2 + 10 * k) * (1 - u);
+          r = (2 + 10 * k) * K * (1 - u);
         f.above.col(u < 0.3 ? C.hot : u < 0.6 ? C.gold : C.orange, 0.9 * (1 - u));
-        f.above.rect(Math.round(q2[0] + Math.cos(a) * r), Math.round(q2[1] + Math.sin(a) * r), 2, 2);
+        f.above.rect(Math.round(q2[0] + Math.cos(a) * r), Math.round(q2[1] + Math.sin(a) * r), 3, 3);
       }
       glow(f.above, c, 4 + 22 * k, 4 + 22 * k, C.gold, 0.6, 4);
-      ellFill(f.above, c, 1 + 5 * k, 1 + 5 * k, C.hot, 1);
+      ellFill(f.above, c, (1 + 5 * k) * K, (1 + 5 * k) * K, C.hot, 1);
     }
   }
   // The pass over the painting: a heat flash, fire streaming behind his jaws.
   if (frame >= b.pass[0] && frame < b.pass[1]) {
     wash(f.above, f, C.orange, 0.16 * (1 - progress(frame, b.pass[0], b.pass[0] + 6)));
     const m = pt(f, 'mouth');
-    if (m) for (let k = 0; k < 3; k++) flame(f.above, add(m, k * 14, k * 2), Math.PI * 0.05, 30, 0.9, frame + k);
+    if (m) for (let k = 0; k < 3; k++) flame(f.above, add(m, k * 14 * K, k * 2 * K), Math.PI * 0.05, 30, 0.9, frame + k);
     // the fire trail along his path
     for (let g = Math.max(b.pass[0], frame - 6); g <= frame; g++) {
       const q = pt(f, 'body', g);
       if (!q) continue;
       const age = frame - g;
-      ellFill(f.above, add(q, -20 - age * 6, 8), 26 - age * 3, 12 - age * 1.4, age < 2 ? C.gold : age < 4 ? C.orange : C.red, 0.55 * (1 - age / 7));
+      ellFill(f.above, add(q, (-20 - age * 6) * K, 8 * K), (26 - age * 3) * K, (12 - age * 1.4) * K, age < 2 ? C.gold : age < 4 ? C.orange : C.red, 0.55 * (1 - age / 7));
     }
     const tail = pt(f, 'tailTip');
     if (tail) motes(f.above, tail, frame - b.pass[0], 16, 12, 20, 5, [C.hot, C.gold, C.orange], 10);
@@ -634,15 +673,15 @@ function trickBFx(f: FxInput, frame: number) {
       const t0 = frame - (b.pass[1] - 2);
       for (let i = 0; i < 9; i++) {
         const x = (f.w * (i + 0.5)) / 9;
-        ellFill(f.above, [x, path[1] + 6 - t0 * 0.5 + Math.sin(i * 1.7) * 3], 18 + t0 * 0.4, 5 + t0 * 0.2, C.smokeL, 0.2 * (1 - t0 / 28));
+        ellFill(f.above, [x, path[1] + (6 - t0 * 0.5 + Math.sin(i * 1.7) * 3) * K], (18 + t0 * 0.4) * K, (5 + t0 * 0.2) * K, C.smokeL, 0.2 * (1 - t0 / 28));
       }
       for (let i = 0; i < 26; i++) {
         const age = t0 - hash(i, 7) * 8;
         if (age < 0) continue;
-        const x = f.w * hash(i, 3) + Math.sin(age * 0.3 + i) * 3,
-          y = path[1] + (hash(i, 5) - 0.5) * 22 + age * 1.3 + age * age * 0.02;
+        const x = f.w * hash(i, 3) + Math.sin(age * 0.3 + i) * 3 * K,
+          y = path[1] + ((hash(i, 5) - 0.5) * 22 + age * 1.3 + age * age * 0.02) * K;
         f.above.col(age < 8 ? C.hot : age < 16 ? C.gold : C.orange, 0.9 * (1 - age / 28));
-        f.above.rect(Math.round(x), Math.round(y), 2, age < 12 ? 2 : 1);
+        f.above.rect(Math.round(x), Math.round(y), 3, age < 12 ? 3 : 2);
       }
     }
   }
@@ -653,7 +692,7 @@ function trickBFx(f: FxInput, frame: number) {
     const out = 1 - progress(frame, 246, 262);
     cracks(f.under, land, 7, 34, heat, 13, progress(frame, b.land, b.land + 6), out);
     const skid = pt(f, 'floor', 136);
-    if (skid) for (const k of [-3, 3]) line(f.under, add(land, -8, k), add(skid, 0, k), '#1a1424', 0.7 * out, 2);
+    if (skid) for (const k of [-3, 3]) line(f.under, add(land, -8 * K, k * K), add(skid, 0, k * K), '#1a1424', 0.7 * out, 2);
     shock(f.under, land, 6 + (frame - b.land) * 3, 0.8 * (1 - progress(frame, b.land, b.land + 10)));
     dust(f.under, land, frame - b.land, 16, 8, 26, 9);
   }
@@ -664,19 +703,19 @@ function trickBFx(f: FxInput, frame: number) {
         start = b.roar[0] + hash(i, 3) * 50;
       const age = frame - start;
       if (age < 0 || age > life) continue;
-      const x = hash(i, 4) * f.w + Math.sin(age * 0.2 + i) * 4,
-        y = -4 + age * 4.2;
+      const x = hash(i, 4) * f.w + Math.sin(age * 0.2 + i) * 4 * K,
+        y = (-4 + age * 4.2) * K;
       f.above.col(i % 3 ? C.orange : C.gold, 0.9 * (1 - age / life));
-      f.above.rect(Math.round(x), Math.round(y), 1, 2);
+      f.above.rect(Math.round(x), Math.round(y), 2, 3);
     }
     for (const r0 of [144, 152]) {
       const m = pt(f, 'mouth', r0);
-      if (m && frame >= r0) airRing(f.above, add(m, 0, -(frame - r0) * 1.5), 3 + (frame - r0) * 1.6, 0.5 * (1 - progress(frame, r0, r0 + 12)), C.hot, C.gold);
+      if (m && frame >= r0) airRing(f.above, add(m, 0, -(frame - r0) * 1.5 * K), 3 + (frame - r0) * 1.6, 0.5 * (1 - progress(frame, r0, r0 + 12)), C.hot, C.gold);
     }
     // the roar at the viewer: rings that grow toward the glass, a hot breath over the picture
     for (const r0 of [b.roarFront, b.roarFront + 5, b.roarFront + 10]) {
       const m = pt(f, 'mouth', r0);
-      if (m && frame >= r0) airRing(f.above, add(m, (frame - r0) * 1.2, (frame - r0) * 0.8), 4 + (frame - r0) * 3.2, 0.6 * (1 - progress(frame, r0, r0 + 12)), C.hot, C.gold);
+      if (m && frame >= r0) airRing(f.above, add(m, (frame - r0) * 1.2 * K, (frame - r0) * 0.8 * K), 4 + (frame - r0) * 3.2, 0.6 * (1 - progress(frame, r0, r0 + 12)), C.hot, C.gold);
     }
     wash(f.above, f, C.orange, frame >= b.roarFront && frame < b.roarFront + 14 ? 0.1 * (1 - progress(frame, b.roarFront, b.roarFront + 14)) : 0);
   }
@@ -687,14 +726,10 @@ function trickBFx(f: FxInput, frame: number) {
       if (q) puff(f.above, q, frame - b.shake[0], 18, tip.length, 1.2, 10);
     }
     const back = pt(f, 'chest', b.shake[0] + 2);
-    if (back) sparks(f.above, back, frame - b.shake[0], 14, 10, 40, 23, [C.smokeL, C.smoke, C.dustL], -Math.PI / 2, 2.4, 160, (pt(f, 'floor', 0) ?? f.feet)[1] + 3);
+    if (back) sparks(f.above, back, frame - b.shake[0], 14, 10, 40, 23, [C.smokeL, C.smoke, C.dustL], -Math.PI / 2, 2.4, 160, (pt(f, 'floor', 0) ?? f.feet)[1] + 3 * K);
   }
-  // Dust at the steps home.
-  for (let i = 0; i < 4; i++) {
-    const s = 204 + i * 12 + 6;
-    const foot = pt(f, (i % 2 ? 'footL' : 'footR') + 'Ground', s);
-    if (foot) dust(f.under, foot, frame - s, 8, 3, 6, 20 + i);
-  }
+  // Dust at the steps home: each hind foot, then the wrist of the same side.
+  stepDust(f, frame, b.walk[0], 10, 4, 20);
 }
 function trickCFx(f: FxInput, frame: number) {
   const b = beats.trick_c;
@@ -714,9 +749,9 @@ function trickCFx(f: FxInput, frame: number) {
     }
     const on = progress(frame, b.rise[0], b.rise[1]) * (1 - progress(frame, b.flash, b.flash + 2) * 0.2);
     const smoulder = frame >= b.flash ? 1 - progress(frame, b.flash, b.marks[1]) : 0;
-    if (on > 0 && frame < b.flash) oval(f.under, bp, 7, 2.4, C.gold, 0.7 * on);
+    if (on > 0 && frame < b.flash) oval(f.under, bp, 9 * K, 3 * K, C.gold, 0.7 * on);
     if (smoulder > 0) {
-      oval(f.under, bp, 7, 2.4, smoulder > 0.5 ? C.orange : C.red, 0.85 * smoulder);
+      oval(f.under, bp, 9 * K, 3 * K, smoulder > 0.5 ? C.orange : C.red, 0.85 * smoulder);
       if ((frame + k * 5) % 10 < 4) puff(f.above, bp, (frame + k * 5) % 20, 20, k, 1, 10);
     }
   });
@@ -751,16 +786,16 @@ function trickCFx(f: FxInput, frame: number) {
         beam(f.under, A2, mid(A2, C2, 0.6), w, pulse, frame + a);
         beam(f.above, mid(A2, C2, 0.6), C2, w, pulse, frame + a + 5);
       }
-      if (frame < appear + 3) glow(f.above, A2, 10, 10, C.hot, 0.6, 4);
+      if (frame < appear + 3) glow(f.above, A2, 16, 16, C.hot, 0.6, 4);
       // light motes running along the triangle into the pearl
       for (let i = 0; i < 3; i++) {
         const u = ((frame * 0.05 + i / 3 + a * 0.2) % 1) as number;
         const q = mid(A2, C2, u);
         f.above.col(C.white, 0.9);
-        f.above.rect(Math.round(q[0]), Math.round(q[1]), 1, 1);
+        f.above.rect(Math.round(q[0]), Math.round(q[1]), 2, 2);
       }
     }
-    mirrors.forEach((m) => m && frame >= 44 && glow(f.above, m, 6, 7, C.gold, 0.3 * pulse, 3));
+    mirrors.forEach((m) => m && frame >= 44 && glow(f.above, m, 18, 21, C.gold, 0.3 * pulse, 3));
     // a packet of light runs 0 → 1 → 2 → pearl in 10 frames; each mirror flares as it passes, the pearl rings on arrival
     for (const start of b.packets) {
       const t = (frame - start) / 10;
@@ -774,10 +809,10 @@ function trickCFx(f: FxInput, frame: number) {
         if (A && Z) {
           const q = mid(A, Z, u);
           glow(f.above, q, 9, 9, C.hot, 0.7, 4);
-          ellFill(f.above, q, 2.5, 2.5, C.white, 1);
+          ellFill(f.above, q, 2.5 * K, 2.5 * K, C.white, 1);
           const behind = mid(A, Z, Math.max(0, u - 0.25));
           line(f.above, behind, q, C.white, 0.9, 2);
-          glow(f.above, A, 12, 13, C.hot, 0.5 * (1 - u), 4);
+          glow(f.above, A, 20, 23, C.hot, 0.5 * (1 - u), 4);
         }
       } else {
         const k = (t - 1) / 0.4;
@@ -789,16 +824,16 @@ function trickCFx(f: FxInput, frame: number) {
   // The snort over the mark: two jets of ash from the nostrils, the mark flares up once and smokes.
   const nose = pt(f, 'nose', b.sniff);
   if (nose && frame >= b.sniff - 1) {
-    puff(f.above, add(nose, 2, 2), frame - b.sniff, 16, 4, 1.4, 6);
-    puff(f.above, add(nose, -1, 3), frame - b.sniff - 1, 16, 5, 1.2, 5);
-    sparks(f.above, add(nose, 0, 3), frame - b.sniff, 12, 8, 30, 51, [C.dustL, C.dust, C.orange], Math.PI * 0.6, 1.4, 140);
+    puff(f.above, add(nose, 2 * K, 2 * K), frame - b.sniff, 16, 4, 1.4, 6);
+    puff(f.above, add(nose, -1 * K, 3 * K), frame - b.sniff - 1, 16, 5, 1.2, 5);
+    sparks(f.above, add(nose, 0, 3 * K), frame - b.sniff, 12, 8, 30, 51, [C.dustL, C.dust, C.orange], Math.PI * 0.6, 1.4, 140);
   }
   // The solar flash: rays over the whole scene, a ring of light from the chest, the painting whitened.
   if (pearl && frame >= b.flash && frame < b.flash + 14) {
     const k = 1 - progress(frame, b.flash, b.flash + 14);
     for (let i = 0; i < 14; i++) {
       const a = (i / 14) * TAU + 0.1;
-      f.sceneryRay(pearl, [pearl[0] + Math.cos(a) * 200, pearl[1] + Math.sin(a) * 160], C.hot, 0.5 * k);
+      f.sceneryRay(pearl, [pearl[0] + Math.cos(a) * 200 * K, pearl[1] + Math.sin(a) * 160 * K], C.hot, 0.5 * k);
     }
     wash(f.above, f, C.hot, 0.32 * k * k);
     airRing(f.above, pearl, 6 + (frame - b.flash) * 7, 0.8 * k);
@@ -811,16 +846,16 @@ function trickCFx(f: FxInput, frame: number) {
     if (!m) return;
     const age = frame - (b.flash + 2);
     if (age < 0 || age > 80) return;
-    const bp = bases[k] ?? add(m, 0, 16);
-    for (let i = 0; i < 18; i++) {
+    const bp = bases[k] ?? add(m, 0, 16 * K);
+    for (let i = 0; i < 28; i++) {
       const a = hash(i, k, 1) * TAU,
-        r = 7 * Math.sqrt(hash(i, k, 2));
+        r = 26 * Math.sqrt(hash(i, k, 2));
       const start: XY = [m[0] + Math.cos(a) * r, m[1] + Math.sin(a) * r * 1.1];
       const fallU = Math.min(1, (age / 40) * (0.6 + 0.4 * hash(i, k, 3)));
-      const q: XY = [start[0] + Math.sin(age * 0.15 + i) * 3, start[1] + (bp[1] + (hash(i, k, 4) - 0.5) * 6 - start[1]) * fallU * fallU];
+      const q: XY = [start[0] + Math.sin(age * 0.15 + i) * 3 * K, start[1] + (bp[1] + (hash(i, k, 4) - 0.5) * 6 * K - start[1]) * fallU * fallU];
       const out = 1 - progress(age, 50, 80);
       f.above.col(goldDust[i % goldDust.length], out * (fallU < 1 || (frame + i) % 8 < 5 ? 1 : 0.4));
-      f.above.rect(Math.round(q[0]), Math.round(q[1]), 1, 1);
+      f.above.rect(Math.round(q[0]), Math.round(q[1]), i % 3 ? 1 : 2, i % 3 ? 1 : 2);
     }
     void fl;
   });
@@ -836,18 +871,18 @@ function phaseFx(f: FxInput, frame: number) {
   const night = progress(frame, b.shadow[0], b.shadow[1]);
   // The moon's shadow runs across the scene left to right; behind its front the night.
   if (frame >= b.shadow[0] && frame < b.shadow[1]) {
-    const front = -30 + (f.w + 60) * night;
+    const front = -30 * K + (f.w + 60 * K) * night;
     f.backdrop.col('#0a0820', 0.42);
     f.backdrop.rect(0, 0, Math.max(0, Math.round(front)), f.h);
-    for (let x = Math.round(front); x < front + 24; x += 2) {
-      f.backdrop.col('#0a0820', 0.42 * (1 - (x - front) / 24));
+    for (let x = Math.round(front); x < front + 24 * K; x += 2) {
+      f.backdrop.col('#0a0820', 0.42 * (1 - (x - front) / (24 * K)));
       f.backdrop.rect(x, 0, 2, f.h);
     }
   }
   eclipseSky(f, frame, frame >= b.shadow[1] ? 1 : night * 0.4, moon);
   if (frame >= b.total && frame < b.total + 10) {
     const k = 1 - progress(frame, b.total, b.total + 10);
-    airRing(f.backdrop, [SUN.x, SUN.y], SUN.r + 2 + (frame - b.total) * 3, 0.9 * k, C.white, C.corona);
+    airRing(f.backdrop, [SUN.x, SUN.y], SUN.r / K + 2 + (frame - b.total) * 3, 0.9 * k, C.white, C.corona);
     wash(f.above, f, C.silver, 0.18 * k);
   }
   // Sparks run with the flip front from the chest to the feet, the tail and the wing tips.
@@ -907,7 +942,7 @@ function ribbon(p: Pen, a: XY, b: XY, wave: number, ph: number, alpha: number, w
   const pts: XY[] = [];
   for (let i = 0; i <= 12; i++) {
     const u = i / 12,
-      o = Math.sin(u * 7 + ph) * wave * Math.sin(u * Math.PI);
+      o = Math.sin(u * 7 + ph) * wave * K * Math.sin(u * Math.PI);
     pts.push([a[0] + (b[0] - a[0]) * u + nx * o, a[1] + (b[1] - a[1]) * u + ny * o]);
   }
   polyline(p, pts, C.violet, alpha * 0.6, w + 2);
@@ -934,12 +969,12 @@ function trickF2Fx(f: FxInput, frame: number) {
     for (let i = 0; i < 6; i++) {
       const base = (i / 6) * TAU + tw;
       const pts: XY[] = [];
-      const R = (16 + 30 * progress(frame, b.whips, b.whips + 10)) * (1 - wrap * 0.7);
+      const R = (16 + 30 * progress(frame, b.whips, b.whips + 10)) * K * (1 - wrap * 0.7);
       for (let k = 0; k <= 10; k++) {
         const u = k / 10,
           a = base - u * 1.8;
-        const rr = 6 + R * u;
-        pts.push([body[0] + Math.cos(a) * rr, body[1] - 6 + Math.sin(a) * rr * 0.35 + (floor[1] - body[1] + 4) * u * u * (1 - wrap)]);
+        const rr = 6 * K + R * u;
+        pts.push([body[0] + Math.cos(a) * rr, body[1] - 6 * K + Math.sin(a) * rr * 0.35 + (floor[1] - body[1] + 4 * K) * u * u * (1 - wrap)]);
       }
       for (let k = 1; k < pts.length; k++) {
         const a = base - (k / 10) * 1.8;
@@ -960,8 +995,8 @@ function trickF2Fx(f: FxInput, frame: number) {
       }
     if (frame >= b.flare) {
       const q = progress(frame, b.flare, b.flare + 14);
-      airRing(f.backdrop, [SUN.x, SUN.y], SUN.r + 2 + q * 26, 0.8 * (1 - q), C.white, C.corona);
-      glow(f.backdrop, [SUN.x, SUN.y], SUN.r + 14, SUN.r + 14, C.corona, 0.5 * (1 - q), 4);
+      airRing(f.backdrop, [SUN.x, SUN.y], SUN.r / K + 2 + q * 26, 0.8 * (1 - q), C.white, C.corona);
+      glow(f.backdrop, [SUN.x, SUN.y], SUN.r / K + 14, SUN.r / K + 14, C.corona, 0.5 * (1 - q), 4);
     }
   }
   // The silver arcs left on the stone by the lashes, cooling.
@@ -971,8 +1006,8 @@ function trickF2Fx(f: FxInput, frame: number) {
     const age = frame - g;
     const heat = Math.max(0, 1 - age / 80);
     const a0 = (n * 2.3) % TAU;
-    const c: XY = [floor[0] + Math.cos(a0) * 34, floor[1] + Math.sin(a0) * 9];
-    oval(f.under, c, 9, 2.6, heat > 0.5 ? C.white : heat > 0.15 ? C.corona : C.violet, (0.4 + heat * 0.6) * out, a0, a0 + 2.2);
+    const c: XY = [floor[0] + Math.cos(a0) * 34 * K, floor[1] + Math.sin(a0) * 9 * K];
+    oval(f.under, c, 9 * K, 2.6 * K, heat > 0.5 ? C.white : heat > 0.15 ? C.corona : C.violet, (0.4 + heat * 0.6) * out, a0, a0 + 2.2);
     if (age < 6) sparks(f.above, c, age, 6, 5, 30, g, [C.white, C.silver, C.corona], -Math.PI / 2, 1.2, 160, c[1]);
   });
   // The roar at the glass: the corona ring flies at the viewer and bursts on the glass in sparks.
@@ -983,7 +1018,7 @@ function trickF2Fx(f: FxInput, frame: number) {
     for (let i = 0; i < 26; i++) {
       const age = frame - b.ring - 8 - hash(i, 2) * 6;
       if (age < 0 || age > 20) continue;
-      const q: XY = [hash(i, 3) * f.w, hash(i, 4) * f.h + age * 1.2];
+      const q: XY = [hash(i, 3) * f.w, hash(i, 4) * f.h + age * 1.2 * K];
       starSpark(f.above, q, 1.5 + hash(i, 5) * 1.5, 1 - age / 20);
     }
   }
@@ -1007,11 +1042,11 @@ function trickBF2Fx(f: FxInput, frame: number) {
     const [f0, x0, y0, s0] = path[i],
       [f1, x1, y1, s1] = path[Math.min(i + 1, path.length - 1)];
     const u = smooth(Math.max(0, Math.min(1, (g - f0) / (f1 - f0))));
-    return [[home[0] + x0 + (x1 - x0) * u, home[1] + y0 + (y1 - y0) * u], s0 + (s1 - s0) * u];
+    return [[home[0] + (x0 + (x1 - x0) * u) * K, home[1] + (y0 + (y1 - y0) * u) * K], s0 + (s1 - s0) * u];
   };
   const shade = (q: XY, s: number, a: number) => {
-    ellFill(f.under, q, 22 * s, 6 * s, C.ink, 0.85 * a);
-    oval(f.under, q, 22 * s, 6 * s, C.silver, 0.7 * a);
+    ellFill(f.under, q, 22 * K * s, 6 * K * s, C.ink, 0.85 * a);
+    oval(f.under, q, 22 * K * s, 6 * K * s, C.silver, 0.7 * a);
   };
   // The shadow darkens under him; he dives into it.
   if (frame < b.dive) shade(home, 1, progress(frame, 0, b.look[1]));
@@ -1024,7 +1059,7 @@ function trickBF2Fx(f: FxInput, frame: number) {
     sparks(f.above, q, frame - g, 12, 10, 60, g, [C.ink, C.ink, C.silver], -Math.PI / 2, 1.1, 220, q[1]);
     for (let r = 0; r < 3; r++) {
       const age = frame - g - r * 4;
-      if (age >= 0 && age < 24) oval(f.under, q, 8 + age * 1.6, (8 + age * 1.6) * 0.27, C.silver, 0.6 * (1 - age / 24));
+      if (age >= 0 && age < 24) oval(f.under, q, (8 + age * 1.6) * K, (8 + age * 1.6) * 0.27 * K, C.silver, 0.6 * (1 - age / 24));
     }
   }
   /** His shadow swimming under the stone: a dragon shape turned along its run, wings beating, two white eyes. */
@@ -1032,16 +1067,16 @@ function trickBF2Fx(f: FxInput, frame: number) {
     const L = Math.hypot(d[0], d[1] * 3.3) || 1,
       fx = d[0] / L,
       fy = (d[1] * 3.3) / L;
-    const P = (u: number, v: number): number[] => [q[0] + (fx * u - fy * v) * s * 1.35, q[1] + (fy * u + fx * v) * s * 0.4];
+    const P = (u: number, v: number): number[] => [q[0] + (fx * u - fy * v) * s * 1.35 * K, q[1] + (fy * u + fx * v) * s * 0.4 * K];
     const flap = Math.sin(frame * 0.9) * 0.35;
     f.under.col(C.ink, 0.9 * a);
     fillPoly(f.under, [...P(16, 0), ...P(7, 5), ...P(-12, 4), ...P(-34, 1), ...P(-40, -2), ...P(-12, -4), ...P(7, -5)]);
     for (const side of [-1, 1]) fillPoly(f.under, [...P(5, 4 * side), ...P(-6, 34 * (0.8 + flap) * side), ...P(-14, 22 * (0.8 + flap) * side), ...P(-12, 5 * side)]);
-    oval(f.under, q, 24 * s, 7 * s, C.silver, 0.45 * a);
+    oval(f.under, q, 24 * K * s, 7 * K * s, C.silver, 0.45 * a);
     for (const side of [-1, 1]) {
       const e = P(12, 2.2 * side);
       f.under.col(C.white, a);
-      f.under.rect(Math.round(e[0]), Math.round(e[1]), 1, 1);
+      f.under.rect(Math.round(e[0]), Math.round(e[1]), 2, 1);
     }
   };
   if (frame >= b.race[0] && frame < b.burst) {
@@ -1052,8 +1087,8 @@ function trickBF2Fx(f: FxInput, frame: number) {
     for (const w of path.slice(1, -1)) {
       const age = frame - w[0];
       if (age < 0 || age > 30) continue;
-      const c: XY = [home[0] + w[1], home[1] + w[2]];
-      for (let r = 0; r < 2; r++) oval(f.under, c, (6 + age * 1.2 + r * 5) * w[3], (6 + age * 1.2 + r * 5) * 0.27 * w[3], C.silver, 0.55 * (1 - age / 30));
+      const c: XY = [home[0] + w[1] * K, home[1] + w[2] * K];
+      for (let r = 0; r < 2; r++) oval(f.under, c, (6 + age * 1.2 + r * 5) * K * w[3], (6 + age * 1.2 + r * 5) * 0.27 * K * w[3], C.silver, 0.55 * (1 - age / 30));
     }
   }
   // Drops of darkness on the glass: they slide down slowly and fade.
@@ -1061,15 +1096,15 @@ function trickBF2Fx(f: FxInput, frame: number) {
     for (let i = 0; i < 14; i++) {
       const age = frame - b.burst - hash(i, 7) * 4;
       if (age < 0) continue;
-      const x = 16 + hash(i, 8) * (f.w - 32),
-        y0 = 20 + hash(i, 9) * (f.h * 0.7);
-      const y = y0 + age * (0.15 + hash(i, 10) * 0.25);
+      const x = 24 + hash(i, 8) * (f.w - 48),
+        y0 = 30 + hash(i, 9) * (f.h * 0.7);
+      const y = y0 + age * (0.15 + hash(i, 10) * 0.25) * K;
       const a = 1 - progress(frame, 200, 260);
-      const r = 1.5 + hash(i, 11) * 2.5;
+      const r = (1.5 + hash(i, 11) * 2.5) * K;
       ellFill(f.above, [x, y], r, r * 1.2, C.ink, 0.85 * a);
       line(f.above, [x, y - r * 2], [x, y], C.ink, 0.6 * a);
       f.above.col(C.silver, a);
-      f.above.rect(Math.round(x - r * 0.4), Math.round(y - r * 0.4), 1, 1);
+      f.above.rect(Math.round(x - r * 0.4), Math.round(y - r * 0.4), 2, 2);
     }
   }
   // His breath fogs the glass (in front of his face, where he hangs at the glass); a claw draws a crescent in the fog,
@@ -1078,21 +1113,25 @@ function trickBF2Fx(f: FxInput, frame: number) {
     const grow = progress(frame, b.breath, b.breath + 6),
       clear = 1 - progress(frame, 176, 214);
     if (clear > 0) {
-      const c: XY = [f.w * 0.85, f.h * 0.44];
-      for (let i = 4; i >= 1; i--) ellFill(f.above, c, (10 + 20 * grow) * (i / 4), (8 + 16 * grow) * (i / 4), '#c8c4e0', 0.16 * clear);
+      // the fog where his breath hits the glass, in front of his jaws; the crescent where his claw draws
+      const m = pt(f, 'mouth', b.breath + 2);
+      const c: XY = m ? [m[0] + 8 * K, m[1]] : [f.w * 0.85, f.h * 0.44];
+      const h = pt(f, 'handR', Math.round((b.draw[0] + b.draw[1]) / 2));
+      const cc: XY = h ?? c;
+      for (let i = 4; i >= 1; i--) ellFill(f.above, c, (10 + 20 * grow) * K * (i / 4), (8 + 16 * grow) * K * (i / 4), '#c8c4e0', 0.16 * clear);
       const k = progress(frame, b.draw[0], b.draw[1]);
       if (k > 0) {
         const arc = (r: number, ox: number, from: number, to: number): XY[] => {
           const pts: XY[] = [];
           for (let i = 0; i <= 16; i++) {
             const a = from + (to - from) * (i / 16);
-            pts.push([c[0] + ox + Math.cos(a) * r, c[1] + Math.sin(a) * r * 0.95]);
+            pts.push([cc[0] + ox + Math.cos(a) * r, cc[1] + Math.sin(a) * r * 0.95]);
           }
           return pts;
         };
         // outer edge first (top round to bottom), then the inner edge back up
-        const outer = arc(12, 0, -Math.PI * 0.85, Math.PI * 0.85),
-          inner = arc(9, 4, Math.PI * 0.72, -Math.PI * 0.72);
+        const outer = arc(14 * K, 0, -Math.PI * 0.85, Math.PI * 0.85),
+          inner = arc(10.5 * K, 4.5 * K, Math.PI * 0.72, -Math.PI * 0.72);
         const all = [...outer, ...inner];
         const shown = all.slice(0, Math.max(2, Math.round(all.length * k)));
         polyline(f.above, shown.map(([x, y]) => [x + 1, y + 1] as XY), '#14102a', 0.6 * clear, 2);
@@ -1107,7 +1146,7 @@ function trickBF2Fx(f: FxInput, frame: number) {
   sparks(f.above, slapAt, frame - b.slap, 14, 12, 56, 71, [C.ink, C.ink, C.silver], -Math.PI / 2, 1.3, 220, slapAt[1] + 2);
   for (let r = 0; r < 2; r++) {
     const age = frame - b.slap - r * 4;
-    if (age >= 0 && age < 18) oval(f.under, under, 10 + age * 2, (10 + age * 2) * 0.27, C.silver, 0.6 * (1 - age / 18));
+    if (age >= 0 && age < 18) oval(f.under, under, (10 + age * 2) * K, (10 + age * 2) * 0.27 * K, C.silver, 0.6 * (1 - age / 18));
   }
 }
 function trickCF2Fx(f: FxInput, frame: number) {
@@ -1119,21 +1158,21 @@ function trickCF2Fx(f: FxInput, frame: number) {
     const start = c - 22;
     const target = pt(f, sides[i], c);
     if (!target) return;
-    const from: XY = [SUN.x + Math.cos(-0.6 - i * 0.9) * (SUN.r + 2), SUN.y + Math.sin(-0.6 - i * 0.9) * (SUN.r + 2)];
+    const from: XY = [SUN.x + Math.cos(-0.6 - i * 0.9) * (SUN.r + 2 * K), SUN.y + Math.sin(-0.6 - i * 0.9) * (SUN.r + 2 * K)];
     // the corona flares where the star tears off
     if (frame >= start - 3 && frame < start + 5) glow(f.backdrop, from, 9, 9, C.white, 0.6 * (1 - Math.abs(frame - start) / 5), 4);
     if (frame >= start && frame <= c) {
       const u = progress(frame, start, c);
       // an arc: out from the corona, then down to the claw (accelerating)
       const e = u * u;
-      const q: XY = [from[0] + (target[0] - from[0]) * e - Math.sin(u * Math.PI) * 26 * (i % 2 ? -1 : 1), from[1] + (target[1] - from[1]) * e - Math.sin(u * Math.PI) * 18];
+      const q: XY = [from[0] + (target[0] - from[0]) * e - Math.sin(u * Math.PI) * 26 * K * (i % 2 ? -1 : 1), from[1] + (target[1] - from[1]) * e - Math.sin(u * Math.PI) * 18 * K];
       // a fading trail of the last few positions
       for (let k = 1; k <= 6; k++) {
         const v = Math.max(0, u - k * 0.04),
           ev = v * v;
-        const t: XY = [from[0] + (target[0] - from[0]) * ev - Math.sin(v * Math.PI) * 26 * (i % 2 ? -1 : 1), from[1] + (target[1] - from[1]) * ev - Math.sin(v * Math.PI) * 18];
+        const t: XY = [from[0] + (target[0] - from[0]) * ev - Math.sin(v * Math.PI) * 26 * K * (i % 2 ? -1 : 1), from[1] + (target[1] - from[1]) * ev - Math.sin(v * Math.PI) * 18 * K];
         f.above.col(k < 3 ? C.white : C.corona, 0.8 * (1 - k / 7));
-        f.above.rect(Math.round(t[0]), Math.round(t[1]), 2, 2);
+        f.above.rect(Math.round(t[0]), Math.round(t[1]), 3, 3);
       }
       glow(f.above, q, 7, 7, C.corona, 0.5, 3);
       starSpark(f.above, q, 4, 1);
@@ -1147,26 +1186,29 @@ function trickCF2Fx(f: FxInput, frame: number) {
     }
     sparks(f.above, target, frame - c, 8, 6, 34, 80 + i, [C.white, C.silver, C.corona], -Math.PI / 2, 2.5, 120);
   });
-  // The ball of stars between the palms, overhead, thrown up out of the picture.
+  // The ball of stars: it grows on his chest as each star is pressed to it, then sits between his hands when he
+  // lands, goes up overhead and is thrown out of the picture.
   const orb = P.orb ?? 0;
   const hl = pt(f, 'handL'),
-    hr = pt(f, 'handR');
-  if (orb > 0.01 && hl && hr && frame < b.throw + 1) {
-    const c = mid(hl, hr);
+    hr = pt(f, 'handR'),
+    chest = pt(f, 'pearl');
+  if (orb > 0.01 && hl && hr && chest && frame < b.throw + 1) {
+    const held = smooth(progress(frame, b.land - 4, b.land));
+    const c = mid(add(chest, 4 * K, -2 * K), mid(hl, hr), held);
     const r = 2 + 4 * orb;
     glow(f.above, c, r * 2.5, r * 2.5, C.corona, 0.5, 4);
-    ellFill(f.above, c, r, r, C.silver, 1);
-    ellFill(f.above, c, r * 0.5, r * 0.5, C.white, 1);
-    for (let i = 0; i < 4; i++) starSpark(f.above, add(c, Math.cos(frame * 0.3 + i * 1.57) * r * 1.4, Math.sin(frame * 0.3 + i * 1.57) * r * 1.4), 1.6, 0.9);
+    ellFill(f.above, c, r * K, r * K, C.silver, 1);
+    ellFill(f.above, c, r * 0.5 * K, r * 0.5 * K, C.white, 1);
+    for (let i = 0; i < 4; i++) starSpark(f.above, add(c, Math.cos(frame * 0.3 + i * 1.57) * r * 1.4 * K, Math.sin(frame * 0.3 + i * 1.57) * r * 1.4 * K), 1.6, 0.9);
   }
   const up = pt(f, 'handL', b.throw);
   const up2 = pt(f, 'handR', b.throw);
   if (up && up2 && frame > b.throw && frame < b.flash) {
     const c0 = mid(up, up2);
     const u = progress(frame, b.throw, b.flash - 1);
-    const c: XY = [c0[0], c0[1] - (c0[1] + 20) * u];
+    const c: XY = [c0[0], c0[1] - (c0[1] + 20 * K) * u];
     glow(f.above, c, 10, 10, C.corona, 0.5, 4);
-    ellFill(f.above, c, 5, 5, C.white, 1);
+    ellFill(f.above, c, 5 * K, 5 * K, C.white, 1);
   }
   if (frame >= b.flash && frame < b.flash + 8) wash(f.above, f, C.silver, 0.3 * (1 - progress(frame, b.flash, b.flash + 8)));
   // The starfall: stars streak down diagonally, strike the stone and stand as crystals that go out one by one.
@@ -1174,8 +1216,8 @@ function trickCF2Fx(f: FxInput, frame: number) {
   for (let i = 0; i < 24; i++) {
     const start = b.fall[0] + hash(i, 21) * 34;
     const fallLen = 10 + hash(i, 22) * 6;
-    const landX = 16 + hash(i, 23) * (f.w - 32),
-      landY = floor[1] - 18 + hash(i, 24) * 40;
+    const landX = 24 + hash(i, 23) * (f.w - 48),
+      landY = floor[1] + (-18 + hash(i, 24) * 40) * K;
     const age = frame - start;
     if (age < 0) continue;
     const out = frame - (b.fade[0] + i * 3.5);
@@ -1183,11 +1225,11 @@ function trickCF2Fx(f: FxInput, frame: number) {
     const big = i % 3 === 0 ? 1.6 : 1;
     if (age < fallLen) {
       const u = age / fallLen;
-      const q: XY = [landX - 40 * (1 - u), landY - (landY + 10) * (1 - u)];
+      const q: XY = [landX - 40 * K * (1 - u), landY - (landY + 10 * K) * (1 - u)];
       // a long tapering streak with a hot head
-      line(f.above, q, add(q, -22, -26), C.violet, 0.45, 3);
-      line(f.above, q, add(q, -16, -19), C.corona, 0.8, 2);
-      line(f.above, q, add(q, -7, -8), C.white, 1, 1);
+      line(f.above, q, add(q, -22 * K, -26 * K), C.violet, 0.45, 3);
+      line(f.above, q, add(q, -16 * K, -19 * K), C.corona, 0.8, 2);
+      line(f.above, q, add(q, -7 * K, -8 * K), C.white, 1, 1);
       glow(f.above, q, 5 * big, 5 * big, C.corona, 0.5, 3);
       starSpark(f.above, q, 3.2 * big, 1);
     } else {
@@ -1195,12 +1237,12 @@ function trickCF2Fx(f: FxInput, frame: number) {
       if (age < fallLen + 5) {
         const k = (age - fallLen) / 5;
         glow(f.above, [landX, landY], 8 * big, 4 * big, C.white, 0.7 * (1 - k), 3);
-        oval(f.under, [landX, landY], (3 + k * 9) * big, (1 + k * 2.5) * big, C.silver, 0.7 * (1 - k));
+        oval(f.under, [landX, landY], (3 + k * 9) * big * K, (1 + k * 2.5) * big * K, C.silver, 0.7 * (1 - k));
       }
       if (age < fallLen + 6) sparks(f.above, [landX, landY], age - fallLen, 6, 6, 30, i, [C.white, C.silver, C.corona], -Math.PI / 2, 1.3, 140, landY);
       // a crystal standing on the stone, a cold glow round its foot, a glint that walks up it
-      const h = 7 * big,
-        w = 2.4 * big;
+      const h = 7 * big * K,
+        w = 2.4 * big * K;
       ellFill(f.under, [landX, landY], w * 2.4, w * 0.8, C.corona, 0.3 * a);
       f.under.col(C.violet, a);
       fillPoly(f.under, [landX - w, landY, landX - w * 0.4, landY - h * 0.7, landX, landY - h, landX + w, landY]);
@@ -1209,7 +1251,7 @@ function trickCF2Fx(f: FxInput, frame: number) {
       const g = ((frame + i * 4) % 14) / 14;
       if (g < 0.5) {
         f.under.col(C.white, a);
-        f.under.rect(Math.round(landX), Math.round(landY - h * g * 2), 1, 1);
+        f.under.rect(Math.round(landX), Math.round(landY - h * g * 2), 2, 1);
       }
       // going out: a little puff of silver dust
       if (out > 0 && out < 10) sparks(f.above, [landX, landY - h * 0.5], out, 10, 4, 20, i + 90, [C.silver, C.corona], -Math.PI / 2, 1.5, 40);
@@ -1220,7 +1262,7 @@ function trickCF2Fx(f: FxInput, frame: number) {
   if (cres) {
     if (frame >= 160 && frame < b.bat) {
       const u = progress(frame, 160, b.bat);
-      const q: XY = [cres[0] + 30 * (1 - u), cres[1] - 70 * (1 - u)];
+      const q: XY = [cres[0] + 30 * K * (1 - u), cres[1] - 70 * K * (1 - u)];
       starSpark(f.above, q, 4, 1);
       glow(f.above, q, 8, 8, C.corona, 0.5, 3);
     }
@@ -1239,7 +1281,7 @@ function trickCF2Fx(f: FxInput, frame: number) {
       if (frame < b.smash + 4) wash(f.above, f, C.white, 0.35);
       for (let i = 0; i < 9; i++) {
         const ang = (i / 9) * TAU + hash(i, 31);
-        const L = 20 + hash(i, 32) * 34;
+        const L = (20 + hash(i, 32) * 34) * K;
         const pts: XY[] = [g];
         for (let s = 1; s <= 3; s++) pts.push([g[0] + Math.cos(ang + (hash(i, s) - 0.5) * 0.3) * L * (s / 3), g[1] + Math.sin(ang + (hash(i, s + 4) - 0.5) * 0.3) * L * (s / 3)]);
         polyline(f.above, pts, C.silver, 0.8 * a);
@@ -1254,6 +1296,8 @@ function trickCF2Fx(f: FxInput, frame: number) {
 /** A dragon-shaped shadow on the stone: body, spread wings, tail. */
 function wingShadow(p: Pen, at: XY, s: number, a: number, flap: number) {
   if (a <= 0.01 || s <= 0.01) return;
+  s *= K;
+  flap *= K;
   p.col(C.ink, a);
   fillPoly(p, [at[0] - 40 * s, at[1] - 2 * s - flap, at[0] - 6 * s, at[1] - 1 * s, at[0], at[1] - 3 * s, at[0] + 6 * s, at[1] - 1 * s, at[0] + 40 * s, at[1] - 2 * s - flap, at[0] + 12 * s, at[1] + 4 * s, at[0] - 12 * s, at[1] + 4 * s]);
   ellFill(p, at, 8 * s, 3 * s, C.ink, a);
@@ -1265,28 +1309,29 @@ function showFx(f: FxInput, frame: number) {
   // Something huge crosses the face of the sun: the sun winks, rays flicker.
   if (frame >= b.cross[0] && frame < b.cross[1] + 4) {
     const u = progress(frame, b.cross[0], b.cross[1]);
-    const q: XY = [SUN.x - 40 + 80 * u, SUN.y - 4 - 10 * Math.sin(u * Math.PI)];
+    const q: XY = [SUN.x + (-40 + 80 * u) * K, SUN.y - (4 + 10 * Math.sin(u * Math.PI)) * K];
     const flap = Math.sin(frame * 1.1) * 5;
     if (frame < b.cross[1]) {
+      const P = (pts: number[]) => pts.map((v, i) => q[i % 2] + v * K);
       f.backdrop.col('#140c10', 1);
-      fillPoly(f.backdrop, [q[0] - 16, q[1] - flap, q[0] - 3, q[1] + 1, q[0] + 4, q[1] + 1, q[0] + 16, q[1] - flap, q[0], q[1] - 3]);
-      fillPoly(f.backdrop, [q[0] + 2, q[1] - 1, q[0] + 9, q[1] - 2, q[0] + 4, q[1] + 2]);
-      fillPoly(f.backdrop, [q[0] - 2, q[1], q[0] - 13, q[1] + 3, q[0] - 1, q[1] + 2]);
+      fillPoly(f.backdrop, P([-16, -flap, -3, 1, 4, 1, 16, -flap, 0, -3]));
+      fillPoly(f.backdrop, P([2, -1, 9, -2, 4, 2]));
+      fillPoly(f.backdrop, P([-2, 0, -13, 3, -1, 2]));
     }
     const k = Math.sin(u * Math.PI);
     for (let i = 0; i < 10; i++) {
       const a = (i / 10) * TAU + 0.15;
-      line(f.backdrop, [SUN.x + Math.cos(a) * (SUN.r + 2), SUN.y + Math.sin(a) * (SUN.r + 2)], [SUN.x + Math.cos(a) * (SUN.r + 10 + 8 * k), SUN.y + Math.sin(a) * (SUN.r + 10 + 8 * k)], C.hot, 0.55 * k);
+      line(f.backdrop, [SUN.x + Math.cos(a) * (SUN.r + 2 * K), SUN.y + Math.sin(a) * (SUN.r + 2 * K)], [SUN.x + Math.cos(a) * (SUN.r + (10 + 8 * k) * K), SUN.y + Math.sin(a) * (SUN.r + (10 + 8 * k) * K)], C.hot, 0.55 * k);
     }
   }
   // A copper scale tumbles down from the sky, glinting, and lands on the dial where he will land.
-  const scaleAt = add(fl, 6, 3);
+  const scaleAt = add(fl, 6 * K, 3 * K);
   if (frame >= b.scale[0] && frame < b.land) {
     const u = progress(frame, b.scale[0], b.scale[1]);
-    const q: XY = frame < b.scale[1] ? [scaleAt[0] + Math.sin(u * 9) * 14 * (1 - u), -6 + (scaleAt[1] + 6) * u] : scaleAt;
+    const q: XY = frame < b.scale[1] ? [scaleAt[0] + Math.sin(u * 9) * 14 * K * (1 - u), -6 * K + (scaleAt[1] + 6 * K) * u] : scaleAt;
     const spin = frame < b.scale[1] ? Math.abs(Math.cos(frame * 0.7)) : 0.25;
-    ellFill(f.above, q, 2.6, 0.6 + 1.8 * spin, '#bc701c', 1);
-    ellFill(f.above, add(q, -0.6, -0.4), 1.4, 0.4 + spin, '#e8a634', 1);
+    ellFill(f.above, q, 2.6 * K, (0.6 + 1.8 * spin) * K, '#bc701c', 1);
+    ellFill(f.above, add(q, -0.6 * K, -0.4 * K), 1.4 * K, (0.4 + spin) * K, '#e8a634', 1);
     if (spin > 0.85 || frame >= b.scale[1]) glow(f.above, q, 5, 5, C.gold, frame >= b.scale[1] ? 0.3 + 0.2 * Math.sin(frame * 0.6) : 0.6, 3);
     if (frame >= b.scale[1]) {
       sparks(f.above, scaleAt, frame - b.scale[1], 6, 5, 20, 61, [C.hot, C.gold], -Math.PI / 2, 1.2, 160, scaleAt[1] + 1);
@@ -1298,27 +1343,27 @@ function showFx(f: FxInput, frame: number) {
   for (let g = b.beat[0]; g < b.descend[1]; g += 6) {
     const age = frame - g;
     if (age < 0 || age > 12) continue;
-    const top: XY = [fl[0], g < b.descend[0] ? -10 : fl[1] - 120 + (g - b.descend[0]) * 7];
-    oval(f.above, add(top, 0, age * 5), 16 + age * 4, 3 + age, C.dustL, 0.35 * (1 - age / 12));
+    const top: XY = [fl[0], g < b.descend[0] ? -10 * K : fl[1] + (-120 + (g - b.descend[0]) * 7) * K];
+    oval(f.above, add(top, 0, age * 5 * K), (16 + age * 4) * K, (3 + age) * K, C.dustL, 0.35 * (1 - age / 12));
     dust(f.under, fl, age, 12, 6, 16 + (g - b.beat[0]), 100 + g);
   }
   // His shadow pools on the dial as he descends.
   if (frame >= b.beat[0] && frame < b.land) {
     const k = progress(frame, b.beat[0], b.land);
-    ellFill(f.under, fl, 10 + 22 * k, 3 + 6 * k, C.ink, 0.25 + 0.4 * k);
+    ellFill(f.under, fl, (10 + 22 * k) * K, (3 + 6 * k) * K, C.ink, 0.25 + 0.4 * k);
   }
   // The winged shadow sweeps over the empty dial with wind, dust and petals; it sweeps back, shrinking.
   if (frame < b.descend[0]) {
     const sweep = frame < b.shadow[1] ? progress(frame, b.shadow[0], b.shadow[1]) : 0;
     const back = progress(frame, b.back[0], b.back[1]);
-    const x = frame < b.shadow[1] ? f.w + 70 - (f.w + 140) * sweep : -70 + (fl[0] + 70) * smooth(back);
+    const x = frame < b.shadow[1] ? f.w + 70 * K - (f.w + 140 * K) * sweep : -70 * K + (fl[0] + 70 * K) * smooth(back);
     const s = frame < b.shadow[1] ? 1.7 : 1.7 - 1.1 * back;
-    wingShadow(f.under, [x, fl[1] - 4], s, frame < b.shadow[1] || back < 1 ? 0.7 : 0, Math.sin(frame * 0.5) * 3 * s);
+    wingShadow(f.under, [x, fl[1] - 4 * K], s, frame < b.shadow[1] || back < 1 ? 0.7 : 0, Math.sin(frame * 0.5) * 3 * s);
     for (let i = 0; i < 18; i++) {
-      const age = (frame * (1.5 + hash(i, 3)) + hash(i, 4) * 300) % 300;
-      const q: XY = [f.w - age, fl[1] - 50 + hash(i, 5) * 60 + Math.sin(age * 0.1 + i) * 4];
+      const age = ((frame * (1.5 + hash(i, 3)) + hash(i, 4) * 300) % 300) * K;
+      const q: XY = [f.w - age, fl[1] + (-50 + hash(i, 5) * 60 + Math.sin(age * 0.1 + i) * 4) * K];
       f.above.col(i % 3 ? C.dustL : '#e8b4b8', 0.7);
-      f.above.rect(Math.round(q[0]), Math.round(q[1]), i % 3 ? 1 : 2, 1);
+      f.above.rect(Math.round(q[0]), Math.round(q[1]), i % 3 ? 2 : 3, i % 3 ? 1 : 2);
     }
   }
   // The heavy landing: a ring, dust, cracks that cool and are gone before the held pose.
@@ -1334,7 +1379,7 @@ function showFx(f: FxInput, frame: number) {
     const k = 1 - Math.abs(frame - b.flare) / 14;
     for (let i = 0; i < 12; i++) {
       const a = (i / 12) * TAU;
-      f.sceneryRay(pearl, [pearl[0] + Math.cos(a) * 160, pearl[1] + Math.sin(a) * 120], C.hot, 0.45 * k);
+      f.sceneryRay(pearl, [pearl[0] + Math.cos(a) * 160 * K, pearl[1] + Math.sin(a) * 120 * K], C.hot, 0.45 * k);
     }
     glow(f.above, pearl, 18, 16, C.hot, 0.5 * k, 4);
   }
@@ -1343,13 +1388,13 @@ function showFx(f: FxInput, frame: number) {
   if (m && frame >= b.roar[0] + 4 && frame < b.ring) {
     const a = 1 - progress(frame, b.ring - 3, b.ring);
     // grows up from the jaws in 4 frames, a fat roiling column with a red rim and a white-hot core
-    const reach = m[1] + 6 - (m[1] + 10) * progress(frame, b.roar[0] + 4, b.roar[0] + 8);
+    const reach = m[1] + 6 * K - (m[1] + 10 * K) * progress(frame, b.roar[0] + 4, b.roar[0] + 8);
     for (let y = m[1]; y > reach; y -= 2) {
       const u = (m[1] - y) / Math.max(1, m[1]);
-      const w = 7 + u * 12 + Math.sin(frame * 0.9 + y * 0.3) * 2.5;
-      const x = m[0] + Math.sin(frame * 0.5 + y * 0.12) * 3 * u;
+      const w = (7 + u * 12 + Math.sin(frame * 0.9 + y * 0.3) * 2.5) * K;
+      const x = m[0] + Math.sin(frame * 0.5 + y * 0.12) * 3 * K * u;
       f.above.col(C.red, 0.55 * a);
-      f.above.rect(Math.round(x - w / 2 - 2), Math.round(y), Math.round(w + 4), 2);
+      f.above.rect(Math.round(x - w / 2 - 3), Math.round(y), Math.round(w + 6), 2);
       f.above.col(u < 0.25 ? C.gold : u < 0.6 ? C.orange : C.red, a * (1 - u * 0.3));
       f.above.rect(Math.round(x - w / 2), Math.round(y), Math.round(w), 2);
       f.above.col(u < 0.5 ? C.white : C.hot, a);
@@ -1358,7 +1403,7 @@ function showFx(f: FxInput, frame: number) {
     glow(f.above, m, 14, 14, C.hot, 0.6 * a, 4);
     // the light of it on the stone and a few embers drifting down beside it
     glow(f.under, fl, 40, 10, C.gold, 0.35 * a, 4);
-    sparks(f.above, [m[0], Math.max(4, reach)], (frame - b.roar[0]) % 10, 10, 6, 40, Math.floor(frame / 10), [C.hot, C.gold, C.orange], Math.PI / 2, 2.4, 60);
+    sparks(f.above, [m[0], Math.max(6, reach)], (frame - b.roar[0]) % 10, 10, 6, 40, Math.floor(frame / 10), [C.hot, C.gold, C.orange], Math.PI / 2, 2.4, 60);
   }
   const m0 = pt(f, 'mouth', b.ring);
   if (m0) smokeRing(f.above, m0, frame - b.ring, 24);
