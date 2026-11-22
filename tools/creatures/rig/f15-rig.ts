@@ -186,6 +186,10 @@ export class Rig {
   /** Optional world height below which nothing is drawn, per pixel (a body sinking into a pool, a hole in the
    * stone). The floor is z = 0; the cut edge gets the outline like any silhouette edge. */
   clipZ?: number;
+  /** Cartoon ink: the outer outline this many pixels wide (default 1) [22.11, Пончик]. */
+  outlineW?: number;
+  /** Cartoon ink: the inner contour lines in this colour instead of each part's darkest tone. */
+  innerInk?: RGBA;
   // Independent of the skin binding tag: moving the head still moves its eyes.
   markEye(start: number, side: number, open: boolean) {
     const part = open ? (side < 0 ? 'eyeL' : 'eyeR') : false;
@@ -616,7 +620,7 @@ export function renderRig(
         else if (y > 0 && id[i - w] >= 0 && id[i - w] !== pid && zb[i - w] > z) near = i - w;
         else if (y < h - 1 && id[i + w] >= 0 && id[i + w] !== pid && zb[i + w] > z) near = i + w;
         if (near < 0) continue;
-        const c = opt.innerC ?? m.T[0];
+        const c = opt.innerC ?? rig.innerInk ?? m.T[0];
         const j = i * 4;
         out[j] = c[0];
         out[j + 1] = c[1];
@@ -640,6 +644,23 @@ export function renderRig(
           out[j + 3] = oc[3];
         }
       }
+    // a wider cartoon ink: further rings round the first one
+    for (let ring = 2; ring <= (rig.outlineW ?? 1); ring++) {
+      const inked = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && out[(y * w + x) * 4 + 3] >= 200;
+      const add: number[] = [];
+      for (let y = 0; y < h; y++)
+        for (let x = 0; x < w; x++) {
+          if (out[(y * w + x) * 4 + 3] >= 100) continue;
+          if (inked(x - 1, y) || inked(x + 1, y) || inked(x, y - 1) || inked(x, y + 1)) add.push(y * w + x);
+        }
+      for (const i of add) {
+        const j = i * 4;
+        out[j] = oc[0];
+        out[j + 1] = oc[1];
+        out[j + 2] = oc[2];
+        out[j + 3] = oc[3];
+      }
+    }
   }
   let lit: Px | null = null;
   if (anyGlow) {
