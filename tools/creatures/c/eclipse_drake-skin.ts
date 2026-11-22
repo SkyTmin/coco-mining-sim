@@ -779,7 +779,8 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
   // all hugging the side (no outward lean), so the membrane between them covers the flank
   const FOLD: V3[] = [vnorm(Pv.v(-0.97, -s * 0.04, -0.24)), vnorm(Pv.v(-0.9, -s * 0.02, -0.43)), vnorm(Pv.v(-0.8, 0, -0.6))];
   // wrapped: the fingers hang from the raised wrist down and forward round the flank, the membrane a cloak
-  const WRAP: V3[] = [vnorm(BU.v(0.62, -s * 0.18, -0.78)), vnorm(BU.v(0.12, -s * 0.05, -1)), vnorm(BU.v(-0.42, s * 0.08, -0.9))];
+  // (leaning out a little, so the bones pass outside the thigh instead of through it)
+  const WRAP: V3[] = [vnorm(BU.v(0.62, s * 0.26, -0.78)), vnorm(BU.v(0.12, s * 0.28, -1)), vnorm(BU.v(-0.42, s * 0.32, -0.9))];
   const wr = smooth(saturate(st.wrap));
   // the far wing of a mantle leans out so it stands above his back; the near one rises straight beside him
   const mOut = s > 0 ? 1 : 3.6;
@@ -1079,7 +1080,7 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
         .roll(get('tilt'))
         .pitch(0.04 + get('nod') + coil * 0.35);
       // asleep the head lies on the dial in front of the near wrist, turned to us, the eyes shut
-      const asleepH = FT.at(17.4, 6.2, 2.5).turn(1.35).roll(-0.12).pitch(0.08);
+      const asleepH = FT.at(18.6, 6.6, 2.5).turn(1.35).roll(-0.12).pitch(0.08);
       const Hd = (sl > 0 ? blendFrame(awake, asleepH, smooth(sl)) : awake).scale(HEAD_SCALE);
       // ---- the one line: crescent → tail → pelvis → belly → chest → neck → skull
       const sway = 0.12 * clock.osc(0.33) + get('tailSway');
@@ -1213,7 +1214,7 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
         const fwd = walking ? st.forward / portraitScale : 0;
         const foot = vlerp(
           FT.p(STANCE.wrist[0] + fwd - get('stride') * s * 0.6, s * STANCE.wrist[1], STANCE.wrist[2] + st.lift * 2.4),
-          FT.p(12.2, s * 5.2, 1.1),
+          FT.p(11.6, s * 5.4, 1.1),
           sl,
         );
         const handW = Math.min(1, A['goal.hand' + k + '.weight'] ?? 0);
