@@ -657,8 +657,11 @@ export interface WingState {
   flex: number;
   /** Radians the fingers trail the beat (opposite to its motion): the trailing fingers billow, the lead stays. */
   tipLag: number;
-  /** 0..1 how much this is the wing nearer the viewer (see liftBeat). */
+  /** 0..1 how much the wing needs the edge-on cheat, and the elevation where it stands edge-on (see wingEdge). */
   near: number;
+  edge: number;
+  /** The beat's change since the previous frame (the cheat crosses the band smoothly in a fast stroke, at once in a hold). */
+  vel: number;
 }
 /** Bone lengths: humerus, forearm; wing fingers (lead, middle, trail); the membrane reaches the flank over the hip. */
 const HUM = 12.0,
@@ -683,9 +686,9 @@ const MANTLE_DIRS: V3[] = [
 ];
 /** The wing's own wrist position relative to the shoulder (forward, outward, up): folded up on the back (the wrist
  * just ahead of and above the shoulder, the elbow back over the hips, the fingers along the flank), spread. */
-const WRIST_FOLD: V3 = [3.0, 2.4, 2.2];
+const WRIST_FOLD: V3 = [2.0, 3.2, 1.6];
 /** Halfway open: the wrist raised over the back (the control point of the opening curve). */
-const WRIST_LIFT: V3 = [0.5, 6.0, 12.0];
+const WRIST_LIFT: V3 = [-0.5, 8.0, 19.0];
 // spread, the arm is straight [owner's references 22.11: the elbow does not bend in flight]
 const WRIST_OPEN: V3 = vmul(SPAR, (HUM + FORE) * 0.998);
 /** Rotate a local (forward, outward, up) vector by the wing beat (round the forward axis) and sweep (round up). */
@@ -708,19 +711,38 @@ const F2_OPEN = 1;
 /** How far he turns side on in flight (rad). */
 const FLY_TURN = 0.42;
 /** `edge`: the elevation where the near wing stands edge-on, atan(0.75 / cos ψ) for the camera (tan 37° = 0.75)
- * and his turn ψ from side on. */
-const liftBeat = (beat: number, u: number, near = 0, edge = 0.7) => {
+ * and his turn ψ from side on. The near wing is never held in the band edge ∓ 0.45: from a little below a level beat
+ * up it stands high (we see its underside, a broad sail), below that it hangs low (we see its top); it crosses the
+ * band only in the downstroke, where the beat is fastest. Holding beats of 0.2–0.6 used to stand it edge-on. */
+const liftBeat = (beat: number, u: number, near = 0, edge = 0.7, vel = 0) => {
   const a = beat * 0.8 * u;
-  return a + near * u * 0.3 * Math.tanh((a + 0.26 - edge) / 0.22);
+  const e = a + 0.26;
+  const c = edge - 0.62;
+  const high = edge + 0.5 + Math.max(0, e - c) * 0.3;
+  // held, the jump is instant; in a stroke it is spread so the wing crosses the band in 2–3 frames, not one
+  const w = 0.08 + Math.min(0.3, 3 * Math.abs(vel * 0.8 * u));
+  return a + near * smooth(saturate((e - c) / w + 0.5)) * (high - e);
 };
-const edgeOn = (BU: F3) => Math.atan2(0.75, Math.max(0.3, Math.abs(BU.s[1])));
+/** Where this wing stands edge-on to the camera, for any turn of the body: the wing at elevation θ spans
+ * cos θ·out + sin θ·up and the tail direction, its normal is ⊥ to the view at tan θ = −A / B. A wing whose edge-on
+ * elevation falls inside the beat's range (0.3–1.2 rad, the near wing in the usual three-quarter view, either wing in
+ * a roll or a spin) gets the cheat; the far wing stands edge-on only far below its downstroke. */
+const VIEW: V3 = [0, 0.8, 0.6];
+function wingEdge(BU: F3, s: number): { near: number; edge: number } {
+  const out = BU.v(0, s, 0),
+    back = BU.v(-1, 0, 0);
+  const A = vdot(vcross(out, back), VIEW),
+    B = vdot(vcross(BU.u, back), VIEW);
+  const edge = Math.abs(B) < 1e-4 ? Math.PI / 2 : Math.atan(-A / B);
+  return { near: saturate((edge - 0.15) / 0.2) * saturate((1.35 - edge) / 0.2), edge };
+}
 /** The wing's own wrist (world) for a spread / beat / sweep, from the shoulder in the upright frame BU. */
-function wingWrist(BU: F3, Pv: F3, shoulder: V3, s: number, open: number, beat: number, sweep: number, near: number): V3 {
+function wingWrist(BU: F3, Pv: F3, shoulder: V3, s: number, open: number, beat: number, sweep: number, near: number, edge: number, vel: number): V3 {
   const u = smooth(saturate(open));
   // folded, the wing lies along the body (it follows him up when he rears); spread, it stands in the upright frame
   // Opening, the wrist goes up over the back first and then out (a curve through WRIST_LIFT), so a half-open wing
   // stands raised behind him instead of stabbing down past his side.
-  const v = beatSweep(WRIST_OPEN, liftBeat(beat, u, near, edgeOn(BU)), sweep);
+  const v = beatSweep(WRIST_OPEN, liftBeat(beat, u, near, edge, vel), sweep);
   const fold = Pv.v(WRIST_FOLD[0], s * WRIST_FOLD[1], WRIST_FOLD[2]),
     lift = BU.v(WRIST_LIFT[0], s * WRIST_LIFT[1], WRIST_LIFT[2]),
     out = BU.v(v[0], s * v[1], v[2]);
@@ -743,15 +765,19 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
   const pole = vnorm(vlerp(vlerp(Pv.v(-1.0, s * 0.25, 0.35), BU.v(-1.0, s * 0.3, -0.25), u), BU.v(-0.6, s * 1, -0.3), smooth(saturate(st.wrap))));
   const elbow = ik(shoulder, wrist, HUM, FORE, pole);
   const fd = vnorm(vsub(wrist, elbow));
+  // one elevation for the whole wing (the near wing's cheat taken at the wrist), plus each finger's own lag
+  const lift0 = liftBeat(st.beat, u, st.near, st.edge, st.vel);
   const place = (v: V3, lagBy = 0): V3 => {
-    const w = beatSweep(v, liftBeat(st.beat + lagBy, u, st.near, edgeOn(BU)), st.sweep);
+    const w = beatSweep(v, lift0 + lagBy * 0.8 * u, st.sweep);
     return BU.v(w[0], s * w[1], w[2]);
   };
   // folded: the fingers run back from the wrist along the forearm, past the elbow, down the flank toward the tail,
   // the membrane furled between them; spread: out of the wrist into the wing
   const back = vmul(fd, -1);
   void back;
-  const FOLD: V3[] = [vnorm(Pv.v(-0.96, s * 0.16, -0.08)), vnorm(Pv.v(-0.95, s * 0.2, -0.18)), vnorm(Pv.v(-0.92, s * 0.24, -0.28))];
+  // folded like a cloak on the flank: the lead finger back along the top of the flank, the others fanning down it,
+  // all hugging the side (no outward lean), so the membrane between them covers the flank
+  const FOLD: V3[] = [vnorm(Pv.v(-0.97, -s * 0.04, -0.24)), vnorm(Pv.v(-0.9, -s * 0.02, -0.43)), vnorm(Pv.v(-0.8, 0, -0.6))];
   // wrapped: the fingers hang from the raised wrist down and forward round the flank, the membrane a cloak
   const WRAP: V3[] = [vnorm(BU.v(0.62, -s * 0.18, -0.78)), vnorm(BU.v(0.12, -s * 0.05, -1)), vnorm(BU.v(-0.42, s * 0.08, -0.9))];
   const wr = smooth(saturate(st.wrap));
@@ -845,11 +871,13 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
   r.cap(vlerp(b0, b1, 0.9), vlerp(b0, b1, 1.1), 1.3, 1.3, goldDeep);
   // Wing fingers: ivory bones with a knuckle.
   r.tag = 'wingBone' + name;
+  const thin = 0.6 + 0.4 * u;
   tips.forEach((tip, k) => {
     const knuckle = vlerp(wrist, tip, 0.45);
-    r.cap(wrist, knuckle, 0.66 - k * 0.05, 0.5, M(bone, boneDeep, 0.8));
-    r.ell(axisFrame(knuckle, vsub(tip, wrist), BU.u), [0, 0, 0], [0.64, 0.64, 0.52], M(boneDeep, boneDeep, 0.85));
-    r.cap(knuckle, tip, 0.5, 0.18, M(bone, boneDeep, 0.9));
+    const b = u > 0.4 ? M(bone, boneDeep, 0.8) : M(boneDeep, boneDeep, 0.8);
+    r.cap(wrist, knuckle, (0.66 - k * 0.05) * thin, 0.5 * thin, b);
+    r.ell(axisFrame(knuckle, vsub(tip, wrist), BU.u), [0, 0, 0], [0.64 * thin, 0.64 * thin, 0.52 * thin], M(boneDeep, boneDeep, 0.85));
+    r.cap(knuckle, tip, 0.5 * thin, 0.18, u > 0.4 ? M(bone, boneDeep, 0.9) : b);
   });
   // The wrist: a knuckle with one hooked thumb claw forward.
   r.tag = 'wingThumb' + name;
@@ -1158,8 +1186,8 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
         // mantling: the wrists up and out, the fingers arch back over him like a hood
         const hoodWrist = vadd(shoulder, BU.v(1.5, s * 7.5, 7.5));
         // the wing whose side faces the viewer (0, 0.8, 0.6 — towards the camera)
-        const near = saturate((s * vdot(BU.s, [0, 0.8, 0.6]) - 0.1) / 0.4);
-        const own = vlerp(vlerp(wingWrist(BU, Pv, shoulder, s, open, beat, sweep, near), hoodWrist, brace * (1 - smooth(open) * 0.5)), wrapWrist, smooth(wrapK));
+        const { near, edge } = wingEdge(BU, s);
+        const own = vlerp(vlerp(wingWrist(BU, Pv, shoulder, s, open, beat, sweep, near, edge, beatVel), hoodWrist, brace * (1 - smooth(open) * 0.5)), wrapWrist, smooth(wrapK));
         wing(R0, BU, Pv, shoulder, s, {
           open,
           beat,
@@ -1173,6 +1201,8 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
           flex: upK,
           tipLag: -Math.max(-0.22, Math.min(0.22, beatVel * 0.5)),
           near,
+          edge,
+          vel: beatVel,
         }, j);
       }
       // ---- forelegs: on the stone when he stands or walks; at the chest when he rears; tucked under him in flight;
@@ -1193,8 +1223,8 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
         // between them); in flight tucked up against the chest
         // (the paw about two thirds of the leg's length from the shoulder: a paw near the shoulder folds the leg
         // like a chicken wing and throws the elbow out)
-        const atChest = Pv.p(14.6, s * 5.4, -6.4);
-        const tucked = Pv.p(11.0, s * 4.6, -9.4);
+        const atChest = Pv.p(16.0, s * 5.6, -5.0);
+        const tucked = Pv.p(13.5, s * 4.4, -7.5);
         const air = target('hand' + k, vlerp(atChest, tucked, Math.max(hoverK, tuck, saturate(get('jump') / 3))));
         foreleg(R0, Pv, BU, s, vlerp(air, target('fore' + k, foot), ground), { fist: 0.15 + get('fist' + k), ground }, j);
         if (walking && st.planted && ground > 0.9) planted.push('fore' + k);
