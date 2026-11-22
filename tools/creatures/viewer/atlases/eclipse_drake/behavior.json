@@ -3,10 +3,10 @@
   "seed": 20520,
   "previewSeconds": 64,
   "field": [
-    256,
-    208
+    384,
+    312
   ],
-  "stride": 26,
+  "stride": 40,
   "yaw": 0.62,
   "depthScale": 0.6,
   "stops": [
