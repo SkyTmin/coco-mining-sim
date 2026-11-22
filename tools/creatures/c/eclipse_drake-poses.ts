@@ -557,13 +557,14 @@ function trickBF2Track(): { keys: Track; lanes: Record<string, Lane> } {
 }
 function trickCF2Track(): { keys: Track; lanes: Record<string, Lane> } {
   const lookUp = (p: JointPose = {}): JointPose => f2({ neckUp: 2, nod: -0.45, lookY: 0.8, charge: 0.9, ...p });
-  /** A catch: the hand of one wing snaps up and out to the star and closes on it; that wing stops beating, so he
-   * dips to its side and the other wing beats down hard to right him. */
+  /** A catch: one forepaw snaps up and out to the star and closes on it (the other stays tucked at the chest); he
+   * leans to that side and turns his head after the star; the wings keep beating (owner 22.11: the wings and arms
+   * broke whenever he raised them — the paws are his own limbs now). */
   const catchKey = (side: 'L' | 'R' | 'both', i: number): JointPose => {
-    const r: JointPose = side !== 'L' ? { ...R(16, 10, 18), fistR: 0.9 } : { fistR: 0.3, wingBeatR: -0.8 };
-    const l: JointPose = side !== 'R' ? { ...L(16, -9, 19), fistL: 0.9 } : { fistL: 0.3, wingBeatL: -0.8 };
+    const r: JointPose = side !== 'L' ? { ...R(20, side === 'both' ? 8 : 13, 19), fistR: 0.9 } : { ...R(13, 3.5, 10), fistR: 0.4 };
+    const l: JointPose = side !== 'R' ? { ...L(22, side === 'both' ? -8 : -1, 15), fistL: 0.9 } : { ...L(13, -3.5, 10.5), fistL: 0.4 };
     const dir = side === 'R' ? 1 : side === 'L' ? -1 : 0;
-    return f2({ ...r, ...l, nod: -0.2, lookY: 0.5, neckUp: 1, roll: dir * 0.1, gaze: dir * 0.25, snarl: 0.6, charge: 1.1 + i * 0.1, flash: 0.03, hover: side === 'both' ? 3.6 : 4.3 });
+    return f2({ ...r, ...l, nod: 0.1, lookY: 0.1, neckUp: 1.7, neckReach: -2.6, roll: dir * 0.14, gaze: dir * 0.3, snarl: 0.6, charge: 1.1 + i * 0.1, flash: 0.03, hover: side === 'both' ? 3.6 : 4.3 });
   };
   /** The star pressed to the chest: the hand opens over the pearl and the star joins the ball. */
   const pressKey = (side: 'L' | 'R' | 'both', i: number): JointPose =>
@@ -585,12 +586,14 @@ function trickCF2Track(): { keys: Track; lanes: Record<string, Lane> } {
     // Down onto the dial on his hind legs with the ball in both hands before his chest, the wings folded.
     [90, f2({ hover: 0, rear: 1, wingOpen: -1.0, ...R(14, 3.2, 10.5), ...L(14, -3.2, 11), fistR: -0.5, fistL: -0.5, nod: 0.3, charge: 1.6, snarl: 0.4, crouch: 1.2, ...size(1.03, 0.97) })],
     [94, f2({ hover: 0, rear: 1, wingOpen: -1.0, ...R(14, 3.2, 10.5), ...L(14, -3.2, 11), fistR: -0.5, fistL: -0.5, nod: 0.3, charge: 1.6, snarl: 0.4 })],
-    // Lifts it overhead and turns with it.
-    [100, f2({ hover: 0, rear: 1, wingOpen: -0.78, ...R(15, 5.2, 22), ...L(15, -5.2, 22.5), fistR: -0.8, fistL: -0.8, neckReach: -2.2, neckUp: 0.6, nod: -0.45, lookY: 0.8, charge: 1.6 })],
-    [118, f2({ hover: 0, rear: 1, wingOpen: -0.78, ...R(15, 5.2, 22.5), ...L(15, -5.2, 23), fistR: -0.8, fistL: -0.8, neckReach: -2.2, neckUp: 0.6, nod: -0.45, lookY: 0.8, charge: 1.7 })],
-    // The throw up out of the picture: the same downstroke lifts him off the dial again.
-    [120, f2({ hover: 0, rear: 1, wingOpen: -0.78, ...R(14, 5.2, 19), ...L(14, -5.2, 19.5), fistR: -0.8, fistL: -0.8, crouch: 1.6, neckReach: -2.2, neckUp: 0.9, nod: -0.3, charge: 1.7, wingBeat: 0.7 })],
-    [122, f2({ hover: 1.5, rear: 0.6, wingOpen: 0.3, wingBeat: -0.8, ...R(12, 3.5, 28), ...L(12, -3.5, 28.5), fistR: -0.9, fistL: -0.9, crouch: -1, neckReach: -1.2, neckUp: 3, nod: -0.7, roar: 0.8, charge: 1.8, flash: 0.06 })],
+    // Holds it out before him in both paws and turns once with it, looking down into it (his forelegs are short: the
+    // ball cannot go over his head, so it is shown off in front).
+    [100, f2({ hover: 0, rear: 1, wingOpen: -0.78, ...R(18, 3.6, 12), ...L(18, -3.6, 12.5), fistR: -0.8, fistL: -0.8, neckReach: -1, neckUp: 0.4, nod: 0.35, lookY: -0.35, charge: 1.6 })],
+    [118, f2({ hover: 0, rear: 1, wingOpen: -0.78, ...R(18, 3.6, 12.5), ...L(18, -3.6, 13), fistR: -0.8, fistL: -0.8, neckReach: -1, neckUp: 0.4, nod: 0.3, lookY: -0.3, charge: 1.7 })],
+    // The throw up out of the picture: down into a crouch with the ball at his belly, then both paws fling it up
+    // past his face as the head snaps back out of its way; the same downstroke lifts him off the dial again.
+    [120, f2({ hover: 0, rear: 1, wingOpen: -0.78, ...R(15, 3.4, 6), ...L(15, -3.4, 6.5), fistR: -0.8, fistL: -0.8, crouch: 1.8, neckReach: -1, neckUp: 0.3, nod: 0.45, lookY: -0.4, charge: 1.7, wingBeat: 0.7, ...size(1.04, 0.96) })],
+    [122, f2({ hover: 1.5, rear: 0.6, wingOpen: 0.3, wingBeat: -0.8, ...R(19, 4, 25), ...L(19, -4, 25.5), fistR: -0.9, fistL: -0.9, crouch: -1, neckReach: -3.2, neckUp: 1.6, nod: -0.7, lookY: 0.9, roar: 0.8, charge: 1.8, flash: 0.06, ...size(0.96, 1.05) })],
     [132, f2({ wingBeat: 0.4, neckUp: 2.5, nod: -0.6, lookY: 0.9, charge: 1.2 })],
     // The starfall: he watches it come down round him.
     [150, f2({ gaze: -0.3, lookX: -0.6, nod: 0.2, charge: 1 })],
