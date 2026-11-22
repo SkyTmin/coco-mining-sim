@@ -1211,69 +1211,156 @@ function trickF2Fx(f: FxInput, frame: number) {
 function trickBF2Fx(f: FxInput, frame: number) {
   const b = beats['trick_b-f2'];
   const home = pt(f, 'floor', 0) ?? f.feet;
-  /** The shadow's position on the floor (and its size) over the clip. */
+  // The pool lies where his head meets the floor in the dive (a little in front of him); his shadow slides there
+  // from under him as it darkens and spreads.
+  const entry = pt(f, 'headFloor', b.entry + 1) ?? add(home, 14 * K, 4 * K);
+  const pool: XY = mid(home, entry, smooth(progress(frame, b.pool[0], b.pool[1])));
+  /** The shadow's position on the floor (and its size) over the clip, from the entry spot. */
   const path: [number, number, number, number][] = [
     [b.race[0], 0, 0, 1],
-    [52, -70, -4, 0.9],
-    [70, -12, -30, 0.55],
-    [88, 70, -2, 0.9],
-    [100, 14, 18, 1.2],
-    [b.burst, 0, 30, 1.5],
+    [60, -78, -6, 0.9],
+    [76, -18, -32, 0.6],
+    [92, 72, -4, 0.95],
+    [102, 18, 12, 1.2],
+    [b.burst, 4, 20, 1.5],
   ];
   const at = (g: number): [XY, number] => {
-    if (g <= path[0][0]) return [home, 1];
+    if (g <= path[0][0]) return [entry, 1];
     let i = 0;
     while (i < path.length - 2 && g > path[i + 1][0]) i++;
     const [f0, x0, y0, s0] = path[i],
       [f1, x1, y1, s1] = path[Math.min(i + 1, path.length - 1)];
     const u = smooth(Math.max(0, Math.min(1, (g - f0) / (f1 - f0))));
-    return [[home[0] + (x0 + (x1 - x0) * u) * K, home[1] + (y0 + (y1 - y0) * u) * K], s0 + (s1 - s0) * u];
+    return [[entry[0] + (x0 + (x1 - x0) * u) * K, entry[1] + (y0 + (y1 - y0) * u) * K], s0 + (s1 - s0) * u];
   };
   const shade = (q: XY, s: number, a: number) => {
     ellFill(f.under, q, 22 * K * s, 6 * K * s, C.ink, 0.85 * a);
     oval(f.under, q, 22 * K * s, 6 * K * s, C.silver, 0.7 * a);
   };
-  // The shadow darkens under him; he dives into it.
-  if (frame < b.dive) shade(home, 1, progress(frame, 0, b.look[1]));
-  if (frame >= b.dive && frame < b.race[0]) shade(home, 1, 1);
-  // The splash of darkness at the dive and at the burst; ripple rings where the shadow ran.
-  for (const [g, q] of [
-    [b.gone, home],
-    [b.burst, at(b.burst)[0]],
+  /** A pool of night on the stone: ink with a silver rim, slow rings inside, a few star glints and a crescent. */
+  const nightPool = (q: XY, rx: number, a: number) => {
+    if (a <= 0) return;
+    const ry = rx * 0.3;
+    ellFill(f.under, q, rx * 1.08, ry * 1.08, C.violet, 0.25 * a);
+    ellFill(f.under, q, rx, ry, C.ink, 0.92 * a);
+    for (let r = 0; r < 3; r++) {
+      const k = ((frame * 0.03 + r / 3) % 1) * 0.9;
+      oval(f.under, q, rx * k, ry * k, C.violet, 0.45 * a * (1 - k));
+    }
+    oval(f.under, q, rx, ry, C.silver, 0.85 * a);
+    for (let i = 0; i < 5; i++) {
+      const tw = 0.5 + 0.5 * Math.sin(frame * 0.35 + i * 1.7);
+      const g: XY = [q[0] + (hash(i, 31) - 0.5) * rx * 1.3, q[1] + (hash(i, 32) - 0.5) * ry * 1.1];
+      f.under.col(C.silver, a * tw);
+      f.under.rect(Math.round(g[0]), Math.round(g[1]), 1, 1);
+    }
+    // the moon's crescent in it, a reflection
+    oval(f.under, add(q, -rx * 0.35, -ry * 0.1), 4 * K, 1.6 * K, C.silver, 0.8 * a, Math.PI * 0.55, Math.PI * 1.45);
+  };
+  // His shadow darkens and spreads into the pool; it holds while he dives; it closes over the tail with a plop and
+  // runs off as his swimming shadow.
+  const poolR = (22 + 14 * smooth(progress(frame, b.pool[0], b.pool[1]))) * K;
+  if (frame < b.pool[0]) shade(home, 1, progress(frame, 0, b.pool[0]));
+  else if (frame < b.gone + 4) nightPool(frame < b.dive ? pool : entry, poolR * (frame > b.gone ? 1 - progress(frame, b.gone, b.gone + 4) * 0.35 : 1), 1);
+  // The entry: rings run out, a crown of black splashes stands round him at the waterline (the front half over his
+  // body, the back half behind it), black drops fly; the plop as the crescent goes under.
+  if (frame >= b.entry && frame < b.gone + 2) {
+    const k = progress(frame, b.entry, b.entry + 3) * (1 - progress(frame, b.gone - 2, b.gone + 2));
+    const cr = (9 + 2 * Math.sin(frame * 1.3)) * K;
+    for (let i = 0; i < 9; i++) {
+      const a = (i / 9) * TAU + frame * 0.05;
+      const front = Math.sin(a) > 0;
+      const base: XY = [entry[0] + Math.cos(a) * cr, entry[1] + Math.sin(a) * cr * 0.3];
+      const tall = (5 + 4 * hash(i, frame >> 1)) * K * k;
+      const pen = front ? f.above : f.under;
+      line(pen, base, add(base, Math.cos(a) * 1.5 * K, -tall), C.ink, 0.95, 2);
+      pen.col(C.silver, 0.8 * k);
+      pen.rect(Math.round(base[0] + Math.cos(a) * 1.5 * K), Math.round(base[1] - tall), 1, 1);
+    }
+    oval(f.above, entry, cr, cr * 0.3, C.silver, 0.7 * k, 0, Math.PI);
+    oval(f.under, entry, cr, cr * 0.3, C.silver, 0.5 * k, Math.PI, TAU);
+  }
+  for (const [g, q, n] of [
+    [b.entry, entry, 14],
+    [b.gone, entry, 10],
+    [b.burst, at(b.burst)[0], 12],
   ] as const) {
-    sparks(f.above, q, frame - g, 12, 10, 60, g, [C.ink, C.ink, C.silver], -Math.PI / 2, 1.1, 220, q[1]);
+    sparks(f.above, q, frame - g, 14, n, 70, g, [C.ink, C.ink, C.silver], -Math.PI / 2, 0.9, 240, q[1]);
     for (let r = 0; r < 3; r++) {
       const age = frame - g - r * 4;
-      if (age >= 0 && age < 24) oval(f.under, q, (8 + age * 1.6) * K, (8 + age * 1.6) * 0.27 * K, C.silver, 0.6 * (1 - age / 24));
+      if (age >= 0 && age < 24) oval(f.under, q, (10 + age * 1.8) * K, (10 + age * 1.8) * 0.3 * K, C.silver, 0.6 * (1 - age / 24));
     }
   }
-  /** His shadow swimming under the stone: a dragon shape turned along its run, wings beating, two white eyes. */
+  // the plop: a little column of night jumps up where the tail went in and falls back
+  {
+    const age = frame - b.gone;
+    if (age >= 0 && age < 10) {
+      const hgt = Math.sin((age / 10) * Math.PI) * 14 * K;
+      line(f.above, entry, add(entry, 0, -hgt), C.ink, 1, 3);
+      ellFill(f.above, add(entry, 0, -hgt), 2 * K, 2 * K, C.ink, 1);
+      f.above.col(C.silver, 0.9);
+      f.above.rect(Math.round(entry[0]), Math.round(entry[1] - hgt - 1), 1, 1);
+    }
+  }
+  /** His shadow swimming under the stone: a dragon shape turned along its run, wings beating, two white eyes, a
+   * silver rim and a wake of rings behind. */
   const swim = (q: XY, s: number, d: XY, a: number) => {
     const L = Math.hypot(d[0], d[1] * 3.3) || 1,
       fx = d[0] / L,
       fy = (d[1] * 3.3) / L;
-    const P = (u: number, v: number): number[] => [q[0] + (fx * u - fy * v) * s * 1.35 * K, q[1] + (fy * u + fx * v) * s * 0.4 * K];
+    const S = 1.6;
+    const P = (u: number, v: number): number[] => [q[0] + (fx * u - fy * v) * s * 1.35 * S * K, q[1] + (fy * u + fx * v) * s * 0.4 * S * K];
     const flap = Math.sin(frame * 0.9) * 0.35;
-    f.under.col(C.ink, 0.9 * a);
-    fillPoly(f.under, [...P(16, 0), ...P(7, 5), ...P(-12, 4), ...P(-34, 1), ...P(-40, -2), ...P(-12, -4), ...P(7, -5)]);
-    for (const side of [-1, 1]) fillPoly(f.under, [...P(5, 4 * side), ...P(-6, 34 * (0.8 + flap) * side), ...P(-14, 22 * (0.8 + flap) * side), ...P(-12, 5 * side)]);
-    oval(f.under, q, 24 * K * s, 7 * K * s, C.silver, 0.45 * a);
+    const body = [...P(16, 0), ...P(7, 5), ...P(-12, 4), ...P(-34, 1), ...P(-40, -2), ...P(-12, -4), ...P(7, -5)];
+    const wings = [-1, 1].map((side) => [...P(5, 4 * side), ...P(-6, 34 * (0.8 + flap) * side), ...P(-14, 22 * (0.8 + flap) * side), ...P(-12, 5 * side)]);
+    ellFill(f.under, q, 30 * K * s * S, 8 * K * s * S, C.violet, 0.22 * a);
+    f.under.col(C.ink, 0.92 * a);
+    fillPoly(f.under, body);
+    for (const w of wings) fillPoly(f.under, w);
+    oval(f.under, q, 26 * K * s * S, 7.5 * K * s * S, C.silver, 0.5 * a);
     for (const side of [-1, 1]) {
       const e = P(12, 2.2 * side);
       f.under.col(C.white, a);
-      f.under.rect(Math.round(e[0]), Math.round(e[1]), 2, 1);
+      f.under.rect(Math.round(e[0]), Math.round(e[1]), 2, 2);
     }
   };
   if (frame >= b.race[0] && frame < b.burst) {
     const [q, s] = at(frame);
     const [q0] = at(frame - 2),
       [q1] = at(frame + 2);
-    swim(q, s, [q1[0] - q0[0] || 1, q1[1] - q0[1]], 1);
-    for (const w of path.slice(1, -1)) {
-      const age = frame - w[0];
-      if (age < 0 || age > 30) continue;
-      const c: XY = [home[0] + w[1] * K, home[1] + w[2] * K];
-      for (let r = 0; r < 2; r++) oval(f.under, c, (6 + age * 1.2 + r * 5) * K * w[3], (6 + age * 1.2 + r * 5) * 0.27 * K * w[3], C.silver, 0.55 * (1 - age / 30));
+    // it surfaces out of the pool where he went in (grows in over four frames)
+    swim(q, s * (0.55 + 0.45 * progress(frame, b.race[0], b.race[0] + 4)), [q1[0] - q0[0] || 1, q1[1] - q0[1]], 1);
+    for (let k = 1; k <= 4; k++) {
+      const [w] = at(frame - k * 4);
+      const age = k * 4;
+      oval(f.under, w, (6 + age * 1.1) * K, (6 + age * 1.1) * 0.3 * K, C.silver, 0.4 * (1 - k / 5));
+    }
+  }
+  // Before he bursts out the shadow boils: the rings speed up and black spikes rise round it; then a geyser of night
+  // goes up over the frame and he is in it, huge (a dark flash hides the cut).
+  {
+    const [q] = at(b.burst);
+    const boil = progress(frame, b.burst - 6, b.burst);
+    if (frame >= b.burst - 6 && frame < b.burst) {
+      for (let r = 0; r < 4; r++) {
+        const k = ((frame * 0.25 + r / 4) % 1);
+        oval(f.under, q, (14 + 30 * k) * K, (14 + 30 * k) * 0.3 * K, C.silver, 0.7 * (1 - k) * boil);
+      }
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * TAU;
+        const base: XY = [q[0] + Math.cos(a) * 20 * K, q[1] + Math.sin(a) * 6 * K];
+        line(f.above, base, add(base, 0, -(4 + 10 * hash(i, frame)) * K * boil), C.ink, 0.9, 2);
+      }
+    }
+    const age = frame - b.burst;
+    if (age >= -1 && age < 8) {
+      wash(f.above, f, C.ink, 0.45 * (1 - Math.max(0, age) / 8));
+      for (let i = 0; i < 16; i++) {
+        const a = -Math.PI / 2 + (hash(i, 41) - 0.5) * 2.4;
+        const len = (60 + 120 * hash(i, 42)) * K * Math.min(1, (age + 2) / 4);
+        const w = 3 + Math.round(3 * hash(i, 43));
+        line(f.above, q, add(q, Math.cos(a) * len, Math.sin(a) * len), C.ink, 0.95 * (1 - Math.max(0, age) / 8), w);
+      }
     }
   }
   // Drops of darkness on the glass: they slide down slowly and fade.

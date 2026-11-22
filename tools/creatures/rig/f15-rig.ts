@@ -183,6 +183,9 @@ export class Rig {
   prims: Prim[] = [];
   /** Optional part name stamped on every primitive pushed after it is set (studio checks read it). */
   tag?: string;
+  /** Optional world height below which nothing is drawn, per pixel (a body sinking into a pool, a hole in the
+   * stone). The floor is z = 0; the cut edge gets the outline like any silhouette edge. */
+  clipZ?: number;
   // Independent of the skin binding tag: moving the head still moves its eyes.
   markEye(start: number, side: number, open: boolean) {
     const part = open ? (side < 0 ? 'eyeL' : 'eyeR') : false;
@@ -365,7 +368,10 @@ export function renderRig(
   const mats: (Mat | null)[] = [];
   let anyGlow = false;
 
+  const clipZ = rig.clipZ;
   const put = (i: number, z: number, pid: number, c: RGBA, g: number) => {
+    // the world height of this pixel's surface point from its screen row and depth (the inverse of proj)
+    if (clipZ !== undefined && -CE * ((((i / w) | 0) + 0.5) - ay) + SE * z < clipZ) return;
     zb[i] = z;
     id[i] = pid;
     const j = i * 4;

@@ -708,6 +708,8 @@ function beatSweep(v: V3, beat: number, sweep: number): V3 {
 const HOVER_BEAT = 0.75;
 /** The eclipse form's own wing spread (poses add to it). */
 const F2_OPEN = 1;
+/** Forward travel per unit of `dive` depth: his body stoops at ~60°, so it slides forward as it sinks. */
+const DIVE_FWD = 0.55;
 /** How far he turns side on in flight (rad). */
 const FLY_TURN = 0.42;
 /** `edge`: the elevation where the near wing stands edge-on, atan(0.75 / cos ψ) for the camera (tan 37° = 0.75)
@@ -1019,12 +1021,14 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       wrapK = saturate(get('wrap'));
     const rear = get('rear');
     const crouch = get('crouch') + sl * 7.4;
-    const hipZ = HIP + get('lift') - crouch + get('jump') + hover + breath * 0.25 + bob;
+    // `dive`: he goes down through the floor into his shadow pool (the rig is cut at the floor while he does)
+    const hipZ = HIP + get('lift') - crouch + get('jump') + hover + breath * 0.25 + bob - get('dive');
     // A flip turns round his middle, not round the hips (kit/pet-moves).
     const [pivotX, pivotZ] = pivotLift(get('pitch'), 0, 8);
     // BU: upright at the hips (it follows flips, rolls and spins); Pv: the body axis, level on four, raised when he
     // rears on the hind legs, level again in flight.
-    const BU = F.at(get('lean') + pivotX, get('drift'), hipZ + pivotZ)
+    // a dive goes along the body (head first, the rest through the same spot), not straight down
+    const BU = F.at(get('lean') + pivotX + get('dive') * DIVE_FWD, get('drift'), hipZ + pivotZ)
       .pitch(get('pitch'))
       .roll(get('roll') + (walking ? 0.03 * gaitW * Math.sin((lifeWalk ? t : gait) * TAU) : 0))
       .turn(get('twist'));
@@ -1045,6 +1049,10 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       wingLag = previous(3);
     const lagJump = (p: JointPose) => lag(p, 'jump') + lag(p, 'lift') - lag(p, 'crouch') + lag(p, 'hover');
     const planted: string[] = [];
+    let Hd0: F3 | null = null;
+    // diving into the shadow pool: nothing below the floor is drawn
+    const diving = get('dive') > 0.01;
+    if (diving) r.clipZ = 0;
     if (get('hidden') < 0.5) {
       const tuck = Math.max(flipTuck(get('pitch')), saturate(get('tuck')));
       // ---- hind legs: stand on the dial, hang in flight, fold under him asleep, tuck in a flip
@@ -1082,6 +1090,7 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       // asleep the head lies on the dial in front of the near wrist, turned to us, the eyes shut
       const asleepH = FT.at(18.6, 6.6, 2.5).turn(1.35).roll(-0.12).pitch(0.08);
       const Hd = (sl > 0 ? blendFrame(awake, asleepH, smooth(sl)) : awake).scale(HEAD_SCALE);
+      Hd0 = Hd;
       // ---- the one line: crescent → tail → pelvis → belly → chest → neck → skull
       const sway = 0.12 * clock.osc(0.33) + get('tailSway');
       const lagT = lag(tailLag, 'tailSway') - get('tailSway') + 0.5 * (lag(tailLag, 'twist') - get('twist')) + 0.05 * (lagJump(tailLag) - lagJump(A));
@@ -1098,7 +1107,8 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       const tailPt = (n: number, x: number, y: number, z: number, wx: number, wy: number, wz: number, rad: number): V3 => {
         const k = n / 7;
         const p = vadd(r1, TF.v(lerp(x * (1 + 0.15 * flyK), wx, sl), lerp(y, wy, sl) + wsk(k) * 7, lerp(z * (1 - 0.7 * flyK), wz, sl) + lift * k * k * 8 + curl * k * k * 6));
-        return [p[0], p[1], Math.max(p[2], rad + 0.25)];
+        // the tail lies on the stone, never in it — except when he dives through it into the shadow pool
+        return [p[0], p[1], diving ? p[2] : Math.max(p[2], rad + 0.25)];
       };
       const tailPts: V3[] = [
         tailPt(1, -3.74, 0.42, -4.2, -3.6, 1.8, -3.4, TW[2]),
@@ -1255,6 +1265,9 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
     j.body = j.body ?? F.p(3.6, 0, HIP);
     j.head = j.head ?? F.p(15, 0, HIP + 12);
     j.floor = F.p(0, 0, 0);
+    // where his head meets the floor (the dive into the shadow pool)
+    const hw = Hd0 ? Hd0.p(0, 0, 0) : F.p(0, 0, 0);
+    j.headFloor = [hw[0], hw[1], 0];
     for (const [k, v] of Object.entries(j)) j[k + 'Ground'] = [v[0], v[1], 0];
     const finishes: Parameters<typeof finishSurfaces>[2] = [
       [scale, 'skin'],

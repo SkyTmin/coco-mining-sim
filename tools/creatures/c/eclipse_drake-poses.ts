@@ -55,7 +55,7 @@ export const asleep: JointPose = { sleep: 1, blink: 1 };
 /** Keys that switch at the key instead of fading. */
 export const SWITCHES = new Set(['hidden', 'overAll', 'blink', 'noShadow', 'egg', 'mirrorsOn', 'pearlDark']);
 /** Lane keys that run linearly (positions in flight, spins). */
-export const LINEAR = new Set(['dx', 'dy', 'twist', 'pitch', 'gaitT']);
+export const LINEAR = new Set(['dx', 'dy', 'twist', 'pitch', 'gaitT', 'dive']);
 
 /** Wings thrown wide (on the ground this rears him on the hind legs). */
 // raised high: in the 3/4 ground view a level near wing lies across the picture like a stick (owner 22.11)
@@ -112,7 +112,7 @@ export const beats = {
   // floor (left, deep, right, to the viewer) leaving ripples, bursts at the bottom edge — he comes out huge over the
   // frame, darkness on the glass; breathes on the glass and draws a crescent in the fog with the claws of his near
   // wing-hand; a back somersault home, the shadow returns under him, the ripples and drops fade.
-  'trick_b-f2': { look: [0, 24], dive: 30, gone: 34, race: [36, 110], burst: 110, glass: [110, 150], breath: 126, draw: [134, 144], flip: [150, 176], home: 180, slap: 224, fade: [110, 260] },
+  'trick_b-f2': { look: [0, 22], pool: [4, 24], rise: 25, dive: 30, entry: 31, gone: 46, race: [48, 110], burst: 110, glass: [110, 150], breath: 126, draw: [134, 144], flip: [150, 176], home: 180, slap: 224, fade: [110, 260] },
   // Звездопад: stars break off the corona and drift down; he snatches them one by one with the hands at the wrists
   // (each catch stops that wing — he dips and rights himself with the other) and presses each to his chest, where they
   // fuse into a ball; he drops onto the dial on his hind legs with the ball in both hands, lifts it overhead, turns
@@ -497,14 +497,19 @@ function trickBF2Track(): { keys: Track; lanes: Record<string, Lane> } {
   const glass = (p: JointPose = {}): JointPose => f2({ overAll: 1, noShadow: 1, wingOpen: 0.45, neckUp: 1, charge: 1, ...p });
   const keys: Track = [
     [0, f2({})],
-    // Looks down at his shadow.
+    // Looks down at his shadow: it darkens and spreads into a pool of night in front of him.
     [10, f2({ nod: 0.6, lookY: -0.8, gaze: -0.1, neckReach: 1, charge: 0.7 })],
-    [24, f2({ nod: 0.65, lookY: -0.8, gaze: 0.1, neckReach: 1.5, snarl: 0.5, charge: 0.9, wingBeat: 0.6 })],
-    // Up a beat, then the stoop: the wings folded, head first.
-    [28, f2({ nod: 0.3, wingOpen: 0.4, wingBeat: 0.68, point: 1, hover: 7 })],
-    [31, f2({ pitch: 1.1, nod: 0.5, wingOpen: -0.88, wingBeat: -0.3, point: 1, tuck: 0.6, hover: 3, ...size(0.9, 1.15) })],
-    [33, f2({ pitch: 1.5, nod: 0.6, wingOpen: -1.0, point: 1, tuck: 0.8, hover: -2, ...size(0.75, 1.35) })],
-    [34, { hidden: 1, form: 1 }],
+    [22, f2({ nod: 0.65, lookY: -0.8, gaze: 0.1, neckReach: 1.5, snarl: 0.5, charge: 0.9, wingBeat: 0.6 })],
+    // Up a beat over the pool, then the stoop: the wings folded tight, head first, and down into it — the body slides
+    // in along its own line through one spot (the skin cuts him at the floor), the crescent of the tail goes in last.
+    [25, f2({ nod: 0.3, wingOpen: 0.4, wingBeat: 0.7, point: 1, hover: 8, noShadow: 1, snarl: 0.6 })],
+    [28, f2({ nod: 0.3, wingOpen: -0.9, wingBeat: -0.2, point: 1, tuck: 0.6, hover: 8, noShadow: 1, dive: 0, ...size(0.95, 1.08) })],
+    [30, f2({ nod: 0.25, wingOpen: -1.0, point: 1, tuck: 0.8, hover: 6, noShadow: 1, dive: 0, ...size(0.88, 1.18) })],
+    [34, f2({ nod: 0.25, wingOpen: -1.0, point: 1, tuck: 0.8, hover: 6, noShadow: 1, dive: 8, ...size(0.92, 1.12) })],
+    [38, f2({ nod: 0.25, wingOpen: -1.0, point: 1, tuck: 0.8, hover: 6, noShadow: 1, dive: 21 })],
+    [42, f2({ nod: 0.25, wingOpen: -1.0, point: 1, tuck: 0.8, hover: 6, noShadow: 1, dive: 41 })],
+    [46, f2({ nod: 0.25, wingOpen: -1.0, point: 1, tuck: 0.8, hover: 6, noShadow: 1, dive: 70 })],
+    [47, { hidden: 1, form: 1 }],
     [109, { hidden: 1, form: 1 }],
     // Out of the shadow at the bottom edge: huge, wings over the frame, the roar.
     [110, glass({ wingOpen: 0.5, wingBeat: 0.8, roar: 1, snarl: 1, neckUp: 2, nod: -0.2, gaze: 0.45, fistR: -0.9, fistL: -0.9, charge: 1.5, flash: 0.08 })],
@@ -537,8 +542,8 @@ function trickBF2Track(): { keys: Track; lanes: Record<string, Lane> } {
   return {
     keys,
     lanes: {
-      pitch: [[0, 0], [28, 0], [31, 1.1], [33, 1.5], [34, 0], ...flip.pitch.slice(0)],
-      dy: [[0, 0], [30, 0], [33, 12], [34, 0], [109, 0], [110, 93], [150, 93], [174, 0], [276, 0]],
+      pitch: [[0, 0], [25, 0], [28, 0.7], [30, 1.45], [46, 1.5], [47, 0], ...flip.pitch.slice(0)],
+      dy: [[0, 0], [109, 0], [110, 93], [150, 93], [174, 0], [276, 0]],
       sx: [[0, 0], [109, 0], [110, 0.62], [150, 0.62], [174, 0], [276, 0]],
       sy: [[0, 0], [109, 0], [110, 0.62], [150, 0.62], [174, 0], [276, 0]],
     },
