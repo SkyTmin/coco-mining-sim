@@ -592,17 +592,28 @@ export interface WingState {
   foot: V3;
   /** The wrist when the wing is not on the stone: pose-authored goal or the wing's own air position (world). */
   air: V3;
+  /** 0..1 upstroke: the hand flexes back at the wrist; the arm stays straight. */
+  flex: number;
+  /** Radians the fingers trail the beat (opposite to its motion): the trailing fingers billow, the lead stays. */
+  tipLag: number;
+  /** 0..1 how much this is the wing nearer the viewer (see liftBeat). */
+  near: number;
 }
 /** Bone lengths: humerus, forearm; wing fingers (lead, middle, trail); the membrane reaches the flank over the hip. */
-const HUM = 7.0,
-  FORE = 15.0,
-  FINGERS = [26, 22, 17.5];
-/** Wing finger directions when spread, in the upright frame (forward, outward, up). */
-const OPEN_DIRS: V3[] = [
-  [-0.12, 0.72, 0.68],
-  [-0.6, 0.66, 0.16],
-  [-0.88, 0.34, -0.36],
-];
+const HUM = 9.0,
+  FORE = 19.0,
+  FINGERS = [40, 35, 29];
+/** The spread wing as dragons are drawn and filmed [owner's references 22.11; drawing guides: the arm and the long wing
+ * finger make the leading edge]: the arm is a straight spar from the shoulder, the lead finger carries it on in nearly
+ * one line, the other fingers fan back from the wrist in the wing plane, the last toward the tail. Bats keep the elbow
+ * bent in flight — not a dragon (owner 22.11). Spar: (forward, outward, up), a little forward, a little dihedral. */
+const SPAR: V3 = vnorm([0.12, 0.96, 0.26]);
+/** In the wing plane, perpendicular to the spar, toward the tail and a little down. */
+const WING_BACK: V3 = vnorm(vsub([-1, 0, -0.25], vmul(SPAR, vdot([-1, 0, -0.25], SPAR))));
+/** Fingers' angles from the spar toward WING_BACK, radians; the upstroke flex added to each; the share of the tip lag. */
+const FAN = [0.1, 0.74, 1.4],
+  FLEX = [0.18, 0.3, 0.22],
+  LAG = [0.25, 0.6, 1];
 /** Mantling (braced on the wrists): the fingers rise from the planted wrist up, out and back over him. */
 const MANTLE_DIRS: V3[] = [
   [-0.1, 0.14, 0.98],
@@ -611,7 +622,8 @@ const MANTLE_DIRS: V3[] = [
 ];
 /** The wing's own wrist position relative to the shoulder (forward, outward, up): folded in front of the chest, spread. */
 const WRIST_FOLD: V3 = [3.0, 3.6, -8.0];
-const WRIST_OPEN: V3 = [-2.4, 15.0, 7.2];
+// spread, the arm is straight [owner's references 22.11: the elbow does not bend in flight]
+const WRIST_OPEN: V3 = vmul(SPAR, (HUM + FORE) * 0.998);
 /** Rotate a local (forward, outward, up) vector by the wing beat (round the forward axis) and sweep (round up). */
 function beatSweep(v: V3, beat: number, sweep: number): V3 {
   const y1 = v[1] * Math.cos(beat) - v[2] * Math.sin(beat),
@@ -620,10 +632,28 @@ function beatSweep(v: V3, beat: number, sweep: number): V3 {
     y2 = v[0] * Math.sin(sweep) + y1 * Math.cos(sweep);
   return [x2, y2, z1];
 }
+/** The beat turns the whole straight wing round the shoulder (the dihedral is in SPAR): authored ±1 is about ±46°.
+ * In this camera (from above, the dragon turned 35° to us) the near wing raised 40–55° stands edge-on: spar and trailing
+ * finger fall on one screen line and the wing reads as a stick. Painters cheat the near wing out of that band, and so
+ * do we: `near` (0..1) pushes its elevation down toward level below the band and up toward vertical above it, so it
+ * is either level-to-low or high, and only flicks through the band in a beat. */
+/** Beat amplitude of the eclipse form's hover (it flies all the time). */
+const HOVER_BEAT = 0.75;
+/** The eclipse form's own wing spread (poses add to it). */
+const F2_OPEN = 1;
+/** How far he turns side on in flight (rad). */
+const FLY_TURN = 0.42;
+/** `edge`: the elevation where the near wing stands edge-on, atan(0.75 / cos ψ) for the camera (tan 37° = 0.75)
+ * and his turn ψ from side on. */
+const liftBeat = (beat: number, u: number, near = 0, edge = 0.7) => {
+  const a = beat * 0.8 * u;
+  return a + near * u * 0.3 * Math.tanh((a + 0.26 - edge) / 0.22);
+};
+const edgeOn = (BU: F3) => Math.atan2(0.75, Math.max(0.3, Math.abs(BU.s[1])));
 /** The wing's own wrist (world) for a spread / beat / sweep, from the shoulder in the upright frame BU. */
-function wingWrist(BU: F3, shoulder: V3, s: number, open: number, beat: number, sweep: number): V3 {
+function wingWrist(BU: F3, shoulder: V3, s: number, open: number, beat: number, sweep: number, near: number): V3 {
   const u = smooth(saturate(open));
-  const v = beatSweep(vlerp(WRIST_FOLD, WRIST_OPEN, u), beat * u, sweep);
+  const v = beatSweep(vlerp(WRIST_FOLD, WRIST_OPEN, u), liftBeat(beat, u, near, edgeOn(BU)), sweep);
   return vadd(shoulder, BU.v(v[0], s * v[1], v[2]));
 }
 function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j: Record<string, V3>) {
@@ -633,16 +663,18 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
   let wrist = vlerp(st.air, st.foot, st.ground);
   const reachV = vsub(wrist, shoulder),
     reachL = vlen(reachV);
-  if (reachL > (HUM + FORE) * 0.985) wrist = vadd(shoulder, vmul(reachV, ((HUM + FORE) * 0.985) / reachL));
+  const maxReach = (HUM + FORE) * (0.985 + 0.014 * u);
+  if (reachL > maxReach) wrist = vadd(shoulder, vmul(reachV, maxReach / reachL));
   // and never nearer than the folded arm allows (the forearm is twice the humerus): a closer goal used to push the
   // forearm through the shoulder; the tightest elbow is ~26°
   const nearest = (FORE - HUM) * 1.15;
   if (reachL < nearest) wrist = vadd(shoulder, vmul(reachL > 1e-3 ? vmul(reachV, 1 / reachL) : BU.f, nearest));
-  const pole = vnorm(vlerp(vlerp(BU.v(-1.0, s * 0.35, 0.6), BU.v(-0.5, s * 0.25, 1.0), u), BU.v(-0.6, s * 1, -0.3), smooth(saturate(st.wrap))));
+  // the elbow points back: up behind the shoulder when folded, back and a little down when spread (bat, pterosaur)
+  const pole = vnorm(vlerp(vlerp(BU.v(-1.0, s * 0.35, 0.6), BU.v(-1.0, s * 0.3, -0.25), u), BU.v(-0.6, s * 1, -0.3), smooth(saturate(st.wrap))));
   const elbow = ik(shoulder, wrist, HUM, FORE, pole);
   const fd = vnorm(vsub(wrist, elbow));
-  const place = (v: V3): V3 => {
-    const w = beatSweep(v, st.beat * u, st.sweep);
+  const place = (v: V3, lagBy = 0): V3 => {
+    const w = beatSweep(v, liftBeat(st.beat + lagBy, u, st.near, edgeOn(BU)), st.sweep);
     return BU.v(w[0], s * w[1], w[2]);
   };
   // folded: the fingers lie up along the forearm and run on past the elbow, three points behind the shoulder, the
@@ -658,8 +690,12 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
   const wr = smooth(saturate(st.wrap));
   // the far wing of a mantle leans out so it stands above his back; the near one rises straight beside him
   const mOut = s > 0 ? 1 : 3.6;
-  const spread = (k: number) => vnorm(vlerp(place(OPEN_DIRS[k]), BU.v(MANTLE_DIRS[k][0], s * MANTLE_DIRS[k][1] * mOut, MANTLE_DIRS[k][2]), st.mantle));
-  const tips = FINGERS.map((len, k) => vadd(wrist, vmul(vnorm(vlerp(vlerp(FOLD[k], spread(k), u), WRAP[k], wr)), len * (0.92 + 0.08 * Math.max(u, wr) - 0.22 * wr))));
+  const fan = (k: number): V3 => {
+    const a = FAN[k] + FLEX[k] * st.flex;
+    return vadd(vmul(SPAR, Math.cos(a)), vmul(WING_BACK, Math.sin(a)));
+  };
+  const spread = (k: number) => vnorm(vlerp(place(fan(k), st.tipLag * LAG[k]), BU.v(MANTLE_DIRS[k][0], s * MANTLE_DIRS[k][1] * mOut, MANTLE_DIRS[k][2]), st.mantle));
+  const tips = FINGERS.map((len, k) => vadd(wrist, vmul(vnorm(vlerp(vlerp(FOLD[k], spread(k), u), WRAP[k], wr)), len * (0.6 + 0.4 * Math.max(u, wr) - 0.22 * wr))));
   // The main membrane runs back to the hind leg [вики: Patagium, Pterosaur — bats to the ankle, pterosaurs to the
   // hind limb], not to the flank: here to the shin just under the knee, so the leg still reads on the stone. Its root
   // runs along the flank from the shoulder over the hip to that point, and it stretches and slackens as he walks.
@@ -868,8 +904,13 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
     const lag = (p: JointPose, k: string) => p[k] ?? 0;
     const r = new Rig(),
       j: Record<string, V3> = {};
+    // In flight he turns his side to us [owner's references 22.11: dragons are seen side on in flight]: from the 3/4
+    // ground view the near wing would lie along his body on screen; side on, both wings open as broad sails. The head
+    // keeps looking at us (it turns back by the same amount).
+    const flyOpen = Math.max(get('wingOpen') + get('wingOpenL'), get('wingOpen') + get('wingOpenR')) + (get('form') > 0.5 ? F2_OPEN : 0);
+    const flyTurn = FLY_TURN * smooth(saturate(Math.max(get('hover'), get('jump') - 2) / 4)) * smooth(saturate((flyOpen - 0.3) / 0.5)) * (1 - saturate(get('sleep')));
     const F0 = F3.yaw(route.yaw + (side * Math.PI) / 8),
-      F = F0.turn(get('yaw'));
+      F = F0.turn(get('yaw') - flyTurn);
     const form = get('form'),
       sleep = get('sleep'),
       sl = saturate(sleep);
@@ -882,7 +923,8 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
     const step = (key: keyof typeof GAIT) => (walking ? strideFoot(gait, GAIT[key], route.stride) : { forward: 0, lift: 0, planted: true });
     const bob = walking ? 0.35 * Math.cos(t * TAU * 2) : 0;
     const breath = period && !walking ? 0.4 * Math.sin(q) : 0;
-    const hover = get('hover') + (eclipseK > 0.5 ? 0.7 * Math.sin(clock.turn(1)) : 0);
+    // hovering, the body rises on the downstroke and sinks on the upstroke, a little after the wings
+    const hover = get('hover') + (eclipseK > 0.5 ? -0.7 * Math.sin(clock.turn(1) - 0.6) : 0);
     const hoverK = saturate(hover / 4);
     // opening the wings on the ground means rearing up on the hind legs (the wrists leave the stone)
     const openNow = Math.max(get('wingOpen') + get('wingOpenL'), get('wingOpen') + get('wingOpenR'));
@@ -947,7 +989,7 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       const hx0 = lerp(8.8, 6.0, rearK) - coil * 4.6 + reachN,
         hz0 = lerp(13.4, 12.6, rearK) - coil * 3.4 + rise + neckLagN;
       const awake = CU.at(hx0, 0, hz0)
-        .turn(0.3 + get('gaze'))
+        .turn(0.3 + get('gaze') + flyTurn * 0.8)
         .roll(get('tilt'))
         .pitch(0.04 + get('nod') + coil * 0.35);
       // asleep the head lies on the dial in front of the near wrist, turned to us, the eyes shut
@@ -1031,20 +1073,22 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
         fold: saturate(sleep * 1.6),
       });
       // ---- wings: on the stone when he walks on four, folded in front of the chest when he rears, spread in flight
-      const openBase = get('wingOpen') + (eclipseK > 0.5 ? 0.62 : 0) * (1 - sl);
-      const beatBase = get('wingBeat') + (eclipseK > 0.5 ? 0.42 * Math.sin(clock.turn(1)) : 0.03 * clock.osc(0.33));
+      // the eclipse form flies with the wings fully spread (half-open bent the elbows — owner 22.11)
+      const openBase = get('wingOpen') + (eclipseK > 0.5 ? F2_OPEN : 0) * (1 - sl);
+      const beatBase = get('wingBeat') + (eclipseK > 0.5 ? HOVER_BEAT * Math.sin(clock.turn(1)) : 0.03 * clock.osc(0.33));
       const lagBeat = 0.5 * (lag(wingLag, 'jump') - get('jump')) * 0.05 + 0.6 * (lag(wingLag, 'twist') - get('twist'));
-      // Bats fold the wings in toward the body on the upstroke [вики: Bat — saves 35% of the energy]: a rising beat
-      // (positive = up) flexes elbow, wrist and fingers, the downstroke spreads them full.
+      // The upstroke flexes the hand back at the wrist and the arm stays straight [owner 22.11: no elbow bend in
+      // flight]; the trailing fingers lag the beat both ways, so the membrane billows behind the straight leading edge.
       const prev1 = previous(1),
         clockPrev = clipClock(clips[anim]?.seconds ?? 2, Math.max(0, t - 1 / 24));
-      const beatPrevBase = lag(prev1, 'wingBeat') + (eclipseK > 0.5 ? 0.42 * Math.sin(clockPrev.turn(1)) : 0.03 * clockPrev.osc(0.33));
+      const beatPrevBase = lag(prev1, 'wingBeat') + (eclipseK > 0.5 ? HOVER_BEAT * Math.sin(clockPrev.turn(1)) : 0.03 * clockPrev.osc(0.33));
       for (const s of [-1, 1]) {
         const k = s < 0 ? 'L' : 'R';
         const open = saturate(openBase + get('wingOpen' + k));
         const beat = beatBase + get('wingBeat' + k) + s * lagBeat * 0.3;
-        const upK = saturate((beat - (beatPrevBase + lag(prev1, 'wingBeat' + k) + s * lagBeat * 0.3)) * 3) * smooth(open);
-        const openFlex = open * (1 - 0.32 * upK);
+        const beatVel = beat - (beatPrevBase + lag(prev1, 'wingBeat' + k) + s * lagBeat * 0.3);
+        const upK = saturate(beatVel * 3) * smooth(open);
+        const openFlex = open;
         const sweep = get('wingSweep') + get('wingSweep' + k);
         const shoulder = Pv.p(9.0, s * 3.3, 3.6);
         const st = step(s < 0 ? 'foreL' : 'foreR');
@@ -1066,7 +1110,9 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
           saturate(get('vault')) * (1 - handW),
         );
         const wrapWrist = vadd(shoulder, BU.v(3.4, s * 2.6, 10.5));
-        const air = target('hand' + k, vlerp(wingWrist(BU, shoulder, s, openFlex, beat, sweep), wrapWrist, smooth(wrapK)));
+        // the wing whose side faces the viewer (0, 0.8, 0.6 — towards the camera)
+        const near = saturate((s * vdot(BU.s, [0, 0.8, 0.6]) - 0.1) / 0.4);
+        const air = target('hand' + k, vlerp(wingWrist(BU, shoulder, s, openFlex, beat, sweep, near), wrapWrist, smooth(wrapK)));
         wing(R0, BU, Pv, shoulder, s, {
           open: openFlex,
           beat,
@@ -1080,6 +1126,9 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
           mantle: brace * ground,
           foot: target('fore' + k, foot),
           air,
+          flex: upK,
+          tipLag: -Math.max(-0.22, Math.min(0.22, beatVel * 0.5)),
+          near,
         }, j);
         if (walking && st.planted && ground > 0.9) planted.push('fore' + k);
       }
