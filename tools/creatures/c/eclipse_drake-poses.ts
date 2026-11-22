@@ -102,12 +102,13 @@ export const beats = {
   // flip in a wave 60–90 (the claws clench); shock wave; flight.
   phase: { roar: [4, 20], moon: [6, 56], shadow: [20, 50], rise: [24, 50], total: 56, flip: [60, 90], wave: 92, flight: [92, 120] },
   'happy-f2': { loop: [10, 34], roar: 36 },
-  // Вихрь короны: both wing-hands up to the black sun (he sinks — wings up cannot beat), the claws catch ribbons of
-  // corona; six whips; one slow turn with the wings spread, three faster and faster as he draws the wings in like a
-  // skater (the whips a tornado, their tips lash the stone — silver arcs); a dead stop, wings and whips wrap him; the
-  // wings burst open, he lunges at the glass and roars — the corona ring hits the glass; he gives the ribbons back to
-  // the sun from open claws; the arcs cool.
-  'trick-f2': { draw: [0, 30], whips: 30, turns: [30, 140], lashes: [] as number[], stop: 140, lunge: [140, 150], ring: 146, back: [176, 200], release: 214, flare: 226, cool: [146, 270] },
+  // Вихрь короны [rewritten 22.11, owner: "he just spins?"]: a storm cloud creeps over the black sun, its corona goes out
+  // and his own light sinks; he growls, pulls six ribbons of corona out of the black sun in his chest and spins — one
+  // slow turn, three faster (the whips lash the stone: silver arcs) — the whips rise into a funnel that reaches the
+  // cloud and swirls it; at the dead stop the funnel bursts up and tears the cloud to rags, the sun's corona flares back
+  // and his light with it; the whips wrap him by inertia, the wings burst open, he lunges at the glass and roars (the
+  // corona ring hits the glass); he gives his ribbons to the sun, which blazes; the arcs cool.
+  'trick-f2': { cloud: [6, 30], dim: 24, growl: 31, pull: [34, 42], whips: 44, turns: [44, 140], funnel: [76, 112], lashes: [] as number[], stop: 140, tear: [140, 176], sunBack: 142, lunge: [140, 150], ring: 146, back: [176, 200], release: 214, flare: 226, cool: [146, 270] },
   // Лунная тень: he looks at his shadow, stoops into it head first with the wings folded, the shadow races over the
   // floor (left, deep, right, to the viewer) leaving ripples, bursts at the bottom edge — he comes out huge over the
   // frame, darkness on the glass; breathes on the glass and draws a crescent in the fog with the claws of his near
@@ -443,16 +444,21 @@ function trickF2Track(): { keys: Track; lanes: Record<string, Lane> } {
   const toSun = (p: JointPose = {}): JointPose => f2({ ...R(13, 7.5, 24), ...L(13, -7.5, 25), neckUp: 2, nod: -0.5, lookY: 0.8, gaze: 0.2, ...p });
   const keys: Track = [
     [0, f2({})],
-    // Both wing-hands up to the black sun; with the wings up he cannot beat, so he sinks a little.
-    // the hands go up round the sides, wide of the crown
-    [5, f2({ ...R(9, 11, 15), ...L(9, -11, 16), fistR: -0.5, fistL: -0.5, neckUp: 1, nod: -0.25, lookY: 0.5, hover: 4.5 })],
-    [10, toSun({ fistR: -0.7, fistL: -0.7, charge: 0.9, hover: 4 })],
-    [26, toSun({ ...R(13, 8, 24.5), ...L(13, -8, 25.5), fistR: 0.6, fistL: 0.6, neckUp: 2.2, charge: 1.2, hover: 3.2 })],
+    // A storm cloud creeps over the black sun: he looks up at it; as it covers the sun the corona goes out and his own
+    // light sinks with it (he sags a little in the air); he growls at it.
+    [10, f2({ neckUp: 1.5, nod: -0.35, lookY: 0.7, gaze: 0.2, charge: 0.6 })],
+    [20, f2({ neckUp: 2, nod: -0.45, lookY: 0.85, gaze: 0.2, wide: 0.6, charge: 0.4 })],
+    [26, f2({ neckUp: 1.8, nod: -0.4, lookY: 0.8, lid: 0.3, charge: 0.2, hover: 4.2, wingBeat: -0.2 })],
+    [31, f2({ neckUp: 1.2, nod: 0.05, gaze: 0.35, snarl: 1, roar: 0.5, charge: 0.25, crouch: 0.4 })],
+    // He pulls ribbons of corona out of the black sun in his chest: both paws to the chest, then flung wide.
+    [35, f2({ ...R(13, 3, 9), ...L(13, -3, 9.5), fistR: 0.7, fistL: 0.7, nod: 0.35, lookY: -0.3, snarl: 0.8, charge: 0.4 })],
+    [38, f2({ ...R(13, 3, 9), ...L(13, -3, 9.5), fistR: 0.9, fistL: 0.9, nod: 0.3, lookY: -0.3, snarl: 0.9, charge: 0.6, crouch: 0.3 })],
+    [42, f2({ ...R(14, 12, 11), ...L(14, -12, 11.5), fistR: 0.9, fistL: 0.9, nod: 0.05, snarl: 1, charge: 0.9, flash: 0.04 })],
     // The whips burst out; one slow turn with the wings spread.
-    [30, whirl({ flash: 0.06, roar: 0.6 })],
-    [60, whirl({ roar: 0, nod: 0.05 })],
+    [44, whirl({ flash: 0.06, roar: 0.6 })],
+    [70, whirl({ roar: 0, nod: 0.05 })],
     // Faster: the wings drawn in like a skater's arms.
-    [100, whirl({ wingOpen: -0.63, fistR: 0.9, fistL: 0.9, snarl: 0.9, charge: 1.4, nod: 0.1 })],
+    [105, whirl({ wingOpen: -0.63, fistR: 0.9, fistL: 0.9, snarl: 0.9, charge: 1.4, nod: 0.1, neckUp: 0.6, lookY: 0.3 })],
     [137, whirl({ wingOpen: -0.88, fistR: 1, fistL: 1, snarl: 1, charge: 1.5, nod: 0.12 })],
     [138, whirl({ wingOpen: -0.88, wrap: 0.45, fistR: 1, fistL: 1, snarl: 1, charge: 1.5, nod: 0.12 })],
     // The dead stop: wings and whips wrap him.
@@ -474,13 +480,13 @@ function trickF2Track(): { keys: Track; lanes: Record<string, Lane> } {
     [264, f2({ gaze: 0.05, nod: 0.05, snarl: 0.3, lid: 0.25 })],
     [288, f2({})],
   ];
-  // Six whips, the turns: one slow (30–60), then three faster and faster (60–140); the tips lash at each half turn.
-  const twist: Lane = [[0, 0], [30, 0], [60, TAU], [92, TAU * 2], [118, TAU * 3], [140, TAU * 4], [288, TAU * 4]];
+  // Six whips, the turns: one slow (44–70), then three faster and faster (70–140); the tips lash at each half turn.
+  const twist: Lane = [[0, 0], [44, 0], [70, TAU], [98, TAU * 2], [120, TAU * 3], [140, TAU * 4], [288, TAU * 4]];
   const lashes: number[] = [];
   for (let k = 1; k < twist.length - 2; k++) {
     const [f0] = twist[k],
       [f1] = twist[k + 1];
-    if (f0 >= 30) lashes.push(Math.round((f0 + f1) / 2), f1);
+    if (f0 >= 44) lashes.push(Math.round((f0 + f1) / 2), f1);
   }
   beats['trick-f2'].lashes = lashes;
   return {

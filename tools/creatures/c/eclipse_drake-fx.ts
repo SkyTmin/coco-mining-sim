@@ -1134,16 +1134,96 @@ function ribbon(p: Pen, a: XY, b: XY, wave: number, ph: number, alpha: number, w
   polyline(p, pts, C.corona, alpha * 0.9, w);
   polyline(p, pts, C.white, alpha, 1);
 }
+/** The storm cloud of «Вихрь короны»: puffs in a heap over the black sun; `swirl` turns them round its middle (the
+ * funnel has reached it), `tear` throws them out as rags that thin and go. */
+function stormCloud(f: FxInput, frame: number, c: XY, cover: number, swirl: number, tear: number) {
+  if (cover <= 0.01 || tear >= 1) return;
+  const p = f.backdrop;
+  const W = 120 * K;
+  const N = 18;
+  for (let i = 0; i < N; i++) {
+    const a0 = (i / N) * TAU + hash(i, 50) * 0.4;
+    const rr = (0.2 + 0.8 * Math.sqrt(hash(i, 51))) * W * 0.5;
+    const a = a0 + swirl * (1.2 + frame * 0.05) * (1.15 - rr / W);
+    const out = tear * (1.2 + hash(i, 52)) * W * 0.9;
+    const x = c[0] + Math.cos(a) * (rr * (1 - 0.3 * swirl) + out) + Math.sin(frame * 0.05 + i) * 1.5 * K;
+    const y = c[1] + Math.sin(a) * (rr * 0.36 * (1 - 0.3 * swirl) + out * 0.4) - tear * 16 * K * hash(i, 53);
+    const r = (11 + 9 * hash(i, 54)) * K * (1 - 0.65 * tear);
+    const al = cover * (1 - tear * tear);
+    ellFill(p, [x, y + 3 * K], r * 1.05, r * 0.7, '#0c0a16', 0.95 * al);
+    ellFill(p, [x, y], r, r * 0.66, '#262035', al);
+    ellFill(p, [x - r * 0.18, y - r * 0.26], r * 0.62, r * 0.32, '#3e3654', 0.85 * al);
+    oval(p, [x, y], r, r * 0.66, C.violet, 0.4 * al, Math.PI * 1.05, Math.PI * 1.95);
+  }
+  // Silver lightning inside while it swirls.
+  if (swirl > 0.1 && tear < 0.3)
+    for (let i = 0; i < 3; i++) {
+      if (hash(i, frame >> 1) < 0.55) continue;
+      const q: XY = [c[0] + (hash(i, frame) - 0.5) * W * 0.8, c[1] + (hash(i + 5, frame) - 0.5) * W * 0.2];
+      polyline(p, [q, add(q, 4 * K, 6 * K), add(q, 1 * K, 9 * K), add(q, 6 * K, 15 * K)], C.silver, 0.9 * swirl, 1);
+      glow(p, q, 8, 5, C.corona, 0.25 * swirl, 3);
+    }
+}
 function trickF2Fx(f: FxInput, frame: number) {
   const b = beats['trick-f2'];
   const body = pt(f, 'body'),
     floor = pt(f, 'floor', 0) ?? f.feet;
-  // Ribbons drawn down from the black sun into the claws.
-  if (frame < b.whips + 2) {
-    const k = progress(frame, 4, 26);
+  const sun: XY = [SUN.x, SUN.y];
+  // The cloud creeps in from the left over the black sun and covers it; the scene goes dull while it is there.
+  const cover = smooth(progress(frame, b.cloud[0], b.cloud[1]));
+  const swirl = smooth(progress(frame, b.funnel[1] - 8, b.stop));
+  const tear = progress(frame, b.tear[0], b.tear[1]);
+  const cc: XY = [SUN.x - 30 * K - (1 - cover) * 170 * K, SUN.y - 14 * K];
+  const dull = cover * (1 - progress(frame, b.stop, b.stop + 10));
+  if (dull > 0) wash(f.backdrop, f, '#05040c', 0.42 * dull);
+  stormCloud(f, frame, cc, Math.max(cover, 0.001), swirl, tear);
+  // The sun comes back: a flare of its corona as the rags fly.
+  if (frame >= b.sunBack && frame < b.sunBack + 16) {
+    const q = progress(frame, b.sunBack, b.sunBack + 16);
+    airRing(f.backdrop, sun, SUN.r / K + 2 + q * 34, 0.85 * (1 - q), C.white, C.corona);
+    glow(f.backdrop, sun, SUN.r / K + 16, SUN.r / K + 16, C.corona, 0.55 * (1 - q), 4);
+  }
+  // Ribbons pulled out of the black sun in his chest into both fists.
+  if (frame >= b.pull[0] && frame < b.whips + 2) {
+    const pearl = pt(f, 'pearl');
     for (const s of ['L', 'R']) {
       const h = pt(f, 'hand' + s);
-      if (h) ribbon(f.above, [SUN.x, SUN.y], mid([SUN.x, SUN.y], h, k), 5, frame * 0.4 + (s === 'L' ? 1 : 0), 0.9);
+      if (pearl && h) ribbon(f.above, pearl, h, 3 + 3 * progress(frame, b.pull[0], b.pull[1]), frame * 0.5 + (s === 'L' ? 1 : 0), 0.95);
+    }
+    const q = pearl;
+    if (q) glow(f.above, q, 6, 6, C.corona, 0.6 * progress(frame, b.pull[0], b.pull[0] + 3), 3);
+  }
+  // The funnel: the whips' wind climbs from him to the cloud, rings widening upward, spinning (front arcs over him,
+  // back arcs behind); at the dead stop it shoots up through the cloud and is gone.
+  if (body && frame >= b.funnel[0] && frame < b.stop + 6) {
+    const grow = smooth(progress(frame, b.funnel[0], b.funnel[1]));
+    const burst = progress(frame, b.stop, b.stop + 6);
+    const bottom = body[1] + 4 * K;
+    const top = bottom + (cc[1] + 10 * K - bottom) * grow - burst * 80 * K;
+    const n = 10;
+    for (let k = 0; k < n; k++) {
+      const u = k / (n - 1);
+      const y = bottom + (top - bottom) * u;
+      const x = body[0] + (cc[0] - body[0]) * u * u * grow;
+      const r = (14 + 40 * u) * K;
+      const a = (1 - burst) * (0.3 + 0.5 * u) * Math.min(1, grow * 1.5);
+      const ph = frame * (0.45 + 0.25 * u) + k * 0.9;
+      ellFill(f.backdrop, [x, y], r, r * 0.3, C.corona, 0.09 * a);
+      for (let d = 0; d < 3; d++) {
+        const s0 = (((ph + (d / 3) * TAU) % TAU) + TAU) % TAU;
+        // the arc's lower half (sin > 0 on screen) is in front of him
+        const front = Math.sin(s0 + 0.7) > 0;
+        oval(front ? f.above : f.backdrop, [x, y], r, r * 0.26, d === 0 ? C.white : C.corona, a * (front ? 0.7 : 1), s0, s0 + 1.4);
+      }
+    }
+    // dust sucked up from the floor round his feet
+    for (let i = 0; i < 10; i++) {
+      const age = (frame * 0.9 + i * 7) % 26;
+      const u = age / 26;
+      const ang = i * 2.4 + frame * 0.4;
+      const q: XY = [floor[0] + Math.cos(ang) * (36 - 20 * u) * K, floor[1] + Math.sin(ang) * 8 * K - u * 70 * K * grow];
+      (Math.sin(ang) > 0 ? f.above : f.under).col(C.silver, 0.5 * (1 - u) * grow * (1 - burst));
+      (Math.sin(ang) > 0 ? f.above : f.under).dot(Math.round(q[0]), Math.round(q[1]));
     }
   }
   // Six whips spiralling round him; the half in front is drawn over him, the half behind under him.
