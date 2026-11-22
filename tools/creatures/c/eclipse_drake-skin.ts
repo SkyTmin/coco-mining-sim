@@ -570,7 +570,71 @@ function leg(r: Rig, Pv: F3, BU: F3, s: number, hock: V3, toeDir: V3, j: Record<
   j['foot' + name] = ball;
 }
 
-// ---- wings: the fore limbs --------------------------------------------------------------------------------------
+// ---- forelegs ------------------------------------------------------------------------------------------------
+/** Six limbs [owner 22.11: «как будто на турнике висит… крылья и руки передние отдельно сделать?»]: the wings grow out
+ * of the back, the forelegs are legs of their own. He walks on four paws; reared, the paws come up to the chest; in a
+ * trick they hold, catch and reach (the hand goals). A strong upper arm out of a shoulder muscle, the elbow pointing
+ * back, a forearm with the gold bangle, a paw with three clawed fingers and a thumb claw. */
+export interface PawState {
+  /** 0 open claws, 1 a fist. */
+  fist: number;
+  /** 0..1 how much the paw stands on the stone. */
+  ground: number;
+}
+const UPPER = 7.2,
+  LOWER = 6.9;
+function foreleg(r: Rig, Pv: F3, BU: F3, s: number, paw: V3, st: PawState, j: Record<string, V3>) {
+  const name = s < 0 ? 'L' : 'R';
+  const shoulder = Pv.p(8.4, s * 3.5, -1.2);
+  // never further than the leg reaches, never closer than the folded leg allows
+  let to = paw;
+  const d = vsub(to, shoulder),
+    L = vlen(d);
+  if (L > (UPPER + LOWER) * 0.995) to = vadd(shoulder, vmul(d, ((UPPER + LOWER) * 0.995) / L));
+  if (L < 3.2) to = vadd(shoulder, vmul(L > 1e-3 ? vmul(d, 1 / L) : Pv.f, 3.2));
+  // the elbow points back and a little out, like a lizard's or a cat's
+  const elbow = ik(shoulder, to, UPPER, LOWER, vnorm(BU.v(-1, s * 0.35, 0.05)));
+  r.tag = 'shoulder' + name;
+  r.ell(axisFrame(shoulder, vsub(shoulder, elbow), BU.f), [0, s * 0.2, 0], [2.6, 2.3, 3.0], S(0.2));
+  r.tag = 'arm' + name;
+  r.cap(shoulder, elbow, 1.75, 1.35, S(0.4));
+  for (let k = 0; k < 3; k++) tubeScutes(r, vlerp(shoulder, elbow, 0.12 + k * 0.28), vlerp(shoulder, elbow, 0.28 + k * 0.28), 1.7, BU.s, 0.75, k % 2 ? SS(0.42) : S(0.42));
+  r.ell(axisFrame(elbow, vsub(to, elbow), BU.u), [0, 0, 0], [1.4, 1.4, 1.4], SS(0.5));
+  r.spike(elbow, vnorm(vadd(vsub(elbow, to), vmul(vsub(elbow, shoulder), 0.5))), 1.3, 0.38, bone, 3);
+  r.cap(elbow, to, 1.3, 1.0, S(0.55));
+  tubeScutes(r, vlerp(elbow, to, 0.15), vlerp(elbow, to, 0.4), 1.25, BU.s, 0.6, SS(0.55));
+  r.tag = 'bangle' + name;
+  const b0 = vlerp(elbow, to, 0.58),
+    b1 = vlerp(elbow, to, 0.76);
+  r.cap(b0, b1, 1.3, 1.22, gold);
+  r.cap(vlerp(b0, b1, -0.05), vlerp(b0, b1, 0.1), 1.42, 1.42, goldDeep);
+  r.cap(vlerp(b0, b1, 0.9), vlerp(b0, b1, 1.05), 1.36, 1.36, goldDeep);
+  // the paw: on the stone the fingers point forward and grip the dial; in the air they follow the forearm and curl
+  r.tag = 'paw' + name;
+  const fd = vnorm(vsub(to, elbow));
+  const handF = vnorm(vlerp(vnorm(vadd(fd, BU.v(0.5, 0, 0))), FTdir(BU, s), st.ground));
+  const Wp = frameF(to, handF, BU.u);
+  r.ell(Wp, [0.3, 0, -0.1], [1.7, 1.5, 1.1], S(0.6));
+  r.tag = 'claw' + name;
+  const fist = saturate(st.fist);
+  for (let k = 0; k < 3; k++) {
+    const y = (k - 1) * 0.85;
+    const k1 = Wp.p(1.3, y, -0.2),
+      k2 = Wp.p(2.6 - Math.abs(y) * 0.3 - fist * 1.4, y * 1.2, -0.4 - fist * 1.3 - st.ground * 0.3);
+    const kn = vlerp(k1, k2, 0.5);
+    r.cap(k1, kn, 0.55, 0.47, S(0.62));
+    r.cap(kn, k2, 0.47, 0.42, SS(0.62));
+    r.spike(k2, vnorm(vadd(vnorm(vsub(k2, k1)), vmul(Wp.u, -0.7 - fist * 0.6))), 1.25, 0.32, claw, 3);
+  }
+  // the thumb claw on the inside
+  r.spike(Wp.p(0.4, -s * 1.3, 0.1), vnorm(Wp.v(0.6, -s * 0.8, -0.3)), 1.1, 0.3, claw, 3);
+  j['shoulder' + name] = shoulder;
+  j['elbow' + name] = elbow;
+  j['hand' + name] = Wp.p(2.4, 0, -0.4);
+  j['fore' + name] = [to[0], to[1], Math.max(0, to[2] - 1.1)];
+}
+
+// ---- wings: out of the back -------------------------------------------------------------------------------------
 export interface WingState {
   /** 0 folded (umbrella), 1 spread. */
   open: number;
@@ -580,17 +644,11 @@ export interface WingState {
   glow: number;
   /** Sunlight soaked into the membranes: 0 none, 1 every band glowing (from the edge in). */
   heat: number;
-  /** Hand curl: 0 open claws, 1 a fist. */
-  fist: number;
-  /** 0..1 how much the wrist stands on the stone (walking on four). */
-  ground: number;
   /** 0..1 the wing wrapped round the body like a cloak: the wrist up by the head, the fingers down round the flank. */
   wrap: number;
-  /** 0..1 mantling: braced on the wrists, the fingers arch up and back over him like a hood. */
+  /** 0..1 mantling: the fingers arch up and back over him like a hood. */
   mantle: number;
-  /** The wrist on the stone (world). */
-  foot: V3;
-  /** The wrist when the wing is not on the stone: pose-authored goal or the wing's own air position (world). */
+  /** The wing's wrist (world): its own spread / fold / wrap position, or a pose goal. */
   air: V3;
   /** 0..1 upstroke: the hand flexes back at the wrist; the arm stays straight. */
   flex: number;
@@ -600,8 +658,8 @@ export interface WingState {
   near: number;
 }
 /** Bone lengths: humerus, forearm; wing fingers (lead, middle, trail); the membrane reaches the flank over the hip. */
-const HUM = 9.0,
-  FORE = 19.0,
+const HUM = 12.0,
+  FORE = 16.0,
   FINGERS = [40, 35, 29];
 /** The spread wing as dragons are drawn and filmed [owner's references 22.11; drawing guides: the arm and the long wing
  * finger make the leading edge]: the arm is a straight spar from the shoulder, the lead finger carries it on in nearly
@@ -620,8 +678,9 @@ const MANTLE_DIRS: V3[] = [
   [-0.55, 0.16, 0.82],
   [-0.9, 0.12, 0.42],
 ];
-/** The wing's own wrist position relative to the shoulder (forward, outward, up): folded in front of the chest, spread. */
-const WRIST_FOLD: V3 = [3.0, 3.6, -8.0];
+/** The wing's own wrist position relative to the shoulder (forward, outward, up): folded up on the back (the wrist
+ * just ahead of and above the shoulder, the elbow back over the hips, the fingers along the flank), spread. */
+const WRIST_FOLD: V3 = [3.0, 2.4, 2.2];
 // spread, the arm is straight [owner's references 22.11: the elbow does not bend in flight]
 const WRIST_OPEN: V3 = vmul(SPAR, (HUM + FORE) * 0.998);
 /** Rotate a local (forward, outward, up) vector by the wing beat (round the forward axis) and sweep (round up). */
@@ -659,8 +718,8 @@ function wingWrist(BU: F3, shoulder: V3, s: number, open: number, beat: number, 
 function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j: Record<string, V3>) {
   const name = s < 0 ? 'L' : 'R';
   const u = smooth(saturate(st.open));
-  // the wrist: on the stone, or where the wing puts it; never further than the arm reaches
-  let wrist = vlerp(st.air, st.foot, st.ground);
+  // the wrist where the wing puts it; never further than the arm reaches
+  let wrist = st.air;
   const reachV = vsub(wrist, shoulder),
     reachL = vlen(reachV);
   const maxReach = (HUM + FORE) * (0.985 + 0.014 * u);
@@ -669,22 +728,19 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
   // forearm through the shoulder; the tightest elbow is ~26°
   const nearest = (FORE - HUM) * 1.15;
   if (reachL < nearest) wrist = vadd(shoulder, vmul(reachL > 1e-3 ? vmul(reachV, 1 / reachL) : BU.f, nearest));
-  // the elbow points back: up behind the shoulder when folded, back and a little down when spread (bat, pterosaur)
-  const pole = vnorm(vlerp(vlerp(BU.v(-1.0, s * 0.35, 0.6), BU.v(-1.0, s * 0.3, -0.25), u), BU.v(-0.6, s * 1, -0.3), smooth(saturate(st.wrap))));
+  // the elbow points back: over the hips when folded, back and a little down when spread
+  const pole = vnorm(vlerp(vlerp(BU.v(-1.0, s * 0.25, 0.35), BU.v(-1.0, s * 0.3, -0.25), u), BU.v(-0.6, s * 1, -0.3), smooth(saturate(st.wrap))));
   const elbow = ik(shoulder, wrist, HUM, FORE, pole);
   const fd = vnorm(vsub(wrist, elbow));
   const place = (v: V3, lagBy = 0): V3 => {
     const w = beatSweep(v, liftBeat(st.beat + lagBy, u, st.near, edgeOn(BU)), st.sweep);
     return BU.v(w[0], s * w[1], w[2]);
   };
-  // folded: the fingers lie up along the forearm and run on past the elbow, three points behind the shoulder, the
-  // membrane furled between them like a closed umbrella; spread: out of the wrist into the wing
+  // folded: the fingers run back from the wrist along the forearm, past the elbow, down the flank toward the tail,
+  // the membrane furled between them; spread: out of the wrist into the wing
   const back = vmul(fd, -1);
-  const FOLD: V3[] = [
-    vnorm(vadd(vmul(back, 0.6), BU.v(-0.28, s * 0.1, 0.75))),
-    vnorm(vadd(vmul(back, 0.6), BU.v(-0.55, s * 0.16, 0.5))),
-    vnorm(vadd(vmul(back, 0.6), BU.v(-0.85, s * 0.22, 0.22))),
-  ];
+  void back;
+  const FOLD: V3[] = [vnorm(Pv.v(-0.96, s * 0.16, -0.08)), vnorm(Pv.v(-0.95, s * 0.2, -0.18)), vnorm(Pv.v(-0.92, s * 0.24, -0.28))];
   // wrapped: the fingers hang from the raised wrist down and forward round the flank, the membrane a cloak
   const WRAP: V3[] = [vnorm(BU.v(0.62, -s * 0.18, -0.78)), vnorm(BU.v(0.12, -s * 0.05, -1)), vnorm(BU.v(-0.42, s * 0.08, -0.9))];
   const wr = smooth(saturate(st.wrap));
@@ -695,14 +751,11 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
     return vadd(vmul(SPAR, Math.cos(a)), vmul(WING_BACK, Math.sin(a)));
   };
   const spread = (k: number) => vnorm(vlerp(place(fan(k), st.tipLag * LAG[k]), BU.v(MANTLE_DIRS[k][0], s * MANTLE_DIRS[k][1] * mOut, MANTLE_DIRS[k][2]), st.mantle));
-  const tips = FINGERS.map((len, k) => vadd(wrist, vmul(vnorm(vlerp(vlerp(FOLD[k], spread(k), u), WRAP[k], wr)), len * (0.6 + 0.4 * Math.max(u, wr) - 0.22 * wr))));
-  // The main membrane runs back to the hind leg [вики: Patagium, Pterosaur — bats to the ankle, pterosaurs to the
-  // hind limb], not to the flank: here to the shin just under the knee, so the leg still reads on the stone. Its root
-  // runs along the flank from the shoulder over the hip to that point, and it stretches and slackens as he walks.
-  const hipF = Pv.p(-1.6, s * 3.3, 1.6);
-  const kneeJ = j['knee' + name],
-    heelJ = j['heel' + name];
-  const trail = kneeJ && heelJ ? vadd(vlerp(kneeJ, heelJ, 0.3), vmul(Pv.s, s * 0.7)) : hipF;
+  // folded, the fingers lie close together and reach back to the root of the tail
+  const tips = FINGERS.map((len, k) => vadd(wrist, vmul(vnorm(vlerp(vlerp(FOLD[k], spread(k), u), WRAP[k], wr)), len * (0.52 + 0.48 * Math.max(u, wr) - 0.22 * wr))));
+  // The membrane's root runs along the back from the shoulder over the hips to the root of the tail.
+  const hipF = Pv.p(-0.8, s * 2.4, 3.4);
+  const trail = Pv.p(-5.2, s * 1.7, 2.4);
   // Membranes first (behind the bones in depth bias), scalloped between the finger tips.
   r.tag = 'membrane' + name;
   const memIn = (d: number) => M(membrane, voidwing, d),
@@ -761,28 +814,21 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
         const out = vnorm(vsub(pt, wrist));
         tongueOfFire(r, pt, out, place([0, 0, 1]), (1.4 + 0.8 * Math.sin(st.ph * 1 + q * 1.9)) * eclipseK * u, 0.4, st.ph + q, coronaMat);
       }
-  // The arm: a scaled humerus out of a shoulder muscle, the elbow knob with a spike, the forearm with a gold bangle.
-  r.tag = 'shoulder' + name;
-  r.ell(axisFrame(shoulder, vsub(shoulder, elbow), BU.f), [0, 0, 0], [2.7, 2.5, 2.9], S(0.15));
-  r.tag = 'arm' + name;
-  r.cap(shoulder, elbow, 1.8, 1.4, S(0.45));
-  for (let k = 0; k < 3; k++) tubeScutes(r, vlerp(shoulder, elbow, 0.15 + k * 0.28), vlerp(shoulder, elbow, 0.3 + k * 0.28), 1.6, BU.s, 0.7, k % 2 ? SS(0.45) : S(0.45));
-  r.ell(axisFrame(elbow, vsub(wrist, elbow), BU.u), [0, 0, 0], [1.45, 1.45, 1.45], SS(0.55));
-  r.spike(elbow, vnorm(vadd(vsub(elbow, wrist), vmul(vsub(elbow, shoulder), 0.6))), 1.8, 0.45, bone, 3);
-  r.cap(elbow, wrist, 1.4, 1.1, S(0.6));
-  for (let k = 0; k < 2; k++) tubeScutes(r, vlerp(elbow, wrist, 0.1 + k * 0.3), vlerp(elbow, wrist, 0.25 + k * 0.3), 1.25, BU.s, 0.6, k % 2 ? SS(0.6) : S(0.6));
-  r.tag = 'bangle' + name;
-  const b0 = vlerp(elbow, wrist, 0.7),
-    b1 = vlerp(elbow, wrist, 0.86);
-  r.cap(b0, b1, 1.45, 1.35, gold);
-  r.cap(vlerp(b0, b1, -0.05), vlerp(b0, b1, 0.08), 1.58, 1.58, goldDeep);
-  r.cap(vlerp(b0, b1, 0.92), vlerp(b0, b1, 1.05), 1.5, 1.5, goldDeep);
-  const outB = vnorm(vcross(vsub(b1, b0), BU.u));
-  for (let k = 0; k < 9; k++) {
-    const a = (k / 9) * Math.PI - Math.PI / 2;
-    const rim = vadd(vmul(outB, s * Math.cos(a) * 1.5), vmul(vnorm(vcross(outB, vsub(b1, b0))), Math.sin(a) * 1.45));
-    r.line(vadd(vlerp(b0, b1, 0.3), rim), vadd(vlerp(b0, b1, k % 3 ? 0.55 : 0.7), rim), goldDeep.T[0], 0, 0.5);
-  }
+  // The wing arm: a humerus out of a muscle on the back, the elbow knob with a spike, a gold ring on the forearm.
+  r.tag = 'wingShoulder' + name;
+  r.ell(axisFrame(shoulder, vsub(shoulder, elbow), BU.f), [0, 0, 0], [2.3, 2.1, 2.5], S(0.15));
+  r.tag = 'wingArm' + name;
+  r.cap(shoulder, elbow, 1.55, 1.25, S(0.45));
+  for (let k = 0; k < 3; k++) tubeScutes(r, vlerp(shoulder, elbow, 0.15 + k * 0.28), vlerp(shoulder, elbow, 0.3 + k * 0.28), 1.4, BU.s, 0.65, k % 2 ? SS(0.45) : S(0.45));
+  r.ell(axisFrame(elbow, vsub(wrist, elbow), BU.u), [0, 0, 0], [1.3, 1.3, 1.3], SS(0.55));
+  r.spike(elbow, vnorm(vadd(vsub(elbow, wrist), vmul(vsub(elbow, shoulder), 0.6))), 1.6, 0.42, bone, 3);
+  r.cap(elbow, wrist, 1.25, 1.0, S(0.6));
+  for (let k = 0; k < 2; k++) tubeScutes(r, vlerp(elbow, wrist, 0.1 + k * 0.3), vlerp(elbow, wrist, 0.25 + k * 0.3), 1.15, BU.s, 0.55, k % 2 ? SS(0.6) : S(0.6));
+  r.tag = 'wingRing' + name;
+  const b0 = vlerp(elbow, wrist, 0.8),
+    b1 = vlerp(elbow, wrist, 0.9);
+  r.cap(b0, b1, 1.22, 1.15, gold);
+  r.cap(vlerp(b0, b1, 0.9), vlerp(b0, b1, 1.1), 1.3, 1.3, goldDeep);
   // Wing fingers: ivory bones with a knuckle.
   r.tag = 'wingBone' + name;
   tips.forEach((tip, k) => {
@@ -791,31 +837,15 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
     r.ell(axisFrame(knuckle, vsub(tip, wrist), BU.u), [0, 0, 0], [0.64, 0.64, 0.52], M(boneDeep, boneDeep, 0.85));
     r.cap(knuckle, tip, 0.5, 0.18, M(bone, boneDeep, 0.9));
   });
-  // The hand at the wrist: a knuckle pad he walks on, three clawed fingers forward. On the stone the claws grip
-  // the dial; in the air they point along the forearm and curl into a fist.
-  r.tag = 'hand' + name;
-  const handF = vnorm(vlerp(vnorm(vadd(fd, BU.v(0.35, 0, 0))), FTdir(BU, s), st.ground));
-  const Wp = frameF(wrist, handF, BU.u);
-  r.ell(Wp, [0.2, 0, -0.2], [1.6, 1.45, 1.2], S(0.62));
-  r.tag = 'claw' + name;
-  const fist = saturate(st.fist);
-  for (let k = 0; k < 3; k++) {
-    const y = (k - 1) * 0.85;
-    const k1 = Wp.p(1.2, y, -0.3),
-      k2 = Wp.p(2.4 - Math.abs(y) * 0.25 - fist * 1.3, y * 1.2, -0.5 - fist * 1.2 - st.ground * 0.4);
-    const kn = vlerp(k1, k2, 0.5);
-    r.cap(k1, kn, 0.52, 0.45, S(0.66));
-    r.cap(kn, k2, 0.45, 0.4, SS(0.66));
-    const tipDir = vnorm(vadd(vnorm(vsub(k2, k1)), vmul(Wp.u, -0.7 - fist * 0.6)));
-    r.spike(k2, tipDir, 1.25, 0.3, claw, 3);
-  }
+  // The wrist: a knuckle with one hooked thumb claw forward.
+  r.tag = 'wingThumb' + name;
+  r.ell(axisFrame(wrist, fd, BU.u), [0, 0, 0], [1.05, 1.05, 1.0], S(0.62));
+  r.spike(vadd(wrist, vmul(fd, 0.6)), vnorm(vadd(fd, vmul(BU.u, 0.5))), 1.5, 0.36, claw, 3);
   j['wingRoot' + name] = shoulder;
-  j['elbow' + name] = elbow;
+  j['wingElbow' + name] = elbow;
   j['wingWrist' + name] = wrist;
   j['wingTip' + name] = tips[0];
   j['wingTrail' + name] = tips[2];
-  j['hand' + name] = Wp.p(2.4, 0, -0.4);
-  j['fore' + name] = [wrist[0], wrist[1], Math.max(0, wrist[2] - 1.4)];
 }
 /** On the stone the hand points forward and a little out. */
 const FTdir = (BU: F3, s: number): V3 => vnorm([BU.f[0] + BU.s[0] * s * 0.3, BU.f[1] + BU.s[1] * s * 0.3, -0.15]);
@@ -890,7 +920,7 @@ export const loopPeriods: Record<string, number> = { idle: 3, walk: 1, sleep: 3,
 /** Rig units → painting pixels before the depth scale of the life engine. */
 export const portraitScale = 4.6;
 /** Rest stance in the feet frame: hind hocks and the wrists on the stone (forward, outward, up). */
-export const STANCE = { hock: [-2.8, 4.3, 4.8] as V3, wrist: [13.4, 6.0, 1.8] as V3 };
+export const STANCE = { hock: [-2.8, 4.3, 4.8] as V3, wrist: [11.6, 4.6, 1.1] as V3 };
 /** Gait offsets of the four contacts (a lateral walk: left hind, left fore, right hind, right fore). */
 const GAIT = { footL: 0, foreL: 0.25, footR: 0.5, foreR: 0.75 };
 export function drakeFrame(sample: PoseSample): Creature['frame'] {
@@ -941,11 +971,10 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
     // hovering, the body rises on the downstroke and sinks on the upstroke, a little after the wings
     const hover = get('hover') + (eclipseK > 0.5 ? -0.7 * Math.sin(clock.turn(1) - 0.6) : 0);
     const hoverK = saturate(hover / 4);
-    // opening the wings on the ground means rearing up on the hind legs (the wrists leave the stone)
-    const openNow = Math.max(get('wingOpen') + get('wingOpenL'), get('wingOpen') + get('wingOpenR'));
+    // six limbs: he can open the wings standing on four; he rears only when a pose asks for it
     const brace = saturate(get('brace')),
       wrapK = saturate(get('wrap'));
-    const rear = Math.max(get('rear'), 0.8 * smooth(saturate((openNow - 0.15) / 0.6)) * (1 - saturate(get('hover') / 4)) * (1 - saturate(get('sleep'))) * (1 - brace));
+    const rear = get('rear');
     const crouch = get('crouch') + sl * 7.4;
     const hipZ = HIP + get('lift') - crouch + get('jump') + hover + breath * 0.25 + bob;
     // A flip turns round his middle, not round the hips (kit/pet-moves).
@@ -1099,54 +1128,56 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
       const prev1 = previous(1),
         clockPrev = clipClock(clips[anim]?.seconds ?? 2, Math.max(0, t - 1 / 24));
       const beatPrevBase = lag(prev1, 'wingBeat') + (eclipseK > 0.5 ? HOVER_BEAT * Math.sin(clockPrev.turn(1)) : 0.03 * clockPrev.osc(0.33));
+      const airborne = (1 - hoverK) * (1 - saturate(get('jump') / 2.5)) * (1 - tuck) * (1 - saturate(get('lift') / 4));
       for (const s of [-1, 1]) {
         const k = s < 0 ? 'L' : 'R';
         const open = saturate(openBase + get('wingOpen' + k));
         const beat = beatBase + get('wingBeat' + k) + s * lagBeat * 0.3;
         const beatVel = beat - (beatPrevBase + lag(prev1, 'wingBeat' + k) + s * lagBeat * 0.3);
         const upK = saturate(beatVel * 3) * smooth(open);
-        const openFlex = open;
         const sweep = get('wingSweep') + get('wingSweep' + k);
-        const shoulder = Pv.p(9.0, s * 3.3, 3.6);
-        const st = step(s < 0 ? 'foreL' : 'foreR');
-        const fwd = walking ? st.forward / portraitScale : 0;
-        const foot = vlerp(
-          FT.p(STANCE.wrist[0] + fwd - get('stride') * s * 0.6, s * STANCE.wrist[1], STANCE.wrist[2] + st.lift * 2.6),
-          FT.p(10.6, s * 6.4, 1.3),
-          sl,
-        );
-        // the wrist stands on the stone unless he rears, flies, jumps or opens the wing; braced, it stays planted with
-        // the wing half open like a cape; a hand goal (catch, hold, draw) lifts it in proportion to its weight
-        const airborne = (1 - hoverK) * (1 - saturate(get('jump') / 2.5)) * (1 - tuck) * (1 - saturate(get('lift') / 4));
-        const handW = Math.min(1, A['goal.hand' + k + '.weight'] ?? 0);
-        // `vault`: the quad launch of pterosaurs [вики: Pterosaur — Habib, Witton]: the hind legs throw the body
-        // forward over the planted wrists and the fore limbs give the main push, so the wrists stay on the stone while
-        // the body rises; the wings open only once they leave it.
-        const ground = Math.max(
-          Math.max(saturate(1 - 2.2 * rearK) * (1 - smooth(open)), brace) * airborne * (1 - handW) * (1 - smooth(wrapK)),
-          saturate(get('vault')) * (1 - handW),
-        );
-        const wrapWrist = vadd(shoulder, BU.v(3.4, s * 2.6, 10.5));
+        // the wing grows out of the back, over the shoulder blade
+        const shoulder = Pv.p(6.4, s * 2.3, 5.2);
+        const wrapWrist = vadd(shoulder, BU.v(6.5, s * 3.0, 4.5));
+        // mantling: the wrists up and out, the fingers arch back over him like a hood
+        const hoodWrist = vadd(shoulder, BU.v(1.5, s * 7.5, 7.5));
         // the wing whose side faces the viewer (0, 0.8, 0.6 — towards the camera)
         const near = saturate((s * vdot(BU.s, [0, 0.8, 0.6]) - 0.1) / 0.4);
-        const air = target('hand' + k, vlerp(wingWrist(BU, shoulder, s, openFlex, beat, sweep, near), wrapWrist, smooth(wrapK)));
+        const own = vlerp(vlerp(wingWrist(BU, shoulder, s, open, beat, sweep, near), hoodWrist, brace * (1 - smooth(open) * 0.5)), wrapWrist, smooth(wrapK));
         wing(R0, BU, Pv, shoulder, s, {
-          open: openFlex,
+          open,
           beat,
           sweep,
           ph: ph + s,
           glow,
           heat: get('wingHeat'),
-          fist: 0.15 + get('fist' + k),
-          ground,
-          wrap: wrapK * (1 - handW * 0.6),
-          mantle: brace * ground,
-          foot: target('fore' + k, foot),
-          air,
+          wrap: wrapK,
+          mantle: brace,
+          air: target('wing' + k, own),
           flex: upK,
           tipLag: -Math.max(-0.22, Math.min(0.22, beatVel * 0.5)),
           near,
         }, j);
+      }
+      // ---- forelegs: on the stone when he stands or walks; at the chest when he rears; tucked under him in flight;
+      // a hand goal (catch, hold, reach) lifts the paw in proportion to its weight
+      for (const s of [-1, 1]) {
+        const k = s < 0 ? 'L' : 'R';
+        const st = step(s < 0 ? 'foreL' : 'foreR');
+        const fwd = walking ? st.forward / portraitScale : 0;
+        const foot = vlerp(
+          FT.p(STANCE.wrist[0] + fwd - get('stride') * s * 0.6, s * STANCE.wrist[1], STANCE.wrist[2] + st.lift * 2.4),
+          FT.p(12.2, s * 5.2, 1.1),
+          sl,
+        );
+        const handW = Math.min(1, A['goal.hand' + k + '.weight'] ?? 0);
+        // `vault`: the hind legs throw the body forward over the planted paws, which give the last push
+        const ground = Math.max(saturate(1 - 2.2 * rearK) * airborne * (1 - handW), Math.max(saturate(get('vault')), brace) * (1 - handW));
+        // in the air: curled at the chest when he rears, tucked under him in flight
+        const atChest = Pv.p(12.6, s * 3.0, -4.2);
+        const tucked = Pv.p(11.2, s * 3.4, -6.2);
+        const air = target('hand' + k, vlerp(atChest, tucked, Math.max(hoverK, tuck, saturate(get('jump') / 3))));
+        foreleg(R0, Pv, BU, s, vlerp(air, target('fore' + k, foot), ground), { fist: 0.15 + get('fist' + k), ground }, j);
         if (walking && st.planted && ground > 0.9) planted.push('fore' + k);
       }
       // Mirrors of the observatory: they stand still in the world while he turns among them.
