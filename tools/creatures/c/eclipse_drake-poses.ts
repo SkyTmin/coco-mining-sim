@@ -78,25 +78,25 @@ export const beats = {
   // Голова сверху [owner 22.11: a short neck, slow, the head turns]: the snout slides down under the frame, he looks
   // left, right, at us with his head on one side, grins, puffs smoke, and is pulled back up.
   peek: { flap: 5, gone: 9, hang: [23, 36], blink: 64, grin: 74, puff: 82, up: [92, 96], land: 100 },
-  // Солнечный луч: he rears and throws the wings open to the sun, sunlight runs into the membranes in two gulps; he
-  // settles low on the hind legs, claws in the stone, draws the neck back, the beam strikes the stone and is led in an
-  // arc across the dial to the viewer and up into the glass; the recoil drives him back over the stone, the hind claws
-  // cutting two grooves, the wings beating against it; the beam goes out, a last shove drops him onto his
-  // wrists (dust), he shakes his head, the wings fold with a snap; he walks home on four over the groove that cools from orange to red to dark glass, snorts a
-  // ring of fire and rears into the sun pose.
-  trick: { gulps: [20, 34], open: [0, 12], sun: [12, 40], rear: [40, 56], brace: 46, drop: 134, shot: 56, sweep: [60, 108], glass: [108, 122], off: 122, scrape: [56, 134], recoil: [130, 170], snap: 160, spotCool: 160, walk: [170, 202], snort: 223, pose: [234, 248], cool: [170, 250] },
+  // Солнечный луч [rewritten 22.11, owner: "not clear"]: he rears and opens the wings to the sun, two gulps of light
+  // fill the membranes; he wraps the wings round himself and the light runs into the pearl, which blazes; down on four,
+  // a small sun in the jaws; the beam burns a sun sign into the dial in front of him — a circle, then eight rays; the
+  // sign blazes and a pillar of sunlight bursts up out of the painting, he flinches back with the claws scraping; the
+  // sign cools to dark glass while he shakes his head and watches; he walks up to it, sniffs, snorts a ring of smoke
+  // and rears into the sun pose. The sign fades at the end.
+  trick: { gulps: [20, 32], sun: [12, 40], wrap: [40, 54], flare: 52, aim: [54, 62], land: 56, shot: 62, circle: [62, 88], rays: [88, 108], off: 108, blaze: 112, pillar: [112, 132], scrape: [112, 126], shake: [128, 140], cool: [112, 200], walk: [170, 196], sniff: 204, snort: 214, pose: [226, 246], fade: [238, 256] },
   // К зениту: low on four, the tail a spring; the wrists vault him up (dust ring), the wings open at the top and beat
   // him out of the painting; far away a small dark shape crosses the sun, loops, becomes a spark; the spark grows into
   // a comet diving at the viewer, the huge wings and fire pass over the whole painting; he glides back in from the
   // upper left, lands hind feet first and slams the wrists down (shock ring, molten cracks), skids braced, rears and
   // roars at the sky under falling embers, leans at us with the wings spread and roars at the viewer, folds the wings and walks home on four.
   trick_b: { crouch: [0, 20], launch: 22, gone: 40, far: [40, 90], comet: [90, 100], pass: [100, 112], back: [112, 130], land: 130, roar: [140, 184], roarFront: 166, shake: [186, 198], walk: [206, 246], cool: [140, 262] },
-  // Зеркала зенита: a tail strike raises three crystal mirrors out of the hour marks; he braces toward the first, a
-  // beam into it, reflected behind him into the second, into the third, back into the pearl — a triangle of light; he
-  // turns slowly inside it, braced, the wings up, while the pearl charges; he rears and draws the triangle into the
-  // pearl with both hands, the claws close on the light, the mirrors crack; the solar flash flings hands and wings
-  // wide; the mirrors fall to golden dust, the marks smoulder and go out.
-  trick_c: { strike: 8, rise: [8, 24], turn: [24, 40], beam: [40, 48], hold: [48, 120], packets: [64, 82, 100], draw: [120, 128], rear: [120, 130], flash: 130, dust: [132, 200], marks: [132, 270], sniff: 185 },
+  // Зеркала зенита [rewritten 22.11]: a tail strike raises three mirrors out of the hour marks; he rears with the pearl
+  // to the sun and its light jumps pearl → A → B → C — but C is turned wrong and the beam burns the glass of the
+  // painting; he looks at us (oops), swats C round with his tail, the beam climbs to the tip of the gnomon, which
+  // ignites; the twelve hour marks light one after another round the dial; the ring closes, he roars to the sky, the
+  // mirrors sink back, the marks glow and fade.
+  trick_c: { strike: 8, rise: [8, 24], sun: 36, legs: [40, 43, 46], miss: 49, swat: 74, turn: [74, 84], apex: 84, hours: [88, 121], ring: 124, off: 134, sink: [140, 160], fade: [228, 262] },
   // Затмение: head to the sun, a roar on the hind legs; the moon slides over the sun; its shadow runs across the
   // scene, stars; he opens the wings and rises; totality at 56 (the pearl goes black, the claws spread); the scales
   // flip in a wave 60–90 (the claws clench); shock wave; flight.
@@ -128,28 +128,6 @@ export const beats = {
 };
 
 // ---- helpers -------------------------------------------------------------------------------------------------------
-/**
- * Walks on four while the whole body travels `dx` screen pixels: a lateral walk — in each step the hind foot of one
- * side lifts and sets down forward, then the wrist of the same side. The screen offset moves through the step.
- */
-function walkSteps(keys: Track, from: number, every: number, n: number, dx0: number, dx1: number, base: JointPose, dxLane: Lane) {
-  const c = base.crouch ?? 0,
-    nod = base.nod ?? 0;
-  for (let i = 0; i < n; i++) {
-    const f = from + i * every;
-    const s = i % 2 === 0 ? 1 : -1;
-    const hind = (s > 0 ? footR : footL)(HOCK[0] + 1.8, s * HOCK[1], HOCK[2] + 2.6);
-    const fore = (s > 0 ? foreR : foreL)(WRIST[0] + 2.2, s * WRIST[1], WRIST[2] + 2.8);
-    keys.push(
-      [f, { ...base, crouch: c + 0.2 }],
-      [f + every * 0.25, { ...base, ...hind, crouch: c - 0.2 }],
-      [f + every * 0.5, { ...base, crouch: c + 0.15, nod: nod + 0.04 }],
-      [f + every * 0.75, { ...base, ...fore, crouch: c - 0.1, nod: nod - 0.05 }],
-    );
-    dxLane.push([f, dx0 + ((dx1 - dx0) * i) / n], [f + every, dx0 + ((dx1 - dx0) * (i + 1)) / n]);
-  }
-  keys.push([from + n * every, base]);
-}
 /** Screen pixels one gait cycle carries him along his facing: the card's life stride 40 px over portraitScale 4.6 is
  * 8.7 rig units, drawn at 4.71 px a unit. */
 const STRIDE_PX = 41;
@@ -180,80 +158,105 @@ function shakeHead(keys: Track, from: number, to: number, step: number, amp: num
 }
 
 // ---- first form tricks ------------------------------------------------------------------------------------------
-/** Where the beam points over the clip (head aim): gaze (turn of the head) and nod at key frames. */
-export const BEAM_AIM: [number, number, number][] = [
-  // frame, gaze, nod
-  [56, -0.5, 0.5],
-  [72, -0.2, 0.62],
-  [90, 0.35, 0.66],
-  [108, 0.8, 0.58],
-  [116, 0.8, 0.3],
-  [122, 0.75, 0.25],
-];
+/** The sun sign he burns into the dial with the beam: centre and radii in screen px from the floor point at the
+ * shot (fx draws it, the head aims at it); a circle, then eight rays drawn as one zigzag. */
+export const SIGN = { cx: 86, cy: 16, rx: 36, ry: 14, rim: 1.1, tip: 1.6, rays: 8 };
+/** Where on the sign the beam is at `frame` (0..0.5 the circle, 0.5..1 the rays), null outside the burn. */
+export function signProgress(frame: number): number | null {
+  const b = beats.trick;
+  if (frame < b.shot || frame > b.off) return null;
+  if (frame <= b.circle[1]) return (0.5 * (frame - b.shot)) / (b.circle[1] - b.shot);
+  return 0.5 + (0.5 * (frame - b.rays[0])) / (b.rays[1] - b.rays[0]);
+}
+/** The point of the sign at progress `u` (screen px from the sign centre). */
+export function signPoint(u: number): [number, number] {
+  const { rx, ry, rim, tip, rays } = SIGN;
+  if (u <= 0.5) {
+    const a = Math.PI + (u / 0.5) * TAU;
+    return [rx * Math.cos(a), ry * Math.sin(a)];
+  }
+  const v = Math.min(rays - 1e-6, ((u - 0.5) / 0.5) * rays),
+    i = Math.floor(v),
+    w = v - i,
+    step = TAU / rays,
+    a0 = Math.PI + i * step;
+  const [a, r] = w < 0.5 ? [a0 + step * w, rim + (tip - rim) * (w / 0.5)] : [a0 + step * w, tip - (tip - rim) * ((w - 0.5) / 0.5)];
+  return [rx * r * Math.cos(a), ry * r * Math.sin(a)];
+}
+/** Head aim at the sign: the gaze turns towards the viewer (+) for the near and left side of the sign, away for the
+ * right and far side; the nod deepens where the sign comes nearer his chest. */
+function aimAt(u: number): JointPose {
+  const [x, y] = signPoint(u);
+  return { gaze: 0.05 - 0.4 * (x / SIGN.rx) + 0.3 * (y / SIGN.ry), nod: 0.58 - 0.14 * (x / SIGN.rx) + 0.05 * (y / SIGN.ry) };
+}
 function trickTrack(): { keys: Track; lanes: Record<string, Lane> } {
-  const sun = (p: JointPose = {}): JointPose => ({ rear: 1, ...WIDE, ...p });
+  const b = beats.trick;
+  const sun = (p: JointPose = {}): JointPose => ({ rear: 1, ...WIDE, wingBeat: 1.25, ...p });
   const keys: Track = [
     [0, {}],
-    // Turns to the sun, rears; the wings snap open with an overshoot.
-    [4, { gaze: 0.15, nod: -0.15, lookY: 0.4, wingOpen: 0.2, crouch: 0.6 }],
-    [8, { gaze: 0.2, nod: -0.25, lookY: 0.5, rear: 1, wingOpen: 1.18, wingBeat: 0.45, crouch: 0.2, neckUp: 1 }],
-    [12, sun({ gaze: 0.2, nod: -0.25, lookY: 0.5, neckUp: 1 })],
-    // Sunlight runs into the membranes in two gulps: the wings tip to the sun and flare, the chest heaves, then settle.
-    [16, sun({ gaze: 0.2, nod: -0.3, lookY: 0.5, wingBeat: 0.12, neckUp: 1.1, lid: 0.2 })],
-    [20, sun({ gaze: 0.22, nod: -0.4, lookY: 0.6, wingBeat: 0.62, lift: 0.9, neckUp: 1.8, charge: 0.6, lid: 0.3, ...size(0.98, 1.03) })],
-    [27, sun({ gaze: 0.18, nod: -0.3, lookY: 0.55, wingBeat: 0.26, lift: 0.3, neckUp: 1.3, charge: 0.7, lid: 0.3 })],
-    [30, sun({ gaze: 0.16, nod: -0.32, lookY: 0.5, wingBeat: 0.1, lift: 0, neckUp: 1.1, charge: 0.7, lid: 0.3 })],
-    [34, sun({ gaze: 0.2, nod: -0.45, lookY: 0.65, wingBeat: 0.7, lift: 1.1, neckUp: 2.0, charge: 1.0, lid: 0.4, ...size(0.97, 1.04) })],
-    [40, sun({ gaze: 0.15, nod: -0.3, lookY: 0.5, wingBeat: 0.3, neckUp: 1.2, charge: 1.1, lid: 0.35 })],
-    // Settles low on the hind legs, the claws dug in, the sun-filled wings held wide; the neck draws back into an S.
-    [44, sun({ wingBeat: 0.35, crouch: 0.8, coil: 0.3, nod: 0.05, gaze: -0.2, snarl: 0.4, charge: 1.2, fistR: 0.6, fistL: 0.6 })],
-    [46, sun({ wingBeat: 0.2, crouch: 2.4, coil: 0.5, nod: 0.12, gaze: -0.3, snarl: 0.6, charge: 1.3, flash: 0.04, fistR: 0.7, fistL: 0.7, ...size(1.04, 0.96) })],
-    [50, sun({ wingBeat: 0.3, crouch: 1.8, coil: 0.8, nod: 0.18, gaze: -0.38, snarl: 0.8, charge: 1.3, fistR: 0.7, fistL: 0.7 })],
-    [54, sun({ wingBeat: 0.4, crouch: 2, coil: 1, nod: 0.25, gaze: -0.45, snarl: 0.9, roar: 0.3, charge: 1.3, neckUp: 0.6, fistR: 0.7, fistL: 0.7 })],
-    // The shot: the head snaps forward and down, the jaws wide; the wings beat forward against the recoil.
-    [56, sun({ coil: 0, neckReach: 2.5, gaze: -0.55, nod: 0.55, fire: 1, crouch: 2.6, wingBeat: 0.05, flash: 0.14, charge: 1.3, ...size(1.03, 0.97) })],
-    [60, sun({ coil: 0.15, neckReach: 1.8, gaze: -0.5, nod: 0.58, fire: 1, crouch: 2.8, wingBeat: 0.15, lean: -0.4, charge: 1.3 })],
+    // Looks up at the sun, rears and throws the wings open to it (an overshoot), the membranes towards the light.
+    [4, { gaze: 0.15, nod: -0.25, lookY: 0.5, crouch: 0.6, neckUp: 0.6 }],
+    [8, sun({ gaze: 0.2, nod: -0.35, lookY: 0.5, wingOpen: 1.15, wingBeat: 1.45, crouch: 0.2, neckUp: 1.2 })],
+    [12, sun({ gaze: 0.2, nod: -0.3, lookY: 0.5, neckUp: 1.1, lid: 0.2 })],
+    // Two gulps of sunlight: the wings tip to the sun and flare, the chest heaves; the membranes fill band by band.
+    [17, sun({ gaze: 0.2, nod: -0.32, lookY: 0.5, wingBeat: 1.1, neckUp: 1.1, lid: 0.25 })],
+    [20, sun({ gaze: 0.22, nod: -0.45, lookY: 0.6, wingBeat: 1.45, lift: 0.9, neckUp: 1.8, charge: 0.6, lid: 0.3, ...size(0.98, 1.03) })],
+    [26, sun({ gaze: 0.18, nod: -0.32, lookY: 0.55, wingBeat: 1.15, lift: 0.2, neckUp: 1.2, charge: 0.7, lid: 0.3 })],
+    [32, sun({ gaze: 0.2, nod: -0.5, lookY: 0.65, wingBeat: 1.5, lift: 1.1, neckUp: 2.0, charge: 1.0, lid: 0.4, ...size(0.97, 1.04) })],
+    [38, sun({ gaze: 0.15, nod: -0.3, lookY: 0.5, wingBeat: 1.2, neckUp: 1.2, charge: 1.1, lid: 0.35 })],
+    // He wraps the full wings round himself: the light runs out of them into the pearl on his chest, which blazes.
+    [42, sun({ wrap: 0.6, nod: 0.15, gaze: 0, lookY: -0.4, neckUp: 0.8, charge: 1.2 })],
+    [46, sun({ wrap: 1, crouch: 0.8, nod: 0.3, lookY: -0.6, neckUp: 0.4, charge: 1.5, lid: 0.3, ...size(1.02, 0.98) })],
+    [52, sun({ wrap: 1, crouch: 1, nod: 0.25, lookY: -0.5, neckUp: 0.4, charge: 1.9, flash: 0.08, lid: 0.5 })],
+    // Down onto all four (the wrists slam, dust), the neck drawn back into an S, a small sun in the jaws.
+    [56, { crouch: 2.6, coil: 0.6, nod: 0.25, gaze: 0, snarl: 0.6, charge: 1.6, ...size(1.05, 0.95) }],
+    [60, { crouch: 2.2, coil: 1, neckUp: 0.5, nod: 0.15, snarl: 0.9, roar: 0.3, charge: 1.6 }],
+    // The shot: the head snaps forward and down at the dial.
+    [b.shot, { coil: 0, neckReach: 2.2, ...aimAt(0), fire: 1, crouch: 2.6, flash: 0.14, charge: 1.4, ...size(1.03, 0.97) }],
   ];
-  // The sweep: the head leads the beam; the recoil drives him back, the hind claws scraping (the dx lane), the wings
-  // pushing forward against it.
-  BEAM_AIM.slice(1).forEach(([f, g, n], i) =>
-    keys.push([f, sun({ coil: 0.15, neckReach: 1.8, gaze: g, nod: n, fire: 1, crouch: 2.8 + (f > 108 ? -1 : 0), wingBeat: i % 2 ? 0.08 : 0.32, lean: -0.4 - (f - 60) * 0.008, neckUp: f > 108 ? 2.5 : 0, charge: 1.3 })]),
-  );
+  // The burn: the head leads the beam round the circle, then out and in along the eight rays.
+  for (let f = b.shot + 3; f < b.off; f += 3) {
+    const u = signProgress(f) ?? 0;
+    keys.push([f, { coil: 0.1, neckReach: 1.9, ...aimAt(u), fire: 1, crouch: 2.5, charge: 1.3 }]);
+  }
   keys.push(
-    // The beam goes out; the last shove throws him back onto his wrists, the wings flare.
-    [126, sun({ coil: 0.3, gaze: 0.6, nod: 0.1, fire: 0, roar: 0.4, crouch: 1.8, lean: -1.0, neckUp: 1.5, charge: 0.7 })],
-    [134, braced({ wingOpen: 1, wingBeat: 0.4, crouch: 3.2, lean: -1.4, bodyPitch: -0.15, nod: -0.2, gaze: 0.2, roar: 0.2, charge: 0.6, fistR: 0.6, fistL: 0.6, flash: 0.03, ...size(1.04, 0.96) })],
-    [140, braced({ wingOpen: 0.85, crouch: 2.2, lean: -1.1, nod: 0.25, gaze: 0, charge: 0.5, fistR: 0.3, fistL: 0.3 })],
+    [b.off, { coil: 0.2, neckReach: 1.4, ...aimAt(1), fire: 0, roar: 0.2, crouch: 2.2, charge: 1 }],
+    // The sign blazes and a pillar of sunlight bursts up out of it: he flinches back, squinting, the claws scraping.
+    [b.blaze, { crouch: 1.6, lean: -0.6, nod: -0.25, neckUp: 1.6, gaze: 0.25, lid: 0.85, snarl: 0.5, charge: 0.8, flash: 0.1 }],
+    [118, { crouch: 2.4, lean: -0.9, nod: -0.1, neckUp: 1.2, gaze: 0.2, lid: 0.7, charge: 0.6, ...size(1.04, 0.96) }],
+    [124, { crouch: 1.4, lean: -0.6, nod: 0.15, neckUp: 0.6, gaze: 0.1, lid: 0.3, charge: 0.5 }],
   );
   // Shakes his head: sparks fly from the jaws.
-  shakeHead(keys, 144, 156, 2, 0.32, braced({ crouch: 1.6, lean: -1, nod: 0.25, snarl: 0.4, blink: 1, fistR: 0.2, fistL: 0.2 }));
+  shakeHead(keys, b.shake[0], b.shake[1], 2, 0.3, { crouch: 1, lean: -0.4, nod: 0.25, snarl: 0.3, blink: 1 });
   keys.push(
-    // The wings fold with a snap (overshoot past folded, back).
-    [158, { brace: 1, wingOpen: 0.9, crouch: 1.2, lean: -0.8, nod: 0.1 }],
-    [161, { brace: 0.3, wingOpen: -0.08, wingBeat: -0.1, crouch: 1.0, lean: -0.7, nod: 0.05 }],
-    [166, { wingOpen: 0, crouch: 0.6, lean: -0.5, gaze: -0.2, lookX: -0.5, nod: 0.3 }],
+    // watches the sign cool from white to orange to red to dark glass
+    [144, { crouch: 0.8, nod: 0.45, gaze: -0.1, lookY: -0.3, lookX: 0.2 }],
+    [158, { crouch: 0.7, nod: 0.5, gaze: -0.05, lookY: -0.4, lookX: 0.4, tailSway: 0.3 }],
+    [166, { crouch: 0.6, nod: 0.35, gaze: 0, lookY: -0.2 }],
   );
-  // He walks home on four over the cooling groove, looks along the scorched arc from end to end, snorts fire with a
-  // ring of smoke, rears into the sun pose and snaps the wings shut.
-  const dx: Lane = [[0, 0], [56, 0], [122, -34], [134, -44], [170, -44]];
-  walkSteps(keys, 170, 8, 4, -44, 0, { lean: -0.2, nod: 0.3, gaze: -0.1 }, dx);
-  dx.push([264, 0]);
+  // walks up to it with planted feet (side on), then turns back to us
+  const home = walkHome(b.walk[0], b.walk[1], -30, 0, { nod: 0.35, gaze: 0.3, lookY: -0.2 });
   keys.push(
-    [204, { gaze: -0.45, lookX: -0.8, nod: 0.38, lean: -0.1 }],
-    [208, { gaze: -0.42, lookX: -0.7, nod: 0.36 }],
-    [214, { gaze: 0.35, lookX: 0.8, nod: 0.3, tailSway: 0.3 }],
-    [218, { gaze: 0.3, lookX: 0.6, nod: 0.28 }],
-    [221, { gaze: 0.05, coil: 0.5, nod: -0.15, neckUp: 0.6, crouch: 0.6, lid: 0.3 }],
-    [223, { gaze: 0, coil: 0, neckReach: 1.2, nod: 0.15, flame: 1, snarl: 0.6, crouch: 1, ...size(1.02, 0.98) }],
-    [229, { gaze: 0.1, neckReach: 0.6, nod: 0.05, flame: 0.2, snarl: 0.4 }],
-    [234, sun({ wingOpen: 0.8, wingBeat: 0.45, lift: 0.8, neckUp: 1.6, nod: -0.25, gaze: 0.25, snarl: 0.5, charge: 0.6, ...size(0.98, 1.03) })],
-    [244, sun({ wingOpen: 0.75, wingBeat: 0.38, lift: 0.6, neckUp: 1.4, nod: -0.2, gaze: 0.3, snarl: 0.4, charge: 0.5 })],
-    [248, { rear: 0.2, wingOpen: -0.08, wingBeat: -0.12, lift: 0, crouch: 0.6, nod: 0.08, snarl: 0.2 }],
-    [254, { nod: 0.02, lid: 0.25 }],
+    ...home.keys,
+    // looks down at the sign, sniffs it, snorts a ring of smoke, proud
+    [b.sniff - 4, { nod: 0.5, neckReach: 1.2, gaze: -0.1, lookY: -0.5 }],
+    [b.sniff, { nod: 0.62, neckReach: 2, gaze: -0.05, lookY: -0.6, lid: 0.3 }],
+    [b.snort - 2, { coil: 0.4, nod: 0.2, neckReach: 0.8, gaze: 0.1 }],
+    [b.snort, { coil: 0, neckReach: 1.2, nod: 0.15, flame: 1, snarl: 0.6, crouch: 1, ...size(1.02, 0.98) }],
+    [b.snort + 6, { neckReach: 0.6, nod: 0.05, flame: 0.2, snarl: 0.4, gaze: 0.15 }],
+    // and rears into the sun pose, the wings raised behind him
+    [b.pose[0], sun({ lift: 0.8, neckUp: 1.6, nod: -0.25, gaze: 0.25, snarl: 0.5, charge: 0.6, ...size(0.98, 1.03) })],
+    [b.pose[1] - 4, sun({ wingBeat: 1.15, lift: 0.6, neckUp: 1.4, nod: -0.2, gaze: 0.3, snarl: 0.4, charge: 0.5 })],
+    [b.pose[1] + 2, { rear: 0.2, wingOpen: -0.08, lift: 0, crouch: 0.6, nod: 0.08, snarl: 0.2 }],
+    [256, { nod: 0.02, lid: 0.25 }],
     [264, {}],
   );
-  keys.sort((a, b) => a[0] - b[0]);
-  return { keys, lanes: { dx, wingHeat: [[0, 0], [12, 0], [40, 1], [60, 1], [122, 0.7], [134, 0.3], [160, 0], [264, 0]] } };
+  keys.sort((x, y) => x[0] - y[0]);
+  const dx: Lane = [[0, 0], [b.blaze, 0], [118, -24], [126, -30], ...home.dx, [264, 0]];
+  return {
+    keys,
+    lanes: { dx, gaitT: home.gaitT, wingHeat: [[0, 0], [12, 0], [38, 1], [42, 1], [54, 0], [264, 0]] },
+  };
 }
 function trickBTrack(): { keys: Track; lanes: Record<string, Lane> } {
   const fly = (p: JointPose = {}): JointPose => ({ ...WIDE, point: 1, tuck: 0.7, tailCurl: 0.3, fistR: 0.7, fistL: 0.7, ...p });
@@ -325,64 +328,81 @@ function trickBTrack(): { keys: Track; lanes: Record<string, Lane> } {
     },
   };
 }
-/** The three mirrors stand where the skin puts them: front-near, back-near, front-far. He turns to the first. */
+/** Зеркала зенита [rewritten 22.11, owner: "the logic is strange"]: a try, a miss, a fix, a success. */
 function trickCTrack(): { keys: Track; lanes: Record<string, Lane> } {
-  const hold = (p: JointPose = {}): JointPose => braced({ wingOpen: 0.6, crouch: 0.6, nod: -0.05, charge: 1.3, mirrorsOn: 1, lid: 0.3, fistR: 0.4, fistL: 0.4, ...p });
+  const b = beats.trick_c;
+  // reared, the chest (the pearl) to the sun, the wings raised and swept back out of the light
+  // turned a little towards us, so the raised wings read as a broad V; the near wing swings a little forward to show
+  // its membrane instead of its edge
+  const up = (p: JointPose = {}): JointPose => ({ rear: 1, ...WIDE, wingBeat: 1.1, wingSweep: 0.2, wingSweepR: -0.4, yaw: 0.5, neckUp: 1.2, charge: 1.1, ...p });
   const keys: Track = [
     [0, {}],
-    // The tail strike that raises the mirrors.
-    [4, { tailLift: 0.9, tailSway: -0.3, crouch: 0.8, nod: 0.1, gaze: -0.2 }],
-    [8, { tailLift: -0.35, tailSway: 0.15, crouch: 1.4, nod: 0.2, gaze: -0.3, flash: 0.04, mirrorsOn: 1 }],
-    [14, { tailLift: 0, crouch: 0.8, nod: 0.1, gaze: -0.35, lookX: -0.6, mirrorsOn: 1 }],
-    [24, { crouch: 0.5, gaze: -0.2, nod: 0, lookX: -0.3, mirrorsOn: 1 }],
-    // Turned to the first mirror; braces, a deep breath.
-    [36, { crouch: 0.8, nod: 0.15, gaze: 0, charge: 0.9, lid: 0.2, mirrorsOn: 1, coil: 0.4, brace: 0.6, wingOpen: 0.2 }],
-    [40, braced({ wingOpen: 0.4, crouch: 1.2, nod: 0.2, gaze: 0, charge: 1.1, mirrorsOn: 1, coil: 0.6, snarl: 0.4 })],
-    // The beam: short and bright, into the first mirror; the jaws close on it.
-    [42, braced({ wingOpen: 0.5, crouch: 1.6, nod: 0.25, gaze: 0, fire: 1, neckReach: 1.5, mirrorsOn: 1, flash: 0.06 })],
-    [48, braced({ wingOpen: 0.55, crouch: 1.2, nod: 0.2, gaze: 0, fire: 0, snarl: 0.5, mirrorsOn: 1, charge: 1.2 })],
-    // Inside the triangle: braced, the wings up, he turns slowly while the pearl charges.
-    [60, hold()],
-    [118, hold({ wingOpen: 0.7, crouch: 0.4, nod: -0.15, charge: 1.6, lid: 0.2, snarl: 0.4 })],
-    // Rears and draws the triangle into the pearl with both hands: the claws close on the light, the mirrors crack.
-    [124, { rear: 1, wingOpen: 0.5, lift: 1.2, neckUp: 2, nod: -0.3, ...R(14, 3.2, 9), ...L(14, -3.2, 9.5), fistR: -0.8, fistL: -0.8, charge: 1.7, mirrorsOn: 1 }],
-    [128, { rear: 1, wingOpen: 0.45, lift: 1.5, neckUp: 2.4, nod: -0.4, roar: 0.4, ...R(11.5, 2.2, 10.5), ...L(11.5, -2.2, 11), fistR: 0.9, fistL: 0.9, charge: 1.9, mirrorsOn: 1 }],
-    // The solar flash: hands and wings flung wide.
-    [130, { rear: 1, ...WIDE, wingOpen: 1.2, lift: 2, neckUp: 3, nod: -0.55, roar: 1, fistR: -0.9, fistL: -0.9, charge: 2, mirrorsOn: 1, flash: 0.2 }],
-    [132, { rear: 1, ...WIDE, wingOpen: 1.1, lift: 1.8, neckUp: 3, nod: -0.5, roar: 0.9, fistR: -0.9, fistL: -0.9, charge: 1.6, flash: 0.08 }],
-    [150, { rear: 0.8, ...WIDE, wingBeat: 0.2, lift: 0.8, neckUp: 1.5, nod: -0.2, roar: 0.2, fistR: -0.4, fistL: -0.4, charge: 1 }],
-    // Down to the nearest smouldering mark and sniffs it; the ash makes him snort.
-    [166, { brace: 1, wingOpen: 0.4, wingBeat: 0.15, neckUp: 0.8, nod: 0.05, gaze: -0.2, lookX: -0.4, charge: 0.8 }],
-    [176, { brace: 1, wingOpen: 0.3, lean: 0.9, crouch: 1.3, neckReach: 1.6, nod: 0.5, gaze: -0.35, lookX: -0.6, charge: 0.7 }],
-    [182, { brace: 1, wingOpen: 0.3, lean: 0.95, crouch: 1.2, neckReach: 1.8, nod: 0.55, gaze: -0.32, lookX: -0.5, lid: 0.4 }],
-    [185, { brace: 1, wingOpen: 0.5, wingBeat: 0.3, lean: 0.7, crouch: 0.8, neckReach: 0.6, nod: 0.1, gaze: -0.2, snarl: 0.7, blink: 1, ...size(1.02, 0.98) }],
-    [190, { brace: 1, wingOpen: 0.6, lean: 0.3, crouch: 0.5, neckUp: 0.8, nod: 0.05, gaze: 0.05, snarl: 0.3 }],
-    [196, braced({ wingBeat: 0.15, neckUp: 0.6, nod: 0.15, gaze: 0.1, charge: 0.7, fistR: 0, fistL: 0 })],
+    // The tail strike that raises the three mirrors out of the hour marks.
+    [4, { tailLift: 1.5, tailSway: -0.3, crouch: 0.8, nod: 0.1, gaze: -0.4, lookX: -0.6 }],
+    [b.strike, { tailLift: -0.9, tailSway: 0.15, crouch: 1.4, nod: 0.2, gaze: -0.3, flash: 0.04, mirrorsOn: 1 }],
+    [14, { tailLift: -0.2, crouch: 0.8, nod: 0.1, gaze: -0.35, lookX: -0.6, mirrorsOn: 1 }],
+    [20, { crouch: 0.5, gaze: 0.2, nod: 0, lookX: 0.5, mirrorsOn: 1 }],
+    // He rears with his chest to the sun: the pearl catches the light.
+    [26, { rear: 0.6, crouch: 0.4, neckUp: 0.6, nod: -0.1, gaze: 0.15, yaw: 0.3, mirrorsOn: 1 }],
+    [32, up({ nod: -0.25, gaze: 0.2, lookY: 0.4, mirrorsOn: 1 })],
+    [38, up({ nod: -0.3, gaze: 0.2, lookY: 0.5, lid: 0.3, charge: 1.4, mirrorsOn: 1 })],
+    // His eyes follow the beam: pearl → A (right, far, by the sun) → B (right, near) → C (left, by the tail).
+    [42, up({ nod: -0.2, gaze: -0.2, lookX: 0.7, lookY: 0.3, charge: 1.4, mirrorsOn: 1 })],
+    [45, up({ nod: 0.15, gaze: -0.1, lookX: 0.6, lookY: -0.4, charge: 1.4, mirrorsOn: 1 })],
+    [48, up({ nod: 0.15, gaze: 0.45, lookX: -0.8, lookY: -0.4, charge: 1.4, mirrorsOn: 1 })],
+    // C is turned wrong: the beam hits the glass of the painting. He jolts back from the flash, then slumps and
+    // looks at us — oops — then a sharp look at C, the tail winds up and swats it round.
+    [50, up({ rear: 1.15, wingBeat: 1.3, lift: 0.6, nod: -0.15, gaze: 0.5, wide: 1, charge: 1.4, mirrorsOn: 1, ...size(0.97, 1.04) })],
+    [53, up({ rear: 1.05, wingBeat: 1.15, nod: 0.05, gaze: 0.7, wide: 0.8, charge: 1.4, mirrorsOn: 1, ...size(1.02, 0.98) })],
+    [57, up({ rear: 0.85, wingBeat: 1.0, crouch: 0.6, neckUp: 0.8, nod: 0.25, gaze: 0.85, tilt: 0.3, lid: 0.25, snarl: 0.15, charge: 1.4, mirrorsOn: 1 })],
+    [62, up({ rear: 0.85, wingBeat: 1.0, crouch: 0.7, neckUp: 0.7, nod: 0.3, gaze: 0.8, tilt: 0.38, lid: 0.3, snarl: 0.2, charge: 1.4, mirrorsOn: 1 })],
+    [64, up({ nod: 0.25, gaze: 0.4, lookX: -0.9, lookY: -0.4, charge: 1.4, mirrorsOn: 1 })],
+    [69, up({ nod: 0.2, gaze: 0.45, lookX: -0.8, tailSway: -0.9, tailLift: 0.6, crouch: 0.3, charge: 1.4, mirrorsOn: 1 })],
+    [72, up({ nod: 0.2, gaze: 0.45, lookX: -0.8, tailSway: -1.0, tailLift: 0.7, crouch: 0.4, charge: 1.4, mirrorsOn: 1 })],
+    [b.swat, up({ nod: 0.15, gaze: 0.5, lookX: -0.7, tailSway: 1.0, tailLift: -0.2, flash: 0.03, charge: 1.4, mirrorsOn: 1, ...size(1.02, 0.98) })],
+    [77, up({ nod: 0.05, gaze: 0.45, lookX: -0.6, tailSway: 1.2, tailLift: 0, charge: 1.4, mirrorsOn: 1 })],
+    [80, up({ nod: -0.1, gaze: 0.4, lookX: -0.4, lookY: 0.6, neckUp: 1.4, tailSway: 0.2, charge: 1.4, mirrorsOn: 1 })],
+    // The beam climbs to the tip of the gnomon: it ignites; the hour marks light one after another round the dial.
+    [b.apex, up({ nod: -0.35, gaze: 0.5, lookX: -0.6, lookY: 0.8, neckUp: 1.6, wide: 0.5, charge: 1.5, mirrorsOn: 1 })],
+    // He follows the fire with his whole body, round the left to the front, pumping his wings as each mark catches;
+    // he crouches as the two runs near each other in front of him, then rises with the ring.
+    [92, up({ yaw: 0.7, crouch: 0.3, wingBeat: 1.2, nod: 0.1, gaze: -0.1, lookX: -0.7, lookY: -0.3, charge: 1.5, mirrorsOn: 1 })],
+    [98, up({ yaw: 0.85, rear: 0.9, wingBeat: 1.05, nod: 0.3, gaze: 0, lookX: -0.5, lookY: -0.6, charge: 1.5, mirrorsOn: 1 })],
+    [103, up({ yaw: 0.7, wingBeat: 1.28, nod: 0.25, gaze: 0.2, lookY: -0.6, charge: 1.55, mirrorsOn: 1 })],
+    [109, up({ yaw: 0.4, rear: 0.9, wingBeat: 1.05, nod: 0.3, gaze: 0.35, lookX: 0.2, lookY: -0.7, charge: 1.6, mirrorsOn: 1 })],
+    [114, up({ yaw: 0.2, wingBeat: 1.28, nod: 0.25, gaze: 0.1, lookX: 0.6, lookY: -0.6, charge: 1.6, mirrorsOn: 1 })],
+    [119, up({ yaw: 0.25, rear: 0.8, crouch: 0.7, wingBeat: 1.0, nod: 0.35, gaze: 0.1, lookX: 0.5, lookY: -0.7, charge: 1.7, mirrorsOn: 1, ...size(1.03, 0.97) })],
+    [121, up({ yaw: 0.25, rear: 0.8, crouch: 0.75, wingBeat: 1.0, nod: 0.35, gaze: 0.1, lookX: 0.5, lookY: -0.7, charge: 1.7, mirrorsOn: 1, ...size(1.04, 0.96) })],
+    // The ring closes: a roar to the sky.
+    [b.ring, up({ wingBeat: 1.3, wingSweepR: -0.15, lift: 1.5, neckUp: 2.4, nod: -0.7, gaze: -0.3, roar: 1, charge: 1.9, flash: 0.12, mirrorsOn: 1 })],
+    [140, up({ wingBeat: 1.2, wingSweepR: -0.15, lift: 1.2, neckUp: 2.1, nod: -0.55, gaze: -0.25, roar: 0.8, charge: 1.4 })],
+    // Down on four; the mirrors sink back; he looks round at the glowing marks, pleased.
+    // the wings come down open, level, before they fold
+    [149, { rear: 0.55, ...WIDE, wingBeat: 0.6, wingSweep: 0.45, yaw: 0.2, crouch: 0.4, nod: 0.05, charge: 1.1 }],
+    [153, { rear: 0.42, wingOpen: 0.42, wingBeat: 0.3, wingSweep: 0.35, yaw: 0.1, crouch: 0.5, nod: 0.08, charge: 1 }],
+    [157, { rear: 0.3, wingOpen: 0.2, crouch: 0.6, nod: 0.1, charge: 1 }],
+    [166, { nod: 0.3, gaze: -0.4, lookX: -0.6, charge: 0.8 }],
+    [180, { nod: 0.3, gaze: 0.4, lookX: 0.6, tailSway: 0.3, charge: 0.7 }],
+    [192, { nod: 0.05, snarl: 0.4, lid: 0.3, charge: 0.6 }],
+    // a pleased shake of the wings and a swish of the tail
+    [200, { nod: -0.1, snarl: 0.5, lid: 0.35, charge: 0.6, wingOpen: 0.1 }],
+    [204, { nod: -0.15, snarl: 0.5, lid: 0.3, charge: 0.7, wingOpen: 0.3, wingBeat: 0.2 }],
+    [207, { nod: -0.1, snarl: 0.45, lid: 0.3, charge: 0.6, wingOpen: 0.15, wingBeat: 0.05 }],
+    [210, { nod: -0.1, snarl: 0.4, lid: 0.3, charge: 0.6, wingOpen: 0.26, wingBeat: 0.15 }],
+    [214, { nod: 0.05, snarl: 0.3, lid: 0.25 }],
+    [224, { nod: 0.1, lid: 0.25, snarl: 0.2, tailSway: -0.45, tailLift: 0.3 }],
+    [234, { nod: 0.08, lid: 0.2, snarl: 0.15, tailSway: 0.25, tailLift: 0 }],
+    [250, { nod: 0.05, lid: 0.2 }],
+    [276, {}],
   ];
-  // Three packets of light run round the triangle; each arrival in the pearl jolts him up off his wrists.
-  beats.trick_c.packets.forEach((p, i) => {
-    const w = 0.6 + i * 0.04,
-      ch = 1.37 + i * 0.1;
-    keys.push(
-      [p + 7, hold({ wingOpen: w, crouch: 1.05, nod: -0.07, charge: ch })],
-      [p + 10, hold({ wingOpen: w + 0.3, wingBeat: 0.45, crouch: 0, lift: 0.9, bodyPitch: -0.12, nod: -0.22 - i * 0.04, snarl: 0.8, charge: ch + 0.3, flash: 0.04, ...size(0.98, 1.03) })],
-      [p + 16, hold({ wingOpen: w, crouch: 0.55 - i * 0.05, nod: -0.07, charge: ch, lid: 0.25, snarl: 0.3 })],
-    );
-  });
-  // Shakes the golden dust off: the raised wings shiver, then fold.
-  for (let f = 200, i = 0; f <= 216; f += 2, i++) keys.push([f, { brace: 1, wingOpen: 0.8, wingBeat: (i % 2 ? 0.35 : -0.05) * (1 - (f - 200) / 20), tilt: (i % 2 ? 0.12 : -0.12) * (1 - (f - 200) / 20), blink: 1 }]);
-  keys.push([222, { brace: 0.2, wingOpen: 0.1, nod: 0.25, gaze: -0.2, lookX: -0.5 }], [236, { nod: 0.3, gaze: 0.25, lookX: 0.5 }], [250, { nod: 0.05, lid: 0.25, snarl: 0.2 }], [276, {}]);
-  keys.sort((a, b) => a[0] - b[0]);
   return {
     keys,
     lanes: {
-      mirrors: [[0, 0], [8, 0], [24, 1], [132, 1], [133, 0], [276, 0]],
-      mirrorCrack: [[0, 0], [120, 0], [130, 0.7], [276, 0.7]],
-      mirrorLit0: [[0, 0], [41, 0], [42, 1], [130, 1], [132, 0]],
-      mirrorLit1: [[0, 0], [43, 0], [44, 1], [130, 1], [132, 0]],
-      mirrorLit2: [[0, 0], [45, 0], [46, 1], [130, 1], [132, 0]],
-      // Turn toward the first mirror (front-left), then slowly round inside the triangle and back to rest.
-      twist: [[0, 0], [24, 0], [36, 0.45], [60, 0.45], [118, -0.55], [128, -0.2], [150, 0], [276, 0]],
+      mirrors: [[0, 0], [b.rise[0], 0], [b.rise[1], 1], [b.sink[0], 1], [b.sink[1], 0], [276, 0]],
+      mirrorLit0: [[0, 0], [b.legs[0] - 1, 0], [b.legs[0], 1], [b.off, 1], [b.off + 2, 0]],
+      mirrorLit1: [[0, 0], [b.legs[1] - 1, 0], [b.legs[1], 1], [b.off, 1], [b.off + 2, 0]],
+      mirrorLit2: [[0, 0], [b.legs[2] - 1, 0], [b.legs[2], 1], [b.off, 1], [b.off + 2, 0]],
+      mirrorTurn2: [[0, 0], [b.turn[0], 0], [b.turn[1], 1], [276, 1]],
     },
   };
 }

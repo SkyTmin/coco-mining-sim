@@ -12,10 +12,10 @@ import { takeoffFrame } from '../kit/pet-moves';
 import { ellFill, oval, progress } from '../fx/field';
 import { fillPoly, star, type Pen } from '../fx/pen';
 import type { FxInput, XY } from '../types';
-import { BEAM_AIM, beats, gesture } from './eclipse_drake-poses';
-import { HORIZON, SUN } from '../scenes/sun_observatory';
+import { beats, gesture, SIGN, signPoint, signProgress } from './eclipse_drake-poses';
+import { DIAL, GNOMON, HORIZON, SUN } from '../scenes/sun_observatory';
+import { MIRROR_POP } from './eclipse_drake-skin';
 
-void BEAM_AIM;
 const C = {
   white: '#ffffff',
   hot: '#fff4c8',
@@ -479,20 +479,15 @@ function peekFx(f: FxInput, frame: number) {
 }
 
 // ---- first form tricks ----------------------------------------------------------------------------------------
-/** The beam's end over the sweep: an arc across the dial in front of him (far side → ahead → near side), then up to
- * the glass in front of the painting, low and to his front. */
-const GLASS_SPOT: XY = [40 * K, 14 * K];
-function beamTarget(feet: XY, frame: number): { at: XY; glass: number } {
-  const u = smooth(progress(frame, 56, 108));
-  const a = -1.25 + 3.5 * u;
-  const onStone: XY = [feet[0] + (26 + 64 * Math.cos(a)) * K, feet[1] + (4 + 22 * Math.sin(a)) * K];
-  if (frame <= 108) return { at: onStone, glass: 0 };
-  const g = progress(frame, 108, 116);
-  return { at: [onStone[0] + (feet[0] + GLASS_SPOT[0] - onStone[0]) * g, onStone[1] + (feet[1] + GLASS_SPOT[1] - onStone[1]) * g], glass: g };
+/** The sun sign's point at progress u, in the painting (its centre fixed where he stood at the shot). */
+function signAt(feet: XY, u: number): XY {
+  const [x, y] = signPoint(u);
+  return [feet[0] + SIGN.cx + x, feet[1] + SIGN.cy + y];
 }
 function trickFx(f: FxInput, frame: number) {
   const b = beats.trick;
-  const feet = pt(f, 'floor', 0) ?? f.feet;
+  const feet = pt(f, 'floor', b.shot) ?? f.feet;
+  const centre: XY = [feet[0] + SIGN.cx, feet[1] + SIGN.cy];
   // Sunlight gathered: soft shafts from the sun into the wings, brightest on each gulp; motes flow along them.
   if (frame >= b.sun[0] && frame < b.sun[1] + 4) {
     const fade = Math.min(progress(frame, b.sun[0], b.sun[0] + 6), 1 - progress(frame, b.sun[1] - 2, b.sun[1] + 4));
@@ -531,31 +526,91 @@ function trickFx(f: FxInput, frame: number) {
       f.above.rect(Math.round(q[0]), Math.round(q[1]), 3, 3);
     }
   }
-  // The ball of light at the jaws.
+  // The wrap: the light runs out of the folded wings into the pearl along the membranes (motes converge on it); the
+  // pearl swells and flares.
+  const pearl = pt(f, 'pearl');
+  if (pearl && frame >= b.wrap[0] && frame < b.aim[1]) {
+    for (let i = 0; i < 18; i++) {
+      const start = b.wrap[0] + i * 0.6,
+        u = (frame - start) / 8;
+      if (u < 0 || u > 1) continue;
+      const from = pt(f, ['wingTipL', 'wingTipR', 'wingTrailL', 'wingTrailR', 'wingWristL', 'wingWristR'][i % 6]);
+      if (!from) continue;
+      const q: XY = [from[0] + (pearl[0] - from[0]) * u * u, from[1] + (pearl[1] - from[1]) * u * u];
+      f.above.col(u > 0.6 ? C.hot : C.gold, 0.9);
+      f.above.rect(Math.round(q[0]), Math.round(q[1]), 3, 3);
+    }
+    const k = progress(frame, b.wrap[0], b.flare),
+      out = 1 - progress(frame, b.flare + 2, b.aim[1]);
+    glow(f.above, pearl, 8 + 14 * k, 8 + 14 * k, C.gold, (0.3 + 0.5 * k) * out, 4);
+    if (frame >= b.flare && frame < b.flare + 4) wash(f.above, f, C.hot, 0.16 * (1 - progress(frame, b.flare, b.flare + 4)));
+  }
+  // Down on four: dust at both wrists.
+  for (const s of ['L', 'R']) {
+    const w = pt(f, 'fore' + s + 'Ground', b.land);
+    if (w) dust(f.under, w, frame - b.land, 10, 4, 10, s === 'L' ? 21 : 22);
+  }
+  // The small sun gathering in the jaws.
   const mouth = pt(f, 'mouth');
-  if (mouth && frame >= b.rear[0] && frame < b.shot) {
-    const k = progress(frame, b.rear[0], b.shot);
+  if (mouth && frame >= b.aim[0] && frame < b.shot) {
+    const k = progress(frame, b.aim[0], b.shot);
     glow(f.above, mouth, 4 + 6 * k, 4 + 6 * k, C.gold, 0.4 + 0.4 * k, 4);
     ellFill(f.above, mouth, (1 + 2.5 * k) * K, (1 + 2.5 * k) * K, C.hot, 0.9);
   }
-  // The furrow: every frame of the sweep leaves molten stone that cools to dark glass, gone by the end.
-  const fade = 1 - progress(frame, 236, 252);
-  if (frame > b.sweep[0]) {
+  // The sign: every step of the burn leaves molten stone; at the blaze it all goes white again, then cools to dark
+  // glass with glints, and fades at the end of the clip.
+  const fade = 1 - progress(frame, b.fade[0], b.fade[1]);
+  const burnt = signProgress(Math.min(frame, b.off));
+  if (frame >= b.shot && burnt !== null && fade > 0) {
     const pts: { q: XY; born: number }[] = [];
-    for (let g = b.sweep[0]; g <= Math.min(frame, b.sweep[1]); g += 2) pts.push({ q: beamTarget(feet, g).at, born: g });
+    for (let g = b.shot; g <= Math.min(frame, b.off); g += 0.5) {
+      const u = signProgress(g);
+      if (u !== null) pts.push({ q: signAt(feet, u), born: g });
+    }
+    const blaze = frame >= b.blaze ? 1 - progress(frame, b.blaze, b.cool[1]) : 0;
     for (let i = 1; i < pts.length; i++) {
-      const age = frame - pts[i].born;
-      const heat = Math.max(0, 1 - age / 90);
+      const own = Math.max(0, 1 - (frame - pts[i].born) / 40);
+      const heat = Math.max(own, blaze);
       line(f.under, pts[i - 1].q, pts[i].q, C.ink, 0.7 * fade, 4);
-      line(f.under, pts[i - 1].q, pts[i].q, moltenColor(heat), (0.4 + heat) * fade, heat > 0.2 ? 2 : 1);
-      if (heat < 0.2 && i % 3 === 0) {
+      line(f.under, pts[i - 1].q, pts[i].q, moltenColor(heat), (0.45 + heat) * fade, heat > 0.2 ? 2 : 1);
+      if (heat < 0.2 && i % 5 === 0) {
         f.under.col(C.glassLit, 0.8 * fade * (0.5 + 0.5 * Math.sin(frame * 0.3 + i)));
         f.under.rect(Math.round(pts[i].q[0]), Math.round(pts[i].q[1]) - 1, 1, 1);
       }
-      if (heat > 0.4 && i % 4 === 0) glow(f.under, pts[i].q, 5, 2.5, C.orange, 0.25 * heat * fade, 3);
+      if (heat > 0.4 && i % 6 === 0) glow(f.under, pts[i].q, 5, 2.5, C.orange, 0.25 * heat * fade, 3);
     }
+    if (blaze > 0.3) glow(f.under, centre, SIGN.rx / K + 10, SIGN.ry / K + 6, C.gold, 0.3 * blaze * fade, 4);
   }
-  // Claw grooves where the recoil drove his hind feet back over the stone: hot scratches that darken.
+  // The beam itself, with molten splashes at the contact.
+  if (mouth && frame >= b.shot && frame < b.off + 3) {
+    const at = signAt(feet, signProgress(Math.min(frame, b.off)) ?? 1);
+    const a = frame < b.off ? 1 : 1 - progress(frame, b.off, b.off + 3);
+    if (frame < b.shot + 3) wash(f.above, f, C.hot, 0.18 * (1 - progress(frame, b.shot, b.shot + 3)));
+    glow(f.above, mid(mouth, at), Math.abs(at[0] - mouth[0]) * 0.5 / K + 6, Math.abs(at[1] - mouth[1]) * 0.5 / K + 6, C.gold, 0.12 * a, 3);
+    beam(f.above, mouth, at, 5, a, frame);
+    glow(f.above, mouth, 7, 7, C.hot, 0.6 * a, 4);
+    glow(f.above, at, 14, 6, C.orange, 0.55 * a, 4);
+    ellFill(f.above, at, 4 * K, 2 * K, C.hot, a);
+    sparks(f.above, at, frame % 6, 6, 9, 46, Math.floor(frame / 6), [C.hot, C.gold, C.orange, C.red], -Math.PI / 2, 1.3, 200, at[1] + 2);
+  }
+  // The blaze: a flash, a ring of light running out along the dial, and a pillar of sunlight up out of the painting.
+  if (frame >= b.pillar[0] && frame < b.pillar[1]) {
+    const k = progress(frame, b.pillar[0], b.pillar[1]);
+    if (frame < b.blaze + 3) wash(f.above, f, C.white, 0.35 * (1 - progress(frame, b.blaze, b.blaze + 3)));
+    shock(f.under, centre, (SIGN.rx / K) * (1 + 1.6 * k), 0.7 * (1 - k), C.gold, SIGN.ry / SIGN.rx);
+    const w = SIGN.rx * 1.3 * (1 - 0.7 * k) * (frame < b.blaze + 2 ? progress(frame, b.blaze - 1, b.blaze + 2) : 1);
+    const top = -10;
+    for (const [ww, c, al] of [
+      [w + 4 * K, C.orange, 0.35],
+      [w, C.gold, 0.6],
+      [w * 0.45, C.white, 0.9],
+    ] as const) {
+      f.above.col(c, al * (1 - k * k));
+      fillPoly(f.above, [centre[0] - ww / 2, centre[1], centre[0] + ww / 2, centre[1], centre[0] + ww * 0.35, top, centre[0] - ww * 0.35, top]);
+    }
+    sparks(f.above, centre, frame - b.blaze, 16, 14, 70, 31, [C.hot, C.gold, C.orange], -Math.PI / 2, 0.5, 40);
+  }
+  // Claw grooves where the flinch drove his hind feet back over the stone: hot scratches that darken.
   if (frame > b.scrape[0] + 2) {
     const heat = 1 - progress(frame, b.scrape[1], b.scrape[1] + 40);
     for (const s of ['L', 'R']) {
@@ -569,43 +624,8 @@ function trickFx(f: FxInput, frame: number) {
       if (a && c && frame < b.scrape[1] && frame % 3 === 0) sparks(f.above, c, 1, 4, 3, 26, frame + (s === 'L' ? 0 : 50), [C.hot, C.gold, C.orange], -Math.PI / 2 + 0.6, 0.6, 160, c[1]);
     }
   }
-  // The last shove drops him onto his wrists: dust at both.
-  for (const s of ['L', 'R']) {
-    const w = pt(f, 'fore' + s + 'Ground', b.drop);
-    if (w) dust(f.under, w, frame - b.drop, 10, 4, 10, s === 'L' ? 21 : 22);
-  }
-  // The beam itself, with molten splashes at the contact.
-  if (mouth && frame >= b.shot && frame < b.off + 3) {
-    const { at, glass } = beamTarget(feet, frame);
-    const a = frame < b.off ? 1 : 1 - progress(frame, b.off, b.off + 3);
-    if (frame < b.shot + 3) wash(f.above, f, C.hot, 0.18 * (1 - progress(frame, b.shot, b.shot + 3)));
-    glow(f.above, mid(mouth, at), Math.abs(at[0] - mouth[0]) * 0.5 / K + 6, Math.abs(at[1] - mouth[1]) * 0.5 / K + 6, C.gold, 0.12 * a, 3);
-    beam(f.above, mouth, at, 5 + glass * 9, a, frame);
-    glow(f.above, mouth, 7, 7, C.hot, 0.6 * a, 4);
-    if (glass < 0.05) {
-      glow(f.above, at, 14, 6, C.orange, 0.55 * a, 4);
-      ellFill(f.above, at, 4 * K, 2 * K, C.hot, a);
-      sparks(f.above, at, frame % 6, 6, 9, 46, Math.floor(frame / 6), [C.hot, C.gold, C.orange, C.red], -Math.PI / 2, 1.3, 200, at[1] + 2);
-    }
-  }
-  // The burn on the glass (over everything in the painting), cooling.
-  if (frame >= b.glass[0] + 6) {
-    const g: XY = [feet[0] + GLASS_SPOT[0], feet[1] + GLASS_SPOT[1]];
-    const grow = progress(frame, b.glass[0] + 6, b.off);
-    const heat = 1 - progress(frame, b.off, b.spotCool);
-    const out = 1 - progress(frame, b.spotCool, b.spotCool + 20);
-    if (out > 0) {
-      ellFill(f.above, g, (4 + 8 * grow) * K, (4 + 8 * grow) * K, heat > 0.5 ? C.hot : heat > 0.2 ? C.orange : C.red, 0.85 * out);
-      oval(f.above, g, (6 + 9 * grow) * K, (6 + 9 * grow) * K, C.red, 0.7 * out);
-      glow(f.above, g, 22 * grow, 22 * grow, C.gold, 0.4 * heat * out, 4);
-      for (let i = 0; i < 6; i++) {
-        const a = (i / 6) * TAU + 0.4;
-        line(f.above, add(g, Math.cos(a) * 8 * K * grow, Math.sin(a) * 8 * K * grow), add(g, Math.cos(a) * (14 + 6 * hash(i, 2)) * K * grow, Math.sin(a) * (14 + 6 * hash(i, 2)) * K * grow), heat > 0.3 ? C.gold : C.red, 0.7 * out, 2);
-      }
-    }
-  }
-  // The head shake: sparks from the jaws. The breath of smoke at the end.
-  if (mouth && frame >= 144 && frame <= 158 && frame % 2 === 0) sparks(f.above, mouth, 1, 3, 4, 40, frame, [C.hot, C.gold, C.orange], frame % 4 ? -0.4 : -2.7, 0.8);
+  // The head shake: sparks from the jaws.
+  if (mouth && frame >= b.shake[0] && frame <= b.shake[1] && frame % 2 === 0) sparks(f.above, mouth, 1, 3, 4, 40, frame, [C.hot, C.gold, C.orange], frame % 4 ? -0.4 : -2.7, 0.8);
   // The snort: a short tongue of fire from the nostrils, a ring of smoke rising, embers falling on the dial.
   const nose = pt(f, 'nose', b.snort);
   if (nose) {
@@ -761,138 +781,273 @@ function trickBFx(f: FxInput, frame: number) {
   // Dust at the steps home: each hind foot, then the wrist of the same side.
   stepDust(f, frame, b.walk[0], 10, 4, 20);
 }
+/** Where the stray beam meets the glass of the painting (left, over the sky beside the gnomon). */
+const GLASS_HIT: XY = [34, 146];
+/** Angle of hour glyph `i` on the dial ellipse (0 = far centre, clockwise seen from above). */
+const hourAngle = (i: number) => -Math.PI / 2 + (i / 12) * TAU;
+const onDial = (a: number, k = 0.86): XY => [DIAL.cx + Math.cos(a) * DIAL.rx * k, DIAL.cy + Math.sin(a) * DIAL.ry * k];
+/** The fire runs round the dial both ways from the glyph at the gnomon's foot and meets in front. */
+const RING_FROM = 10,
+  RING_TO = 4;
+/** The frame each hour glyph catches fire. */
+function hourLit(i: number, b: { hours: number[] }): number {
+  const steps = (((i - RING_FROM) % 12) + 12) % 12; // clockwise steps from the start
+  const k = Math.min(steps, 12 - steps); // the nearer of the two runs
+  return b.hours[0] + ((b.hours[1] - b.hours[0]) * k) / 6;
+}
+/** Thin cracks in the glass of the painting, round a hit (not squashed: the glass faces us). */
+function glassCracks(p: Pen, at: XY, n: number, len: number, seed: number, a: number) {
+  if (a <= 0.02) return;
+  for (let i = 0; i < n; i++) {
+    const ang = (i / n) * TAU + (hash(i, seed) - 0.5) * 0.7,
+      L = len * K * (0.5 + 0.7 * hash(i, seed, 2));
+    const pts: XY[] = [at];
+    for (let k = 1; k <= 3; k++) {
+      const o = (hash(i, seed, k + 4) - 0.5) * 2.4 * K;
+      pts.push([at[0] + Math.cos(ang) * L * (k / 3) - Math.sin(ang) * o, at[1] + Math.sin(ang) * L * (k / 3) + Math.cos(ang) * o]);
+    }
+    polyline(p, pts, '#e8ecff', 0.55 * a);
+    if (hash(i, seed, 9) > 0.5) {
+      // a branch
+      const m = pts[2],
+        b2 = ang + (hash(i, seed, 10) > 0.5 ? 0.7 : -0.7);
+      line(p, m, [m[0] + Math.cos(b2) * L * 0.35, m[1] + Math.sin(b2) * L * 0.35], '#c8ccf0', 0.45 * a);
+    }
+  }
+}
 function trickCFx(f: FxInput, frame: number) {
   const b = beats.trick_c;
-  const tip = pt(f, 'crescentGround', b.strike);
+  // 1. The tail strike: sparks and a ring where the crescent hits the dial.
+  // the tail lags its key by two frames: the crescent meets the stone at strike + 2
+  const hit = b.strike + 2;
+  const tip = pt(f, 'crescentGround', hit);
   if (tip) {
-    sparks(f.above, tip, frame - b.strike, 8, 7, 34, 3, [C.hot, C.gold, C.orange], -Math.PI / 2, 1.3, 160, tip[1]);
-    shock(f.under, tip, 3 + (frame - b.strike) * 1.6, frame >= b.strike ? 0.6 * (1 - progress(frame, b.strike, b.strike + 8)) : 0);
+    sparks(f.above, tip, frame - hit, 8, 9, 38, 3, [C.hot, C.gold, C.orange], -Math.PI / 2, 1.3, 160, tip[1]);
+    shock(f.under, tip, 3 + (frame - hit) * 1.6, frame >= hit ? 0.6 * (1 - progress(frame, hit, hit + 8)) : 0);
+    if (frame >= hit && frame < hit + 3) glow(f.above, tip, 10, 6, C.hot, 0.7, 3);
   }
-  const bases = [0, 1, 2].map((k) => pt(f, 'mirror' + k + 'Ground', 30));
+  // 2. The three mirrors grow out of the stone: a gold ring opens on the dial, chips and dust fly; they sink back at
+  // the end the same way, shedding golden dust.
+  const bases = [0, 1, 2].map((k) => pt(f, 'mirror' + k + 'Ground', 40));
   const mirrors = [0, 1, 2].map((k) => pt(f, 'mirror' + k));
-  // The hour marks the mirrors rise from: chips fly at the rise, the marks smoulder after the flash and go out.
+  // A mirror pops in (and out) at a quarter of its rise: a flash of gold at the moment, then the lens.
+  const upAt = (fr: number) => gesture(f.anim, Math.max(0, fr) / 24).mirrors ?? 0;
+  let popAge = -1;
+  for (let back = 0; back < 6 && popAge < 0; back++) {
+    const a = upAt(frame - back - 1) - MIRROR_POP,
+      z = upAt(frame - back) - MIRROR_POP;
+    if (a * z <= 0 && a !== z) popAge = back;
+  }
+  if (popAge >= 0)
+    bases.forEach((bp, k) => {
+      if (!bp) return;
+      const c = add(bp, 0, -26 * K);
+      glow(f.above, c, 14, 16, C.hot, 0.85 * (1 - popAge / 6), 4);
+      starSpark(f.above, c, 9 * (1 - popAge / 6) + 2, 1 - popAge / 6, C.hot);
+      sparks(f.above, c, popAge, 6, 6, 30, 90 + k, [C.white, C.hot, C.gold], -Math.PI / 2, 2, 120);
+    });
   bases.forEach((bp, k) => {
     if (!bp) return;
-    if (frame >= b.rise[0] && frame < b.rise[1] + 8) {
-      dust(f.under, bp, frame - b.rise[0], 18, 4, 10, 30 + k);
-      sparks(f.above, bp, frame - b.rise[0], 10, 5, 30, 40 + k, ['#a08490', C.dust, C.dustL], -Math.PI / 2, 1.2, 180, bp[1]);
-    }
-    const on = progress(frame, b.rise[0], b.rise[1]) * (1 - progress(frame, b.flash, b.flash + 2) * 0.2);
-    const smoulder = frame >= b.flash ? 1 - progress(frame, b.flash, b.marks[1]) : 0;
-    if (on > 0 && frame < b.flash) oval(f.under, bp, 9 * K, 3 * K, C.gold, 0.7 * on);
-    if (smoulder > 0) {
-      oval(f.under, bp, 9 * K, 3 * K, smoulder > 0.5 ? C.orange : C.red, 0.85 * smoulder);
-      if ((frame + k * 5) % 10 < 4) puff(f.above, bp, (frame + k * 5) % 20, 20, k, 1, 10);
-    }
+    dust(f.under, bp, frame - b.rise[0] - k * 2, 18, 4, 10, 30 + k);
+    sparks(f.above, bp, frame - b.rise[0] - k * 2, 10, 5, 30, 40 + k, ['#a08490', C.dust, C.dustL], -Math.PI / 2, 1.2, 180, bp[1]);
+    dust(f.under, bp, frame - b.sink[0] - k * 2, 18, 4, 10, 60 + k);
+    const open = progress(frame, b.rise[0], b.rise[0] + 6) * (1 - progress(frame, b.sink[1] - 4, b.sink[1] + 4));
+    if (open > 0) oval(f.under, bp, 7 * K * open, 2.4 * K * open, C.gold, 0.7);
+    const m = pt(f, 'mirror' + k, b.sink[0]);
+    if (m && frame >= b.sink[0]) motes(f.above, m, frame - b.sink[0] - k * 2, 40, 18, 10, 70 + k, goldDust, 40, bp[1]);
   });
-  // The beam into the first mirror, then the triangle; the back leg runs behind him.
-  const mouth = pt(f, 'mouth'),
-    pearl = pt(f, 'pearl');
-  const legs: [number, number, number][] = [
-    // from, to, appear frame
-    [0, 1, 44],
-    [1, 2, 46],
-    [2, 3, 48],
-  ];
-  if (frame >= b.beam[0] && frame < b.flash && mirrors[0]) {
-    if (mouth && frame < b.beam[1]) beam(f.above, mouth, mirrors[0], 2, 1, frame);
-    const shrink = progress(frame, b.rear[0], b.flash);
-    const pulse = 0.75 + 0.25 * Math.sin(frame * (0.3 + progress(frame, b.hold[0], b.hold[1]) * 1.2));
-    for (const [a, c, appear] of legs) {
-      if (frame < appear) continue;
-      const A = a === 3 ? pearl : mirrors[a],
-        Cq = c === 3 ? pearl : mirrors[c];
-      if (!A || !Cq || !pearl) continue;
-      const A2 = mid(A, pearl, shrink),
-        C2 = mid(Cq, pearl, shrink);
-      const w = 2 + progress(frame, b.hold[0], b.hold[1]) * 1.5;
-      // 0 → 1 runs along the near side in front of him; 1 → 2 crosses to the far mirror: near half in front, far
-      // half behind; 2 → pearl comes from behind him into his chest
-      if (a === 0) beam(f.above, A2, C2, w, pulse, frame + a);
-      else if (a === 1) {
-        beam(f.above, A2, mid(A2, C2), w, pulse, frame + a);
-        beam(f.under, mid(A2, C2), C2, w, pulse, frame + a + 5);
-      } else {
-        beam(f.under, A2, mid(A2, C2, 0.6), w, pulse, frame + a);
-        beam(f.above, mid(A2, C2, 0.6), C2, w, pulse, frame + a + 5);
-      }
-      if (frame < appear + 3) glow(f.above, A2, 16, 16, C.hot, 0.6, 4);
-      // light motes running along the triangle into the pearl
-      for (let i = 0; i < 3; i++) {
-        const u = ((frame * 0.05 + i / 3 + a * 0.2) % 1) as number;
-        const q = mid(A2, C2, u);
-        f.above.col(C.white, 0.9);
+  // 3. Sunlight into the pearl: a soft shaft from the low sun, motes along it; the pearl swells.
+  const pearl = pt(f, 'pearl');
+  if (pearl && frame >= 24 && frame < b.off + 3) {
+    const k = progress(frame, 24, b.sun),
+      out = 1 - progress(frame, b.off, b.off + 3);
+    const dx = pearl[0] - SUN.x,
+      dy = pearl[1] - SUN.y,
+      L = Math.hypot(dx, dy) || 1;
+    const nx = -dy / L,
+      ny = dx / L,
+      w0 = SUN.r * 0.6,
+      w1 = 4 * K;
+    for (const [s, c, al] of [
+      [1, C.orange, 0.1],
+      [0.55, C.gold, 0.16],
+      [0.2, C.hot, 0.26],
+    ] as const) {
+      f.under.col(c, al * k * out);
+      fillPoly(f.under, [SUN.x + nx * w0 * s, SUN.y + ny * w0 * s, pearl[0] + nx * w1 * s, pearl[1] + ny * w1 * s, pearl[0] - nx * w1 * s, pearl[1] - ny * w1 * s, SUN.x - nx * w0 * s, SUN.y - ny * w0 * s]);
+    }
+    if (frame < b.legs[0] + 4)
+      for (let i = 0; i < 12; i++) {
+        const u = (frame - 24 - i * 1.2) / 10;
+        if (u < 0 || u > 1) continue;
+        const q = mid([SUN.x, SUN.y], pearl, u);
+        f.above.col(u > 0.7 ? C.hot : C.gold, 0.9);
         f.above.rect(Math.round(q[0]), Math.round(q[1]), 2, 2);
       }
-    }
-    mirrors.forEach((m) => m && frame >= 44 && glow(f.above, m, 18, 21, C.gold, 0.3 * pulse, 3));
-    // a packet of light runs 0 → 1 → 2 → pearl in 10 frames; each mirror flares as it passes, the pearl rings on arrival
-    for (const start of b.packets) {
-      const t = (frame - start) / 10;
-      if (t < 0 || t > 1.4 || !pearl) continue;
-      const route = [mirrors[0], mirrors[1], mirrors[2], pearl];
-      if (t <= 1) {
-        const seg = Math.min(2, Math.floor(t * 3)),
-          u = t * 3 - seg;
-        const A = route[seg],
-          Z = route[seg + 1];
-        if (A && Z) {
-          const q = mid(A, Z, u);
-          glow(f.above, q, 9, 9, C.hot, 0.7, 4);
-          ellFill(f.above, q, 2.5 * K, 2.5 * K, C.white, 1);
-          const behind = mid(A, Z, Math.max(0, u - 0.25));
-          line(f.above, behind, q, C.white, 0.9, 2);
-          glow(f.above, A, 20, 23, C.hot, 0.5 * (1 - u), 4);
+    glow(f.above, pearl, 6 + 8 * k, 6 + 8 * k, C.gold, (0.25 + 0.45 * k) * out, 4);
+    ellFill(f.above, pearl, (1 + 1.5 * k) * K, (1 + 1.5 * k) * K, C.hot, 0.9 * k * out);
+  }
+  // 4. The beam jumps pearl → A → B → C.
+  const glass = GLASS_HIT;
+  const apex: XY = [GNOMON.apex[0], GNOMON.apex[1]];
+  const turnU = smooth(progress(frame, b.turn[0], b.turn[1]));
+  const on = frame >= b.legs[0] && frame < b.off + 3 ? 1 - progress(frame, b.off, b.off + 3) : 0;
+  const pulse = 0.8 + 0.2 * Math.sin(frame * 0.9);
+  if (on > 0 && pearl && mirrors.every(Boolean)) {
+    const [A, B, Cm] = mirrors as XY[];
+    const reach = (start: number) => Math.min(1, Math.max(0, (frame - start) / 2));
+    // `behind`: the stretch of the leg (0 at its start … 1 at its end) that runs behind him
+    const leg = (from: XY, to: XY, start: number, behind: [number, number], seed: number) => {
+      const r = reach(start);
+      if (r <= 0) return;
+      const part = (u0: number, u1: number, p: Pen) => {
+        const a = Math.min(u0, r),
+          z = Math.min(u1, r);
+        if (z > a) beam(p, mid(from, to, a), mid(from, to, z), 1.4, on * pulse, seed + u0 * 7);
+      };
+      part(0, behind[0], f.above);
+      part(behind[0], behind[1], f.under);
+      part(behind[1], 1, f.above);
+      if (frame - start < 4 && r >= 1) glow(f.above, to, 12, 12, C.hot, 0.7 * (1 - (frame - start - 2) / 2), 4);
+    };
+    // pearl → the far mirror by the sun (behind his head) → the near one below it → across in front of his paws to C
+    leg(pearl, A, b.legs[0], [0.15, 1], 1);
+    leg(A, B, b.legs[1], [0, 0.5], 2);
+    leg(B, Cm, b.legs[2], [0, 0], 3);
+    // C → the glass of the painting (it widens as it comes at us), then, after the swat, round to the gnomon's tip.
+    if (frame >= b.miss - 1) {
+      const target = mid(glass, apex, turnU);
+      const r = reach(b.miss - 1);
+      const end = mid(Cm, target, r);
+      if (turnU < 0.35) {
+        const L = Math.hypot(end[0] - Cm[0], end[1] - Cm[1]) || 1;
+        const dir: XY = [(end[0] - Cm[0]) / L, (end[1] - Cm[1]) / L];
+        const nx = -dir[1],
+          ny = dir[0];
+        const w1 = (3 + 5 * (1 - turnU / 0.35)) * K;
+        for (const [s, c, al] of [
+          [1.6, C.red, 0.4],
+          [1.2, C.orange, 0.7],
+          [0.8, C.gold, 0.9],
+          [0.35, C.hot, 1],
+        ] as const) {
+          f.above.col(c, al * on * pulse);
+          fillPoly(f.above, [Cm[0] + nx * 1.2 * s, Cm[1] + ny * 1.2 * s, end[0] + nx * w1 * s, end[1] + ny * w1 * s, end[0] - nx * w1 * s, end[1] - ny * w1 * s, Cm[0] - nx * 1.2 * s, Cm[1] - ny * 1.2 * s]);
         }
-      } else {
-        const k = (t - 1) / 0.4;
-        airRing(f.above, pearl, 4 + k * 14, 0.8 * (1 - k), C.hot, C.gold);
-        glow(f.above, pearl, 10, 10, C.hot, 0.7 * (1 - k), 4);
+        line(f.above, Cm, end, C.white, on);
+      } else beam(f.under, Cm, end, 1.4, on * pulse, 4);
+    }
+    // the lit lenses throw a little glow of their own
+    mirrors.forEach((m, k) => m && frame >= b.legs[k] + 2 && glow(f.above, m, 9, 10, C.gold, 0.25 * on * pulse, 3));
+  }
+  // 5. The miss: a white flash on the glass, cracks, then a molten spot that smokes while the beam stays on it; when
+  // the beam leaves it cools white → orange → red → a sooty smudge with a glint, and fades away at the end.
+  if (frame >= b.miss) {
+    const age = frame - b.miss;
+    const left = b.turn[0] + 2;
+    const heat = frame < left ? 1 : 1 - progress(frame, left, left + 36);
+    const gone = 1 - progress(frame, b.fade[0], b.fade[1]);
+    if (age < 6) {
+      wash(f.above, f, C.hot, 0.22 * (1 - age / 6));
+      airRing(f.above, glass, 3 + age * 3, 0.8 * (1 - age / 6));
+    }
+    glassCracks(f.above, glass, 9, 16 * Math.min(1, age / 3 + 0.4), 11, gone);
+    // the glare of the glass round the hit: two short diagonal streaks
+    for (const [o, L] of [[-7, 9], [5, 6]] as const) {
+      const q = add(glass, o * K, -o * K * 0.4);
+      line(f.above, add(q, -L * 0.5 * K, L * 0.5 * K), add(q, L * 0.5 * K, -L * 0.5 * K), '#f4f6ff', 0.35 * gone);
+    }
+    const r = (2.4 + 2.4 * progress(frame, b.miss, left)) * K;
+    ellFill(f.above, glass, r + 2 * K, r + 2 * K, '#1a1420', 0.55 * gone);
+    ellFill(f.above, glass, r + 1, r + 1, heat > 0.3 ? C.red : '#2e2430', (heat > 0 ? 0.9 : 0.75) * gone);
+    if (heat > 0) ellFill(f.above, glass, r * 0.75, r * 0.75, moltenColor(heat), Math.min(1, 0.4 + heat) * gone);
+    if (heat > 0.85) glow(f.above, glass, 10, 10, C.hot, 0.6, 4);
+    if (heat <= 0 && (frame >> 2) % 6 === 0) starSpark(f.above, add(glass, -2, -2), 1.6, 0.7 * gone, C.hot);
+    // smoke curls up off the glass while it burns
+    for (let i = 0; i < 4; i++) {
+      const start = b.miss + 2 + i * 6;
+      if (start < left + 10) puff(f.above, add(glass, 0, -2), frame - start, 22, i, 1.2, 22);
+    }
+  }
+  // 6. The swat: sparks off C's ring, speed arcs round it while it spins.
+  const cAt = mirrors[2];
+  if (cAt) {
+    sparks(f.above, cAt, frame - b.swat, 10, 8, 36, 13, [C.hot, C.gold, C.orange], Math.PI, 1.1, 160);
+    if (frame >= b.turn[0] && frame < b.turn[1] + 2) {
+      const a = 1 - progress(frame, b.turn[0], b.turn[1] + 2);
+      for (let i = 0; i < 3; i++) {
+        const r = (11 + i * 2) * K,
+          a0 = turnU * 5 + i * 2.1;
+        const pts: XY[] = [];
+        for (let s = 0; s <= 6; s++) pts.push([cAt[0] + Math.cos(a0 + s * 0.22) * r, cAt[1] + Math.sin(a0 + s * 0.22) * r * 0.45]);
+        polyline(f.above, pts, C.hot, 0.6 * a);
       }
     }
   }
-  // The snort over the mark: two jets of ash from the nostrils, the mark flares up once and smokes.
-  const nose = pt(f, 'nose', b.sniff);
-  if (nose && frame >= b.sniff - 1) {
-    puff(f.above, add(nose, 2 * K, 2 * K), frame - b.sniff, 16, 4, 1.4, 6);
-    puff(f.above, add(nose, -1 * K, 3 * K), frame - b.sniff - 1, 16, 5, 1.2, 5);
-    sparks(f.above, add(nose, 0, 3 * K), frame - b.sniff, 12, 8, 30, 51, [C.dustL, C.dust, C.orange], Math.PI * 0.6, 1.4, 140);
+  // 7. The gnomon's tip ignites; the light runs down the blade to the dial.
+  const lit = frame >= b.apex ? 1 - progress(frame, b.off, b.off + 30) : 0;
+  if (lit > 0) {
+    const flare = Math.max(0, 1 - (frame - b.apex) / 8),
+      ringFlare = frame >= b.ring ? Math.max(0, 1 - (frame - b.ring) / 10) : 0;
+    glow(f.under, apex, 10 + flare * 14 + ringFlare * 10, 10 + flare * 14 + ringFlare * 10, C.gold, (0.5 + 0.4 * flare) * lit, 5);
+    ellFill(f.under, apex, 2.4 * K, 2.4 * K, C.hot, lit);
+    starSpark(f.under, apex, 5 + flare * 8 + Math.sin(frame * 0.8) * 1.5, lit, C.hot);
+    if (flare > 0) sparks(f.under, apex, frame - b.apex, 12, 10, 40, 17, [C.white, C.hot, C.gold], -Math.PI / 2, 2, 120);
+    const foot: XY = [(GNOMON.x0 + GNOMON.x1) / 2, GNOMON.foot];
+    const run = progress(frame, b.apex, b.hours[0]);
+    if (run > 0 && run < 1) {
+      const q = mid(apex, foot, run * run);
+      line(f.under, apex, q, C.gold, 0.8 * lit, 2);
+      glow(f.under, q, 6, 6, C.hot, 0.8, 3);
+    } else if (run >= 1) line(f.under, apex, foot, C.gold, 0.35 * lit * (0.8 + 0.2 * Math.sin(frame * 0.6)));
   }
-  // The solar flash: rays over the whole scene, a ring of light from the chest, the painting whitened.
-  if (pearl && frame >= b.flash && frame < b.flash + 14) {
-    const k = 1 - progress(frame, b.flash, b.flash + 14);
-    for (let i = 0; i < 14; i++) {
-      const a = (i / 14) * TAU + 0.1;
-      f.sceneryRay(pearl, [pearl[0] + Math.cos(a) * 200 * K, pearl[1] + Math.sin(a) * 160 * K], C.hot, 0.5 * k);
+  // 8. Fire runs round the dial both ways from the gnomon's foot; every hour glyph it passes catches and stays lit.
+  //    The far half is hidden behind him, the near half runs in front of his feet; the two runs meet in front.
+  const glyphsOut = 1 - progress(frame, b.fade[0], b.fade[1]);
+  if (frame >= b.hours[0] && glyphsOut > 0) {
+    const u = progress(frame, b.hours[0], b.hours[1]);
+    const a0 = hourAngle(RING_FROM);
+    const trailA = frame < b.off ? 1 : 0.4 + 0.6 * (1 - progress(frame, b.off, b.off + 20));
+    for (const s of [1, -1]) {
+      const pts: XY[] = [];
+      for (let q = 0; q <= 24; q++) pts.push(onDial(a0 + s * Math.PI * u * (q / 24)));
+      polyline(f.under, pts, C.gold, 0.75 * trailA * glyphsOut);
+      if (u < 1) {
+        const head = onDial(a0 + s * Math.PI * u);
+        glow(f.under, head, 7, 4, C.hot, 0.9, 3);
+        sparks(f.under, head, (frame - b.hours[0]) % 6, 6, 3, 20, frame + (s > 0 ? 1 : 7), [C.white, C.hot, C.gold], -Math.PI / 2, 1, 120, head[1] + 1);
+      }
     }
-    wash(f.above, f, C.hot, 0.32 * k * k);
-    airRing(f.above, pearl, 6 + (frame - b.flash) * 7, 0.8 * k);
-    shock(f.under, pt(f, 'floor') ?? f.feet, 8 + (frame - b.flash) * 6, 0.7 * k);
+    for (let i = 0; i < 12; i++) {
+      const at = hourLit(i, b);
+      if (frame < at) continue;
+      const g = onDial(hourAngle(i));
+      const age = frame - at;
+      const flick = 0.75 + 0.25 * Math.sin(frame * 0.7 + i * 1.9);
+      const ringFlare = frame >= b.ring ? Math.max(0, 1 - (frame - b.ring) / 12) : 0;
+      if (age < 5) glow(f.under, g, 12, 7, C.hot, 0.8 * (1 - age / 5), 4);
+      glow(f.under, g, 6 + ringFlare * 6, 3.5 + ringFlare * 4, C.gold, (0.5 * flick + ringFlare * 0.4) * glyphsOut, 3);
+      flame(f.under, add(g, 0, -1), -Math.PI / 2, (3 + ringFlare * 8) * flick * glyphsOut, 0.8 * glyphsOut, frame + i);
+      if (age < 8) sparks(f.under, g, age, 8, 4, 26, 80 + i, [C.white, C.hot, C.gold], -Math.PI / 2, 0.8, 140, g[1] + 1);
+      // at the ring: a short pillar of light out of every glyph
+      if (ringFlare > 0) {
+        f.under.col(C.hot, 0.5 * ringFlare);
+        f.under.rect(Math.round(g[0] - K), Math.round(g[1] - 28 * K * ringFlare), Math.round(2 * K), Math.round(28 * K * ringFlare));
+      }
+    }
   }
-  // The mirrors fall to golden dust that settles on the stone and glints out.
-  const fl = pt(f, 'floor', 0) ?? f.feet;
-  [0, 1, 2].forEach((k) => {
-    const m = pt(f, 'mirror' + k, b.flash);
-    if (!m) return;
-    const age = frame - (b.flash + 2);
-    if (age < 0 || age > 80) return;
-    const bp = bases[k] ?? add(m, 0, 16 * K);
-    for (let i = 0; i < 28; i++) {
-      const a = hash(i, k, 1) * TAU,
-        r = 26 * Math.sqrt(hash(i, k, 2));
-      const start: XY = [m[0] + Math.cos(a) * r, m[1] + Math.sin(a) * r * 1.1];
-      const fallU = Math.min(1, (age / 40) * (0.6 + 0.4 * hash(i, k, 3)));
-      const q: XY = [start[0] + Math.sin(age * 0.15 + i) * 3 * K, start[1] + (bp[1] + (hash(i, k, 4) - 0.5) * 6 * K - start[1]) * fallU * fallU];
-      const out = 1 - progress(age, 50, 80);
-      f.above.col(goldDust[i % goldDust.length], out * (fallU < 1 || (frame + i) % 8 < 5 ? 1 : 0.4));
-      f.above.rect(Math.round(q[0]), Math.round(q[1]), i % 3 ? 1 : 2, i % 3 ? 1 : 2);
+  // 9. The ring closes: a golden flash over the painting, a ring of light runs out over the dial, he roars.
+  if (frame >= b.ring && frame < b.ring + 14) {
+    const k = 1 - progress(frame, b.ring, b.ring + 14);
+    wash(f.above, f, C.gold, 0.26 * k * k);
+    const age = frame - b.ring;
+    oval(f.under, [DIAL.cx, DIAL.cy], DIAL.rx * (0.86 + age * 0.03), DIAL.ry * (0.86 + age * 0.03), C.hot, 0.8 * k);
+    oval(f.under, [DIAL.cx, DIAL.cy + 1], DIAL.rx * (0.84 + age * 0.03), DIAL.ry * (0.84 + age * 0.03), C.orange, 0.5 * k);
+    const mouth = pt(f, 'mouth');
+    if (mouth) {
+      airRing(f.above, mouth, 4 + age * 4, 0.7 * k);
+      airRing(f.above, mouth, 2 + Math.max(0, age - 3) * 4, 0.5 * k);
     }
-    void fl;
-  });
-  // The dust shaken off the wings.
-  for (const s of ['L', 'R']) {
-    const w = pt(f, 'wingTip' + s, 204);
-    if (w) motes(f.above, w, frame - 200, 24, 10, 12, s === 'L' ? 51 : 52, goldDust, 30);
   }
 }
 function phaseFx(f: FxInput, frame: number) {

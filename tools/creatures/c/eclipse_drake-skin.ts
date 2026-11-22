@@ -821,19 +821,25 @@ function wing(r: Rig, BU: F3, Pv: F3, shoulder: V3, s: number, st: WingState, j:
 const FTdir = (BU: F3, s: number): V3 => vnorm([BU.f[0] + BU.s[0] * s * 0.3, BU.f[1] + BU.s[1] * s * 0.3, -0.15]);
 
 /** Mirror spots in the facing frame (forward, right): front-near, back-near, front-far. */
+/** Below this share of the rise a mirror is not drawn (fx: a flash where it pops in and out). */
+export const MIRROR_POP = 0.25;
 export const MIRRORS: [number, number][] = [
-  [25, 14],
-  [-16, 20],
-  [22, -14],
+  // the order the beam visits them: right and far (beside the sun), right and near (below his head), left and near
+  // by the tail (it gets turned) — every leg of the beam stays in sight round the raised wings
+  [14.4, -31.8],
+  [30, -4],
+  [-14, 14],
 ];
 // ---- props: mirrors, egg ----------------------------------------------------------------------------------------
 /** A crystal mirror in a bronze ring: a lens standing on edge, facing `face`. `up` 0..1 rises it out of the floor. */
-function mirror(r: Rig, base: V3, face: V3, up: number, crack: number, lit: number, j: Record<string, V3>, key: string) {
+function mirror(r: Rig, base: V3, face: V3, up: number, crack: number, lit: number, j: Record<string, V3>, key: string, turn = 0) {
   r.tag = 'mirror';
-  const n = vnorm([face[0], face[1], 0]);
+  const n0 = vnorm([face[0], face[1], 0]);
+  // `turn` (radians) swings it round its stem
+  const n: V3 = [n0[0] * Math.cos(turn) - n0[1] * Math.sin(turn), n0[0] * Math.sin(turn) + n0[1] * Math.cos(turn), 0];
   const side = vnorm(vcross([0, 0, 1], n));
   // it grows up out of the hour mark: small and low at first, full size on its stem
-  const R = 7.4 * (0.25 + 0.75 * smooth(up));
+  const R = 6 * (0.4 + 0.6 * smooth(up));
   const c = vadd(base, [0, 0, (R * 1.15 + 0.6) + 6.5 * smooth(up)]);
   const ring: V3[] = [];
   for (let k = 0; k < 12; k++) {
@@ -1144,10 +1150,11 @@ export function drakeFrame(sample: PoseSample): Creature['frame'] {
         if (walking && st.planted && ground > 0.9) planted.push('fore' + k);
       }
       // Mirrors of the observatory: they stand still in the world while he turns among them.
-      if (get('mirrors') > 0.001) {
+      // under a quarter risen it would be a crumpled lump on the stone: it pops in (and out) in a flash of the fx
+      if (get('mirrors') > MIRROR_POP) {
         const spots: V3[] = MIRRORS.map(([x, y]) => F0.p(x, y, 0));
         const viewer = F0.v(0.57, 0.82, 0);
-        spots.forEach((at, k) => mirror(R0, at, vadd(vnorm(vsub(F0.p(0, 0, 0), at)), vmul(viewer, 1.3)), get('mirrors'), get('mirrorCrack'), get('mirrorLit' + k), j, 'mirror' + k));
+        spots.forEach((at, k) => mirror(R0, at, vadd(vnorm(vsub(F0.p(0, 0, 0), at)), vmul(viewer, 1.3)), get('mirrors'), get('mirrorCrack'), get('mirrorLit' + k), j, 'mirror' + k, get('mirrorTurn' + k) * -2.6));
       }
     } else if (peek) {
       // Peeking from above the frame: only the neck and the upside-down head hang down into the picture.
