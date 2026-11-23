@@ -443,7 +443,8 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
   }
   j.mouth = MZ.p(2.7, 0, -0.9);
   // ears: black discs with a grey inside, they flap (`earFlap`) and fold back (`earBack`)
-  for (const s of [-1, 1]) {
+  // a knight's pot pushed down over his eyes swallows the ears
+  for (const s of knight && a('helmetSlide') > 0.4 ? [] : [-1, 1]) {
     r.tag = 'ear' + (s < 0 ? 'L' : 'R');
     const E = Hd.at(-1.2, s * 6.0, 6.3).roll(s * (0.35 + a('earFlap') * 0.5)).pitch(-a('earBack') * 0.6);
     r.ell(E, [0, s * 0.8, 1.7], [1.5, 3.0, 2.9], black);
@@ -633,7 +634,7 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
     j.shield = SH.p(0.9, 0, 0);
     r.tag = 'spoon';
     const sp = j.handR;
-    const dir = vnorm(R.v(0.4 + a('spoonFwd'), 0.1, 1 - a('spoonDown')));
+    const dir = vnorm(R.v(0.4 + a('spoonFwd'), 0.1 + a('spoonOut'), 1 - a('spoonDown')));
     const tip = vadd(sp, vmul(dir, 10.5));
     r.cap(vadd(sp, vmul(dir, -1.4)), tip, 0.55, 0.5, flat(T.spoon));
     r.ell(frameF(vadd(tip, vmul(dir, 1.4)), dir, R.f), [0, 0, 0], [1.9, 1.4, 0.7], flat(T.spoon));
@@ -802,7 +803,7 @@ function monkey(r: Rig, F: F3, A: JointPose, j: Record<string, V3>, P: PandaOut 
     r.tag = 'mStick';
     const d = vnorm(Mb.v(0.7 + a('mStickFwd'), 0.1, 0.7 - a('mStickDown')));
     // the bamboo shoot he stole from Пончик, held like a rapier: nodes, a bitten top, a tuft of leaves at the base
-    const b0 = vsub(j.mHandR, vmul(d, 2.2 * K)),
+    const b0 = vsub(j.mHandR, vmul(d, 1.3 * K)),
       b1 = vadd(j.mHandR, vmul(d, 8.2 * K));
     r.cap(b0, b1, 0.5, 0.42, flat(T.bamboo));
     r.ball(b1, 0.42, flat(T.bite));

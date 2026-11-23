@@ -97,6 +97,8 @@ export const beats = {
   trick_b: { hold: [[61, 81], [116, 147]], smack: 82, spin: [83, 106], tickle: [124, 143], launch: 147, shoot: 152, gone: [158, 186], leaves: [156, 200], splash: 198, kick: [199, 214], spit: [222, 230], out: 236, shake: [243, 250], soak: 245, ladleToss: [244, 252], dry: [258, 262], puddle: [198, 276] },
   trick_c: { sniff: [2, 20], lift: [20, 24], stuck: [24, 40], door: 62, table: 74, lids: [80, 86], lidHome: 96, laugh: [64, 106], tug: [120, 159], pop: 160, jarFly: [160, 176], flour: 165, honeyLick: [170, 230], sneeze: 240, shake: 250 },
   phase: { snatch: 7, red: [20, 34], steam: [24, 36], dash: [34, 44], cloud: [44, 72], items: [46, 72], out: 72, helmet: 80, clanks: [88, 92, 96, 100, 104], lidRoll: [74, 98], visor: 109 },
+  'happy-f2': { clangs: [9, 16], spin: [20, 35] },
+  'trick-f2': { clacks: [28, 36, 46], whoosh: [24, 28, 32, 36, 42, 46], thrust: 57, stumble: 61, parries: [72, 84, 96, 110], duck: [118, 128], bong: 150, bong2: 178, table: 190, lidFly: [191, 206], bonk: 206, lidHome: 220, stars: [150, 226], mStars: [206, 226] },
   peek: { in: [0, 10], sniff: [12, 30], scare: 32, bonk: 38, out: [40, 50], monkey: [46, 70], tongue: [54, 64] },
 };
 
@@ -718,9 +720,10 @@ const KNIGHT: JointPose = {
   ...F2,
   pitch: -0.05,
   gaze: 0.25,
-  ...hand('R', 3.4, 8.6, 13.2),
+  ...hand('R', 2.8, 9.8, 12.4),
   ...hand('L', 6.2, -5.4, 12.2),
   spoonFwd: -0.4,
+  spoonOut: 0.45,
   mOn: 0,
   mStick: 1,
   mLid: 1,
@@ -798,6 +801,138 @@ const phase: Track = [
   [120, { ...KNIGHT }],
 ];
 
+// happy (knight): clangs the spoon on the shield, spins round, the cape flying; Шустрик taps his lid along
+const happy_f2: Track = [
+  [0, { ...KNIGHT }],
+  [5, { ...KNIGHT, ...hand('R', 2.6, 8.8, 21), spoonDown: 0.6, pitch: -0.12, smile: 0.6, mStickFwd: 0.9 }],
+  [9, { ...KNIGHT, ...hand('R', 6.8, 2.0, 13), spoonFwd: 0.6, spoonDown: 1.1, crouch: 0.6, sqz: -0.06, vib: 0.8, smile: 1, mouth: 0.4, ...mHand('R', 2.6, 0.6, 0.4), mStickDown: 0.8, mSmile: 1 }],
+  [13, { ...KNIGHT, ...hand('R', 2.6, 8.8, 21), spoonDown: 0.6, smile: 1, lid: 0.3, mStickFwd: 0.9 }],
+  [16, { ...KNIGHT, ...hand('R', 6.8, 2.0, 13), spoonFwd: 0.6, spoonDown: 1.1, crouch: 0.6, sqz: -0.06, vib: 0.8, smile: 1, mouth: 0.6, ...mHand('R', 2.6, 0.6, 0.4), mStickDown: 0.8, mSmile: 1, mMouth: 0.6 }],
+  // the spin: one whole turn on the spot, the cape out flat
+  [20, { ...KNIGHT, lift: 1.4, air: 1, twist: 0.4, capeFly: 2, ...both(3, 10, 16), smile: 1, lid: 0.5, mJump: 1.5, mSmile: 1 }],
+  [26, { ...KNIGHT, lift: 2.4, air: 1, twist: 3.3, capeFly: 3, ...both(2, 10.5, 17), smile: 1, lid: 0.5, mJump: 0, mTwist: 0.6 }],
+  [32, { ...KNIGHT, lift: 1.2, air: 1, twist: 6.0, capeFly: 2.4, ...both(3, 10, 16), smile: 1, lid: 0.4, mTwist: -0.6 }],
+  [35, { ...KNIGHT, twist: 6.28, crouch: 1.0, sqz: -0.1, sqx: 0.05, sqy: 0.05, capeFly: 1, smile: 1, mTwist: 0 }],
+  [40, { ...KNIGHT, twist: 6.28, smile: 0.6, helmetSlide: 0.3 }],
+  [48, { ...KNIGHT, twist: 6.28 }],
+];
+
+// ---- trick-f2 «Поединок» (12 s, 288 frames) ---------------------------------------------------------------------------
+// A duel: spoon against the stolen shoot, clack, clack. Шустрик ducks under his arm and climbs onto the helmet; the
+// knight swings at him — the spoon comes down on his own helmet: BONG, spiral eyes. Шустрик taps it again — bong. The
+// knight sits down hard, his foot jolts the table, and the steamer lid lands on the bowing Шустрик. Back to en garde.
+const KN_FACE = Math.atan2(M_F2[1], M_F2[0]) - 1.0;
+const D_RET: [number, number] = [-11, -18];
+const M_FRONT: [number, number] = [5, -8];
+const M_BOW: [number, number] = [9, -7];
+/** Where Шустрик taps the helmet from: beside the head, clear of it. */
+const TAP: [number, number] = [-0.5, -14.5];
+const duelP = pathLanes([
+  stay(0, 21, 0, 0, KN_FACE),
+  run(22, 40, [0, 0], [7, 3], true, KN_FACE),
+  run(42, 58, [7, 3], [12, 5], true, KN_FACE),
+  // overreaches on the thrust and stumbles
+  run(59, 64, [12, 5], [15, 6], false, KN_FACE),
+  // Шустрик presses him back, step by step, toward the table
+  run(66, 90, [15, 6], [0, -8], true, KN_FACE),
+  run(91, 110, [0, -8], D_RET, true, KN_FACE),
+  stay(111, 245, D_RET[0], D_RET[1], KN_FACE),
+  run(246, 270, D_RET, [0, 0], true),
+  stay(271, 288, 0, 0, 0),
+]);
+const duelM = pathLanes(
+  [
+    stay(0, 21, M_F2[0], M_F2[1], FACE.left),
+    run(22, 40, M_F2, [26, 10], false, FACE.left),
+    run(42, 56, [26, 10], [30, 9], false, FACE.left),
+    // the dodge: a hop to the side, the thrust goes past
+    { a: 57, b: 62, at: (u) => ({ x: 30 + 3 * u, y: 9 - 6 * u, z: 6 * Math.sin(u * Math.PI), yaw: FACE.left }) },
+    run(66, 90, [35, 4], [20, 0], false, FACE.left),
+    run(91, 110, [20, 0], [10, -8], false, FACE.left),
+    stay(111, 117, 10, -8, FACE.left),
+    // under his arm and round behind him, then up his back onto the helmet
+    run(118, 127, [10, -8], [-16, -24], true),
+    { a: 128, b: 136, at: (u) => ({ x: -16 + 4.4 * u, y: -24 + 5.2 * u, z: 36 * Math.sin((u * Math.PI) / 2), yaw: FACE.us }) },
+    stay(137, 145, -11.6, -18.8, FACE.us, 36),
+    // hops off just as the spoon comes down
+    { a: 146, b: 152, at: (u) => ({ x: -11.6 + (M_FRONT[0] + 11.6) * u, y: -18.8 + (M_FRONT[1] + 18.8) * u, z: 36 * (1 - u) + 8 * Math.sin(u * Math.PI), yaw: FACE.us }) },
+    stay(153, 169, M_FRONT[0], M_FRONT[1], FACE.usLeft),
+    // up again to tap the helmet with the shoot — bong — and down in front to bow
+    { a: 170, b: 178, at: (u) => ({ x: M_FRONT[0] + (TAP[0] - M_FRONT[0]) * u, y: M_FRONT[1] + (TAP[1] - M_FRONT[1]) * u, z: 26 * Math.sin((u * Math.PI) / 2), yaw: FACE.left }) },
+    { a: 179, b: 186, at: (u) => ({ x: TAP[0] + (M_BOW[0] - TAP[0]) * u, y: TAP[1] + (M_BOW[1] - TAP[1]) * u, z: 26 * (1 - u) + 6 * Math.sin(u * Math.PI), yaw: FACE.us }) },
+    stay(187, 235, M_BOW[0], M_BOW[1], FACE.us),
+    run(236, 262, M_BOW, M_F2),
+    stay(263, 288, M_F2[0], M_F2[1], FACE.left),
+  ],
+  true,
+);
+const KV: JointPose = { ...KNIGHT, visor: 1 };
+const CHOP_UP = (p: JointPose = {}): JointPose => ({ ...KV, ...hand('R', -0.5, 10, 20.5), spoonFwd: -0.9, pitch: -0.12, browIn: 1, ...p });
+const CHOP_DN = (p: JointPose = {}): JointPose => ({ ...KV, ...hand('R', 7.6, 4.2, 12), spoonFwd: 0.8, spoonDown: 1.3, pitch: 0.12, crouch: 0.8, browIn: 1, ...p });
+const PARRY = (p: JointPose = {}): JointPose => ({ mStickFwd: 0.2, mStickDown: -0.6, ...mHand('R', 2.4, 1.6, 2.6), mBrowIn: 1, ...p });
+const LUNGE = (p: JointPose = {}): JointPose => ({ mLean: 0.9, mStickFwd: 1.1, mStickDown: 0.15, ...mHand('R', 3.0, 1.0, 1.2), mBrowIn: 1, mSmirk: 1, ...p });
+const trick_f2: Track = [
+  [0, { ...KNIGHT }],
+  // visor down, salute; Шустрик salutes back with the shoot
+  [8, { ...KV, ...hand('R', 2.6, 8.8, 21), spoonDown: 0.6, mStickFwd: -0.2, ...mHand('R', 2.0, 1.6, 3.8) }],
+  [16, { ...KV, browIn: 1, ...PARRY() }],
+  // chop — clack — chop — clack
+  [24, CHOP_UP({ gait: 1, ...PARRY() })],
+  [28, CHOP_DN({ gait: 1, ...PARRY({ mSit: 0.4 }) })],
+  [32, CHOP_UP({ gait: 1, ...PARRY() })],
+  [36, CHOP_DN({ gait: 1, ...PARRY({ mSit: 0.4 }) })],
+  [42, CHOP_UP({ gait: 1, ...PARRY() })],
+  [46, CHOP_DN({ gait: 1, ...PARRY({ mSit: 0.5 }) })],
+  [52, { ...KV, gait: 1, ...hand('R', 2, 7.5, 15), spoonFwd: -0.4, pitch: -0.1, browIn: 1, ...PARRY() }],
+  // the thrust — Шустрик hops aside — the knight overreaches and stumbles
+  [57, { ...KV, ...hand('R', 8.2, 4.2, 15), spoonFwd: 1.6, spoonDown: 0.7, pitch: 0.3, lean: 1.4, browIn: 1, mJump: 1, mPop: 0.4 }],
+  [61, { ...KV, ...hand('R', 8.2, 4.2, 14), spoonFwd: 1.6, spoonDown: 0.8, pitch: 0.45, lean: 2.2, ...foot('R', 4.6, 4.4, 1.5), pop: 0.6, mJump: 0, mSmirk: 1 }],
+  [65, { ...KV, ...hand('R', 4, 8, 13), pitch: 0.1, roll: 0.1, browUp: 0.6, ...LUNGE() }],
+  // Шустрик attacks: lunge after lunge, the knight backs away fending him off with the shield
+  [72, { ...KV, gait: 1, ...hand('L', 6.4, -4.0, 13), shieldTurn: 0.3, pitch: -0.1, browSad: 0.5, ...LUNGE() }],
+  [78, { ...KV, gait: 1, ...hand('L', 7.0, -4.4, 12.4), shieldTurn: 0.1, pitch: -0.1, ...PARRY() }],
+  [84, { ...KV, gait: 1, ...hand('L', 6.4, -4.0, 13), shieldTurn: 0.3, pitch: -0.1, vib: 0.3, ...LUNGE() }],
+  [90, { ...KV, gait: 1, ...hand('L', 7.0, -4.4, 12.4), pitch: -0.1, ...PARRY() }],
+  [96, { ...KV, gait: 1, ...hand('L', 6.4, -4.0, 13), shieldTurn: 0.3, pitch: -0.1, vib: 0.3, ...LUNGE() }],
+  [104, { ...KV, gait: 1, ...hand('L', 7.0, -4.4, 12.4), pitch: -0.1, ...PARRY() }],
+  [110, { ...KV, ...hand('L', 6.4, -4.0, 13), shieldTurn: 0.3, browIn: 1, ...LUNGE({ mLean: 0.6 }) }],
+  // Шустрик ducks under his arm and is gone: where is he? left… right…
+  [118, { ...KV, ...hand('R', 2, 9.5, 18), spoonFwd: -0.4, mRun: 1, mSmirk: 1 }],
+  [126, { ...KV, gaze: 0.6, lookX: 0.9, browUp: 0.6, mRun: 1 }],
+  [132, { ...KV, gaze: -0.6, lookX: -0.9, browUp: 0.6, mRun: 0, ...mBoth(2.2, 1.6, 2.4) }],
+  [138, { ...KV, gaze: 0.5, lookX: 0.8, browIn: 0.6, mStickFwd: 0.6, ...mHand('R', 1.6, 2.2, 3.4), mSmirk: 1, mTongue: 1 }],
+  // he looks up — there you are! — and swings
+  [142, { ...KV, nod: -0.4, lookY: 1, browIn: 1, ...hand('R', 6, 5, 12), spoonDown: 0.6, mSmirk: 1, mTongue: 1 }],
+  [146, { ...KV, nod: -0.35, lookY: 1, browIn: 1, ...hand('R', 1.6, 6, 22.4), spoonFwd: -0.4, spoonDown: -0.3, mJump: 1.5 }],
+  // BONG: the spoon on his own helmet
+  [150, { ...KV, nod: 0.1, helmetSlide: 0.85, ...hand('R', 2.2, 4.4, 22.6), spoonFwd: -0.3, spoonDown: -0.4, crouch: 1.6, sqz: -0.16, sqx: 0.08, sqy: 0.08, vib: 1, dizzy: 1, mJump: 0, mPop: 0.6 }],
+  [156, { ...KV, helmetSlide: 0.85, ...both(4, 9.5, 12), crouch: 0.6, vib: 0.8, dizzy: 1, wavy: 1, tongueOut: 0.6, mMouth: 1, mSquint: 1, mSmile: 1 }],
+  [164, { ...KV, helmetSlide: 0.85, ...both(4, 9.5, 12), roll: 0.12, vib: 0.4, dizzy: 1, wavy: 1, tongueOut: 0.8, mMouth: 1, mSquint: 1, mSmile: 1 }],
+  [170, { ...KV, helmetSlide: 0.85, ...both(4, 9.5, 12), roll: -0.12, dizzy: 1, wavy: 1, tongueOut: 0.6, mJump: 1, mSmirk: 1 }],
+  // the second bong: Шустрик taps the helmet with the shoot
+  [176, { ...KV, helmetSlide: 0.85, ...both(4, 9.5, 12), roll: 0.08, dizzy: 1, wavy: 1, mJump: 0, mStickFwd: 0.4, mStickDown: -0.4, ...mHand('R', 2.4, 1.6, 3.4) }],
+  [178, { ...KV, helmetSlide: 0.9, ...both(4, 9.5, 12), crouch: 1.2, sqz: -0.1, vib: 1, dizzy: 1, wavy: 1, mStickFwd: 0.8, mStickDown: 0.3, ...mHand('R', 2.8, 1.6, 2.4), mSmirk: 1 }],
+  // sits down hard; his foot jolts the table
+  [184, { ...KV, helmetSlide: 0.9, sit: 0.6, ...both(4, 10, 10), vib: 0.6, dizzy: 1, wavy: 1, mSmirk: 1 }],
+  [190, { ...KV, helmetSlide: 0.9, sit: 1, sqz: -0.12, sqx: 0.06, sqy: 0.06, ...both(4, 10, 6), ...foot('R', 7.4, 4.6, 1.6), vib: 0.4, dizzy: 1, wavy: 1, mSmile: 0.6 }],
+  [194, { ...KV, helmetSlide: 0.9, sit: 1, ...both(4, 10, 6), dizzy: 1, wavy: 1, tongueOut: 0.6 }],
+  // Шустрик bows to us… and the lid comes down on his head
+  [200, { ...KV, helmetSlide: 0.9, sit: 1, ...both(4, 10, 6), dizzy: 1, wavy: 1, tongueOut: 0.6, mPitch: 0.4, mStickFwd: -1, ...mHand('R', 0.4, 2.6, -1), mSmile: 1, mLid: 1 }],
+  [204, { ...KV, helmetSlide: 0.9, sit: 1, ...both(4, 10, 6), dizzy: 1, wavy: 1, mPitch: 0.9, mStickFwd: -1, ...mHand('R', 0.2, 2.6, -1.2), mLid: 1, mSmile: 1 }],
+  [206, { ...KV, helmetSlide: 0.9, sit: 1, ...both(4, 10, 6), dizzy: 1, wavy: 1, mPitch: 0.6, mSit: 0.8, mPop: 1, mDizzy: 1, ...mBoth(1.6, 2.6, 1.4) }],
+  [212, { ...KV, helmetSlide: 0.9, sit: 1, ...both(4, 10, 6), dizzy: 0.5, mPitch: 0, mSit: 0.6, mDizzy: 1, ...mBoth(1.6, 2.6, 0.4) }],
+  [222, { ...KV, helmetSlide: 0.9, sit: 1, ...both(4, 10, 6), lid: 0.5, mSit: 0.4, mDizzy: 1, mRoll: 0.2 }],
+  // both come round: he pushes the helmet up, stands; Шустрик shakes his head
+  [230, { ...KV, helmetSlide: 0.2, sit: 1, ...hand('R', 2.4, 9.6, 17), spoonDown: 0.6, ...hand('L', 6.2, -5.4, 8), browIn: 0.6, mSit: 0, mDizzy: 0, mTwist: 0.5 }],
+  [236, { ...KV, sit: 0.5, ...both(4, 9, 12), browIn: 0.8, mTwist: -0.5, mRun: 1 }],
+  [242, { ...KV, sit: 0, crouch: 0.6, browIn: 0.8, mTwist: 0, mRun: 1 }],
+  [250, { ...KV, gait: 1, browIn: 0.8, mRun: 1 }],
+  [262, { ...KV, gait: 1, browIn: 0.8, mRun: 0 }],
+  [270, { ...KNIGHT, gait: 0, visor: 0.4, ...PARRY({ mBrowIn: 0.6 }) }],
+  [276, { ...KNIGHT }],
+  [288, { ...KNIGHT }],
+];
+
 export const tracks: Record<string, Track> = {
   idle,
   walk,
@@ -816,6 +951,8 @@ export const tracks: Record<string, Track> = {
   trick_c,
   phase,
   'idle-f2': idle_f2,
+  'happy-f2': happy_f2,
+  'trick-f2': trick_f2,
 };
 export const lanes: Record<string, Record<string, Lane>> = {
   trick: { ...trickPanda, ...trickMonkey, rugX: lane([0, 0], [190, 0], [194, -9], [248, -9], [258, 0]) },
@@ -823,6 +960,8 @@ export const lanes: Record<string, Record<string, Lane>> = {
   trick_c: { ...trickCPanda, ...trickCMonkey },
   phase: { ...phaseP, ...phaseM },
   'idle-f2': pathLanes([stay(0, 48, M_F2[0], M_F2[1], FACE.left)], true),
+  'happy-f2': pathLanes([stay(0, 48, M_F2[0], M_F2[1], FACE.left)], true),
+  'trick-f2': { ...duelP, ...duelM },
 };
 
 export const gesture = keyframer({ tracks, lanes, switches: SWITCHES, linear: LINEAR });

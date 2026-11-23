@@ -20,7 +20,9 @@
       "walk_w"
     ],
     "clip": [
-      "phase:36-43"
+      "phase:36-43",
+      "trick-f2:121-133",
+      "trick-f2:147-152"
     ]
   },
   "clipAllow": [
@@ -107,6 +109,10 @@
     {
       "a": "helmet",
       "b": "brow"
+    },
+    {
+      "a": "mStick",
+      "b": "shield"
     }
   ]
 }

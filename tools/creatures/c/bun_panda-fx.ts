@@ -407,6 +407,13 @@ function propsFor(anim: string, fr: number, P: Record<string, number>, f: FxInpu
     pr.lidOff = fr >= b.table + 1 && fr < b.lidHome ? 1 : 0;
     pr.swing = Math.max(ring(fr, b.door, 0.3), ring(fr, b.table, 0.4));
   }
+  if (anim === 'trick-f2') {
+    const b = beats['trick-f2'];
+    // he sits down so hard the table jumps; the steamer lid is away while it flies and bounces
+    pr.hop = fr >= b.table && fr < b.table + 6 ? Math.sin(prog(fr, b.table, b.table + 6) * Math.PI) * 5 : 0;
+    pr.lidOff = fr > b.table && fr < b.lidHome ? 1 : 0;
+    pr.swing = Math.max(ring(fr, b.bong, 0.5), ring(fr, b.bong2, 0.35), ring(fr, b.table, 0.3));
+  }
   return pr;
 }
 
@@ -982,6 +989,95 @@ function phaseFx(f: FxInput, fr: number) {
   if (pt.helmet && fr >= b.visor && fr < b.visor + 5) starInk(f.above, pt.helmet[0] + 18, pt.helmet[1] + 8, 5 - (fr - b.visor), fr, '#fff4c0');
 }
 
+/** A clang where metal meets metal: a star and two rings. */
+function clang(p: Pen, x: number, y: number, age: number, r: number, seed: number) {
+  if (age < 0 || age > 7) return;
+  boom(p, x, y, r, age, seed);
+  for (let k = 0; k < 2; k++) p_ring(p, x, y, r * 1.4 + age * 3 + k * 5, '#fff4c0', Math.max(0, 0.7 - age * 0.1 - k * 0.15));
+}
+/** A whoosh: the arc the tip of a weapon swept over the last few frames. */
+function whoosh(f: FxInput, part: string, frames: number, c = '#fffbe8') {
+  for (let k = 1; k <= frames; k++) {
+    const a = f.pointAt(Math.max(0, f.t - (k - 1) / 24), part),
+      b = f.pointAt(Math.max(0, f.t - k / 24), part);
+    if (Math.hypot(a[0] - b[0], a[1] - b[1]) < 2) continue;
+    seg(f.under, a[0], a[1], b[0], b[1], 1.6 - k * 0.3, c, 0.8 - k * 0.2);
+  }
+}
+function happyF2Fx(f: FxInput, fr: number) {
+  const b = beats['happy-f2'];
+  const pt = f.points;
+  for (const c of b.clangs) if (pt.shield) clang(f.above, pt.shield[0], pt.shield[1], fr - c, 9, c);
+  if (pt.spoonTip && fr < b.spin[0]) whoosh(f, 'spoonTip', 3);
+  // the spin: speed arcs round him and the cape
+  if (pt.body && fr >= b.spin[0] && fr < b.spin[1])
+    for (let i = 0; i < 3; i++) {
+      const ang = fr * 0.8 + (i / 3) * TAU;
+      const x = pt.body[0] + Math.cos(ang) * 34,
+        y = pt.body[1] - 4 + Math.sin(ang) * 10;
+      seg(Math.sin(ang) > 0 ? f.above : f.under, x, y, x - Math.sin(ang) * 10, y + Math.cos(ang) * 3, 0.6, '#fffbe8', 0.8);
+    }
+  // Шустрик's little taps on his own lid
+  if (pt.mStickTip) for (const c of b.clangs) if (fr >= c && fr < c + 3) starInk(f.above, pt.mStickTip[0], pt.mStickTip[1], 3, fr, '#fff4c0');
+}
+function duelFx(f: FxInput, fr: number) {
+  const b = beats['trick-f2'];
+  const pt = f.points;
+  // the spoon sweeps and the clacks where it meets the shoot
+  if (pt.spoonTip && fr < 70) whoosh(f, 'spoonTip', 3);
+  if (pt.mStickTip && fr >= 66 && fr < 112) whoosh(f, 'mStickTip', 2, '#e8ffd0');
+  for (const c of b.clacks)
+    if (fr >= c && fr < c + 6 && pt.spoonTip && pt.mStickTip) {
+      const x = (pt.spoonTip[0] + pt.mStickTip[0]) / 2,
+        y = (pt.spoonTip[1] + pt.mStickTip[1]) / 2;
+      boom(f.above, x, y, 7, fr - c, c);
+    }
+  // the thrust and the stumble
+  if (pt.spoonTip && fr >= b.thrust && fr < b.thrust + 4) speedLines(f.above, pt.spoonTip[0], pt.spoonTip[1], 1, 0.2, 18, 3, 10, fr);
+  if (pt.footR) puff(f.under, pt.footR[0] + 4, pt.footR[1], 6, fr - b.stumble, 8, 3);
+  // Шустрик's lunges thud on the shield
+  for (const c of b.parries) if (pt.shield) boom(f.above, pt.shield[0] + 4, pt.shield[1], 6, fr - c, c);
+  // the dash under his arm: dust
+  if (pt.mGround && fr >= b.duck[0] && fr < b.duck[1]) puff(f.under, pt.mGround[0], pt.mGround[1], 4, fr % 4, 4, fr);
+  // BONG, and bong: the helmet rings; the whole of him shivers (vib)
+  if (pt.helmet) {
+    clang(f.above, pt.helmet[0], pt.helmet[1] - 4, fr - b.bong, 15, 4);
+    clang(f.above, pt.helmet[0] + 8, pt.helmet[1] - 2, fr - b.bong2, 10, 6);
+    if (fr >= b.stars[0] + 2 && fr < b.stars[1]) dizzyRing(f, [pt.helmet[0], pt.helmet[1] - 4], 30, fr * 0.35, 1);
+  }
+  // he sits down: a thud through the floor to the table
+  if (pt.bodyGround && fr >= b.table && fr < b.table + 8) {
+    const age = fr - b.table;
+    for (let k = 0; k < 2; k++) p_ring(f.under, pt.bodyGround[0], pt.bodyGround[1], 10 + age * 6 + k * 6, '#d8c8b0', Math.max(0, 0.6 - age * 0.08));
+    puff(f.under, pt.bodyGround[0] - 10, pt.bodyGround[1], 7, age, 8, 11);
+    puff(f.under, pt.bodyGround[0] + 10, pt.bodyGround[1], 7, age, 8, 12);
+  }
+  // the steamer lid jumps off and lands on the bowing Шустрик's head, then hops back home
+  const T = KITCHEN.table;
+  const st = W(T.x, T.y, T.top);
+  const home: XY = [st[0] + STEAM_DX, st[1] + 2 - 18];
+  const mh = f.pointAt((b.bonk - 0.5) / 24, 'mHead');
+  const hit: XY = [mh[0], mh[1] - 12];
+  if (fr > b.table && fr < b.lidHome) {
+    let x: number, y: number, rot: number;
+    if (fr < b.bonk) {
+      const u = prog(fr, b.table + 1, b.bonk);
+      x = home[0] + (hit[0] - home[0]) * u;
+      y = home[1] + (hit[1] - home[1]) * u - Math.sin(u * Math.PI) * 60;
+      rot = u * 6;
+    } else {
+      const u = prog(fr, b.bonk, b.lidHome);
+      x = hit[0] + (home[0] - hit[0]) * u;
+      y = hit[1] + (home[1] - hit[1]) * u - Math.sin(u * Math.PI) * 50;
+      rot = Math.PI * 2 + u * Math.PI * 4;
+    }
+    steamerLid(f.above, x, y, rot);
+  }
+  boom(f.above, hit[0], hit[1], 10, fr - b.bonk, 8);
+  if (fr >= b.lidHome && fr < b.lidHome + 4) boom(f.under, home[0], home[1] - 4, 6, fr - b.lidHome, 5);
+  if (pt.mHead && fr >= b.mStars[0] + 2 && fr < b.mStars[1]) dizzyRing(f, [pt.mHead[0], pt.mHead[1] - 10], 14, fr * 0.4, 0.6);
+}
+
 // ---- the effects entry --------------------------------------------------------------------------------------------
 export function pandaEffects(f: FxInput) {
   const fr = f.t * 24;
@@ -1006,6 +1102,8 @@ export function pandaEffects(f: FxInput) {
   if (f.anim === 'trick_b') trickBFx(f, fr, P);
   if (f.anim === 'trick_c') trickCFx(f, fr, P);
   if (f.anim === 'phase') phaseFx(f, fr);
+  if (f.anim === 'happy-f2') happyF2Fx(f, fr);
+  if (f.anim === 'trick-f2') duelFx(f, fr);
   // stars over a bonked head
   if ((P.dizzy ?? 0) > 0.5 && pt.head) dizzyRing(f, [pt.head[0], pt.head[1] - 36], 30, f.t * TAU * 1.2, 1);
   if ((P.mDizzy ?? 0) > 0.5 && pt.mHead) dizzyRing(f, [pt.mHead[0], pt.mHead[1] - 13], 12, -f.t * TAU * 1.5, 0.6);
