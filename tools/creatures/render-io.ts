@@ -55,22 +55,33 @@ function reducePalette(colors: Color[], transparentId: number) {
   const remap = new Uint8Array(colors.length);
   const distance = new Float64Array(remaining.length).fill(Infinity);
   const weights = remaining.map((c) => 1 + 0.25 * Math.log2(c.count));
+  // flat copies of the candidates: the same integer arithmetic in the same order, without nested array lookups
+  const count = remaining.length,
+    R = new Int32Array(count),
+    G = new Int32Array(count),
+    B = new Int32Array(count),
+    ID = new Int32Array(count);
+  for (let i = 0; i < count; i++) {
+    R[i] = remaining[i].rgb[0];
+    G[i] = remaining[i].rgb[1];
+    B[i] = remaining[i].rgb[2];
+    ID[i] = remaining[i].id;
+  }
 
   function add(color: Color) {
     const index = palette.length;
     palette.push(color.rgb);
     remap[color.id] = index;
     const [r, g, b] = color.rgb;
-    for (let i = 0; i < remaining.length; i++) {
+    for (let i = 0; i < count; i++) {
       if (distance[i] === 0) continue;
-      const candidate = remaining[i];
-      const dr = candidate.rgb[0] - r,
-        dg = candidate.rgb[1] - g,
-        db = candidate.rgb[2] - b;
+      const dr = R[i] - r,
+        dg = G[i] - g,
+        db = B[i] - b;
       const error = 2 * dr * dr + 3 * dg * dg + db * db;
       if (error < distance[i]) {
         distance[i] = error;
-        remap[candidate.id] = index;
+        remap[ID[i]] = index;
       }
     }
   }
@@ -97,6 +108,9 @@ export function indexed(p: Px) {
   const indices = new Uint8Array(p.w * p.h);
   let wideIds: Uint32Array | undefined;
   const pixels = p.data;
+  // pixel art is runs of one colour: the previous pixel's identity answers most lookups without the map
+  let lastKey = -2,
+    lastId = 0;
   for (let k = 0; k < indices.length; k++) {
     const i = k * 4;
     // Transparent pixels have one dedicated identity, even when opaque black is present.
@@ -104,7 +118,8 @@ export function indexed(p: Px) {
       pixels[i + 3] < 128
         ? -1
         : (pixels[i] << 16) | (pixels[i + 1] << 8) | pixels[i + 2];
-    let id = ids.get(key);
+    let id = key === lastKey ? lastId : ids.get(key);
+    lastKey = key;
     if (id === undefined) {
       id = colors.length;
       ids.set(key, id);
@@ -118,6 +133,7 @@ export function indexed(p: Px) {
         wideIds.set(indices.subarray(0, k));
       }
     }
+    lastId = id;
     colors[id].count++;
     if (wideIds) wideIds[k] = id;
     else indices[k] = id;
@@ -139,6 +155,10 @@ export function indexed(p: Px) {
 export class GifWriter {
   private encoder = GIFEncoder();
   private previous?: Uint32Array;
+  // Reused per frame (the encoder consumes a frame synchronously): no new megabyte buffers for the collector.
+  private spare?: Uint32Array;
+  private delta?: Uint8Array;
+  private big?: Uint8Array;
   constructor(
     private scale = 3,
     private opaque = false,
@@ -152,16 +172,18 @@ export class GifWriter {
     if (this.opaque) {
       if (transparent)
         throw new Error('Opaque GIF has transparent scene pixels');
-      const colors = Uint32Array.from(
-        palette,
-        (c) => (c[0] << 16) | (c[1] << 8) | c[2],
-      );
-      const current = Uint32Array.from(indices, (i) => colors[i]);
+      const colors = new Uint32Array(256);
+      for (let k = 0; k < palette.length; k++) colors[k] = (palette[k][0] << 16) | (palette[k][1] << 8) | palette[k][2];
+      const n = indices.length;
+      const current = this.spare && this.spare.length === n ? this.spare : new Uint32Array(n);
+      for (let k = 0; k < n; k++) current[k] = colors[indices[k]];
       if (this.previous) {
         // A transparent delta means "keep the previous RGB", even when consecutive
         // frames have different local colour tables. Compare resolved RGB, never indices.
+        if (!this.delta || this.delta.length !== n) this.delta = new Uint8Array(n);
+        else this.delta.fill(0);
         const remap = new Uint16Array(256),
-          delta = new Uint8Array(indices.length),
+          delta = this.delta,
           used = [[0, 0, 0]];
         let changed = 0;
         for (let i = 0; i < indices.length && used.length <= 256; i++) {
@@ -181,20 +203,23 @@ export class GifWriter {
           transparentIndex = 0;
         }
       }
+      this.spare = this.previous;
       this.previous = current;
     }
     let enlarged = indices;
     if (scale !== 1) {
-      const rowWidth = p.w * scale;
-      enlarged = new Uint8Array(rowWidth * p.h * scale);
+      const rowWidth = p.w * scale,
+        size = rowWidth * p.h * scale;
+      if (!this.big || this.big.length !== size) this.big = new Uint8Array(size);
+      enlarged = this.big; // every byte is written below
       for (let y = 0; y < p.h; y++) {
-        const offset = y * scale * rowWidth;
-        for (let x = 0; x < p.w; x++)
-          enlarged.fill(
-            indices[y * p.w + x],
-            offset + x * scale,
-            offset + (x + 1) * scale,
-          );
+        const offset = y * scale * rowWidth,
+          row = y * p.w;
+        let o = offset;
+        for (let x = 0; x < p.w; x++) {
+          const v = indices[row + x];
+          for (let k = 0; k < scale; k++) enlarged[o++] = v;
+        }
         for (let i = 1; i < scale; i++)
           enlarged.copyWithin(offset + i * rowWidth, offset, offset + rowWidth);
       }

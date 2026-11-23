@@ -1,19 +1,27 @@
 import { paintSceneryRays } from './scenery.mjs';
 import { createPetBehavior } from './behavior.mjs';
 
-import { drawSprite, imagePage, json, material, sharedMaterial } from './material.mjs';
+import { bytesOf, decodeStats, drawSprite, imagePage, json, material, sharedMaterial } from './material.mjs';
 
 // Some boss atlases contain hundreds of MB of decoded pixels. A thumbnail needs
 // only the pages for its current pose. Keep a small working set and prefetch the next pose.
-function actorPages(root, atlas, priority) {
+// Decoded bytes are counted (galleryMemory) [research 23.11, stage 5]; the set itself stays five pages. Measured on
+// 40 s of Zenith, Ponchik and Zephyr: a 64–192 MB byte budget cut the actor peak by 20–40% (277 → 167–212 MB) but
+// decoded pages 1.5–4× as often; at 256 MB the peak equalled five pages and still decoded more. Every actor page is
+// 40–55 MB, so pages and bytes are the same measure here.
+function actorPages(root, atlas, priority, cancelled) {
   const pages = new Map();
+  let held = 0;
   function touch(id) {
     let page = pages.get(id);
     if (!page) {
       page = {};
-      imagePage(root + atlas.pages[id], priority).then(
+      imagePage(root + atlas.pages[id], priority, cancelled).then(
         (image) => {
           page.image = image;
+          page.bytes = bytesOf(image);
+          if (pages.get(id) === page) held += page.bytes;
+          decodeStats.actorPeak = Math.max(decodeStats.actorPeak, held);
         },
         (error) => {
           page.error = error;
@@ -41,10 +49,14 @@ function actorPages(root, atlas, priority) {
       }
       for (const [id, page] of pages) {
         if (pages.size <= Math.max(needed.size, 5)) break;
-        if (!needed.has(id) && (page.image || page.error)) pages.delete(id);
+        if (!needed.has(id) && (page.image || page.error)) {
+          pages.delete(id);
+          held -= page.bytes ?? 0;
+        }
       }
       return ready;
     },
+    bytes: () => held,
     stamp(ctx, id, x, y) {
       const rect = atlas.rects[id];
       drawSprite(ctx, pages.get(rect[0]).image, rect, x, y);
@@ -52,7 +64,7 @@ function actorPages(root, atlas, priority) {
   };
 }
 
-async function loadArtwork(id, runtime, priority) {
+async function loadArtwork(id, runtime, priority, cancelled) {
   if (runtime === 'f1') {
     const { loadKingPainting } = await import('./king-painting.mjs');
     return loadKingPainting();
@@ -62,14 +74,16 @@ async function loadArtwork(id, runtime, priority) {
   const [scene, border, actor, behavior] = await Promise.all([
     typeof data.scene === 'string'
       ? sharedMaterial(new URL(root + data.scene, document.baseURI).href, ...data.canvas)
-      : material(root, data.scene, ...data.canvas, priority),
+      : material(root, data.scene, ...data.canvas, priority, cancelled),
     data.border
-      ? material(root, data.border, ...(data.borderCanvas ?? data.canvas), priority)
+      ? material(root, data.border, ...(data.borderCanvas ?? data.canvas), priority, cancelled)
       : sharedMaterial('./atlases/frames/' + data.rarity + '/atlas.json', ...(data.borderCanvas ?? data.canvas)),
-    actorPages(root, data.actors, priority),
+    actorPages(root, data.actors, priority, cancelled),
     data.behavior ? json(root + 'behavior.json') : null,
   ]);
-  return { data, scene, border, actor, behavior };
+  // shared materials (common scenes and rarity frames) stay loaded for every painting: not counted here
+  const own = (m) => (typeof data.scene === 'string' && m === scene) || (!data.border && m === border) ? 0 : m.bytes ?? 0;
+  return { data, scene, border, actor, behavior, bytes: () => own(scene) + own(border) + actor.bytes() };
 }
 
 const rarityNames = {
@@ -213,7 +227,8 @@ class Painting {
     this.failed = false;
     const ticket = this.ticket;
     try {
-      const art = await loadArtwork(this.atlasId, this.entry.runtime, () => this.priority);
+      // a closed or reassigned painting changes its ticket: its unstarted page decodes are dropped
+      const art = await loadArtwork(this.atlasId, this.entry.runtime, () => this.priority, () => ticket !== this.ticket);
       if (ticket !== this.ticket) return;
       this.surface = art;
       if (!this.pet && art.createBattle) this.pet = art.createBattle();
@@ -439,6 +454,8 @@ const heroContext = heroCanvas.getContext('2d');
 const players = [];
 let featured,
   heroVisible = false;
+/** For QA in the browser console: decoded bytes of the open painting's own pages, and of the whole session. */
+globalThis.galleryMemory = () => ({ open: featured?.surface?.bytes?.() ?? null, ...decodeStats });
 function copyToHero() {
   const source = featured.ctx.canvas;
   if (heroCanvas.width !== source.width || heroCanvas.height !== source.height) {
