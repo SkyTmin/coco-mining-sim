@@ -74,6 +74,40 @@ export function inputHash(files: string[]) {
   return h.digest('hex').slice(0, 16);
 }
 
+/** Hash of every input file, kept in the render stamp so a miss can say why [research 23.11, R07]. */
+export function fileHashes(files: string[]): Record<string, string> {
+  return Object.fromEntries(files.map((f) => [relative(tools, f), createHash('sha256').update(readFileSync(f)).digest('hex').slice(0, 12)]));
+}
+/** Why a stamp no longer matches: which inputs changed, appeared or disappeared. */
+export function explainMiss(old: Record<string, string> | undefined, now: Record<string, string>): string {
+  if (!old) return 'no earlier stamp with file hashes';
+  const list = (xs: string[]) => xs.slice(0, 6).join(', ') + (xs.length > 6 ? ` … +${xs.length - 6}` : '');
+  const changed = Object.keys(now).filter((k) => k in old && old[k] !== now[k]);
+  const added = Object.keys(now).filter((k) => !(k in old));
+  const removed = Object.keys(old).filter((k) => !(k in now));
+  const parts = [changed.length && `changed ${list(changed)}`, added.length && `new ${list(added)}`, removed.length && `gone ${list(removed)}`].filter(Boolean);
+  return parts.length ? parts.join('; ') : 'same files, different stamp format';
+}
+const gifOf = (id: string, suffix: string, root = assets) => join(root, id, 'gif', `painting-${suffix}.gif`);
+const sha = (file: string) => createHash('sha256').update(readFileSync(file)).digest('hex').slice(0, 16);
+/** What a finished render of a clip left on disk: the GIF's hash and the number of body frames. */
+function outputOf(id: string, anim: string, root = assets) {
+  const gif = gifOf(id, anim, root),
+    body = join(root, id, 'frames', anim, 'body');
+  return {
+    gif: existsSync(gif) ? sha(gif) : null,
+    frames: existsSync(body) ? readdirSync(body).filter((f) => /^\d{3,}\.png$/.test(f)).length : 0,
+  };
+}
+/** Clips whose outputs are missing, cut short or changed since the stamp: the inputs are the same, the files are not. */
+export function damagedClips(id: string, counts: Record<string, number>, stamped: Record<string, { gif: string | null; frames: number }> | undefined, root = assets) {
+  return Object.keys(counts).filter((anim) => {
+    const now = outputOf(id, anim, root),
+      was = stamped?.[anim];
+    return !now.gif || now.frames !== counts[anim] || (was && was.gif !== now.gif);
+  });
+}
+
 function run(args: string[]) {
   return new Promise<number>((done) => {
     const p = spawn(process.execPath, ['--import', 'tsx', ...args], { cwd: tools, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -86,6 +120,21 @@ function run(args: string[]) {
   });
 }
 
+/** Which clips' authored motion changed since the stamp (a hint printed on a miss, never a reason to skip a clip). */
+async function clipsTouched(id: string, before?: Record<string, string>) {
+  const { trackFingerprints } = await import('./events');
+  const tracks = await trackFingerprints(id);
+  if (!tracks) return undefined;
+  if (!before) return { tracks, line: '' };
+  const clips = Object.keys(tracks).filter((k) => k !== '_module');
+  const moved = clips.filter((a) => before[a] !== tracks[a]);
+  const line =
+    before._module !== tracks._module
+      ? 'poses module data changed (beats, lanes or helpers): every clip may move'
+      : `authored motion changed in ${moved.length ? moved.join(', ') : 'no clip'}; the other ${clips.length - moved.length} clips keep their tracks (skin, effects and shared code still feed all of them)`;
+  return { tracks, line };
+}
+
 export async function renderCommand(args: string[]) {
   const force = args.includes('--force');
   const opt = (k: string) => (args.indexOf(k) >= 0 ? args[args.indexOf(k) + 1] : undefined);
@@ -96,26 +145,52 @@ export async function renderCommand(args: string[]) {
   const named = args.filter((a, i) => !a.startsWith('--') && !['--jobs', '--anim'].includes(args[i - 1]));
   const list = !named.length || named[0] === 'all' ? creatureIds() : named.flatMap((a) => a.split(','));
   const { loadPainting } = await import('../render');
-  type Todo = { id: string; hash: string; anims: string[]; left: number; failed: boolean; started: number; ready: boolean };
+  const { frameCount } = await import('../engine');
+  type Todo = {
+    id: string;
+    hash: string;
+    files: Record<string, string>;
+    counts: Record<string, number>;
+    tracks?: Record<string, string>;
+    previous: { outputs?: Record<string, { gif: string | null; frames: number }> } | null;
+    anims: string[];
+    left: number;
+    failed: boolean;
+    started: number;
+    ready: boolean;
+  };
   const todo: Todo[] = [];
   const units: { t: Todo; anim: string; lead: boolean; frames: number }[] = [];
   for (const id of list) {
     const { c } = await loadPainting(id);
-    const hash = inputHash(inputsOf(id, c.theme, c.rarity));
+    const inputs = inputsOf(id, c.theme, c.rarity);
+    const hash = inputHash(inputs);
+    const files = fileHashes(inputs);
     const stamp = join(assets, id, '.ws-render.json');
-    const old = existsSync(stamp) ? JSON.parse(readFileSync(stamp, 'utf8')).hash : null;
-    if (!only && !force && old === hash) {
-      console.log(`= ${id}: unchanged, skipped`);
-      continue;
+    const previous = existsSync(stamp) ? JSON.parse(readFileSync(stamp, 'utf8')) : null;
+    const counts = Object.fromEntries(Object.keys(c.animations).map((a) => [a, frameCount(c.animations[a].seconds)]));
+    let anims = only ? only.filter((a) => c.animations[a]) : Object.keys(c.animations);
+    if (!only && !force && previous?.hash === hash) {
+      // same inputs: re-render only the clips whose files were deleted, cut short or changed on disk
+      const damaged = damagedClips(id, counts, previous.outputs);
+      if (!damaged.length) {
+        console.log(`= ${id}: unchanged, skipped`);
+        continue;
+      }
+      console.log(`  ${id}: inputs unchanged, outputs missing or changed for ${damaged.join(', ')} → only those`);
+      anims = damaged;
+    } else if (!only && !force) {
+      console.log(`  ${id}: ${explainMiss(previous?.files, files)} → all ${anims.length} clips (which clips a file feeds is not tracked)`);
+      const hint = await clipsTouched(id, previous?.tracks);
+      if (hint?.line) console.log(`  ${id}: ${hint.line}`);
     }
-    const anims = only ? only.filter((a) => c.animations[a]) : Object.keys(c.animations);
     if (only && anims.length < only.length) console.log(`  ${id}: no ${only.filter((a) => !c.animations[a]).join(', ')}`);
     if (!anims.length) continue;
     // idle writes the scene and the frame (materials) the other clips read; it goes first and alone for its creature
     // (without idle and without materials, the first named clip writes them and leads)
     const hasMaterials = existsSync(join(assets, id, 'bg', 'base.png'));
     const lead = anims.includes('idle') ? 'idle' : hasMaterials ? undefined : anims[0];
-    const t: Todo = { id, hash, anims, left: anims.length, failed: false, started: 0, ready: !lead };
+    const t: Todo = { id, hash, files, counts, tracks: (await clipsTouched(id))?.tracks, previous, anims, left: anims.length, failed: false, started: 0, ready: !lead };
     todo.push(t);
     for (const anim of anims) units.push({ t, anim, lead: anim === lead, frames: Math.round(c.animations[anim].seconds * 24) });
   }
@@ -131,8 +206,11 @@ export async function renderCommand(args: string[]) {
       return;
     }
     if (!only) {
+      // the stamp: inputs (hash and per file, to explain the next miss), what each clip left on disk, the clips' tracks
+      const outputs = { ...(t.previous?.outputs ?? {}) };
+      for (const anim of t.anims) outputs[anim] = outputOf(t.id, anim);
       mkdirSync(join(assets, t.id), { recursive: true });
-      writeFileSync(join(assets, t.id, '.ws-render.json'), JSON.stringify({ hash: t.hash, at: new Date().toISOString() }) + '\n');
+      writeFileSync(join(assets, t.id, '.ws-render.json'), JSON.stringify({ hash: t.hash, at: new Date().toISOString(), files: t.files, tracks: t.tracks, outputs }) + '\n');
     }
     console.log(`✓ ${t.id}: ${t.anims.length} clips, ${((Date.now() - t.started) / 1000).toFixed(0)} s`);
   };

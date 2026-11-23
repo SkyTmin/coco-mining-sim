@@ -81,6 +81,37 @@ export function pointsAt(c: Creature, anim: string, t: number): BodyFrame {
   return withPointsOnly(() => c.frame(anim, t, 0, 'normal', { headSide: 0, gaitPhase: t, pointsOnly: true }));
 }
 
+/** A fingerprint of each clip's authored channels [stage 4 hint]: the pose sampled every half frame from 1 s before to
+ * 1 s after the clip (lags read outside it), and `_module` for everything else the poses module exports (beats, lanes,
+ * helpers' source). Equal fingerprints mean the clip's authored motion did not change — not that its pixels did not:
+ * the skin, effects and shared code feed every clip, so this only narrows where to look first. */
+export async function trackFingerprints(id: string): Promise<Record<string, string> | undefined> {
+  const file = join(tools, 'c', `${id}-poses.ts`);
+  if (!existsSync(file)) return undefined;
+  const { loadPainting: load } = await import('../render');
+  const { c } = await load(id);
+  const mod = (await import(file)) as Record<string, unknown> & { gesture?: Gesture };
+  const { createHash } = await import('node:crypto');
+  const out: Record<string, string> = {};
+  for (const [anim, spec] of Object.entries(c.animations)) {
+    const h = createHash('sha256');
+    const technique = c.techniques?.[anim];
+    for (let k = -48; k <= Math.ceil(spec.seconds * 48) + 48; k++) {
+      const t = k / 48;
+      const pose = technique ? techniquePoseAt(technique, t) : mod.gesture?.(anim, t);
+      h.update(JSON.stringify(pose ?? null));
+    }
+    out[anim] = h.digest('hex').slice(0, 12);
+  }
+  const rest = createHash('sha256');
+  for (const [k, v] of Object.entries(mod).sort(([a], [b]) => a.localeCompare(b))) {
+    if (k === 'gesture' || k === 'tracks') continue;
+    rest.update(k + '=' + (typeof v === 'function' ? v.toString() : JSON.stringify(v)));
+  }
+  out._module = rest.digest('hex').slice(0, 12);
+  return out;
+}
+
 /** Events of one clip from both schemes, sorted by frame. */
 export function readEvents(c: Creature, beats: Record<string, unknown> | undefined, anim: string, track?: JointPose[]): ClipEvent[] {
   const spec = c.animations[anim];
