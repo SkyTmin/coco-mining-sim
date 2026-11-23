@@ -6,7 +6,7 @@ import { Pen } from './fx/pen';
 import { emptyTechniqueTrace } from './technique-fx';
 import { frameImage } from './frame-kit';
 import { withPointsOnly } from './rig/figure';
-import { rigStats } from './rig/stats';
+import { rigStats, fxJournal } from './rig/stats';
 import {
   sizeOf,
   type Creature,
@@ -227,6 +227,16 @@ export function loopSample(t: number, anim: string, seconds: number) {
 export function overAllowed(c: Creature, anim: string) {
   return anim === 'peek' || anim === 'show' || !!c.overClips?.includes(anim);
 }
+const PROBES = new Set(['then', 'toJSON', 'constructor', 'length', 'inspect']);
+function journaled(points: Record<string, XY>, frame: number): Record<string, XY> {
+  return new Proxy(points, {
+    get(target, key) {
+      if (typeof key === 'string' && !(key in target) && !PROBES.has(key))
+        fxJournal.socket?.({ frame, when: frame / fps, name: key, ok: false });
+      return Reflect.get(target, key);
+    },
+  });
+}
 export function compose(
   c: Creature,
   scene: Scene,
@@ -373,6 +383,7 @@ export function compose(
   if ((c.props || c.effects) && !(finalFrame && anim === 'away')) {
     const [under, above] = getFxCanvases(w, h);
     const historical = new Map<number, BodyFrame>([[poseTime, body]]);
+    fxJournal.pose?.(n, points);
     let field: Canvas | undefined;
     let fieldPen: Pen | undefined;
     const fx: FxInput = {
@@ -392,7 +403,9 @@ export function compose(
       hits: finalFrame ? [] : hits,
       variant,
       feet,
-      points,
+      // with a socket journal the misses of the current pose are reported too (effects often fall back silently)
+      points: fxJournal.socket ? journaled(points, n) : points,
+      propAt: fxJournal.prop ? (prop, at) => fxJournal.prop?.({ frame: n, prop, at: [at[0], at[1]] }) : undefined,
       techniqueTrace,
       w,
       h,
@@ -409,6 +422,7 @@ export function compose(
           fr = projected(when, source, true);
           historical.set(when, fr);
         }
+        fxJournal.socket?.({ frame: n, when, name, ok: !!fr.points[name] });
         if (!fr.points[name])
           throw new Error(c.id + '/' + anim + ' missing socket ' + name);
         return screenPoint(fr, fr.points[name], source.feet);

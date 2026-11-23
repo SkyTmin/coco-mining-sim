@@ -8,3 +8,26 @@ export const rigMode = { pointsOnly: false };
 export function resetRigStats() {
   for (const k of Object.keys(rigStats) as (keyof typeof rigStats)[]) rigStats[k] = 0;
 }
+
+/** What the effects reveal while a frame is composed, for the studio [research 23.11, stage 3 / 4]. `socket`: one socket
+ * read — `frame` being composed, `when` the pose time asked (seconds; fractional times stay as they are), whether that
+ * pose had the socket; reads through `pointAt` and misses of `points[name]` are reported. `prop`: an effect drew a
+ * carried object off the body (Murlen's hat on the floor) at `at`, field pixels. Set a sink to listen; with no sink
+ * nothing is recorded and no pixel depends on it either way. */
+export interface SocketRead {
+  frame: number;
+  when: number;
+  name: string;
+  ok: boolean;
+}
+export interface PropMark {
+  frame: number;
+  prop: string;
+  at: [number, number];
+}
+export const fxJournal: {
+  socket?: (read: SocketRead) => void;
+  prop?: (mark: PropMark) => void;
+  /** The current pose's sockets in field pixels, once per composed frame that runs effects. */
+  pose?: (frame: number, points: Record<string, [number, number]>) => void;
+} = {};

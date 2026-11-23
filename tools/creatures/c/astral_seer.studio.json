@@ -19,5 +19,15 @@
       "walk_e",
       "walk_w"
     ]
+  },
+  "requiredSockets": {
+    "fidget_a": {
+      "toss": [
+        "lightR"
+      ],
+      "catch": [
+        "lightL"
+      ]
+    }
   }
 }

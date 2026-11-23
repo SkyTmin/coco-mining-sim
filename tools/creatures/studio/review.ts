@@ -27,6 +27,7 @@ import { actionBox, layout, type COLORS, type Img, type Tile } from './sheet';
 import { endpointSeams } from './pet-gate';
 import { inputHash, inputsOf } from './cache';
 import { checkerFingerprint, exceptionRules, readAcceptance } from './baseline';
+import { clipReport, recordFx } from './events';
 
 const tools = join(import.meta.dirname, '..');
 const SHOWN = ['body', 'lit', 'fxu', 'fxo', 'over'];
@@ -144,7 +145,8 @@ export async function reviewCommand(args: string[]) {
   const kept = new Map<number, Kept>();
   const hashes: string[] = [];
   let flaggedKept = 0;
-  const samples = sampleAnimation(painting, anim, cfg, (n, f, sample) => {
+  // the same walk also records what the effects read and drew off the body (ws events), so no second compose
+  const { result: samples, fx } = recordFx(() => sampleAnimation(painting, anim, cfg, (n, f, sample) => {
     if (wantsGolden) hashes[n] = createHash('sha1').update(f.picture.data).digest('hex').slice(0, 10);
     const flagged = !!(sample.clip || sample.gone || sample.hidden || sample.contactIssues?.length);
     if (wanted.has(n)) kept.set(n, keep(f));
@@ -153,11 +155,17 @@ export async function reviewCommand(args: string[]) {
       flaggedKept++;
     }
     if (goal === 'refactor' && golden && golden[n] !== hashes[n] && kept.size < CAP) kept.set(n, keep(f));
-  });
+  }));
   const found = findings(painting, anim, samples, cfg);
   const coverage: Coverage[] = [];
   const errors = found.filter((f) => f.level === 'error');
   coverage.push({ check: 'critic', status: errors.length ? 'failed' : 'passed', note: `${errors.length} errors, ${found.length - errors.length} warnings` });
+
+  // ---- events: required sockets, effects asking a pose that has no such socket, declared props (ws events)
+  const ev = await clipReport(id, anim, false, {}, fx);
+  const evIssues = ev.issues.filter((i) => i.level !== 'info');
+  const evErrors = evIssues.filter((i) => i.level === 'error').length;
+  coverage.push({ check: 'events', status: evErrors ? 'failed' : 'passed', note: `${ev.events.filter((e) => e.from !== 'switch').length} events, ${evErrors} errors, ${evIssues.length - evErrors} warnings` });
 
   // ---- seams and the held last pose (one-shot clips only)
   const { seams, hold } = spec.loop ? { seams: [], hold: [] } : endpointSeams(painting, [anim]);
@@ -230,7 +238,10 @@ export async function reviewCommand(args: string[]) {
   } else coverage.push({ check: 'sheet', status: 'n/a', note: goal === 'refactor' ? 'no frame changed' : 'nothing to show' });
 
   // ---- issues: stable ids, new / fixed / still there against the previous review of this clip
-  const issues: Issue[] = found.map((f) => ({ id: issueId(f), level: f.level, kind: f.kind, frames: ranges(f.frames), note: f.note }));
+  const issues: Issue[] = [
+    ...found.map((f) => ({ id: issueId(f), level: f.level, kind: f.kind, frames: ranges(f.frames), note: f.note })),
+    ...evIssues.map((i) => ({ id: `events:${i.kind}:${i.note.replace(/[\d.]+/g, '#')}`, level: i.level as 'error' | 'warn', kind: i.kind, frames: i.frame === undefined ? '' : String(i.frame), note: i.note })),
+  ];
   const before = new Set((previous?.issues ?? []).map((i) => i.id));
   const now = new Set(issues.map((i) => i.id));
   const fresh = issues.filter((i) => !before.has(i.id));

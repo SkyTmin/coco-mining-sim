@@ -419,6 +419,7 @@ function vanish(f: FxInput, frame: number) {
       pen = f.above;
     }
     if (frame >= b.wobble && frame < b.emergeEnd) ellFill(f.above, [floorHat[0], floorHat[1] - 22], 9, 2.2, '#bccbff', 0.5 + 0.4 * Math.sin(frame));
+    f.propAt?.('hat', pos);
     drawHat(pen, pos, 1.25, opening, rot);
   }
   if (frame >= b.hatUp + 6 && frame < b.hatUp + 14) sparkle(f.above, at(f, 'wandTip'), 4, 1 - (frame - b.hatUp - 6) / 8, starDust);
@@ -480,6 +481,7 @@ function show(f: FxInput, frame: number) {
       pen = f.above;
     }
     if (frame < b.hatLand) ellFill(f.under, [floor[0], floor[1] + 1], 6 + 8 * (frame / b.hatLand), 2.5, '#140c0c', 0.4);
+    f.propAt?.('hat', pos);
     drawHat(pen, pos, 1.25, opening, rot);
   }
   burst(f.above, [floor[0], floor[1] - 24], frame - b.burst, 16, 20, 50, gold, 15);

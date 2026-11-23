@@ -68,6 +68,9 @@ export interface FxInput {
   pointAt: (time: number, name: string) => XY;
   variant: Variant;
   techniqueTrace?: TechniqueTrace;
+  /** Studio only (ws events): an effect draws a carried object off the body here, e.g. the hat on the floor. Absent
+   * outside the studio journal; calling it changes no pixel. */
+  propAt?: (prop: string, at: XY) => void;
 }
 export interface Creature {
   id: string;

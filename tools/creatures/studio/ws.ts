@@ -160,6 +160,11 @@ process.on('exit', (code) => {
   }
 });
 switch (cmd) {
+  case 'events': {
+    const { eventsCommand } = await import('./events');
+    await eventsCommand(rest);
+    break;
+  }
   case 'context': {
     const { contextCommand } = await import('./context');
     await contextCommand(rest);
