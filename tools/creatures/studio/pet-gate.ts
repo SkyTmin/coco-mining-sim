@@ -224,5 +224,43 @@ export function petGate(painting: Painting, references: string[], hatchKeys: num
     if (seam.iou < 0.9) issues.push(seam.clip + ' frame ' + seam.frame + ' vs ' + seam.against + ' IoU ' + seam.iou.toFixed(3) + ' < 0.900');
   }
   console.log('  ' + c.id + ': ' + count + ' one-shot endpoints, lowest endpoint IoU ' + minimum.toFixed(3));
+  const carried = sceneryOnPerformer(painting);
+  if (carried) issues.push(carried);
   return issues;
+}
+
+function alphaBox(p: Px): [number, number, number, number] | null {
+  let x0 = p.w, y0 = p.h, x1 = -1, y1 = -1;
+  for (let y = 0; y < p.h; y++)
+    for (let x = 0; x < p.w; x++)
+      if (p.data[(y * p.w + x) * 4 + 3] > 0) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+  return x1 < 0 ? null : [x0, y0, x1, y1];
+}
+
+/** Scenery must not travel with the pet. In the gallery the performer's layers (fxu, body, lit, fxo) move with the
+ * walking pet and only the backdrop stays in the painting; furniture drawn on `f.under` walked along with Пончик
+ * [владелец 23.11]. Accepted pets keep their walking effects (shadow, aura, glow) within 18 px of the body; 40 px is
+ * the limit. Returns the issue or null. */
+export function sceneryOnPerformer(painting: Painting, limit = 40) {
+  const { c, s, b } = painting;
+  const walk = c.animations.walk_e ? 'walk_e' : c.animations.walk ? 'walk' : undefined;
+  if (!walk) return null;
+  let worst = 0;
+  for (const n of [0, 8, 16]) {
+    const f = compose(c, s, b, walk, n / 24);
+    const body = alphaBox(f.layers.body);
+    if (!body) continue;
+    for (const layer of [f.layers.fxu, f.layers.fxo]) {
+      const e = alphaBox(layer);
+      if (e) worst = Math.max(worst, body[0] - e[0], e[2] - body[2], body[1] - e[1], e[3] - body[3]);
+    }
+  }
+  return worst > limit
+    ? `${walk}: effects reach ${worst} px past the body (limit ${limit}) — scenery on f.under/f.above walks with the pet in the gallery; draw it on f.backdrop`
+    : null;
 }

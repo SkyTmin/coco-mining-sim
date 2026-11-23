@@ -369,11 +369,14 @@ interface Who {
   monkey: XY | null;
 }
 /** Which pen a prop at floor depth `py` (painting px) belongs to: over the heroes when one of them stands behind it
- * within `half` px across. */
+ * within `half` px across, otherwise the field-anchored backdrop. The kitchen stands still in the painting: in the
+ * gallery the performer's layers (`under`, `above`) travel with the pet when it walks, the backdrop does not
+ * [владелец 23.11: «когда панда ходит, вместе с ней ходят предметы и окружение»]. A hero stands behind a prop only in
+ * tricks at home, where the performer's layers are not shifted. */
 function penFor(f: FxInput, who: Who, px: number, py: number, half: number) {
   for (const at of [who.panda, who.monkey])
     if (at && Math.abs(at[0] - px) < half && at[1] < py - 2) return f.above;
-  return f.under;
+  return f.backdrop;
 }
 
 /** Decaying swing after an impact at frame `at`. */
@@ -450,22 +453,23 @@ function drawKitchen(f: FxInput, pr: Props, who: Who, fr: number) {
   const T = KITCHEN.table;
   const tb = W(T.x, T.y);
   const tablePen = penFor(f, who, tb[0], tb[1] + T.r * PX.y * 0.6, T.r * PX.s + 10);
-  rug(f.under, pr);
+  const back = f.backdrop;
+  rug(back, pr);
   table(tablePen, pr);
   const tbb = W(KITCHEN.tub.x, KITCHEN.tub.y);
   tub(penFor(f, who, tbb[0], tbb[1], 22), pr, fr, pr.stalkFront ? f.above : null);
   if (pr.door > 0.01) {
-    doorway(f.under);
-    doorLeaf(pr.doorFront ? f.above : f.under, pr.door);
+    doorway(back);
+    doorLeaf(pr.doorFront ? f.above : back, pr.door);
   }
-  if (pr.panOnWall) wallPan(f.under, pr.panSwing);
-  if (pr.jarOnBench) honeyJar(f.under, ...W(KITCHEN.jar.x, KITCHEN.jar.y, KITCHEN.jar.z));
+  if (pr.panOnWall) wallPan(back, pr.panSwing);
+  if (pr.jarOnBench) honeyJar(back, ...W(KITCHEN.jar.x, KITCHEN.jar.y, KITCHEN.jar.z));
   const bb = W(KITCHEN.barrel.x, KITCHEN.barrel.y);
   barrel(penFor(f, who, bb[0], bb[1], 30), pr, fr);
   const sb = W(KITCHEN.sack.x, KITCHEN.sack.y);
   const sackPen = penFor(f, who, sb[0], sb[1], 26);
   sack(sackPen);
-  lanterns(f.under, pr, fr);
+  lanterns(back, pr, fr);
 }
 
 // ---- everyday effects ---------------------------------------------------------------------------------------------
