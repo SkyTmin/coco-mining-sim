@@ -154,7 +154,13 @@ export function coveredByForeground(
 }
 
 /** Samples every frame of `anim` once. */
-export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {}): FrameSample[] {
+/** `onFrame` sees every composed frame with its sample, so a caller (ws review) can keep pictures without composing again. */
+export function sampleAnimation(
+  p: Painting,
+  anim: string,
+  cfg: StudioConfig = {},
+  onFrame?: (n: number, frame: ReturnType<typeof compose>, sample: FrameSample) => void,
+): FrameSample[] {
   const { c, s, b } = p;
   const spec = c.animations[anim];
   const count = frameCount(spec.seconds);
@@ -299,7 +305,9 @@ export function sampleAnimation(p: Painting, anim: string, cfg: StudioConfig = {
           hidden = 'contact at ' + birth.at.map(Math.round).join(',') + ' under a foreground prop';
       }
     }
-    out.push({ n, mask, clip, thin, gone, contrast, hidden, contactIssues });
+    const sample: FrameSample = { n, mask, clip, thin, gone, contrast, hidden, contactIssues };
+    onFrame?.(n, f, sample);
+    out.push(sample);
   }
   for (const [id, n] of flights)
     if (!seen.has(id)) out[Math.min(out.length - 1, n)].contactIssues!.push({ kind: 'from-nowhere',

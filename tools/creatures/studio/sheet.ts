@@ -13,7 +13,7 @@ import { findings, sampleAnimation, studioConfig } from './checks';
 
 const tools = join(import.meta.dirname, '..');
 type RGBA = [number, number, number, number];
-interface Img {
+export interface Img {
   w: number;
   h: number;
   data: Uint8Array | Uint8ClampedArray | Buffer;
@@ -62,7 +62,7 @@ function frameRect(dst: PNG, x: number, y: number, w: number, h: number, c: RGBA
   rect(dst, x + w, y, t, h, c);
 }
 
-const COLORS = {
+export const COLORS = {
   bg: [24, 22, 28, 255] as RGBA,
   label: [230, 224, 200, 255] as RGBA,
   hit: [255, 210, 60, 255] as RGBA,
@@ -71,13 +71,13 @@ const COLORS = {
   warn: [240, 150, 50, 255] as RGBA,
 };
 
-interface Tile {
+export interface Tile {
   n: number;
   pics: Img[]; // one picture, or old + new
   marks: (keyof typeof COLORS)[];
 }
 
-function layout(tiles: Tile[], box: number[], k: number, maxWidth = 1400) {
+export function layout(tiles: Tile[], box: number[], k: number, maxWidth = 1400) {
   const tw = box[2] * k,
     th = box[3] * k,
     rows = Math.max(...tiles.map((t) => t.pics.length));
@@ -102,7 +102,7 @@ function layout(tiles: Tile[], box: number[], k: number, maxWidth = 1400) {
 }
 
 /** Bounding box of everything that is not background/frame, over the chosen frames, plus a margin. */
-function actionBox(frames: { layers: Record<string, Img> }[], W: number, H: number, margin = 8) {
+export function actionBox(frames: { layers: Record<string, Img> }[], W: number, H: number, margin = 8) {
   let x0 = W,
     y0 = H,
     x1 = -1,

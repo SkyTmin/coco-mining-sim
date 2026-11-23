@@ -88,42 +88,78 @@ function run(args: string[]) {
 
 export async function renderCommand(args: string[]) {
   const force = args.includes('--force');
-  const jobsArg = args.indexOf('--jobs');
+  const opt = (k: string) => (args.indexOf(k) >= 0 ? args[args.indexOf(k) + 1] : undefined);
   const { defaultJobs, heavyLock } = await import('./lock');
-  const jobs = jobsArg >= 0 ? Number(args[jobsArg + 1]) : defaultJobs();
-  const named = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--jobs');
+  const jobs = Number(opt('--jobs') ?? defaultJobs());
+  // --anim a,b renders only those clips of each named creature; a partial run never writes the stamp
+  const only = opt('--anim')?.split(',');
+  const named = args.filter((a, i) => !a.startsWith('--') && !['--jobs', '--anim'].includes(args[i - 1]));
   const list = !named.length || named[0] === 'all' ? creatureIds() : named.flatMap((a) => a.split(','));
   const { loadPainting } = await import('../render');
-  const todo: { id: string; hash: string }[] = [];
+  type Todo = { id: string; hash: string; anims: string[]; left: number; failed: boolean; started: number; ready: boolean };
+  const todo: Todo[] = [];
+  const units: { t: Todo; anim: string; lead: boolean; frames: number }[] = [];
   for (const id of list) {
     const { c } = await loadPainting(id);
     const hash = inputHash(inputsOf(id, c.theme, c.rarity));
     const stamp = join(assets, id, '.ws-render.json');
     const old = existsSync(stamp) ? JSON.parse(readFileSync(stamp, 'utf8')).hash : null;
-    if (!force && old === hash) console.log(`= ${id}: unchanged, skipped`);
-    else todo.push({ id, hash });
+    if (!only && !force && old === hash) {
+      console.log(`= ${id}: unchanged, skipped`);
+      continue;
+    }
+    const anims = only ? only.filter((a) => c.animations[a]) : Object.keys(c.animations);
+    if (only && anims.length < only.length) console.log(`  ${id}: no ${only.filter((a) => !c.animations[a]).join(', ')}`);
+    if (!anims.length) continue;
+    // idle writes the scene and the frame (materials) the other clips read; it goes first and alone for its creature
+    // (without idle and without materials, the first named clip writes them and leads)
+    const hasMaterials = existsSync(join(assets, id, 'bg', 'base.png'));
+    const lead = anims.includes('idle') ? 'idle' : hasMaterials ? undefined : anims[0];
+    const t: Todo = { id, hash, anims, left: anims.length, failed: false, started: 0, ready: !lead };
+    todo.push(t);
+    for (const anim of anims) units.push({ t, anim, lead: anim === lead, frames: Math.round(c.animations[anim].seconds * 24) });
   }
-  const release = todo.length ? await heavyLock('render ' + todo.map((t) => t.id).join(',')) : () => {};
+  // longest clips first (showreel, life, tricks), so the last minutes are not one long clip on one core
+  units.sort((a, z) => Number(z.lead) - Number(a.lead) || z.frames - a.frames);
+  const release = units.length ? await heavyLock('render ' + todo.map((t) => t.id).join(',')) : () => {};
   const t0 = Date.now();
-  let next = 0,
-    failed = 0;
+  let failed = 0;
+  const finish = (t: Todo) => {
+    if (t.failed) {
+      failed++;
+      console.log(`✗ ${t.id}: render failed`);
+      return;
+    }
+    if (!only) {
+      mkdirSync(join(assets, t.id), { recursive: true });
+      writeFileSync(join(assets, t.id, '.ws-render.json'), JSON.stringify({ hash: t.hash, at: new Date().toISOString() }) + '\n');
+    }
+    console.log(`✓ ${t.id}: ${t.anims.length} clips, ${((Date.now() - t.started) / 1000).toFixed(0)} s`);
+  };
+  const waiting: (() => void)[] = [];
   async function worker() {
-    while (next < todo.length) {
-      const { id, hash } = todo[next++];
-      const t = Date.now();
-      const code = await run(['render.ts', '--id', id]);
-      if (code) {
-        failed++;
-        console.log(`✗ ${id}: render failed`);
+    for (;;) {
+      const i = units.findIndex((u) => u.lead || u.t.ready);
+      if (i < 0) {
+        if (!units.length) return;
+        await new Promise<void>((r) => waiting.push(r)); // the rest of a creature waits for its lead clip
         continue;
       }
-      mkdirSync(join(assets, id), { recursive: true });
-      writeFileSync(join(assets, id, '.ws-render.json'), JSON.stringify({ hash, at: new Date().toISOString() }) + '\n');
-      console.log(`✓ ${id}: ${((Date.now() - t) / 1000).toFixed(0)} s`);
+      const { t, anim, lead } = units.splice(i, 1)[0];
+      t.started ||= Date.now();
+      const code = t.failed ? 1 : await run(['render.ts', '--id', t.id, '--anim', anim]);
+      if (code && !t.failed) {
+        t.failed = true;
+        console.log(`  ✗ ${t.id} ${anim}`);
+      }
+      if (lead) t.ready = true;
+      if (--t.left === 0) finish(t);
+      for (const w of waiting.splice(0)) w();
     }
   }
-  await Promise.all(Array.from({ length: Math.min(jobs, todo.length) }, worker));
+  await Promise.all(Array.from({ length: Math.max(1, Math.min(jobs, units.length)) }, worker));
   release();
-  if (todo.length) console.log(`rendered ${todo.length - failed}/${todo.length} in ${((Date.now() - t0) / 1000).toFixed(0)} s with ${jobs} jobs`);
+  if (todo.length)
+    console.log(`rendered ${todo.length - failed}/${todo.length} in ${((Date.now() - t0) / 1000).toFixed(0)} s with ${jobs} jobs, one process a clip`);
   if (failed) process.exitCode = 1;
 }

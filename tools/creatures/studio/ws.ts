@@ -9,10 +9,12 @@
 //                                                --check skips a creature whose inputs did not change since its last identical check
 //   npm run ws -- clip <id> <anim|all> [a-b] [--tag part] [-v]  limb-in-body on every frame of a clip, clearance of a part
 //   npm run ws -- seam <id> [anim...]            pet endpoints vs idle / idle-f2 / sleep in seconds, with the parts that drifted
+//   npm run ws -- review <id> <anim> [--frames a,b] [--out f.png]  per-clip loop in one pass: check + sheet + seams
+//   npm run ws -- detail <id>                    detail bar of the rest frame (colours, edge, flat, size) — run before the clips
 // check/gate/snap on several creatures run in parallel child processes (--jobs N, default = cores, at most one per 4.5 GB);
 // heavy runs (render, snap, check/gate of several) wait for each other instead of running out of memory together;
 // gate remembers a green result per creature and skips it while none of its inputs changed (--force re-runs).
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadPainting } from '../render';
 import { checkCreature, defaultAnims, studioConfig } from './checks';
@@ -121,7 +123,34 @@ async function check(args: string[], strict: boolean) {
 }
 
 const [cmd, ...rest] = process.argv.slice(2);
+// timing log: one line per command in .studio/ws-log.jsonl (gitignored) — what the loop really costs, measured, not guessed.
+// maxRssMB is this process only; render/snap/check of several creatures add their children on top.
+const startedAt = Date.now();
+process.on('exit', (code) => {
+  if (!cmd) return;
+  try {
+    mkdirSync(studioDir, { recursive: true });
+    const line = { at: new Date(startedAt).toISOString().slice(0, 19), cmd, args: rest, sec: +((Date.now() - startedAt) / 1000).toFixed(1), maxRssMB: Math.round(process.resourceUsage().maxRSS / 1024), code };
+    appendFileSync(join(studioDir, 'ws-log.jsonl'), JSON.stringify(line) + '\n');
+  } catch {
+    // the log is a convenience; a read-only checkout must not fail the command
+  }
+});
 switch (cmd) {
+  case 'review': {
+    const { reviewCommand } = await import('./review');
+    await reviewCommand(rest);
+    break;
+  }
+  case 'detail': {
+    const { detailBar } = await import('./gate');
+    for (const id of await ids(rest[0])) {
+      const { line, issues } = detailBar(await loadPainting(id));
+      console.log(line);
+      if (issues.length) process.exitCode = 1;
+    }
+    break;
+  }
   case 'export-ref': {
     const { exportRefCommand } = await import('./art-sheet');
     await exportRefCommand(rest);
@@ -184,6 +213,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: npm run ws -- new|check|gate|probe|seam|clip|sheet|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
+    console.log('usage: npm run ws -- new|check|gate|review|detail|probe|seam|clip|sheet|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
     process.exitCode = cmd ? 1 : 0;
 }
