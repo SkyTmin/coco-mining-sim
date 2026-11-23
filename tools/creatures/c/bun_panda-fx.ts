@@ -596,7 +596,17 @@ function everydayFx(f: FxInput, fr: number, P: Record<string, number>) {
     }
     case 'peek': {
       const pb = beats.peek;
+      const home = W(0, 0);
+      // a cloud where he stood, speed lines behind the wheel of legs, a cloud where he skids home
+      puff(f.under, home[0] - 4, home[1] - 4, 16, fr - pb.dash[0], 12, 0.4);
+      puff(f.under, home[0] + 10, home[1] - 2, 9, fr - pb.dash[0] - 1, 9, 1.7);
+      const body = pt.body;
+      if (body && fr >= pb.dash[0] && fr <= pb.dash[1]) speedLines(f.above, body[0], body[1], -1, -0.15, 30, 5, 34, fr, 0.8);
+      if (body && fr >= pb.back[0] + 3 && fr <= pb.back[1]) speedLines(f.above, body[0], body[1], 1, 0.35, 30, 5, 34, fr + 7, 0.8);
+      puff(f.under, home[0] + 14, home[1] - 2, 14, fr - pb.skid, 12, 2.2);
+      puff(f.under, home[0] - 8, home[1] - 1, 10, fr - pb.skid, 10, 0.9);
       if (head && fr >= pb.bonk && fr < pb.bonk + 7) boom(f.above, 2, head[1] - 20, 11, fr - pb.bonk, 0.7);
+      if (head && fr >= pb.drop && fr < pb.drop + 7) boom(f.above, head[0] + 6, head[1] - 30, 9, fr - pb.drop, 1.9);
       break;
     }
   }
