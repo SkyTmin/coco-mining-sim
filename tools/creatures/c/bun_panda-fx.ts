@@ -414,6 +414,12 @@ function propsFor(anim: string, fr: number, P: Record<string, number>, f: FxInpu
     pr.lidOff = fr > b.table && fr < b.lidHome ? 1 : 0;
     pr.swing = Math.max(ring(fr, b.bong, 0.5), ring(fr, b.bong2, 0.35), ring(fr, b.table, 0.3));
   }
+  if (anim === 'trick_b-f2') {
+    const b = beats['trick_b-f2'];
+    // the whole room shakes when he hits the glass; the steamers jump when he walks into the table
+    pr.hop = fr >= b.thud && fr < b.thud + 6 ? Math.sin(prog(fr, b.thud, b.thud + 6) * Math.PI) * 6 : 0;
+    pr.swing = Math.max(ring(fr, b.splat, 0.6), ring(fr, b.thud, 0.3));
+  }
   return pr;
 }
 
@@ -1078,6 +1084,85 @@ function duelFx(f: FxInput, fr: number) {
   if (pt.mHead && fr >= b.mStars[0] + 2 && fr < b.mStars[1]) dizzyRing(f, [pt.mHead[0], pt.mHead[1] - 10], 14, fr * 0.4, 0.6);
 }
 
+function squeak(p: Pen, x: number, y: number, side: number, age: number) {
+  if (age < 0 || age > 5) return;
+  const a = 1 - age / 6;
+  for (let i = 0; i < 3; i++) {
+    const y0 = y - 6 + i * 6,
+      x0 = x + side * (4 + age * 1.5);
+    seg(p, x0, y0, x0 + side * 4, y0 - 2, 0.7, INK, a);
+    seg(p, x0 + side * 4, y0 - 2, x0 + side * 8, y0, 0.7, INK, a);
+  }
+}
+function ramFx(f: FxInput, fr: number) {
+  const b = beats['trick_b-f2'];
+  const pt = f.points;
+  // pawing the floor like a bull: dust kicked back, two angry snorts
+  for (const c of [22, 26, 30, 34]) if (pt.footR) puff(f.under, pt.footR[0] - 6, pt.footR[1] + 1, 5, fr - c, 8, c);
+  for (const c of [28, 36])
+    if (pt.nose) {
+      puff(f.above, pt.nose[0] - 7, pt.nose[1] + 3, 3, fr - c, 7, c, '#f4f0e8');
+      puff(f.above, pt.nose[0] + 7, pt.nose[1] + 3, 3, fr - c, 7, c + 1, '#f4f0e8');
+    }
+  // the charge: dust from the wheel of legs, speed lines streaming back
+  if (fr >= b.charge[0] + 3 && fr < b.charge[1]) {
+    const k = prog(fr, b.charge[0], b.charge[1]);
+    if (pt.bodyGround) puff(f.under, pt.bodyGround[0] + (fr % 2 ? 9 : -9), pt.bodyGround[1] - 2, 5 + k * 6, fr % 5, 5, fr);
+    if (pt.body) speedLines(f.above, pt.body[0], pt.body[1] - 14, 0, 1, 18 + k * 26, 6, 56 + k * 30, fr, 0.9);
+  }
+  // olé: the lid sweeps aside like a cape
+  if (fr >= b.ole - 3 && fr < b.ole + 4) whoosh(f, 'mBody', 3, '#ffe7a0');
+  // SPLAT: a white flash on the glass, booms where the brim and the shield hit it, rings running out round him
+  const hat0 = f.pointAt((b.splat + 2) / 24, 'helmet');
+  if (fr >= b.splat && fr < b.splat + 3) poly(f.above, [0, 0, f.w, 0, f.w, f.h, 0, f.h], '#ffffff', 0.35 - (fr - b.splat) * 0.1);
+  clang(f.above, hat0[0] - 118, hat0[1] - 2, fr - b.splat, 18, 2);
+  clang(f.above, hat0[0] + 122, hat0[1] + 2, fr - b.splat - 1, 16, 5);
+  if (fr >= b.splat && fr < b.splat + 14) {
+    const age = fr - b.splat;
+    for (let k = 0; k < 3; k++) p_ring(f.above, hat0[0], hat0[1] + 70, 120 + age * 9 + k * 9, '#f4fbff', Math.max(0, 0.6 - age * 0.04 - k * 0.12));
+  }
+  if (fr >= b.splat + 2 && fr < b.splat + 16) {
+    const u = prog(fr, b.splat + 2, b.splat + 16);
+    const x = -60 + u * (f.w + 160);
+    for (const [off, w, a] of [[0, 9, 0.35], [16, 4, 0.25]] as const) {
+      const x0 = x + off;
+      poly(f.above, [x0, 0, x0 + w, 0, x0 + w - f.h * 0.5, f.h, x0 - f.h * 0.5, f.h], '#ffffff', a);
+    }
+  }
+  // sliding down: squeaks at the brim and a fogged smear left on the glass above him (it fades, like breath)
+  const top = f.pointAt((b.slide[0] + 1) / 24, 'helmet');
+  const now = f.pointAt(Math.min(fr, b.slide[1]) / 24, 'helmet');
+  if (fr >= b.slide[0] && fr < 140 && now[1] - top[1] > 4) {
+    const fade = fr < b.slide[1] ? 0.4 : 0.4 * (1 - prog(fr, b.slide[1], 140));
+    // breath fog where his face hit first, and wet streaks his cheeks and nose drew down the glass
+    ell(f.above, top[0], top[1] + 4, 40, 14, '#eef6ff', fade * 0.6);
+    for (let i = 0; i < 7; i++) {
+      const xo = (i - 3) * 17 + (hash(i, 7) - 0.5) * 8;
+      const len = (now[1] - top[1]) * (0.55 + 0.45 * hash(i, 9));
+      const w = 2 + hash(i, 11) * 3;
+      seg(f.above, top[0] + xo, top[1] + 2, top[0] + xo + (now[0] - top[0]) * 0.8, top[1] + 2 + len, w, '#eef6ff', fade * (0.6 + 0.4 * hash(i, 13)));
+      dot(f.above, top[0] + xo + (now[0] - top[0]) * 0.8, top[1] + 4 + len, w * 0.6, '#ffffff', fade, '#eef6ff');
+    }
+  }
+  if (fr >= b.slide[0] && fr < b.slide[1])
+    for (let c = b.slide[0]; c < b.slide[1]; c += 9) {
+      squeak(f.above, now[0] - 112, now[1] + 10, -1, fr - c);
+      squeak(f.above, now[0] + 116, now[1] + 12, 1, fr - c - 4);
+    }
+  // drops off the glass onto his bottom
+  if (pt.bodyGround) {
+    boom(f.under, pt.bodyGround[0], pt.bodyGround[1] - 6, 10, fr - (b.drop + 2), 3);
+    puff(f.under, pt.bodyGround[0] - 14, pt.bodyGround[1], 7, fr - (b.drop + 2), 9, 4);
+    puff(f.under, pt.bodyGround[0] + 14, pt.bodyGround[1], 7, fr - (b.drop + 2), 9, 5);
+  }
+  // blind, he walks into the table: thud
+  if (pt.helmet && fr >= b.thud && fr < b.thud + 8) {
+    const age = fr - b.thud;
+    boom(f.above, pt.helmet[0] - 24, pt.helmet[1] - 8, 12, age, 9);
+    for (let k = 0; k < 2; k++) p_ring(f.under, pt.helmet[0] - 8, pt.helmet[1] + 4, 22 + age * 5 + k * 6, '#fff4c0', Math.max(0, 0.6 - age * 0.08));
+  }
+}
+
 // ---- the effects entry --------------------------------------------------------------------------------------------
 export function pandaEffects(f: FxInput) {
   const fr = f.t * 24;
@@ -1104,6 +1189,7 @@ export function pandaEffects(f: FxInput) {
   if (f.anim === 'phase') phaseFx(f, fr);
   if (f.anim === 'happy-f2') happyF2Fx(f, fr);
   if (f.anim === 'trick-f2') duelFx(f, fr);
+  if (f.anim === 'trick_b-f2') ramFx(f, fr);
   // stars over a bonked head
   if ((P.dizzy ?? 0) > 0.5 && pt.head) dizzyRing(f, [pt.head[0], pt.head[1] - 36], 30, f.t * TAU * 1.2, 1);
   if ((P.mDizzy ?? 0) > 0.5 && pt.mHead) dizzyRing(f, [pt.mHead[0], pt.mHead[1] - 13], 12, -f.t * TAU * 1.5, 0.6);

@@ -99,6 +99,7 @@ export const beats = {
   phase: { snatch: 7, red: [20, 34], steam: [24, 36], dash: [34, 44], cloud: [44, 72], items: [46, 72], out: 72, helmet: 80, clanks: [88, 92, 96, 100, 104], lidRoll: [74, 98], visor: 109 },
   'happy-f2': { clangs: [9, 16], spin: [20, 35] },
   'trick-f2': { clacks: [28, 36, 46], whoosh: [24, 28, 32, 36, 42, 46], thrust: 57, stumble: 61, parries: [72, 84, 96, 110], duck: [118, 128], bong: 150, bong2: 178, table: 190, lidFly: [191, 206], bonk: 206, lidHome: 220, stars: [150, 226], mStars: [206, 226] },
+  'trick_b-f2': { paw: [22, 30], charge: [38, 56], ole: 45, splat: 56, slide: [66, 112], drop: 114, thud: 170, stars: [116, 132] },
   peek: { in: [0, 10], sniff: [12, 30], scare: 32, bonk: 38, out: [40, 50], monkey: [46, 70], tongue: [54, 64] },
 };
 
@@ -933,6 +934,101 @@ const trick_f2: Track = [
   [288, { ...KNIGHT }],
 ];
 
+// ---- trick_b-f2 «Таран» (12 s, 288 frames), over the frame -------------------------------------------------------------
+// The knight backs off, lowers the visor, raises the shield and paws the floor like a bull; Шустрик plays the matador
+// with his steamer lid. The charge — olé! — Шустрик steps aside, the knight can't stop: face first into the glass of
+// the painting, the whole face across the frame. He slides down it with a squeak, leaving a streak, drops back, the
+// helmet over his eyes; walks blind into the table, pushes the helmet up and marches home.
+const RAM_START: [number, number] = [0, -16];
+const GLASS: [number, number] = [1, 12];
+const M_MAT: [number, number] = [1, 9];
+const M_OLE: [number, number] = [17, 7];
+const ramP = pathLanes([
+  stay(0, 4, 0, 0, 0),
+  // backs off to take a run
+  run(5, 18, [0, 0], RAM_START, true, FACE.us),
+  stay(19, 37, RAM_START[0], RAM_START[1], FACE.us),
+  // the charge straight at us
+  { a: 38, b: 56, at: (u) => { const k = u ** 1.5; return { x: RAM_START[0] + (GLASS[0] - RAM_START[0]) * k, y: RAM_START[1] + (GLASS[1] - RAM_START[1]) * k, z: 0, yaw: FACE.us }; } },
+  stay(57, 112, GLASS[0], GLASS[1], FACE.us),
+  // drops back off the glass
+  run(113, 118, GLASS, [1, 6], false, FACE.us),
+  stay(119, 136, 1, 6, FACE.us),
+  // blind, wandering into the table
+  run(137, 152, [1, 6], [-6, -6]),
+  run(153, 168, [-6, -6], [-10, -16]),
+  // bounces off it
+  run(169, 174, [-10, -16], [-7, -12], false, FACE.away),
+  stay(175, 184, -7, -12, FACE.away),
+  // turns round to us
+  stay(192, 214, -7, -12, FACE.us),
+  run(215, 240, [-7, -12], [0, 0]),
+  stay(241, 288, 0, 0, 0),
+]);
+const ramM = pathLanes(
+  [
+    stay(0, 5, M_F2[0], M_F2[1], FACE.left),
+    run(6, 20, M_F2, M_MAT),
+    stay(21, 41, M_MAT[0], M_MAT[1], FACE.away),
+    // olé: a neat side step at the last moment
+    { a: 42, b: 48, at: (u) => ({ x: M_MAT[0] + (M_OLE[0] - M_MAT[0]) * u, y: M_MAT[1] + (M_OLE[1] - M_MAT[1]) * u, z: 5 * Math.sin(u * Math.PI), yaw: FACE.left }) },
+    stay(49, 230, M_OLE[0], M_OLE[1], FACE.left),
+    run(231, 254, M_OLE, M_F2),
+    stay(255, 288, M_F2[0], M_F2[1], FACE.left),
+  ],
+  true,
+);
+/** Behind the shield, head down, ready to charge. */
+const BULL = (p: JointPose = {}): JointPose => ({ ...KV, ...hand('L', 7.6, -2.4, 14.4), shieldTurn: 0.55, ...hand('R', 2.4, 9.6, 12), spoonFwd: -0.6, spoonOut: 0.5, pitch: 0.25, crouch: 1.2, nod: 0.15, browIn: 1, ...p });
+/** Шустрик the matador: the lid held out at his side like a cape. */
+const MATADOR = (k = 0): JointPose => ({ mStick: 1, mLid: 1, ...mHand('L', 1.0, -3.6, 1.4 + k), ...mHand('R', 1.2, 2.2, 2.6), mStickFwd: -0.6, mSmirk: 1, mPitch: -0.15, mRoll: 0.1 * k });
+const trick_b_f2: Track = [
+  [0, { ...KNIGHT }],
+  [5, { ...KV, gait: 1, browIn: 1, mRun: 1 }],
+  [18, { ...KV, gait: 1, browIn: 1, mRun: 1 }],
+  // paws the floor like a bull, twice; Шустрик flicks his lid
+  [22, BULL({ ...foot('R', -2.6, 4.4, 1.6), ...MATADOR(0) })],
+  [26, BULL({ ...foot('R', 1.4, 4.4, 0.9), ...MATADOR(1) })],
+  [30, BULL({ ...foot('R', -2.6, 4.4, 1.6), ...MATADOR(0) })],
+  [34, BULL({ ...foot('R', 1.4, 4.4, 0.9), sqz: -0.06, ...MATADOR(1) })],
+  // the charge
+  [38, BULL({ crouch: 1.8, lean: -1, sqz: -0.1, ...MATADOR(0) })],
+  [41, BULL({ wheel: 1, crouch: 0, pitch: 0.28, lean: 1.2, capeFly: 2, earBack: 1, ...MATADOR(1) })],
+  [42, BULL({ wheel: 1, crouch: 0, pitch: 0.28, lean: 1.2, capeFly: 2.2, ...MATADOR(0), mBrowUp: 0.6 })],
+  [45, BULL({ wheel: 1, crouch: 0, pitch: 0.28, lean: 1.2, capeFly: 2.4, mStick: 1, mLid: 1, mJump: 1, ...mHand('L', 2.0, -2.6, 2.4), mSmirk: 1 })],
+  [49, BULL({ wheel: 1, crouch: 0, pitch: 0.28, lean: 1.2, capeFly: 2.4, ...MATADOR(1), mBrowUp: 0.4 })],
+  [52, BULL({ wheel: 1, crouch: 0, pitch: 0.28, lean: 1.2, capeFly: 2.4, sx: 1.12, sy: 1.12, ...MATADOR(0) })],
+  // SPLAT on the glass: over the frame, the face across the whole painting
+  [56, { ...KV, visor: 0, overAll: 1, wheel: 0, flatFace: 1, sqx: 0.14, sqy: 0.14, sqz: -0.1, sx: 1.45, sy: 1.45, dy: 30, ...both(5, 12, 22), pop: 0.6, browUp: 1, vib: 1, capeFly: 1.4, mStick: 1, mLid: 1, mPop: 0.6, mBrowUp: 1 }],
+  [58, { ...KV, visor: 0, overAll: 1, flatFace: 1, sqx: 0.16, sqy: 0.16, sqz: -0.12, sx: 1.6, sy: 1.6, dy: 40, ...both(5, 12, 22), pop: 0.4, lid: 0.3, vib: 0.6, mStick: 1, mLid: 1, mSquint: 1, mMouth: 1 }],
+  [66, { ...KV, visor: 0, overAll: 1, flatFace: 1, sqx: 0.16, sqy: 0.16, sqz: -0.12, sx: 1.6, sy: 1.6, dy: 40, ...both(5, 12, 22), lid: 0.6, wavy: 1, mouth: 0.3, mStick: 1, mLid: 1, mSquint: 1, mMouth: 1, mSmile: 1 }],
+  // slides slowly down the glass with a squeak
+  [108, { ...KV, visor: 0, overAll: 1, flatFace: 1, sqx: 0.16, sqy: 0.16, sqz: -0.12, sx: 1.6, sy: 1.6, dy: 110, ...both(5, 12, 20), lid: 0.8, wavy: 1, mouth: 0.3, mStick: 1, mLid: 1, mSquint: 1, mMouth: 1, mSmile: 1 }],
+  [112, { ...KV, visor: 0, overAll: 1, flatFace: 0.8, sqx: 0.1, sqy: 0.1, sqz: -0.06, sx: 1.6, sy: 1.6, dy: 118, ...both(5, 11, 18), lid: 1, mStick: 1, mLid: 1, mMouth: 0.6 }],
+  // drops back onto his bottom; the helmet comes down over his eyes
+  [116, { ...KV, flatFace: 0.3, sit: 1, pitch: -0.4, helmetSlide: 1.5, visor: 0, sqz: -0.12, ...both(3, 10, 8), legsUp: 0.4, dizzy: 1, mStick: 1, mLid: 1, mMouth: 0.6, mSmile: 1 }],
+  [122, { ...KV, sit: 1, helmetSlide: 1.5, visor: 0, ...both(3, 10, 8), dizzy: 1, wavy: 1, mStick: 1, mLid: 1, mSquint: 1, mMouth: 1, mSmile: 1 }],
+  [132, { ...KV, sit: 0.4, helmetSlide: 1.5, visor: 0, ...both(4, 9, 12), mStick: 1, mLid: 1, mSmirk: 1 }],
+  // blind: arms out, feeling his way, into the table
+  [138, { ...KV, helmetSlide: 1.5, visor: 0, gait: 1, ...hand('R', 7.6, 4.8, 13.2), ...hand('L', 7.6, -4.8, 13.2), mStick: 1, mLid: 1, mSmirk: 1 }],
+  [150, { ...KV, helmetSlide: 1.5, visor: 0, gait: 1, roll: 0.08, ...hand('R', 7.6, 5.4, 12.6), ...hand('L', 7.6, -4.2, 13.8), mStick: 1, mLid: 1, mSmirk: 1, mSmile: 0.6 }],
+  [162, { ...KV, helmetSlide: 1.5, visor: 0, gait: 1, roll: -0.08, ...hand('R', 7.6, 4.2, 13.8), ...hand('L', 7.6, -5.4, 12.6), mStick: 1, mLid: 1, mSmirk: 1 }],
+  [168, { ...KV, helmetSlide: 1.5, visor: 0, gait: 1, ...hand('R', 7.6, 4.8, 13.2), ...hand('L', 7.6, -4.8, 13.2), mStick: 1, mLid: 1 }],
+  // thud
+  [170, { ...KV, helmetSlide: 1.5, visor: 0, sqz: -0.12, sqx: 0.06, sqy: 0.06, pitch: -0.2, vib: 1, ...both(3, 10, 14), mStick: 1, mLid: 1, mPop: 0.5 }],
+  [176, { ...KV, helmetSlide: 1.5, visor: 0, pitch: -0.1, ...both(4, 9, 12), mStick: 1, mLid: 1, mMouth: 1, mSquint: 1, mSmile: 1 }],
+  // pushes the helmet up, looks round at the table, shrugs
+  [186, { ...KV, visor: 0, helmetSlide: 0.4, ...hand('R', 2.4, 9.6, 17), spoonDown: 0.6, ...hand('L', 6.2, -5.4, 12.2), mStick: 1, mLid: 1, mMouth: 0.6 }],
+  [192, { ...KV, visor: 0, helmetSlide: 0, gaze: -0.5, lookX: -0.8, browUp: 0.6, mStick: 1, mLid: 1 }],
+  [202, { ...KV, visor: 0, gaze: 0.3, lookX: 0.6, ...both(3, 10.5, 15), browSad: 0.6, smile: 0.4, mStick: 1, mLid: 1, mSmirk: 1 }],
+  [212, { ...KV, visor: 0, browIn: 0.6, mStick: 1, mLid: 1 }],
+  [220, { ...KV, visor: 0, gait: 1, browIn: 0.8, mStick: 1, mLid: 1 }],
+  [236, { ...KV, visor: 0, gait: 1, browIn: 0.8, mStick: 1, mLid: 1, mRun: 1 }],
+  [244, { ...KNIGHT, visor: 0.4, mRun: 1 }],
+  [256, { ...KNIGHT, mRun: 0 }],
+  [288, { ...KNIGHT }],
+];
+
 export const tracks: Record<string, Track> = {
   idle,
   walk,
@@ -953,6 +1049,7 @@ export const tracks: Record<string, Track> = {
   'idle-f2': idle_f2,
   'happy-f2': happy_f2,
   'trick-f2': trick_f2,
+  'trick_b-f2': trick_b_f2,
 };
 export const lanes: Record<string, Record<string, Lane>> = {
   trick: { ...trickPanda, ...trickMonkey, rugX: lane([0, 0], [190, 0], [194, -9], [248, -9], [258, 0]) },
@@ -962,6 +1059,7 @@ export const lanes: Record<string, Record<string, Lane>> = {
   'idle-f2': pathLanes([stay(0, 48, M_F2[0], M_F2[1], FACE.left)], true),
   'happy-f2': pathLanes([stay(0, 48, M_F2[0], M_F2[1], FACE.left)], true),
   'trick-f2': { ...duelP, ...duelM },
+  'trick_b-f2': { ...ramP, ...ramM },
 };
 
 export const gesture = keyframer({ tracks, lanes, switches: SWITCHES, linear: LINEAR });

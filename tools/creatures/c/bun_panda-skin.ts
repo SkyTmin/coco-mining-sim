@@ -615,13 +615,17 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
     r.tag = 'helmet';
     const slide = a('helmetSlide');
     const HF = Hd.at(-0.4, 0, 6.6 - slide * 4.2).pitch(a('helmetTip'));
-    r.ell(HF, [0, 0, 0], [8.0, 9.6, 3.6], flat(T.iron, { spec: true }), (q) => q[2] < -0.05);
-    r.cap(HF.p(0, -9.3, -0.2), HF.p(0, 9.3, -0.2), 1.0, 1.0, flat(T.ironDark));
-    for (const s of [-1, 1]) r.cap(HF.p(0, s * 9.3, 0.6), HF.p(0, s * 11.3, 0.8), 0.8, 0.8, flat(T.ironDark));
+    // pulled down over the eyes it is a deep pot round the whole crown, never a ring through the head
+    const deep = Math.max(0, 2.3 + slide * 4.2 - 3.6);
+    const wide = Math.min(1, slide);
+    const HR: V3 = [8.0 + 0.4 * wide, 9.6 + 0.5 * wide, 3.6 + deep];
+    r.ell(HF, [0, 0, 0], HR, flat(T.iron, { spec: true }), (q) => q[2] < -0.05);
+    r.cap(HF.p(0, -HR[1] + 0.3, -0.2), HF.p(0, HR[1] - 0.3, -0.2), 1.0, 1.0, flat(T.ironDark));
+    for (const s of [-1, 1]) r.cap(HF.p(0, s * (HR[1] - 0.3), 0.6), HF.p(0, s * (HR[1] + 1.7), 0.8), 0.8, 0.8, flat(T.ironDark));
     r.tag = 'plume';
-    r.cap(HF.p(-1.5, 0, 3.2), HF.p(-3.6, 0.4, 9.2), 0.45, 0.45, flat(T.iron));
-    r.ell(HF.at(-4.0, 0.4, 10.4), [0, 0, 0], [1.6, 1.6, 1.0], flat(T.iron), (q) => q[2] > 0.35);
-    j.helmet = HF.p(0, 0, 3.6);
+    r.cap(HF.p(-1.5, 0, 3.2 + deep), HF.p(-3.6, 0.4, 9.2 + deep), 0.45, 0.45, flat(T.iron));
+    r.ell(HF.at(-4.0, 0.4, 10.4 + deep), [0, 0, 0], [1.6, 1.6, 1.0], flat(T.iron), (q) => q[2] > 0.35);
+    j.helmet = HF.p(0, 0, 3.6 + deep);
     if (a('visor') > 0.05) {
       r.tag = 'visor';
       const V = HF.at(5.6, 0, -3.0 + (1 - a('visor')) * 4.6).pitch(-0.9 * (1 - a('visor')));
