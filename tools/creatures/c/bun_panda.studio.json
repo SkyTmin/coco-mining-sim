@@ -18,6 +18,9 @@
     "foot-slide": [
       "walk_e",
       "walk_w"
+    ],
+    "clip": [
+      "phase:36-43"
     ]
   },
   "clipAllow": [
@@ -84,6 +87,26 @@
     {
       "a": "mTail",
       "b": "torso"
+    },
+    {
+      "a": "visor",
+      "b": "brow"
+    },
+    {
+      "a": "visor",
+      "b": "eye"
+    },
+    {
+      "a": "helmet",
+      "b": "head"
+    },
+    {
+      "a": "helmet",
+      "b": "ear"
+    },
+    {
+      "a": "helmet",
+      "b": "brow"
     }
   ]
 }

@@ -76,8 +76,10 @@ const INKMAT = flat(cel('#1e1620', '#1e1620', '#1e1620'), { soft: true });
 
 /** The black band of the torso: over the shoulders and round the back, the chest and belly stay white. */
 const torsoBlack = (q: V3) => q[2] > 0.2 - 0.22 * q[0] && !(q[0] > 0.5 && q[2] < 0.7);
+/** Red with anger rising from the feet up: the torso fills over heat 0…0.5, the head over 0.5…1. */
+const redUpTo = (q: V3, level: number) => level > 0.02 && (q[2] + 1) / 2 < level * 1.08 + 0.04 * Math.sin(q[1] * 9 + q[0] * 5);
 function torsoMat(heat: number): Mat {
-  return { T: T.white, pat: (q, l) => pickBand(torsoBlack(q) ? T.black : heat > 0.5 ? T.heat : T.white, l) };
+  return { T: T.white, pat: (q, l) => pickBand(torsoBlack(q) ? T.black : redUpTo(q, heat * 2) ? T.heat : T.white, l) };
 }
 /** Head patches: centres on the unit sphere of the head (az ±PATCH_AZ, el PATCH_EL). */
 const PATCH_AZ = 0.44,
@@ -97,11 +99,11 @@ function inPatch(q: V3): boolean {
   return false;
 }
 function headMat(heat: number): Mat {
-  return { T: T.white, pat: (q, l) => pickBand(inPatch(q) ? T.black : heat > 0.5 ? T.heat : T.white, l) };
+  return { T: T.white, pat: (q, l) => pickBand(inPatch(q) ? T.black : redUpTo(q, heat * 2 - 1) ? T.heat : T.white, l) };
 }
 const cheekMat = (heat: number): Mat => ({
   T: T.white,
-  pat: (q, l) => pickBand(q[0] > 0.45 && q[2] > -0.25 && q[2] < 0.55 ? T.blush : heat > 0.5 ? T.heat : T.white, l),
+  pat: (q, l) => pickBand(q[0] > 0.45 && q[2] > -0.25 && q[2] < 0.55 ? T.blush : heat > 0.75 ? T.heat : T.white, l),
 });
 /** A foot: black, the pink pad and three toe beans underneath (seen when he lies or kicks). */
 const footMat: Mat = {
@@ -799,8 +801,16 @@ function monkey(r: Rig, F: F3, A: JointPose, j: Record<string, V3>, P: PandaOut 
   if (a('mStick') > 0.5) {
     r.tag = 'mStick';
     const d = vnorm(Mb.v(0.7 + a('mStickFwd'), 0.1, 0.7 - a('mStickDown')));
-    r.cap(vsub(j.mHandR, vmul(d, 0.8 * K)), vadd(j.mHandR, vmul(d, 7.5 * K)), 0.24 * K, 0.18 * K, flat(T.chop));
-    j.mStickTip = vadd(j.mHandR, vmul(d, 7.5 * K));
+    // the bamboo shoot he stole from Пончик, held like a rapier: nodes, a bitten top, a tuft of leaves at the base
+    const b0 = vsub(j.mHandR, vmul(d, 2.2 * K)),
+      b1 = vadd(j.mHandR, vmul(d, 8.2 * K));
+    r.cap(b0, b1, 0.5, 0.42, flat(T.bamboo));
+    r.ball(b1, 0.42, flat(T.bite));
+    for (const u of [0.3, 0.55, 0.8]) r.ball(vlerp(b0, b1, u), 0.56, flat(T.node));
+    const sv = vnorm(vcross(d, [0, 0.2, 1]));
+    leaf(r, b0, vadd(vmul(d, -1), vmul(sv, -0.4)), sv, 2.6, 0.65, flat(T.leaf));
+    leaf(r, b0, vadd(vmul(d, -1), vmul(sv, 0.5)), sv, 2.2, 0.55, flat(T.leaf));
+    j.mStickTip = b1;
   }
   if (a('mLid') > 0.5) {
     r.tag = 'mLid';

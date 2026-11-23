@@ -96,6 +96,7 @@ export const beats = {
   trick: { lid: [38, 48, 60], snatch: 56, freeze: 68, chase: [74, 150], hop: [116, 126], exit: [140, 164], enter: [164, 190], yank: 190, hang: [196, 212], land: 216, bunFly: [218, 230], munch: [230, 262], rugBack: [248, 258] },
   trick_b: { hold: [[61, 81], [116, 147]], smack: 82, spin: [83, 106], tickle: [124, 143], launch: 147, shoot: 152, gone: [158, 186], leaves: [156, 200], splash: 198, kick: [199, 214], spit: [222, 230], out: 236, shake: [243, 250], soak: 245, ladleToss: [244, 252], dry: [258, 262], puddle: [198, 276] },
   trick_c: { sniff: [2, 20], lift: [20, 24], stuck: [24, 40], door: 62, table: 74, lids: [80, 86], lidHome: 96, laugh: [64, 106], tug: [120, 159], pop: 160, jarFly: [160, 176], flour: 165, honeyLick: [170, 230], sneeze: 240, shake: 250 },
+  phase: { snatch: 7, red: [20, 34], steam: [24, 36], dash: [34, 44], cloud: [44, 72], items: [46, 72], out: 72, helmet: 80, clanks: [88, 92, 96, 100, 104], lidRoll: [74, 98], visor: 109 },
   peek: { in: [0, 10], sniff: [12, 30], scare: 32, bonk: 38, out: [40, 50], monkey: [46, 70], tongue: [54, 64] },
 };
 
@@ -709,6 +710,94 @@ const trick_c: Track = [
   [264, { ...REST }],
 ];
 
+// ---- the second form: «Рыцарь из кастрюль» ---------------------------------------------------------------------------
+/** Шустрик's place in the second form: on the floor to the right, the stolen shoot raised like a rapier. */
+const M_F2: [number, number] = [21, 8];
+/** The knight at rest: spoon up, the lid shield in front, chest out; Шустрик en garde with the shoot and a steamer lid. */
+const KNIGHT: JointPose = {
+  ...F2,
+  pitch: -0.05,
+  gaze: 0.25,
+  ...hand('R', 3.4, 8.6, 13.2),
+  ...hand('L', 6.2, -5.4, 12.2),
+  spoonFwd: -0.4,
+  mOn: 0,
+  mStick: 1,
+  mLid: 1,
+  mStickFwd: 0.4,
+  mBrowIn: 0.6,
+  mSmirk: 0.5,
+  ...mHand('R', 2.4, 1.8, 1.0),
+  ...mHand('L', 2.2, -1.6, -0.4),
+};
+const idle_f2: Track = [
+  [0, { ...KNIGHT }],
+  // the helmet slides down over his eyes; he pushes it back up with the spoon hand
+  [10, { ...KNIGHT, helmetSlide: 0.35, mGaze: 0.2 }],
+  [18, { ...KNIGHT, helmetSlide: 0.75, lid: 0.4, browSad: 0.4, mSmirk: 1 }],
+  [24, { ...KNIGHT, helmetSlide: 0.7, ...hand('R', 3.0, 5.2, 21.5), spoonDown: 0.6, mSmirk: 1, mStickFwd: 0.6 }],
+  [30, { ...KNIGHT, helmetSlide: 0.05, ...hand('R', 2.6, 8.8, 21), spoonDown: 0.6, browIn: 0.8, mStickFwd: 0.4 }],
+  [38, { ...KNIGHT, blink: 1 }],
+  [41, { ...KNIGHT }],
+  [48, { ...KNIGHT }],
+];
+const phaseM = pathLanes(
+  [
+    stay(0, 8, 0, 0, 0),
+    // off the head with the shoot, onto the floor to the right
+    { a: 9, b: 17, at: (u) => ({ x: M_F2[0] * Math.sin((u * Math.PI) / 2), y: M_F2[1] * Math.sin((u * Math.PI) / 2), z: 31 * (1 - u) + 12 * Math.sin(u * Math.PI), yaw: FACE.usLeft }) },
+    stay(18, 120, M_F2[0], M_F2[1], FACE.left),
+  ],
+  true,
+);
+export const CUP_AT: [number, number] = [42, -41];
+const phaseP = pathLanes([
+  stay(0, 33, 0, 0, 0),
+  // a flat-out dash on a wheel of legs to the dish cupboard
+  run(35, 43, [0, 0], CUP_AT),
+  stay(44, 72, CUP_AT[0], CUP_AT[1], FACE.us),
+  // out of the clatter as a knight; marches home, every step a clank
+  run(86, 104, CUP_AT, [0, 0]),
+  stay(105, 120, 0, 0, 0),
+]);
+const phase: Track = [
+  [0, { ...REST }],
+  // the big bite is coming; Шустрик hangs down over his forehead…
+  [4, { ...REST, chew: 0, toMouth: 1, mouth: 0.7, lid: 0.3, mPitch: 1.6, mLean: 1.2, ...mHand('R', 3.2, 1.0, -2.4), mSmirk: 1 }],
+  // …and snatches the shoot right out of his mouth: he bites the air
+  [7, { ...ON, mouth: 0, teeth: 1, pop: 0.5, ...hand('R', 7.0, 6.6, 15.2), mPitch: 0.4, mStick: 1, mStickFwd: 0.3, ...mHand('R', 1.8, 2.4, 3.6), mSmirk: 1, mSmile: 1 }],
+  [9, { ...ON, pop: 0.8, lookY: -0.6, ...hand('R', 6.0, 6.6, 13.5), mStick: 1, mJump: 1.5, mSmirk: 1 }],
+  [13, { pop: 0.6, lookY: -0.7, lookX: 0.3, ...hand('R', 6.0, 6.6, 13), mOn: 0, mStick: 1, mStickFwd: 0.2, ...mHand('R', 1.0, 1.8, 3.6), mTongue: 1, mSquint: 0.7 }],
+  // Шустрик waves it, giggling; Пончик stares at his empty paw, then at him
+  [18, { lookY: -0.8, ...hand('R', 6.0, 6.6, 13), mOn: 0, mStick: 1, mStickFwd: 0.3, ...mHand('R', 1.4, 2.2, 3.2), mTongue: 1, mSquint: 1, mSmile: 1 }],
+  [22, { gaze: 0.35, lookX: 0.8, browIn: 0.4, ...both(4, 8, 11), heat: 0.25, mOn: 0, mStick: 1, mStickFwd: -0.2, ...mHand('R', 1.0, 2.4, 3.6), mTongue: 1, mSquint: 1, mSmile: 1 }],
+  // red rising from the feet up, steam from the ears, the brows come down
+  [27, { gaze: 0.35, lookX: 0.8, browIn: 0.9, mouth: 0.2, teeth: 1, crouch: 0.6, vib: 0.4, ...both(4, 8.4, 10), heat: 0.6, earBack: 0.5, mOn: 0, mStick: 1, mPop: 0.4, mBrowUp: 0.6 }],
+  [32, { gaze: 0.35, lookX: 0.8, browIn: 1, mouth: 0.4, teeth: 1, crouch: 1, vib: 0.7, sqz: -0.06, ...both(3.5, 8.6, 9.5), heat: 1, earBack: 0.8, mOn: 0, mStick: 1, mPop: 0.8, mBrowUp: 1 }],
+  // anticipation, then off on a wheel of legs
+  [34, { gaze: -0.4, browIn: 1, teeth: 1, crouch: 1.6, lean: -1.4, pitch: -0.2, sqz: -0.1, heat: 1, ...both(-1, 9, 12), earBack: 1, mOn: 0, mStick: 1, mPop: 1 }],
+  [36, { ...RUN, bambooEar: 0, teeth: 1, browIn: 1, heat: 1, mOn: 0, mStick: 1, mPop: 0.6 }],
+  [42, { ...RUN, bambooEar: 0, teeth: 1, browIn: 1, heat: 1, mOn: 0, mStick: 1, mPop: 0.4 }],
+  // into the cupboard: gone inside a cloud of clatter
+  [44, { hidden: 1, mOn: 0, mStick: 1, mPop: 1, mBrowUp: 1, mGaze: 0.4 }],
+  [58, { hidden: 1, mOn: 0, mStick: 1, mPop: 0.6, mBrowUp: 1, mGaze: 0.4, mNod: -0.2 }],
+  [70, { hidden: 1, mOn: 0, mStick: 1, mPop: 0.6, mBrowUp: 1, mGaze: 0.4 }],
+  // steps out a knight, visor down; the last pot drops onto his head — a helmet
+  [72, { ...F2, visor: 1, helmetSlide: -9, ...both(4, 8, 11), browIn: 1, mOn: 0, mStick: 1, mPop: 1, mMouth: 0.5, mGaze: 0.4 }],
+  [79, { ...F2, visor: 1, helmetSlide: -0.4, ...both(4, 8, 11), browIn: 1, mOn: 0, mStick: 1, mPop: 1, mMouth: 0.5, mGaze: 0.4 }],
+  [80, { ...F2, visor: 1, helmetSlide: 0.3, crouch: 1.2, sqz: -0.14, sqx: 0.07, sqy: 0.07, vib: 1, ...both(4, 8.6, 10), browIn: 1, mOn: 0, mStick: 1, mPop: 0.8 }],
+  [84, { ...F2, visor: 1, helmetSlide: 0, ...both(4, 8, 11), browIn: 1, mOn: 0, mStick: 1, mMouth: 0.8, mBrowUp: 1 }],
+  // the march home, clank clank; Шустрик gulps, a rolling lid reaches his feet — he picks it up for a shield
+  [88, { ...F2, visor: 1, gait: 1, pitch: -0.08, ...hand('R', 4.4, 7.4, 13.4), ...hand('L', 6.2, -5.4, 12.2), mOn: 0, mStick: 1, mMouth: 0.8, mPop: 0.5 }],
+  [96, { ...F2, visor: 1, gait: 1, pitch: -0.08, ...hand('R', 4.4, 7.4, 13.4), ...hand('L', 6.2, -5.4, 12.2), mOn: 0, mStick: 1, mSit: 0.5, mPitch: 0.6, ...mHand('L', 2.4, -1.4, -3.4) }],
+  [100, { ...F2, visor: 1, gait: 1, pitch: -0.08, ...hand('R', 4.4, 7.4, 13.4), ...hand('L', 6.2, -5.4, 12.2), mOn: 0, mStick: 1, mLid: 1, mSit: 0, mPitch: 0, ...mHand('L', 2.2, -1.6, -0.4), mMouth: 0.6 }],
+  // home: up goes the visor with a clang, up goes the spoon; Шустрик raises the shoot en garde
+  [106, { ...F2, visor: 1, ...hand('R', 2.6, 8.8, 21), spoonDown: 0.6, ...hand('L', 6.2, -5.4, 12.2), mOn: 0, mStick: 1, mLid: 1, mStickFwd: 0.4, mBrowIn: 0.3 }],
+  [109, { ...F2, visor: 0, ...hand('R', 2.6, 8.8, 21), spoonDown: 0.6, ...hand('L', 6.2, -5.4, 12.2), browIn: 1, mOn: 0, mStick: 1, mLid: 1, mPop: 0.5 }],
+  [113, { ...KNIGHT, ...hand('R', 4.0, 7.6, 15.5), spoonFwd: -0.2, pitch: -0.12, mPop: 0.3 }],
+  [120, { ...KNIGHT }],
+];
+
 export const tracks: Record<string, Track> = {
   idle,
   walk,
@@ -725,11 +814,15 @@ export const tracks: Record<string, Track> = {
   trick,
   trick_b,
   trick_c,
+  phase,
+  'idle-f2': idle_f2,
 };
 export const lanes: Record<string, Record<string, Lane>> = {
   trick: { ...trickPanda, ...trickMonkey, rugX: lane([0, 0], [190, 0], [194, -9], [248, -9], [258, 0]) },
   trick_b: { ...trickBPanda, ...trickBMonkey },
   trick_c: { ...trickCPanda, ...trickCMonkey },
+  phase: { ...phaseP, ...phaseM },
+  'idle-f2': pathLanes([stay(0, 48, M_F2[0], M_F2[1], FACE.left)], true),
 };
 
 export const gesture = keyframer({ tracks, lanes, switches: SWITCHES, linear: LINEAR });
