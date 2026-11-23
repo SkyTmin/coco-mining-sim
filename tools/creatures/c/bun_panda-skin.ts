@@ -17,8 +17,8 @@ import { goalAt } from '../bodies/goals';
 import { clipClock } from '../kit/clock';
 import { hash, hx, ik, tn, TAU } from '../kit/f11-mobkit';
 import { strideFoot } from '../motion';
-import { F3, Rig, vadd, vcross, vdot, vlen, vlerp, vmul, vnorm, vsub, type Mat, type RGBA, type Tones, type V3 } from '../rig/f15-rig';
-import { projectFigure, scaleFigure } from '../rig/figure';
+import { F3, Rig, renderRig, vadd, vcross, vdot, vlen, vlerp, vmul, vnorm, vsub, type Mat, type RGBA, type Tones, type V3 } from '../rig/f15-rig';
+import { pointsOnlyActive, projectFigure, scaleFigure } from '../rig/figure';
 import type { JointPose } from '../technique';
 import type { BodyFrame, Creature } from '../types';
 import { clips } from './bun_panda-poses';
@@ -59,6 +59,14 @@ const T = {
   mitt: cel('#7c1a22', '#cc3c38', '#ff8a6a'),
   towel: cel('#2e5a8a', '#5490c8', '#9ccaf2'),
   heat: cel('#b8283a', '#e8505a', '#ff8a8a'),
+  honey: cel('#b8700c', '#f0a820', '#ffe070'),
+  jar: cel('#6a3418', '#a85a2c', '#dc8a4a'),
+  welt: cel('#b03a48', '#e86a74', '#ffa0a0'),
+  bump: cel('#d8a0b0', '#fbe4e8', '#ffffff'),
+  egg: cel('#b8b0c4', '#f6f2ea', '#ffffff'),
+  eggGold: cel('#b87818', '#f0c040', '#fff0a0'),
+  chop: cel('#8a6430', '#d8b070', '#fff0c8'),
+  lid: cel('#7a5a20', '#c0963c', '#f0d070'),
 };
 const flat = (tones: Tones, extra: Partial<Mat> = {}): Mat => ({ T: tones, ...extra });
 const pickBand = (tones: Tones, l: number): RGBA => (l > 0.78 ? tones[3] : l > -0.02 ? tones[1] : tones[0]);
@@ -272,8 +280,14 @@ function leaf(r: Rig, base: V3, dir: V3, side: V3, L: number, W: number, m: Mat)
 export const BODY_Z = 10;
 const BELLY: V3 = [6.9, 7.9, 7.7];
 const HEAD: V3 = [7.6, 9.4, 8.2];
-const HEAD_TURN = 0.38,
-  HEAD_PITCH = -0.2;
+const HEAD_PITCH = -0.2;
+/** How far to turn the head toward the viewer from a frame's facing: a share of the angle, capped. */
+function towardViewer(F: F3, share: number, cap: number) {
+  let d = Math.PI / 2 - Math.atan2(F.f[1], F.f[0]);
+  while (d > Math.PI) d -= 2 * Math.PI;
+  while (d < -Math.PI) d += 2 * Math.PI;
+  return Math.max(-cap, Math.min(cap, d * share));
+}
 const SHOULDER: V3 = [0.4, 6.5, 4.6];
 const HIP: V3 = [0.6, 4.1, -5.0];
 const UPPER = 4.1,
@@ -283,6 +297,12 @@ const UPPER = 4.1,
 /** Rest hand and foot targets in the feet frame (forward, right, up). */
 export const REST = { hand: [2.6, 8.4, 8.6] as V3, foot: [1.3, 4.4, 0.9] as V3 };
 
+/** `to`, pulled back toward `from` so it is no further than `max` (a limb's reach). */
+function within(from: V3, to: V3, max: number): V3 {
+  const d = vsub(to, from),
+    L = vlen(d);
+  return L > max ? vadd(from, vmul(d, max / L)) : to;
+}
 interface PandaOut {
   Hd: F3;
   R: F3;
@@ -311,15 +331,29 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
     .turn(a('twist'));
   // ---- legs (planted feet stay on the floor; in the air or lying they follow the body)
   const plant = 1 - sat(a('air'));
-  for (const s of [-1, 1]) {
+  // flat-out run: the legs become a blurred wheel of six legs under him (the 1940s cartoon gag)
+  if (a('wheel') > 0.5) {
+    const hub = R.p(0.8, 0, -6.4);
+    const ph = ctx.t * TAU * 5;
+    for (let i = 0; i < 6; i++) {
+      const ang = ph + (i * TAU) / 6;
+      const end = vadd(hub, R.v(Math.cos(ang) * 4.6, (i % 2 ? 1 : -1) * 2.6, Math.sin(ang) * 4.6));
+      r.tag = i % 2 ? 'thighR' : 'thighL';
+      r.cap(hub, end, 1.9, 1.7, black);
+      r.ell(frameF(end, R.v(-Math.sin(ang), 0, Math.cos(ang)), R.s), [0, 0, 0], [1.9, 1.6, 1.1], footMat);
+    }
+    j.footL = R.p(0.8, -2.6, -11);
+    j.footR = R.p(0.8, 2.6, -11);
+  }
+  for (const s of a('wheel') > 0.5 ? [] : [-1, 1]) {
     const name = s < 0 ? 'L' : 'R';
     const st = step(s < 0 ? 0 : 0.5);
     const hip = R.p(HIP[0], s * HIP[1], HIP[2]);
     const restF: V3 = [REST.foot[0] + st.forward + sit * 3.6, s * (REST.foot[1] + sit * 0.6), REST.foot[2] + st.lift * 1.5 + sit * 0.3];
     const goalF = goalAt(A, 'foot' + name, restF);
     const onFloor = FT.p(...(goalF ?? restF));
-    const inAir = R.p(1.4 + a('kick') * s * 1.2 + a('tuck') * 1.8, s * 4.3, -9.2 + a('tuck') * 3.2 + a('legsUp') * 2);
-    const foot = vlerp(inAir, onFloor, plant);
+    const inAir = R.p(1.4 + a('kick') * s * 1.2 + a('tuck') * 1.8 + a('legsUp') * 3, s * 4.3 * (1 - 0.8 * a('click')), -9.2 + a('tuck') * 3.2 + a('legsUp') * 2);
+    const foot = within(hip, vlerp(inAir, onFloor, plant), (THIGH + SHIN) * 1.12);
     if (plant > 0.5 && st.planted && !goalF) ctx.planted.push('foot' + name);
     const knee = ik(hip, foot, THIGH, SHIN, R.v(1, s * 0.2, 0.2));
     r.tag = 'thigh' + name;
@@ -345,11 +379,16 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
   j.body = R.o;
   // ---- head: no neck, it sits on the shoulders; turned and lifted a little toward the viewer
   const Hd = R.at(0.6, 0, 12.4 + a('neck'))
-    .turn(HEAD_TURN + a('gaze'))
+    .turn(towardViewer(F, 0.65, 0.75) * Math.max(0, Math.cos(a('pitch'))) + a('gaze'))
     .pitch(HEAD_PITCH + a('nod'))
     .roll(a('tilt'));
   r.tag = 'head';
-  r.ell(Hd, [0, 0, 0], HEAD, headMat(heat));
+  const headStart = r.prims.length;
+  const honey = a('honey');
+  const hm = headMat(heat);
+  // honey over the crown, running down in drips
+  const honeyMat: Mat = honey > 0.05 ? { T: T.white, pat: (q, l) => (q[2] > 0.62 - honey * 0.5 + 0.12 * Math.sin(q[1] * 11 + q[0] * 5) ? pickBand(T.honey, l) : hm.pat!(q, l)) } : hm;
+  r.ell(Hd, [0, 0, 0], HEAD, honeyMat);
   fuzz(r, Hd, HEAD, 150, 1.05, 0.62, 0.4, (d) => (d[0] > 0.2 && d[2] < 0.55 ? null : heat > 0.5 ? flat(T.heat) : white));
   for (const s of [-1, 1]) {
     r.tag = 'cheek';
@@ -414,6 +453,61 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
   }
   j.head = Hd.o;
   j.crown = Hd.p(-0.8, 0, HEAD[2]);
+  // a ladle stuck on his head like a hat (out of the barrel)
+  if (a('ladleHat') > 0.5) {
+    r.tag = 'ladle';
+    const LF = Hd.at(-0.4, 0.6, HEAD[2] - 0.8).roll(0.3);
+    r.ell(LF, [0, 0, 0], [4.2, 4.2, 2.8], flat(T.iron, { spec: true }), (q) => q[2] < -0.1);
+    r.cap(LF.p(0, 3.8, 0.2), LF.p(-1.2, 11, 3.4), 0.5, 0.45, flat(T.iron));
+  }
+  // a bump grows on the crown after a bonk
+  if (a('bump') > 0.02) {
+    r.tag = 'bump';
+    const bk = a('bump');
+    r.ell(Hd.at(1.0, 0.8, HEAD[2] - 0.6 + bk * 0.9), [0, 0, 0], [2.0 * bk, 2.0 * bk, 2.2 * bk], flat(T.bump, { spec: true }));
+  }
+  // the red welt across the face where the bamboo stalk smacked it
+  if (a('welt') > 0.05) {
+    r.tag = 'welt';
+    const pts = [-0.75, -0.4, 0, 0.4, 0.75].map((az) => vadd(onEll(Hd, HEAD, az, -0.08).p, vmul(onEll(Hd, HEAD, az, -0.08).n, 0.25)));
+    for (let i = 1; i < pts.length; i++) r.cap(pts[i - 1], pts[i], 1.0 * a('welt'), 1.0 * a('welt'), flat(T.welt));
+  }
+  // the face pressed flat (`flatFace`: by a stalk, a door, the glass, a pan) — the head squashes along its forward axis
+  if (a('flatFace') > 0.01) {
+    const k = 1 - 0.55 * a('flatFace');
+    const o = Hd.p(-HEAD[0] * 0.2, 0, 0);
+    const ax = Hd.f;
+    for (let i = headStart; i < r.prims.length; i++) {
+      const pr = r.prims[i] as any;
+      const sq = (v: V3): V3 => vadd(v, vmul(ax, (vdot(vsub(v, o), ax)) * (k - 1)));
+      const sd = (v: V3): V3 => vadd(v, vmul(ax, vdot(v, ax) * (k - 1)));
+      if (pr.k === 0) {
+        pr.c = sq(pr.c);
+        pr.a = [sd(pr.a[0]), sd(pr.a[1]), sd(pr.a[2])];
+      } else if (pr.k === 1) {
+        pr.a = sq(pr.a);
+        pr.b = sq(pr.b);
+      } else if (pr.k === 2) pr.pts = pr.pts.map(sq);
+      else if (pr.k === 3) pr.p = sq(pr.p);
+      else {
+        pr.a = sq(pr.a);
+        pr.b = sq(pr.b);
+      }
+    }
+  }
+  // stuck in the honey pot: a round clay pot over the whole head, honey running from its rim
+  if (a('jar') > 0.5) {
+    r.tag = 'jar';
+    const J = Hd.at(-0.4, 0, 1.2);
+    r.ell(J, [0, 0, 0], [10.2, 11.4, 10.6], { T: T.jar, pat: (q, l) => (q[2] < -0.55 && q[2] > -0.62 - 0.08 * Math.sin(q[1] * 9) ? pickBand(T.honey, l) : Math.abs(q[2] - 0.15) < 0.06 ? pickBand(T.jar, l - 0.5) : null) }, (q) => q[2] < -0.86);
+    // the rim round his neck and honey drips on the shoulders
+    for (let i = 0; i < 10; i++) {
+      const ang = (i / 10) * TAU;
+      r.ball(J.p(Math.cos(ang) * 5.4, Math.sin(ang) * 6.0, -9.4), 1.1, flat(T.jar));
+    }
+    for (const k of [-0.7, -0.2, 0.4, 0.8]) r.cap(J.p(5.2, k * 6, -9.6), J.p(5.6, k * 6, -11.2 - Math.abs(k) * 0.8), 0.55, 0.45, flat(T.honey));
+    j.jar = J.o;
+  }
   // ---- arms
   const handT = (name: string, s: number): V3 => {
     const rest: V3 = [REST.hand[0] + (walking ? -1.6 * s * Math.sin(ctx.gait * TAU) * ctx.gaitW : 0), s * REST.hand[1], REST.hand[2] + bodyZ - BODY_Z];
@@ -422,7 +516,8 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
   for (const s of [-1, 1]) {
     const name = s < 0 ? 'L' : 'R';
     const sh = R.p(SHOULDER[0], s * SHOULDER[1], SHOULDER[2]);
-    const hand = handT(name, s);
+    // a paw never leaves the arm's reach: a goal set from the floor follows him up into the air
+    const hand = within(sh, handT(name, s), (UPPER + FORE) * 1.04);
     const elbow = ik(sh, hand, UPPER, FORE, R.v(-0.6, s * 1, -0.5));
     const fur = knight ? flat(T.mitt) : black;
     r.tag = 'arm' + name;
@@ -446,11 +541,16 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
   // ---- props in his paws
   if (a('bamboo') > 0.5) {
     r.tag = 'bamboo';
+    // in the paw: the bitten top at the corner of the mouth (`toMouth`) or upright; tucked behind the ear (`bambooEar`)
+    // when the paws are busy in a trick, and back again at its end
     const h = j.handR;
-    // chewing: the bitten top end at the corner of the mouth; else upright in the paw
-    const top = a('chew') ? vadd(j.mouth, Hd.v(0.3, 1.6, 0.2)) : vadd(h, R.v(-0.4, 0.4, 9.5));
-    const ax = vnorm(vsub(top, h));
-    const bot = vsub(h, vmul(ax, 6.5));
+    const tm = sat(a('toMouth') + (a('chew') ? 1 : 0));
+    const topHand = vlerp(vadd(h, R.v(-0.4, 0.4, 9.5)), vadd(j.mouth, Hd.v(0.3, 1.6, 0.2)), tm);
+    const botHand = vsub(h, vmul(vnorm(vsub(topHand, h)), 6.5));
+    const ear = smooth(sat(a('bambooEar')));
+    const top = vlerp(topHand, Hd.p(-4.6, 6.6, 9.8), ear);
+    const bot = vlerp(botHand, Hd.p(-1.2, 8.6, -4.2), ear);
+    const ax = vnorm(vsub(top, bot));
     r.cap(bot, top, 0.72, 0.62, flat(T.bamboo));
     r.ball(top, 0.62, flat(T.bite));
     for (const u of [0.18, 0.42, 0.66, 0.88]) r.ball(vlerp(bot, top, u), 0.8, flat(T.node));
@@ -504,6 +604,18 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
     const flap = 0.6 * Math.sin(ctx.t * TAU * 1.5) + a('capeFly');
     r.poly([R.p(-3.6, -6.2, 6.4), R.p(-3.6, 6.2, 6.4), R.p(-7.6 - flap, 7.8, -6.2), R.p(-8.6 - flap * 1.4, 0, -7.8), R.p(-7.6 - flap, -7.8, -6.2)], towelMat);
   }
+  // the frying pan (second form, «Сковородка»): handle in both paws, the pan raised for a swing
+  if (a('pan') > 0.5) {
+    r.tag = 'pan';
+    const grip = vlerp(j.handR, j.handL, 0.5);
+    const dir = vnorm(R.v(0.3 + a('panFwd'), 0.05, 1 - a('panDown')));
+    const c = vadd(grip, vmul(dir, 9.5));
+    r.cap(grip, vadd(grip, vmul(dir, 5.4)), 0.6, 0.6, flat(T.ironDark));
+    const PF = frameF(c, vnorm(vcross(dir, R.s)), dir);
+    r.ell(PF, [0, 0, 0], [0.7, 4.6, 4.6], flat(T.iron, { spec: true }));
+    r.ell(PF, [0.5, 0, 0], [0.35, 3.9, 3.9], flat(T.ironDark));
+    j.pan = c;
+  }
   // squash and stretch of the panda alone, about his feet
   const sq: V3 = [1 + a('sqx'), 1 + a('sqy'), 1 + a('sqz')];
   if (sq[0] !== 1 || sq[1] !== 1 || sq[2] !== 1) {
@@ -516,16 +628,19 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
 // ---- Шустрик -----------------------------------------------------------------------------------------------------
 /** Шустрик's size relative to the numbers below. */
 const MK = 1.3;
-function monkey(r: Rig, F: F3, A: JointPose, j: Record<string, V3>, P: PandaOut | null, ctx: { t: number; spin: number }) {
+function monkey(r: Rig, F: F3, A: JointPose, j: Record<string, V3>, P: PandaOut | null, ctx: { t: number; spin: number; base: number }) {
   const a = (k: string) => A[k] ?? 0;
   const K = MK;
   const on = P ? smooth(sat(a('mOn'))) : 0;
-  // free: his own spot in the feet frame; attached: sitting on Пончик's crown, turned with the head
-  const free = F.at(a('mX'), a('mY'), a('mZ')).turn(a('mYaw'));
+  // free: his own spot in the world (mX right, mY toward us, mZ up; mYaw from the painting's yaw); attached: sitting
+  // on Пончик's crown, turned with the head
+  void F;
+  const free = F3.yaw(ctx.base + a('mYaw'), [a('mX'), a('mY'), a('mZ')]);
   const seat = P ? P.Hd.at(-1.0, 0, HEAD[2] - 0.6).turn(a('mYaw') * 0.3).pitch(-HEAD_PITCH * 0.7) : free;
   const M = blendFrame(free, seat, on);
   const white = a('mFlour') > 0.5;
-  const fur = flat(white ? T.flour : T.gold),
+  const wet = a('mWet') > 0.5;
+  const fur = flat(white ? T.flour : wet ? cel('#7a3e08', '#b8701c', '#e8a848') : T.gold),
     mane = white ? flat(T.flour) : maneMat,
     face = flat(white ? T.flour : T.face),
     hands = flat(white ? T.flour : T.hand);
@@ -552,11 +667,16 @@ function monkey(r: Rig, F: F3, A: JointPose, j: Record<string, V3>, P: PandaOut 
   const pts: V3[] = [p];
   const N = 10,
     L = 12.5 * K;
+  const fw = sat(a('mTailFwd'));
   for (let i = 1; i <= N; i++) {
     const u = i / N;
-    const th = -0.2 + u * (2.9 + a('mTail'));
-    // it leaves the rump to his right side so the curl reads from the front, not hidden behind him
-    const dir = vnorm(Mb.v(-0.35 * Math.cos(th), 1.0 * Math.cos(th) + sway * u, Math.sin(th)));
+    // it leaves the rump to his right side so the curl reads from the front, not hidden behind him; `mTailFwd` arches
+    // it up over his head and down in front (to tickle a nose)
+    const thN = -0.2 + u * (2.9 + a('mTail')),
+      thF = 1.3 + u * 2.7;
+    const th = thN + (thF - thN) * fw;
+    const side = (1 - fw) * (1.0 * Math.cos(th) + sway * u) + fw * 0.15;
+    const dir = vnorm(Mb.v(-(0.35 + 0.6 * fw) * Math.cos(th), side, Math.sin(th)));
     p = vadd(p, vmul(dir, L / N));
     pts.push(p);
   }
@@ -569,7 +689,7 @@ function monkey(r: Rig, F: F3, A: JointPose, j: Record<string, V3>, P: PandaOut 
   fuzz(r, new F3(pts[N], Mb.f, Mb.s, Mb.u), [1.15 * K, 1.15 * K, 1.15 * K], 20, 0.8 * K, 0.4 * K, 1.1, () => flat(white ? T.flour : T.mane));
   j.mTail = pts[N];
   // head
-  const Mh = Mb.at(0.4 * K, 0, 4.4 * K).turn(a('mGaze')).pitch(a('mNod')).roll(a('mTilt'));
+  const Mh = Mb.at(0.4 * K, 0, 4.4 * K).turn(a('mGaze') + (1 - on) * towardViewer(Mb, 0.5, 0.7) * Math.max(0, Math.cos(a('mPitch')))).pitch(a('mNod')).roll(a('mTilt'));
   const HEADM: V3 = [2.3 * K, 2.5 * K, 2.3 * K];
   r.tag = 'mHead';
   r.ell(Mh, [0, 0, 0], HEADM, fur);
@@ -639,8 +759,58 @@ function monkey(r: Rig, F: F3, A: JointPose, j: Record<string, V3>, P: PandaOut 
     r.ell(frameF(foot, Mb.f, Mb.u).at(0.4 * K, 0, 0), [0, 0, 0], [0.9 * K, 0.55 * K, 0.45 * K], hands);
     j['mFoot' + name] = foot;
   }
+  // his props: a chopstick for a rapier, a steamer lid for a shield, a stolen bun
+  if (a('mStick') > 0.5) {
+    r.tag = 'mStick';
+    const d = vnorm(Mb.v(0.7 + a('mStickFwd'), 0.1, 0.7 - a('mStickDown')));
+    r.cap(vsub(j.mHandR, vmul(d, 0.8 * K)), vadd(j.mHandR, vmul(d, 7.5 * K)), 0.24 * K, 0.18 * K, flat(T.chop));
+    j.mStickTip = vadd(j.mHandR, vmul(d, 7.5 * K));
+  }
+  if (a('mLid') > 0.5) {
+    r.tag = 'mLid';
+    const LF = frameF(vadd(j.mHandL, Mb.v(0.6 * K, -0.3 * K, 0)), Mb.v(1, -0.4, 0), Mb.u);
+    r.ell(LF, [0, 0, 0], [0.4 * K, 2.6 * K, 2.6 * K], { T: T.lid, pat: (q, l) => (Math.sin(Math.atan2(q[2], q[1]) * 10) > 0.6 ? pickBand(T.lid, l - 0.5) : null) });
+  }
+  if (a('mBun') > 0.5) {
+    r.tag = 'mBun';
+    const at = vadd(j.mHandR, Mb.v(0.3 * K, 0, 0.9 * K));
+    r.ell(frameF(at, Mb.f, Mb.u), [0, 0, 0], [1.5, 1.5, 1.2], flat(T.bun));
+    r.spike(vadd(at, Mb.v(0, 0, 0.9)), Mb.u, 0.8, 0.5, flat(T.bun));
+    j.mBunAt = at;
+  }
   j.mBody = Mb.o;
   j.mGround = [M.o[0], M.o[1], 0];
+}
+
+// ---- eggs (hatch) -------------------------------------------------------------------------------------------------
+/** Spots on the panda egg (unit sphere directions) and their sizes. */
+const EGG_SPOTS: [V3, number][] = [
+  [vnorm([0.8, 0.3, 0.4]), 0.32],
+  [vnorm([0.5, -0.7, -0.1]), 0.26],
+  [vnorm([-0.3, 0.8, -0.4]), 0.3],
+  [vnorm([0.9, -0.1, -0.5]), 0.22],
+  [vnorm([-0.7, -0.4, 0.5]), 0.28],
+];
+/** An egg standing on the floor at `at`, rocking about its bottom; a zigzag crack runs round it as `crack` grows. */
+function eggAt(r: Rig, base: number, at: V3, R3: V3, pitch: number, roll: number, crack: number, gold: boolean) {
+  const E = F3.yaw(base, [at[0], at[1], 0]).pitch(pitch).roll(roll).at(0, 0, R3[2]);
+  const mat: Mat = gold
+    ? { T: T.eggGold, pat: (q, l) => (Math.sin(q[2] * 14) > 0.85 ? pickBand(T.eggGold, l + 0.6) : null) }
+    : { T: T.egg, pat: (q, l) => (EGG_SPOTS.some(([d, k]) => vdot(q, d) > 1 - k * k * 0.5) ? pickBand(T.black, l) : null) };
+  r.tag = gold ? 'mEgg' : 'egg';
+  r.ell(E, [0, 0, 0], R3, mat);
+  if (crack > 0.02) {
+    const pts: V3[] = [];
+    const n = Math.max(2, Math.round(16 * crack));
+    for (let i = 0; i <= n; i++) {
+      const u = (i / 16 - crack / 2) * TAU * 0.9;
+      const z = 0.18 + (i % 2 ? 0.1 : -0.06);
+      const d = vnorm([Math.cos(u) * Math.sqrt(1 - z * z), Math.sin(u) * Math.sqrt(1 - z * z), z]);
+      pts.push(E.p(d[0] * R3[0] * 1.02, d[1] * R3[1] * 1.02, d[2] * R3[2] * 1.02));
+    }
+    inkCurve(r, pts, gold ? 0.18 : 0.3);
+  }
+  return E;
 }
 
 // ---- the frame ---------------------------------------------------------------------------------------------------
@@ -662,7 +832,9 @@ export function pandaFrame(sample: PoseSample): Creature['frame'] {
     r.outlineW = 2;
     r.innerInk = INK;
     const j: Record<string, V3> = {};
-    const F = F3.yaw(route.yaw + (side * Math.PI) / 8 + get('yaw'));
+    // the painting's yaw; Пончик moves about the kitchen by X (right) and Y (toward us) in rig units
+    const base = route.yaw + (side * Math.PI) / 8;
+    const F = F3.yaw(base + get('yaw'), [get('X'), get('Y'), 0]);
     const twist = get('twist');
     const FT = twist ? F.turn(twist) : F;
     const lifeWalk = anim === 'walk';
@@ -671,21 +843,74 @@ export function pandaFrame(sample: PoseSample): Creature['frame'] {
     const breath = period ? Math.sin((t * TAU) / period) : 0;
     const planted: string[] = [];
     const spin = clock.turn(2);
+    // over the painting's frame: the whole of Пончик (`overAll`) or of Шустрик (`mOver`) goes to the front layer
+    const overAll = get('overAll') > 0.5,
+      mOver = get('mOver') > 0.5;
+    const front = overAll || mOver ? new Rig() : null;
+    if (front) {
+      front.outlineW = 2;
+      front.innerInk = INK;
+    }
     let P: PandaOut | null = null;
-    if (get('hidden') < 0.5) P = panda(r, F, FT, pose, j, { gait, gaitW, t, spin, breath, planted });
-    if (get('mHidden') < 0.5) monkey(r, F, pose, j, P, { t, spin });
+    if (get('egg') > 0.5) {
+      const E = eggAt(r, base, [get('X'), get('Y'), 0], [8.6, 8.6, 10.8], get('eggRock'), get('eggRoll'), get('eggCrack'), false);
+      j.egg = E.o;
+    } else if (get('hidden') < 0.5) P = panda(overAll ? front! : r, F, FT, pose, j, { gait, gaitW, t, spin, breath, planted });
+    if (get('mEgg') > 0.5) {
+      const E = eggAt(r, base, [get('mX'), get('mY'), 0], [3.3, 3.3, 4.3], get('mEggRock'), 0, get('mEggCrack'), true);
+      j.mEgg = E.o;
+    } else if (get('mHidden') < 0.5) monkey(mOver ? front! : r, F, pose, j, P, { t, spin, base });
+    // egg shells: the top cap rides on Пончик's head, then on Шустрик's
+    if (get('shellHat') > 0.5 && P) {
+      r.tag = 'shell';
+      const S3 = P.Hd.at(-0.6, 0, HEAD[2] - 2.2).roll(0.25);
+      (overAll ? front! : r).ell(S3, [0, 0, 0], [7.2, 7.2, 5.6], { T: T.egg, pat: (q, l) => (EGG_SPOTS.slice(0, 2).some(([d, k]) => vdot(q, d) > 1 - k * k * 0.5) ? pickBand(T.black, l) : null) }, (q) => q[2] < 0.15 + 0.08 * Math.sin(Math.atan2(q[1], q[0]) * 9));
+    }
+    if (get('mShellHat') > 0.5 && j.mHead) {
+      const S3 = new F3(vadd(j.mHead, [0, 0, 1.4 * MK]), [1, 0, 0], [0, 1, 0], [0, 0, 1]).roll(-0.3);
+      (mOver ? front! : r).ell(S3, [0, 0, 0], [3.1 * MK, 3.1 * MK, 2.6 * MK], { T: T.egg, pat: (q, l) => (vdot(q, EGG_SPOTS[0][0]) > 0.95 ? pickBand(T.black, l) : null) }, (q) => q[2] < 0.12 + 0.08 * Math.sin(Math.atan2(q[1], q[0]) * 9));
+    }
+    if (get('shellBottom') > 0.5) {
+      const B = F3.yaw(base, [get('X'), get('Y'), 0]).at(0, 0, 6.4);
+      r.ell(B, [0, 0, 0], [8.6, 8.6, 6.6], { T: T.egg, pat: (q, l) => (EGG_SPOTS.slice(2).some(([d, k]) => vdot(q, d) > 1 - k * k * 0.5) ? pickBand(T.black, l) : null) }, (q) => q[2] > -0.05 + 0.1 * Math.sin(Math.atan2(q[1], q[0]) * 9));
+    }
     j.floor = [0, 0, 0];
+    j.home = [get('X'), get('Y'), 0];
     for (const [k, v] of Object.entries(j)) j[k + 'Ground'] = [v[0], v[1], 0];
     scaleFigure(r, j, portraitScale);
+    if (front) scaleFigure(front, {}, portraitScale);
+    // inside the barrel: nothing below its rim is drawn (the rim height in rig units)
+    if (get('clipZ') > 0.01) r.clipZ = get('clipZ') * portraitScale;
     const frame: BodyFrame = projectFigure(r, FIGURE, ANCHOR, j, '#1e1620', 3.2, true);
-    const up = Math.max(0, get('jump') + get('lift'));
-    frame.groundShadow =
-      get('hidden') > 0.5 || get('noShadow') > 0.5 ? { radius: 0, opacity: 0, reflectionOpacity: 0 } : { radius: (FIGURE * 0.17) / (1 + 0.04 * up), opacity: 0.5 / (1 + 0.06 * up), reflectionOpacity: 1 };
+    if (front) {
+      const paint = { outline: INK, inner: 3.2 };
+      const pad = 240,
+        size = frame.px.w + 2 * pad,
+        anchor: [number, number] = [frame.anchor[0] + pad, frame.anchor[1] + pad];
+      if (!pointsOnlyActive()) {
+        const body = renderRig(r, size, size, ...anchor, paint);
+        frame.px = body.p;
+        frame.lit = body.lit;
+        frame.eye = body.eye;
+        frame.over = renderRig(front, size, size, ...anchor, paint).p;
+      }
+      frame.anchor = anchor;
+      for (const key of Object.keys(frame.points)) frame.points[key] = [frame.points[key][0] + pad, frame.points[key][1] + pad];
+    }
+    // both shadows are drawn by the effects under each character (they move apart about the kitchen)
+    frame.groundShadow = { radius: 0, opacity: 0, reflectionOpacity: 0 };
     if (get('dx')) frame.dx = Math.round(get('dx'));
     if (get('dy')) frame.dy = Math.round(get('dy'));
     if (get('sx')) frame.sx = 1 + get('sx');
     if (get('sy')) frame.sy = 1 + get('sy');
     if (get('flash')) frame.flash = Math.min(1, get('flash'));
+    // a clang: the whole picture of him shivers and its outline doubles
+    const vib = get('vib');
+    if (vib > 0.05) {
+      const odd = Math.round(t * 24) % 2 ? 1 : -1;
+      frame.dx = (frame.dx ?? 0) + odd * Math.round(1 + vib);
+      frame.ghost = { dx: -odd * Math.round(2 + vib * 3), dy: 0, alpha: 0.4 };
+    }
     frame.planted = planted;
     return frame;
   };

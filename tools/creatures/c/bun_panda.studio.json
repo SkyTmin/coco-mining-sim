@@ -1,17 +1,89 @@
 {
   "minPrimitives": 900,
   "multiActTrick": true,
-  "bodyClips": ["walk_n", "walk_ne", "walk_e", "walk_se", "walk_s", "walk_sw", "walk_w", "walk_nw", "turn", "tired", "sleep"],
+  "bodyClips": [
+    "walk_n",
+    "walk_ne",
+    "walk_e",
+    "walk_se",
+    "walk_s",
+    "walk_sw",
+    "walk_w",
+    "walk_nw",
+    "turn",
+    "tired",
+    "sleep"
+  ],
   "skip": {
-    "foot-slide": ["walk_e", "walk_w"]
+    "foot-slide": [
+      "walk_e",
+      "walk_w"
+    ]
   },
   "clipAllow": [
-    { "a": "mBody", "b": "head" },
-    { "a": "mLegL", "b": "head" },
-    { "a": "mLegR", "b": "head" },
-    { "a": "mTail", "b": "head" },
-    { "a": "bamboo", "b": "head" },
-    { "a": "bamboo", "b": "cheek" },
-    { "a": "bamboo", "b": "muzzle" }
+    {
+      "a": "mBody",
+      "b": "head"
+    },
+    {
+      "a": "mLegL",
+      "b": "head"
+    },
+    {
+      "a": "mLegR",
+      "b": "head"
+    },
+    {
+      "a": "mTail",
+      "b": "head"
+    },
+    {
+      "a": "bamboo",
+      "b": "head"
+    },
+    {
+      "a": "bamboo",
+      "b": "cheek"
+    },
+    {
+      "a": "bamboo",
+      "b": "muzzle"
+    },
+    {
+      "a": "welt",
+      "b": "nose"
+    },
+    {
+      "a": "welt",
+      "b": "muzzle"
+    },
+    {
+      "a": "welt",
+      "b": "cheek"
+    },
+    {
+      "a": "welt",
+      "b": "head"
+    },
+    {
+      "a": "ladle",
+      "b": "ear"
+    },
+    {
+      "a": "ladle",
+      "b": "head"
+    },
+    {
+      "a": "mArm",
+      "b": "ear"
+    },
+    {
+      "a": "mArm",
+      "b": "cheek"
+    },
+    {
+      "a": "mTail",
+      "b": "torso"
+    }
   ]
 }
