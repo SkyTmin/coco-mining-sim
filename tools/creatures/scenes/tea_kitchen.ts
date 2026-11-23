@@ -286,7 +286,8 @@ function cupboard(p: Px) {
   });
 }
 
-/** A lattice door: timber frame, paper panes in a geometric lattice, a round brass pull. */
+/** A lattice door: timber frame, paper panes in a geometric lattice, a round brass pull on the left (it hangs on the right
+ * post and opens into the room — «Сковородка» swings it). */
 function door(p: Px) {
   const { x0, x1, top } = DOOR;
   box(x0, top, x1, WALL_FOOT, (x, y) => {
@@ -299,7 +300,7 @@ function door(p: Px) {
   line(p, x0, top, x1, top, timber[0]);
   line(p, x0, top, x0, WALL_FOOT, timber[0]);
   line(p, x1, top, x1, WALL_FOOT, timber[0]);
-  for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) if (x * x + y * y <= 5) put(p, x1 - 8 + x, 108 + y, x + y < 0 ? fire[3] : fire[1]);
+  for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) if (x * x + y * y <= 5) put(p, x0 + 8 + x, 108 + y, x + y < 0 ? fire[3] : fire[1]);
 }
 
 /** A ladder leaning on the left post up into the loft (out of the top of the picture). */

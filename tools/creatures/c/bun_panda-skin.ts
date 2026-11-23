@@ -421,14 +421,17 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
   r.tag = 'nose';
   r.ell(MZ, [2.35, 0, 1.25], [0.95, 1.6, 1.0], flat(T.nose, { spec: true }));
   j.nose = MZ.p(3.3, 0, 1.25);
-  const open = sat(a('mouth') + (a('chew') ? 0.18 + 0.18 * Math.sin(ctx.t * TAU * 4) : 0));
+  const chatter = a('chatter');
+  const open = sat(a('mouth') + (a('chew') ? 0.18 + 0.18 * Math.sin(ctx.t * TAU * 4) : 0) + chatter * (0.16 + 0.16 * Math.sin(ctx.t * TAU * 9)));
   const smile = a('smile') + 0.6;
   r.tag = 'mouth';
   if (open > 0.06) {
     const MF = MZ.at(2.3, 0, -0.9 - open * 0.5);
     r.ell(MF, [0, 0, 0], [0.8, 1.3 + open * 1.1 + a('wide') * 0.9, 0.5 + open * 1.5], flat(T.mouth));
     r.ell(MF, [0.3, 0, -0.3 - open * 0.7], [0.75, 0.9 + open * 0.6, 0.32 + open * 0.55], flat(T.tongue));
-    if (a('teeth') > 0.3) for (const s of [-1, 1]) r.ell(MF, [0.7, s * 0.4, 0.4 + open * 0.95], [0.38, 0.36, 0.48], flat(T.tooth));
+    if (a('teeth') > 0.3 || chatter > 0.3) for (const s of [-1, 1]) r.ell(MF, [0.7, s * 0.4, 0.4 + open * 0.95], [0.38, 0.36, 0.48], flat(T.tooth));
+    // chattering: the bottom teeth knock on the top ones
+    if (chatter > 0.3) for (const s of [-1, 1]) r.ell(MF, [0.7, s * 0.4, -0.4 - open * 0.9], [0.38, 0.36, 0.44], flat(T.tooth));
     if (a('tongueOut') > 0.1) r.cap(MF.p(0.5, 0.5, -0.4), MF.p(1.6, 1.2, -1.6 - a('tongueOut') * 1.6), 0.6, 0.75, flat(T.tongue));
   } else {
     const wavy = a('wavy');
@@ -510,6 +513,19 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
         pr.b = sq(pr.b);
       }
     }
+  }
+  // the face takes the pan's shape (`panFace`): a flat round dish with the rim's red mark and a handle-shaped chin
+  if (a('panFace') > 0.05) {
+    const pf = a('panFace');
+    r.tag = 'welt';
+    for (let i = 0; i < 30; i++) {
+      const th = (i / 30) * TAU;
+      // the rim's mark runs round the face and opens at the bottom into the handle's
+      if (Math.abs(th - Math.PI * 1.5) < 0.18) continue;
+      r.ball(Hd.p(2.9, Math.cos(th) * 6.6, Math.sin(th) * 6.0 - 0.6), 0.6 * pf, flat(T.heat));
+    }
+    r.cap(Hd.p(2.2, 0, -6.2), Hd.p(2.6, 0, -6.2 - 5 * pf), 1.3 * pf, 1.1 * pf, flat(T.white));
+    for (const s of [-1, 1]) r.cap(Hd.p(2.95, s * 1.15, -6.4), Hd.p(3.3, s * 1.0, -6.2 - 5 * pf), 0.45 * pf, 0.4 * pf, flat(T.heat));
   }
   // stuck in the honey pot: a round clay pot over the whole head, honey running from its rim
   if (a('jar') > 0.5) {
@@ -640,8 +656,11 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
     const sp = j.handR;
     const dir = vnorm(R.v(0.4 + a('spoonFwd'), 0.1 + a('spoonOut'), 1 - a('spoonDown')));
     const tip = vadd(sp, vmul(dir, 10.5));
-    r.cap(vadd(sp, vmul(dir, -1.4)), tip, 0.55, 0.5, flat(T.spoon));
-    r.ell(frameF(vadd(tip, vmul(dir, 1.4)), dir, R.f), [0, 0, 0], [1.9, 1.4, 0.7], flat(T.spoon));
+    // `spoonOff`: knocked out of his paw (the effects fly it and stick it in the ceiling beam)
+    if (a('spoonOff') < 0.5) {
+      r.cap(vadd(sp, vmul(dir, -1.4)), tip, 0.55, 0.5, flat(T.spoon));
+      r.ell(frameF(vadd(tip, vmul(dir, 1.4)), dir, R.f), [0, 0, 0], [1.9, 1.4, 0.7], flat(T.spoon));
+    }
     j.spoonTip = vadd(tip, vmul(dir, 2.4));
     r.tag = 'cape';
     const flap = 0.6 * Math.sin(ctx.t * TAU * 1.5) + a('capeFly');
@@ -650,13 +669,24 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
   // the frying pan (second form, «Сковородка»): handle in both paws, the pan raised for a swing
   if (a('pan') > 0.5) {
     r.tag = 'pan';
-    const grip = vlerp(j.handR, j.handL, 0.5);
-    const dir = vnorm(R.v(0.3 + a('panFwd'), 0.05, 1 - a('panDown')));
+    // in both paws, or by the handle in the right one (`panOne`, the lid stays on the left arm)
+    const grip = a('panOne') > 0.5 ? j.handR : vlerp(j.handR, j.handL, 0.5);
+    const dir = vnorm(R.v(0.3 + a('panFwd'), 0.05 + a('panOut'), 1 - a('panDown')));
     const c = vadd(grip, vmul(dir, 9.5));
     r.cap(grip, vadd(grip, vmul(dir, 5.4)), 0.6, 0.6, flat(T.ironDark));
     const PF = frameF(c, vnorm(vcross(dir, R.s)), dir);
     r.ell(PF, [0, 0, 0], [0.7, 4.6, 4.6], flat(T.iron, { spec: true }));
     r.ell(PF, [0.5, 0, 0], [0.35, 3.9, 3.9], flat(T.ironDark));
+    j.pan = c;
+  }
+  // the pan stuck on his face after it sprang back (`panStuck`), handle down; `panSlide` lets it slip down off his chin
+  if (a('panStuck') > 0.5) {
+    r.tag = 'pan';
+    const c = Hd.p(3.6, 0, -a('panSlide') * 7.5);
+    const PF = frameF(c, Hd.f, Hd.u);
+    r.ell(PF, [0, 0, 0], [0.7, 4.6, 4.6], flat(T.iron, { spec: true }));
+    r.ell(PF, [0.5, 0, 0], [0.35, 3.9, 3.9], flat(T.ironDark));
+    r.cap(Hd.p(3.4, 0, -4.6 - a('panSlide') * 7.5), Hd.p(3.2, 0, -10 - a('panSlide') * 7.5), 0.6, 0.6, flat(T.ironDark));
     j.pan = c;
   }
   // squash and stretch of the panda alone, about his feet

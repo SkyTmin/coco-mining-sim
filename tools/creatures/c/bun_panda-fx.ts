@@ -6,7 +6,8 @@
 import { hash } from '../kit/f11-mobkit';
 import { disc, fillPoly, fillSeg, star, type Pen } from '../fx/pen';
 import type { FxInput, XY } from '../types';
-import { beats, CUP_AT, gesture, KITCHEN, PX } from './bun_panda-poses';
+import { DOOR } from '../scenes/tea_kitchen';
+import { beats, CUP_AT, DOOR_LEAF, doorAngle, gesture, KITCHEN, PAN_FLOOR, PAN_HOOK, PX } from './bun_panda-poses';
 
 const TAU = Math.PI * 2;
 const INK = '#1e1620';
@@ -170,8 +171,14 @@ export interface Props {
   puddle: number;
   /** Floor wave from a fall: centre px, age in frames. */
   wave: [number, number, number] | null;
+  /** The lattice door's swing (radians, 0 shut) and whether its leaf is in front of the heroes. */
+  door: number;
+  doorFront: boolean;
+  /** The frying pan on its hook by the door, and its swing (radians). */
+  panOnWall: boolean;
+  panSwing: number;
 }
-const REST_PROPS: Props = { rugX: 0, swing: 0, lidOff: 0, hop: 0, buns: 3, stalkTip: null, spring: 0, shoot: true, jarOnBench: true, splash: 0, puddle: 0, wave: null };
+const REST_PROPS: Props = { rugX: 0, swing: 0, lidOff: 0, hop: 0, buns: 3, stalkTip: null, spring: 0, shoot: true, jarOnBench: true, splash: 0, puddle: 0, wave: null, door: 0, doorFront: false, panOnWall: true, panSwing: 0 };
 
 function shadow(p: Pen, at: XY | undefined, rx: number, ry: number, up: number) {
   if (!at) return;
@@ -414,6 +421,16 @@ function propsFor(anim: string, fr: number, P: Record<string, number>, f: FxInpu
     pr.lidOff = fr > b.table && fr < b.lidHome ? 1 : 0;
     pr.swing = Math.max(ring(fr, b.bong, 0.5), ring(fr, b.bong2, 0.35), ring(fr, b.table, 0.3));
   }
+  if (anim === 'trick_c-f2') {
+    const b = beats['trick_c-f2'];
+    pr.door = doorAngle(fr);
+    // the leaf passes in front of him as it sweeps him onto the wall, and in front of Шустрик as he pulls it shut
+    pr.doorFront = fr >= b.slam + 3 && fr < b.shut[1] + 2;
+    // pressed into his back on the wall; peeled off with him; flicked back onto its hook at the end
+    pr.panOnWall = fr < b.peel[0] || fr >= b.hook;
+    pr.panSwing = fr >= b.hook ? 0.5 * Math.exp(-(fr - b.hook) / 7) * Math.cos((fr - b.hook) * 0.9) : 0;
+    pr.swing = Math.max(ring(fr, b.slam, 0.4), ring(fr, b.bong, 0.35), ring(fr, b.floor, 0.2));
+  }
   if (anim === 'trick_b-f2') {
     const b = beats['trick_b-f2'];
     // the whole room shakes when he hits the glass; the steamers jump when he walks into the table
@@ -431,6 +448,11 @@ function drawKitchen(f: FxInput, pr: Props, who: Who, fr: number) {
   table(tablePen, pr);
   const tbb = W(KITCHEN.tub.x, KITCHEN.tub.y);
   tub(penFor(f, who, tbb[0], tbb[1], 22), pr, fr, pr.stalkFront ? f.above : null);
+  if (pr.door > 0.01) {
+    doorway(f.under);
+    doorLeaf(pr.doorFront ? f.above : f.under, pr.door);
+  }
+  if (pr.panOnWall) wallPan(f.under, pr.panSwing);
   if (pr.jarOnBench) honeyJar(f.under, ...W(KITCHEN.jar.x, KITCHEN.jar.y, KITCHEN.jar.z));
   const bb = W(KITCHEN.barrel.x, KITCHEN.barrel.y);
   barrel(penFor(f, who, bb[0], bb[1], 30), pr, fr);
@@ -1163,6 +1185,220 @@ function ramFx(f: FxInput, fr: number) {
   }
 }
 
+// ---- the door, the pan on its hook, the spoon ---------------------------------------------------------------------
+/** The dark next room seen through the open doorway. */
+function doorway(p: Pen) {
+  const { x0, x1, top } = DOOR;
+  poly(p, [x0 + 3, top + 3, x1 - 3, top + 3, x1 - 3, 150, x0 + 3, 150], '#140d0a');
+  poly(p, [x0 + 3, 138, x1 - 3, 138, x1 - 3, 150, x0 + 3, 150], '#2c1e15');
+  for (let x = x0 + 8; x < x1 - 4; x += 9) seg(p, x, 139, x - 2, 149, 0.5, '#3a281c');
+  poly(p, [x0 + 3, top + 3, x1 - 3, top + 3, x1 - 3, top + 12, x0 + 3, top + 12], '#0c0806', 0.8);
+}
+/** The door's leaf turned θ on its right post: timber frame, paper panes, a lattice, the brass pull at the free edge. */
+function doorLeaf(p: Pen, th: number) {
+  const { hinge, len, h } = DOOR_LEAF;
+  const ex = hinge[0] - len * Math.cos(th),
+    ey = hinge[1] + len * Math.sin(th);
+  const at = (u: number, z: number) => W(hinge[0] + (ex - hinge[0]) * u, hinge[1] + (ey - hinge[1]) * u, z);
+  const quad = (u0: number, u1: number, z0: number, z1: number, c: string, a = 1) => {
+    const A = at(u0, z0),
+      B = at(u1, z0),
+      C = at(u1, z1),
+      D = at(u0, z1);
+    poly(p, [A[0], A[1], B[0], B[1], C[0], C[1], D[0], D[1]], c, a);
+  };
+  const wpx = Math.abs(len * Math.cos(th)) * PX.s;
+  quad(0, 1, -0.3, h + 0.3, INK);
+  if (wpx < 3) return;
+  const light = Math.abs(Math.cos(th));
+  quad(0.02, 0.98, 0, h, th > Math.PI / 2 ? '#5a3c25' : '#6e4c2f');
+  const fr = Math.min(0.3, 3.5 / wpx);
+  const paper = th > Math.PI / 2 ? '#c8b48c' : light > 0.7 ? '#eadcbc' : '#d8c8a2';
+  quad(fr, 1 - fr, 1.4, h - 1.4, paper);
+  for (const u of [0.25, 0.5, 0.75]) {
+    const A = at(fr + (1 - 2 * fr) * u, 1.4),
+      B = at(fr + (1 - 2 * fr) * u, h - 1.4);
+    seg(p, A[0], A[1], B[0], B[1], 0.5, '#5a3c25');
+  }
+  for (let z = 1.4 + 4.1; z < h - 1.4; z += 4.1) {
+    const A = at(fr, z),
+      B = at(1 - fr, z);
+    seg(p, A[0], A[1], B[0], B[1], 0.5, '#5a3c25');
+  }
+  const pull = at(0.82, 14.2);
+  dot(p, pull[0], pull[1], 2.2, '#ffc860', 1, '#5a3010');
+}
+/** The frying pan hanging by its handle from a hook on the wall, swinging `sw` radians. */
+function wallPan(p: Pen, sw: number) {
+  const hk = W(PAN_HOOK.x, KITCHEN.wall, PAN_HOOK.z);
+  seg(p, hk[0] - 2, hk[1] - 1, hk[0] + 2, hk[1] - 1, 1, '#2a262e');
+  const dx = Math.sin(sw),
+    dy = Math.cos(sw);
+  const L = 16,
+    rx = 15,
+    ry = 12;
+  const c: XY = [hk[0] + dx * (L + ry), hk[1] + dy * (L + ry)];
+  seg(p, hk[0], hk[1], hk[0] + dx * (L + 2), hk[1] + dy * (L + 2), 2.4, INK);
+  seg(p, hk[0], hk[1], hk[0] + dx * (L + 2), hk[1] + dy * (L + 2), 1.4, '#30303e');
+  dot(p, hk[0], hk[1] + 1, 1.2, '#14141c', 1, INK);
+  ell(p, c[0], c[1], rx + 1.5, ry + 1.5, INK);
+  ell(p, c[0], c[1], rx, ry, '#565668');
+  ell(p, c[0], c[1], rx - 2.5, ry - 2.2, '#30303e');
+  ell(p, c[0] - 4, c[1] - 4, 4, 2, '#a4a4bc', 0.8);
+}
+/** A flying pan, face-on, its spin squeezing it edge-on. */
+function flyingPan(p: Pen, x: number, y: number, spin: number, k = 1) {
+  const c = Math.cos(spin);
+  const rx = Math.max(2, 15 * k * Math.abs(c)),
+    ry = 12 * k;
+  const hx = Math.sin(spin) * 18 * k;
+  seg(p, x, y, x + hx, y - 14 * k, 2.6, INK);
+  seg(p, x, y, x + hx, y - 14 * k, 1.4, '#30303e');
+  ell(p, x, y, rx + 1.5, ry + 1.5, INK);
+  ell(p, x, y, rx, ry, c > 0 ? '#565668' : '#30303e');
+  if (rx > 5) ell(p, x - rx * 0.25, y - ry * 0.3, rx * 0.3, ry * 0.18, '#a4a4bc', 0.8);
+}
+/** The pan lying on the floor (seen from above). */
+function floorPan(p: Pen, x: number, y: number, tilt = 0) {
+  seg(p, x + 12, y - 2 - tilt, x + 26, y - 6 - tilt * 2, 2.6, INK);
+  seg(p, x + 12, y - 2 - tilt, x + 26, y - 6 - tilt * 2, 1.4, '#30303e');
+  ell(p, x, y - tilt, 16.5, 10.5 + tilt * 0.3, INK);
+  ell(p, x, y - tilt, 15, 9, '#565668');
+  ell(p, x, y - tilt, 12, 7, '#30303e');
+}
+/** The wooden spoon: handle from (x, y) at angle `rot`, the bowl at its far end. */
+function woodSpoon(p: Pen, x: number, y: number, rot: number) {
+  const ex = x + Math.cos(rot) * 30,
+    ey = y + Math.sin(rot) * 30;
+  seg(p, x, y, ex, ey, 3.4, INK);
+  seg(p, x, y, ex, ey, 2, '#b8783a');
+  const bx = ex + Math.cos(rot) * 5,
+    by = ey + Math.sin(rot) * 5;
+  ell(p, bx, by, 6.5, 5.5, INK);
+  ell(p, bx, by, 5, 4, '#b8783a');
+  ell(p, bx - 1.5, by - 1.5, 2, 1.4, '#f0c070');
+}
+/** A little music note (Шустрик hums). */
+function note(p: Pen, x: number, y: number, a: number) {
+  ell(p, x, y, 2.4, 1.8, INK, a);
+  ell(p, x, y, 1.6, 1.1, '#fff4c0', a);
+  seg(p, x + 1.8, y, x + 1.8, y - 8, 0.7, INK, a);
+  seg(p, x + 1.8, y - 8, x + 4.6, y - 5.6, 0.7, INK, a);
+}
+function bezier(a: XY, b: XY, h: number, u: number): XY {
+  return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u - Math.sin(u * Math.PI) * h];
+}
+function panFx(f: FxInput, fr: number) {
+  const b = beats['trick_c-f2'];
+  const pt = f.points;
+  // the door slams: a boom where the leaf meets him and the wall; the shut door clacks
+  const pin = W(PAN_HOOK.x, -46.6, 18);
+  boom(f.above, pin[0] + 22, pin[1] - 6, 14, fr - (b.slam + 3), 3);
+  for (let k = 0; k < 2; k++) if (fr >= b.slam + 3 && fr < b.slam + 11) p_ring(f.above, pin[0] + 4, pin[1], 30 + (fr - b.slam - 3) * 6 + k * 7, '#fff4c0', Math.max(0, 0.6 - (fr - b.slam - 3) * 0.08));
+  const shut = W(DOOR_LEAF.hinge[0] - DOOR_LEAF.len, DOOR_LEAF.hinge[1], 14);
+  boom(f.under, shut[0] + 4, shut[1], 7, fr - b.shut[1], 6);
+  // Шустрик's giggles in the doorway
+  if (pt.mHead && fr >= b.giggle[0] && fr < b.giggle[1] && fr % 4 < 2) starInk(f.above, pt.mHead[0] + 10, pt.mHead[1] - 10, 2.2, fr, '#fff4c0');
+  // the spoon: knocked up into the ceiling beam, stuck there quivering, drops — tink — onto his helmet, into his paw
+  const s0 = f.pointAt(b.slam / 24, 'spoonTip');
+  const BEAM: XY = [176, 22];
+  if (fr >= b.slam + 1 && fr < b.tink + 4) {
+    let x: number, y: number, rot: number;
+    if (fr < b.slam + 7) {
+      const u = prog(fr, b.slam + 1, b.slam + 7);
+      [x, y] = bezier(s0, BEAM, 40, u);
+      rot = Math.PI / 2 + u * Math.PI * 4;
+    } else if (fr < b.tink - 2) {
+      x = BEAM[0];
+      y = BEAM[1];
+      rot = Math.PI / 2 + 0.35 * Math.exp(-(fr - b.slam - 7) / 6) * Math.sin((fr - b.slam - 7) * 1.3);
+    } else if (fr < b.tink + 1) {
+      const hel = f.pointAt((b.tink + 1) / 24, 'helmet');
+      const u = prog(fr, b.tink - 2, b.tink + 1);
+      x = BEAM[0] + (hel[0] - 6 - BEAM[0]) * u;
+      y = BEAM[1] + (hel[1] - 44 - BEAM[1]) * u * u;
+      rot = Math.PI / 2 + u * 0.8;
+    } else {
+      const hel = f.pointAt((b.tink + 1) / 24, 'helmet');
+      const hand = f.pointAt((b.tink + 4) / 24, 'handR');
+      const u = prog(fr, b.tink + 1, b.tink + 4);
+      [x, y] = bezier([hel[0] - 6, hel[1] - 44], [hand[0], hand[1] - 30], 16, u);
+      rot = Math.PI / 2 + 0.8 + u * 2.2;
+    }
+    woodSpoon(fr < b.tink - 2 ? f.under : f.above, x, y, rot);
+  }
+  if (pt.helmet) starInk(f.above, pt.helmet[0] - 4, pt.helmet[1] - 6, fr - b.tink - 1 < 4 && fr > b.tink ? 5 : 0, fr, '#fff4c0');
+  // sideways and paper-thin: the pan stuck flat on his back shows edge-on
+  if (pt.body && fr >= b.thin[0] - 1 && fr < b.thin[1] + 1) {
+    const x = pt.body[0] - 7,
+      y = pt.body[1] - 12;
+    seg(f.under, x, y - 13, x, y + 13, 3.4, INK);
+    seg(f.under, x, y - 13, x, y + 13, 1.8, '#565668');
+    seg(f.under, x, y - 13, x - 1, y - 30, 2.6, INK);
+    seg(f.under, x, y - 13, x - 1, y - 30, 1.4, '#30303e');
+  }
+  // the thumb-blow and «бульк!»: rings, a puff, the pan pops off his back into his paw
+  if (pt.body) {
+    for (let k = 0; k < 3; k++) if (fr >= b.bloop && fr < b.bloop + 8) p_ring(f.above, pt.body[0], pt.body[1] - 10, 26 + (fr - b.bloop) * 5 + k * 6, '#fffbe8', Math.max(0, 0.7 - (fr - b.bloop) * 0.09 - k * 0.15));
+    puff(f.under, pt.body[0] - 22, pt.body[1] + 8, 6, fr - b.bloop, 8, 2, '#f4f0e8');
+    puff(f.under, pt.body[0] + 22, pt.body[1] + 8, 6, fr - b.bloop, 8, 3, '#f4f0e8');
+  }
+  if (fr >= b.bloop && fr < b.catch[1]) {
+    const from = f.pointAt(b.bloop / 24, 'body');
+    const to = f.pointAt(b.catch[1] / 24, 'pan');
+    const u = prog(fr, b.bloop, b.catch[1]);
+    const [x, y] = bezier([from[0], from[1] - 14], to, 46, u);
+    flyingPan(f.above, x, y, u * Math.PI * 3);
+  }
+  // angry steam from under the helmet
+  if (pt.helmet && fr >= b.catch[1] && fr < 178)
+    for (const s of [-1, 1]) puff(f.above, pt.helmet[0] + s * 26, pt.helmet[1] + 6 - ((fr - b.catch[1]) % 6) * 2, 3.4, (fr - b.catch[1]) % 6, 6, s + fr, '#f4f0e8');
+  // Шустрик hums with his back to him
+  if (pt.mHead && fr >= b.hum[0] && fr < b.hum[1])
+    for (let i = 0; i < 2; i++) {
+      const age = (fr - b.hum[0] + i * 12) % 24;
+      note(f.above, pt.mHead[0] + 8 + age * 0.5 + Math.sin(age * 0.5) * 2, pt.mHead[1] - 12 - age * 1.1, 1 - age / 24);
+    }
+  // the swing, the floor, BONG
+  if (pt.pan && fr >= b.swing - 3 && fr <= b.floor) whoosh(f, 'pan', 3);
+  if (fr >= b.floor && fr < b.floor + 8) {
+    const fl = W(PAN_FLOOR[0], PAN_FLOOR[1]);
+    boom(f.under, fl[0], fl[1] - 2, 10, fr - b.floor, 7);
+    puff(f.under, fl[0] - 14, fl[1], 6, fr - b.floor, 8, 9);
+    puff(f.under, fl[0] + 14, fl[1], 6, fr - b.floor, 8, 10);
+  }
+  if (pt.helmet) {
+    clang(f.above, pt.helmet[0], pt.helmet[1] - 6, fr - b.bong - 1, 16, 4);
+    if (fr >= b.bong + 1 && fr < b.bong + 14) for (let k = 0; k < 2; k++) p_ring(f.above, pt.helmet[0], pt.helmet[1] + 14, 30 + (fr - b.bong) * 5 + k * 8, '#fff4c0', Math.max(0, 0.6 - (fr - b.bong) * 0.05 - k * 0.15));
+  }
+  // the pan drops off his chin, clatters on the floor and lies there until Шустрик flicks it home
+  const fl = W(PAN_FLOOR[0], PAN_FLOOR[1]);
+  if (fr >= b.drop && fr < b.drop + 3) {
+    const from = f.pointAt((b.drop - 1) / 24, 'pan');
+    const u = prog(fr, b.drop, b.drop + 3);
+    flyingPan(f.above, from[0] + (fl[0] - from[0]) * u, from[1] + (fl[1] - from[1]) * u * u, u * 1.2);
+  }
+  if (fr >= b.drop + 3 && fr < b.flick) floorPan(f.under, fl[0], fl[1], fr >= b.flick - 2 ? 4 : 0);
+  boom(f.under, fl[0], fl[1] - 4, 8, fr - b.drop - 3, 5);
+  if (fr >= b.flick && fr < b.hook) {
+    const hk = W(PAN_HOOK.x, KITCHEN.wall, PAN_HOOK.z);
+    const u = prog(fr, b.flick, b.hook);
+    const [x, y] = bezier([fl[0], fl[1] - 6], [hk[0], hk[1] + 28], 130, u);
+    flyingPan(u < 0.6 ? f.above : f.under, x, y, u * Math.PI * 4);
+  }
+  if (pt.mStickTip && fr >= b.flick - 2 && fr < b.flick + 3) whoosh(f, 'mStickTip', 3, '#e8ffd0');
+  const hk = W(PAN_HOOK.x, KITCHEN.wall, PAN_HOOK.z);
+  if (fr >= b.hook && fr < b.hook + 4) starInk(f.under, hk[0], hk[1] + 2, 4, fr, '#fff4c0');
+  // chattering teeth: little tinks at his mouth
+  if (pt.mouth && fr >= b.chatter[0] && fr < b.chatter[1] && fr % 2 === 0) {
+    const s = fr % 4 ? 1 : -1;
+    starInk(f.above, pt.mouth[0] + s * 9, pt.mouth[1] + 1, 2.2, fr, '#ffffff');
+    seg(f.above, pt.mouth[0] + s * 13, pt.mouth[1] - 3, pt.mouth[0] + s * 17, pt.mouth[1] - 4, 0.6, INK);
+  }
+  // shaking it off: a pop
+  if (pt.head) puff(f.above, pt.head[0], pt.head[1] - 4, 9, fr - 258, 7, 6, '#fffbe8');
+}
+
 // ---- the effects entry --------------------------------------------------------------------------------------------
 export function pandaEffects(f: FxInput) {
   const fr = f.t * 24;
@@ -1190,6 +1426,7 @@ export function pandaEffects(f: FxInput) {
   if (f.anim === 'happy-f2') happyF2Fx(f, fr);
   if (f.anim === 'trick-f2') duelFx(f, fr);
   if (f.anim === 'trick_b-f2') ramFx(f, fr);
+  if (f.anim === 'trick_c-f2') panFx(f, fr);
   // stars over a bonked head
   if ((P.dizzy ?? 0) > 0.5 && pt.head) dizzyRing(f, [pt.head[0], pt.head[1] - 36], 30, f.t * TAU * 1.2, 1);
   if ((P.mDizzy ?? 0) > 0.5 && pt.mHead) dizzyRing(f, [pt.mHead[0], pt.mHead[1] - 13], 12, -f.t * TAU * 1.5, 0.6);

@@ -78,7 +78,7 @@ export const f2 = (p: JointPose): JointPose => ({ ...F2, ...p });
 export const SWITCHES = new Set([
   'hidden', 'mHidden', 'blink', 'mBlink', 'noShadow', 'bamboo', 'bun', 'bunL', 'chew', 'mFlour', 'mWet', 'form', 'dizzy',
   'mDizzy', 'overAll', 'mOver', 'egg', 'mEgg', 'shellHat', 'mShellHat', 'shellBottom', 'jar', 'wheel', 'pan', 'mStick',
-  'mLid', 'mBun',
+  'mLid', 'mBun', 'spoonOff', 'panOne', 'panStuck',
 ]);
 /** Lane keys that run linearly (positions in flight, spins). */
 export const LINEAR = new Set(['dx', 'dy', 'twist', 'gaitT', 'mGait', 'X', 'Y', 'mX', 'mY', 'mZ', 'mPitch', 'mTwist', 'yaw', 'mYaw', 'rugX']);
@@ -100,6 +100,7 @@ export const beats = {
   'happy-f2': { clangs: [9, 16], spin: [20, 35] },
   'trick-f2': { clacks: [28, 36, 46], whoosh: [24, 28, 32, 36, 42, 46], thrust: 57, stumble: 61, parries: [72, 84, 96, 110], duck: [118, 128], bong: 150, bong2: 178, table: 190, lidFly: [191, 206], bonk: 206, lidHome: 220, stars: [150, 226], mStars: [206, 226] },
   'trick_b-f2': { paw: [22, 30], charge: [38, 56], ole: 45, splat: 56, slide: [66, 112], drop: 114, thud: 170, stars: [116, 132] },
+  'trick_c-f2': { slip: [26, 40], ear: [80, 92], slam: 93, giggle: [98, 110], shut: [112, 120], out: [126, 136], peel: [128, 137], thin: [143, 149], blow: [151, 156], bloop: 157, catch: [157, 163], hum: [151, 214], swing: 217, floor: 219, bong: 221, slide: [232, 237], drop: 237, chatter: [237, 253], flick: 247, hook: 257, tink: 267 },
   peek: { in: [0, 10], sniff: [12, 30], scare: 32, bonk: 38, out: [40, 50], monkey: [46, 70], tongue: [54, 64] },
 };
 
@@ -1029,6 +1030,157 @@ const trick_b_f2: Track = [
   [288, { ...KNIGHT }],
 ];
 
+// ---- «Сковородка» (form 2) ----------------------------------------------------------------------------------------
+// Шустрик slips through the lattice door. Пончик tiptoes after him and puts his ear to it; the door bursts open on its
+// right post, sweeps him round and slaps him flat on the wall (his spoon flies up and sticks in the ceiling beam, the
+// pan on the hook is pressed into his back). Шустрик giggles in the doorway and pulls the door shut: Пончик is a flat
+// sheet on the wall. He peels off, turns sideways — thin as paper, the pan stuck on his back — blows into his thumb and
+// «бульк!» inflates; the pan pops off into his paw. Revenge: he creeps up behind the humming Шустрик, swings — Шустрик
+// hops aside, the pan hits the floor, springs back BONG into his own face. The pan slides off; his face has its shape,
+// his teeth chatter. Шустрик flicks the pan back onto its hook with his shoot; Пончик shakes it off, marches home and
+// the spoon drops from the beam onto his helmet into his paw.
+/** The lattice door on its right post: hinge (rig), leaf length and height. θ = 0 shut, π lies on the wall to the right. */
+export const DOOR_LEAF = { hinge: [-1.6, -47.7] as [number, number], len: 10.8, h: 31.1 };
+const sm = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
+export function doorAngle(fr: number): number {
+  const b = beats['trick_c-f2'];
+  if (fr >= b.slip[0] && fr < b.slip[1]) return 0.7 * Math.min(sm((fr - b.slip[0]) / 4), 1 - sm((fr - b.slip[1] + 4) / 4));
+  if (fr >= b.out[0] && fr < b.out[1]) return 0.75 * Math.min(sm((fr - b.out[0]) / 4), 1 - sm((fr - b.out[1] + 4) / 4));
+  if (fr < b.slam || fr >= b.shut[1]) return 0;
+  if (fr < b.slam + 3) return 2.95 * ((fr - b.slam) / 3);
+  if (fr < b.shut[0]) return 2.8 + 0.15 * Math.exp(-(fr - b.slam - 3) / 3) * Math.cos((fr - b.slam - 3) * 1.4);
+  return 2.8 * (1 - sm((fr - b.shut[0]) / (b.shut[1] - b.shut[0])));
+}
+/** Where the pan hangs on its hook (rig x, wall, z of the hook). */
+export const PAN_HOOK = { x: 5, z: 22 };
+const EAR_AT: [number, number] = [-6, -43];
+const PIN: [number, number] = [7.2, -46.6];
+const STEP: [number, number] = [7.2, -40.5];
+const BEHIND: [number, number] = [7, -27];
+const M_GAP: [number, number] = [-10.8, -44.2];
+const M_IN: [number, number] = [-7.5, -50.5];
+const M_DOOR: [number, number] = [-7, -49.4];
+const M_SIT: [number, number] = [4.2, -11.6];
+const M_DODGE: [number, number] = [-9, -9];
+export const PAN_FLOOR: [number, number] = [3.9, -13.5];
+const M_FLICK: [number, number] = [-1.6, -12.4];
+const panP = pathLanes([
+  stay(0, 40, 0, 0, 0),
+  // tiptoes to the door, ear to it
+  run(41, 78, [0, 0], EAR_AT, true, FACE.away),
+  stay(79, 93, EAR_AT[0], EAR_AT[1], FACE.away),
+  // the door sweeps him round onto the wall
+  { a: 93, b: 96, at: (u) => ({ x: EAR_AT[0] + (PIN[0] - EAR_AT[0]) * u, y: EAR_AT[1] + (PIN[1] - EAR_AT[1]) * u + 3 * Math.sin(u * Math.PI), yaw: FACE.away - Math.PI * u }) },
+  stay(97, 128, PIN[0], PIN[1], FACE.us),
+  // peels off, a stiff step forward
+  run(129, 136, PIN, STEP, false, FACE.us),
+  stay(137, 139, STEP[0], STEP[1], FACE.us),
+  // sideways: thin as paper
+  stay(143, 149, STEP[0], STEP[1], FACE.right),
+  stay(153, 176, STEP[0], STEP[1], FACE.us),
+  // creeps up behind Шустрик
+  run(177, 206, STEP, BEHIND),
+  stay(207, 259, BEHIND[0], BEHIND[1], FACE.us),
+  run(260, 272, BEHIND, [0, 0]),
+  stay(273, 276, 0, 0, 0),
+]);
+const panM = pathLanes(
+  [
+    stay(0, 13, M_F2[0], M_F2[1], FACE.left),
+    run(14, 27, M_F2, M_GAP),
+    run(28, 33, M_GAP, M_IN),
+    stay(34, 95, M_IN[0], M_IN[1], FACE.us),
+    stay(96, 112, M_DOOR[0], M_DOOR[1], FACE.us),
+    stay(113, 127, M_IN[0], M_IN[1], FACE.us),
+    run(128, 132, M_IN, M_GAP),
+    run(133, 150, M_GAP, M_SIT),
+    stay(151, 215, M_SIT[0], M_SIT[1], FACE.us),
+    // hops aside at the last moment
+    { a: 216, b: 221, at: (u) => ({ x: M_SIT[0] + (M_DODGE[0] - M_SIT[0]) * u, y: M_SIT[1] + (M_DODGE[1] - M_SIT[1]) * u, z: 6 * Math.sin(u * Math.PI), yaw: FACE.us }) },
+    stay(222, 237, M_DODGE[0], M_DODGE[1], FACE.usRight),
+    run(238, 244, M_DODGE, M_FLICK),
+    stay(245, 254, M_FLICK[0], M_FLICK[1], FACE.right),
+    run(255, 270, M_FLICK, M_F2),
+    stay(271, 276, M_F2[0], M_F2[1], FACE.left),
+  ],
+  true,
+);
+/** Flat as a sheet on the wall (thin toward us), arms and legs spread. */
+const SHEET = (p: JointPose = {}): JointPose => ({ ...KV, visor: 0, spoonOff: 1, gaze: -0.35, sqy: -0.45, sqx: 0.3, sqz: 0.06, lift: 4, air: 1, ...hand('R', 0.6, 10.5, 16), ...hand('L', 0.6, -10.5, 16), ...foot('R', 0, 4.6, 0), ...foot('L', 0, -4.6, 0), ...p });
+/** One-handed pan in the right paw (the lid still on the left arm). */
+const PAN = (p: JointPose = {}): JointPose => ({ ...KV, visor: 0, spoonOff: 1, pan: 1, panOne: 1, ...p });
+const M_HUM = (k = 0): JointPose => ({ mStick: 1, mLid: 1, mSit: 1, mSmile: 0.6, mGaze: 0.2 * k, mTilt: 0.12 * k, mLookX: 0.4 * k, mBlink: 0, mSquint: 0.6 });
+const trick_c_f2: Track = [
+  [0, { ...KNIGHT }],
+  // Шустрик winks and slips off through the door
+  [10, { ...KNIGHT, mSmirk: 1, mBrowUp: 0.6 }],
+  [20, { ...KNIGHT, gaze: -0.6, lookX: -0.8, mRun: 1 }],
+  [34, { ...KNIGHT, gaze: -0.9, lookX: -1, browUp: 0.6, mStick: 1, mLid: 1, mHidden: 1 }],
+  [40, { ...KNIGHT, gaze: -0.9, lookX: -1, browIn: 1, smile: 0.4, mStick: 1, mLid: 1, mHidden: 1 }],
+  // tiptoes after him: knees high, paws up, tongue out
+  [44, { ...KV, gait: 1, crouch: 1.4, lean: -0.3, ...hand('R', 5.6, 5.4, 19), ...hand('L', 6.4, -4.4, 17), tongueOut: 0.6, lid: 0.4, mStick: 1, mLid: 1, mHidden: 1 }],
+  [76, { ...KV, gait: 1, crouch: 1.4, lean: -0.3, ...hand('R', 5.6, 5.4, 19), ...hand('L', 6.4, -4.4, 17), tongueOut: 0.6, lid: 0.4, mStick: 1, mLid: 1, mHidden: 1 }],
+  // ear to the door, listening; a sly grin
+  [82, { ...KV, lean: 0.6, tilt: 0.35, gaze: 0.6, ...hand('R', 3.6, 8.6, 17), spoonOut: 0.9, ...hand('L', 5.2, -5.4, 13), smile: 0.8, lid: 0.5, mStick: 1, mLid: 1, mHidden: 1 }],
+  [92, { ...KV, lean: 0.7, tilt: 0.4, gaze: 0.6, ...hand('R', 3.6, 8.6, 17.5), spoonOut: 0.9, ...hand('L', 5.2, -5.4, 13), smile: 1, lid: 0.6, mStick: 1, mLid: 1, mHidden: 1 }],
+  // WHAM: swept round onto the wall, the spoon flies out of his paw
+  [94, { ...KV, visor: 0, spoonOff: 1, pop: 1, browUp: 1, sqy: -0.5, ...both(4, 9, 18), mStick: 1, mLid: 1 }],
+  [97, SHEET({ pop: 0.5, vib: 1, mStick: 1, mLid: 1, mSmirk: 1, mMouth: 1, mSquint: 1 })],
+  // Шустрик giggles in the doorway, then pulls the door shut
+  [104, SHEET({ lid: 0.5, vib: 0.3, mStick: 1, mLid: 1, mSmile: 1, mMouth: 1, mSquint: 1, mNod: 0.3 })],
+  [110, SHEET({ lid: 0.5, mStick: 1, mLid: 1, mSmile: 1, mMouth: 1, mSquint: 1, mNod: -0.2 })],
+  [120, SHEET({ lid: 0.7, wavy: 1, mStick: 1, mLid: 1, mHidden: 1, mSmirk: 1 })],
+  [124, SHEET({ blink: 1, wavy: 1, mStick: 1, mLid: 1, mHidden: 1 })],
+  [126, SHEET({ lid: 0.3, wavy: 1, mStick: 1, mLid: 1, mHidden: 1, mSmirk: 1 })],
+  // peels off the wall, top first, and takes a stiff step
+  [132, SHEET({ roll: 0.14, lift: 2, sqy: -0.45, lid: 0.3, mStick: 1, mLid: 1, mRun: 1 })],
+  [135, SHEET({ roll: -0.12, lift: 0.6, sqy: -0.45, lid: 0.3, mStick: 1, mLid: 1, mRun: 1 })],
+  [137, SHEET({ roll: 0, lift: 0, air: 0, sqy: -0.45, lid: 0.3, mStick: 1, mLid: 1, mRun: 1 })],
+  // sideways he is a sliver — the pan stuck on his back
+  [143, SHEET({ lift: 0, air: 0, sqy: 0, sqx: -0.85, lid: 0.2, browUp: 0.6, ...hand('R', 0.6, 8.5, 14), ...hand('L', 0.6, -8.5, 14), mStick: 1, mLid: 1 })],
+  [149, SHEET({ lift: 0, air: 0, sqy: 0, sqx: -0.85, lid: 0.2, browUp: 0.6, ...hand('R', 0.6, 8.5, 14), ...hand('L', 0.6, -8.5, 14), mStick: 1, mLid: 1 })],
+  // blows into his thumb...
+  [153, SHEET({ lift: 0, air: 0, sqy: -0.45, ...hand('R', 6.4, 1.2, 20.5), ...hand('L', 4.4, -6, 13), mouth: 0, mStick: 1, mLid: 1, mSit: 1 })],
+  [155, SHEET({ lift: 0, air: 0, sqy: -0.3, sqx: 0.24, ...hand('R', 6.4, 1.2, 20.5), ...hand('L', 4.4, -6, 13), browUp: 0.8, mStick: 1, mLid: 1, mSit: 1 })],
+  // «бульк!» — round again, the pan pops off his back into his paw
+  [157, { ...KV, visor: 0, spoonOff: 1, flatFace: 0, sqx: 0.22, sqy: 0.22, sqz: -0.16, pop: 0.8, ...both(5, 9, 17), mStick: 1, mLid: 1, mSit: 1, mBrowUp: 1 }],
+  [160, { ...KV, visor: 0, spoonOff: 1, sqx: -0.08, sqy: -0.08, sqz: 0.1, ...both(5, 8, 16), browUp: 1, mStick: 1, mLid: 1, mSit: 1 }],
+  [163, PAN({ ...hand('R', 6.6, 6.4, 17), panFwd: -0.2, browUp: 0.6, ...M_HUM(0) })],
+  // looks at the pan, at Шустрик: revenge
+  [168, PAN({ ...hand('R', 6.6, 6.4, 18), panFwd: -0.3, gaze: 0.4, lookX: 0.6, browIn: 1, smile: 0.5, lid: 0.4, ...M_HUM(1) })],
+  [174, PAN({ ...hand('R', 6.6, 6.4, 18), panFwd: -0.3, nod: 0.25, gaze: 0.4, lookX: 0.6, browIn: 1, smile: 0.8, lid: 0.5, ...M_HUM(-1) })],
+  // creeps up behind him, the pan raised
+  [180, PAN({ gait: 1, crouch: 1.4, ...hand('R', 3.4, 8.4, 22.5), panFwd: -0.2, panOut: 0.5, panDown: 0, ...hand('L', 6.4, -4.4, 15), tongueOut: 0.6, lid: 0.5, smile: 0.6, ...M_HUM(1) })],
+  [204, PAN({ gait: 1, crouch: 1.4, ...hand('R', 3.4, 8.4, 22.5), panFwd: -0.2, panOut: 0.5, panDown: 0, ...hand('L', 6.4, -4.4, 15), tongueOut: 0.6, lid: 0.5, smile: 0.6, ...M_HUM(-1) })],
+  // the windup; Шустрик's ear twitches
+  [208, PAN({ crouch: 0.6, lean: -0.6, ...hand('R', 1.2, 8.4, 23.5), panFwd: -0.6, panOut: 0.6, panDown: -0.2, ...hand('L', 6.4, -4.4, 15), tongueOut: 1, lid: 0.6, smile: 1, ...M_HUM(1) })],
+  [214, PAN({ crouch: 0.6, lean: -0.8, ...hand('R', 0.6, 8.6, 23.5), panFwd: -0.8, panOut: 0.7, panDown: -0.3, ...hand('L', 6.4, -4.4, 15), tongueOut: 1, lid: 0.6, smile: 1, mStick: 1, mLid: 1, mSit: 1, mBrowUp: 1, mLookY: -0.6 })],
+  // the swing — Шустрик is gone; the pan hits the floor
+  [217, PAN({ lean: 1.2, pitch: 0.3, crouch: 1, ...hand('R', 8, 3.4, 9), panFwd: 1.2, panDown: 1.8, ...hand('L', 5.4, -5.4, 11), browIn: 1, mStick: 1, mLid: 1, mJump: 1, mSmirk: 1 })],
+  [219, PAN({ lean: 1.4, pitch: 0.35, crouch: 1.2, ...hand('R', 8, 3.4, 8), panFwd: 1.3, panDown: 2.1, ...hand('L', 5.4, -5.4, 11), pop: 0.6, vib: 0.6, mStick: 1, mLid: 1, mSmirk: 1 })],
+  // it springs back up: BONG into his own face
+  [221, PAN({ lean: 0.2, pitch: -0.1, ...hand('R', 6.6, 2.6, 14), panFwd: 0.4, panDown: -0.3, ...hand('L', 5.4, -5.4, 11), pop: 1, mStick: 1, mLid: 1, mBrowUp: 1, mPop: 0.6 })],
+  [222, { ...KV, visor: 0, spoonOff: 1, panStuck: 1, flatFace: 1, sqz: -0.1, sqx: 0.06, sqy: 0.06, vib: 1, ...both(3, 9, 10), mStick: 1, mLid: 1, mPop: 1, mBrowUp: 1 }],
+  [226, { ...KV, visor: 0, spoonOff: 1, panStuck: 1, flatFace: 1, vib: 0.5, ...both(2, 8, 8), mStick: 1, mLid: 1, mSmile: 1, mMouth: 1, mSquint: 1 }],
+  [232, { ...KV, visor: 0, spoonOff: 1, panStuck: 1, flatFace: 1, panFace: 1, ...both(2, 8, 8), mStick: 1, mLid: 1, mSmile: 1, mMouth: 1, mSquint: 1, mNod: 0.3 }],
+  // it slides down off his face and drops: the face has the pan's shape, the teeth chatter
+  [236, { ...KV, visor: 0, spoonOff: 1, panStuck: 1, panSlide: 1, flatFace: 1, panFace: 1, ...both(2, 8, 8), mStick: 1, mLid: 1, mSmile: 1, mMouth: 1, mSquint: 1 }],
+  [237, { ...KV, visor: 0, spoonOff: 1, flatFace: 1, panFace: 1, chatter: 1, lid: 0.4, ...both(2, 8, 8), mStick: 1, mLid: 1, mSmirk: 1 }],
+  [244, { ...KV, visor: 0, spoonOff: 1, flatFace: 1, panFace: 1, chatter: 1, lid: 0.5, ...both(2, 8, 8), mStick: 1, mLid: 1, mStickFwd: 0.9, mStickDown: 0.7, mPitch: 0.3 }],
+  [247, { ...KV, visor: 0, spoonOff: 1, flatFace: 1, panFace: 1, chatter: 1, lid: 0.4, ...both(2, 8, 8), mStick: 1, mLid: 1, mStickFwd: -0.6, mStickDown: -0.5, mPitch: -0.2, mSmirk: 1 }],
+  [252, { ...KV, visor: 0, spoonOff: 1, flatFace: 1, panFace: 1, chatter: 1, lid: 0.5, ...both(2, 8, 8), mStick: 1, mLid: 1, mSmirk: 1, mBrowUp: 0.6 }],
+  // brrr — shakes it off
+  [254, { ...KV, visor: 0, spoonOff: 1, flatFace: 1, panFace: 1, tilt: 0.3, ...both(2, 8, 8), mStick: 1, mLid: 1, mSmirk: 1 }],
+  [256, { ...KV, visor: 0, spoonOff: 1, flatFace: 0.6, panFace: 0.6, tilt: -0.3, ...both(2, 8, 8), mStick: 1, mLid: 1, mSmirk: 1 }],
+  [258, { ...KV, visor: 0, spoonOff: 1, flatFace: 0, panFace: 0, tilt: 0.25, sqx: 0.1, sqy: 0.1, sqz: -0.08, ...both(2, 8, 8), mStick: 1, mLid: 1, mSmirk: 1, mRun: 1 }],
+  [260, { ...KV, visor: 0, spoonOff: 1, tilt: 0, browIn: 0.6, gait: 1, mStick: 1, mLid: 1, mRun: 1 }],
+  // marching home; the spoon drops off the beam — tink — into his paw
+  [266, { ...KV, visor: 0, spoonOff: 1, gait: 1, browIn: 0.6, mStick: 1, mLid: 1, mRun: 1 }],
+  [268, { ...KV, visor: 0, spoonOff: 1, gait: 1, sqz: -0.08, pop: 0.6, browUp: 1, ...hand('R', 4.8, 7.4, 17), mStick: 1, mLid: 1, mRun: 1 }],
+  [271, { ...KNIGHT, visor: 0.3, smile: 0.6, mRun: 0 }],
+  [276, { ...KNIGHT }],
+];
+
 export const tracks: Record<string, Track> = {
   idle,
   walk,
@@ -1050,6 +1202,7 @@ export const tracks: Record<string, Track> = {
   'happy-f2': happy_f2,
   'trick-f2': trick_f2,
   'trick_b-f2': trick_b_f2,
+  'trick_c-f2': trick_c_f2,
 };
 export const lanes: Record<string, Record<string, Lane>> = {
   trick: { ...trickPanda, ...trickMonkey, rugX: lane([0, 0], [190, 0], [194, -9], [248, -9], [258, 0]) },
@@ -1060,6 +1213,7 @@ export const lanes: Record<string, Record<string, Lane>> = {
   'happy-f2': pathLanes([stay(0, 48, M_F2[0], M_F2[1], FACE.left)], true),
   'trick-f2': { ...duelP, ...duelM },
   'trick_b-f2': { ...ramP, ...ramM },
+  'trick_c-f2': { ...panP, ...panM },
 };
 
 export const gesture = keyframer({ tracks, lanes, switches: SWITCHES, linear: LINEAR });

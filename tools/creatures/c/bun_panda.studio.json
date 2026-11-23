@@ -114,6 +114,34 @@
     {
       "a": "mStick",
       "b": "shield"
+    },
+    {
+      "a": "pan",
+      "b": "head"
+    },
+    {
+      "a": "pan",
+      "b": "muzzle"
+    },
+    {
+      "a": "pan",
+      "b": "nose"
+    },
+    {
+      "a": "pan",
+      "b": "cheek"
+    },
+    {
+      "a": "pan",
+      "b": "mouth"
+    },
+    {
+      "a": "welt",
+      "b": "torso"
+    },
+    {
+      "a": "pan",
+      "b": "handR"
     }
   ]
 }
