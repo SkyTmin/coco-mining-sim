@@ -95,6 +95,7 @@ export const beats = {
   hatch: { rock: [0, 30], cracks: [12, 22, 30], burst: 38, shellOff: 50, mCrack: 46, mBurst: 52, swap: 62 },
   trick: { lid: [38, 48, 60], snatch: 56, freeze: 68, chase: [74, 150], hop: [116, 126], exit: [140, 164], enter: [164, 190], yank: 190, hang: [196, 212], land: 216, bunFly: [218, 230], munch: [230, 262], rugBack: [248, 258] },
   trick_b: { hold: [[61, 81], [116, 147]], smack: 82, spin: [83, 106], tickle: [124, 143], launch: 147, shoot: 152, gone: [158, 186], leaves: [156, 200], splash: 198, kick: [199, 214], spit: [222, 230], out: 236, shake: [243, 250], soak: 245, ladleToss: [244, 252], dry: [258, 262], puddle: [198, 276] },
+  trick_c: { sniff: [2, 20], lift: [20, 24], stuck: [24, 40], door: 62, table: 74, lids: [80, 86], lidHome: 96, laugh: [64, 106], tug: [120, 159], pop: 160, jarFly: [160, 176], flour: 165, honeyLick: [170, 230], sneeze: 240, shake: 250 },
   peek: { in: [0, 10], sniff: [12, 30], scare: 32, bonk: 38, out: [40, 50], monkey: [46, 70], tongue: [54, 64] },
 };
 
@@ -549,6 +550,165 @@ const trick_b: Track = [
   [276, { ...REST, twist: 12.57, pitch: -12.57 }],
 ];
 
+// ---- trick_c «Горшок мёда» (11 s, 264 frames) ------------------------------------------------------------------------
+// He sniffs the honey jar on the bench, puts his head in it and gets stuck; walks blind into the door, staggers back
+// against the table — the steamer lid jumps up and lands on the jar twice (bom, bom) and back on the steamer. Шустрик rolls about laughing, then pulls the
+// jar off in a tug of war (the neck stretches); the jar pops off and lands back on the bench, Шустрик flies into the
+// flour sack. A white Шустрик steps out of the cloud; Пончик licks the honey off his nose and they go home.
+const AT_JAR: [number, number] = [9, -38.5];
+const DOOR_HIT: [number, number] = [-7, -37];
+const TABLE_HIT: [number, number] = [-5, -24.5];
+const TUG: [number, number] = [-4, -2];
+const M_SIDE: [number, number] = [21, -29];
+const M_ROLL: [number, number] = [16, -22];
+const M_TUG0 = 17.5,
+  M_TUG1 = 21;
+const M_OUT: [number, number] = [33.5, 15];
+const M_WAIT: [number, number] = [22, 10];
+const trickCPanda = pathLanes([
+  stay(0, 6, 0, 0, 0),
+  run(8, 20, [0, 0], AT_JAR),
+  stay(21, 40, AT_JAR[0], AT_JAR[1], FACE.away),
+  // blind: a step toward us, a turn, and straight into the door
+  run(40, 50, AT_JAR, [1, -30]),
+  run(51, 62, [1, -30], DOOR_HIT),
+  // bounced back off the door, staggering backwards; his hip bumps the table
+  run(63, 74, DOOR_HIT, TABLE_HIT, false, FACE.away),
+  stay(75, 92, TABLE_HIT[0], TABLE_HIT[1], FACE.away),
+  // wanders blind to the middle of the floor
+  run(93, 104, TABLE_HIT, [2, -14]),
+  run(105, 116, [2, -14], TUG),
+  stay(118, 244, TUG[0], TUG[1], FACE.right),
+  run(246, 258, TUG, [0, 0]),
+  stay(259, 264, 0, 0, 0),
+]);
+const trickCMonkey = pathLanes(
+  [
+    stay(0, 17, 0, 0, 0),
+    { a: 18, b: 26, at: (u) => ({ x: AT_JAR[0] + (M_SIDE[0] - AT_JAR[0]) * Math.sin((u * Math.PI) / 2), y: AT_JAR[1] + (M_SIDE[1] - AT_JAR[1]) * Math.sin((u * Math.PI) / 2), z: 30 * (1 - u) + 12 * Math.sin(u * Math.PI), yaw: FACE.usLeft }) },
+    stay(27, 70, M_SIDE[0], M_SIDE[1], FACE.usLeft),
+    run(71, 76, M_SIDE, M_ROLL, false, FACE.us),
+    stay(77, 106, M_ROLL[0], M_ROLL[1], FACE.us),
+    run(107, 118, M_ROLL, [M_TUG0, TUG[1]]),
+    { a: 119, b: 159, at: (u) => ({ x: M_TUG0 + (M_TUG1 - M_TUG0) * u, y: TUG[1], z: 0, yaw: FACE.left }) },
+    // the pop: flies backward into the flour sack
+    { a: 160, b: 166, at: (u) => ({ x: M_TUG1 + (KITCHEN.sack.x - M_TUG1) * u, y: TUG[1] + (KITCHEN.sack.y - TUG[1]) * u, z: 6 + 12 * Math.sin(u * Math.PI), yaw: FACE.left }) },
+    stay(167, 175, KITCHEN.sack.x, KITCHEN.sack.y, FACE.us, 4),
+    run(176, 184, [KITCHEN.sack.x, KITCHEN.sack.y], M_OUT, false, FACE.us),
+    stay(185, 208, M_OUT[0], M_OUT[1], FACE.us),
+    run(209, 222, M_OUT, M_WAIT),
+    stay(223, 250, M_WAIT[0], M_WAIT[1], FACE.left),
+    // hops up onto the head as Пончик comes home
+    { a: 251, b: 258, at: (u) => ({ x: M_WAIT[0] * (1 - u), y: M_WAIT[1] * (1 - u) - 4 * Math.sin(u * Math.PI), z: 34 * Math.sin((u * Math.PI) / 2) + 8 * Math.sin(u * Math.PI), yaw: 0 }) },
+    stay(259, 264, 0, 0, 0, 34),
+  ],
+  true,
+);
+/** Paws on the sides of the jar (pulling it off). */
+const JAR_PAWS = (dz = 0): JointPose => both(0.8, 11.4, 21.5 + dz);
+/** Arms out in front, feeling the way. */
+const BLIND = (k = 0): JointPose => ({ ...hand('R', 7.6, 4.8 + k, 13.2 + k), ...hand('L', 7.6, -4.8 + k, 13.2 - k) });
+/** Шустрик doubled up with laughter. */
+const LAUGH = (k: number): JointPose => ({ mMouth: 1, mSquint: 1, mSmile: 1, mPitch: 0.45 + 0.15 * k, mLean: 0.6, ...mHand('R', 1.2, 2.2, -1.2), ...mHand('L', 1.6, -1.4, 0.6 + k) });
+/** Rolling on his back with laughter, legs kicking. */
+const ROLL = (k: number): JointPose => ({ mMouth: 1, mSquint: 1, mSmile: 1, mPitch: -1.45, mTwist: 0.5 * k, ...mHand('R', 1.0, 2.0, -0.4), ...mHand('L', 1.0, -2.0, -0.4), ...mFoot('L', 1.4, -1.4, -1.2 + k), ...mFoot('R', 1.4, 1.4, -1.2 - k) });
+/** The tug of war: he sits bent forward, the neck stretching; Шустрик leans back hauling on the jar. */
+const TUGK = (neck: number, k: number): JointPose => ({
+  jar: 1,
+  bamboo: 1,
+  bambooEar: 1,
+  sit: 1,
+  pitch: 1.25 + 0.04 * k,
+  neck,
+  sqx: 0.04 * k,
+  ...hand('R', 6.5, 8.5, 1.5 + k),
+  ...hand('L', 6.5, -8.5, 1.5 - k),
+  mOn: 0,
+  mLean: -1.5 - 0.2 * k,
+  mPitch: -0.45 - 0.1 * k,
+  ...mBoth(3.4, 0.9, 1.6),
+  ...mFoot('L', 2.4, -1.4, -3.0),
+  ...mFoot('R', 1.8, 1.4, -3.0),
+  mSquint: 1,
+  mMouth: 0.4,
+  mBrowIn: 1,
+});
+const trick_c: Track = [
+  [0, { ...REST }],
+  // sniffs: the nose goes up, the eyes half shut, a dreamy smile
+  [4, { ...REST, chew: 0, toMouth: 0.4, nod: -0.35, lookY: 0.8, lid: 0.45, smile: 0.6, mGaze: 0.3 }],
+  [8, { ...ON, bamboo: 1, bambooEar: 1, nod: -0.3, lid: 0.4, smile: 0.9, tongueOut: 0.4, gait: 1, ...mBoth(1.0, 3.3, -1.0) }],
+  [16, { ...ON, bamboo: 1, bambooEar: 1, nod: -0.2, smile: 0.9, gait: 1, mJump: 1, mBrowUp: 1 }],
+  // Шустрик hops off; Пончик takes the jar off the bench and lifts it
+  [18, { ...ON, bamboo: 1, bambooEar: 1, gait: 1, ...both(6.6, 3.4, 13), mJump: 1.5 }],
+  [20, { bamboo: 1, bambooEar: 1, ...both(7.0, 3.2, 12), mOn: 0.5, mJump: 0 }],
+  [22, { bamboo: 1, bambooEar: 1, lift: 0.6, ...both(6.8, 4.2, 18.6), sqz: 0.08, mOn: 0, mPop: 0.5, mBrowUp: 1 }],
+  // head in: the jar slams down, squash
+  [24, { bamboo: 1, bambooEar: 1, jar: 1, crouch: 1.2, sqz: -0.14, sqx: 0.07, sqy: 0.07, ...JAR_PAWS(-1), mOn: 0, mSmirk: 1 }],
+  // stuck: he tugs and twists, it won't come off
+  [27, { bamboo: 1, bambooEar: 1, jar: 1, lift: 0.8, twist: 0.45, sqz: 0.1, ...JAR_PAWS(0.8), mOn: 0, mSmirk: 1, mSmile: 0.6 }],
+  [30, { bamboo: 1, bambooEar: 1, jar: 1, crouch: 0.8, twist: -0.45, sqz: -0.08, ...JAR_PAWS(-0.6), vib: 0.4, mOn: 0, ...mHand('R', 1.4, 1.0, 1.6) }],
+  [33, { bamboo: 1, bambooEar: 1, jar: 1, lift: 1.0, twist: 0.5, sqz: 0.12, ...JAR_PAWS(1), mOn: 0, ...mHand('R', 1.4, 1.0, 1.7), mSmile: 1 }],
+  [36, { bamboo: 1, bambooEar: 1, jar: 1, crouch: 1, twist: -0.5, sqz: -0.1, ...JAR_PAWS(-0.8), vib: 0.5, mOn: 0, mSmirk: 1 }],
+  [39, { bamboo: 1, bambooEar: 1, jar: 1, roll: 0.1, ...JAR_PAWS(0), mOn: 0, mSmirk: 1 }],
+  // blind walk, arms out
+  [42, { bamboo: 1, bambooEar: 1, jar: 1, gait: 1, roll: -0.1, ...BLIND(0.6), mOn: 0, mSmirk: 1, mSmile: 0.6 }],
+  [48, { bamboo: 1, bambooEar: 1, jar: 1, gait: 1, roll: 0.1, ...BLIND(-0.6), mOn: 0, ...mHand('R', 1.4, 1.0, 1.6) }],
+  [54, { bamboo: 1, bambooEar: 1, jar: 1, gait: 1, roll: -0.1, ...BLIND(0.6), mOn: 0, ...mHand('R', 1.4, 1.0, 1.7), mSmile: 1 }],
+  [60, { bamboo: 1, bambooEar: 1, jar: 1, gait: 1, roll: 0.06, ...BLIND(-0.3), mOn: 0, mSmirk: 1 }],
+  // BONK on the door: squash, the whole of him rings
+  [62, { bamboo: 1, bambooEar: 1, jar: 1, pitch: -0.18, sqz: -0.16, sqx: 0.08, sqy: 0.08, vib: 1, ...both(3, 10, 13), mOn: 0, mPop: 0.6 }],
+  [65, { bamboo: 1, bambooEar: 1, jar: 1, pitch: -0.3, lean: -1, vib: 0.7, ...hand('R', -1, 10, 22), ...hand('L', 5, -9, 11), gait: 1, mOn: 0, ...LAUGH(0) }],
+  [69, { bamboo: 1, bambooEar: 1, jar: 1, pitch: -0.22, roll: 0.15, vib: 0.3, ...hand('R', 5, 9, 11), ...hand('L', -1, -10, 22), gait: 1, mOn: 0, ...LAUGH(1) }],
+  // backs into the table: thump, the steamers jump
+  [74, { bamboo: 1, bambooEar: 1, jar: 1, pitch: -0.1, sqz: -0.1, vib: 0.6, ...both(2, 9.5, 14), mOn: 0, ...LAUGH(0) }],
+  [78, { bamboo: 1, bambooEar: 1, jar: 1, ...both(2, 9.5, 14), mOn: 0, ...ROLL(1) }],
+  // bom! the first lid
+  [80, { bamboo: 1, bambooEar: 1, jar: 1, crouch: 1.6, sqz: -0.16, sqx: 0.08, sqy: 0.08, vib: 1, ...JAR_PAWS(-1.6), mOn: 0, ...ROLL(-1) }],
+  [84, { bamboo: 1, bambooEar: 1, jar: 1, roll: 0.1, ...JAR_PAWS(0), vib: 0.3, mOn: 0, ...ROLL(1) }],
+  // bom! the second
+  [86, { bamboo: 1, bambooEar: 1, jar: 1, crouch: 1.8, sqz: -0.18, sqx: 0.09, sqy: 0.09, vib: 1, ...JAR_PAWS(-1.8), mOn: 0, ...ROLL(-1) }],
+  [90, { bamboo: 1, bambooEar: 1, jar: 1, roll: -0.16, ...both(4, 10, 12), vib: 0.3, mOn: 0, ...ROLL(1) }],
+  [94, { bamboo: 1, bambooEar: 1, jar: 1, roll: 0.14, gait: 1, ...BLIND(0.5), mOn: 0, ...ROLL(-1) }],
+  [100, { bamboo: 1, bambooEar: 1, jar: 1, roll: -0.12, gait: 1, ...BLIND(-0.5), mOn: 0, ...ROLL(1) }],
+  [106, { bamboo: 1, bambooEar: 1, jar: 1, roll: 0.1, gait: 1, ...BLIND(0.5), mOn: 0, mPitch: 0, mMouth: 0.4, mSmile: 0.8, mBrowUp: 0.6 }],
+  [112, { bamboo: 1, bambooEar: 1, jar: 1, roll: -0.08, gait: 1, ...BLIND(-0.4), mOn: 0, mRun: 1, mSmile: 0.6 }],
+  // sits down; Шустрик grabs the jar
+  [118, { bamboo: 1, bambooEar: 1, jar: 1, sit: 1, pitch: 0.5, sqz: -0.1, ...both(3, 9, 6), mOn: 0, mRun: 0, ...mBoth(3.2, 0.9, 1.8) }],
+  [124, TUGK(0.6, 1)],
+  [130, TUGK(1.6, -1)],
+  [136, TUGK(1.2, 1)],
+  [142, TUGK(2.4, -1)],
+  [148, TUGK(2.0, 1)],
+  [154, TUGK(3.2, -1)],
+  [158, { ...TUGK(3.8, 1), vib: 0.6, mBrowIn: 0, mPop: 0.3 }],
+  // POP: the jar flies off, he falls back on his bottom in honey up to the ears
+  [160, { bamboo: 1, bambooEar: 1, honey: 0.8, sit: 1, pitch: -0.75, neck: 0, sqz: 0.18, sqx: -0.08, sqy: -0.08, legsUp: 0.5, air: 0.5, ...both(1, 10, 22), pop: 1, browUp: 1, mouth: 0.8, mOn: 0, mPop: 1, mBrowUp: 1, mPitch: -0.6, mLean: -1 }],
+  [164, { bamboo: 1, bambooEar: 1, honey: 0.8, sit: 1, pitch: -0.2, sqz: -0.12, sqx: 0.06, sqy: 0.06, ...both(3, 9, 9), pop: 0.6, mouth: 0.5, mOn: 0, mPitch: -1, mFlour: 1 }],
+  [168, { bamboo: 1, bambooEar: 1, honey: 0.8, sit: 1, ...both(3, 9, 9), lid: 0.4, smile: 0.4, mOn: 0, mFlour: 1 }],
+  // licks the honey off his paw, delighted
+  [174, { bamboo: 1, bambooEar: 1, honey: 0.8, sit: 1, ...hand('R', 6.4, 2.6, 15.5), ...hand('L', 3, -9, 9), tongueOut: 1, lid: 0.6, smile: 1, mOn: 0, mFlour: 1, mLid: 0.6 }],
+  [180, { bamboo: 1, bambooEar: 1, honey: 0.8, sit: 1, ...hand('R', 6.2, 2.6, 16.5), ...hand('L', 3, -9, 9), tongueOut: 0.6, chew: 1, lid: 0.7, smile: 1, mOn: 0, mFlour: 1, mBlink: 1 }],
+  [184, { bamboo: 1, bambooEar: 1, honey: 0.8, sit: 1, ...hand('R', 6.4, 2.6, 15.5), ...hand('L', 3, -9, 9), tongueOut: 1, lid: 0.6, smile: 1, mOn: 0, mFlour: 1, mLid: 0.5 }],
+  [190, { bamboo: 1, bambooEar: 1, honey: 0.9, sit: 1, ...hand('L', 6.4, -2.6, 15.5), ...hand('R', 3, 9, 9), tongueOut: 1, lid: 0.6, smile: 1, mOn: 0, mFlour: 1, mBlink: 1 }],
+  [198, { bamboo: 1, bambooEar: 1, honey: 0.85, sit: 1, ...hand('L', 6.2, -2.6, 16.5), ...hand('R', 3, 9, 9), tongueOut: 0.6, chew: 1, lid: 0.7, smile: 1, mOn: 0, mFlour: 1, mBrowIn: 0.6 }],
+  [206, { bamboo: 1, bambooEar: 1, honey: 0.8, sit: 1, ...both(3, 9, 9), lid: 0.5, smile: 1, mOn: 0, mFlour: 1, mBrowIn: 0.8 }],
+  // licks the honey off his nose: tongue up, cross-eyed
+  [214, { bamboo: 1, bambooEar: 1, honey: 0.7, sit: 1, ...both(3, 9, 9), tongueOut: 1, nod: -0.15, lookY: -1, lookX: 0, squint: 0.3, mOn: 0, mFlour: 1, mBrowIn: 0.8 }],
+  [222, { bamboo: 1, bambooEar: 1, honey: 0.55, sit: 1, ...both(3, 9, 9), tongueOut: 1, nod: -0.2, lookY: -1, squint: 0.3, mOn: 0, mFlour: 1 }],
+  [230, { bamboo: 1, bambooEar: 1, honey: 0.4, sit: 1, ...both(3, 9, 9), tongueOut: 0.8, nod: -0.1, lookY: -0.8, mOn: 0, mFlour: 1, mSquint: 0.6, mMouth: 0.4 }],
+  // Шустрик sneezes a cloud of flour
+  [236, { bamboo: 1, bambooEar: 1, honey: 0.3, sit: 1, ...both(3, 9, 9), smile: 0.8, mOn: 0, mFlour: 1, mSquint: 1, mMouth: 0.8, mPitch: -0.3, mBrowUp: 1 }],
+  [240, { bamboo: 1, bambooEar: 1, honey: 0.25, sit: 1, ...both(3, 9, 9), smile: 0.8, pop: 0.3, mOn: 0, mFlour: 1, mSquint: 1, mMouth: 1, mPitch: 0.5, sqz: 0 }],
+  [244, { bamboo: 1, bambooEar: 1, honey: 0.2, ...both(4, 7.5, 13), smile: 0.8, mOn: 0, mFlour: 1, mBlink: 1 }],
+  // home; Шустрик shakes the flour off and hops up
+  [248, { bamboo: 1, bambooEar: 0.5, honey: 0.12, gait: 1, smile: 0.8, toMouth: 1, mOn: 0, mFlour: 1, mTwist: 0.6 }],
+  [250, { bamboo: 1, bambooEar: 0.4, honey: 0.08, gait: 1, smile: 0.8, toMouth: 1, mOn: 0, mFlour: 0, mTwist: -0.6, mJump: 1 }],
+  [254, { ...REST, honey: 0.04, gait: 1, mOn: 0, mJump: 0, ...mBoth(1.6, 2, 1) }],
+  [258, { ...REST, gait: 0, mOn: 0.2, ...mBoth(1.6, 2, 1) }],
+  [264, { ...REST }],
+];
+
 export const tracks: Record<string, Track> = {
   idle,
   walk,
@@ -564,10 +724,12 @@ export const tracks: Record<string, Track> = {
   peek,
   trick,
   trick_b,
+  trick_c,
 };
 export const lanes: Record<string, Record<string, Lane>> = {
   trick: { ...trickPanda, ...trickMonkey, rugX: lane([0, 0], [190, 0], [194, -9], [248, -9], [258, 0]) },
   trick_b: { ...trickBPanda, ...trickBMonkey },
+  trick_c: { ...trickCPanda, ...trickCMonkey },
 };
 
 export const gesture = keyframer({ tracks, lanes, switches: SWITCHES, linear: LINEAR });

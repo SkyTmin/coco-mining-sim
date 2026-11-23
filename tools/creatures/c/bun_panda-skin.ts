@@ -387,8 +387,21 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
   const honey = a('honey');
   const hm = headMat(heat);
   // honey over the crown, running down in drips
-  const honeyMat: Mat = honey > 0.05 ? { T: T.white, pat: (q, l) => (q[2] > 0.62 - honey * 0.5 + 0.12 * Math.sin(q[1] * 11 + q[0] * 5) ? pickBand(T.honey, l) : hm.pat!(q, l)) } : hm;
+  const honeyEdge = 1.02 - honey * 0.8;
+  const honeyMat: Mat = honey > 0.05 ? { T: T.white, pat: (q, l) => (q[2] > honeyEdge + 0.1 * Math.sin(q[1] * 11 + q[0] * 5) ? pickBand(T.honey, l + 0.3) : hm.pat!(q, l)) } : hm;
   r.ell(Hd, [0, 0, 0], HEAD, honeyMat);
+  // honey drips running down from the edge of the honey cap
+  if (honey > 0.15) {
+    const el0 = Math.asin(Math.min(0.98, honeyEdge));
+    [-1.1, -0.55, -0.1, 0.4, 0.95].forEach((az, i) => {
+      const o = onEll(Hd, HEAD, az, el0 - 0.04);
+      const top = vadd(o.p, vmul(o.n, 0.15));
+      const len = (0.8 + hash(i, 31) * 1.6) * honey * 2;
+      const bot = vadd(top, vadd(vmul(Hd.u, -len), vmul(o.n, 0.2)));
+      r.cap(top, bot, 0.75, 0.55, flat(T.honey));
+      r.ball(bot, 0.75, flat(T.honey, { spec: true }));
+    });
+  }
   fuzz(r, Hd, HEAD, 150, 1.05, 0.62, 0.4, (d) => (d[0] > 0.2 && d[2] < 0.55 ? null : heat > 0.5 ? flat(T.heat) : white));
   for (const s of [-1, 1]) {
     r.tag = 'cheek';
@@ -497,15 +510,37 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
   }
   // stuck in the honey pot: a round clay pot over the whole head, honey running from its rim
   if (a('jar') > 0.5) {
+    // inside the pot no feature of the head shows: only the head ball stays (it fills the pot's open mouth)
+    const inside = new Set(['head', 'cheek', 'muzzle', 'nose', 'mouth', 'earL', 'earR', 'eyeL', 'eyeR', 'browL', 'browR', 'welt', 'bump', 'ladle']);
+    r.prims = r.prims.filter((p, i) => i <= headStart || !inside.has(p.t ?? ''));
     r.tag = 'jar';
-    const J = Hd.at(-0.4, 0, 1.2);
-    r.ell(J, [0, 0, 0], [10.2, 11.4, 10.6], { T: T.jar, pat: (q, l) => (q[2] < -0.55 && q[2] > -0.62 - 0.08 * Math.sin(q[1] * 9) ? pickBand(T.honey, l) : Math.abs(q[2] - 0.15) < 0.06 ? pickBand(T.jar, l - 0.5) : null) }, (q) => q[2] < -0.86);
+    // squeezed over the head, it takes the head's shape: a glazed pot a size bigger, a cream label on the front,
+    // a darker shoulder, honey oozing out round the rim at his neck
+    const J = Hd.at(-0.2, 0, 0.9);
+    const JR: V3 = [8.5, 10.1, 9.2];
+    r.ell(J, [0, 0, 0], JR, {
+      T: T.jar,
+      spec: true,
+      pat: (q, l) =>
+        q[2] < -0.5 + 0.07 * Math.sin(q[1] * 9 + q[0] * 4)
+          ? pickBand(T.honey, l)
+          : q[0] > 0.3 && Math.abs(q[2] - 0.02) < 0.24 && Math.abs(q[1]) < 0.62
+            ? pickBand(T.white, l)
+            : Math.abs(q[2] - 0.3) < 0.05 || Math.abs(q[2] + 0.26) < 0.05
+              ? pickBand(T.jar, l - 0.6)
+              : q[2] > 0.7
+                ? pickBand(T.jar, l - 0.3)
+                : null,
+    }, (q) => q[2] < -0.84);
+    // a honey drop drawn on the label
+    r.ball(J.p(JR[0] * 0.98, 0, -0.4), 1.25, flat(T.honey));
+    r.spike(J.p(JR[0] * 0.98, 0, 0.3), J.u, 1.4, 0.8, flat(T.honey), 4);
     // the rim round his neck and honey drips on the shoulders
-    for (let i = 0; i < 10; i++) {
-      const ang = (i / 10) * TAU;
-      r.ball(J.p(Math.cos(ang) * 5.4, Math.sin(ang) * 6.0, -9.4), 1.1, flat(T.jar));
+    for (let i = 0; i < 12; i++) {
+      const ang = (i / 12) * TAU;
+      r.ball(J.p(Math.cos(ang) * 4.6, Math.sin(ang) * 5.4, -8.0), 1.0, flat(T.jar));
     }
-    for (const k of [-0.7, -0.2, 0.4, 0.8]) r.cap(J.p(5.2, k * 6, -9.6), J.p(5.6, k * 6, -11.2 - Math.abs(k) * 0.8), 0.55, 0.45, flat(T.honey));
+    for (const k of [-0.7, -0.2, 0.4, 0.8]) r.cap(J.p(4.6, k * 5.2, -8.2), J.p(5.0, k * 5.2, -9.8 - Math.abs(k) * 0.8), 0.55, 0.45, flat(T.honey));
     j.jar = J.o;
   }
   // ---- arms
@@ -539,7 +574,8 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
     j['hand' + name] = hand;
   }
   // ---- props in his paws
-  if (a('bamboo') > 0.5) {
+  // tucked behind the ear it hides under the pot
+  if (a('bamboo') > 0.5 && !(a('jar') > 0.5 && a('bambooEar') > 0.5)) {
     r.tag = 'bamboo';
     // in the paw: the bitten top at the corner of the mouth (`toMouth`) or upright; tucked behind the ear (`bambooEar`)
     // when the paws are busy in a trick, and back again at its end
