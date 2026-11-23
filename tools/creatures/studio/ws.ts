@@ -11,6 +11,7 @@
 //   npm run ws -- seam <id> [anim...]            pet endpoints vs idle / idle-f2 / sleep in seconds, with the parts that drifted
 //   npm run ws -- review <id> <anim> [--frames a,b] [--out f.png]  per-clip loop in one pass: check + sheet + seams
 //   npm run ws -- detail <id>                    detail bar of the rest frame (colours, edge, flat, size) — run before the clips
+//   npm run ws -- baseline [id,…] [--force]      reference cases: acceptance facts next to the last gate of the exact inputs
 // check/gate/snap on several creatures run in parallel child processes (--jobs N, default = cores, at most one per 4.5 GB);
 // heavy runs (render, snap, check/gate of several) wait for each other instead of running out of memory together;
 // gate remembers a green result per creature and skips it while none of its inputs changed (--force re-runs).
@@ -93,6 +94,11 @@ async function check(args: string[], strict: boolean) {
     }
   }
   let failed = 0;
+  // the gate keeps its own short result (C07): the stamp holds counts and the issue lines, so a baseline or a review can
+  // read the last honest result of this exact input key instead of re-running or re-reading the console
+  const lines: string[] = [];
+  const log = console.log;
+  if (key) console.log = (...a: unknown[]) => (lines.push(a.map(String).join(' ')), log(...a));
   for (const id of list) {
     const p = await loadPainting(id);
     const anims = animFilter.length ? animFilter : defaultAnims(p.c);
@@ -116,8 +122,16 @@ async function check(args: string[], strict: boolean) {
     failed += await gateExtras(list);
   }
   if (key) {
+    console.log = log;
+    const issues = lines.filter((l) => l.startsWith('✗') || l.startsWith('  !'));
+    const summary = {
+      errors: lines.filter((l) => l.startsWith('  !')).length,
+      warnings: lines.filter((l) => l.startsWith('  ·')).length,
+      issues: issues.slice(0, 60),
+      more: Math.max(0, issues.length - 60),
+    };
     mkdirSync(studioDir, { recursive: true });
-    writeFileSync(stamp, JSON.stringify({ key, ok: !failed, at: new Date().toISOString().slice(0, 16) }) + '\n');
+    writeFileSync(stamp, JSON.stringify({ key, ok: !failed, at: new Date().toISOString().slice(0, 16), ...summary }) + '\n');
   }
   if (failed) process.exitCode = 1;
 }
@@ -137,6 +151,11 @@ process.on('exit', (code) => {
   }
 });
 switch (cmd) {
+  case 'baseline': {
+    const { baselineCommand } = await import('./baseline');
+    await baselineCommand(rest, gateKey);
+    break;
+  }
   case 'review': {
     const { reviewCommand } = await import('./review');
     await reviewCommand(rest);
@@ -213,6 +232,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: npm run ws -- new|check|gate|review|detail|probe|seam|clip|sheet|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
+    console.log('usage: npm run ws -- new|check|gate|review|detail|baseline|probe|seam|clip|sheet|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
     process.exitCode = cmd ? 1 : 0;
 }
