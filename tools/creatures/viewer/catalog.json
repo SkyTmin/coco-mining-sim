@@ -3408,6 +3408,185 @@
     ]
   },
   {
+    "id": "bun_panda",
+    "name": "Пончик и Шустрик",
+    "section": "ours",
+    "rarity": "secret",
+    "color": "#2c2736",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 1536
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Пахнет пирожками",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Хлопок пятками",
+        "frames": 48
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Вылупляются из двух яиц",
+        "frames": 72
+      },
+      {
+        "id": "fidget_a",
+        "name": "Зевок",
+        "frames": 60
+      },
+      {
+        "id": "fidget_b",
+        "name": "Чих",
+        "frames": 60
+      },
+      {
+        "id": "happy-f2",
+        "name": "Радость рыцаря",
+        "frames": 48
+      },
+      {
+        "id": "trick",
+        "name": "Трюк: пирожок",
+        "frames": 276
+      },
+      {
+        "id": "trick_b",
+        "name": "Трюк: бамбук",
+        "frames": 276
+      },
+      {
+        "id": "trick_c",
+        "name": "Трюк: горшок мёда",
+        "frames": 264
+      },
+      {
+        "id": "phase",
+        "name": "Рыцарь из кастрюль",
+        "frames": 120
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой рыцаря",
+        "frames": 48
+      },
+      {
+        "id": "trick-f2",
+        "name": "Трюк: поединок",
+        "frames": 288
+      },
+      {
+        "id": "trick_b-f2",
+        "name": "Трюк: таран",
+        "frames": 288
+      },
+      {
+        "id": "trick_c-f2",
+        "name": "Трюк: сковородка",
+        "frames": 276
+      },
+      {
+        "id": "show",
+        "name": "Появление",
+        "frames": 168
+      },
+      {
+        "id": "peek",
+        "name": "Голова из-за рамы",
+        "frames": 120
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 36
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 36
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 29
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 3203
+      }
+    ]
+  },
+  {
     "id": "bramble_warden",
     "name": "Ежевичный страж",
     "section": "ours",
