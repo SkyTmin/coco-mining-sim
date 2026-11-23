@@ -339,7 +339,9 @@ function panda(r: Rig, F: F3, FT: F3, A: JointPose, j: Record<string, V3>, ctx: 
     const ph = ctx.t * TAU * 5;
     for (let i = 0; i < 6; i++) {
       const ang = ph + (i * TAU) / 6;
-      const end = vadd(hub, R.v(Math.cos(ang) * 4.6, (i % 2 ? 1 : -1) * 2.6, Math.sin(ang) * 4.6));
+      // the legs that swing up under the belly fold away into the blur instead of poking into it
+      const len = 4.6 * (Math.sin(ang) > 0 ? 1 - 0.75 * Math.sin(ang) : 1);
+      const end = vadd(hub, R.v(Math.cos(ang) * len, (i % 2 ? 1 : -1) * 2.6, Math.sin(ang) * len));
       r.tag = i % 2 ? 'thighR' : 'thighL';
       r.cap(hub, end, 1.9, 1.7, black);
       r.ell(frameF(end, R.v(-Math.sin(ang), 0, Math.cos(ang)), R.s), [0, 0, 0], [1.9, 1.6, 1.1], footMat);

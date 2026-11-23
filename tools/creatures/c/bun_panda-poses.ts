@@ -365,8 +365,8 @@ const trickPanda = pathLanes([
 const trickMonkey = pathLanes(
   [
     stay(0, 48, 0, 0, 0),
-    { a: 50, b: 58, at: (u) => ({ x: AT_TABLE[0] + (TB.x + 6 - AT_TABLE[0]) * u, y: AT_TABLE[1] + (TB.y - 1 - AT_TABLE[1]) * u, z: TB.top + 14 * Math.sin(u * Math.PI) + (1 - u) * 14, yaw: FACE.right }) },
-    stay(59, 69, TB.x + 6, TB.y - 1, FACE.usRight, TB.top),
+    { a: 50, b: 58, at: (u) => ({ x: AT_TABLE[0] + (TB.x + 0.5 - AT_TABLE[0]) * u, y: AT_TABLE[1] + (TB.y - 1 - AT_TABLE[1]) * u, z: TB.top + 14 * Math.sin(u * Math.PI) + (1 - u) * 14, yaw: FACE.right }) },
+    stay(59, 69, TB.x + 0.5, TB.y - 1, FACE.usRight, TB.top),
     orbit(72, 110, C_TB, [21, 13], Math.PI / 2 + 0.6, 4.3),
     { a: 111, b: 126, at: (u) => ({ x: TB.x + 21 * Math.cos(4.3) * (1 - u), y: TB.y + 13 * Math.sin(4.3) + (13 - 13 * Math.sin(4.3)) * u, z: TB.top * Math.sin(Math.min(1, u * 1.6) * Math.PI * 0.5) * (u < 0.85 ? 1 : (1 - u) / 0.15) + 6 * Math.sin(u * Math.PI), yaw: FACE.us }) },
     stay(127, 139, TB.x, TB.y + 13, FACE.us),
@@ -374,8 +374,8 @@ const trickMonkey = pathLanes(
     stay(153, 163, 80, 2, FACE.left),
     run(164, 184, [64, 2], [-13.5, 2.5]),
     stay(185, 247, -13.5, 2.5, FACE.right),
-    run(248, 258, [-13.5, 2.5], [-6.5, 2.5], false, FACE.left),
-    { a: 260, b: 268, at: (u) => ({ x: -6.5 + 6.5 * u, y: 2.5 - 2.5 * u, z: 22 * Math.sin(u * Math.PI * 0.5) + 8 * Math.sin(u * Math.PI), yaw: 0 }) },
+    run(248, 258, [-13.5, 2.5], [-9.5, 2.5], false, FACE.left),
+    { a: 260, b: 268, at: (u) => ({ x: -9.5 + 9.5 * u, y: 2.5 - 2.5 * u, z: 22 * Math.sin(u * Math.PI * 0.5) + 8 * Math.sin(u * Math.PI), yaw: 0 }) },
     stay(269, 276, 0, 0, 0),
   ],
   true,
@@ -428,7 +428,7 @@ const trick: Track = [
   // Шустрик drags the rug back; Пончик sits up, stands, takes his bamboo
   [250, { bamboo: 1, bambooEar: 1, ...LIE, chew: 1, lid: 0.8, smile: 1, ...both(6, 6, 10), mOn: 0, mLean: -1.4, mPitch: -0.3, ...mBoth(-1.6, 1.6, -1.4), mBrowIn: 1 }],
   [256, { bamboo: 1, bambooEar: 1, sit: 1, chew: 1, lid: 0.5, smile: 1, ...both(5, 8, 10), mOn: 0, mLean: -1.4, mPitch: -0.3, ...mBoth(-1.6, 1.6, -1.4), mBrowIn: 1 }],
-  [262, { bamboo: 1, bambooEar: 0.4, crouch: 1, chew: 1, smile: 0.8, lookX: -0.4, mOn: 0, mJump: 1, ...mBoth(1.6, 2.4, 3) }],
+  [262, { bamboo: 1, bambooEar: 1, crouch: 1, chew: 1, smile: 0.8, lookX: -0.4, mOn: 0, mJump: 1, ...mBoth(1.6, 2.4, 3) }],
   [268, { ...REST, mOn: 0.8, ...mBoth(1.6, 2, 1) }],
   [276, { ...REST }],
 ];
@@ -997,7 +997,7 @@ const trick_b_f2: Track = [
   [38, BULL({ crouch: 1.8, lean: -1, sqz: -0.1, ...MATADOR(0) })],
   [41, BULL({ wheel: 1, crouch: 0, pitch: 0.28, lean: 1.2, capeFly: 2, earBack: 1, ...MATADOR(1) })],
   [42, BULL({ wheel: 1, crouch: 0, pitch: 0.28, lean: 1.2, capeFly: 2.2, ...MATADOR(0), mBrowUp: 0.6 })],
-  [45, BULL({ wheel: 1, crouch: 0, pitch: 0.28, lean: 1.2, capeFly: 2.4, mStick: 1, mLid: 1, mJump: 1, ...mHand('L', 2.0, -2.6, 2.4), mSmirk: 1 })],
+  [45, BULL({ wheel: 1, crouch: 0, pitch: 0.28, lean: 1.2, capeFly: 2.4, mStick: 1, mLid: 1, mJump: 1, ...mHand('L', 2.0, -2.6, 2.4), mStickFwd: -1.2, mStickDown: -0.6, mSmirk: 1 })],
   [49, BULL({ wheel: 1, crouch: 0, pitch: 0.28, lean: 1.2, capeFly: 2.4, ...MATADOR(1), mBrowUp: 0.4 })],
   [52, BULL({ wheel: 1, crouch: 0, pitch: 0.28, lean: 1.2, capeFly: 2.4, sx: 1.12, sy: 1.12, ...MATADOR(0) })],
   // SPLAT on the glass: over the frame, the face across the whole painting

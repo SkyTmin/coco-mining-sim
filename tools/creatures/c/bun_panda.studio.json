@@ -23,8 +23,9 @@
       "phase:36-43",
       "trick-f2:121-133",
       "trick-f2:147-152",
-      "trick_b-f2:41-55",
-      "show:72-74"
+      "show:72-74",
+      "trick:111-113",
+      "wake_startled:9"
     ]
   },
   "clipAllow": [
@@ -143,6 +144,54 @@
     {
       "a": "pan",
       "b": "handR"
+    },
+    {
+      "a": "mArm",
+      "b": "head"
+    },
+    {
+      "a": "mArm",
+      "b": "shell"
+    },
+    {
+      "a": "mLeg",
+      "b": "shell"
+    },
+    {
+      "a": "thigh",
+      "b": "shell"
+    },
+    {
+      "a": "mTail",
+      "b": "mMane"
+    },
+    {
+      "a": "mLeg",
+      "b": "cheek"
+    },
+    {
+      "a": "mTail",
+      "b": "ear"
+    },
+    {
+      "a": "mTail",
+      "b": "muzzle"
+    },
+    {
+      "a": "mArm",
+      "b": "mHead"
+    },
+    {
+      "a": "mArm",
+      "b": "mFace"
+    },
+    {
+      "a": "mArm",
+      "b": "mBody"
+    },
+    {
+      "a": "mTail",
+      "b": "shell"
     }
   ]
 }
