@@ -160,6 +160,11 @@ process.on('exit', (code) => {
   }
 });
 switch (cmd) {
+  case 'profile': {
+    const { profileCommand } = await import('./profile');
+    await profileCommand(rest);
+    break;
+  }
   case 'events': {
     const { eventsCommand } = await import('./events');
     await eventsCommand(rest);
