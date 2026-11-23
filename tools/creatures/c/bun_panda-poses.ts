@@ -101,6 +101,7 @@ export const beats = {
   'trick-f2': { clacks: [28, 36, 46], whoosh: [24, 28, 32, 36, 42, 46], thrust: 57, stumble: 61, parries: [72, 84, 96, 110], duck: [118, 128], bong: 150, bong2: 178, table: 190, lidFly: [191, 206], bonk: 206, lidHome: 220, stars: [150, 226], mStars: [206, 226] },
   'trick_b-f2': { paw: [22, 30], charge: [38, 56], ole: 45, splat: 56, slide: [66, 112], drop: 114, thud: 170, stars: [116, 132] },
   'trick_c-f2': { slip: [26, 40], ear: [80, 92], slam: 93, giggle: [98, 110], shut: [112, 120], out: [126, 136], peel: [128, 137], thin: [143, 149], blow: [151, 156], bloop: 157, catch: [157, 163], hum: [151, 214], swing: 217, floor: 219, bong: 221, slide: [232, 237], drop: 237, chatter: [237, 253], flick: 247, hook: 257, tink: 267 },
+  show: { iris: [0, 12], bun: [12, 36], grab: 40, rumble: [36, 46], tumble: [44, 62], rungs: [50, 57], floor: 62, roll: [62, 74], sweep: 72, stop: 74, mLand: 84, potA: [44, 60, 70], potB: [48, 64, 70, 78], potC: [52, 70, 88, 96], foot: 88, bong: 96, knocks: [100, 102, 104], lift: [104, 110], fling: [113, 126], gulp: 129, bow: [136, 144], bonk: 146 },
   peek: { in: [0, 10], sniff: [12, 30], scare: 32, bonk: 38, out: [40, 50], monkey: [46, 70], tongue: [54, 64] },
 };
 
@@ -1181,6 +1182,90 @@ const trick_c_f2: Track = [
   [276, { ...KNIGHT }],
 ];
 
+// ---- «Появление» (show) ------------------------------------------------------------------------------------------
+// Black; an iris opens. A bun rolls in across the floor, Шустрик dashes after it and pounces. A rumble in the loft —
+// Пончик comes tumbling down the ladder head over heels (pots tumbling after him), rolls across the floor like a ball
+// and sweeps Шустрик up into the air; he sits down dizzy, Шустрик lands on his head. Two pots bounce into the barrel;
+// the third rolls up, hops off his foot and lands upside down on his head — over Шустрик. Knock-knock: the pot rises —
+// Шустрик under it with the bun — and Шустрик flings it into the barrel too. A gulp; they smile, bow, bump foreheads.
+const LADDER_FOOT: [number, number] = [-18.4, -40.5];
+const showP = pathLanes([
+  stay(0, 61, LADDER_FOOT[0], LADDER_FOOT[1], FACE.us),
+  run(62, 74, LADDER_FOOT, [0, 0], false),
+  stay(75, 168, 0, 0, 0),
+]);
+const showM = pathLanes(
+  [
+    stay(0, 17, 62, 3, FACE.left),
+    run(18, 36, [62, 3], [6, 3]),
+    { a: 36, b: 40, at: (u) => ({ x: 6 - 3 * u, y: 3, z: 5 * Math.sin(u * Math.PI), yaw: FACE.left }) },
+    stay(41, 59, 3, 3, FACE.us),
+    stay(62, 71, 3, 3, -3.0),
+    // swept up: a high flip that lands him on Пончик's head
+    { a: 72, b: 84, at: (u) => ({ x: 3 - 3 * u, y: 3 - 3 * u, z: 27 * u + 24 * Math.sin(u * Math.PI), yaw: -3.0 + (FACE.us + 3.0) * u }) },
+    stay(85, 168, 0, 0, FACE.us),
+  ],
+  true,
+);
+const PI6 = Math.PI * 6;
+const TUMBLE = (pitch: number, lift: number, p: JointPose = {}): JointPose => ({ bamboo: 1, bambooEar: 1, tuck: 1, air: 1, pitch, lift, pop: 0.6, mouth: 0.7, mOn: 0, ...p });
+const DAZED = (p: JointPose = {}): JointPose => ({ bamboo: 1, bambooEar: 1, sit: 1, ...both(3, 10, 8), ...p });
+const show: Track = [
+  [0, { hidden: 1, noShadow: 1, ...TUMBLE(-PI6, 44), mOn: 0 }],
+  [17, { hidden: 1, noShadow: 1, ...TUMBLE(-PI6, 44), mOn: 0, mRun: 1 }],
+  [36, { hidden: 1, noShadow: 1, ...TUMBLE(-PI6, 44), mOn: 0, mRun: 1 }],
+  [38, { hidden: 1, noShadow: 1, ...TUMBLE(-PI6, 44), mOn: 0, mJump: 1, ...mBoth(2.2, 2, 1) }],
+  // he has it: up over his head, a sniff, licks his lips
+  [41, { hidden: 1, noShadow: 1, ...TUMBLE(-PI6, 44), mOn: 0, mBun: 1, ...mBoth(0.9, 2.0, 5.4), mSmile: 1 }],
+  [43, { hidden: 1, noShadow: 1, ...TUMBLE(-PI6, 44), mOn: 0, mBun: 1, ...mBoth(0.8, 1.2, 5.6), mSmile: 1, mBrowUp: 0.6 }],
+  // the loft: down he comes, head over heels, off the rungs
+  [44, TUMBLE(-PI6, 44, { mBun: 1, ...mBoth(1.4, 1.2, 3), mNod: 0.3, mSmile: 1 })],
+  [48, TUMBLE(-5.2 * Math.PI, 35, { mBun: 1, ...mBoth(1.4, 1.2, 3), mTongue: 1, mSmile: 1 })],
+  [50, TUMBLE(-4.6 * Math.PI, 33, { sqz: -0.08, mBun: 1, ...mBoth(1.4, 1.2, 3), mTongue: 1 })],
+  [52, TUMBLE(-4.2 * Math.PI, 35, { mBun: 1, ...mBoth(1.4, 1.2, 3), mTongue: 1 })],
+  [55, TUMBLE(-3.6 * Math.PI, 24, { mBun: 1, ...mBoth(1.4, 1.2, 3), mSmile: 1 })],
+  [57, TUMBLE(-3.2 * Math.PI, 22, { sqz: -0.08, mBun: 1, ...mBoth(1.4, 1.2, 3), mSmile: 1 })],
+  [59, TUMBLE(-2.8 * Math.PI, 24, { mBun: 1, ...mBoth(1.4, 1.2, 3), mSmile: 1 })],
+  // the floor, and away across it like a ball; Шустрик turns, his eyes pop
+  [62, TUMBLE(-2 * Math.PI, 0, { sqz: -0.15, sqx: 0.08, sqy: 0.08, mBun: 1, ...mBoth(1.4, 1.2, 3), mBrowUp: 1 })],
+  [66, TUMBLE(-1.4 * Math.PI, 1.5, { mBun: 1, ...mBoth(1.4, 2.6, 3.2), mPop: 1, mBrowUp: 1 })],
+  [71, TUMBLE(-0.4 * Math.PI, 0.8, { mBun: 1, ...mBoth(1.6, 3.4, 3.4), mPop: 1, mBrowUp: 1 })],
+  [72, TUMBLE(-0.25 * Math.PI, 0.5, { mBun: 1, mJump: 1, ...mBoth(1.8, 3, 5), mPop: 0.6, mMouth: 1, mPitch: 0 })],
+  // stop: sits down hard, dizzy; Шустрик flips through the air
+  [74, DAZED({ sqz: -0.12, legsUp: 0.4, dizzy: 1, wavy: 1, mBun: 1, mJump: 1, mPitch: Math.PI, mMouth: 1 })],
+  [80, DAZED({ dizzy: 1, wavy: 1, tilt: 0.15, mBun: 1, mJump: 1, mPitch: Math.PI * 2, mSmile: 1 })],
+  // lands on his head
+  [84, DAZED({ dizzy: 1, wavy: 1, tilt: -0.1, sqz: -0.06, mOn: 1, mSit: 1, mBun: 1, ...mBoth(1.6, 1.2, 2.6), mSmile: 1 })],
+  // the last pot bumps his foot, hops up...
+  [88, DAZED({ pop: 0.6, browUp: 1, lookX: -0.5, legsUp: 0.3, mOn: 1, mSit: 1, mBun: 1, ...mBoth(1.6, 1.2, 2.6), mMouth: 0.5 })],
+  [92, DAZED({ pop: 0.8, browUp: 1, lookY: -0.6, mouth: 0.6, mOn: 1, mSit: 1, mBun: 1, ...mBoth(1.6, 1.2, 2.6), mMouth: 0 })],
+  // ...BONG, over his head and Шустрик
+  [96, DAZED({ vib: 1, sqz: -0.08, lid: 0.5, browUp: 0.6, mOn: 1, mSit: 1, mBun: 1, ...mBoth(1.6, 1.2, 2.6) })],
+  // knock-knock on the pot
+  [100, DAZED({ lookY: -0.9, browUp: 0.8, ...hand('L', 4.2, -4, 22.5), mOn: 1, mSit: 1, mBun: 1, ...mBoth(1.6, 1.2, 2.6) })],
+  [102, DAZED({ lookY: -0.9, browUp: 0.8, ...hand('L', 4.6, -3.4, 23.5), mOn: 1, mSit: 1, mBun: 1, ...mBoth(1.6, 1.2, 2.6) })],
+  [104, DAZED({ lookY: -0.9, browUp: 0.8, ...hand('L', 4.2, -4, 22.5), mOn: 1, mSit: 1, mBun: 1, ...mBoth(1.6, 1.2, 2.6) })],
+  // the pot rises: Шустрик holds it up from inside, munching
+  [108, DAZED({ lookY: -1, browUp: 1, mOn: 1, mSit: 0, mBun: 1, ...mHand('R', 0.6, 1.4, 6.2), ...mHand('L', 1.6, -1.6, 2.4), mSmile: 1, mMouth: 0.4 })],
+  [112, DAZED({ lookY: -1, browUp: 1, mouth: 0.4, mOn: 1, mSit: 0, mBun: 1, ...mHand('R', -0.4, 2, 6), ...mHand('L', 1.6, -1.6, 2.4), mSmirk: 1, mMouth: 0.6 })],
+  // and flings it into the barrel
+  [115, DAZED({ lookY: -0.7, lookX: -0.6, browUp: 1, mOn: 1, mSit: 0, mBun: 1, ...mHand('R', 2.4, 3.4, 2.4), ...mHand('L', 1.6, -1.6, 2.4), mTwist: 0.4, mSmirk: 1 })],
+  [122, DAZED({ lookX: -0.9, gaze: -0.4, mOn: 1, mSit: 1, mBun: 1, ...mBoth(1.6, 1.2, 2.6), mSmirk: 1, mMouth: 0.5 })],
+  // a gulp
+  [128, DAZED({ lookX: 0, gaze: 0, lookY: -0.6, smile: 0.4, mOn: 1, mSit: 1, mBun: 1, ...mBoth(2.0, 1.6, 3.4), mMouth: 1 })],
+  [131, DAZED({ lookY: -0.6, smile: 0.6, mOn: 1, mSit: 1, ...mBoth(1.6, 1.8, 0.8), mPop: 0.4, mSmile: 1 })],
+  // up, a smile to us, a bow...
+  [136, { bamboo: 1, bambooEar: 1, smile: 1, ...both(4, 8, 13), mOn: 1, mSit: 1, mSmile: 1, ...mBoth(1.6, 1.8, 0.8) }],
+  [141, { bamboo: 1, bambooEar: 1, pitch: 0.45, nod: 0.25, smile: 1, lid: 0.5, ...both(3, 7, 10), mOn: 1, mSit: 1, mPitch: 0.9, mSmile: 1, ...mBoth(1.6, 1.8, 0.8) }],
+  // ...he looks up as Шустрик leans over his brow — bonk
+  [144, { bamboo: 1, bambooEar: 1, pitch: 0.1, nod: -0.3, lookY: -0.8, smile: 0.6, ...both(3, 7, 10), mOn: 1, mSit: 1, mPitch: 1.25, mSmile: 1, ...mBoth(1.6, 1.8, 0.8) }],
+  [146, { bamboo: 1, bambooEar: 1, pitch: 0, nod: -0.35, lookY: -0.8, sqz: -0.06, pop: 0.6, browUp: 1, ...both(3, 7, 10), mOn: 1, mSit: 1, mPitch: 1.1, mPop: 0.6, mBrowUp: 1, ...mBoth(1.6, 1.8, 0.8) }],
+  [151, { bamboo: 1, bambooEar: 1, smile: 1, lid: 0.6, ...hand('L', 6, -3.4, 21), ...hand('R', 4, 8, 13), mOn: 1, mSit: 1, mPitch: 0.2, mSmile: 1, mSquint: 1, ...mHand('R', 0.2, 1.8, 4.6), ...mHand('L', 1.6, -1.8, 0.8) }],
+  [156, { ...REST, chew: 0, toMouth: 0.4, smile: 0.6, mSmile: 0.6 }],
+  [162, { ...REST }],
+  [168, { ...REST }],
+];
+
 export const tracks: Record<string, Track> = {
   idle,
   walk,
@@ -1203,6 +1288,7 @@ export const tracks: Record<string, Track> = {
   'trick-f2': trick_f2,
   'trick_b-f2': trick_b_f2,
   'trick_c-f2': trick_c_f2,
+  show,
 };
 export const lanes: Record<string, Record<string, Lane>> = {
   trick: { ...trickPanda, ...trickMonkey, rugX: lane([0, 0], [190, 0], [194, -9], [248, -9], [258, 0]) },
@@ -1214,6 +1300,7 @@ export const lanes: Record<string, Record<string, Lane>> = {
   'trick-f2': { ...duelP, ...duelM },
   'trick_b-f2': { ...ramP, ...ramM },
   'trick_c-f2': { ...panP, ...panM },
+  show: { ...showP, ...showM },
 };
 
 export const gesture = keyframer({ tracks, lanes, switches: SWITCHES, linear: LINEAR });

@@ -421,6 +421,12 @@ function propsFor(anim: string, fr: number, P: Record<string, number>, f: FxInpu
     pr.lidOff = fr > b.table && fr < b.lidHome ? 1 : 0;
     pr.swing = Math.max(ring(fr, b.bong, 0.5), ring(fr, b.bong2, 0.35), ring(fr, b.table, 0.3));
   }
+  if (anim === 'show') {
+    const b = beats.show;
+    // a pot bounces off the table: the steamers jump; the floor shakes when he lands
+    pr.hop = fr >= b.potB[2] && fr < b.potB[2] + 6 ? Math.sin(prog(fr, b.potB[2], b.potB[2] + 6) * Math.PI) * 5 : 0;
+    pr.swing = Math.max(ring(fr, b.floor, 0.4), ring(fr, b.bong, 0.3));
+  }
   if (anim === 'trick_c-f2') {
     const b = beats['trick_c-f2'];
     pr.door = doorAngle(fr);
@@ -1399,6 +1405,131 @@ function panFx(f: FxInput, fr: number) {
   if (pt.head) puff(f.above, pt.head[0], pt.head[1] - 4, 9, fr - 258, 7, 6, '#fffbe8');
 }
 
+// ---- show ---------------------------------------------------------------------------------------------------------
+/** Black over the whole painting but a circle of radius r round (cx, cy). */
+function iris(p: Pen, w: number, h: number, cx: number, cy: number, r: number) {
+  for (let y = 0; y < h; y++) {
+    const dy = y + 0.5 - cy;
+    const dx = Math.abs(dy) < r ? Math.sqrt(r * r - dy * dy) : 0;
+    if (dx <= 0) poly(p, [0, y, w, y, w, y + 1, 0, y + 1], '#0a0608');
+    else {
+      if (cx - dx > 0) poly(p, [0, y, cx - dx, y, cx - dx, y + 1, 0, y + 1], '#0a0608');
+      if (cx + dx < w) poly(p, [cx + dx, y, w, y, w, y + 1, cx + dx, y + 1], '#0a0608');
+    }
+  }
+}
+/** A pot in flight along a list of bounce points [frame, x, y, arc height], spinning; undefined outside the frames. */
+function potPath(fr: number, pts: [number, number, number, number][]): [number, number, number] | undefined {
+  for (let i = 0; i + 1 < pts.length; i++) {
+    const [f0, x0, y0] = pts[i],
+      [f1, x1, y1, h] = pts[i + 1];
+    if (fr >= f0 && fr < f1) {
+      const u = (fr - f0) / (f1 - f0);
+      return [x0 + (x1 - x0) * u, y0 + (y1 - y0) * u - Math.sin(u * Math.PI) * h, (fr - pts[0][0]) * 0.5];
+    }
+  }
+  return undefined;
+}
+function splash(p: Pen, x: number, y: number, age: number, seed: number) {
+  if (age < 0 || age > 12) return;
+  drops(p, x, y, age, 12, 7, 2.2, seed);
+  for (let k = 0; k < 2; k++) {
+    const r = 6 + age * 2.4 + k * 5;
+    ell(p, x, y, r, r * 0.35, '#bfe6ff', Math.max(0, 0.7 - age * 0.06 - k * 0.2));
+  }
+}
+function showFx(f: FxInput, fr: number) {
+  const b = beats.show;
+  const pt = f.points;
+  // the bun rolls in and wobbles to a stop where Шустрик pounces
+  if (fr >= b.bun[0] && fr < b.grab) {
+    const u = 1 - (1 - prog(fr, b.bun[0], b.bun[1])) ** 2;
+    const a = W(58, 2.6),
+      z = W(3, 3);
+    const x = a[0] + (z[0] - a[0]) * u,
+      y = a[1] + (z[1] - a[1]) * u;
+    bunMini(f.under, x, y - 5, 5.5);
+    const rot = -u * 9;
+    dot(f.under, x + Math.cos(rot) * 3, y - 5 + Math.sin(rot) * 3, 1, '#c8b49a', 1, '#c8b49a');
+    if (fr < b.bun[1] - 4) speedLines(f.under, x, y - 5, -1, 0, 10, 2, 5, fr, 0.6);
+  }
+  // a rumble in the loft: dust trickles down by the ladder
+  if (fr >= b.rumble[0] && fr < b.tumble[1])
+    for (let i = 0; i < 6; i++) {
+      const age = (fr - b.rumble[0] + i * 3) % 14;
+      dot(f.under, 112 + hash(i, 3) * 26, age * 6, 1, '#d8c8b0', 1 - age / 14, '#b8a890');
+    }
+  // off the rungs and the floor: dust and a thump; the roll trails dust and speed lines
+  if (pt.bodyGround) {
+    for (const c of [b.rungs[0], b.rungs[1]]) if (pt.body) puff(f.above, pt.body[0] - 10, pt.body[1] + 12, 6, fr - c, 7, c);
+    boom(f.under, pt.bodyGround[0], pt.bodyGround[1] - 6, 12, fr - b.floor, 2);
+    if (fr >= b.floor && fr < b.floor + 10) for (let k = 0; k < 2; k++) p_ring(f.under, pt.bodyGround[0], pt.bodyGround[1], 12 + (fr - b.floor) * 5 + k * 6, '#d8c8b0', Math.max(0, 0.6 - (fr - b.floor) * 0.07));
+    if (fr >= b.roll[0] && fr < b.roll[1]) {
+      puff(f.under, pt.bodyGround[0] - 10, pt.bodyGround[1] - 2, 5, fr % 4, 4, fr);
+      if (pt.body) speedLines(f.under, pt.body[0], pt.body[1], 18.4, 40.5 * 0.6, 24, 4, 30, fr);
+    }
+    boom(f.under, pt.bodyGround[0], pt.bodyGround[1] - 4, 9, fr - b.stop, 4);
+  }
+  if (pt.mBody) boom(f.above, pt.mBody[0], pt.mBody[1], 8, fr - b.sweep, 6);
+  // the pots: two bounce into the barrel, the third rolls up to him, hops off his foot onto his head
+  const ladderTop = 124;
+  const B = KITCHEN.barrel;
+  const rim = W(B.x, B.y, B.h);
+  const T = KITCHEN.table;
+  const tableTop = W(T.x + 4, T.y, T.top);
+  const potA = potPath(fr, [[b.potA[0], ladderTop, -14, 0], [b.potA[1], 130, 158, 8], [b.potA[2], rim[0], rim[1] - 6, 46]]);
+  if (potA) pot(f.above, potA[0], potA[1], potA[2], 1.7);
+  const potB = potPath(fr, [[b.potB[0], ladderTop - 4, -14, 0], [b.potB[1], 126, 158, 8], [b.potB[2], tableTop[0], tableTop[1] - 8, 26], [b.potB[3], rim[0] + 3, rim[1] - 6, 36]]);
+  if (potB) pot(f.above, potB[0], potB[1], potB[2], 1.7);
+  for (const [c, sd] of [[b.potA[2], 1], [b.potB[3], 2], [b.fling[1], 3]] as const) splash(f.above, rim[0], rim[1], fr - c, sd);
+  boom(f.under, tableTop[0], tableTop[1] - 4, 7, fr - b.potB[2], 5);
+  const head = (t: number) => {
+    const h = f.pointAt(t / 24, 'head');
+    return [h[0], h[1] - 44] as XY;
+  };
+  const foot = f.pointAt(b.foot / 24, 'footR');
+  if (fr >= b.potC[0] && fr < b.potC[1]) {
+    const q = potPath(fr, [[b.potC[0], ladderTop + 2, -16, 0], [b.potC[1], 132, 160, 10]]);
+    if (q) pot(f.above, q[0], q[1], q[2], 3.2);
+  } else if (fr >= b.potC[1] && fr < b.potC[2]) {
+    // rolling on its side across the floor
+    const u = prog(fr, b.potC[1], b.potC[2]);
+    const x = 132 + (foot[0] - 14 - 132) * u,
+      y = 166 + (foot[1] - 8 - 166) * u;
+    pot(f.under, x, y - 10, u * Math.PI * 6, 3.2);
+  } else if (fr >= b.potC[2] && fr < b.potC[3]) {
+    const hd = head(b.potC[3]);
+    const q = potPath(fr, [[b.potC[2], foot[0] - 14, foot[1] - 18, 0], [b.potC[3], hd[0], hd[1], 50]]);
+    if (q) pot(f.above, q[0], q[1], Math.PI * prog(fr, b.potC[2], b.potC[3]) * 3, 3.2);
+  } else if (fr >= b.potC[3] && fr < b.fling[0]) {
+    // upside down on his head over Шустрик; knocked on; lifted from inside
+    const hd = pt.head ? ([pt.head[0], pt.head[1] - 44] as XY) : head(fr);
+    const lift = fr >= b.lift[0] ? Math.min(1, prog(fr, b.lift[0], b.lift[1])) : 0;
+    const mh = pt.mHandR ?? hd;
+    const x = hd[0] + (mh[0] - hd[0]) * lift,
+      y = hd[1] + (mh[1] - 10 - hd[1]) * lift;
+    pot(f.above, x, y, Math.PI + (fr < b.bong + 6 ? 0.1 * Math.sin((fr - b.bong) * 2.5) : 0), 3.2);
+  } else if (fr >= b.fling[0] && fr < b.fling[1]) {
+    const from = f.pointAt(b.fling[0] / 24, 'mHandR');
+    const q = potPath(fr, [[b.fling[0], from[0], from[1] - 10, 0], [b.fling[1], rim[0] + 2, rim[1] - 6, 70]]);
+    if (q) pot(f.above, q[0], q[1], Math.PI + q[2] * 1.5, 3.2);
+  }
+  boom(f.under, foot[0] - 10, foot[1] - 6, 6, fr - b.foot, 3);
+  if (pt.head) {
+    clang(f.above, pt.head[0], pt.head[1] - 56, fr - b.bong, 16, 4);
+    for (const c of b.knocks) if (fr >= c && fr < c + 2 && pt.handL) starInk(f.above, pt.handL[0], pt.handL[1] - 4, 3, fr, '#fff4c0');
+    // foreheads: bonk
+    if (fr >= b.bonk && fr < b.bonk + 10) {
+      boom(f.above, pt.head[0] + 4, pt.head[1] - 20, 8, fr - b.bonk, 7);
+      for (let i = 0; i < 3; i++) starInk(f.above, pt.head[0] + Math.cos(fr * 0.4 + i * 2.1) * 18, pt.head[1] - 26 + Math.sin(fr * 0.4 + i * 2.1) * 5, 3.4, fr, '#ffd23a');
+    }
+    // a gulp
+    if (pt.mHead) puff(f.above, pt.mHead[0] + 8, pt.mHead[1] + 2, 3, fr - b.gulp, 6, 8, '#f4f0e8');
+  }
+  // the iris opens over everything
+  if (fr < b.iris[1]) iris(f.above, f.w, f.h, f.w / 2, f.h / 2, smooth(prog(fr, b.iris[0], b.iris[1])) * 260);
+}
+
 // ---- the effects entry --------------------------------------------------------------------------------------------
 export function pandaEffects(f: FxInput) {
   const fr = f.t * 24;
@@ -1427,6 +1558,7 @@ export function pandaEffects(f: FxInput) {
   if (f.anim === 'trick-f2') duelFx(f, fr);
   if (f.anim === 'trick_b-f2') ramFx(f, fr);
   if (f.anim === 'trick_c-f2') panFx(f, fr);
+  if (f.anim === 'show') showFx(f, fr);
   // stars over a bonked head
   if ((P.dizzy ?? 0) > 0.5 && pt.head) dizzyRing(f, [pt.head[0], pt.head[1] - 36], 30, f.t * TAU * 1.2, 1);
   if ((P.mDizzy ?? 0) > 0.5 && pt.mHead) dizzyRing(f, [pt.mHead[0], pt.mHead[1] - 13], 12, -f.t * TAU * 1.5, 0.6);
