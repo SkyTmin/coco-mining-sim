@@ -9,7 +9,7 @@
 import type { CreatureCard } from '../bodies/card-data';
 import { hash, hx, mixc, TAU } from '../kit/f11-mobkit';
 import { F3, Rig, renderRig, vadd, vcross, vlerp, vmul, vnorm, vsub, type Mat, type RGBA, type V3 } from '../rig/f15-rig';
-import { life, projectFigure, scaleFigure } from '../rig/figure';
+import { life, pointsOnlyActive, projectFigure, scaleFigure } from '../rig/figure';
 import { sizes, type BodyFrame, type Creature, type MotionPlan, type Variant } from '../types';
 import type { JointPose } from '../technique';
 import { finishSurfaces } from './surface-work';
@@ -463,9 +463,12 @@ export function serpentFrame(
       const pad = 110,
         big = frame.px.w + 2 * pad,
         anchor: [number, number] = [frame.anchor[0] + pad, frame.anchor[1] + pad];
-      const out = renderRig(r, big, big, ...anchor, { outline: hx(ink), inner: 3.6 });
-      frame.px = renderRig(empty, big, big, ...anchor, { outline: hx(ink), inner: 3.6 }).p;
-      frame.over = out.p;
+      // points-only build: no picture needed, anchor and points still shift together [research 23.11, VIII.6.1]
+      if (!pointsOnlyActive()) {
+        const out = renderRig(r, big, big, ...anchor, { outline: hx(ink), inner: 3.6 });
+        frame.px = renderRig(empty, big, big, ...anchor, { outline: hx(ink), inner: 3.6 }).p;
+        frame.over = out.p;
+      }
       frame.anchor = anchor;
       for (const key of Object.keys(frame.points)) frame.points[key] = [frame.points[key][0] + pad, frame.points[key][1] + pad];
       frame.primitives = r.prims.length;

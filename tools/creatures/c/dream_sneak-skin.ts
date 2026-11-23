@@ -17,7 +17,7 @@ import { goalAt, toLocal } from '../bodies/goals';
 import { furLock, stitchedStrap } from '../bodies/kits/tailoring';
 import { hx, ik, mixc, TAU } from '../kit/f11-mobkit';
 import { F3, Rig, renderRig, vadd, vcross, vdot, vlerp, vmul, vnorm, vsub, type Mat, type Tones, type V3 } from '../rig/f15-rig';
-import { projectFigure, scaleFigure } from '../rig/figure';
+import { pointsOnlyActive, projectFigure, scaleFigure } from '../rig/figure';
 import type { JointPose } from '../technique';
 import { finishSurfaces } from './surface-work';
 import { clips, HIP } from './dream_sneak-poses';
@@ -1125,7 +1125,8 @@ export function sneakFigure(sample: PoseSample): Figure {
     if (front) scaleFigure(front, {}, portraitScale);
     const frame = projectFigure(r, 160, [80, 150], j, '#120e26', 4.4, true);
     const paint = { outline: ink, inner: 4.4 };
-    if (front) {
+    // A points-only build needs no picture; the wide canvas shifts anchor and points together [research 23.11, VIII.6.1].
+    if (front && !pointsOnlyActive()) {
       // Frames over the painting get a wide canvas for both layers; the floor reflection is left out for those.
       // The viewer's eyelids must cover the whole painting from wherever he stands, so they get a wider one.
       const pad = lids > 0.001 ? 270 : 110,

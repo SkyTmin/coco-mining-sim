@@ -1,6 +1,8 @@
 import { ellFill, oval, pathSmear, progress } from '../fx/field';
 import { fillPoly, type Pen } from '../fx/pen';
 import { paintImpact, paintSocketTrail } from '../technique-fx';
+import { techniqueContacts } from '../technique';
+import book from './nebula_squid-keys';
 import type { Creature, FxInput, XY } from '../types';
 
 const tau = 2 * Math.PI;
@@ -200,14 +202,24 @@ function emergence(f: FxInput, n: number) {
     gem(pen, edge(0.53, 0.83), 2.8, pearl, remain);
   }
 }
-const moves: Record<string, [string, number, Pigment]> = {
-  tech_star_spiral: ['funnel', 45, pearl],
-  tech_lunar_hook: ['star2', 25, rose],
-  tech_tidal_club: ['clubL', 27, blue],
-  tech_long_cast: ['clubR', 26, amber],
-  tech_orbit_chimes: ['star6', 35, amber],
-  tech_comet_form: ['mantleTip', 30, blue],
+// The colour of each technique's impact. Its contact (socket and frame) is not written here again: it comes from the
+// technique book, the single source the gate and the timing already read [research 23.11, VIII.5.3.2].
+const pigments: Record<string, Pigment> = {
+  tech_star_spiral: pearl,
+  tech_lunar_hook: rose,
+  tech_tidal_club: blue,
+  tech_long_cast: amber,
+  tech_orbit_chimes: amber,
+  tech_comet_form: blue,
 };
+function contactOf(anim: string) {
+  const spec = book[anim];
+  if (!spec || !pigments[anim]) return undefined;
+  const contacts = techniqueContacts(spec);
+  // the impact below is drawn for one contact; a book entry with several needs its own choice here, not a silent first
+  if (contacts.length !== 1) throw new Error(`nebula_squid ${anim}: ${contacts.length} contacts in the book, the FX draws one impact`);
+  return contacts[0];
+}
 export const effects: Creature['effects'] = (f) => {
   const n = Math.round(f.t * 24);
   if (f.anim === 'show') {
@@ -236,9 +248,10 @@ export const effects: Creature['effects'] = (f) => {
     }
     return;
   }
-  const hit = moves[f.anim];
-  if (!hit) return;
-  const [socket, frame, color] = hit,
+  const contact = contactOf(f.anim);
+  if (!contact) return;
+  const { socket, frame } = contact,
+    color = pigments[f.anim],
     age = n - frame;
   if (n >= frame - 6 && n < frame + 4) {
     pathSmear(f, socket, (frame - 6) / 24, frame / 24, 3.5, color[0], color[2], color[3]);

@@ -17,7 +17,7 @@ import { goalAt, toLocal } from '../bodies/goals';
 import { furLock } from '../bodies/kits/tailoring';
 import { hash, hx, ik, mixc, TAU } from '../kit/f11-mobkit';
 import { F3, Rig, renderRig, vadd, vcross, vdot, vlerp, vmul, vnorm, vsub, type Mat, type Tones, type V3 } from '../rig/f15-rig';
-import { projectFigure, scaleFigure } from '../rig/figure';
+import { pointsOnlyActive, projectFigure, scaleFigure } from '../rig/figure';
 import type { JointPose } from '../technique';
 import { finishSurfaces } from './surface-work';
 import { clips, HIP } from './storm_lord-poses';
@@ -1079,7 +1079,8 @@ export function stormFigure(sample: PoseSample): Figure {
     if (front) scaleFigure(front, {}, sc);
     const frame = projectFigure(r, 300, [150, 270], j, '#0a0a18', 4.4, true);
     const paint = { outline: ink, inner: 4.4 };
-    if (front) {
+    // A points-only build needs no picture; the wide canvas shifts anchor and points together [research 23.11, VIII.6.1].
+    if (front && !pointsOnlyActive()) {
       const pad = orbFront ? 280 : 120,
         size = frame.px.w + 2 * pad,
         anchor: [number, number] = [frame.anchor[0] + pad, frame.anchor[1] + pad];

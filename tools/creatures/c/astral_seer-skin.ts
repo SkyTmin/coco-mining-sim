@@ -10,7 +10,7 @@ import { goalAt, toLocal } from '../bodies/goals';
 import { furLock } from '../bodies/kits/tailoring';
 import { hx, ik, TAU } from '../kit/f11-mobkit';
 import { F3, Rig, renderRig, vadd, vcross, vdot, vlerp, vmul, vnorm, vsub, type Mat, type V3 } from '../rig/f15-rig';
-import { projectFigure, scaleFigure } from '../rig/figure';
+import { pointsOnlyActive, projectFigure, scaleFigure } from '../rig/figure';
 import type { JointPose } from '../technique';
 import { finishSurfaces } from './surface-work';
 import { clips, HOVER } from './astral_seer-poses';
@@ -767,7 +767,10 @@ export function seerFigure(sample: PoseSample): Figure {
     const frame = projectFigure(r, 160, [80, 150], j, '#141428', 4.4, true);
     let wide = false;
     const paint = { outline: ink, inner: 4.4 };
-    const over = front && renderRig(front, frame.px.w, frame.px.h, ...frame.anchor, paint).p;
+    // A points-only build (a past or future pose asked only for a socket: the rock's trail, the light's flight) needs no
+    // picture: the front layer and the wide canvas below shift anchor and points together, so the screen points are the
+    // same without them [research 23.11, VIII.6.1: these three rasters were a third of all rasters of the tricks].
+    const over = front && !pointsOnlyActive() && renderRig(front, frame.px.w, frame.px.h, ...frame.anchor, paint).p;
     if (front && over) frame.over = over;
     // A prop flying over the frame can be wholly outside the portrait canvas, so those frames always widen.
     if (front && over && (rockOver || starOver || get('sparks') > 0.01 || edgeTouched(over))) {

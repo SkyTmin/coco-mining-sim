@@ -8,7 +8,7 @@ import type { CreatureCard } from '../bodies/card-data';
 import { goalAt, toLocal } from '../bodies/goals';
 import { hash, hx, ik, mixc, TAU } from '../kit/f11-mobkit';
 import { F3, Rig, renderRig, vadd, vlerp, vmul, vnorm, type Mat, type V3 } from '../rig/f15-rig';
-import { life, projectFigure, scaleFigure } from '../rig/figure';
+import { life, pointsOnlyActive, projectFigure, scaleFigure } from '../rig/figure';
 import { strideFoot } from '../motion';
 import { sizes, type BodyFrame, type Creature, type MotionPlan, type Variant } from '../types';
 import type { JointPose } from '../technique';
@@ -232,9 +232,12 @@ export function crabFrame(card: CreatureCard, route: MotionPlan, sample: PoseSam
       const pad = 90,
         big = frame.px.w + 2 * pad,
         anchor: [number, number] = [frame.anchor[0] + pad, frame.anchor[1] + pad];
-      const out = renderRig(front!, big, big, ...anchor, { outline: hx(ink), inner: 3.6 });
-      frame.px = renderRig(empty, big, big, ...anchor, { outline: hx(ink), inner: 3.6 }).p;
-      frame.over = out.p;
+      // points-only build: no picture needed, anchor and points still shift together [research 23.11, VIII.6.1]
+      if (!pointsOnlyActive()) {
+        const out = renderRig(front!, big, big, ...anchor, { outline: hx(ink), inner: 3.6 });
+        frame.px = renderRig(empty, big, big, ...anchor, { outline: hx(ink), inner: 3.6 }).p;
+        frame.over = out.p;
+      }
       frame.anchor = anchor;
       for (const key of Object.keys(frame.points)) frame.points[key] = [frame.points[key][0] + pad, frame.points[key][1] + pad];
       frame.primitives = r.prims.length;

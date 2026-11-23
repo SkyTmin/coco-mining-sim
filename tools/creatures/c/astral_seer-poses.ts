@@ -86,8 +86,9 @@ export const tracks: Record<string, Track> = {
     [18, { gaze: -0.75, yaw: -0.28, nod: -0.14 }], [26, { gaze: 0.55, yaw: 0.2, tilt: 0.08, earR: -0.3 }], [36, {}]],
   // Tosses the light from the right palm over its head into the left palm.
   fidget_a: [[0, {}], [8, { ...R(9, 9, 6), lightR: 1, gaze: 0.1, nod: 0.1 }], [12, { ...R(8, 8, 10), lightR: 1, squat: 1 }],
-    [14, { ...R(7, 7, 18), lightR: 0, nod: -0.25, gaze: -0.1 }], [22, { ...R(8, 8, 6), ...L(9, -9, 8), nod: -0.35, gaze: -0.35, earL: -0.2, earR: -0.2 }],
-    [30, { ...L(9, -10, 6), lightL: 1, nod: 0.1, gaze: -0.3, smile: 0.6 }], [34, { ...L(9, -10, 4), lightL: 1.2, smile: 1 }], [48, {}]],
+    // the release and the catch are the shared beats, so moving the catch moves the pose, the flight and the sparkle together
+    [beats.fidget_a.toss, { ...R(7, 7, 18), lightR: 0, nod: -0.25, gaze: -0.1 }], [22, { ...R(8, 8, 6), ...L(9, -9, 8), nod: -0.35, gaze: -0.35, earL: -0.2, earR: -0.2 }],
+    [beats.fidget_a.catch, { ...L(9, -10, 6), lightL: 1, nod: 0.1, gaze: -0.3, smile: 0.6 }], [34, { ...L(9, -10, 4), lightL: 1.2, smile: 1 }], [48, {}]],
   // The crystals speed up and dance round the body on a tilting ring while the seer follows them with its eyes.
   fidget_b: [[0, {}], [10, { orbit: 1.2, orbitR: -3, orbitTilt: 0.3, gaze: -0.4, orbitLift: 4 }], [20, { orbit: 3.1, orbitR: 4, orbitTilt: -0.25, gaze: 0.35, orbitLift: 8, nod: -0.1 }],
     [30, { orbit: 5.0, orbitR: -2, orbitTilt: 0.2, gaze: -0.2, orbitLift: 3, smile: 0.5 }], [40, { orbit: 6.0, orbitR: 1, smile: 0.6 }], [48, { orbit: 2 * Math.PI }]],
