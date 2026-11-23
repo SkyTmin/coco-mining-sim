@@ -11,6 +11,7 @@
 // «кипит» на ходу.
 
 import { Px } from './px';
+import { rigMode, rigStats } from './stats';
 
 export type RGBA = [number, number, number, number];
 export type Tones = [RGBA, RGBA, RGBA, RGBA];
@@ -356,6 +357,9 @@ export function renderRig(
   opt: RigOpt = {},
 ): RigOut {
   const N = w * h;
+  rigStats.raster++;
+  rigStats.rasterPixels += N;
+  if (rigMode.pointsOnly) rigStats.wasted++;
   if (!BUF || BUF.n < N)
     BUF = {
       n: N,

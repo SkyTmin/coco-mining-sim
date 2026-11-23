@@ -11,6 +11,8 @@
 //   npm run ws -- seam <id> [anim...]            pet endpoints vs idle / idle-f2 / sleep in seconds, with the parts that drifted
 //   npm run ws -- review <id> <anim> [--frames a,b] [--out f.png]  per-clip loop in one pass: check + sheet + seams
 //   npm run ws -- detail <id>                    detail bar of the rest frame (colours, edge, flat, size) — run before the clips
+//   npm run ws -- context <id> <anim>            context pack of one clip: events, contacts, source lines, acceptance, last review
+//   npm run ws -- help [topic]                   one section of studio/README.md (no topic: the sections and their sizes)
 //   npm run ws -- baseline [id,…] [--force]      reference cases: acceptance facts next to the last gate of the exact inputs
 // check/gate/snap on several creatures run in parallel child processes (--jobs N, default = cores, at most one per 4.5 GB);
 // heavy runs (render, snap, check/gate of several) wait for each other instead of running out of memory together;
@@ -140,17 +142,34 @@ const [cmd, ...rest] = process.argv.slice(2);
 // timing log: one line per command in .studio/ws-log.jsonl (gitignored) — what the loop really costs, measured, not guessed.
 // maxRssMB is this process only; render/snap/check of several creatures add their children on top.
 const startedAt = Date.now();
+// what the command handed back to the model (C01: the cost of talking to the tool, measured separately from the CPU)
+let outBytes = 0;
+const write = process.stdout.write.bind(process.stdout);
+process.stdout.write = ((chunk: string | Uint8Array, ...rest: unknown[]) => {
+  outBytes += typeof chunk === 'string' ? Buffer.byteLength(chunk) : chunk.length;
+  return (write as (...a: unknown[]) => boolean)(chunk, ...rest);
+}) as typeof process.stdout.write;
 process.on('exit', (code) => {
   if (!cmd) return;
   try {
     mkdirSync(studioDir, { recursive: true });
-    const line = { at: new Date(startedAt).toISOString().slice(0, 19), cmd, args: rest, sec: +((Date.now() - startedAt) / 1000).toFixed(1), maxRssMB: Math.round(process.resourceUsage().maxRSS / 1024), code };
+    const line = { at: new Date(startedAt).toISOString().slice(0, 19), cmd, args: rest, sec: +((Date.now() - startedAt) / 1000).toFixed(1), maxRssMB: Math.round(process.resourceUsage().maxRSS / 1024), outBytes, code };
     appendFileSync(join(studioDir, 'ws-log.jsonl'), JSON.stringify(line) + '\n');
   } catch {
     // the log is a convenience; a read-only checkout must not fail the command
   }
 });
 switch (cmd) {
+  case 'context': {
+    const { contextCommand } = await import('./context');
+    await contextCommand(rest);
+    break;
+  }
+  case 'help': {
+    const { helpCommand } = await import('./help');
+    helpCommand(rest);
+    break;
+  }
   case 'baseline': {
     const { baselineCommand } = await import('./baseline');
     await baselineCommand(rest, gateKey);
@@ -232,6 +251,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: npm run ws -- new|check|gate|review|detail|baseline|probe|seam|clip|sheet|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
+    console.log('usage: npm run ws -- new|check|gate|review|context|help|detail|baseline|probe|seam|clip|sheet|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
     process.exitCode = cmd ? 1 : 0;
 }

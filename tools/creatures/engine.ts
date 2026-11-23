@@ -6,6 +6,7 @@ import { Pen } from './fx/pen';
 import { emptyTechniqueTrace } from './technique-fx';
 import { frameImage } from './frame-kit';
 import { withPointsOnly } from './rig/figure';
+import { rigStats } from './rig/stats';
 import {
   sizeOf,
   type Creature,
@@ -235,6 +236,7 @@ export function compose(
   side = 0,
   variant: Variant = 'normal',
 ) {
+  rigStats.compose++;
   const requested = anim,
     clock = t,
     outer = c.animations[anim];
@@ -403,6 +405,7 @@ export function compose(
             : at;
         let fr = historical.get(when);
         if (!fr) {
+          rigStats.history++;
           fr = projected(when, source, true);
           historical.set(when, fr);
         }

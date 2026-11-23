@@ -1,6 +1,7 @@
 // Shared projection for the articulated bodies and the action sockets carried by them.
 import { Px } from './px';
 import { proj, renderRig, Rig, type RigOut, type V3 } from './f15-rig';
+import { rigMode, rigStats } from './stats';
 import { hx, sstep, TAU } from '../kit/f11-mobkit';
 import type { Animation, BodyFrame, XY } from '../types';
 
@@ -114,11 +115,11 @@ let pointsOnly = false;
  * post-raster offsets stay exact; the picture is left empty. */
 export function withPointsOnly<T>(build: () => T): T {
   const previous = pointsOnly;
-  pointsOnly = true;
+  pointsOnly = rigMode.pointsOnly = true;
   try {
     return build();
   } finally {
-    pointsOnly = previous;
+    pointsOnly = rigMode.pointsOnly = previous;
   }
 }
 /** True inside withPointsOnly: a skin may skip its own extra rasters (front layers) but must keep points exact. */
@@ -150,6 +151,7 @@ export function projectFigure(
   const canvas = activeSetup?.(rig, sockets, size, anchor);
   if (canvas) ({ size, anchor } = canvas);
   const paint = { outline: ink ? hx(ink) : undefined, inner };
+  if (pointsOnly) rigStats.skipped++;
   let image: RigOut = pointsOnly ? { p: new Px(size, size), lit: null, eye: null } : renderRig(rig, size, size, ...anchor, paint);
   if (!pointsOnly && touchesEdge(image.p)) {
     const pad = expandForAction ? size : Math.ceil(size / 2),
