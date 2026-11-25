@@ -2354,12 +2354,12 @@
       {
         "id": "hatch",
         "name": "Выныривает из заводи",
-        "frames": 48
+        "frames": 72
       },
       {
         "id": "fidget_a",
         "name": "Умывает щёки",
-        "frames": 48
+        "frames": 72
       },
       {
         "id": "fidget_b",
@@ -2374,7 +2374,7 @@
       {
         "id": "trick_b",
         "name": "С горки на брюхе",
-        "frames": 108
+        "frames": 132
       },
       {
         "id": "sleep_in",
@@ -2434,7 +2434,7 @@
       {
         "id": "showreel",
         "name": "Все анимации",
-        "frames": 1122
+        "frames": 1194
       }
     ]
   },

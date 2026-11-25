@@ -1,3 +1,4 @@
+import { paintWater } from './water.mjs';
 import { paintSceneryRays } from './scenery.mjs';
 import { createPetBehavior } from './behavior.mjs';
 
@@ -426,6 +427,8 @@ class Painting {
       for (const [depth, sprite, px, py] of scene.props)
         if (depth > feetY === front) scene.stamp(ctx, sprite, px + dx, py + dy);
     };
+    const river = data.water, touches = river?.clips[state.anim]?.[frame];
+    if (touches) paintWater(ctx, river.rows, touches, false, pad + dx + fieldX, pad + dy + fieldY, x - fieldX, y - fieldY);
     props(false);
     const backdrop = row[10];
     if (backdrop) actor.stamp(ctx, backdrop[0], backdrop[1] + fieldX, backdrop[2] + fieldY);
@@ -433,6 +436,7 @@ class Painting {
       pad + dx + fieldX, pad + dy + fieldY, x - fieldX, y - fieldY);
     for (const sprite of row.slice(5, 9))
       if (sprite) actor.stamp(ctx, sprite[0], sprite[1] + x, sprite[2] + y);
+    if (touches) paintWater(ctx, river.rows, touches, true, pad + dx + fieldX, pad + dy + fieldY, x - fieldX, y - fieldY);
     props(true);
     ctx.restore();
     border.paint(ctx, phase, cw, ch);
