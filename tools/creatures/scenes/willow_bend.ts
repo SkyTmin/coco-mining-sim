@@ -4,17 +4,16 @@ import { hash, hx, mixc, TAU } from '../kit/f11-mobkit';
 import type { Px } from '../rig/px';
 import type { Scene } from '../types';
 import { face } from './relief';
+import { bank, cliffBase, isRiver, riverRows, shoal, slideSurface } from './willow-terrain';
 
 const sky = hx('#dae3cd'), mist = hx('#b5cdc0'), far = hx('#94b8ad'), woods = hx('#739d91');
-const water = hx('#507f83'), shallows = hx('#85a79c'), glint = hx('#c3d4af');
+const water = hx('#38758a'), shallows = hx('#76acb4'), glint = hx('#c3ded2');
 const clay = hx('#9e886b'), sand = hx('#cab392'), earth = hx('#726857'), grass = hx('#748465');
 const bark = hx('#544e40'), barkLight = hx('#82735a');
 const leaves = [hx('#4c7564'), hx('#60846c'), hx('#769275'), hx('#91a785')];
 const rush = [hx('#485f55'), hx('#65826b'), hx('#9ba27c')];
 const rock = [hx('#4c6767'), hx('#708984'), hx('#9ea99b'), hx('#c1c5ac')];
 const hill = (x: number) => 34 + 3 * Math.sin(x * 0.048) + 2 * Math.sin(x * 0.11);
-const bank = (x: number) => 57 + 12 * Math.sin(x * 0.031 + 1.8) + 8 * Math.sin(x * 0.066 + 0.8);
-const shoal = (y: number) => 23 + (y - 58) * 0.82 + Math.sin(y * 0.084) * 12 + 19 * Math.exp(-((y - 99) ** 2) / 250);
 
 function stone(p: Px, x: number, y: number, radius: number, seed: number) {
   const r = radius, h = Math.max(1.3, r * 0.56);
@@ -36,6 +35,47 @@ function reeds(p: Px, x: number, y: number, n: number, seed: number, high: numbe
       p.set(tip, y - h - 2, barkLight);
     }
   }
+}
+
+function slideBank(p: Px) {
+  const faceDark = hx('#716451'), cut = hx('#987b5d'), ochre = hx('#bc9770'), sun = hx('#dbc094');
+  for (let x = 0; x < 96; x++) {
+    const top = slideSurface(x), toe = cliffBase(x), depth = toe - top;
+    const jag = Math.round(1.2 * Math.sin(x * 0.46) + 0.8 * Math.sin(x * 1.11));
+    p.line(x, toe, x + 1, toe + 1, mixc(earth, water, 0.38));
+    for (let y = Math.round(top - 5); y <= toe; y++) {
+      const d = (y - top) / depth;
+      if (y < top + 3 + jag) {
+        const worn = Math.max(0, 1 - Math.abs(y - top) / 5);
+        p.set(x, y, mixc(mixc(grass, ochre, 0.53), sun, worn * 0.77 + 0.07 * Math.sin(x * 0.27)));
+      } else {
+        const stratum = 0.22 * Math.sin((y - top * 0.51) * 0.75 + Math.sin(x * 0.22)) + 0.12 * Math.cos(x * 0.61);
+        p.set(x, y, mixc(faceDark, cut, 0.35 + (1 - d) * 0.46 + stratum));
+      }
+    }
+    if (x < 91) p.set(x, top + 3 + jag, mixc(ochre, sun, 0.45));
+    if (x < 57 && x % 4 !== 0) {
+      const tip = 1 + Math.floor(hash(x, 38) * 4);
+      p.line(x, top - 5, x - 1, top - 5 - tip, leaves[x % 3]);
+    }
+    if (x % 11 < 4 && x > 15) p.set(x, top + Math.sin(x / 8), ochre);
+  }
+  // Erosion cuts across the bedding; the roots hang down from the turf at the crest.
+  for (const [x, depth] of [[9, 21], [18, 10], [30, 17], [46, 10], [58, 8]]) {
+    const y = Math.round(slideSurface(x) + 3);
+    p.line(x, y, x - 2, y + 4, faceDark);
+    p.line(x - 2, y + 4, x + 1, y + depth, faceDark);
+    p.line(x - 2, y + 4, x - 4, y + 7, barkLight);
+    p.line(x + 1, y, x - 1, y + 3, sand);
+  }
+  for (let i = 0; i < 49; i++) {
+    const x = 3 + hash(i, 110) * 88, y = slideSurface(x);
+    const depth = cliffBase(x) - y;
+    const h = 4 + hash(i, 114) * (depth - 5);
+    p.line(x, y + h, x + (i % 3), y + h, i % 3 ? ochre : faceDark);
+  }
+  for (const [x, y, r] of [[12, 53, 3], [22, 48, 2.6], [43, 49, 1.7], [65, 79, 1.8], [92, 103, 2.5]])
+    stone(p, x, y, r, 97);
 }
 
 const paint: Scene = (p, t) => {
@@ -75,7 +115,37 @@ const paint: Scene = (p, t) => {
     for (let y = 44; y < 44 + (foot - deck) * 0.52; y++)
       if ((y + x) % 5 > 1) p.set(x, y, mixc(woods, water, 0.47));
   }
-  for (let i = 0; i < 190; i++) {
+  // Sunlit ripples cross long, broken blue reflections. The smaller waves run with the current.
+  for (let i = 0; i < 64; i++) {
+    const y = Math.floor(44 + hash(i, 171) * 84), x = Math.floor(hash(i, 169) * 168) - 7;
+    const angle = t * TAU / 3 + i * 1.73, start = x + Math.round(3 * Math.sin(angle));
+    const width = Math.round(3 + 9 * hash(i, 177) + 3 * Math.cos(angle));
+    for (let j = 0; j < width; j++) {
+      const yy = y + Number(j > width * 0.67 && i % 3 === 0);
+      if (isRiver(start + j, yy) && (j !== width - 3 || i % 3 !== 0))
+        p.set(start + j, yy, mixc(water, i % 3 ? glint : woods, i % 3 ? 0.25 + 0.2 * Math.sin(angle) : 0.4));
+    }
+  }
+  for (let i = 0; i < 13; i++) {
+    const y = 46 + i * 6, phase = t * TAU / 3 + i * 0.89;
+    const x = Math.round(111 + 26 * Math.sin(i * 2.2) + 3 * Math.sin(phase));
+    const w = 12 + i % 7;
+    for (let j = 0; j < w; j++) {
+      const yy = y + Number(j > w * 0.5);
+      if (isRiver(x + j, yy) && (j < w * 0.43 || j > w * 0.54)) {
+        p.set(x + j, yy, mixc(water, woods, 0.22));
+        if (j > w * 0.23 && j < w * 0.82) p.set(x + j - 1, yy + 1, mixc(shallows, glint, 0.36));
+      }
+    }
+  }
+  for (let y = 71; y < p.h; y++) {
+    const x = Math.ceil(shoal(y));
+    if (isRiver(x, y)) {
+      p.set(x, y, mixc(clay, water, 0.45));
+      if (Math.sin(y * 0.64 + t * TAU / 3) > -0.2) p.line(x + 1, y, x + 3, y, mixc(shallows, glint, 0.68));
+    }
+  }
+  for (let i = 0; i < 155; i++) {
     const y = 45 + Math.floor(hash(i, 81) * 82);
     const x = Math.floor(hash(i, 87) * 160);
     if (y > bank(x) && x < shoal(y)) {
@@ -107,6 +177,7 @@ const paint: Scene = (p, t) => {
     p.line(x, y, x + width, y - 1, mixc(clay, sand, 0.4));
     if (i % 5 === 0) stone(p, x, y, width * 0.7, i + 1);
   }
+  slideBank(p);
   // A pollarded willow leans over the water, with hanging leaves in separate strands.
   face(p, [[0, 65], [0, 22], [5, 19], [10, 43], [9, 57], [14, 62], [7, 62]], bark);
   p.line(4, 53, 2, 25, barkLight);
@@ -124,6 +195,7 @@ const paint: Scene = (p, t) => {
   reeds(p, 9, 67, 12, 31, 17, wind);
   reeds(p, 152, 50, 10, 75, 10, wind * 0.5);
 };
+paint.waterRows = riverRows;
 paint.front = [
   { id: 'near-rushes', depth: 125, paint(p) { stone(p, 8, 127, 12, 7); reeds(p, 5, 128, 18, 14, 30); } },
   { id: 'river-edge', depth: 123, paint(p) { stone(p, 155, 127, 7, 2); reeds(p, 156, 128, 14, 55, 20); } },

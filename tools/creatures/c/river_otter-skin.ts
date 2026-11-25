@@ -6,6 +6,8 @@ import { strideFoot } from '../motion';
 import { CE, F3, Rig, vadd, vdot, vlerp, vsub, type Mat, type Tones, type V3 } from '../rig/f15-rig';
 import { projectFigure, scaleFigure } from '../rig/figure';
 import { Px } from '../rig/px';
+import { slideSurface } from '../scenes/willow-terrain';
+import { waterStyle } from '../viewer/water.mjs';
 import type { JointPose } from '../technique';
 import type { Creature, Variant } from '../types';
 import { finishSurfaces } from './surface-work';
@@ -35,28 +37,41 @@ type Palette = ReturnType<typeof palette>;
 function skeleton(p: JointPose, course: number, step: number, gait: number, breathe: number, stride: number) {
   const low = Math.max(p.low ?? 0, gait * 0.94), curl = p.curl ?? 0, slide = p.glide ?? 0;
   const floor = F3.yaw(course + (p.turn ?? 0));
-  const hip = floor.at(-2.5 - low * 4.4, 0, 8.4 - slide * 2.3 - curl * 1.2 + (p.jump ?? 0) - (p.dive ?? 0) * 28
+  const hip = floor.at(-2.5 - low * 4.4 + (p.lean ?? 0) * 0.42, 0, 8.4 - slide * 2.3 - curl * 1.2 - (p.periscope ?? 0) * 8.4 + (p.jump ?? 0) - (p.dive ?? 0) * 28
     + breathe * 0.22 + gait * (0.45 - Math.cos(TAU * step * 2) * 0.45));
-  const body = hip.pitch(-1.32 + low * 1.17 + slide * 0.07).roll((p.tilt ?? 0) * 0.55);
+  const body = hip.pitch(-1.32 + low * 1.17 + slide * 0.07 - (p.periscope ?? 0) * 0.56).roll((p.tilt ?? 0) * 0.55);
   const neck = body.p(20.5 - curl * 4, curl * 1.8, 0.45);
   const H = new F3(neck, floor.f, floor.s, floor.u).turn(0.28 * (1 - low) + (p.headTurn ?? 0))
     .pitch(-0.09 + (p.nod ?? 0) + low * 0.04).roll(p.tilt ?? 0);
   const nose = H.p(8.5, 0, -0.25), perch = H.p(8.4, 0, 1.5);
   const shoulders = [-1, 1].map(s => body.p(13.1, s * 5.0, -0.8));
+  const stow = body.p(9.4, 4.95, -4.8);
+  const parked = F3.yaw(course).p(-6.5, 15, 1.46);
+  const palmOffset = H.v(0.9, 0, 0.7);
   const paws = [-1, 1].map(s => {
     const closed = body.p(10.2, s * 2.65, -7.65);
     const cheek = H.p(5.3, s * (2.85 + 1.9 * (p.pawsWide ?? 0)), -3.3);
-    let pos = vlerp(closed, cheek, clamp(p.pawUp ?? 0));
+    let pos = vlerp(closed, cheek, clamp((p.pawUp ?? 0) - Math.max(0, s * (p.stroke ?? 0)) * 0.52));
     pos = vadd(pos, floor.v(3.4 * (p.present ?? 0), -4.3 * (p.present ?? 0) + s * 2.1 * (p.spread ?? 0), 0));
     const pocket = p.pocket ?? 0;
     pos = vlerp(pos, body.p(9, s * 4.75, -4.9), pocket * (1 - clamp(p.pawUp ?? 0)));
     const reach = strideFoot(step, s < 0 ? 0 : 0.5, stride);
     const runPaw = floor.p(11 + reach.forward, s * 4.15, 1.65 + 3.9 * reach.lift + (p.jump ?? 0));
     pos = vlerp(pos, runPaw, gait);
-    return vlerp(pos, body.p(16.9, s * 3.6, -4.2), slide);
+    pos = vlerp(pos, body.p(16.9, s * 3.6, -4.2), slide);
+    if (p.paddle) {
+      const beat = Math.sin(step * TAU * 1.35 + (s < 0 ? 0 : Math.PI));
+      pos = vlerp(pos, floor.p(11 + 4.4 * beat, s * (5.3 + 1.5 * beat), -1.6 + (p.haul ?? 0) * 3), p.paddle);
+    }
+    const cupped = floor.v(0, s * 1.7, 0);
+    if (p.put) {
+      const rest = body.p(11, -4.9, -7.1);
+      pos = vlerp(pos, s > 0 ? vsub(stow, palmOffset) : rest, p.put);
+    }
+    if (p.fetch) pos = vlerp(pos, vadd(vsub(parked, palmOffset), cupped), p.fetch * clamp((low - 0.43) / 0.4));
+    return pos;
   });
   const grip = vadd(vlerp(paws[0], paws[1], 0.5), H.v(0.9, 0, 0.7));
-  const stow = body.p(9.4, 4.95, -4.8);
   const stone = vlerp(grip, stow, p.pocket ?? 0);
   const feet = [-1, 1].map(s => {
     const foot = strideFoot(step, s < 0 ? 0.5 : 0, stride);
@@ -81,7 +96,7 @@ function skeleton(p: JointPose, course: number, step: number, gait: number, brea
       0.7 + 12.7 * u ** 1.45, -1.9 - (hip.o[2] - 2.22) * u);
     tail.push(vlerp(vlerp(straight, brakeTip, brake), curved, curl));
   }
-  return { floor, hip, body, H, low, nose, perch, shoulders, paws, feet, tail, grip, stone, stow };
+  return { floor, hip, body, H, low, nose, perch, shoulders, paws, feet, tail, grip, stone, stow, parked };
 }
 type Bones = ReturnType<typeof skeleton>;
 
@@ -203,6 +218,27 @@ function drawLimbs(r: Rig, g: Bones, m: Palette) {
 }
 
 function stonePosition(g: Bones, anim: string, t: number, course: number, scale: number, stride: number, pose: JointPose) {
+  if (anim === 'fidget_a') {
+    const f = t * 24, k = beats.fidget_a;
+    if (f <= k.stow) return vlerp(g.grip, vadd(g.paws[1], g.H.v(0.9, 0, 0.7)), pose.put ?? 0);
+    if (f >= k.catch) return g.grip;
+    if (f <= k.slip) return g.stow;
+    const bank = F3.yaw(course), impact = vadd(g.parked, bank.v(1, -3.7, 0));
+    if (f <= k.land) {
+      const u = (f - k.slip) / (k.land - k.slip);
+      const released = skeleton(poseAt(anim, k.slip / 24), course, 0, 0, 0, stride).stow;
+      const stone = vlerp(released, impact, u);
+      stone[2] = mix(released[2], impact[2], u * u);
+      return stone;
+    }
+    const u = clamp((f - k.land) / (k.rest - k.land));
+    const stone = vlerp(impact, g.parked, 1 - (1 - u) ** 2);
+    if (f < k.bounce) {
+      const hop = (f - k.land) / (k.bounce - k.land);
+      stone[2] += 2.4 * 4 * hop * (1 - hop);
+    }
+    return stone;
+  }
   if (anim !== 'trick') return g.stone;
   const f = t * 24, { throw: start, noseCatch, noseThrow, pawCatch } = beats.trick;
   if (f >= noseCatch && f <= noseThrow) return g.perch;
@@ -244,7 +280,26 @@ export function otterFrame(card: CreatureCard): Creature['frame'] {
     const pebble = stonePosition(g, anim, t, course, scale, stride, p);
     const sockets: Record<string, V3> = { head: g.H.o, nose: g.nose, perch: g.perch, stone: pebble, grip: g.grip,
       pawL: g.paws[0], pawR: g.paws[1], footL: g.feet[0], footR: g.feet[1], tailTip: g.tail.at(-1)!,
-      tailBase: g.tail[0], surfaceHead: [g.H.o[0], g.H.o[1], 0], chest: g.body.p(14, 0, -4), belly: g.body.p(6.4, 0, -5.7), root: g.hip.o };
+      stow: g.stow, parked: g.parked, tailBase: g.tail[0], surfaceHead: [g.H.o[0], g.H.o[1], 0], chest: g.body.p(14, 0, -4), belly: g.body.p(6.4, 0, -5.7), root: g.hip.o };
+    const waterFeet = [
+      ...g.feet.map(pos => vadd(pos, g.floor.v(2.0, 0, -0.8))),
+      ...g.paws.map(pos => vadd(pos, g.floor.v(1.1, 0, -0.8))),
+      g.tail.at(-1)!, sockets.belly, sockets.nose,
+    ];
+    for (const [i, [x, y]] of waterFeet.entries()) sockets['water' + i] = [x, y, 0];
+    if (walking) {
+      for (let i = 0; i < 4; i++) {
+        const phase = (step + (i === 0 || i === 3 ? 0.5 : 0)) % 1;
+        // The touchdown stays fixed in the river as the carrier advances through its stride.
+        sockets['step' + i] = g.floor.p((i < 2 ? -0.94 * 6 : 12.1) + stride * (0.25 - phase), (i % 2 ? 1 : -1) * (i < 2 ? 4 : 4.15), 0);
+      }
+    }
+    // Inverted fur, bib and tail break into horizontal bands under the moving surface.
+    const reflection = [
+      [g.tail[7], 6], [g.tail[3], 9], [g.hip.o, 11],
+      [g.body.p(8, 0, 0), 16], [g.body.p(15, 0, 0), 13], [g.H.o, 12], [g.nose, 7],
+    ] as const;
+    for (const [i, [[x, y, z]]] of reflection.entries()) sockets['mirror' + i] = [x, y, -z * 0.52];
     const r = new Rig();
     if (!steer?.pointsOnly) {
       drawBody(r, g, m);
@@ -254,7 +309,11 @@ export function otterFrame(card: CreatureCard): Creature['frame'] {
       r.tag = 'pebble';
       const flight = anim === 'trick' ? (Math.max(0, Math.min(1, (t * 24 - beats.trick.throw) / (beats.trick.noseCatch - beats.trick.throw)))
         + Math.max(0, Math.min(1, (t * 24 - beats.trick.noseThrow) / (beats.trick.pawCatch - beats.trick.noseThrow)))) * TAU : 0;
-      const stone = new F3(pebble, g.H.f, g.H.s, g.H.u).roll((p.rollStone ?? 0) + flight);
+      const n = t * 24, bath = beats.fidget_a;
+      const free = anim === 'fidget_a' && n >= bath.slip && n <= bath.lift;
+      const basis = free ? F3.yaw(course) : g.H;
+      const roll = free ? Math.PI * 2 * clamp((n - bath.slip) / (bath.rest - bath.slip)) : 0;
+      const stone = new F3(pebble, basis.f, basis.s, basis.u).roll((p.rollStone ?? 0) + flight + roll);
       r.ell(stone, [0, 0, 0], [2.1, 2.85, 1.45], { ...m.stone, pat: ([x, y, z]) =>
         Math.abs(y + x * 0.52 + Math.sin(z * 3) * 0.16) < 0.17 ? m.cream.T[3] : z < -0.18 ? m.stone.T[1] : null });
     }
@@ -263,10 +322,56 @@ export function otterFrame(card: CreatureCard): Creature['frame'] {
     const frame = projectFigure(r, 96, [48, 77], sockets, ink, 3.6, true);
     frame.dx = Math.round(p.x ?? 0); frame.dy = Math.round(p.y ?? 0);
     frame.sx = frame.sy = 1 + (p.zoom ?? 0);
-    frame.groundShadow = { radius: 14 + 5 * g.low, opacity: Math.max(0.12, 0.75 - (p.jump ?? 0) * 0.07 - (p.dive ?? 0) * 0.65) };
+    frame.rot = p.incline ?? 0;
+    const zoom = frame.sx;
+    if (p.guide) {
+      const [nx, ny] = frame.points.nose;
+      frame.dx = Math.round(mix(frame.dx, p.shoreX - 80 - zoom * (nx - frame.anchor[0]), p.guide));
+      frame.dy = Math.round(mix(frame.dy, p.shoreY - 102.4 - zoom * (ny - frame.anchor[1]), p.guide));
+    }
+    if (p.onBank) {
+      const [bx, by] = frame.points.belly;
+      const localY = zoom * ((bx - frame.anchor[0]) * Math.sin(frame.rot) + (by - frame.anchor[1]) * Math.cos(frame.rot));
+      const track = slideSurface(80 + frame.dx) - 102.4 - (p.bellyTrack ?? 0) * localY;
+      frame.dy = Math.round(mix(frame.dy, track, p.onBank));
+    }
+    frame.groundShadow = { radius: 14 + 5 * g.low, offsetY: frame.dy + Math.round((p.onBank ?? 0) * 2),
+      opacity: Math.max(0, 0.75 - (p.jump ?? 0) * 0.07 - (p.dive ?? 0) * 2.7) };
+    frame.waterContacts = [];
+    const faceCovers = (socket: string) => {
+      const [x, y] = frame.points[socket], [hx, hy] = frame.points.head;
+      return ((x - hx) / (scale * 10.5)) ** 2 + ((y - 3 - hy) / (scale * 8)) ** 2 < 1;
+    };
+    if (!p.onBank) {
+      for (const [i, [pos, radius]] of reflection.entries()) {
+        if (pos[2] >= 0) frame.waterContacts.push({ socket: 'mirror' + i, kind: i === 6 ? waterStyle.muzzleReflection : waterStyle.coatReflection,
+          phase: (t + 0.08 * i) % 1, size: Math.round(radius * zoom) });
+      }
+      for (const [i, pos] of waterFeet.entries()) {
+        const depth = pos[2] - (i < 4 ? 0 : i === 5 ? 1.6 : 0.8);
+        if (depth < -3.5 || depth > (i < 4 ? 3.7 : 2.6) || (i === 6 && anim === 'hatch')) continue;
+        const phase = (step + (i === 0 || i === 3 ? 0.5 : 0) + (i >= 4 ? 0.25 : 0)) % 1;
+        // The far feet and a swimmer's submerged stroke displace water behind the visible muzzle.
+        const socket = 'water' + i;
+        const behind = !!p.paddle || !!p.dive || !!p.glide || faceCovers(socket) ||
+          (i < 4 && (i % 2 ? 1 : -1) * g.floor.s[1] < -0.05);
+        const kind = behind ? waterStyle.submerged : i < 4 ? waterStyle.paw : waterStyle.body;
+        frame.waterContacts.push({ socket, kind, phase, size: i < 4 ? 6 : i === 5 ? 11 : 5 });
+      }
+      if (walking) for (let i = 0; i < 4; i++) {
+        const phase = (step + (i === 0 || i === 3 ? 0.5 : 0)) % 1;
+        const socket = 'step' + i;
+        frame.waterContacts.push({ socket, kind: faceCovers(socket) ? waterStyle.farFootfall : waterStyle.footfall, phase, size: 17 });
+      }
+    }
     if (anim === 'trick_b' && t * 24 >= beats.trick_b.skim && t * 24 <= beats.trick_b.recover) {
-      // The same raster crosses the wooden rail, including the carried stone and the tail.
-      frame.over = frame.px; frame.px = new Px(frame.px.w, frame.px.h);
+      // Only the fur actually crossing the bottom rail comes in front of the wake and reeds.
+      const first = Math.max(0, Math.ceil(frame.anchor[1] + (127 - 102.4 - frame.dy) / zoom));
+      if (first < frame.px.h) {
+        frame.over = new Px(frame.px.w, frame.px.h);
+        const offset = first * frame.px.w * 4;
+        frame.over.data.set(frame.px.data.subarray(offset), offset);
+      }
     }
     return frame;
   };

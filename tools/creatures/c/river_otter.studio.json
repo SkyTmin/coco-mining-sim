@@ -5,14 +5,14 @@
   "keyframes": {
     "idle": [{"frame": 0, "points": {"head": [84, 55, 3], "grip": [92, 80, 3]}}, {"frame": 18, "points": {"nose": [90, 64, 4], "tailTip": [30, 70, 4]}}],
     "look": [{"frame": 9, "points": {"nose": [99, 58, 4]}}, {"frame": 21, "points": {"head": [83, 55, 4], "nose": [83, 65, 4]}}],
-    "fidget_a": [{"frame": 12, "points": {"pawL": [95, 66, 3], "pawR": [81, 71, 3]}}, {"frame": 27, "points": {"pawR": [82, 80, 3], "nose": [92, 66, 4]}}],
+    "fidget_a": [{"frame": 7, "points": {"stow": [79, 82, 3], "stone": [79, 82, 3], "pawR": [79, 83, 3]}}, {"frame": 26, "points": {"stone": [54, 105, 3]}}, {"frame": 37, "points": {"stone": [46, 107, 3], "pawR": [81, 69, 3]}}, {"frame": 56, "points": {"stone": [46, 107, 3], "grip": [46, 107, 3]}}],
     "fidget_b": [{"frame": 12, "points": {"stone": [91, 74, 3]}}, {"frame": 21, "points": {"grip": [90, 72, 3], "nose": [91, 68, 3]}}],
     "happy": [{"frame": 9, "points": {"root": [76, 70, 4], "grip": [89, 54, 4]}}, {"frame": 18, "points": {"footR": [67, 97, 4]}}],
     "trick": [{"frame": 28, "points": {"grip": [67, 59, 3], "stone": [67, 59, 3]}}, {"frame": 38, "points": {"head": [102, 84, 4], "stone": [94, 37, 3]}}, {"frame": 50, "points": {"perch": [114, 52, 3], "stone": [114, 52, 3]}}, {"frame": 80, "points": {"stone": [103, 83, 3], "pawR": [98, 86, 3]}}],
-    "trick_b": [{"frame": 24, "points": {"root": [45, 71, 4], "nose": [47, 90, 4]}}, {"frame": 40, "points": {"root": [69, 74, 4], "nose": [115, 87, 4]}}, {"frame": 58, "points": {"nose": [121, 128, 3], "tailTip": [86, 108, 4]}}, {"frame": 80, "points": {"root": [95, 97, 4]}}],
+    "trick_b": [{"frame": 34, "points": {"footR": [45, 46, 3], "root": [42, 42, 3]}}, {"frame": 53, "points": {"belly": [38, 48, 3], "tailTip": [8, 34, 3]}}, {"frame": 65, "points": {"belly": [69, 74, 3], "nose": [100, 88, 3]}}, {"frame": 70, "points": {"belly": [92, 97, 3]}}, {"frame": 84, "points": {"nose": [121, 128, 3], "tailTip": [86, 108, 3]}}],
     "sleep_in": [{"frame": 12, "points": {"nose": [106, 90, 4], "tailTip": [45, 83, 4]}}, {"frame": 29, "points": {"head": [91, 94, 3]}}],
     "sleep_out": [{"frame": 6, "points": {"head": [91, 94, 3], "nose": [94, 108, 3]}}, {"frame": 18, "points": {"pawR": [82, 94, 3]}}],
     "wake_startled": [{"frame": 6, "points": {"root": [75, 72, 4], "head": [87, 47, 4]}}, {"frame": 21, "points": {"root": [76, 85, 3]}}],
-    "hatch": [{"frame": 0, "points": {"surfaceHead": [104, 112, 4]}}, {"frame": 10, "points": {"head": [103, 97, 4], "nose": [112, 96, 4]}}, {"frame": 26, "points": {"head": [83, 55, 4]}}]
+    "hatch": [{"frame": 0, "points": {"surfaceHead": [124, 73, 3]}}, {"frame": 8, "points": {"nose": [126, 73, 3], "surfaceHead": [124, 73, 3]}}, {"frame": 19, "points": {"nose": [128, 75, 3], "head": [124, 68, 3]}}, {"frame": 32, "points": {"nose": [114, 92, 3], "root": [139, 92, 3]}}, {"frame": 45, "points": {"nose": [79, 106, 3], "pawR": [96, 111, 3]}}, {"frame": 59, "points": {"head": [83, 54, 3]}}]
   }
 }

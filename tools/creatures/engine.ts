@@ -1,6 +1,7 @@
 import { createCanvas, type Canvas } from '@napi-rs/canvas';
 import { Px } from './rig/px';
 import { placement } from './motion';
+import { paintWater } from './viewer/water.mjs';
 import { paintSceneryRays } from './viewer/scenery.mjs';
 import { Pen } from './fx/pen';
 import { emptyTechniqueTrace } from './technique-fx';
@@ -17,6 +18,7 @@ import {
   type BodyFrame,
   type Variant,
   type XY,
+  type WaterContact,
 } from './types';
 
 const fps = 24;
@@ -329,9 +331,26 @@ export function compose(
   // Edge-clamp the backdrop during shake so the field never reveals a transparent seam.
   blit(layers.bg, bg, b, b);
   if (dx || dy) blit(layers.bg, bg, b + dx, b + dy, clip);
+  const points = Object.fromEntries(
+    Object.entries(body.points).map(([k, p]) => [
+      k,
+      screenPoint(body, p, feet),
+    ]),
+  );
+  const waterContacts: WaterContact[] = (body.waterContacts ?? []).map(({ socket, kind, phase, size }) => {
+    const [x, y] = points[socket];
+    return [Math.round(x), Math.round(y), kind, Math.floor(phase * 24) % 24, size];
+  });
+  if (scene.waterRows && waterContacts.length) {
+    for (const front of [false, true]) {
+      const canvas = fieldCanvas(w, h, 'water');
+      paintWater(canvas.getContext('2d'), scene.waterRows, waterContacts, front);
+      blit(front ? layers.bgf : layers.bgfBack, asPx(canvas), b + dx, b + dy, clip);
+    }
+  }
   splitForeground(foregroundObjects(scene, w, h), layers, feet[1], b, dx, dy);
   const origin = screenPoint(body, body.anchor, feet);
-  const floorXY: XY = [origin[0] + b + dx, feet[1] + b + dy];
+  const floorXY: XY = [origin[0] + b + dx, feet[1] + b + dy + (body.groundShadow?.offsetY ?? 0)];
   const scaleX = Math.abs(body.sx ?? 1),
     scaleY = Math.abs(body.sy ?? 1);
   const visible =
@@ -371,12 +390,6 @@ export function compose(
         );
     }
   }
-  const points = Object.fromEntries(
-    Object.entries(body.points).map(([k, p]) => [
-      k,
-      screenPoint(body, p, feet),
-    ]),
-  );
   let backdrop: Px | undefined;
   const sceneryRays: SceneryRay[] = [];
   const techniqueTrace = emptyTechniqueTrace();
@@ -481,6 +494,7 @@ export function compose(
     picture: stack(layers),
     backdrop,
     sceneryRays,
+    waterContacts,
     body,
     feet: fullFeet,
     worldFeet: feet,

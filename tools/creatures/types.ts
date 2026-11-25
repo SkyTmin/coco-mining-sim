@@ -26,6 +26,8 @@ export interface Animation {
   stop?: number; // seconds to hold the contact pose
   loop?: boolean;
 }
+/** Field x/y, contact or reflection style from viewer/water.mjs, age in ticks, radius. */
+export type WaterContact = [number, number, number, number, number];
 export interface BodyFrame {
   px: Px;
   lit?: Px | null;
@@ -36,7 +38,8 @@ export interface BodyFrame {
   /** Projected figure's actual rig and world-space anatomical sockets for studio diagnostics. */
   rig?: Rig;
   joints?: Record<string, V3>;
-  groundShadow?: { radius: number; opacity: number; reflectionOpacity?: number };
+  waterContacts?: { socket: string; kind: number; phase: number; size: number }[];
+  groundShadow?: { radius: number; opacity: number; offsetY?: number; reflectionOpacity?: number };
   planted?: string[]; // sockets on the floor throughout the current stance
   // Post-raster effects, anchored about the feet. Translation is in picture pixels.
   dx?: number;
@@ -116,7 +119,7 @@ export interface ForegroundProp {
   depth: number;
   paint: (p: Px) => void;
 }
-export type Scene = ((p: Px, t: number) => void) & { front?: ForegroundProp[] }; // opaque field bitmap; 3 s loop
+export type Scene = ((p: Px, t: number) => void) & { front?: ForegroundProp[]; waterRows?: number[][] }; // opaque field bitmap; 3 s loop
 export interface Border {
   wood: [string, string, string, string]; // profile, dark to light; hex strings
   accent: string;

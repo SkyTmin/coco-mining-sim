@@ -55,6 +55,8 @@ def fixture(root):
                 if layer == 'fxo' and name == 'trick':
                     points = [((14, 16), GOLD)]
                 png(clip / layer / file, points)
+            if name == 'idle':
+                sample['waterContacts'] = [[14, 16, 0, 0, 4]]
             if name == 'trick':
                 png(clip / 'backdrop' / file, [((8, 9), VIOLET)])
                 sample['sceneryRays'] = [[12, 14, 28, 4, BLUE, 1]]
@@ -62,7 +64,7 @@ def fixture(root):
                 png(clip / 'over' / file, [((0, 13), GOLD)])
             track.append(sample)
         atlas['save'](clip / 'motion.json', track)
-    meta = dict(animations={name: dict(frames=n) for name, n in counts.items()},
+    meta = dict(waterRows=[[12, 32] for _ in range(24)], animations={name: dict(frames=n) for name, n in counts.items()},
                 fps=24, canvas=CANVAS, field=[32, 24], thickness=2)
     atlas['pack_actor'](source, dest, 'probe', meta, scene, 'mythic')
     atlas['repack'](dest)
@@ -95,7 +97,7 @@ class Quiet(SimpleHTTPRequestHandler):
 def run(root):
     fixture(root)
     viewer = TOOLS / 'viewer'
-    for name in ('behavior.mjs', 'material.mjs', 'scenery.mjs'):
+    for name in ('behavior.mjs', 'material.mjs', 'scenery.mjs', 'water.mjs'):
         shutil.copyfile(viewer / name, root / name)
     main = (viewer / 'viewer.mjs').read_text()
     (root / 'viewer.mjs').write_text(main[:main.index('start().catch(')] + DRIVER)
@@ -121,6 +123,10 @@ def run(root):
                     actual = image.getpixel((x, y))
                     assert actual == tuple(bytes.fromhex(color[1:])), (x, y, actual, color)
 
+                wet = sample('idle')
+                dry = sample('idle', at=[6 / 32, 6 / 24])
+                check(wet, 16, 16, '#6da8b3')  # same paw, submerged at its field position
+                check(dry, 10, 6, BLACK)  # the wake has moved onto sand and disappears
                 seated = sample('trick')
                 moved = sample('trick', at=[6 / 32, 6 / 24])
                 for image in (seated, moved):
@@ -145,4 +151,4 @@ def run(root):
 if __name__ == '__main__':
     with TemporaryDirectory() as temporary:
         run(Path(temporary))
-    print('Mobile packed pixels passed: anchored wall and rays, translated glint, both phase directions, sparse show overlap.')
+    print('Mobile packed pixels passed: shoreline contact, anchored wall and rays, translated glint, both phase directions, sparse show overlap.')

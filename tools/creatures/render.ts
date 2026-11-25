@@ -134,6 +134,7 @@ function writePainting(
     showcase?.add(r.picture, f);
     track.push({
       feet: r.worldFeet,
+      ...(r.waterContacts.length ? { waterContacts: r.waterContacts } : {}),
       ...(r.sceneryRays.length ? { sceneryRays: r.sceneryRays } : {}),
       camera: r.camera,
       backgroundFrame: r.backgroundFrame,
@@ -281,6 +282,7 @@ export async function render(
     id: c.id,
     rarity: c.rarity,
     theme: c.theme,
+    waterRows: s.waterRows,
     frame: hasCustomFrame(c.id) ? 'frame' : undefined,
     fps: 24,
     scale,

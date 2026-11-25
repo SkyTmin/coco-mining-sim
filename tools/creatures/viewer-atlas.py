@@ -111,6 +111,7 @@ def pack_actor(source, dest, ident, meta, scene, rarity, border=None):
     names = list(meta['animations'])
     clips = {}
     rays = {}
+    water = {}
     sprites = Atlas()
     for name in names:
         directory = source / 'frames' / name
@@ -137,6 +138,8 @@ def pack_actor(source, dest, ident, meta, scene, rarity, border=None):
             if backdrop.is_file():
                 with Image.open(backdrop) as image:
                     row.append(sprites.trim(image.convert('RGBA')))
+            if sample.get('waterContacts'):
+                water.setdefault(name, {})[n] = sample['waterContacts']
             if sample.get('sceneryRays'):
                 rays.setdefault(name, {})[n] = sample['sceneryRays']
             frames.append(row)
@@ -149,6 +152,7 @@ def pack_actor(source, dest, ident, meta, scene, rarity, border=None):
         'field': meta['field'], 'thickness': meta['thickness'], 'origin': origin, 'scene': scene,
         'actors': sprites.write(dest, 'sprites'), 'clips': clips,
         **({'sceneryRays': rays} if rays else {}),
+        **({'water': {'rows': meta['waterRows'], 'clips': water}} if water else {}),
         **({'border': border} if border else {}),
         'animations': {name: meta['animations'][name] for name in names}, 'behavior': has_behavior,
     })

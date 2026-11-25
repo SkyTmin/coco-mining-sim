@@ -47,13 +47,37 @@ export function otterEffects(f: FxInput) {
           Math.round(x + sign * (start + 2)), Math.round(y - 5 - age * 0.3));
       }
     }
+  } else if (f.anim === 'fidget_a') {
+    const k = beats.fidget_a;
+    if (n >= k.slip && n < k.lift) {
+      const [, y] = f.points.parked, [sx, sy] = f.points.stone;
+      const length = Math.max(1, 5 - Math.round(Math.abs(y - sy) * 0.14));
+      f.under.col('#695940', Math.max(0.18, 0.6 - Math.abs(y - sy) * 0.015));
+      f.under.rect(Math.round(sx) - length, Math.round(y) + 2, 2 * length + 1, 2);
+      const age = n - k.land;
+      if (age >= 0 && age < 5) {
+        const [xx, yy] = at(k.land, 'stone');
+        f.under.col('#e4c994', 1 - age / 5);
+        for (const side of [-1, 1])
+          f.under.rect(Math.round(xx + side * (5 + age)), Math.round(yy + 1 - Math.sin(age * Math.PI / 5) * 3), 2, 1);
+      }
+    }
   } else if (f.anim === 'trick_b') {
+    // Loose sand breaks away under the sliding belly before the bow meets the pool.
+    if (n >= 54 && n < 69) {
+      const [x, y] = f.points.belly;
+      for (let j = 0; j < 6; j++) {
+        const age = (n + j * 3) % 11;
+        f.under.col(j % 3 ? '#dbb783' : '#806748', (11 - age) / 12);
+        f.under.rect(Math.round(x - 6 - age * (0.7 + j * 0.17)), Math.round(y - 3 - age * 0.4 - 3 * Math.sin(age / 11 * Math.PI)), 2, 1);
+      }
+    }
     // The bow wave peels out either side of the moving chest. Old ripples use the floor contact at that instant.
-    if (n >= 42 && n < 67) {
+    if (n >= 70 && n < 94) {
       const [x, y] = f.points.belly;
       const [tx, ty] = f.points.tailBase;
       const dx = tx - x, dy = ty - y, len = Math.max(1, Math.hypot(dx, dy));
-      const alpha = Math.min(1, (n - 42) / 6, (67 - n) / 8);
+      const alpha = Math.min(1, (n - 70) / 5, (94 - n) / 8);
       for (const side of [-1, 1]) {
         const vx = -side * dy / len, vy = side * dx / len;
         for (let k = 0; k < 9; k++) {
@@ -64,7 +88,7 @@ export function otterEffects(f: FxInput) {
         }
       }
     }
-    for (const frame of [47, 51, 55]) splash(frame, 'belly', 13, 12, -0.7);
+    for (const frame of [71, 75, 79]) splash(frame, 'belly', 13, 12, -0.7);
     splash(beats.trick_b.brake, 'tailTip', 24, 20, -0.35);
     const brakeAge = n - beats.trick_b.brake;
     if (brakeAge >= 0 && brakeAge < 14) {
@@ -76,20 +100,22 @@ export function otterEffects(f: FxInput) {
           Math.round(contact[0] + s * (6 + brakeAge)), Math.round(contact[1] - 2 - brakeAge));
       }
     }
-    for (const [frame, foot] of [[73, 'footL'], [77, 'footR'], [82, 'footL'], [87, 'footR']] as const)
+    for (const [frame, foot] of [[99, 'footL'], [103, 'footR']] as const)
       splash(frame, foot, 11, 8, 0.55);
   } else if (f.anim === 'hatch') {
     const surface = f.points.surfaceHead;
     if (n < 18) ripple(f.under, surface, n + 3, 22, 18);
-    if (n < 10) {
+    if (n < 8) {
       for (let i = 0; i < 3; i++) {
-        const x = Math.round(surface[0] - 4 + i * 3.5);
+        const x = Math.round(surface[0] + [-11, 8, 13][i]);
         const y = Math.round(surface[1] + (i % 2) * 2 - (n % 6) * 0.5);
         f.above.col(water[0], (10 - n) / 10); f.above.rect(x, y, 3, 2);
         f.above.col(water[3], (10 - n) / 10); f.above.rect(x, y - 1, 2, 1);
       }
     }
-    splash(beats.hatch.surface, 'surfaceHead', 12, 9, 0);
+    splash(beats.hatch.surface, 'surfaceHead', 8, 6, 0);
+    for (const frame of [21, 27, 33, 39])
+      splash(frame, 'surfaceHead', 6, 9, 0.65);
     if (n >= beats.hatch.shake && n <= beats.hatch.shake + 15)
       spray(f.above, at(beats.hatch.shake, 'head'), n - beats.hatch.shake, 10, 13, 0, 29);
   }
