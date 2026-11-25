@@ -669,7 +669,9 @@ function synchronize(now) {
 async function start() {
   const catalog = await json('./catalog.json');
   archive(catalog);
-  selectFeatured(players.find((player) => player.entry.id === hero.dataset.id) ?? players[0], false);
+  const linkedId = new URL(document.baseURI).searchParams.get('pet');
+  const linked = linkedId && players.find((player) => player.entry.id === linkedId);
+  selectFeatured(linked || players.find((player) => player.entry.id === hero.dataset.id) || players[0], Boolean(linked));
   hero.addEventListener('click', () => featured.tap());
   hero.addEventListener('keydown', (event) => {
     if (event.key === '2' && featured.trickClip) {

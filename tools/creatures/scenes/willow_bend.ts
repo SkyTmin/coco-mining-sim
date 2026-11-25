@@ -14,7 +14,7 @@ const rush = [hx('#485f55'), hx('#65826b'), hx('#9ba27c')];
 const rock = [hx('#4c6767'), hx('#708984'), hx('#9ea99b'), hx('#c1c5ac')];
 const hill = (x: number) => 34 + 3 * Math.sin(x * 0.048) + 2 * Math.sin(x * 0.11);
 const bank = (x: number) => 57 + 12 * Math.sin(x * 0.031 + 1.8) + 8 * Math.sin(x * 0.066 + 0.8);
-const shoal = (y: number) => 23 + (y - 58) * 0.82 + Math.sin(y * 0.084) * 12;
+const shoal = (y: number) => 23 + (y - 58) * 0.82 + Math.sin(y * 0.084) * 12 + 19 * Math.exp(-((y - 99) ** 2) / 250);
 
 function stone(p: Px, x: number, y: number, radius: number, seed: number) {
   const r = radius, h = Math.max(1.3, r * 0.56);
@@ -63,7 +63,19 @@ const paint: Scene = (p, t) => {
       if (x % 7 < 4) p.set(x, y + 1, glint);
     }
   }
-  for (let i = 0; i < 114; i++) {
+  // The old packhorse bridge crosses the narrow part of the bend. Its arch openings keep the water visible.
+  for (let x = 84; x < 158; x++) {
+    const deck = 35.5 - 4 * Math.sin((x - 84) * Math.PI / 75);
+    const arch = [101, 125, 147].reduce((gap, cx) => Math.max(gap, Math.sqrt(Math.max(0, 1 - ((x - cx) / 9) ** 2))), 0);
+    const foot = 43 - 8.5 * arch;
+    p.line(x, deck, x, Math.max(deck, foot), mixc(woods, clay, 0.58));
+    p.set(x, deck - 1, mixc(sand, mist, 0.6));
+    if (x % 6 < 2 && foot > deck + 2) p.set(x, deck + 1, mixc(woods, clay, 0.84));
+    if (foot > deck + 1) p.set(x, foot, mixc(water, woods, 0.35));
+    for (let y = 44; y < 44 + (foot - deck) * 0.52; y++)
+      if ((y + x) % 5 > 1) p.set(x, y, mixc(woods, water, 0.47));
+  }
+  for (let i = 0; i < 190; i++) {
     const y = 45 + Math.floor(hash(i, 81) * 82);
     const x = Math.floor(hash(i, 87) * 160);
     if (y > bank(x) && x < shoal(y)) {
@@ -76,6 +88,25 @@ const paint: Scene = (p, t) => {
     }
   }
   for (const [x, y, r] of [[14, 68, 6], [22, 66, 4], [36, 87, 3.5], [5, 112, 6.8], [149, 47, 3.1]]) stone(p, x, y, r, 4);
+  // Broken reflections and lily pads give the foreground water a different scale from the far bank.
+  for (let i = 0; i < 9; i++) {
+    const x = 119 + hash(i, 17, 2) * 36, y = 80 + hash(i, 28, 7) * 20;
+    const r = 2 + hash(i, 59, 3) * 3.5;
+    p.ell(x, y + 1, r, r * 0.4, rock[0]); p.ell(x, y, r, r * 0.38, leaves[1]);
+    p.line(x - r * 0.6, y - 0.6, x - 1, y - 0.8, leaves[3]);
+    p.line(x + 1, y, x + r, y + r * 0.2, water);
+    if (i === 4 || i === 7) {
+      p.ell(x - 1, y - 2, 2.6, 1.25, hx('#cead9e')); p.set(x - 1, y - 3, hx('#e0cdc0'));
+      p.set(x - 2, y - 2, hx('#e7d0a0'));
+    }
+  }
+  for (let i = 0; i < 21; i++) {
+    const x = 8 + hash(i, 39) * 22, y = 73 + hash(i, 97) * 45;
+    if (x > shoal(y) - 3) continue;
+    const width = 2 + hash(i, 56) * 3;
+    p.line(x, y, x + width, y - 1, mixc(clay, sand, 0.4));
+    if (i % 5 === 0) stone(p, x, y, width * 0.7, i + 1);
+  }
   // A pollarded willow leans over the water, with hanging leaves in separate strands.
   face(p, [[0, 65], [0, 22], [5, 19], [10, 43], [9, 57], [14, 62], [7, 62]], bark);
   p.line(4, 53, 2, 25, barkLight);

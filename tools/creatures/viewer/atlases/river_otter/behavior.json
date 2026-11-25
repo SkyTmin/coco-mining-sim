@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../tools/creatures/bodies/behavior.schema.json",
+  "seed": 25873,
+  "previewSeconds": 30,
+  "field": [160, 128],
+  "stride": 12,
+  "yaw": 0.82,
+  "depthScale": 0.6,
+  "stops": [[0.5, 0.8], [0.40, 0.72], [0.60, 0.77]],
+  "walkShare": [0.36, 0.44],
+  "weights": { "idle": 4, "fidget_a": 2, "fidget_b": 2, "look": 2, "trick": 1 },
+  "tricks": { "f1": ["trick", "trick_b"] },
+  "events": {
+    "tap": ["happy"], "tap_asleep": ["wake_startled", "happy"],
+    "like": ["trick"], "double_tap": ["trick"], "rare_find": ["happy"],
+    "approach": ["look"], "idle_owner": ["sleep_in", "sleep"],
+    "owner_back": ["sleep_out"], "skill_ready": ["trick_b"]
+  }
+}
