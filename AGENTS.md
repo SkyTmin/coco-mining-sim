@@ -13,6 +13,8 @@ from task specs (ТЗ) in `docs/tz/`; Claude writes the specs and reviews every 
    `wiki/19-lager-shakhta-i-lyudi.md` (camp, 8 players, social) → wiki files 01–17. Stage order: `docs/tz/README.md`.
    Balance data lives in `scripts/balance/data.mjs`; from stage 3 it feeds `scripts/design-decisions.json`.
    `docs/design/studio/*` are raw research behind the wiki — read only when the ТЗ points there.
+4. Для живых картин применяй [правило первой версии](.agents/skills/pixel-bosses/references/0-quick.md#поведение-в-первой-версии-картины)
+   при постановке действий героя и перед показом картины владельцу.
 
 ## Where things come from
 
