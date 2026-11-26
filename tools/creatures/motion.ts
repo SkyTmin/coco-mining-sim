@@ -1,4 +1,4 @@
-import { createPetBehavior, interruptFrames, validateBehavior,
+import { createPetBehavior, interruptFrames, turnFramesFor, validateBehavior,
   type BehaviorConfig, type PetSample } from './viewer/behavior.mjs';
 import { SE } from './rig/f15-rig';
 import { sizeOf, type Creature, type MotionPlan, type XY } from './types';
@@ -40,23 +40,61 @@ const turn = (a: number, b: number, u: number) =>
   wrap(a + (wrap(b - a + 8, 16) - 8) * u, 16);
 export const lifeDuration = (p: MotionPlan) =>
   p.beats.reduce((n, b) => n + b.seconds, 0);
+interface ReelPart {
+  name: string;
+  frames: number;
+  offset?: number;
+  at?: XY;
+  pivot?: { at: XY; frames: number[] };
+}
+
+// Pets with a handoff take one continuous walk through the eight views and return to the same mark.
+const walkingDemos = new WeakMap<Creature, ReelPart[]>();
+function walkingDemo(c: Creature): ReelPart[] {
+  const cached = walkingDemos.get(c);
+  if (cached) return cached;
+  const frames = Math.round(c.animations.prepare_walk.seconds * 24), middle = Math.ceil(frames / 2);
+  const turnFrames = Math.round(c.animations.turn.seconds * 24), { yaw, stride } = c.motion!;
+  const bearings = c.animations.turn.bearings ?? Array.from({ length: turnFrames }, (_, i) => yaw + i * 2 * Math.PI / turnFrames);
+  const route: Direction[] = ['se', 's', 'w', 'nw', 'ne', 'n', 'e', 'sw'];
+  const bearing = (d: Direction) => (directions.indexOf(d) - 2) * Math.PI / 4;
+  const still: XY = [0, 0];
+  const parts: ReelPart[] = [
+    { name: 'prepare_walk', frames: middle, pivot: { at: still, frames: [] } },
+    { name: 'turn', frames: turnFrames, pivot: { at: still, frames: turnFramesFor(bearings, bearings.at(-1)!, bearing(route[0])) } },
+  ];
+  let floor: XY = still;
+  for (const [i, d] of route.entries()) {
+    const [vx, vy] = directionVector(d, stride);
+    const at: XY = [floor[0] + vx / 2, floor[1] + vy / 2];
+    floor = [floor[0] + vx, floor[1] + vy];
+    parts.push({ name: 'walk_' + d, frames: 24, at, pivot: { at: floor,
+      frames: turnFramesFor(bearings, bearing(d), route[i+1] ? bearing(route[i+1]) : yaw) } });
+  }
+  parts.push({ name: 'prepare_walk', offset: middle, frames: frames - middle });
+  walkingDemos.set(c, parts);
+  return parts;
+}
+
 // Frame indices keep short attacks and the six-frame rests exactly on a GIF tick.
 export function reelChapters(c: Creature) {
   let cursor = 0;
   const tricks = c.behavior?.tricks;
+  const demo = c.behavior && c.motion && c.animations.prepare_walk ? walkingDemo(c) : undefined;
   const names = c.behavior
-    ? ['hatch','turn','idle','fidget_a','fidget_b', ...directions.map(d => 'walk_' + d),
+    ? ['hatch', ...(demo ? [] : ['turn']), 'idle','fidget_a','fidget_b', ...(demo ? ['prepare_walk'] : directions.map(d => 'walk_' + d)),
        'look','happy', ...(tricks?.f1 ?? ['trick']), ...Object.keys(c.animations).filter(key => c.animations[key].companion),
        ...(c.behavior.attacks ?? []),'tired','sleep_in','sleep','wake_startled','sleep_out',
        ...['show', 'peek'].filter(name => tricks && c.animations[name]),
        ...['phase', 'idle-f2'].filter(name => c.animations[name]),
        ...(tricks ? (tricks.f2 ? ['happy-f2', ...tricks.f2] : []) : ['show'].filter(name => c.animations[name]))]
     : Object.keys(c.animations).filter(name => name.startsWith('tech_'));
-  return names.map(name => {
-    const frames = Math.round(c.animations[name].seconds * 24);
+  const parts = names.flatMap((name): ReelPart[] =>
+    name === 'prepare_walk' && demo ? demo : [{ name, frames: Math.round(c.animations[name].seconds * 24) }]);
+  return parts.map(part => {
     const start = cursor;
-    cursor += frames + 6;
-    return { name, start, frames, end: cursor };
+    cursor += part.frames + (part.pivot?.frames.length ?? 6);
+    return { ...part, start, end: cursor };
   });
 }
 
@@ -239,8 +277,15 @@ function routePlacement(
     const tick = wrap(t * 24, chapters.at(-1)!.end);
     const chapter = chapters.find(({ end }) => tick < end)!;
     const age = tick - chapter.start;
-    if (c.behavior && age < chapter.frames)
-      return { ...routePlacement(c, chapter.name, age / 24, side, origin), start: chapter.start / 24 };
+    if (c.behavior && age < chapter.frames) {
+      const mark: XY = chapter.at ? [origin[0] + chapter.at[0], origin[1] + chapter.at[1]] : origin;
+      return { ...routePlacement(c, chapter.name, ((chapter.offset ?? 0) + age) / 24, side, mark), start: chapter.start / 24 };
+    }
+    if (chapter.pivot) {
+      const mark: XY = [origin[0] + chapter.pivot.at[0], origin[1] + chapter.pivot.at[1]];
+      const frame = chapter.pivot.frames[Math.floor(age - chapter.frames)];
+      return { ...routePlacement(c, 'turn', frame / 24, side, mark), start: chapter.start / 24 };
+    }
     return age < chapter.frames
       ? {
           ...fixed,

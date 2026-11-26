@@ -451,6 +451,10 @@
       63.00139053491489,
       54.96056111948081
     ],
+    "bite": [
+      63.877135691601154,
+      44.018916762626944
+    ],
     "pawL": [
       66.43226891895013,
       52.96307623543065
@@ -676,135 +680,303 @@
   "showreel": [
     {
       "name": "hatch",
-      "start": 0,
       "frames": 72,
+      "start": 0,
       "end": 78
     },
     {
-      "name": "turn",
-      "start": 78,
-      "frames": 96,
-      "end": 180
-    },
-    {
       "name": "idle",
-      "start": 180,
       "frames": 72,
-      "end": 258
+      "start": 78,
+      "end": 156
     },
     {
       "name": "fidget_a",
-      "start": 258,
       "frames": 72,
-      "end": 336
+      "start": 156,
+      "end": 234
     },
     {
       "name": "fidget_b",
-      "start": 336,
       "frames": 48,
-      "end": 390
+      "start": 234,
+      "end": 288
     },
     {
-      "name": "walk_n",
-      "start": 390,
-      "frames": 24,
-      "end": 420
+      "name": "prepare_walk",
+      "frames": 18,
+      "pivot": {
+        "at": [
+          0,
+          0
+        ],
+        "frames": []
+      },
+      "start": 288,
+      "end": 306
     },
     {
-      "name": "walk_ne",
-      "start": 420,
-      "frames": 24,
-      "end": 450
-    },
-    {
-      "name": "walk_e",
-      "start": 450,
-      "frames": 24,
-      "end": 480
+      "name": "turn",
+      "frames": 96,
+      "pivot": {
+        "at": [
+          0,
+          0
+        ],
+        "frames": [
+          95
+        ]
+      },
+      "start": 306,
+      "end": 403
     },
     {
       "name": "walk_se",
-      "start": 480,
       "frames": 24,
-      "end": 510
+      "at": [
+        4.242640687119286,
+        2.545584412271571
+      ],
+      "pivot": {
+        "at": [
+          8.485281374238571,
+          5.091168824543142
+        ],
+        "frames": [
+          3,
+          7,
+          11
+        ]
+      },
+      "start": 403,
+      "end": 430
     },
     {
       "name": "walk_s",
-      "start": 510,
       "frames": 24,
-      "end": 540
-    },
-    {
-      "name": "walk_sw",
-      "start": 540,
-      "frames": 24,
-      "end": 570
+      "at": [
+        8.485281374238571,
+        8.69116882454314
+      ],
+      "pivot": {
+        "at": [
+          8.485281374238571,
+          12.291168824543142
+        ],
+        "frames": [
+          15,
+          19,
+          23,
+          27,
+          31,
+          35
+        ]
+      },
+      "start": 430,
+      "end": 460
     },
     {
       "name": "walk_w",
-      "start": 570,
       "frames": 24,
-      "end": 600
+      "at": [
+        2.4852813742385713,
+        12.291168824543142
+      ],
+      "pivot": {
+        "at": [
+          -3.5147186257614287,
+          12.291168824543142
+        ],
+        "frames": [
+          39,
+          43,
+          47
+        ]
+      },
+      "start": 460,
+      "end": 487
     },
     {
       "name": "walk_nw",
-      "start": 600,
       "frames": 24,
-      "end": 630
+      "at": [
+        -7.757359312880714,
+        9.74558441227157
+      ],
+      "pivot": {
+        "at": [
+          -12,
+          7.2
+        ],
+        "frames": [
+          51,
+          54,
+          58,
+          61,
+          65,
+          68,
+          71
+        ]
+      },
+      "start": 487,
+      "end": 518
+    },
+    {
+      "name": "walk_ne",
+      "frames": 24,
+      "at": [
+        -7.757359312880714,
+        4.65441558772843
+      ],
+      "pivot": {
+        "at": [
+          -3.5147186257614287,
+          2.1088311754568583
+        ],
+        "frames": [
+          67,
+          63,
+          59
+        ]
+      },
+      "start": 518,
+      "end": 545
+    },
+    {
+      "name": "walk_n",
+      "frames": 24,
+      "at": [
+        -3.5147186257614287,
+        -1.4911688245431414
+      ],
+      "pivot": {
+        "at": [
+          -3.5147186257614287,
+          -5.091168824543141
+        ],
+        "frames": [
+          63,
+          67,
+          71,
+          75,
+          79,
+          83
+        ]
+      },
+      "start": 545,
+      "end": 575
+    },
+    {
+      "name": "walk_e",
+      "frames": 24,
+      "at": [
+        2.4852813742385713,
+        -5.091168824543141
+      ],
+      "pivot": {
+        "at": [
+          8.485281374238571,
+          -5.091168824543141
+        ],
+        "frames": [
+          87,
+          91,
+          95,
+          3,
+          7,
+          11,
+          15,
+          19,
+          23
+        ]
+      },
+      "start": 575,
+      "end": 608
+    },
+    {
+      "name": "walk_sw",
+      "frames": 24,
+      "at": [
+        4.2426406871192865,
+        -2.5455844122715696
+      ],
+      "pivot": {
+        "at": [
+          1.7763568394002505e-15,
+          1.7763568394002505e-15
+        ],
+        "frames": [
+          20,
+          16,
+          12,
+          8,
+          4,
+          0
+        ]
+      },
+      "start": 608,
+      "end": 638
+    },
+    {
+      "name": "prepare_walk",
+      "offset": 18,
+      "frames": 18,
+      "start": 638,
+      "end": 662
     },
     {
       "name": "look",
-      "start": 630,
       "frames": 36,
-      "end": 672
+      "start": 662,
+      "end": 704
     },
     {
       "name": "happy",
-      "start": 672,
       "frames": 42,
-      "end": 720
+      "start": 704,
+      "end": 752
     },
     {
       "name": "trick",
-      "start": 720,
       "frames": 108,
-      "end": 834
+      "start": 752,
+      "end": 866
     },
     {
       "name": "trick_b",
-      "start": 834,
       "frames": 132,
-      "end": 972
+      "start": 866,
+      "end": 1004
     },
     {
       "name": "tired",
-      "start": 972,
       "frames": 36,
-      "end": 1014
+      "start": 1004,
+      "end": 1046
     },
     {
       "name": "sleep_in",
-      "start": 1014,
       "frames": 30,
-      "end": 1050
+      "start": 1046,
+      "end": 1082
     },
     {
       "name": "sleep",
-      "start": 1050,
       "frames": 72,
-      "end": 1128
+      "start": 1082,
+      "end": 1160
     },
     {
       "name": "wake_startled",
-      "start": 1128,
       "frames": 24,
-      "end": 1158
+      "start": 1160,
+      "end": 1190
     },
     {
       "name": "sleep_out",
-      "start": 1158,
       "frames": 30,
-      "end": 1194
+      "start": 1190,
+      "end": 1226
     }
   ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
@@ -1050,6 +1222,23 @@
         60,
         66,
         71
+      ]
+    },
+    "prepare_walk": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0,
+      "interrupt": [
+        0,
+        6,
+        12,
+        18,
+        24,
+        30,
+        35
       ]
     },
     "fidget_a": {
@@ -1607,8 +1796,8 @@
       ]
     },
     "showreel": {
-      "seconds": 49.75,
-      "frames": 1194,
+      "seconds": 51.083333333333336,
+      "frames": 1226,
       "loop": true,
       "hit": [],
       "shake": 0,
@@ -1813,7 +2002,13 @@
         1176,
         1182,
         1188,
-        1193
+        1194,
+        1200,
+        1206,
+        1212,
+        1218,
+        1224,
+        1225
       ]
     }
   }

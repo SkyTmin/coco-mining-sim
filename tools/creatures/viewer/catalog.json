@@ -2357,6 +2357,11 @@
         "frames": 72
       },
       {
+        "id": "prepare_walk",
+        "name": "Перехватывает гальку",
+        "frames": 36
+      },
+      {
         "id": "fidget_a",
         "name": "Умывает щёки",
         "frames": 72
@@ -2434,7 +2439,7 @@
       {
         "id": "showreel",
         "name": "Все анимации",
-        "frames": 1194
+        "frames": 1226
       }
     ]
   },

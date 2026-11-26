@@ -10,6 +10,7 @@ const otter: Creature = {
   animations: clips, frame: otterFrame(card), effects: otterEffects,
   overClips: ['trick_b'],
   titles: {
+    prepare_walk: 'Перехватывает гальку',
     hatch: 'Выныривает из заводи', fidget_a: 'Умывает щёки', fidget_b: 'Переворачивает гальку',
     happy: 'Двойной подскок', trick: 'Камешек на носу', trick_b: 'С горки на брюхе',
   },

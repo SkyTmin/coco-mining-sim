@@ -5,10 +5,21 @@ import { loadPainting } from '../render';
 import { withPointsOnly } from '../rig/figure';
 import type { XY } from '../types';
 import { beats } from '../c/river_otter-poses';
+import { placement, reelChapters } from '../motion';
+import { createPetBehavior } from '../viewer/behavior.mjs';
 import { isRiver, slideSurface } from '../scenes/willow-terrain';
 import { visibleOwnedPixels } from '../studio/visibility';
 import { waterStyle } from '../viewer/water.mjs';
 import { Px } from '../rig/px';
+
+function advanceTo(pet: ReturnType<typeof createPetBehavior>, matches: (state: ReturnType<typeof pet.sample>) => boolean) {
+  for (let i = 0; i < 720; i++) {
+    const state = pet.sample();
+    if (matches(state)) return state;
+    pet.advance(1 / 24);
+  }
+  assert.fail('expected pose was not reached in a full excursion');
+}
 
 test('one pebble leaves the forepaws, balances on the nose and returns to the forepaws', async () => {
   const { c, s, b } = await loadPainting('river_otter');
@@ -74,7 +85,7 @@ test('the nose breaks the water before the back, then the otter swims face-first
   }
 });
 
-test('the same pebble slips from the flank, bounces and waits on the sand until cupped again', async () => {
+test('the pebble stays on the sand while the otter searches the wrong bank, spots it and recoils before picking it up', async () => {
   const { c, s, b } = await loadPainting('river_otter');
   const k = beats.fidget_a;
   const frame = (n: number) => compose(c, s, b, 'fidget_a', n / 24);
@@ -82,7 +93,7 @@ test('the same pebble slips from the flank, bounces and waits on the sand until 
   assert.deepEqual(set.stone, set.stow);
   assert.ok(Math.hypot(set.stone[0] - set.pawR[0], set.stone[1] - set.pawR[1]) < 3);
   const z = (n: number) => frame(n).body.joints!.stone[2];
-  assert.ok(z(24) - z(26) > z(18) - z(20), 'gravity accelerates the descent');
+  assert.ok(z(k.land - 2) - z(k.land) > z(k.slip) - z(k.slip + 2), 'gravity accelerates the descent');
   assert.ok(z(k.land) < z(k.land + 2) && z(k.land + 2) > z(k.bounce));
   const grounded = frame(k.rest).points.stone;
   for (const [x, y] of c.behavior!.stops) {
@@ -92,11 +103,126 @@ test('the same pebble slips from the flank, bounces and waits on the sand until 
     const f = frame(n);
     assert.deepEqual(f.points.stone, grounded);
     assert.ok(f.body.rig!.prims.filter(p => p.t === 'pebble').length === 1);
-    if (n < 42) for (const palm of [f.points.pawR, f.points.pawL]) assert.ok(Math.hypot(palm[0] - grounded[0], palm[1] - grounded[1]) > 34);
+    if (n >= k.miss && n < k.miss + 5) {
+      assert.ok(f.points.nose[0] > set.nose[0] + 25);
+      for (const palm of [f.points.pawR, f.points.pawL]) assert.ok(palm[0] > grounded[0] + 46);
+    }
+    if (n < k.reach) assert.ok(Math.hypot(f.points.grip[0] - grounded[0], f.points.grip[1] - grounded[1]) > 17);
     if (n >= k.catch) assert.deepEqual(f.points.grip, grounded);
   }
-  assert.ok(frame(67).body.joints!.stone[2] > 30);
+  const spotted = frame(k.spot);
+  assert.ok(Math.abs(spotted.points.nose[0] - grounded[0]) < 7);
+  const eyeArea = (f: ReturnType<typeof frame>) => {
+    const rig = f.body.rig!, ink = visibleOwnedPixels(rig, f, rig.prims.map(p => p.t));
+    return (ink.get('eyeR')?.length ?? 0) + (ink.get('eyeL')?.length ?? 0);
+  };
+  for (let n = k.surprise; n < k.surprise + 5; n++) {
+    const recoil = frame(n);
+    assert.ok(recoil.points.nose[1] < spotted.points.nose[1] - 18);
+    assert.ok(eyeArea(recoil) > 1.6 * eyeArea(spotted));
+  }
+  assert.ok(z(k.lift + 2) > z(k.lift) && z(69) > 30);
   assert.deepEqual(frame(71).points.stone, frame(0).points.stone);
+});
+
+test('both forepaws hand the pebble to the mouth before a walk and receive it after the walk', async () => {
+  const { c, s, b } = await loadPainting('river_otter');
+  const frame = (n: number) => withPointsOnly(() => compose(c, s, b, 'prepare_walk', n / 24)).body.joints!;
+  const middle = c.animations.prepare_walk.seconds * 12;
+  for (let i = 0; i < middle; i++) {
+    const outbound = frame(i), inbound = frame(2 * middle - 1 - i);
+    for (const key of ['head', 'stone', 'pawR', 'pawL'])
+      outbound[key].forEach((v, axis) => assert.ok(Math.abs(v - inbound[key][axis]) < 1e-6));
+    assert.deepEqual(outbound.stone, i <= 6 ? outbound.grip : outbound.bite);
+    if (i >= 7 && i <= 10) outbound.grip.forEach((v, axis) => assert.ok(Math.abs(v - outbound.bite[axis]) < 1e-6));
+  }
+  assert.ok(frame(0).head[2] - frame(middle - 1).head[2] > 30);
+  assert.ok(frame(middle - 1).pawR[2] < 4 && frame(middle - 1).pawL[2] < 4);
+});
+
+test('the otter carries one pebble below the nose through all eight gaits and steps around on four feet', async () => {
+  const { c, s, b } = await loadPainting('river_otter');
+  const distance = (a: number[], b: number[]) => Math.hypot(...a.map((v,i) => v - b[i]));
+  const feet = ['pawL', 'pawR', 'footL', 'footR'];
+  for (const anim of ['turn', ...Object.keys(c.animations).filter(name => name.startsWith('walk_'))]) {
+    let previous: Record<string, number[]> | undefined;
+    for (let n = 0; n < c.animations[anim].seconds * 24; n++) {
+      const j = withPointsOnly(() => compose(c, s, b, anim, n / 24)).body.joints!;
+      assert.deepEqual(j.stone, j.bite);
+      assert.ok(distance(j.stone, j.belly) > 35 && distance(j.stone, j.chest) > 23 && distance(j.stone, j.nose) < 7);
+      assert.ok(j.head[2] < 33 && j.head[2] - j.root[2] < 12);
+      if (anim === 'turn' && previous) {
+        const last = previous;
+        assert.ok(feet.filter(foot => distance(last[foot], j[foot]) < 0.02).length >= 2, 'planted pair at ' + n);
+      }
+      previous = j;
+    }
+    const f = compose(c, s, b, anim, 8 / 24), rig = f.body.rig!;
+    assert.equal(rig.prims.filter(p => p.t === 'pebble').length, 1);
+    const ink = visibleOwnedPixels(rig, f, rig.prims.map(p => p.t));
+    const stone = ink.get('pebble')?.length ?? 0;
+    if (anim === 'walk_n') assert.equal(stone, 0, 'the muzzle occludes the stone from directly behind');
+    else if (!['walk_ne', 'walk_nw'].includes(anim)) assert.ok(stone > 40, 'visible in the mouth in ' + anim);
+  }
+});
+
+test('life and the gallery reel keep all direction changes between the two halves of the handoff', async () => {
+  const { c } = await loadPainting('river_otter');
+  const home = c.portraitOrigin!, middle = c.animations.prepare_walk.seconds * 12;
+  for (const clip of ['life', 'showreel']) {
+    const poses = Array.from({ length: Math.round(c.animations[clip].seconds * 24) }, (_, i) =>
+      placement(c, clip, i / 24, 0, home));
+    const first = poses.findIndex(p => p.anim === 'prepare_walk');
+    const last = poses.findLastIndex(p => p.anim === 'prepare_walk');
+    assert.ok(first > 0 && last > first + middle * 2);
+    const steps = poses.slice(first + middle, last - middle + 1);
+    assert.ok(steps.every(p => p.anim === 'turn' || p.anim === 'walk'));
+    assert.ok(steps.filter(p => p.anim === 'turn').length >= 10);
+    for (let i = 0; i < middle; i++) {
+      assert.equal(Math.round(poses[first+i].t * 24), i);
+      assert.equal(Math.round(poses[last-i].t * 24), middle * 2 - 1 - i);
+    }
+    for (const p of [poses[first], poses[last]]) assert.deepEqual(p.feet, home);
+    if (clip === 'showreel') assert.equal(reelChapters(c).filter(ch => ch.name.startsWith('walk_')).length, 8);
+  }
+});
+
+test('a tap mid-stride seats the otter once, gives back its pebble and resumes the same step', async () => {
+  const { c } = await loadPainting('river_otter');
+  const pet = createPetBehavior(c.behavior!, c.animations);
+  advanceTo(pet, state => state.anim.startsWith('walk_'));
+  const paused = pet.advance(8 / 24);
+  assert.ok(pet.event('tap'));
+  const rows = [pet.sample()];
+  while (rows.length < 160 && !rows.at(-1)!.anim.startsWith('walk_')) rows.push(pet.advance(1 / 24));
+  const clips = rows.map(p => p.anim).filter((name, i) => name !== rows[i-1]?.anim);
+  assert.deepEqual(clips, ['turn','prepare_walk','happy','prepare_walk','turn',paused.anim]);
+  for (const p of rows) assert.deepEqual(p.at, paused.at);
+  assert.equal(rows.at(-1)!.frame, paused.frame);
+  const transfers = rows.filter(p => p.anim === 'prepare_walk').map(p => p.frame);
+  assert.deepEqual(transfers, Array.from({ length: 36 }, (_, i) => (18 + i) % 36));
+});
+
+test('a tap during the handoff reverses a partial departure or finishes the ongoing arrival only once', async () => {
+  const { c } = await loadPainting('river_otter');
+  for (const interrupt of [6, 24]) {
+    const pet = createPetBehavior(c.behavior!, c.animations);
+    advanceTo(pet, row => row.anim === 'prepare_walk' && row.frame === interrupt);
+    pet.event('tap');
+    const frames = [];
+    while (frames.length < 36 && pet.sample().anim === 'prepare_walk') {
+      frames.push(pet.sample().frame);
+      pet.advance(1 / 24);
+    }
+    assert.equal(pet.sample().anim, 'happy');
+    if (interrupt === 6) assert.deepEqual(frames, [6, 5, 4, 3, 2, 1, 0]);
+    else assert.deepEqual(frames, Array.from({ length: 12 }, (_, i) => 24 + i));
+    const next = pet.advance(c.animations.happy.seconds);
+    if (interrupt === 6) {
+      assert.equal(next.anim, 'prepare_walk');
+      assert.equal(next.frame, 0);
+    } else assert.notEqual(next.anim, 'prepare_walk');
+  }
 });
 
 test('the otter climbs the visible crest and keeps its belly on the descending clay until entering the pool', async () => {
@@ -131,6 +257,22 @@ test('footfalls stay in place as the otter wades in all eight directions', async
         assert.ok(Math.hypot(echoes[i][0] - start[i][0], echoes[i][1] - start[i][1]) <= 1.5, anim + ' drifting footfall at ' + n);
         assert.ok(echoes[i][3] >= start[i][3] + n - 1);
       }
+    }
+  }
+});
+
+test('the wake remains visible around the feet and cannot paint a blue pebble on the back or tail', async () => {
+  const { c, s, b } = await loadPainting('river_otter');
+  for (const anim of ['walk_n', 'walk_ne', 'walk_nw']) {
+    for (const n of [0, 4, 8, 12, 16, 20]) {
+      const frame = compose(c, s, b, anim, n / 24), rig = frame.body.rig!;
+      const { bgf, bgfBack } = frame.layers;
+      const clean = { ...frame, layers: { ...frame.layers, bgf: new Px(bgf.w, bgf.h) } };
+      const coat = visibleOwnedPixels(rig, clean, rig.prims.map(p =>
+        p.t === 'body' || p.t === 'tail' ? 'coat' : undefined)).get('coat')!;
+      assert.ok(coat.length > 500 && coat.every(([x,y]) => !bgf.solid(x,y)), anim + ' wet fur at ' + n);
+      assert.ok(frame.waterContacts.filter(row => row[2] === waterStyle.farFootfall).length === 4);
+      assert.ok(bgfBack.data.some(value => value > 0), 'visible wake at ' + n);
     }
   }
 });

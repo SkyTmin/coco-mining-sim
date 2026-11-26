@@ -225,7 +225,8 @@ function trickPlan(config, animations, bearings = turnBearings(config, animation
     ? Math.max(...Array.from({ length: Math.max(f1.length, f2.length) }, (_, index) => duration(index)))
     : duration(cycle);
   const turns = legs.reduce((sum, leg) => sum + leg.departing.length + leg.entering.length, 0);
-  const fixed = 2 + actions + turns +
+  const handoff = animations.prepare_walk ? length(animations, 'prepare_walk') : 0;
+  const fixed = 2 + actions + turns + handoff +
     (f2.length ? 2 * length(animations, 'phase') + length(animations, 'idle-f2') : 0);
   if (cycle !== undefined) stops.at(-1).actions.push(clipAt(f1, cycle));
   return { stops, legs, maxWalk: ticks(config.previewSeconds) - fixed };
@@ -237,6 +238,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   const between = range => range[0] + random() * (range[1] - range[0]);
   const window = ticks(config.previewSeconds);
   const idleFrames = length(animations, 'idle');
+  const carryFrames = animations.prepare_walk ? length(animations, 'prepare_walk') : 0;
   const bearings = turnBearings(config, animations);
   const ranked = config.lifeAttacks ? performancePlan(config, animations) : undefined;
   const tricks = config.tricks;
@@ -262,8 +264,15 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   let nextAttack = Math.round(window * (0.40 + 0.27 * random()));
   let absolute = 0, cycleStart = 0, cursor = 0, remainder = 0;
   let path = [], pending, reaction, held;
+  let travel = [], travelFrame = 0, returnToWalk = [];
   const sampleAt = (anim, frame, at, direction = 'se') => ({anim, frame, at, direction, elapsed: frame / petFPS});
 
+  // Two halves of a single authored handoff. Turning at an intermediate waypoint needs neither.
+  function handoff(rows, at, leaving) {
+    const middle = Math.ceil(carryFrames / 2);
+    for (let f = leaving ? 0 : middle; f < (leaving ? middle : carryFrames); f++)
+      rows.push(sampleAt('prepare_walk', f, at));
+  }
   function walk(rows, leg) {
     const name = 'walk_' + leg.direction;
     const strideFrames = length(animations, name);
@@ -333,7 +342,11 @@ export function createPetBehavior(config, animations, seed = config.seed) {
       rows.push(sampleAt('idle', 0, home));
       for (const [i, stop] of score.stops.entries()) {
         if (tricks) {
-          if (i === legs.length) rest(stop.at, spare, false, false);
+          if (i === 0) handoff(rows, stop.at, true);
+          if (i === legs.length) {
+            handoff(rows, stop.at, false);
+            rest(stop.at, spare, false, false);
+          }
         } else {
           const before = Math.floor(spare * i / score.stops.length);
           rest(stop.at, Math.floor(spare * (i + 1) / score.stops.length) - before, false, false);
@@ -405,10 +418,10 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   path = planCycle();
 
   function current() {
+    if (travel.length) return travel[travelFrame];
     if (!reaction && held)
       return { ...sampleAt(held.anim, held.frame, held.at), form: held.form };
     if (!reaction) return path[cursor];
-    if (reaction.approach?.length) return reaction.approach[reaction.approachFrame];
     const {anim, age, at, form, reverse} = reaction;
     const count = length(animations, anim);
     const row = sampleAt(anim, reverse ? count - age - 1 : age % count, at);
@@ -418,18 +431,54 @@ export function createPetBehavior(config, animations, seed = config.seed) {
     const [first, ...rest] = sequence;
     reaction = {anim: first === 'attack' ? pickAttack(at) : first, age: 0, rest, at, form};
   }
+  function movingBearing(state) {
+    if (state.anim === 'turn') return bearings[state.frame];
+    if (state.anim.startsWith('walk_')) return petDirections.indexOf(state.direction) * Math.PI / 4;
+  }
+  function pivot(rows, at, from, to) {
+    for (const frame of turnFramesFor(bearings, from, to)) rows.push(sampleAt('turn', frame, at));
+  }
+  function sitFromHandoff(state, resume) {
+    const row = frame => sampleAt('prepare_walk', frame, state.at);
+    if (state.frame < Math.ceil(carryFrames / 2)) {
+      for (let f = state.frame; f >= 0; f--) travel.push(row(f));
+      if (resume) for (let f = 0; f < state.frame; f++) returnToWalk.push(row(f));
+    } else {
+      for (let f = state.frame; f < carryFrames; f++) travel.push(row(f));
+      if (resume) cursor += carryFrames - state.frame;
+    }
+  }
+  function stopForGesture(state) {
+    if (state.anim === 'prepare_walk') return sitFromHandoff(state, true);
+    const from = movingBearing(state);
+    if (!carryFrames || from === undefined) return;
+    pivot(travel, state.at, from, config.yaw);
+    handoff(travel, state.at, false);
+    handoff(returnToWalk, state.at, true);
+    pivot(returnToWalk, state.at, config.yaw, from);
+  }
   function stageAtHome(state) {
-    if (state.at[0] === home[0] && state.at[1] === home[1]) return;
-    const leg = walkingLeg(config, state.at, home, bearings);
-    const from = state.anim.startsWith('walk_') ? petDirections.indexOf(state.direction) * Math.PI / 4
-      : state.anim === 'turn' ? bearings[state.frame] : config.yaw;
-    const rows = turnFramesFor(bearings, from, leg.angle).map(frame => sampleAt('turn', frame, state.at));
-    leg.count = Math.max(1, Math.round(petFPS * leg.distance / (config.stride * 1.5)));
-    walk(rows, leg);
-    for (const frame of leg.entering) rows.push(sampleAt('turn', frame, home));
+    const atHome = state.at[0] === home[0] && state.at[1] === home[1];
+    const from = movingBearing(state);
+    if (returnToWalk.length) { returnToWalk = []; cursor = 0; }
+    if (atHome && state.anim === 'prepare_walk') {
+      sitFromHandoff(state, false);
+      cursor = 0;
+      return;
+    }
+    if (atHome && !(carryFrames && from !== undefined)) return;
+    if (from === undefined) handoff(travel, state.at, true);
+    if (atHome) {
+      pivot(travel, home, from, config.yaw);
+    } else {
+      const leg = walkingLeg(config, state.at, home, bearings);
+      pivot(travel, state.at, from ?? config.yaw, leg.angle);
+      leg.count = Math.max(1, Math.round(petFPS * leg.distance / (config.stride * 1.5)));
+      walk(travel, leg);
+      for (const frame of leg.entering) travel.push(sampleAt('turn', frame, home));
+    }
+    handoff(travel, home, false);
     reaction.at = home;
-    reaction.approach = rows;
-    reaction.approachFrame = 0;
     cursor = 0;
   }
   function sleeping() {
@@ -438,7 +487,7 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   function dispatch() {
     if (!pending) return false;
     const state = current();
-    if (tricks && (state.anim === 'phase' || reaction?.approach?.length)) return false;
+    if (travel.length || (tricks && state.anim === 'phase')) return false;
     if (!animations[state.anim].interrupt.includes(state.frame)) return false;
     const event = pending;
     pending = undefined;
@@ -457,16 +506,17 @@ export function createPetBehavior(config, animations, seed = config.seed) {
     } else {
       const sequence = config.events[event === 'tap' && sleeping() ? 'tap_asleep' : event];
       begin(form === 'f2' ? sequence.map(name => name === 'happy' ? 'happy-f2' : name) : sequence, state.at, form);
+      stopForGesture(state);
     }
     return true;
   }
   function step() {
     absolute++;
+    if (travel.length) {
+      if (++travelFrame === travel.length) { travel = []; travelFrame = 0; }
+      return;
+    }
     if (reaction) {
-      if (reaction.approach?.length) {
-        if (++reaction.approachFrame === reaction.approach.length) reaction.approach = undefined;
-        return;
-      }
       reaction.age++;
       if (reaction.age === length(animations, reaction.anim) && reaction.anim !== 'sleep') {
         if (reaction.rest.length) begin(reaction.rest, reaction.at, reaction.form);
@@ -476,6 +526,8 @@ export function createPetBehavior(config, animations, seed = config.seed) {
             if (reaction.reverse) cursor = 0;
           }
           reaction = undefined;
+          travel = returnToWalk;
+          returnToWalk = [];
         }
       }
     } else if (held) {
