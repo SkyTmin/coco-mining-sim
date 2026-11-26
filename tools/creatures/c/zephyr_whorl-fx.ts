@@ -1,9 +1,10 @@
 import { hash, hx, TAU } from '../kit/f11-mobkit';
 import { Px } from '../rig/px';
 import { face } from '../scenes/relief';
-import { wheelAxle } from '../scenes/paper_updraft';
+import { meadowSignals, signalTop, wheelAxle } from '../scenes/paper_updraft';
 import type { FxInput, XY } from '../types';
-import { glider, wind } from './zephyr_whorl-keys';
+import { footfalls, glider, wind } from './zephyr_whorl-keys';
+import { airTravel, breezeAt, turnsInBreeze } from './zephyr_whorl-wind';
 
 const pigment = (...colors: string[]) => colors.map((c) => hx(c));
 const ink = pigment('#48475a', '#62617a', '#8d6b59', '#d2ab76', '#fff0af');
@@ -84,6 +85,9 @@ function pinwheel(angle: number) {
   return p.canvas();
 }
 const resting = pinwheel(0);
+const quietMeadow = meadowSignals(0, () => 0);
+const mastTurns = turnsInBreeze(() => wheelAxle[0], 5, 0.27);
+const entryAir = airTravel(glider.enter, glider.catch, 35);
 
 export function planePose(
   f: Pick<FxInput, 'points' | 'pointAt'>,
@@ -93,11 +97,13 @@ export function planePose(
   if (n < glider.catch) {
     const u = clamp((n - glider.enter) / (glider.catch - glider.enter)),
       target = f.pointAt(glider.catch / 24, 'pinch');
-    // It crosses above the crest, then loses speed in the climb into the open hand.
-    const travel = 0.72 * (1 - (1 - u) ** 2.8) + 0.28 * u;
+    const travel = 0.7 * (1 - (1 - u) ** 2.8) + (0.3 * airTravel(glider.enter, n, 35)) / entryAir;
+    const x = mix(-24, target[0], travel),
+      air = breezeAt(n, x),
+      arc = Math.sin(Math.PI * u);
     return {
-      fold: [mix(-24, target[0], travel), mix(24, target[1], u) - 18.5 * Math.sin(Math.PI * u)],
-      tilt: mix(0.12, -0.06, u) + 0.1 * Math.sin(TAU * u),
+      fold: [x, mix(24, target[1], u) - (12.3 + 2.45 * air) * arc],
+      tilt: mix(0.12, -0.06, u) + (0.07 + 0.1 * air) * Math.sin(TAU * u),
     };
   }
   if (n <= glider.throw) {
@@ -107,13 +113,21 @@ export function planePose(
         : n < 86
           ? -0.06 + 0.19 * Math.sin(((n - 61) / 25) * Math.PI)
           : -0.06 - 0.21 * smooth((n - 94) / 8) + 0.16 * smooth((n - 104) / 3);
-    return { fold: f.points.pinch, tilt: bank };
+    // The sail trembles about the held keel as the second gust reaches the sill. The fingers keep the fold.
+    const flutter =
+      breezeAt(n, f.points.pinch[0]) *
+      Math.sin(n * 0.55) *
+      smooth((n - glider.catch) / 6) *
+      smooth((glider.throw - n) / 4) *
+      0.105;
+    return { fold: f.points.pinch, tilt: bank + flutter };
   }
   const a = n - glider.throw,
     release = f.pointAt(glider.throw / 24, 'pinch');
+  const lift = airTravel(glider.throw, n, release[0]);
   return {
-    fold: [release[0] + a * 3.45, release[1] - a * 1.45 + 0.035 * a * a],
-    tilt: -0.11 + 0.21 * clamp(a / 24),
+    fold: [release[0] + a * 2.3 + lift * 1.55, release[1] - a * 1.15 - lift * 0.54 + 0.035 * a * a],
+    tilt: -0.11 + 0.21 * clamp(a / 24) - 0.085 * breezeAt(n, release[0] + a * 3) * Math.sin(a * 0.39),
   };
 }
 function airframe(tilt: number) {
@@ -229,16 +243,16 @@ function breath(f: FxInput, n: number) {
       f.backdrop.dot(target[0] + (j + 1) * a * 0.46, target[1] + (j - 1) * a * 0.72, 2, 1);
   }
 }
-function grassDust(f: FxInput, n: number, at: number, foot: string) {
+function grassDust(f: FxInput, n: number, at: number, foot: string, duration = 12) {
   const dt = n - at;
-  if (dt < 0 || dt > 12) return;
+  if (dt < 0 || dt >= duration) return;
   const base = f.pointAt(at / 24, foot);
   for (let j = 0; j < 9; j++) {
     const age = dt - (j % 3) * 0.5;
     if (age < 0) continue;
     const rise = 0.105 * age * age - (0.7 + hash(j, at, 3) * 1.04) * age;
     if (rise > 0) continue;
-    f.under.col(j % 3 === 0 ? '#967d62' : '#e3ce9c', 0.85 - age * 0.035);
+    f.under.col(j % 3 === 0 ? '#967d62' : '#e3ce9c', 0.88 * (1 - (age / duration) ** 2));
     f.under.dot(
       base[0] + (j % 2 ? 1 : -1) * (0.6 + hash(j, at, 9) * 1.35) * age,
       base[1] + rise,
@@ -247,14 +261,119 @@ function grassDust(f: FxInput, n: number, at: number, foot: string) {
     );
   }
 }
+
+function stamp(f: FxInput, n: number, at: number, foot: string) {
+  const duration = at === footfalls.leaving ? 6 : 8;
+  grassDust(f, n, at, foot, duration);
+  const age = n - at;
+  if (age < 1 || age >= duration) return;
+  const [x, y] = f.pointAt(at / 24, foot);
+  for (const side of [-1, 1]) {
+    for (const spread of [0.6, 1]) {
+      const xx = Math.round(x + side * (4 + age * spread * 2.55));
+      const yy = Math.round(y + 1 - (3.3 + 3.0 * spread) * Math.sin((Math.PI * age) / duration));
+      const alpha = Math.min(1, (duration - age) * 0.35);
+      f.under.col('#866848', alpha);
+      f.under.line(xx - 2, yy + 1, xx + 2, yy);
+      f.under.col('#c49361', alpha);
+      f.under.dot(xx - 1, yy - 1, 3, 2);
+      f.under.col('#f6daad', alpha);
+      f.under.dot(xx, yy - 2, 2, 1);
+    }
+  }
+}
+
+// Follow individual airborne seeds from the left edge until they pass the right edge.
+const seeds = [
+  [0, 39, 3.65],
+  [7, 71, 3.55],
+  [14, 34, 3.1],
+  [81, 58, 3.8],
+  [88, 32, 4.2],
+].map(([born, y, speed]) => {
+  const trail: XY[] = [];
+  let x = -8;
+  for (let n = born; n < 151 && x < 190; n++) {
+    const air = breezeAt(n, x);
+    x += 1.35 + speed * air;
+    trail.push([x, y + 3.7 * Math.sin((n - born) * 0.23) - 6.5 * air]);
+  }
+  return { born, trail };
+});
+
+function driftingSeeds(f: FxInput, n: number) {
+  for (const { born, trail } of seeds) {
+    const i = n - born;
+    if (i < 0 || i >= trail.length) continue;
+    const [x, y] = trail[i],
+      flip = Math.cos(i * 0.54);
+    for (let j = Math.max(1, i - 8); j < i - 1; j++) {
+      if (j === i - 6) continue;
+      const a = trail[j - 1],
+        b = trail[j];
+      const alpha = 1 - (i - j) * 0.087;
+      f.backdrop.col('#809e96', 0.66 * alpha);
+      f.backdrop.line(Math.round(a[0]), Math.round(a[1]) + 1, Math.round(b[0]), Math.round(b[1]) + 1);
+      f.backdrop.col('#fff1ce', alpha);
+      f.backdrop.line(Math.round(a[0]), Math.round(a[1]), Math.round(b[0]), Math.round(b[1]));
+    }
+    const xx = Math.round(x),
+      yy = Math.round(y);
+    f.backdrop.col('#91754d');
+    f.backdrop.line(xx - 3, yy + Math.round(flip), xx + 2, yy - Math.round(flip));
+    f.backdrop.col('#f4ca7f');
+    f.backdrop.dot(xx - 1, yy - 1, 2, 1);
+    f.backdrop.dot(xx - 2, yy - 1 - Math.round(2 * flip));
+  }
+}
+
+function sillContact(f: FxInput, n: number) {
+  if (n < 75 || n > 132) return;
+  for (const [foot, contact] of [
+    ['footR', glider.perch],
+    ['footL', glider.perch + 2],
+  ] as const) {
+    const [x, y] = f.pointAt(contact / 24, foot);
+    const current = f.points[foot];
+    const pressure = clamp(1 - Math.hypot(current[0] - x, current[1] - y) / 18);
+    if (!pressure) continue;
+    const xx = Math.round(x),
+      yy = Math.round(y),
+      radius = Math.round(3.5 + 2 * pressure);
+    f.backdrop.col('#765f56', 0.73 * pressure);
+    f.backdrop.line(xx - radius, yy, xx + radius, yy);
+    f.backdrop.col('#544c4d', 0.82 * pressure);
+    f.backdrop.line(xx - radius + 2, yy + 1, xx + radius - 2, yy + 1);
+  }
+}
+
 export function meadowTricks(f: FxInput) {
-  const n = Math.round(24 * f.t),
-    turn = f.anim === 'trick' ? wheelAngle(n) : 0;
-  f.backdrop.img(turn && n < 125 ? pinwheel(turn) : resting, wheelAxle[0] - 20, wheelAxle[1] - 20);
+  const n = Math.round(24 * f.t);
+  const jet = f.anim === 'trick' ? smooth((n - wind.hit) / 5) * (1 - smooth((n - wind.stop) / 12)) : 0;
+  let signals = quietMeadow,
+    angle = 0;
+  if (f.anim === 'trick_b') {
+    signals = meadowSignals(n, (x) => breezeAt(n, x));
+    const turns = mastTurns[Math.min(n, mastTurns.length - 1)];
+    angle = TAU * (turns % 1);
+    driftingSeeds(f, n);
+  } else if (f.anim === 'trick') {
+    angle = wheelAngle(n) % TAU;
+    if (jet > 0) signals = meadowSignals(n, (x) => (x === wheelAxle[0] ? jet * 0.78 : 0));
+  }
+  f.backdrop.alpha(1);
+  f.backdrop.img(signals, 0, signalTop);
+  f.backdrop.img(angle ? pinwheel(angle) : resting, wheelAxle[0] - 20, wheelAxle[1] - 20);
+  if (f.anim === 'prepare_walk') {
+    stamp(f, n, footfalls.leaving, 'footR');
+    stamp(f, n, footfalls.arriving, 'footL');
+  }
+  if (f.anim === 'hatch') grassDust(f, n, 34, 'footR');
   if (f.anim === 'trick') {
     if (n >= wind.breath && n < 88) breath(f, n);
     grassDust(f, n, 40, 'footR');
     grassDust(f, n, 97, 'footR');
+    grassDust(f, n, 125, 'footR', 6);
   }
   if (f.anim === 'fidget_a' && n >= 25 && n <= 36) {
     for (const born of [25, 29]) {
@@ -273,10 +392,12 @@ export function meadowTricks(f: FxInput) {
     }
   }
   if (f.anim === 'trick_b') {
+    sillContact(f, n);
     const plane = planePose(f, n);
     if (plane) {
       const pen = n >= glider.catch && n <= glider.throw ? f.under : f.backdrop;
       // The paper is behind the grasp: fingertips obscure the bottom crease, not the nose or the wings.
+      pen.alpha(1);
       pen.img(airframe(plane.tilt), Math.round(plane.fold[0]) - 21, Math.round(plane.fold[1]) - 21);
     }
     grassDust(f, n, 25, 'footR');

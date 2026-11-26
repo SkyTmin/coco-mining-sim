@@ -16,7 +16,7 @@ const pet: Creature = {
   overClips: ['trick_b'],
   titles: {
     hatch: 'Прилетает на луг',
-    prepare_walk: 'Пружинит на ступнях',
+    prepare_walk: 'Переходит на шаг',
     happy: 'Прыгает от радости',
     fidget_a: 'Надувает щёки',
     fidget_b: 'Складывает хохолок в бутон',

@@ -1,10 +1,12 @@
 import { keyframer, type Lane, type Track } from '../kit/pet-moves';
 import { everyday } from '../rig/figure';
 import type { Animation, XY } from '../types';
+import { turnsInBreeze } from './zephyr_whorl-wind';
 
 export const home: XY = [56, 99];
 export const wind = { inhale: 45, lips: 54, breath: 57, hit: 61, stop: 79 };
-export const glider = { enter: 4, lift: 26, catch: 51, perch: 85, throw: 107, free: 108 };
+export const glider = { enter: 11, lift: 26, catch: 51, perch: 85, throw: 107, free: 108 };
+export const footfalls = { leaving: 11, arriving: 27 };
 export const walking = { low: 0.15, lean: 0.48, tilt: -0.06 };
 const doze = { low: 0.85, nod: 0.41, lids: 1, bud: 0.75, armsIn: 0.85, tail: 0.5 };
 const puff = { cheek: 1, armsDown: 1, headTurn: 0.25, lean: -0.55, nod: -0.13 };
@@ -13,6 +15,29 @@ const fly = { tuck: 1, armsOut: 0.7, lean: 0.18, bud: -0.3 };
 const ready = { reach: 0.86, high: 0.72, grip: 0, headTurn: -0.43, gaze: 1, tilt: -0.05 };
 const held = { reach: 1, high: 0.77, grip: 1, headTurn: -0.42, gaze: 1 };
 const perch = { reach: 0.95, high: 0.34, grip: 1, headTurn: -0.34, gaze: 0.82, feetGrip: 1 };
+// The forward stance meets the first gait sample. Lift a foot before changing its footprint.
+const stance = { ...walking, aheadR: 1.75, aheadL: -1.75 };
+const rightKnee = {
+  weight: -3.0,
+  highR: 8.3,
+  outR: 1.4,
+  aheadR: 6.2,
+  armsIn: 0.33,
+  armSwing: -2.7,
+  nod: 0.15,
+  tilt: -0.16,
+};
+const leftKnee = {
+  aheadR: 1.75,
+  weight: 2.7,
+  highL: 6.6,
+  outL: 1.2,
+  aheadL: 4.2,
+  armsIn: 0.27,
+  armSwing: 2.5,
+  nod: 0.18,
+  tilt: 0.14,
+};
 const tracks: Record<string, Track> = {
   look: [
     [0, {}],
@@ -24,9 +49,19 @@ const tracks: Record<string, Track> = {
   ],
   prepare_walk: [
     [0, {}],
-    [4, { low: 0.23, tail: 0.27 }],
-    [10, walking],
-    [17, walking],
+    [3, { low: 0.28, weight: -1.8, armsIn: 0.37 }],
+    [6, rightKnee],
+    [8, rightKnee],
+    [footfalls.leaving, { aheadR: 1.75, weight: -0.48, lean: 0.73, low: 0.29, armSwing: -1.2 }],
+    [14, { aheadR: 1.75, aheadL: -0.75, highL: 1.7, weight: 1.2, lean: 0.89 }],
+    [17, stance],
+    [18, stance],
+    [20, { ...stance, low: 0.25, weight: 1.3 }],
+    [23, leftKnee],
+    [25, leftKnee],
+    [footfalls.arriving, { aheadR: 1.75, weight: 0.43, low: 0.24, armSwing: 0.8 }],
+    [30, { aheadR: 0.8, highR: 1.35, weight: -0.84, low: 0.11 }],
+    [35, {}],
   ],
   fidget_a: [
     [0, {}],
@@ -87,7 +122,7 @@ const tracks: Record<string, Track> = {
   ],
   hatch: [
     [0, { ...fly, alt: 13 }],
-    [10, { ...fly, alt: 19, tilt: -0.24 }],
+    [10, { ...fly, alt: 16, tilt: -0.24 }],
     [20, { ...fly, alt: 11, nod: -0.13 }],
     [30, { tuck: 0.29, alt: 5, armsOut: 0.65 }],
     [34, { low: 0.74, armsOut: 0.7, bud: 0.2 }],
@@ -104,13 +139,13 @@ const tracks: Record<string, Track> = {
     [31, { ...fly, alt: 16, armsOut: 0.54 }],
     [37, { alt: 3, tuck: 0.3 }],
     [40, { low: 0.53, nod: -0.15 }],
-    [45, { ...puff, cheek: 0.59, headTurn: -0.58 }],
-    [51, { ...puff, headTurn: -0.58 }],
-    [54, { ...puff, headTurn: -0.58, purse: 0.76 }],
-    [57, { ...puff, headTurn: -0.58, purse: 1, lean: 0.6 }],
-    [65, { headTurn: -0.58, armsDown: 1, purse: 1, cheek: 0.71, lean: 0.97, low: 0.26, brows: 0.6 }],
-    [72, { headTurn: -0.58, armsDown: 1, purse: 1, cheek: 0.37, lean: 0.79, low: 0.3 }],
-    [79, { headTurn: -0.58, armsDown: 0.8, purse: 0.69, cheek: 0.12, lean: 0.56 }],
+    [45, { ...puff, cheek: 0.59, headTurn: -0.98 }],
+    [51, { ...puff, headTurn: -0.98 }],
+    [54, { ...puff, headTurn: -0.98, purse: 0.76 }],
+    [57, { ...puff, headTurn: -0.98, purse: 1, lean: 0.6 }],
+    [65, { headTurn: -0.98, armsDown: 1, purse: 1, cheek: 0.71, lean: 0.97, low: 0.26, brows: 0.6 }],
+    [72, { headTurn: -0.98, armsDown: 1, purse: 1, cheek: 0.37, lean: 0.79, low: 0.3 }],
+    [79, { headTurn: -0.98, armsDown: 0.8, purse: 0.69, cheek: 0.12, lean: 0.56 }],
     [82, { alt: 5, tuck: 0.45, armsOut: 0.8, bud: -0.22 }],
     [86, { alt: 11, tuck: 1, armsOut: 1, nod: -0.27 }],
     [94, { alt: 2, armsOut: 0.5 }],
@@ -134,13 +169,16 @@ const tracks: Record<string, Track> = {
     [45, { ...fly, alt: 15, ...ready, high: 0.4 }],
     [50, { ...fly, alt: 15, ...ready, high: 0.8 }],
     [51, { ...fly, alt: 15, ...held }],
-    [59, { ...fly, alt: 15, ...held }],
-    [65, { ...fly, alt: 11, ...held, tilt: 0.15 }],
-    [73, { ...fly, alt: 16, ...held, high: 0.51 }],
-    [81, { ...fly, alt: 8, ...perch, tuck: 0.48 }],
-    [85, { ...perch, low: 0.69, armsOut: 0.36 }],
-    [90, { ...perch, low: 0.19 }],
-    [96, { ...perch, low: 0.19 }],
+    [56, { ...fly, alt: 15, ...held }],
+    [64, { ...fly, alt: 12.6, ...held, tilt: 0.12, tuck: 0.83 }],
+    [73, { ...fly, alt: 8.6, ...held, high: 0.59, tuck: 0.48 }],
+    [80, { ...fly, alt: 3.9, ...perch, high: 0.45, tuck: 0.19 }],
+    [84, { ...perch, alt: 0.9, tuck: 0.04, highL: 2.3 }],
+    [85, { ...perch, low: 0.09, highL: 2.1, armsOut: 0.44 }],
+    [87, { ...perch, low: 0.42, armsOut: 0.42 }],
+    [89, { ...perch, low: 0.66, armsOut: 0.33 }],
+    [94, { ...perch, low: 0.19 }],
+    [96, { ...perch, low: 0.19, eyesUp: 0.85, nod: -0.19 }],
     [101, { ...perch, windup: 1, high: 0.96, low: 0.5, lean: -0.8 }],
     [104, { ...perch, windup: 0.9, high: 0.91, low: 0.45, lean: -0.5 }],
     [107, { ...held, release: 1, high: 1, lean: 0.81, feetGrip: 1 }],
@@ -180,11 +218,9 @@ const routes: Record<string, [number, number, number][]> = {
     [25, 0, 0],
     [37, -14, -3],
     [50, 4, -7],
-    [59, 4, -7],
-    [72, 18, 7],
-    [81, 29, 20],
-    [85, 30, 26],
-    [125, 30, 26],
+    [54, 4, -7],
+    [85, 30, 22],
+    [125, 30, 22],
     [135, 14, 6],
     [141, 0, 0],
     [151, 0, 0],
@@ -209,24 +245,25 @@ const rotations: Record<string, Lane> = {
   trick_b: [
     [0, 0],
     [18, 0],
-    [25, 0.34],
-    [29, 0.73],
-    [50, 2.9],
-    [60, 3.95],
-    [74, 5.4],
-    [85, 6.4],
-    [93, 6.94],
-    [98, 7],
-    [125, 7],
-    [134, 7.75],
-    [143, 8],
-    [151, 8],
+    [25, 0.17],
+    [29, 0.365],
+    [50, 1.45],
+    [60, 1.975],
+    [74, 2.7],
+    [85, 3.2],
+    [93, 3.47],
+    [98, 3.5],
+    [125, 3.5],
+    [134, 3.875],
+    [143, 4],
+    [151, 4],
   ],
 };
 const lanes: Record<string, Record<string, Lane>> = {};
 for (const [clip, path] of Object.entries(routes))
   lanes[clip] = { x: path.map(([n, x]) => [n, x]), y: path.map(([n, , y]) => [n, y]), rev: rotations[clip] };
 export const poseAt = keyframer({ tracks, lanes, linear: new Set(['rev']), fixed: { sleep: doze } });
+export const crestInBreeze = turnsInBreeze((n) => home[0] + poseAt('trick_b', n / 24).x, 3, 0.39);
 const clip = (n: number): Animation => ({ seconds: n / 24 });
 const route = (name: string, n: number): Animation => ({
   ...clip(n),

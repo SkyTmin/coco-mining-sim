@@ -1,7 +1,7 @@
 // A last patch of meadow on a bluff. The folding table is set into the front edge of the lookout.
 import { hash, hx, mixc, TAU } from '../kit/f11-mobkit';
-import type { Px } from '../rig/px';
-import type { Scene } from '../types';
+import { Px } from '../rig/px';
+import type { Scene, XY } from '../types';
 import { face } from './relief';
 
 export const wheelAxle = [138, 43] as const;
@@ -18,6 +18,65 @@ function tuft(p: Px, x: number, y: number, h: number, lean: number) {
     p.line(x, y, end, y - h + Math.abs(i) * 2, grass[i === 0 ? 0 : 1]);
     p.set(end, y - h + Math.abs(i) * 2, grass[3]);
   }
+}
+
+// All these flexible pieces share the pet's field layer, so a gust can reach each one in order.
+export const signalTop = 54;
+export function meadowSignals(n: number, pressure: (x: number) => number) {
+  const p = new Px(160, 42);
+  for (const [x, y, height] of [
+    [4, 91, 6],
+    [11, 82, 4],
+    [27, 81, 5],
+    [77, 79, 4],
+    [123, 83, 4],
+    [150, 91, 6],
+    [158, 87, 8],
+  ]) {
+    const air = pressure(x);
+    tuft(p, x, y - signalTop, height * (1 - 0.36 * air), air * (5.3 + Math.sin(n * 0.46 - x * 0.12)));
+  }
+  for (const [x, y] of [
+    [4, 60],
+    [11, 61],
+    [19, 61],
+    [27, 60],
+  ]) {
+    const air = pressure(x),
+      y0 = y - signalTop;
+    const tip: XY = [x + 1.2 + 7.2 * air, y0 + 5 - 3.1 * air + air * Math.sin(n * 0.54 - x * 0.29)];
+    face(p, [[x, y0], [x + 4, y0], tip], x % 2 ? clay[1] : hills[1]);
+    p.line(x + 2, y0, ...tip, x % 2 ? clay[3] : sky[1]);
+  }
+
+  // The divided cloth tail is tied below the axle. Slack cloth hangs down the pole.
+  const [wx, wy] = wheelAxle,
+    x0 = wx + 2,
+    y0 = wy + 21 - signalTop;
+  const cloth = [hx('#934f4e'), hx('#c8785b'), hx('#f2ac74'), hx('#fbd99a')];
+  const air = pressure(wx);
+  const edge = (u: number, side: number): XY => {
+    const wave = air * u * Math.sin(n * 0.56 - 7.1 * u);
+    const spread = 2.25 - 1.15 * u;
+    return [
+      x0 + (1.9 + 15.2 * air) * u + 1.55 * wave - side * (1 - air) * spread,
+      y0 + (15.5 - 12.8 * air) * u + 2.75 * wave + side * air * spread,
+    ];
+  };
+  for (let j = 0; j < 7; j++) {
+    const u = j / 7,
+      v = (j + 1) / 7;
+    for (const side of [-1, 1]) {
+      const split = Math.max(0, v * 4 - 3);
+      const end = edge(v, side),
+        seam = edge(v - 0.15 * split, side * 0.16 * split);
+      face(p, [edge(u, 0), edge(u, side), end, seam], j === 3 ? cloth[3] : side < 0 ? cloth[2] : cloth[1]);
+      p.line(...edge(u, side), ...end, side === 1 ? cloth[0] : cloth[2]);
+    }
+  }
+  p.line(x0 - 2, y0 - 1, x0 + 2, y0 - 1, wood[0]);
+  p.line(x0 - 2, y0, x0 + 2, y0, clay[3]);
+  return p.canvas();
 }
 
 const meadow: Scene = (p, t) => {
@@ -134,35 +193,8 @@ const meadow: Scene = (p, t) => {
       if (i % 8 === 0) p.set(x + 2, y - 2, sky[3]);
     }
   }
-  for (const [x, y, h] of [
-    [4, 91, 6],
-    [11, 82, 4],
-    [27, 81, 5],
-    [77, 79, 4],
-    [123, 83, 4],
-    [150, 91, 6],
-    [158, 87, 8],
-  ])
-    tuft(p, x, y, h, wind);
-  // Muslin pennants on the meadow fence give a quieter, more distant sign of the breeze.
   p.line(0, 59, 15, 62, hills[3]);
   p.line(15, 62, 33, 58, hills[3]);
-  for (const [x, y] of [
-    [4, 60],
-    [11, 61],
-    [19, 61],
-    [27, 60],
-  ]) {
-    face(
-      p,
-      [
-        [x, y],
-        [x + 4, y],
-        [x + 1.2 + wind, y + 4],
-      ],
-      mixc(x % 2 ? clay[1] : hills[1], sky[1], 0.22),
-    );
-  }
   for (const [x, y] of [
     [5, 92],
     [16, 86],

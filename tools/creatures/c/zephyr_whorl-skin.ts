@@ -8,7 +8,8 @@ import { Px } from '../rig/px';
 import type { JointPose } from '../technique';
 import type { Creature, Variant } from '../types';
 import { finishSurfaces } from './surface-work';
-import { home, poseAt, walking } from './zephyr_whorl-keys';
+import { crestInBreeze, home, poseAt, walking } from './zephyr_whorl-keys';
+import { breezeAt } from './zephyr_whorl-wind';
 
 type Sockets = Record<string, V3>;
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
@@ -35,7 +36,10 @@ const ivory: Mat = { T: ['#817394', '#c7b9b1', '#f6e8cc', '#fff9e5'].map((c) => 
 
 function crest(r: Rig, H: F3, m: Paint, p: JointPose, points: Sockets) {
   r.tag = 'rotor';
-  const root = H.at(-0.8, 0, 7.03).pitch(0.26).roll(-0.09);
+  const fan = p.rotorSpeed ?? 0;
+  const root = H.at(-0.8, 0, 7.03)
+    .pitch(0.26 + 0.12 * fan)
+    .roll(-0.09);
   const phase = (p.rev ?? 0) * TAU + 0.54 + (p.flutter ?? 0);
   r.ell(root, [0, 0, 0.21], [3.1, 3, 1.65], m.jade);
   r.ell(root, [0, 0, 1.3], [2.5, 2.35, 1.1], m.gold);
@@ -44,16 +48,17 @@ function crest(r: Rig, H: F3, m: Paint, p: JointPose, points: Sockets) {
       curl = clamp((p.bud ?? 0) * 1.2 - blade * 0.075);
     const flare = clamp(-(p.bud ?? 0));
     function section(u: number) {
-      const phi = a + 0.93 * u - 0.2 * Math.sin(Math.PI * u) + curl * 0.89 * u;
+      const sweep = 0.93 - 0.42 * fan;
+      const phi = a + sweep * u - 0.2 * Math.sin(Math.PI * u) + curl * 0.89 * u;
       const radius = mix(
-        1.1 + (11.8 + blade * 0.5 + flare) * u,
+        1.1 + (11.8 + blade * 0.5 + flare + 1.8 * fan) * u,
         1.15 + 2.75 * Math.sin(Math.PI * u) + 0.95 * u,
         curl,
       );
       const z =
         1.42 +
         mix(
-          2.0 * u + (2.7 + 0.32 * blade) * Math.sin(Math.PI * u) + 0.85 * u * u,
+          (2.0 * u + (2.7 + 0.32 * blade) * Math.sin(Math.PI * u) + 0.85 * u * u) * (1 - 0.64 * fan),
           8.95 * u + 1.0 * Math.sin(Math.PI * u),
           curl,
         );
@@ -67,7 +72,7 @@ function crest(r: Rig, H: F3, m: Paint, p: JointPose, points: Sockets) {
     let prev = section(0);
     for (let i = 1; i <= 8; i++) {
       const q = section(i / 8);
-      const tip = blade === 0 && i >= 7;
+      const tip = blade === 0 && (i >= 7 || (fan > 0.22 && i === 6));
       r.poly([prev.left, q.left, q.ridge, prev.ridge], tip ? m.gold : m.coral);
       r.poly([prev.ridge, q.ridge, q.right, prev.right], tip ? m.cream : peach);
       r.poly([prev.right, q.right, q.left, prev.left], m.coral);
@@ -79,14 +84,14 @@ function crest(r: Rig, H: F3, m: Paint, p: JointPose, points: Sockets) {
       prev = q;
     }
     points['blade' + blade] = prev.ridge;
-    const speed = p.rotorSpeed ?? 0;
-    if (speed > 0.15) {
-      const tipPhi = a + 0.93,
-        rad = 11.7 + 0.55 * blade;
-      const trail = (v: number) => root.p(rad * Math.cos(tipPhi - v), rad * Math.sin(tipPhi - v), 4.58);
+    if (fan > 0.15) {
+      const tipPhi = a + 0.93 - 0.42 * fan,
+        rad = 12.9 + 0.5 * blade + flare + 1.8 * fan;
+      const trail = (v: number) =>
+        root.p(rad * Math.cos(tipPhi - v), rad * Math.sin(tipPhi - v), 4.77 - 1.83 * fan);
       for (let j = 0; j < 3; j++) {
         const from = 0.12 + j * 0.2;
-        r.line(trail(from), trail(from + 0.15 * speed), blade === 0 ? m.gold.T[2] : m.coral.T[2]);
+        r.line(trail(from), trail(from + 0.15 * fan), blade === 0 ? m.gold.T[2] : m.coral.T[2]);
       }
     }
   }
@@ -118,11 +123,12 @@ function face(r: Rig, H: F3, m: Paint, p: JointPose, points: Sockets) {
       const dot = H.p(7.79 * Math.cos(a), s * 9.66 * Math.sin(a), z);
       r.line(dot, vadd(dot, H.v(-0.92, s * 0.14, 0.31)), m.jade.T[2]);
     }
-    const cheek = H.at(5.48 + air * 0.9, s * (5.12 + 2.7 * air), -2.06).turn(s * 0.48);
-    const swell = 1.7 + 2.65 * air,
-      depth = 1.92 + 1.92 * air;
+    const cheekAir = air * (s < 0 ? 1 - 0.5 * (p.brace ?? 0) : 1);
+    const cheek = H.at(5.48 + cheekAir * 0.9, s * (5.12 + 2.7 * cheekAir), -2.06).turn(s * 0.48);
+    const swell = 1.7 + 2.65 * cheekAir,
+      depth = 1.92 + 1.92 * cheekAir;
     r.tag = s < 0 ? 'cheekL' : 'cheekR';
-    r.ell(cheek, [0, 0, 0], [depth, swell, 1.71 + 2.13 * air], foam);
+    r.ell(cheek, [0, 0, 0], [depth, swell, 1.71 + 2.13 * cheekAir], foam);
     for (let j = 0; j < 3; j++) {
       const y = (j - 1) * swell * 0.37;
       r.line(
@@ -171,8 +177,9 @@ function face(r: Rig, H: F3, m: Paint, p: JointPose, points: Sockets) {
     r.cap(brow.p(0.45, 0.32, 0.21), brow.p(0, 1.6, s * 0.22), 0.59, 0.26, m.cream);
   }
   r.tag = 'head';
-  r.ell(H, [7.08, 0, -1.77], [1.89, 3.06, 1.68], m.cream);
-  const lip = H.at(8.88 + 0.4 * air, 0, -1.76);
+  const nozzle = (p.brace ?? 0) * purse;
+  r.ell(H, [7.08 + 0.52 * nozzle, 0, -1.77], [1.89 + 0.77 * nozzle, 3.06, 1.68], m.cream);
+  const lip = H.at(8.88 + 0.4 * air + 1.3 * nozzle, 0, -1.76);
   r.tag = 'mouth';
   if (purse > 0.035) {
     // A rounded lip opens on the pale muzzle. The little dark aperture is the source of the wind.
@@ -280,11 +287,12 @@ function arms(r: Rig, F: F3, B: F3, m: Paint, p: JointPose, step: number, points
     const side = s < 0 ? 'L' : 'R',
       use = s < 0 ? reach : 0;
     const sh = B.p(0.05, s * 6.15, 3.12);
-    const down = p.armsDown ?? 0;
+    const down = p.armsDown ?? 0,
+      brace = p.brace ?? 0;
     const gesture = B.p(
-      2.4 + inside * 3.7 + step * s - 2.6 * down,
-      s * (7.85 + 4.2 * out - 3.45 * inside + 2.0 * down),
-      -0.43 + 6.7 * out + 2.23 * inside - 4.49 * down,
+      2.4 + inside * 3.7 + step * s - 2.6 * down + 3.5 * brace,
+      s * (7.85 + 4.2 * out - 3.45 * inside + 2.0 * down - 4.6 * brace),
+      -0.43 + 6.7 * out + 2.23 * inside - 4.49 * down - 0.56 * brace,
     );
     const aim: V3 = [
       18.15 + (p.release ?? 0) * 4.08 - (p.windup ?? 0) * 1.9,
@@ -334,21 +342,34 @@ function boots(
     const side = s < 0 ? 'L' : 'R',
       phase = s < 0 ? 0.5 : 0,
       gait = strideFoot(step, phase, stride);
-    let foot = F.p(walk ? gait.forward : 0, s * 3.26, 1.09 + (walk ? gait.lift * 3.2 : 0));
+    const height = p['high' + side] ?? 0;
+    let foot = F.p(
+      walk ? gait.forward : (p['ahead' + side] ?? 0),
+      s * (3.26 + (p['out' + side] ?? 0)),
+      1.09 + (walk ? gait.lift * 3.2 : height),
+    );
     if (pivot !== undefined) {
       const q = (pivot + phase) % 1,
         u = clamp((q - 0.5) * 2),
         angle = ((u * u * (3 - 2 * u) - q + 0.25) * Math.PI) / 4;
-      foot = F.turn(angle).p(0, s * 3.26, 1.09 + 1.9 * Math.sin(Math.PI * u));
+      foot = F.turn(angle).p(s * stride * 0.25, s * 3.26, 1.09 + 1.9 * Math.sin(Math.PI * u));
     }
     const tuck = p.tuck ?? 0;
     foot = vlerp(foot, B.p(-2.1, s * 5.3, -7.1), tuck);
     const hip = B.p(-0.9, s * 3.35, -3.38);
     r.tag = 'leg' + side;
-    r.cap(hip, foot, 2.08, 1.33, m.jade);
-    const boot = new F3(foot, F.f, F.s, F.u).pitch(-0.62 * tuck);
+    if (height > 0) {
+      const knee = vadd(vlerp(hip, foot, 0.53), F.v(height * 0.53, 0, height * 0.24));
+      r.cap(hip, knee, 2.08, 1.65, m.jade);
+      r.cap(knee, foot, 1.65, 1.33, m.jade);
+    } else r.cap(hip, foot, 2.08, 1.33, m.jade);
+    const boot = new F3(foot, F.f, F.s, F.u).pitch(-0.62 * tuck - 0.118 * height);
     r.tag = 'foot' + side;
     r.ell(boot, [1.15, 0, 0.5], [3.1, 1.98, 1.35], m.plum);
+    // The ochre sole and its two dark treads appear when the shoe turns up. In stance they meet the dirt.
+    r.ell(boot, [1.14, 0, -0.44], [2.5, 1.57, 0.38], m.gold);
+    for (const tread of [0.45, 1.9])
+      r.cap(boot.p(tread, -0.79, -0.72), boot.p(tread + 0.24, 0.72, -0.72), 0.24, 0.31, m.plum);
     for (const toe of [-1, 1]) {
       const E = boot.at(2.72, toe * 0.82, 0.1).pitch((p.feetGrip ?? 0) * 0.32);
       r.ell(E, [0.34, 0, 0.31], [1.42, 0.88, 0.78], m.plum);
@@ -367,12 +388,19 @@ export function windling(card: CreatureCard): Creature['frame'] {
       walk = anim === 'walk',
       turn = anim === 'turn',
       step = motion?.gaitPhase ?? t;
-    const at = anim === 'prepare_walk' ? Math.min(t, Math.max(0, 35 / 24 - t)) : t;
-    const p = { ...poseAt(anim, at), ...motion?.techniquePose };
-    if (p.rev)
-      p.rotorSpeed = clamp(
-        (Math.abs(p.rev - (poseAt(anim, Math.max(0, at - 1 / 24)).rev ?? 0)) - 0.024) / 0.074,
-      );
+    const p = { ...poseAt(anim, t), ...motion?.techniquePose };
+    if (anim === 'trick') p.brace = p.armsDown ?? 0;
+    if (p.rev !== undefined) {
+      let previous = poseAt(anim, Math.max(0, t - 1 / 24)).rev ?? 0;
+      if (anim === 'trick_b') {
+        const i = Math.min(n, crestInBreeze.length - 1);
+        p.rev += crestInBreeze[i];
+        previous += crestInBreeze[Math.max(0, i - 1)];
+        const air = breezeAt(n, home[0] + p.x);
+        p.wiggle = air * (3.4 + 1.6 * Math.sin(n * 0.53));
+      }
+      p.rotorSpeed = clamp((Math.abs(p.rev - previous) - 0.009) / 0.085);
+    }
     if (walk || turn) Object.assign(p, walking);
     if (anim === 'idle' || anim === 'sleep') {
       const q = Math.sin((t * TAU) / 3);
@@ -388,7 +416,7 @@ export function windling(card: CreatureCard): Creature['frame'] {
     const pivot = turn && Number.isInteger(side) ? (4 * t) % 1 : 0;
     const F = F3.yaw(card.life.yaw + ((side + pivot) * Math.PI) / 8);
     const bob = walk ? 0.64 * (1 - Math.cos(2 * TAU * step)) : 0;
-    const B = F.at(p.lean ?? 0, 0, 10.9 - 4.48 * (p.low ?? 0) + bob).roll((p.tilt ?? 0) * 0.27);
+    const B = F.at(p.lean ?? 0, p.weight ?? 0, 10.9 - 4.48 * (p.low ?? 0) + bob).roll((p.tilt ?? 0) * 0.27);
     const H = B.at(0.38, 0, 10.25 - 1.1 * (p.low ?? 0))
       .turn(p.headTurn ?? 0)
       .roll(p.tilt ?? 0)
@@ -399,7 +427,7 @@ export function windling(card: CreatureCard): Creature['frame'] {
     r.innerInk = hx('#34535a');
     mantle(r, B, m, p, points);
     boots(r, F, B, m, p, walk, step, turn ? pivot : undefined, card.life.stride / scale, points);
-    arms(r, F, B, m, p, walk ? Math.sin(TAU * step) * 1.55 : 0, points);
+    arms(r, F, B, m, p, walk ? Math.sin(TAU * step) * 1.55 : (p.armSwing ?? 0), points);
     face(r, H, m, p, points);
     crest(r, H, m, p, points);
     finishSurfaces(
@@ -419,7 +447,7 @@ export function windling(card: CreatureCard): Creature['frame'] {
     frame.dy = -(p.alt ?? 0);
     frame.groundShadow = { radius: 12, opacity: 0.4 - 0.14 * clamp((p.alt ?? 0) / 15) };
     if (anim === 'trick_b' && n >= 81 && n <= 130) {
-      const cut = Math.max(0, Math.ceil(frame.anchor[1] + 127 - home[1] - p.y - frame.dy));
+      const cut = Math.max(0, Math.ceil(frame.anchor[1] + 125 - home[1] - p.y - frame.dy));
       if (cut < frame.px.h) {
         frame.over = new Px(frame.px.w, frame.px.h);
         const byte = cut * frame.px.w * 4;

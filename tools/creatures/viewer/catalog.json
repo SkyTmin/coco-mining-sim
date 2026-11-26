@@ -2775,8 +2775,9 @@
       },
       {
         "id": "prepare_walk",
-        "name": "Пружинит на ступнях",
-        "frames": 36
+        "name": "Переходит на шаг",
+        "frames": 36,
+        "sequenceOnly": true
       },
       {
         "id": "fidget_a",

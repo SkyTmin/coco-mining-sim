@@ -567,7 +567,7 @@ function refreshControls() {
 function controls() {
   const entry = featured.entry;
   $('#clips').replaceChildren(
-    ...entry.clips.map((clip) => {
+    ...entry.clips.filter((clip) => !clip.sequenceOnly).map((clip) => {
       const button = buttonFor(clip.name, () => {
         featured.choose(clip.id);
         hero.scrollIntoView({ block: 'nearest' });

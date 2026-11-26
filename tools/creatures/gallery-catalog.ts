@@ -86,7 +86,9 @@ const labels: Record<string, string> = {
   back: 'Возвращение',
 };
 const titles: Record<string, Record<string, string>> = {};
-type Clip = { id: string; name: string; frames?: number };
+// These transitions play inside the walk in Life and in the showreel.
+const sequenceOnly: Record<string, string[]> = { zephyr_whorl: ['prepare_walk'] };
+type Clip = { id: string; name: string; frames?: number; sequenceOnly?: boolean };
 type Entry = {
   id: string;
   name: string;
@@ -140,6 +142,7 @@ async function nativeEntry(id: string, name: string, color: string, section: str
         ? 'Все приёмы'
         : c.titles?.[key] ?? titles[id]?.[key] ?? c.techniques?.[key]?.title ?? labels[key],
     frames: meta.animations[key].frames,
+    ...(sequenceOnly[id]?.includes(key) ? { sequenceOnly: true } : {}),
   }));
   return { id, name, section, rarity: packed.rarity, color, clips };
 }
