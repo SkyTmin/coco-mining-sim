@@ -328,6 +328,8 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
     p.goalRX = 144;
     p.goalRY = 150 + 5 * p.ring;
   }
+  // Only the left paw has the bell pull. The right stays beside the coat.
+  if (anim === 'fidget_a') p.reachR = 0;
   if (anim === 'trick-f2') p.reachL = (p.reach || 0) * (1 - (p.engage || 0)) * (1 - (p.knock || 0));
   if (anim === 'trick-f2' && p.engage) {
     const g = p.engage * (1 - (p.keyPark || 0));
