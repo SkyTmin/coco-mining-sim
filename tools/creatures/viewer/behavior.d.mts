@@ -7,7 +7,9 @@ export interface BehaviorConfig {
   depthScale: number;
   stops: [number, number][];
   walkShare: [number, number];
-  weights: Record<string, number>;
+  weights?: Record<string, number>;
+  /** Whole ambient acts performed at home before each automatic trick cycle, in place of a floor excursion. */
+  lifeProgram?: string[];
   attackInterval?: [number, number];
   attacks?: string[];
   tricks?: { f1: string[]; f2?: string[] };

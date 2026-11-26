@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import Ajv from 'ajv';
 import { createPetBehavior, interruptFrames, petDirections, validateBehavior, type BehaviorConfig } from '../viewer/behavior.mjs';
 
 const config: BehaviorConfig = {
@@ -19,6 +21,105 @@ const durations = {
 const clips = Object.fromEntries(Object.entries(durations).map(([name, seconds]) =>
   [name, { seconds, interrupt: interruptFrames(Math.round(seconds * 24), name) }]));
 
+const staged: BehaviorConfig = { ...config, stops: [config.stops[0]], walkShare: [0, 0],
+  lifeProgram: ['look', 'fidget_b', 'fidget_a'] };
+delete staged.weights;
+const ticksOf = (name: string) => Math.round(clips[name].seconds * 24);
+
+test('a life program plays complete gestures at home before each pair of autonomous tricks', () => {
+  assert.deepEqual(validateBehavior(staged, clips), []);
+  const pet = createPetBehavior(staged, clips);
+  for (let cycle = 0; cycle < 2; cycle++) {
+    const rows = Array.from({ length: staged.previewSeconds * 24 }, () => {
+      const row = pet.sample();
+      pet.advance(1 / 24);
+      return row;
+    });
+    for (const row of rows) assert.deepEqual(row.at, staged.stops[0]);
+    assert.deepEqual([rows[0].anim, rows[0].frame], ['idle', 0]);
+    const normal = [...staged.lifeProgram!, staged.tricks!.f1[cycle], 'phase'];
+    const transformed = ['idle-f2', staged.tricks!.f2![cycle], 'phase'];
+    let index = 1;
+    for (const [form, acts] of [['f1', normal], ['f2', transformed]] as const) {
+      for (const anim of acts) {
+        const count = ticksOf(anim);
+        for (let tick = 0; tick < count; tick++) {
+          const row = rows[index++];
+          const frame = form === 'f2' && anim === 'phase' ? count - 1 - tick : tick;
+          assert.deepEqual([row.anim, row.frame, row.form], [anim, frame, form]);
+        }
+      }
+    }
+    assert.ok(rows.slice(index).every(row => row.anim === 'idle' && row.form === 'f1'));
+    assert.equal(rows.at(-1)!.frame, 0);
+  }
+});
+
+test('manual requests wait for the last pose, play in the selected form and resume the next gesture', () => {
+  const pet = createPetBehavior(staged, clips);
+  const expectFrames = (anim: string, from = 0, reverse = false) => {
+    const count = ticksOf(anim);
+    for (let tick = from; tick < count; tick++) {
+      const row = pet.sample();
+      assert.deepEqual([row.anim, row.frame, row.at], [anim, reverse ? count - 1 - tick : tick, staged.stops[0]]);
+      pet.advance(1 / 24);
+    }
+  };
+  pet.advance(7 / 24);
+  assert.ok(pet.event('double_tap'));
+  expectFrames('look', 6);
+  assert.deepEqual([pet.sample().anim, pet.sample().frame], ['trick', 0]);
+  pet.advance(12 / 24);
+  assert.ok(pet.event('skill_ready'));
+  expectFrames('trick', 12);
+  expectFrames('trick_b');
+  assert.deepEqual([pet.sample().anim, pet.sample().frame], ['fidget_b', 0]);
+
+  assert.ok(pet.event('change_form'));
+  expectFrames('phase');
+  assert.equal(pet.sample().anim, 'idle-f2');
+  assert.ok(pet.event('double_tap'));
+  expectFrames('trick-f2');
+  assert.ok(pet.event('skill_ready'));
+  expectFrames('trick_b-f2');
+  assert.ok(pet.event('change_form'));
+  expectFrames('phase', 0, true);
+  assert.equal(pet.sample().form, 'f1');
+});
+
+test('the schema and runtime admit a stationary trick program only when it is explicitly configured', () => {
+  const schema = JSON.parse(readFileSync(new URL('../bodies/behavior.schema.json', import.meta.url), 'utf8'));
+  const valid = new Ajv().compile(schema);
+  for (const input of [staged, config]) assert.equal(valid(input), true, JSON.stringify(valid.errors));
+  for (const input of [
+    { ...staged, lifeProgram: [] }, { ...staged, lifeProgram: ['walk_n'] },
+    { ...staged, walkShare: [0, 0.4] }, { ...staged, stops: [] }, { ...staged, tricks: undefined },
+    { ...config, stops: staged.stops }, { ...config, walkShare: [0, 0] }, { ...config, weights: undefined },
+  ]) {
+    assert.equal(valid(input), false);
+    assert.ok(validateBehavior(input, clips).length);
+  }
+  assert.match(validateBehavior({ ...staged, lifeProgram: ['fidget_c'] }, clips).join(), /lifeProgram/);
+  const single = Object.fromEntries(Object.entries(clips).filter(([name]) => name !== 'phase' && !name.endsWith('-f2')));
+  const oneForm = { ...staged, tricks: { f1: ['trick', 'trick_b'] } };
+  assert.deepEqual(validateBehavior(oneForm, single), []);
+  assert.match(validateBehavior(staged, single).join(), /phase/);
+  const pet = createPetBehavior(oneForm, single);
+  assert.ok(pet.event('change_form'));
+  const observed = new Set(Array.from({ length: 2 * 720 }, () => pet.advance(1 / 24).anim));
+  assert.deepEqual(observed, new Set(['idle', ...staged.lifeProgram!, 'trick', 'trick_b']));
+});
+
+test('stationary programs budget the pair that actually plays, including later cycles with unequal trick counts', () => {
+  const timed = (seconds: number) => ({ seconds, interrupt: interruptFrames(seconds * 24) });
+  const balanced = { ...clips, trick: timed(12), trick_b: timed(4), 'trick-f2': timed(4), 'trick_b-f2': timed(12) };
+  assert.deepEqual(validateBehavior(staged, balanced), []);
+  assert.match(validateBehavior(staged, { ...balanced, 'trick-f2': timed(12) }).join(), /exceeds previewSeconds/);
+  // The long F1 and F2 tricks first coincide in the fifth cycle.
+  const uneven = { ...staged, tricks: { f1: ['trick', 'trick_b'], f2: ['trick-f2', 'trick_b-f2', 'trick_c-f2'] } };
+  assert.match(validateBehavior(uneven, { ...balanced, 'trick_c-f2': timed(4) }).join(), /exceeds previewSeconds/);
+});
+
 test('life alternates complete trick pairs across 30-second excursions with phase seams intact', () => {
   assert.deepEqual(validateBehavior(config, clips), []);
   const pet = createPetBehavior(config, clips);
@@ -33,6 +134,10 @@ test('life alternates complete trick pairs across 30-second excursions with phas
     assert.deepEqual(tricks.map(row => row.anim), names);
     assert.deepEqual(tricks.map(row => row.form), ['f1', 'f2']);
     assert.ok(frames.slice(0, tricks[0].tick % 720).filter(row => row.anim.startsWith('walk_')).length >= 252);
+    const legs = frames.filter((row, i) => row.anim.startsWith('walk_') && row.anim !== frames[i - 1]?.anim);
+    assert.deepEqual(legs.map(row => [row.anim, row.at]), [
+      ['walk_nw', config.stops[0]], ['walk_se', config.stops[1]], ['walk_nw', config.stops[2]],
+    ]);
     const phase = Array.from({ length: 48 }, (_, i) => i);
     assert.deepEqual(frames.filter(row => row.anim === 'phase').map(row => row.frame), [...phase, ...phase.toReversed()]);
     assert.equal(frames.filter(row => row.anim === 'idle-f2').length, 48);
