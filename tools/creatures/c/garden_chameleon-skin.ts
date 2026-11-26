@@ -9,6 +9,8 @@ import {
   vcross,
   vdot,
   vlerp,
+  vlen,
+  vsub,
   vnorm,
   vmul,
   type Mat,
@@ -21,12 +23,13 @@ import { projectFigure, scaleFigure } from '../rig/figure';
 import { Px } from '../rig/px';
 import type { JointPose } from '../technique';
 import type { Creature, Variant } from '../types';
-import { clips, home, poseAt, seedContact } from './garden_chameleon-poses';
+import { clips, home, poseAt, seedContact, walkingStance } from './garden_chameleon-poses';
 
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
 const mix = (a: number, b: number, u: number) => a + (b - a) * u;
 const view: V3 = [0, 0.8, 0.6];
 const black: Mat = { T: ['#222531', '#26332e', '#354439', '#43503d'].map((c) => hx(c)) as Tones };
+const mouthLining: Mat = { T: ['#392e36', '#573744', '#764754', '#995b64'].map((c) => hx(c)) as Tones };
 const dark = hx('#3f4c3a'),
   cream = hx('#f8e6a1'),
   white = hx('#fff3cf');
@@ -94,21 +97,61 @@ function tail(r: Rig, B: F3, m: Colors, p: JointPose, step: number, gait: number
     tuck = p.tuck ?? 0;
   const cx = -17.3 - 3.5 * loose + 1.6 * tuck,
     cz = -4.5 + 1.6 * tuck;
+  const unroll = p.unroll ?? 0;
+  const lift = -0.5 * Math.sin(Math.PI * unroll);
   const arc = (u: number): V3 => {
     const rad = (7.3 - 0.9 * tuck) * (1 - u) + 1.15 * u;
     const angle = 0.43 + u * (6.08 - 0.64 * loose + 0.37 * tuck);
-    return B.p(
+    return [
       cx + Math.cos(angle) * rad,
       1.1 + u * 0.85 + Math.sin(step * TAU - 0.62 - u * 1.7) * gait * (0.45 + u) + u * (p.sway ?? 0),
       cz + Math.sin(angle) * rad + u * (p.tip ?? 0),
-    );
+    ];
   };
-  let prev = B.p(-8.7, 0, -1.2),
+  const root: V3 = [-8.7, 0, -1.2];
+  // As the coil opens it sweeps out to one side to balance the first step.
+  const sweep =
+    unroll > 0
+      ? B.at(...root)
+          .turn(-0.17 * unroll)
+          .pitch(0.3 * unroll)
+          .roll(0.4 * unroll)
+      : undefined;
+  let lastBind = root,
+    posed = root,
+    prev = B.p(...root),
     thick = 3.25;
+  let lastAngle = 0,
+    lastStraight = 0,
+    heading = 0;
   for (let i = 0; i <= 27; i++) {
     const u = i / 27,
-      next = arc(u),
+      bind = arc(u),
       radius = mix(2.65, 0.37, u);
+    if (unroll > 0) {
+      // Unwind each joint from the base towards the tip. Each segment keeps its length.
+      const dx = bind[0] - lastBind[0],
+        dz = bind[2] - lastBind[2],
+        length = Math.hypot(dx, dz);
+      const angle = Math.atan2(dz, dx);
+      const straight = Math.PI * (0.91 - 0.29 * Math.sin(TAU * u - 0.34) + 0.23 * u);
+      const released = clamp(unroll * 1.34 - u * 0.34);
+      if (i === 0)
+        heading = angle + Math.atan2(Math.sin(straight - angle), Math.cos(straight - angle)) * released;
+      else {
+        const bend = Math.atan2(Math.sin(angle - lastAngle), Math.cos(angle - lastAngle));
+        heading += mix(bend, straight - lastStraight, released);
+      }
+      posed = [
+        posed[0] + length * Math.cos(heading + lift),
+        bind[1],
+        posed[2] + length * Math.sin(heading + lift),
+      ];
+      lastBind = bind;
+      lastAngle = angle;
+      lastStraight = straight;
+    } else posed = bind;
+    const next = sweep ? sweep.p(...vsub(posed, root)) : B.p(...posed);
     r.cap(prev, next, thick, radius, i % 5 < 2 ? m.bars : m.skin);
     if (i > 0 && i % 3 === 1)
       r.line(
@@ -123,8 +166,21 @@ function tail(r: Rig, B: F3, m: Colors, p: JointPose, step: number, gait: number
 }
 function face(r: Rig, H: F3, m: Colors, p: JointPose, breathe: number, sockets: Record<string, V3>) {
   r.tag = 'head';
-  r.ell(H, [0.35, 0, 0.1], [6.65, 4.15, 4.65], m.skin);
-  const nose = H.p(7.4, 0, -0.5),
+  const open = p.open ?? 0;
+  // The forward part of the cheek ends at the upper lip. Carve the gape as the hinge lowers.
+  r.ell(
+    H,
+    [0.35, 0, 0.1],
+    [6.65, 4.15, 4.65],
+    m.skin,
+    open > 0
+      ? ([x, , z]) => {
+          const cut = mix(-4.65, -1.52 + 0.56 * x, clamp(open * 2) * clamp((x + 0.05) * 3));
+          return 0.1 + 4.65 * z < cut;
+        }
+      : undefined,
+  );
+  const nose = H.p(7.4 + 1.5 * open, 0, -0.5),
     crown = H.p(-4.2, 0, 10.8),
     nape = H.p(-5.8, 0, 1.3),
     brow = H.p(3, 0, 4.2);
@@ -145,20 +201,50 @@ function face(r: Rig, H: F3, m: Colors, p: JointPose, breathe: number, sockets: 
   }
   r.line(crown, brow, m.belly.T[3]);
   sockets.casque = crown;
+  const jaw = H.at(-2.15, 0, -1.65).pitch(0.05 + 0.7 * open);
+  const upper = H.p(7.5 + 1.5 * open, 0, -1.22);
+  const lower = jaw.p(9.12, 0, 0.55);
+  const throat = jaw.p(6.35, 0, 1.63);
+  if (open > 0) {
+    r.tag = 'muzzle';
+    // A short, triangular upper snout shades the opening above the tongue.
+    for (const s of [-1, 1]) {
+      const cheek = H.p(2.8, s * 3.35, -1.52);
+      const front = H.p(6.3 + open * 0.75, s * 1.81, -1.3);
+      r.poly([H.p(2.8, s * 2.9, 1.75), H.p(6.1, s * 1.4, 1.02), nose, front, cheek], m.skin);
+      r.poly([cheek, front, upper, H.p(1.1, 0, -1.52)], mouthLining);
+      r.line(cheek, front, m.belly.T[2]);
+      r.line(front, upper, m.belly.T[3]);
+    }
+    r.tag = 'gape';
+    // Inside walls stop at the corners. The front of the mouth stays open between the lips.
+    for (const s of [-1, 1])
+      r.poly(
+        [
+          H.p(-0.8, s * 2.4, -1.4),
+          H.p(4.6, s * 2.45, -1.45),
+          jaw.p(6.7, s * 2.08, 1.05),
+          jaw.p(2.3, s * 2.35, 1.2),
+        ],
+        mouthLining,
+      );
+  }
   r.tag = 'jaw';
-  const jaw = H.at(-2.15, 0, -1.65).pitch(0.05 + (p.open ?? 0) * 0.62);
   r.ell(jaw, [3.65, 0, -0.15], [5.66, 3.48, 2.05], m.belly);
-  if ((p.open ?? 0) > 0.1) r.ell(jaw, [4.3, 0, 0.51], [4.73, 2.87, 0.69], m.tongue);
+  if (open > 0.1) r.ell(jaw, [4.2, 0, 1.23], [4.73, 2.69, 0.69], mouthLining);
   for (const s of [-1, 1]) {
     r.line(H.p(-2.4, s * 3.67, -1.2), H.p(3.7, s * 3.06, -1.47), dark);
-    r.line(H.p(3.7, s * 3.06, -1.47), H.p(7.32, s * 0.69, -0.83), dark);
+    if (open < 0.1) r.line(H.p(3.7, s * 3.06, -1.47), H.p(7.32, s * 0.69, -0.83), dark);
     r.ell(H, [5.29, s * 2.27, 1.29], [0.62, 0.37, 0.44], black);
     r.dot(H.p(5.75, s * 2.25, 1.57), cream, 0, 0.43);
   }
   sockets.head = H.o;
   sockets.nose = nose;
   sockets.chin = jaw.p(3.2, 2.7, -1.43);
-  sockets.lip = H.p(7.5, 0, -1.19);
+  sockets.upperLip = upper;
+  sockets.lowerLip = lower;
+  sockets.tongueRoot = throat;
+  sockets.lip = vlerp(lower, upper, 0.42);
   for (const s of [-1, 1]) {
     r.tag = s < 0 ? 'eyeL' : 'eyeR';
     const eye = H.p(1.1, s * 3.65, 2.15);
@@ -349,8 +435,7 @@ export function chameleonFrame(card: CreatureCard): Creature['frame'] {
     let gait = 0,
       step = 0;
     if (anim === 'walk' || anim === 'turn') {
-      p.low = 0.3;
-      p.loose = 0.62;
+      Object.assign(p, walkingStance);
     }
     if (anim === 'idle') {
       p.turnHead = 0.079 * cycle;
@@ -399,21 +484,33 @@ export function chameleonFrame(card: CreatureCard): Creature['frame'] {
     sockets.tailTip = tail(r, B, m, p, step, gait);
     face(r, H, m, p, cycle, sockets);
     feet(r, floor, B, H, m, p, step, gait, card.life.stride / scale, sockets, trips[anim]?.poses[n]);
-    const mouth = sockets.lip;
-    // The free seed and the pad share this one field coordinate at full extension.
+    const mouth = sockets.lip,
+      shot = p.shot ?? 0;
+    // Feed the tongue through the middle of the gape before it rises towards the falling seed.
+    // Drawing the prefix of the same curve on extension and retraction keeps its base in the mouth.
     const x = (seedContact[0] - home[0] - (p.x ?? 0)) / scale,
       y = mouth[1] + 1.5;
     const z = (y * 0.6 * scale + home[1] + (p.y ?? 0) - seedContact[1]) / (0.8 * vertical);
-    const tip = vlerp(mouth, [x, y, z], p.shot ?? 0);
+    const target: V3 = [x, y, z];
+    const forward = H.pitch(0.5 * (0.05 + 0.7 * (p.open ?? 0))).f;
+    const guide = vadd(mouth, vmul(forward, 0.47 * vlen(vsub(target, mouth))));
+    const onTongue = (u: number) => vlerp(vlerp(mouth, guide, u), vlerp(guide, target, u), u);
+    const innerTip = vlerp(sockets.tongueRoot, mouth, clamp(((p.open ?? 0) - 0.15) * 1.15));
+    const tip = shot > 0 ? onTongue(shot) : innerTip;
     sockets.tongueTip = tip;
-    if ((p.shot ?? 0) > 0.018) {
+    if ((p.open ?? 0) > 0.2) {
       r.tag = 'tongue';
-      const joint = vlerp(mouth, tip, 0.55);
-      joint[2] -= Math.sin((p.shot ?? 0) * Math.PI) * 0.74;
-      r.cap(mouth, joint, 0.7, 0.61, m.tongue);
-      r.cap(joint, tip, 0.62, 0.74, m.tongue);
-      r.ell(new F3(tip, floor.f, floor.s, floor.u), [0, 0, 0], [1.35, 0.92, 1.04], m.tongue);
-      r.dot(vadd(tip, [0, 0.6, 0.62]), m.tongue.T[3], 0, 0.43);
+      r.cap(sockets.tongueRoot, shot > 0 ? mouth : innerTip, 1, 0.78, m.tongue);
+      if (shot > 0) {
+        const segments = Math.max(2, Math.ceil(shot * 5));
+        let previous = mouth;
+        for (let i = 1; i <= segments; i++) {
+          const next = onTongue((shot * i) / segments);
+          r.cap(previous, next, i === 1 ? 0.78 : 0.63, i === segments ? 1.1 : 0.63, m.tongue);
+          previous = next;
+        }
+        r.dot(vadd(tip, [0, 0.6, 0.62]), m.tongue.T[3], 0, 0.43);
+      }
     }
     finishSurfaces(
       r,

@@ -8,6 +8,7 @@ export const seedBeat = { notice: 10, aim: 23, touch: 41, retract: 47, lip: 53, 
 export const birdBeat = { notice: 12, dash: 25, hide: 48, clear: 67, peek: 74, rail: 100 };
 const sleep = { low: 0.92, tuck: 1, nod: 0.38, lids: 1, turnHead: 0.22 };
 const travel = { low: 0.3, loose: 0.62 };
+export const walkingStance = { low: 0.3, unroll: 1 };
 const aim = { ...travel, turn: -0.44, turnHead: -0.1, nod: -0.35, focus: 1 };
 const lip = { turn: -0.37, turnHead: 0.02, nod: -0.21, focus: -0.8, open: 0.42, low: 0.13 };
 const watch = { turnHead: -0.34, nod: -0.61, focus: 1, up: 1 };
@@ -26,9 +27,10 @@ const tracks: Record<string, Track> = {
   ],
   prepare_walk: [
     [0, {}],
-    [5, { lean: -0.65 }],
-    [11, { ...travel, lean: 0.64 }],
-    [17, travel],
+    [3, { lean: -0.45, unroll: 0.12 }],
+    [7, { lean: 0.18, low: 0.14, unroll: 0.46 }],
+    [13, walkingStance],
+    [17, walkingStance],
   ],
   fidget_a: [
     [0, {}],
@@ -110,10 +112,10 @@ const tracks: Record<string, Track> = {
     [21, { ...aim, lean: -0.48 }],
     [25, aim],
     [32, { ...aim, lean: 1.3 }],
-    [36, { ...aim, lean: -0.5, low: 0.5, open: 0.45 }],
-    [38, { ...aim, lean: -0.6, low: 0.52, open: 0.75 }],
-    [41, { ...aim, open: 0.9, lean: 1.95, shot: 1 }],
-    [47, { ...aim, open: 0.92, lean: 1.91, shot: 1 }],
+    [36, { ...aim, lean: -0.5, low: 0.5, nod: -0.58, open: 0.58 }],
+    [38, { ...aim, lean: -0.6, low: 0.52, nod: -0.7, open: 0.93 }],
+    [41, { ...aim, open: 0.96, nod: -0.72, lean: 1.95, shot: 1 }],
+    [47, { ...aim, open: 0.96, nod: -0.72, lean: 1.91, shot: 1 }],
     [53, { ...lip, shot: 0.115 }],
     [56, { ...lip, shot: 0.115, lean: -0.95 }],
     [64, { ...lip, shot: 0.115, lean: -0.95 }],

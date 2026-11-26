@@ -1,5 +1,6 @@
 import { fillPoly, type Pen } from '../fx/pen';
-import { TAU } from '../kit/f11-mobkit';
+import { fill2, hx, TAU } from '../kit/f11-mobkit';
+import { Px } from '../rig/px';
 import type { FxInput, XY } from '../types';
 import { seedBeat, seedContact } from './garden_chameleon-poses';
 
@@ -75,43 +76,86 @@ function shootSeed(f: FxInput, n: number) {
     f.propAt?.('samara', spot);
   }
 }
+// A swallow seen from below. The wrist leads the stroke; the long primaries sweep aft.
+const swallowInk = hx('#344852');
 function swallow(p: Pen, n: number) {
-  const u = n / 64,
-    x = 178 - 205 * u,
-    y = 13 + 15 * Math.sin(u * Math.PI) + 2 * u;
-  const wing = Math.sin((n / 19) * TAU);
-  // Hard glazing bars occlude the silhouette. Its deeply forked tail follows its beak.
-  p.occ = [0, 24, 160, 26];
-  for (const ix of [2, 42, 82, 122]) p.occ.push(ix, 26, ix + 2, 54);
-  const silhouette = [
-    [-17, 0],
-    [-13, -1],
-    [-11, -3],
-    [-8, -3],
-    [-5, -2],
-    [-2, -4],
-    [4, -10 - wing * 4],
-    [13, -12 - wing * 6],
-    [6, -5 - wing * 2],
-    [3, -1],
-    [12, -2],
-    [20, -5],
-    [15, 0],
-    [20, 4],
-    [10, 2],
-    [3, 3],
-    [6, 8 + wing * 3],
-    [8, 12 + wing * 4],
-    [1, 8 + wing * 2],
-    [-4, 3],
-    [-9, 2],
-    [-12, 1],
-  ];
-  p.col('#465a61', 0.74);
-  fillPoly(
-    p,
-    silhouette.flatMap(([a, b]) => [x + a, y + b]),
-  );
+  const u = n / 64;
+  const beat = n % 27;
+  const fold = Math.max(0, Math.min(1, (beat - 5) / 3, (20 - beat) / 9));
+  const bend = fold * fold * (3 - 2 * fold);
+  const bank = -0.28 + 0.09 * Math.sin(TAU * u);
+  const cos = Math.cos(bank),
+    sin = Math.sin(bank);
+  const bird = new Px(66, 64);
+  const paint = (contour: XY[]) =>
+    fill2(
+      bird,
+      contour.map(([x, y]): XY => [32 + x * cos - y * sin, 32 + x * sin + y * cos]),
+      () => swallowInk,
+    );
+  for (const near of [false, true]) {
+    const side = near ? 1 : -1;
+    const wrist = -7.5 + 5 * bend + (near ? 3 : 0);
+    const span = (near ? 0.83 : 1) * (1 - 0.48 * bend);
+    const tip = (near ? 18 : 10) + 7 * bend;
+    const wing: XY[] = [
+      [-5, 1],
+      [wrist - 1, 8],
+      [wrist - 1.8, 12],
+      [wrist - 1.4, 14.8],
+      [wrist + 0.7, 18.2],
+      [tip - 6, 24],
+      [tip, 28],
+      [tip - 2.2, 23.4],
+      [wrist + 7, 14.1],
+      [wrist + 6.4, 12.2],
+      [wrist + 7.4, 10],
+      [wrist + 9.3, 8.6],
+      [wrist + 9.4, 7.1],
+      [wrist + 11.7, 6.2],
+      [5.7, 3.0],
+      [6.1, 0.8],
+    ];
+    paint(wing.map(([x, y]) => [x, side * y * span]));
+  }
+  // Rounded crown, short beak, plump breast, narrow rump and two thin tail streamers.
+  paint([
+    [-21.5, 0.2],
+    [-16.1, -1.6],
+    [-15.6, -3.1],
+    [-14.1, -4.7],
+    [-11.7, -5.3],
+    [-9.6, -5.0],
+    [-7.4, -3.3],
+    [-5, -2.9],
+    [1.6, -3.6],
+    [6.5, -2.6],
+    [10.2, -1.5],
+    [18, -4.7],
+    [26, -9.3],
+    [23.1, -5.3],
+    [19.0, -1.8],
+    [14.8, 1.2],
+    [18.7, 4.5],
+    [23, 10.3],
+    [15.6, 6.0],
+    [9.2, 3.3],
+    [5.3, 3.4],
+    [0.8, 4.9],
+    [-3.7, 5.2],
+    [-7.3, 4.2],
+    [-10.8, 2.4],
+    [-13.4, 2.7],
+    [-15.7, 1.6],
+    [-16.5, 0.7],
+  ]);
+  // Paint the alpha mask once. The open slots between wings and tail must show the glass.
+  const x = 187 - 221 * u,
+    y = 20 + 14 * Math.sin(Math.PI * u) - 1.6 * bend;
+  p.occ = [0, 24, 160, 26, 0, 52, 160, 128];
+  for (const ix of [2, 42, 82, 122]) p.occ.push(ix, 26, ix + 2, 52);
+  p.alpha(0.86);
+  p.img(bird.canvas(), Math.round(x) - 32, Math.round(y) - 32);
   p.occ = null;
 }
 export function glasshouseEffects(f: FxInput) {
