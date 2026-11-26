@@ -48,16 +48,21 @@ export function validateBehavior(data, animations) {
     issues.push('seed/previewSeconds');
   if (!pair(data.field, n => Number.isInteger(n) && n > 0) || !positive(data.stride) ||
       !Number.isFinite(data.yaw) || !positive(data.depthScale)) issues.push('field/stride/depthScale');
-  if (!interval(data.walkShare, 0.35, 0.50)) issues.push('walkShare must be within 35–50%');
+  const program = data.lifeProgram;
+  if (program === undefined) {
+    if (!interval(data.walkShare, 0.35, 0.50)) issues.push('walkShare must be within 35–50%');
+  } else if (!data.tricks || !Array.isArray(program) || !program.length ||
+      program.some(name => !isAmbient(name) || !animations?.[name]) ||
+      !interval(data.walkShare, 0, 0)) issues.push('invalid lifeProgram or nonzero walking share');
   const hasTricks = data.tricks !== undefined;
   if (!hasTricks && (!data.lifeAttacks || data.attackInterval !== undefined) && !interval(data.attackInterval, 30, 45))
     issues.push('attackInterval must be within 30–45 s');
-  if (!Array.isArray(data.stops) || data.stops.length < 3 ||
+  if (!Array.isArray(data.stops) || data.stops.length < (program === undefined ? 3 : 1) ||
       !data.stops.every(stop => pair(stop, n => Number.isFinite(n) && n >= 0 && n <= 1)) ||
       new Set(data.stops.map(String)).size !== data.stops.length) issues.push('distinct floor stops');
   const weights = data.weights ?? {};
-  if (![...ambientClips, ...(hasTricks ? [] : ['trick'])].every(k => positive(weights[k])) ||
-      Object.entries(weights).some(([k,v]) => !positive(v) || !animations?.[k]))
+  if ((program === undefined || data.weights !== undefined) && (![...ambientClips, ...(hasTricks ? [] : ['trick'])].every(k => positive(weights[k])) ||
+      Object.entries(weights).some(([k,v]) => !positive(v) || !animations?.[k])))
     issues.push('positive weights for ambient clips');
   const attacks = data.attacks;
   if (hasTricks) {
@@ -124,7 +129,18 @@ export function validateBehavior(data, animations) {
     if (score.maxWalk < Math.round(ticks(data.previewSeconds) * data.walkShare[0]))
       issues.push('lifeAttacks, turns and phase leave too little time for the minimum walking share');
   }
-  if (!issues.length && hasTricks && trickPlan(data, animations).maxWalk < Math.round(ticks(data.previewSeconds) * data.walkShare[0]))
+  if (!issues.length && program !== undefined) {
+    const { f1, f2 } = data.tricks;
+    const fixed = program.reduce((sum, name) => sum + length(animations, name), 2) +
+      (f2 ? 2 * length(animations, 'phase') + length(animations, 'idle-f2') : 0);
+    const count = f1.length * (f2?.length ?? 1);
+    for (let cycle = 0; cycle < count; cycle++) {
+      const occupied = fixed + length(animations, f1[cycle % f1.length]) +
+        (f2 ? length(animations, f2[cycle % f2.length]) : 0);
+      if (occupied > ticks(data.previewSeconds)) { issues.push('lifeProgram exceeds previewSeconds'); break; }
+    }
+  }
+  if (!issues.length && hasTricks && program === undefined && trickPlan(data, animations).maxWalk < Math.round(ticks(data.previewSeconds) * data.walkShare[0]))
     issues.push('tricks, turns and phase leave too little time for the minimum walking share');
   return issues;
 }
@@ -288,8 +304,30 @@ export function createPetBehavior(config, animations, seed = config.seed) {
   // three floor distances. The planted-foot phase depends on distance travelled.
   function planCycle() {
     const cycle = cycleStart / window;
-    const score = tricks ? trickPlan(config, animations, bearings, cycle) : ranked;
     const rows = [];
+    const play = (name, at, reverse = false, form = 'f1') => {
+      const count = length(animations, name);
+      for (let i = 0; i < count; i++) {
+        const row = sampleAt(name, reverse ? count - i - 1 : i, at);
+        rows.push(tricks ? { ...row, form } : row);
+      }
+    };
+    if (config.lifeProgram) {
+      rows.push(sampleAt('idle', 0, home));
+      for (const name of config.lifeProgram) play(name, home);
+      play(tricks.f1[cycle % tricks.f1.length], home);
+      if (tricks.f2) {
+        play('phase', home);
+        play('idle-f2', home, false, 'f2');
+        play(tricks.f2[cycle % tricks.f2.length], home, false, 'f2');
+        play('phase', home, true, 'f2');
+      }
+      const remaining = window - rows.length;
+      for (let i = 0; i < remaining; i++)
+        rows.push(sampleAt('idle', i === remaining - 1 ? 0 : i % idleFrames, home));
+      return rows;
+    }
+    const score = tricks ? trickPlan(config, animations, bearings, cycle) : ranked;
     const chosen = config.stops.slice(1);
     const take = () => chosen.splice(Math.floor(random() * chosen.length), 1)[0];
     const via = score ? score.stops.map(stop => stop.at) : [home, take(), take(), home];
@@ -331,13 +369,6 @@ export function createPetBehavior(config, animations, seed = config.seed) {
       used = end;
     }
     if (score) {
-      const play = (name, at, reverse = false, form = 'f1') => {
-        const count = length(animations, name);
-        for (let i = 0; i < count; i++) {
-          const row = sampleAt(name, reverse ? count - i - 1 : i, at);
-          rows.push(tricks ? { ...row, form } : row);
-        }
-      };
       const spare = score.maxWalk - walks;
       rows.push(sampleAt('idle', 0, home));
       for (const [i, stop] of score.stops.entries()) {
@@ -488,6 +519,9 @@ export function createPetBehavior(config, animations, seed = config.seed) {
     if (!pending) return false;
     const state = current();
     if (travel.length || (tricks && state.anim === 'phase')) return false;
+    // This performer's scene props move with the action. Finish a staged gesture before answering a tap.
+    if (config.lifeProgram && !['idle', 'idle-f2', 'sleep'].includes(state.anim) &&
+        state.frame !== 0) return false;
     if (!animations[state.anim].interrupt.includes(state.frame)) return false;
     const event = pending;
     pending = undefined;

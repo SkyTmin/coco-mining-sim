@@ -2037,6 +2037,175 @@
     ]
   },
   {
+    "id": "threshold_keeper",
+    "name": "Хранитель дверей",
+    "section": "ours",
+    "rarity": "secret",
+    "color": "#785f72",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Слушает за дверью",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Подпрыгивает вместе с домиком",
+        "frames": 43
+      },
+      {
+        "id": "tired",
+        "name": "Домик стал тяжёлым",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Первый порог",
+        "frames": 52
+      },
+      {
+        "id": "idle-f2",
+        "name": "Покой часовой башни",
+        "frames": 72
+      },
+      {
+        "id": "fidget_a",
+        "name": "Перестукивается с домиком",
+        "frames": 53
+      },
+      {
+        "id": "fidget_b",
+        "name": "Проверяет ключ",
+        "frames": 49
+      },
+      {
+        "id": "happy-f2",
+        "name": "Звонят башенные часы",
+        "frames": 41
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "trick",
+        "name": "Входит в дом на спине и выходит из рамы",
+        "frames": 162
+      },
+      {
+        "id": "trick_b",
+        "name": "Разворачивает лестницу из порога",
+        "frames": 159
+      },
+      {
+        "id": "phase",
+        "name": "Дом раскрывается в часовую башню",
+        "frames": 72
+      },
+      {
+        "id": "trick-f2",
+        "name": "Поворачивает лестницу в небе",
+        "frames": 168
+      },
+      {
+        "id": "trick_b-f2",
+        "name": "Сворачивает город в карту",
+        "frames": 174
+      },
+      {
+        "id": "show",
+        "name": "Кто живёт за маленькой дверью",
+        "frames": 182
+      },
+      {
+        "id": "peek",
+        "name": "Выглядывает из-за косяка",
+        "frames": 63
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 2052
+      }
+    ]
+  },
+  {
     "id": "kettle_crab",
     "name": "Краб-отшельник Котёл",
     "section": "ours",
