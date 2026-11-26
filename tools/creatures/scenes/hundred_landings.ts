@@ -24,6 +24,7 @@ const palette = {
 };
 const C = Object.fromEntries(Object.entries(palette).map(([k, v]) => [k, hx(v)]));
 let cache: Px;
+const terraceEdge = (x: number) => 171 + 7 * Math.sin((x - 24) / 57) + 0.027 * (x - 128);
 function polygon(p: Px, pts: XY[], tone: keyof typeof palette) {
   face(p, pts, C[tone]);
 }
@@ -107,9 +108,8 @@ function backdrop() {
     p.line(x, y, x + 7, y, C.cap);
   }
   // The front terrace has a rounded edge, alternating cut blocks and hanging masonry underneath.
-  const edge = (x: number) => 171 + 7 * Math.sin((x - 24) / 57) + 0.027 * (x - 128);
   for (let x = 0; x < 256; x++) {
-    const y = edge(x),
+    const y = terraceEdge(x),
       back = 147 + 4 * Math.sin(x / 41);
     for (let v = Math.round(back); v <= y; v++)
       p.set(x, v, mixc(C.stone, C.cap, 0.25 + (0.31 * (v - back)) / (y - back) + 0.14 * hash(x >> 2, v >> 1, 7)));
@@ -118,9 +118,9 @@ function backdrop() {
   }
   for (let k = -1; k < 13; k++) {
     const x = k * 25 + 4,
-      y = edge(x),
+      y = terraceEdge(x),
       x2 = x + 24,
-      y2 = edge(x2),
+      y2 = terraceEdge(x2),
       dev = 13 + hash(k, 7, 8) * 20;
     polygon(
       p,
@@ -142,12 +142,6 @@ function backdrop() {
         y = 150 + row * 5 + 4 * Math.sin(x / 47);
       p.line(x, y, x + 12, y - 1, C.stone);
       p.line(x + 13, y, x + 17, y + 3, C.stone);
-    }
-  for (const x of [4, 9, 240, 248])
-    for (let k = 0; k < 7; k++) {
-      const y = edge(x) + 1,
-        h = 2 + hash(x, k, 15) * 7;
-      p.line(x + k * 0.6, y, x + (k - 3) * 1.4, y - h, C.leaf);
     }
   return p;
 }
@@ -187,4 +181,15 @@ const scene: Scene = (p, t) => {
     p.line(x, y + 1, x + 3, y - flap, C.cliff);
   }
 };
+scene.front = [4, 9, 240, 248].map((x) => ({
+  id: 'terrace-grass-' + x,
+  depth: Math.round(terraceEdge(x) + 1),
+  paint(p) {
+    const ground = terraceEdge(x) + 1;
+    for (let k = 0; k < 7; k++) {
+      const height = 2 + hash(x, k, 15) * 7;
+      p.line(x + k * 0.6, ground, x + (k - 3) * 1.4, ground - height, C.leaf);
+    }
+  },
+}));
 export default scene;
