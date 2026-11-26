@@ -1,4 +1,4 @@
-import { F3, Rig, vadd, vcross, vlerp, vmul, vnorm, vsub, type V3 } from '../rig/f15-rig';
+import { F3, Rig, proj, vadd, vcross, vdot, vlen, vlerp, vmul, vnorm, vsub, type V3 } from '../rig/f15-rig';
 import { pointsOnlyActive } from '../rig/figure';
 import type { JointPose } from '../technique';
 import { tau } from './threshold_keeper-score';
@@ -225,7 +225,9 @@ export function beast(r: Rig, F: F3, p: JointPose, j: Marks) {
   const low = p.low || 0,
     gait = p.gait || 0,
     breathe = p.breathe || 0;
-  const B = F.at(-low * 2, 0, 3.2 - 6.6 * low + (p.bounce || 0) + breathe * 0.85);
+  const B = F.at(-low * 2, 0, 3.2 - 6.6 * low + (p.bounce || 0) + breathe * 0.85)
+    .pitch(p.lean || 0)
+    .roll((p.gait || 0) * 0.034);
   r.tag = 'body';
   j.body = B.p(0, 0, 28);
   j.root = F.o;
@@ -249,9 +251,19 @@ export function beast(r: Rig, F: F3, p: JointPose, j: Marks) {
     // In stance the sole moves back by exactly the distance covered by the floor track.
     const push = stride * (u < 0.5 ? 0.25 - u : -0.25 + 0.5 * v * v * (3 - 2 * v));
     const rise = p.step !== undefined && u > 0.5 ? 6.2 * Math.sin(Math.PI * v) : 0;
-    const hip = B.p(-9, s * 10.5, 17),
-      knee = B.p(-5 + push * 0.43, s * 15, 9 + rise * 0.7),
-      foot = F.p(-4 + push, s * 14, 4.3 + rise + lift * 5.5);
+    const hip = B.p(-9, s * 10.5, 17);
+    let knee = B.p(-5 + push * 0.43, s * 15, 9 + rise * 0.7),
+      foot = F.turn(p['pivot' + tag] || 0).p(-4 + push, s * 14, 4.3 + rise + lift * 5.5 + (p['sole' + tag] || 0));
+    if (p.footCycle !== undefined) {
+      const phase = s < 0 ? 0.5 : 0,
+        q = (p.footCycle + phase) % 1,
+        v = 2 * q - 1;
+      const displacement = q < 0.5 ? 0.25 - q : -0.25 + 0.5 * v * v * (3 - 2 * v);
+      const sweep = ((displacement - (0.25 - phase)) * p.footStride * p.heading) / 1.115;
+      const lift = q < 0.5 ? 0 : 7.4 * Math.sin(v * Math.PI);
+      foot = vadd(foot, [sweep, 0, lift]);
+      knee = vadd(knee, [sweep * 0.55, 0, lift * 0.67]);
+    }
     const X = new F3(foot, F.f, F.s, F.u);
     r.tag = 'foot' + tag;
     r.cap(hip, knee, 7, 6, shadowFur);
@@ -262,8 +274,28 @@ export function beast(r: Rig, F: F3, p: JointPose, j: Marks) {
     j['boot' + tag] = X.p(6.5, 0, -1.8);
     j['foot' + tag] = X.p(6.5, 0, -1.8);
     const shoulder = B.p(15, s * 12.4, 32);
-    const elbow = B.p(18 + reach * 3, s * (16 - reach), 17 + reach * 8 + lift * 2);
-    const palm = B.p(22 + reach * 9, s * (12 - reach * 6.6), 13 + reach * 10.8 + g * 2 + lift * 1.4);
+    let elbow = B.p(18 + reach * 3, s * (16 - reach), 17 + reach * 8 + lift * 2);
+    let palm = B.p(22 + reach * 9, s * (12 - reach * 6.6), 13 + reach * 10.8 + g * 2 + lift * 1.4);
+    const swing = (p.footCycle !== undefined ? Math.sin(p.footCycle * Math.PI * 2) * s : 0) * (1 - reach);
+    palm = vadd(palm, F.v(swing * 4.2, 0, Math.abs(swing) * 0.9));
+    elbow = vadd(elbow, F.v(swing * 2.4, 0, 0));
+    const strength = p['goal' + tag] || 0;
+    if (strength) {
+      const fingertip = new F3(palm, F.f, F.s, F.u).pitch(-reach * 0.45).p(3.6, 0, 0.5);
+      const seen = proj(fingertip, 0, 0),
+        dx = (p['goal' + tag + 'X'] - p.atX) / 1.115 - seen[0],
+        dy = (p['goal' + tag + 'Y'] - p.atY) / 1.115 - seen[1];
+      const wanted = vadd(palm, [dx, 0, -dy / 0.8]);
+      const direction = vnorm(vsub(wanted, shoulder)),
+        length = Math.min(33, vlen(vsub(wanted, shoulder))),
+        distance = Math.max(1, length);
+      const mid = (17 * 17 - 16 * 16 + distance * distance) / (2 * distance),
+        bend = Math.sqrt(Math.max(0, 17 * 17 - mid * mid));
+      const raw = vsub(elbow, shoulder),
+        normal = vnorm(vsub(raw, vmul(direction, vdot(raw, direction))));
+      elbow = vlerp(elbow, vadd(vadd(shoulder, vmul(direction, mid)), vmul(normal, bend)), strength);
+      palm = vlerp(palm, vadd(shoulder, vmul(direction, length)), strength);
+    }
     r.tag = 'arm' + tag;
     r.cap(shoulder, elbow, 5.3, 4.1, coat);
     r.cap(elbow, palm, 4.5, 3.3, leather);
@@ -273,6 +305,7 @@ export function beast(r: Rig, F: F3, p: JointPose, j: Marks) {
     for (let k = -1; k <= 1; k++)
       rod(r, P, [1.7, k * 2.2, 0], [4.7 - 0.55 * Math.abs(k), k * 2.4, 0.15], 1.35, cream, 1.05);
     j['hand' + tag] = P.p(3.6, 0, 0.5);
+    j['shoulder' + tag] = shoulder;
   }
   const q = p.key || 0;
   const hanger = B.p(12, 17.9, 29),

@@ -61,8 +61,6 @@
     ]
   },
   "lifeProgram": [
-    "fidget_a",
-    "look",
-    "fidget_b"
+    "fidget_a"
   ]
 }

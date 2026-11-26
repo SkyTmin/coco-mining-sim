@@ -81,15 +81,17 @@ const frame: Border = {
       p.ell(x, 8, h - 1, h - 1, patina);
       p.set(x - 1, 6, light);
     }
-    // A flush map drawer is built into the left jamb, below its large key plate.
-    p.rect(3, 129, 14, 144, black);
-    p.rect(4, 130, 13, 143, steel);
-    p.rect(5, 132, 12, 137, patina);
-    p.line(4, 130, 13, 130, gold);
-    p.line(5, 139, 12, 139, black);
-    p.line(7, 140, 10, 140, silver);
-    escutcheon(p, 9, 112, 8, 0.36);
-    escutcheon(p, p.w - 10, 107, 8, 0.36);
+    // Both mechanisms are at paw height on the same promenade as the house.
+    const x = p.w - 13,
+      y = b + 156;
+    p.rect(x - 3, y - 8, x + 6, y + 7, black);
+    p.rect(x - 2, y - 7, x + 5, y + 5, steel);
+    p.rect(x - 1, y - 5, x + 4, y, patina);
+    p.line(x - 2, y - 7, x + 5, y - 7, gold);
+    p.line(x - 1, y + 3, x + 4, y + 3, black);
+    p.line(x, y + 4, x + 3, y + 4, silver);
+    escutcheon(p, 9, b + 148, 9, 0.34);
+    escutcheon(p, p.w - 9, b + 147, 9, 0.34);
   },
 };
 export default frame;

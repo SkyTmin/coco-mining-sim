@@ -52,6 +52,15 @@ function entry(r: Rig, F: F3, p: JointPose, j: Marks) {
     arch.push(corner((Math.cos(a) * width) / 2, h - 2 + Math.sin(a) * 8));
   }
   r.poly(arch, night, 0.2);
+  // The side wall, worn threshold and diamond pane are recessed behind the outside face of the leaf.
+  const inside = (y: number, z: number) => F.p(0.34, y, z);
+  r.poly([inside(-10, 0), inside(-5, 4), inside(-5, 24), inside(-10, 28)], wood, 0.12);
+  r.poly([inside(-5, 4), inside(10, 3), inside(10, 24), inside(-5, 24)], cherry, 0.16);
+  r.poly([inside(-10, 0), inside(10, 0), inside(10, 4), inside(-5, 5)], brass, 0.12);
+  for (const z of [8, 14, 20]) r.line(inside(-5, z), inside(10, z - 1), wood.T[1], 0, 0.45);
+  r.poly([inside(1, 12), inside(5, 17), inside(1, 22), inside(-3, 17)], lamp, 0.24);
+  r.line(inside(1, 12), inside(1, 22), bronze.T[2], 0, 0.55);
+  r.line(inside(-3, 17), inside(5, 17), bronze.T[2], 0, 0.55);
   for (let i = 0; i < 11; i++) {
     const a = (i * Math.PI) / 11,
       b = ((i + 1) * Math.PI) / 11;
@@ -179,7 +188,7 @@ export function house(r: Rig, F: F3, p: JointPose, j: Marks) {
       block(r, A, [f, y, -leg], [6.4, 7, 2.7], wood, brass);
     }
   block(r, A, [0, 0, -0.8], [36, 49, 5], wood, brass);
-  // The facade stops just behind the moving leaf, so the open doorway really is dark.
+  // The facade ends behind the recessed entry.
   block(r, A, [0, 0, 17.5], [34, 45, 35], plaster, clay);
   for (const s of [-1, 1]) {
     const side = A.at(0, s * 22.6, 17).turn((s * Math.PI) / 2);
@@ -219,8 +228,13 @@ export function house(r: Rig, F: F3, p: JointPose, j: Marks) {
       for (const s of [-1, 1]) rod(r, side, [7.8, s * 6.7, 0], [7.8, s * 6.7, h], 1.15, bronze);
       if (form > 0.3) {
         r.ell(side, [7.6, 0, y], [0.8, 4.45, 4.8], lamp);
-        rod(r, side, [8.5, 0, y], [8.5, 2.9, y + 1.75], 0.55, wood);
-        rod(r, side, [8.5, 0, y], [8.5, -0.5, y + 3.25], 0.55, wood);
+        const angle = (1 - form) * Math.PI * 2.6 + (p.ring || 0) * 1.7;
+        rod(r, side, [8.5, 0, y], [8.5, 2.9 * Math.sin(angle + 1.03), y + 2.9 * Math.cos(angle + 1.03)], 0.58, wood);
+        rod(r, side, [8.6, 0, y], [8.6, 3.5 * Math.sin(angle), y + 3.5 * Math.cos(angle)], 0.55, wood);
+        for (let k = 0; k < 8; k++) {
+          const a = (k * Math.PI) / 4;
+          r.dot(side.p(8.4, 3.7 * Math.sin(a), y + 3.9 * Math.cos(a)), brass.T[1], 0, 0.54, 0.85);
+        }
       }
     }
     const brim = T.at(0, 0, h);

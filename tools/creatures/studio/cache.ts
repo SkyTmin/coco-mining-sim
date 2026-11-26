@@ -35,8 +35,12 @@ function sceneInputs(theme: string) {
   const files = new Set([join(dir, theme + '.ts')]);
   for (const file of files) {
     if (!existsSync(file)) continue;
-    for (const match of readFileSync(file, 'utf8').matchAll(/\bfrom\s*['"]\.\/([\w-]+)(?:\.ts)?['"]/g))
+    if (!file.endsWith('.ts')) continue;
+    const source = readFileSync(file, 'utf8');
+    for (const match of source.matchAll(/\bfrom\s*['"]\.\/([\w-]+)(?:\.ts)?['"]/g))
       files.add(join(dir, match[1] + '.ts'));
+    for (const match of source.matchAll(/new URL\(\s*['"]\.\/([\w-]+\.png)['"]\s*,\s*import\.meta\.url/g))
+      files.add(join(dir, match[1]));
   }
   return files;
 }
