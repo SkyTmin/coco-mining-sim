@@ -2444,6 +2444,145 @@
     ]
   },
   {
+    "id": "garden_chameleon",
+    "name": "Хамелеон Прищур",
+    "section": "ours",
+    "rarity": "common",
+    "color": "#54786a",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Взгляд",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Приветствует лапкой",
+        "frames": 36
+      },
+      {
+        "id": "tired",
+        "name": "Усталость",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Выходит из листьев",
+        "frames": 64
+      },
+      {
+        "id": "prepare_walk",
+        "name": "Распускает хвост",
+        "frames": 36
+      },
+      {
+        "id": "fidget_a",
+        "name": "Высматривает мошку",
+        "frames": 60
+      },
+      {
+        "id": "fidget_b",
+        "name": "Вытирает подбородок",
+        "frames": 48
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 30
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 30
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 24
+      },
+      {
+        "id": "trick",
+        "name": "Ловит крылатку",
+        "frames": 128
+      },
+      {
+        "id": "trick_b",
+        "name": "Тень на стекле",
+        "frames": 134
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1224
+      }
+    ]
+  },
+  {
     "id": "tuft_owlet",
     "name": "Совёнок Ушастик",
     "section": "ours",
