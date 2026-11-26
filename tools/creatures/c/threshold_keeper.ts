@@ -4,7 +4,7 @@ import { gestures } from './threshold_keeper-fx';
 import { figure } from './threshold_keeper-figure';
 import { clips, home } from './threshold_keeper-score';
 const keeper: Creature = {
-  id: card.id,
+  id: 'threshold_keeper',
   rarity: card.rarity,
   theme: card.theme,
   portraitOrigin: home,

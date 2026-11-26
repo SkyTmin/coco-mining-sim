@@ -3,10 +3,14 @@ import assert from 'node:assert/strict';
 import { compose } from '../engine';
 import { loadPainting } from '../render';
 import { withPointsOnly } from '../rig/figure';
+import { creatureIds } from '../studio/cache';
 import { bridgeTop, city, drawer, lock, porchTop, stairTop } from '../c/threshold_keeper-score';
 import type { XY } from '../types';
 
 const painting = await loadPainting('threshold_keeper');
+test('the workshop includes the keeper when checking all paintings', () => {
+  assert.ok(creatureIds().includes(painting.c.id));
+});
 function frame(clip: string, n: number) {
   return compose(painting.c, painting.s, painting.b, clip, n / 24);
 }
