@@ -81,8 +81,7 @@ function playInTheAir(n: number): FireflyPose {
   return { feet: [x, y], air: true, glow, face: x > 68 ? -1 : 1 };
 }
 export function fireflyAt(f: Pick<FxInput, 'points' | 'pointAt'>, n: number): FireflyPose {
-  const faceRight = 1,
-    faceLeft = -1;
+  const faceRight = 1;
   if (n <= visit.leave || n >= visit.home)
     return {
       feet: catchTop,
@@ -121,31 +120,40 @@ export function fireflyAt(f: Pick<FxInput, 'points' | 'pointAt'>, n: number): Fi
   const feet = lerp(f.pointAt(visit.farewell / 24, 'nose'), catchTop, u);
   feet[0] -= 13.5 * Math.sin(Math.PI * u);
   feet[1] -= 17.5 * Math.sin(Math.PI * u);
-  return { feet, air: true, glow: 0.94 - 0.19 * u, face: u < 0.86 ? faceLeft : faceRight };
+  return {
+    feet,
+    air: true,
+    glow: 0.94 - 0.19 * u,
+    face: faceRight - 2 * smooth(u / 0.18) + 2 * smooth((u - 0.62) / 0.27),
+  };
 }
-function firefly(n: number, b: FireflyPose) {
+function firefly(n: number, b: FireflyPose, perched = 0) {
   const p = new Px(27, 25);
-  const light = 13 - 4 * b.face;
-  const aura = [255, 217, 135, Math.round(48 * b.glow)] as [number, number, number, number];
-  p.ell(light, 10, 9, 8.5, aura);
-  p.ell(light, 10, 5.5, 5.3, [255, 222, 134, Math.round(73 * b.glow)]);
-  const x = (d: number) => 13 + b.face * (d - 2.65);
+  // The forefeet meet the nose. The abdomen settles onto the feet as the wings fold.
+  const settle = 3.1 * perched,
+    tuck = 0.55 * perched;
+  const light = 13 - (4 - tuck) * b.face;
+  const aura = [255, 217, 135, Math.round((48 - 13 * perched) * b.glow)] as [number, number, number, number];
+  p.ell(light, 10 + settle, 9 - 1.7 * perched, 8.5 - 1.7 * perched, aura);
+  p.ell(light, 10 + settle, 5.5 - perched, 5.3 - perched, [255, 222, 134, Math.round(73 * b.glow)]);
+  const x = (d: number) => 13 + b.face * (d - 2.65 + tuck),
+    y = (d: number) => d + settle;
   if (b.air) {
     const w = 0.5 + 0.5 * Math.sin((n * TAU) / 5);
-    p.ell(x(-1.75), 7.5 - 2 * w, 1.65 + 2.8 * w, 1.75 + w, beetle[5]);
-    p.ell(x(1.25), 7.3 - 2.6 * w, 1.45, 1.5 + 1.3 * w, beetle[6]);
+    p.ell(x(-1.75), y(7.5 - 2 * w), 1.65 + 2.8 * w, 1.75 + w, beetle[5]);
+    p.ell(x(1.25), y(7.3 - 2.6 * w), 1.45, 1.5 + 1.3 * w, beetle[6]);
   }
-  p.line(x(0.4), 11, x(2.65), 14, beetle[0]);
-  p.line(x(-1), 11, x(-1.6), 14, beetle[0]);
-  p.ell(x(-1.3), 10.2, 3.7, 2.9, beetle[0]);
-  p.ell(x(-1.65), 10.2, 3.15, 2.4, mixc(beetle[2], beetle[3], b.glow));
-  p.ell(x(-2.25), 9.75, 1.2, 1, beetle[4]);
-  p.ell(x(1.78), 9.3, 1.86, 1.66, beetle[0]);
-  p.set(x(2.35), 9, beetle[6]);
-  p.line(x(2), 8, x(2.9), 6.8, beetle[1]);
+  p.line(Math.round(x(0.4)), Math.round(y(11)), 13, 14, beetle[0]);
+  p.line(Math.round(x(-1)), Math.round(y(11)), 13 - 4 * b.face, 14, beetle[0]);
+  p.ell(x(-1.3), y(10.2), 3.7, 2.9, beetle[0]);
+  p.ell(x(-1.65), y(10.2), 3.15, 2.4, mixc(beetle[2], beetle[3], b.glow));
+  p.ell(x(-2.25), y(9.75), 1.2, 1, beetle[4]);
+  p.ell(x(1.78), y(9.3), 1.86, 1.66, beetle[0]);
+  p.set(x(2.35), y(9), beetle[6]);
+  p.line(x(2), y(8), x(2.9), y(6.8), beetle[1]);
   if (!b.air) {
-    p.ell(x(-0.6), 8.4, 2.8, 1.34, beetle[5]);
-    p.set(x(-1), 8, beetle[6]);
+    p.ell(x(-0.6), y(8.4), 2.8, 1.34, beetle[5]);
+    p.set(x(-1), y(8), beetle[6]);
   }
   return p.canvas();
 }
@@ -170,9 +178,6 @@ export function nurseryPlay(f: FxInput) {
   // Only the visiting insect rides on the actor layer. Its brass perch always stays at the window.
   const pen = game && n > visit.leave && n < visit.home ? f.above : field;
   pen.alpha(1);
-  pen.img(game ? firefly(n, b) : restingFly, Math.round(b.feet[0]) - 13, Math.round(b.feet[1]) - 14);
-  if (game && n >= visit.nose && n <= visit.farewell) {
-    pen.col('#ffdfa5', 0.64);
-    pen.dot(b.feet[0] + 1, b.feet[1] + 1);
-  }
+  const perch = smooth((n - visit.nose + 4) / 4) - smooth((n - visit.farewell) / 4);
+  pen.img(game ? firefly(n, b, perch) : restingFly, Math.round(b.feet[0]) - 13, Math.round(b.feet[1]) - 14);
 }

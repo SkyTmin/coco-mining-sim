@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import pet from '../c/lunar_plush';
 import { withPointsOnly } from '../rig/figure';
-import { vlen, vsub } from '../rig/f15-rig';
+import { vdot, vlen, vsub, type V3 } from '../rig/f15-rig';
 import { cushionAt, hug, visit } from '../c/lunar_plush-keys';
 import { fireflyAt } from '../c/lunar_plush-fx';
 import { compose } from '../engine';
@@ -12,6 +12,13 @@ import { visibleOwnedPixels } from '../studio/visibility';
 import type { BodyFrame, XY } from '../types';
 
 const distance = (a: XY, b: XY) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+function headCoordinates(frame: BodyFrame) {
+  const skull = frame.rig!.prims.find((p) => p.k === 0 && p.t === 'head');
+  assert.ok(skull?.k === 0);
+  return (point: V3) => skull.a.map((axis) => vdot(vsub(point, skull.c), axis) / vlen(axis));
+}
+const sameShape = (a: number[], b: number[]) =>
+  a.length === b.length && a.every((v, i) => Math.abs(v - b[i]) < 1e-6);
 function surfaces(f: ReturnType<typeof compose>) {
   const r = f.body.rig!;
   return visibleOwnedPixels(
@@ -90,6 +97,46 @@ test('the two mittens lift one five-point cushion, squeeze it at the cheek and p
   assert.deepEqual(frame(139).picture.data, frame(0).picture.data);
 });
 
+test('the sewn upper point bends under the cheek, stays painted and unfolds on the stool', async () => {
+  const { c, s, b } = await loadPainting('lunar_plush');
+  const frame = (n: number) => compose(c, s, b, 'trick', n / 24);
+  const crownOffset = (n: number) => frame(n).points.pillowCrown[0] - cushionAt(n).x;
+  assert.ok(crownOffset(hug.cheek) - crownOffset(hug.grasp) > 5);
+  assert.ok(Math.abs(crownOffset(hug.release) - crownOffset(hug.grasp)) < 0.01);
+  for (let n = hug.grasp - 12; n <= hug.release + 12; n++) {
+    const f = frame(n);
+    const { pillowCrown, pillowNotch } = f.points;
+    assert.ok(pillowNotch[1] - pillowCrown[1] > 6, 'upper lobe collapses at ' + n);
+    const tip: XY = [
+      pillowCrown[0] + f.feet[0] - f.worldFeet[0],
+      pillowCrown[1] + f.feet[1] - f.worldFeet[1],
+    ];
+    const pixels = surfaces(f)
+      .get('pillow')!
+      .map((p) => distance(p, tip));
+    assert.ok(
+      Math.min(...pixels) < 1.5 && pixels.filter((d) => d < 3.5).length >= 5,
+      'hidden piping at ' + n,
+    );
+  }
+});
+
+test('both curved ears follow the skull throughout the approach, embrace and release', () => {
+  const shape = (n: number) => {
+    const f = withPointsOnly(() => pet.frame('trick', n / 24, 0, 'normal'));
+    const local = headCoordinates(f);
+    // Compare the actual rings from root to tip, including rotation around an ear's own shaft.
+    return f.rig!.prims.flatMap((p) =>
+      p.k === 2 && (p.t === 'earL' || p.t === 'earR') ? local(p.pts[0]) : [],
+    );
+  };
+  const rest = shape(0);
+  assert.ok(rest.length > 60);
+  for (let n = 1; n < Math.round(pet.animations.trick.seconds * 24); n++) {
+    assert.ok(sameShape(shape(n), rest), 'independent ear turn at ' + n);
+  }
+});
+
 test('three rounds of peekaboo hold the hidden face, alternate the peeking eye and give time to see both eyes again', async () => {
   const { c, s, b } = await loadPainting('lunar_plush');
   const frame = (n: number) => compose(c, s, b, 'trick_b', n / 24);
@@ -130,6 +177,23 @@ test('the firefly leaves the window catch, settles on the nose and returns to it
   const frame = (n: number) => compose(c, s, b, 'trick_b', n / 24);
   const historical = (t: number, k: string) => frame(Math.round(t * 24)).points[k];
   const pose = (n: number) => fireflyAt({ points: frame(n).points, pointAt: historical }, n);
+  function lantern(f: ReturnType<typeof frame>): XY {
+    const layer = f.layers.fxo;
+    let x = 0,
+      y = 0,
+      count = 0;
+    // Measure the amber abdomen on the finished insect layer, excluding its translucent halo.
+    for (let i = 0; i < layer.data.length; i += 4) {
+      const [r, g, b, a] = layer.data.subarray(i, i + 4);
+      if (a === 255 && r > 215 && r > 1.08 * g && b < 137) {
+        x += (i / 4) % layer.w;
+        y += Math.floor(i / 4 / layer.w);
+        count++;
+      }
+    }
+    assert.ok(count >= 5);
+    return [x / count, y / count];
+  }
   assert.deepEqual(pose(visit.leave).feet, catchTop);
   assert.ok(pose(32).air && distance(pose(32).feet, catchTop) > 12);
   for (const n of [visit.nose, visit.nose + 7, visit.farewell - 3, visit.farewell]) {
@@ -139,10 +203,44 @@ test('the firefly leaves the window catch, settles on the nose and returns to it
     assert.equal(bug.air, false);
     const [x, y] = bug.feet.map(Math.round);
     assert.ok(f.layers.fxo.solid(x + 8, y + 8), 'a foot touches the nose on the actual insect layer');
+    const centre = lantern(f),
+      parts = surfaces(f);
+    const nearest = (part: string) => Math.min(...parts.get(part)!.map((p) => distance(p, centre)));
+    assert.ok(parts.get('nose')!.length >= 8, 'the dark button nose remains visible');
+    assert.ok(
+      nearest('nose') + 2 < Math.min(nearest('eyeL'), nearest('eyeR')),
+      'the visitor reads as sitting on an eye',
+    );
   }
+  assert.ok(
+    distance(lantern(frame(visit.farewell)), lantern(frame(visit.farewell + 1))) < 3,
+    'takeoff flips the abdomen across the muzzle',
+  );
   assert.ok(pose(visit.farewell + 12).air);
   assert.deepEqual(pose(visit.home).feet, catchTop);
   assert.deepEqual(frame(visit.end).picture.data, frame(0).picture.data);
+});
+
+test('turning to the visitor preserves the idle nose, muzzle and mouth in skull coordinates', () => {
+  const shape = (clip: string, n: number) => {
+    const f = withPointsOnly(() => pet.frame(clip, n / 24, 0, 'normal'));
+    const parts = f.rig!.prims,
+      local = headCoordinates(f);
+    const nose = parts.find((p) => p.k === 0 && p.t === 'nose');
+    const muzzle = parts.findLast((p) => p.k === 0 && p.t === 'head');
+    assert.ok(nose?.k === 0 && muzzle?.k === 0);
+    return [
+      ...local(nose.c),
+      ...nose.a.map(vlen),
+      ...local(muzzle.c),
+      ...muzzle.a.map(vlen),
+      ...local(f.joints!.nose),
+      ...local(f.joints!.mouth),
+    ];
+  };
+  const rest = shape('idle', 0);
+  for (let n = 0; n <= visit.end; n++)
+    assert.ok(sameShape(shape('trick_b', n), rest), 'enlarged muzzle at ' + n);
 });
 
 test('a short mitten strokes each cheek twice while the other one rests on the bib', async () => {
@@ -173,6 +271,13 @@ test('the waving mitten clears the pom and the hovering firefly stays in open ai
   const wave = (n: number) => compose(c, s, b, 'fidget_a', n / 24);
   const out = wave(16),
     back = wave(21);
+  const neutral = wave(0);
+  for (let n = 1; n < Math.round(c.animations.fidget_a.seconds * 24); n++) {
+    const f = wave(n);
+    for (const k of ['head', 'eyeL', 'eyeR', 'nose']) {
+      assert.ok(distance(f.points[k], neutral.points[k]) < 0.01, 'wave moves ' + k + ' at ' + n);
+    }
+  }
   assert.ok(distance(out.points.handL, back.points.handL) >= 8);
   for (const f of [out, back, wave(26)]) {
     assert.ok(distance(f.points.handL, f.points.pom) > 42);

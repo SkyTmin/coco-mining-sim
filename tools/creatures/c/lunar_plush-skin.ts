@@ -21,7 +21,7 @@ import { projectFigure, scaleFigure } from '../rig/figure';
 import type { JointPose } from '../technique';
 import type { Creature } from '../types';
 import { finishSurfaces } from './surface-work';
-import { heldPillow, placePillow } from './lunar_plush-pillow';
+import { heldPillow, pillowDepth, pillowGrip, placePillow } from './lunar_plush-pillow';
 import { cushionAt, home, poseAt } from './lunar_plush-keys';
 
 type Pigments = Record<string, Mat>;
@@ -54,19 +54,17 @@ function palette(card: CreatureCard, gold: boolean): Pigments {
   };
   return colors;
 }
-function ears(r: Rig, H: F3, p: JointPose, m: Pigments, pts: Sockets) {
+function ears(r: Rig, H: F3, p: JointPose, m: Pigments, pts: Sockets, hugging: boolean) {
   for (const s of [-1, 1]) {
     const side = s < 0 ? 'L' : 'R';
     r.tag = 'ear' + side;
-    const base = H.at(-0.9, s * 4.7, 5.3)
-      .turn(s < 0 ? -1.2 * (p.earFold ?? 0) : 0)
-      .roll(
-        -s *
-          ((p.droop ?? 0) * 0.63 +
-            (p.drag ?? 0) * 0.24 +
-            (p.earSway ?? 0) * 0.1 -
-            (p.ears ?? 0) * (s < 0 ? 0.23 : 0.38)),
-      );
+    const flop = hugging
+      ? 0
+      : (p.droop ?? 0) * 0.63 +
+        (p.drag ?? 0) * 0.24 +
+        (p.earSway ?? 0) * 0.1 -
+        (p.ears ?? 0) * (s < 0 ? 0.23 : 0.38);
+    const base = H.at(-0.9, s * 4.7, 5.3).roll(-s * flop);
     // The thick base curves outwards, then folds back over an open notch.
     const spine = (u: number, front = 0) => {
       const a = u * Math.PI * 1.29 - 0.62;
@@ -159,7 +157,7 @@ function face(r: Rig, H: F3, p: JointPose, m: Pigments, pts: Sockets) {
     const start = r.size;
     if (lift > 0.12) {
       const g = p.glance ?? 0,
-        up = p.noseUp ?? 0;
+        up = p.gazeUp ?? 0;
       r.ell(eye, [0, 0, 0], [1.03, 2.56, 3.0 * lift], m.cocoa);
       r.ell(eye, [0.54, 0, 0.02], [0.85, 2.25, 2.74 * lift], m.iris);
       r.ell(eye, [1.1, -g * 0.4, -0.68 * lift], [0.36, 1.52, 1.16 * lift], m.iris);
@@ -202,14 +200,14 @@ function face(r: Rig, H: F3, p: JointPose, m: Pigments, pts: Sockets) {
     r.cap(lock(a), lock(b), 0.22 + 0.45 * Math.sin(Math.PI * a), 0.17 + 0.45 * Math.sin(Math.PI * b), m.milk);
   }
   r.tag = 'head';
-  r.ell(H, [7.12 + 1.2 * (p.noseUp ?? 0), 0, -1.64], [2.35 + 1.75 * (p.noseUp ?? 0), 3.55, 2.12], m.milk);
+  r.ell(H, [7.12, 0, -1.64], [2.35, 3.55, 2.12], m.milk);
   r.tag = 'nose';
-  const nose = H.at(9.26 + 2.85 * (p.noseUp ?? 0), 0, -0.83);
+  const nose = H.at(9.26, 0, -0.83);
   r.ell(nose, [0, 0, 0], [0.98, 1.49, 0.94], m.cocoa);
   r.dot(nose.p(0.73, -0.32, 0.48), m.milk.T[3], 0, 0.41, 1);
-  pts.nose = nose.p(0.82, 0, 0.78);
+  pts.nose = nose.p(0.91, 0, 0.33);
   r.tag = 'mouth';
-  const lip = H.at(9.04 + 2.25 * (p.noseUp ?? 0), 0, -2.27);
+  const lip = H.at(9.04, 0, -2.27);
   r.line(lip.p(0.1, 0, 0.89), lip.p(0.59, 0, 0.05), m.cocoa.T[1]);
   for (const s of [-1, 1]) {
     const a = lip.p(0.62, 0, 0.05),
@@ -306,7 +304,6 @@ function feet(
     pts[r.tag] = boot.p(1, 0, -1.22);
   }
 }
-const pillowDepth = 32.6;
 function paws(
   r: Rig,
   B: F3,
@@ -337,9 +334,9 @@ function paws(
     const shrug = B.v(2.55, 0, 1.85);
     const sh = vadd(
       B.p(
-        0.2 + 6.1 * Math.sin(roll) + 0.75 * brush,
-        s * 6.65 * Math.cos(roll),
-        3.04 + 1.65 * Math.sin(roll) + 0.6 * wave + 0.65 * (p.nest ?? 0) + 1.25 * brush,
+        0.2 + 6.1 * Math.sin(roll) + 0.75 * brush + 1.55 * wave + 1.25 * reach,
+        s * (6.65 * Math.cos(roll) + 3.35 * wave),
+        3.04 + 1.65 * Math.sin(roll) + 0.72 * wave + 0.82 * reach + 0.65 * (p.nest ?? 0) + 1.25 * brush,
       ),
       vmul(shrug, cover),
     );
@@ -358,16 +355,13 @@ function paws(
     goal = vlerp(goal, H.p(5.0, s * 5.75, -5.65), snuggle);
     goal = vlerp(
       goal,
-      vadd(sh, B.v(1.85 - 0.4 * wiggle, s * (2.9 + 2.5 * wiggle), 2.55 - 4.2 * wiggle)),
+      vadd(sh, B.v(1.9 + 0.15 * wiggle, s * (4.2 + 0.3 * wiggle), -0.05 - 3.95 * wiggle)),
       wave,
     );
     goal = vlerp(goal, vadd(H.p(9.15, s * 4.75, 1.9), shrug), cover);
     if (reach) {
-      const pillow = cushionAt(n),
-        px = pillow.x + (s < 0 ? 11.4 : -10.2) * (1 - 0.12 * pillow.squeeze);
-      const py = pillow.y + (s < 0 ? 6.0 : 7.8);
+      const [px, py, depth] = pillowGrip(cushionAt(n), s);
       const dy = py - home[1] - (p.y ?? 0) + (p.alt ?? 0);
-      const depth = pillowDepth + (s < 0 ? 3 : 4);
       const grip: V3 = [
         (px - home[0] - (p.x ?? 0)) / scale,
         (SE * dy + CE * depth) / scale,
@@ -430,8 +424,8 @@ export function plush(card: CreatureCard): Creature['frame'] {
       shy = p.shy ?? 0;
     const H = B.at(
       0.15 - 1.05 * tuckFace - 0.2 * shy - 1.35 * (p.reach ?? 0),
-      3.15 * (p.reach ?? 0) - (p.waveSide ?? -1) * 3.65 * (p.wave ?? 0),
-      10.7 - (p.low ?? 0) * 1.12 - 1.05 * tuckFace - 0.75 * shy - 0.48 * nest,
+      4.15 * (p.reach ?? 0),
+      10.7 - (p.low ?? 0) * 1.12 - 1.05 * tuckFace - 0.75 * shy + nest,
     )
       .turn(p.head ?? 0)
       .roll(p.tilt ?? 0)
@@ -442,7 +436,7 @@ export function plush(card: CreatureCard): Creature['frame'] {
     r.innerInk = hx('#856b79');
     coat(r, B, p, m, pts);
     feet(r, F, B, p, m, pts, walk, step, turn ? pivot : undefined, card.life.stride / scale);
-    ears(r, H, p, m, pts);
+    ears(r, H, p, m, pts, anim === 'trick');
     face(r, H, p, m, pts);
     paws(r, B, H, p, m, pts, n, walk ? Math.sin(step * TAU) * 1.36 : 0, scale);
     finishSurfaces(
@@ -460,7 +454,15 @@ export function plush(card: CreatureCard): Creature['frame'] {
     scaleFigure(r, pts, scale);
     if (anim === 'trick' && heldPillow(n)) {
       const c = cushionAt(n);
-      placePillow(r, c, c.x - home[0] - (p.x ?? 0), c.y - home[1] - (p.y ?? 0) + (p.alt ?? 0), pillowDepth);
+      const seam = placePillow(
+        r,
+        c,
+        c.x - home[0] - (p.x ?? 0),
+        c.y - home[1] - (p.y ?? 0) + (p.alt ?? 0),
+        pillowDepth,
+      );
+      pts.pillowCrown = seam.crown;
+      pts.pillowNotch = seam.notch;
     }
     const frame = projectFigure(r, 96, [48, 75], pts, '#514454', 3.18, true);
     frame.dy = -(p.alt ?? 0);

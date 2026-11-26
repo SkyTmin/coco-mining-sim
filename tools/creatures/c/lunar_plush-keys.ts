@@ -18,20 +18,20 @@ export const visit = {
   end: 287,
 };
 const doze = { low: 1, nod: 0.42, lids: 1, snuggle: 1, droop: 0.74, tilt: 0.19 };
-const welcome = { grin: 0.92, wave: 1, tilt: -0.19, ears: 0.3 };
+const welcome = { grin: 0.92, wave: 1, ears: 0.15 };
 const grooming = { yaw: 0.19, nod: 0.22, low: 0.14, grin: 0.82 };
 const groomRight = { ...grooming, brushR: 1, lidR: 0.72, head: 0.08, tilt: 0.04 };
 const groomLeft = { ...grooming, brushL: 1, lidL: 0.72, head: -0.14, tilt: -0.06 };
 const seek = { yaw: -0.72, glance: 1, nod: 0.05, ears: 0.36 };
-const hold = { yaw: 0.46, head: -0.69, reach: 1, grin: 0.6 };
-const cuddle = { ...hold, reach: 1, lidL: 1, lidR: 1, grin: 1, tilt: -0.29, droop: 0.18, nest: 1, rise: 1.1 };
+const hold = { yaw: 0.43, head: -0.48, reach: 1, grin: 0.6 };
+const cuddle = { ...hold, reach: 1, lidL: 1, lidR: 1, grin: 1, tilt: 0.13, nest: 1, rise: 1.1 };
 const curious = { yaw: 0.19, head: 0.42, glance: -0.9, nod: -0.18, ears: 0.68 };
 const hiding = { yaw: 0.16, head: 0.08, low: 0.52, huddle: 1, coverL: 1, coverR: 1, droop: 0.52 };
 const peekLeft = { ...hiding, coverL: 0, huddle: 0.78, tilt: 0.13, grin: 0.73, glance: 0.9, head: -0.06 };
 const peekRight = { ...hiding, coverR: 0, huddle: 0.78, tilt: -0.16, grin: 0.72, glance: -0.9, head: 0.18 };
 const found = { yaw: 0.2, head: 0.4, nod: -0.1, open: 0.7, grin: 1, ears: 0.65 };
 const [first, second, third] = visit.rounds;
-const watch = { yaw: 0.58, head: 1.01, noseUp: 1, nod: 0.04, grin: 0.43, ears: 0.77 };
+const watch = { yaw: 1.2, head: 0.21, gazeUp: 1, nod: -0.12, grin: 0.43, ears: 0.77 };
 const stride = { aheadR: 1.5, aheadL: -1.5 };
 const tracks: Record<string, Track> = {
   look: [
@@ -56,13 +56,13 @@ const tracks: Record<string, Track> = {
   ],
   fidget_a: [
     [0, {}],
-    [5, { head: 0.12, grin: 0.4 }],
+    [5, { grin: 0.4 }],
     [11, { ...welcome, wiggle: -1 }],
     [16, { ...welcome, wiggle: 1 }],
     [21, { ...welcome, wiggle: -1 }],
     [26, { ...welcome, wiggle: 1 }],
     [31, { ...welcome, wiggle: -0.8 }],
-    [36, { wave: 0.6, grin: 0.75, tilt: -0.12 }],
+    [36, { wave: 0.6, grin: 0.75 }],
     [43, {}],
   ],
   fidget_b: [
@@ -138,7 +138,7 @@ const tracks: Record<string, Track> = {
     [hug.cheek, cuddle],
     [73, { ...cuddle, nod: 0.12 }],
     [80, cuddle],
-    [hug.lower, { ...hold, grin: 0.7, tilt: -0.16, rise: 1 }],
+    [hug.lower, { ...hold, grin: 0.7, tilt: 0.03, rise: 1 }],
     [hug.rest, { ...hold, nod: 0.15 }],
     [hug.release, { yaw: -0.62, head: -0.11, open: 0.21, grin: 0.86 }],
     [109, { yaw: -0.42, low: 0.58, grin: 0.85 }],
@@ -173,13 +173,13 @@ const tracks: Record<string, Track> = {
     [third.open, { ...found, open: 1, ears: 0.9 }],
     [third.open + 7, { ...found, open: 1, ears: 0.9 }],
     [visit.nose - 3, watch],
-    [visit.nose, watch],
-    [visit.farewell - 5, { ...watch, grin: 0.95 }],
-    [visit.farewell, { ...watch, grin: 0.88 }],
-    [visit.farewell + 7, { yaw: 0.47, head: 0.56, wave: 1, wiggle: -0.8, grin: 0.93 }],
-    [visit.farewell + 12, { yaw: 0.41, head: 0.52, wave: 1, wiggle: 1, grin: 0.93 }],
-    [visit.farewell + 17, { yaw: 0.38, head: 0.43, wave: 1, wiggle: -0.8, grin: 0.81 }],
-    [visit.home, { head: 0.5, ears: 0.25, grin: 0.6 }],
+    [visit.nose, { ...watch, lidR: 0.54 }],
+    [visit.farewell - 5, { ...watch, lidR: 0.46, grin: 0.95 }],
+    [visit.farewell, { ...watch, lidR: 0.46, grin: 0.88 }],
+    [visit.farewell + 7, { yaw: 0.96, head: 0.07, wave: 1, wiggle: -0.8, grin: 0.93 }],
+    [visit.farewell + 12, { yaw: 0.9, head: 0.03, wave: 1, wiggle: 1, grin: 0.93 }],
+    [visit.farewell + 17, { yaw: 0.73, head: 0.08, wave: 1, wiggle: -0.8, grin: 0.81 }],
+    [visit.home, { yaw: 0.36, head: 0.14, ears: 0.25, grin: 0.6 }],
     [visit.end, {}],
   ],
 };
@@ -197,8 +197,8 @@ const hops: Record<string, Hop[]> = {
   ],
   trick: [
     [19, 30, 29, 9],
-    [30, 41, 32, 11],
-    [109, 121, -32, 11],
+    [30, 41, 28, 11],
+    [109, 121, -28, 11],
     [121, 132, -29, 9],
   ],
 };
@@ -214,8 +214,8 @@ export function poseAt(anim: string, t: number) {
     height += 4 * h * u * (1 - u);
     if (n >= a && n < b) drag += (1 - 2 * u) * Math.sin(Math.PI * u) * 1.5;
   }
-  const arrival = anim === 'trick' ? x / 61 : 0;
-  return { ...p, x, y: -8 * arrival, earFold: arrival, alt: height, drag };
+  const arrival = anim === 'trick' ? x / 57 : 0;
+  return { ...p, x, y: -8 * arrival, alt: height, drag };
 }
 const clip = (frames: number): Animation => ({ seconds: frames / 24 });
 const path = (name: string, frames: number): Animation => ({
@@ -249,10 +249,12 @@ export function cushionAt(n: number) {
   const press = smooth((n - hug.grasp) / 6) - smooth((n - hug.rest) / 6);
   const nuzzle = lift * Math.sin(Math.PI * Math.min(1, Math.max(0, (n - 65) / 15)));
   return {
-    x: pillowHome[0] + 1.0 * lift,
+    x: pillowHome[0] + lift,
     y: pillowHome[1] - 7.5 * lift + nuzzle,
     lift,
     squeeze: press * 0.28 + lift * 0.72,
-    tilt: -0.22 * lift,
+    // The crown yields after the cheek arrives and unfolds just after the mittens loosen.
+    fold: smooth((n - hug.lift - 2) / 10) - smooth((n - hug.lower - 1) / 10),
+    tilt: 0.09 * lift,
   };
 }
