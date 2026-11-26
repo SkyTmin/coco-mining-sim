@@ -1,0 +1,19 @@
+{
+  "minPrimitives": 300,
+  "multiActTrick": true,
+  "bodyClips": ["walk_n","walk_ne","walk_e","walk_se","walk_s","walk_sw","walk_w","walk_nw","turn","tired","sleep"],
+  "keyframes": {
+    "idle": [{"frame":0,"points":{"head":[68,67,3],"earL":[82,38,3],"earR":[54,43,3],"nose":[74,79,2],"pom":[39,74,3],"footR":[61,102,3]}},{"frame":16,"points":{"eyeL":[81,72,3]}}],
+    "look": [{"frame":6,"points":{"head":[68,67,3],"eyeL":[86,65,3],"earR":[54,49,3]}},{"frame":21,"points":{"eyeR":[55,70,3]}}],
+    "prepare_walk": [{"frame":0,"points":{"footL":[76,100,3],"footR":[61,102,3]}},{"frame":5,"points":{"footR":[61,99,3]}},{"frame":13,"points":{"footL":[76,97,3]}},{"frame":17,"points":{"footL":[75,98,3],"footR":[62,104,3]}},{"frame":27,"points":{"footL":[76,100,3]}},{"frame":35,"points":{"footR":[61,102,3]}}],
+    "fidget_a": [{"frame":0,"points":{"handL":[86,83,3]}},{"frame":11,"points":{"handL":[95,73,3],"earL":[91,40,3]}},{"frame":16,"points":{"handL":[107,67,3]}},{"frame":21,"points":{"handL":[95,73,3]}},{"frame":31,"points":{"handL":[96,72,3]}}],
+    "fidget_b": [{"frame":0,"points":{"handL":[86,83,3]}},{"frame":11,"points":{"cheekL":[88,75,3],"handL":[86,78,3]}},{"frame":17,"points":{"cheekR":[57,84,3],"handR":[57,83,3]}},{"frame":26,"points":{"eyeR":[64,74,3]}},{"frame":47,"points":{"handL":[86,83,3]}}],
+    "happy": [{"frame":5,"points":{"root":[68,89,3],"footR":[61,102,3]}},{"frame":11,"points":{"footL":[77,80,3],"earR":[47,34,3]}},{"frame":16,"points":{"footL":[76,100,3]}},{"frame":23,"points":{"pom":[39,67,3]}}],
+    "sleep_in": [{"frame":15,"points":{"earR":[61,63,3],"handL":[84,87,3]}},{"frame":29,"points":{"head":[67,76,3]}}],
+    "sleep_out": [{"frame":0,"points":{"head":[67,76,3]}},{"frame":16,"points":{"handR":[49,88,3]}},{"frame":29,"points":{"footR":[61,102,3]}}],
+    "wake_startled": [{"frame":0,"points":{"head":[67,76,3]}},{"frame":9,"points":{"earL":[82,33,3],"footR":[60,94,3]}},{"frame":23,"points":{"nose":[74,79,2]}}],
+    "hatch": [{"frame":0,"points":{"footL":[29,97,3]}},{"frame":9,"points":{"earR":[23,34,3]}},{"frame":19,"points":{"footR":[43,104,3]}},{"frame":26,"points":{"handR":[43,76,3]}},{"frame":34,"points":{"footR":[61,102,3]}},{"frame":40,"points":{"handL":[95,73,3]}},{"frame":55,"points":{"head":[68,67,3]}}],
+    "trick": [{"frame":14,"points":{"nose":[85,74,2]}},{"frame":24,"points":{"footL":[81,83,3]}},{"frame":40,"points":{"handL":[123,77,3]}},{"frame":46,"points":{"handL":[140,83,3],"handR":[124,85,3]}},{"frame":55,"points":{"handL":[139,83,3]}},{"frame":66,"points":{"cheekL":[125,73,3],"handR":[119,77,3]}},{"frame":73,"points":{"handL":[132,76,3],"cheekL":[124,74,3],"eyeR":[112,75,3]}},{"frame":90,"points":{"handR":[121,81,3]}},{"frame":96,"points":{"handL":[139,83,3],"handR":[124,85,3]}},{"frame":104,"points":{"handR":[95,92,3]}},{"frame":118,"points":{"pom":[59,66,3]}},{"frame":139,"points":{"footR":[61,102,3]}}],
+    "trick_b": [{"frame":15,"points":{"eyeR":[54,69,3]}},{"frame":30,"points":{"handR":[51,86,3]}},{"frame":44,"points":{"eyeL":[78,78,3],"eyeR":[59,79,3],"handL":[78,79,3],"handR":[59,79,3]}},{"frame":64,"points":{"eyeL":[77,78,3],"handL":[85,88,3],"handR":[58,80,3]}},{"frame":79,"points":{"eyeR":[52,68,3],"nose":[58,75,2]}},{"frame":89,"points":{"nose":[43,72,2]}},{"frame":100,"points":{"nose":[43,72,2]}},{"frame":118,"points":{"handR":[39,58,3]}},{"frame":139,"points":{"nose":[64,79,2]}},{"frame":151,"points":{"eyeL":[82,72,3]}}]
+  }
+}
