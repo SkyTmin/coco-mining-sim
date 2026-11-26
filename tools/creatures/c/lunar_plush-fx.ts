@@ -44,11 +44,42 @@ function pouf(lift: number) {
       braid[5],
     );
   if (lift < 1) p.ell(23, top - 1, 9 * (1 - lift) + 0.3, 1.9, [95, 78, 101, Math.round(88 * (1 - lift))]);
-  return p.canvas();
+  // The visitor stands behind the stool. Its near edge covers the feet while the cushion is lifted.
+  const whole = p.canvas(),
+    front = new Px(p.w, p.h);
+  const firstRow = Math.round(12 - 4.5 * lift);
+  for (let i = 4 * p.w * firstRow; i < p.data.length; i += 4) {
+    if (p.data[i + 3] !== 255) continue;
+    front.data.set(p.data.subarray(i, i + 4), i);
+    p.data[i + 3] = 0;
+  }
+  return { whole, back: p.canvas(), front: front.canvas() };
 }
 const restingPouf = pouf(0),
   restingStar = pillowOnPouf(cushionAt(0));
 type FireflyPose = { feet: XY; air: boolean; glow: number; face: number };
+const hoverStart = 31;
+const approach = visit.rounds[2].open + 7;
+function playInTheAir(n: number): FireflyPose {
+  const u = clamp((n - hoverStart) / (approach - hoverStart));
+  const ripple = Math.sin(Math.PI * u);
+  const drift = smooth((n - hoverStart) / 12);
+  let x = 17 + 3 * drift + 2.3 * ripple * Math.sin((n * TAU) / 35);
+  let y = 33 + 3.2 * drift + 1.65 * ripple * Math.sin((n * TAU) / 29);
+  let glow = 0.86;
+  for (const [i, round] of visit.rounds.entries()) {
+    // Change sides overhead while the pet's face is hidden. Then bob when the eyes appear.
+    if (i > 0) {
+      const cross = smooth((n - round.hide - 1) / (round.peek - round.hide - 3));
+      x += (i === 1 ? 95 : -95) * cross;
+      y -= 22 * Math.sin(cross * Math.PI);
+    }
+    const answer = Math.sin(Math.PI * clamp((n - round.open + 1) / 14));
+    y -= 5.4 * answer;
+    glow += 0.13 * answer;
+  }
+  return { feet: [x, y], air: true, glow, face: x > 68 ? -1 : 1 };
+}
 export function fireflyAt(f: Pick<FxInput, 'points' | 'pointAt'>, n: number): FireflyPose {
   const faceRight = 1,
     faceLeft = -1;
@@ -70,25 +101,20 @@ export function fireflyAt(f: Pick<FxInput, 'points' | 'pointAt'>, n: number): Fi
       face: faceRight,
     };
   if (n < visit.nose) {
-    if (n < 31) {
-      const u = smooth((n - visit.leave) / 15),
-        feet = lerp(catchTop, [17, 33], u);
+    if (n < hoverStart) {
+      const u = smooth((n - visit.leave) / (hoverStart - visit.leave));
+      const feet = lerp(catchTop, playInTheAir(hoverStart).feet, u);
       feet[1] -= 6 * Math.sin(Math.PI * u);
       return { feet, air: true, glow: 0.91, face: faceRight };
     }
-    if (n < 73) {
-      const u = (n - 31) / 42;
-      return {
-        feet: [17 + 3.4 * Math.sin(u * TAU) + 4 * u, 33 + 2.3 * Math.sin(u * TAU * 2) - 2 * u],
-        air: true,
-        glow: 0.87 + 0.08 * Math.sin(u * TAU * 2),
-        face: faceRight,
-      };
-    }
-    // Fly around the outside of the hooked ear, then approach the bare tip of the nose from the side.
-    const u = smooth((n - 73) / (visit.nose - 73));
+    if (n < approach) return playInTheAir(n);
+    const u = smooth((n - approach) / (visit.nose - approach));
     const target = f.pointAt(visit.nose / 24, 'nose');
-    const feet = lerp(lerp([21, 31], [17, target[1] + 1], u), lerp([17, target[1] + 1], target, u), u);
+    const feet = lerp(
+      lerp(playInTheAir(approach).feet, [17, target[1] + 1], u),
+      lerp([17, target[1] + 1], target, u),
+      u,
+    );
     return { feet, air: true, glow: 0.95, face: faceRight };
   }
   const u = smooth((n - visit.farewell) / (visit.home - visit.farewell));
@@ -130,7 +156,13 @@ export function nurseryPlay(f: FxInput) {
     c = cushionAt(f.anim === 'trick' ? n : 0);
   const field = f.backdrop;
   field.alpha(1);
-  field.img(c.lift ? pouf(c.lift) : restingPouf, 109, 76);
+  const stool = c.lift ? pouf(c.lift) : restingPouf;
+  const behindStool = f.anim === 'trick' && f.feet[0] > 93 && f.feet[1] < 98;
+  field.img(behindStool ? stool.back : stool.whole, 109, 76);
+  if (behindStool) {
+    f.above.alpha(1);
+    f.above.img(stool.front, 109, 76);
+  }
   if (f.anim !== 'trick' || !heldPillow(n))
     field.img(restingStar, Math.round(c.x) - 19, Math.round(c.y) - 19);
   const game = f.anim === 'trick_b',

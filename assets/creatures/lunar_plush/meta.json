@@ -85,12 +85,12 @@
       42.05295031155709
     ],
     "handL": [
-      65.8417336518109,
-      58.26953272399173
+      65.84173365181091,
+      58.26953272399174
     ],
     "handR": [
       33.17334146880444,
-      63.92279857514551
+      63.922798575145514
     ]
   },
   "motion": {
@@ -477,39 +477,39 @@
     },
     {
       "name": "trick_b",
-      "frames": 152,
+      "frames": 288,
       "start": 851,
-      "end": 1009
+      "end": 1145
     },
     {
       "name": "tired",
       "frames": 36,
-      "start": 1009,
-      "end": 1051
+      "start": 1145,
+      "end": 1187
     },
     {
       "name": "sleep_in",
       "frames": 30,
-      "start": 1051,
-      "end": 1087
+      "start": 1187,
+      "end": 1223
     },
     {
       "name": "sleep",
       "frames": 72,
-      "start": 1087,
-      "end": 1165
+      "start": 1223,
+      "end": 1301
     },
     {
       "name": "wake_startled",
       "frames": 24,
-      "start": 1165,
-      "end": 1195
+      "start": 1301,
+      "end": 1331
     },
     {
       "name": "sleep_out",
       "frames": 30,
-      "start": 1195,
-      "end": 1231
+      "start": 1331,
+      "end": 1367
     }
   ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
@@ -893,8 +893,8 @@
       ]
     },
     "trick_b": {
-      "seconds": 6.333333333333333,
-      "frames": 152,
+      "seconds": 12,
+      "frames": 288,
       "loop": false,
       "hit": [],
       "shake": 0,
@@ -926,7 +926,29 @@
         138,
         144,
         150,
-        151
+        156,
+        162,
+        168,
+        174,
+        180,
+        186,
+        192,
+        198,
+        204,
+        210,
+        216,
+        222,
+        228,
+        234,
+        240,
+        246,
+        252,
+        258,
+        264,
+        270,
+        276,
+        282,
+        287
       ]
     },
     "walk_n": {
@@ -1333,8 +1355,8 @@
       ]
     },
     "showreel": {
-      "seconds": 51.291666666666664,
-      "frames": 1231,
+      "seconds": 56.958333333333336,
+      "frames": 1367,
       "loop": true,
       "hit": [],
       "shake": 0,
@@ -1545,7 +1567,30 @@
         1212,
         1218,
         1224,
-        1230
+        1230,
+        1236,
+        1242,
+        1248,
+        1254,
+        1260,
+        1266,
+        1272,
+        1278,
+        1284,
+        1290,
+        1296,
+        1302,
+        1308,
+        1314,
+        1320,
+        1326,
+        1332,
+        1338,
+        1344,
+        1350,
+        1356,
+        1362,
+        1366
       ]
     }
   }

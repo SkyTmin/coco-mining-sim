@@ -1,8 +1,22 @@
 // The crooked moon ears and cotton pom are part of the same turning figure as the face.
 import type { CreatureCard } from '../bodies/card-data';
+import { rotateFromTo } from '../bodies/rig-transform';
 import { hx, mixc, TAU } from '../kit/f11-mobkit';
 import { strideFoot } from '../motion';
-import { CE, SE, F3, Rig, vadd, vdot, vlerp, type Mat, type Tones, type V3 } from '../rig/f15-rig';
+import {
+  CE,
+  SE,
+  F3,
+  Rig,
+  vadd,
+  vdot,
+  vlerp,
+  vmul,
+  vsub,
+  type Mat,
+  type Tones,
+  type V3,
+} from '../rig/f15-rig';
 import { projectFigure, scaleFigure } from '../rig/figure';
 import type { JointPose } from '../technique';
 import type { Creature } from '../types';
@@ -44,13 +58,15 @@ function ears(r: Rig, H: F3, p: JointPose, m: Pigments, pts: Sockets) {
   for (const s of [-1, 1]) {
     const side = s < 0 ? 'L' : 'R';
     r.tag = 'ear' + side;
-    const base = H.at(-0.9, s * 4.7, 5.3).roll(
-      -s *
-        ((p.droop ?? 0) * 0.63 +
-          (p.drag ?? 0) * 0.24 +
-          (p.earSway ?? 0) * 0.1 -
-          (p.ears ?? 0) * (s < 0 ? 0.23 : 0.38)),
-    );
+    const base = H.at(-0.9, s * 4.7, 5.3)
+      .turn(s < 0 ? -1.2 * (p.earFold ?? 0) : 0)
+      .roll(
+        -s *
+          ((p.droop ?? 0) * 0.63 +
+            (p.drag ?? 0) * 0.24 +
+            (p.earSway ?? 0) * 0.1 -
+            (p.ears ?? 0) * (s < 0 ? 0.23 : 0.38)),
+      );
     // The thick base curves outwards, then folds back over an open notch.
     const spine = (u: number, front = 0) => {
       const a = u * Math.PI * 1.29 - 0.62;
@@ -117,10 +133,10 @@ function ears(r: Rig, H: F3, p: JointPose, m: Pigments, pts: Sockets) {
 function face(r: Rig, H: F3, p: JointPose, m: Pigments, pts: Sockets) {
   r.tag = 'head';
   r.ell(H, [0, 0, 0], [8.2, 10.55, 8.25], m.cream);
-  const grin = p.grin ?? 0,
-    shy = p.shy ?? 0;
+  const grin = p.grin ?? 0;
   for (const s of [-1, 1]) {
     const side = s < 0 ? 'L' : 'R';
+    const shy = Math.max(p.shy ?? 0, p['brush' + side] ?? 0);
     // Puffed white jowls give the head a wide, low silhouette.
     r.tag = 'head';
     const cheek = H.at(5.35, s * 5.25, -2.13).turn(s * 0.45);
@@ -290,9 +306,9 @@ function feet(
     pts[r.tag] = boot.p(1, 0, -1.22);
   }
 }
+const pillowDepth = 32.6;
 function paws(
   r: Rig,
-  F: F3,
   B: F3,
   H: F3,
   p: JointPose,
@@ -303,38 +319,75 @@ function paws(
   scale: number,
 ) {
   for (const s of [-1, 1]) {
-    const side = s < 0 ? 'L' : 'R',
-      sh = B.p(0.2, s * 6.65, 3.04);
+    const side = s < 0 ? 'L' : 'R';
     const open = p.open ?? 0,
-      cover = p['cover' + side] ?? 0,
-      wave = s === (p.waveSide ?? -1) ? (p.wave ?? 0) : 0;
-    const wiggle = p.wiggle ?? 0;
-    let hand = B.p(2.72 + s * step, s * (8.5 + open * 3.65), 0.65 + open * 6.0);
-    hand = vlerp(hand, H.p(7.6, s * (7.25 + 0.57 * (p.rub ?? 0)), -2.42 + (p.rub ?? 0) * 1.16), p.shy ?? 0);
-    hand = vlerp(hand, H.p(5.0, s * 5.75, -5.65), p.snuggle ?? 0);
-    hand = vlerp(hand, H.p(6.3, s * (14.5 + wiggle * 2.9), 3.1 + 1.9 * wiggle), wave);
-    hand = vlerp(hand, H.p(11.8, s * 4.64, 3.78), cover);
-    // Travel around the face to cover the eye, keeping the soft palm in front of the lashes.
-    hand = vadd(hand, H.v(3.65 * Math.sin(Math.PI * cover), 0, 1.5 * Math.sin(Math.PI * cover)));
-    if (p.reach) {
-      const pillow = cushionAt(n);
-      // Aim in field coordinates at opposite seams. Depth stays in front of the breast.
-      const screenX = pillow.x + (s < 0 ? 7.6 : -8.1) * (1 - 0.16 * pillow.squeeze);
-      const screenY = pillow.y + (s < 0 ? 5.9 : 7.6);
-      const y = s < 0 ? 11.2 : 12.2;
-      const z = (SE * y - (screenY - home[1] + (p.alt ?? 0)) / scale) / CE;
-      hand = vlerp(hand, [(screenX - home[0] - (p.x ?? 0)) / scale, y, z], p.reach);
+      cover = p['cover' + side] ?? 0;
+    const wave = s === (p.waveSide ?? -1) ? (p.wave ?? 0) : 0;
+    const brush = p['brush' + side] ?? 0;
+    const brace = p[s < 0 ? 'brushR' : 'brushL'] ?? 0;
+    const shy = p.shy ?? 0,
+      reach = p.reach ?? 0,
+      snuggle = p.snuggle ?? 0,
+      wiggle = p.wiggle ?? 0;
+
+    // Rolling the shoulders around the ribcage brings the mittens in front of the chest.
+    const roll =
+      0.95 * reach + 0.84 * cover + 0.68 * shy + 0.4 * snuggle + 0.3 * wave + 0.7 * brush + 0.42 * brace;
+    // When the face bows into them the shoulders lift and reach forward together.
+    const shrug = B.v(2.55, 0, 1.85);
+    const sh = vadd(
+      B.p(
+        0.2 + 6.1 * Math.sin(roll) + 0.75 * brush,
+        s * 6.65 * Math.cos(roll),
+        3.04 + 1.65 * Math.sin(roll) + 0.6 * wave + 0.65 * (p.nest ?? 0) + 1.25 * brush,
+      ),
+      vmul(shrug, cover),
+    );
+    const rest = B.v(2.52, s * 1.85, -2.39);
+    const bend = vadd(vmul(rest, 0.5), B.v(-0.83, s * 1.62, -1.76));
+    let goal = vadd(sh, B.v(2.52 + s * step, s * (1.85 + open * 1.7), -2.39 + open * 4.9));
+    goal = vlerp(goal, H.p(7.55, s * 6.95, -2.45), shy);
+    // Rest one mitten on the bib so the stroke on the opposite cheek has a clear silhouette.
+    goal = vlerp(goal, vadd(sh, B.v(3.0, -s * 1.65, -3.0)), brace);
+    const stroke = p.stroke ?? 0;
+    goal = vlerp(
+      goal,
+      vadd(sh, B.v(2.9 + 0.38 * stroke, s * (2.35 + 1.45 * stroke), 0.48 + 3.3 * stroke)),
+      brush,
+    );
+    goal = vlerp(goal, H.p(5.0, s * 5.75, -5.65), snuggle);
+    goal = vlerp(
+      goal,
+      vadd(sh, B.v(1.85 - 0.4 * wiggle, s * (2.9 + 2.5 * wiggle), 2.55 - 4.2 * wiggle)),
+      wave,
+    );
+    goal = vlerp(goal, vadd(H.p(9.15, s * 4.75, 1.9), shrug), cover);
+    if (reach) {
+      const pillow = cushionAt(n),
+        px = pillow.x + (s < 0 ? 11.4 : -10.2) * (1 - 0.12 * pillow.squeeze);
+      const py = pillow.y + (s < 0 ? 6.0 : 7.8);
+      const dy = py - home[1] - (p.y ?? 0) + (p.alt ?? 0);
+      const depth = pillowDepth + (s < 0 ? 3 : 4);
+      const grip: V3 = [
+        (px - home[0] - (p.x ?? 0)) / scale,
+        (SE * dy + CE * depth) / scale,
+        (-CE * dy + SE * depth) / scale,
+      ];
+      goal = vlerp(goal, grip, reach);
     }
-    const elbow = vadd(vlerp(sh, hand, 0.5), F.v(-0.83, s * (1.62 + cover * 0.4), -1.76));
+    // Rotate the complete folded arm from its idle pose. Neither bone nor the mitten is scaled.
+    const turn = rotateFromTo(rest, vsub(goal, sh));
+    const elbow = vadd(sh, turn(bend)),
+      hand = vadd(sh, turn(rest));
     r.tag = 'arm' + side;
     r.cap(sh, elbow, 2.35, 1.88, m.cream);
     r.cap(elbow, hand, 1.9, 1.6, m.cream);
-    const mitten = new F3(hand, H.f, H.s, H.u);
+    const mitten = new F3(hand, H.f, H.s, H.u).pitch(-0.4 * cover).roll(s * wiggle * wave * 0.35);
     r.tag = 'hand' + side;
-    r.ell(mitten, [0, 0, 0], [2.05, 2.49 + 0.35 * cover, 2.05 + 0.96 * cover], m.milk);
-    r.ell(mitten, [1.82, 0, -0.01], [0.38, 1.32, 1.19 + 0.32 * cover], m.rose);
+    r.ell(mitten, [0, 0, 0], [2.05, 2.49, 2.05], m.milk);
+    r.ell(mitten, [1.82, 0, -0.01], [0.38, 1.32, 1.19], m.rose);
     for (const j of [-1, 1]) {
-      r.ell(mitten, [1.42, j * 0.96, 1.17 + 0.52 * cover], [0.5, 0.55, 0.53], m.rose);
+      r.ell(mitten, [1.42, j * 0.96, 1.17], [0.5, 0.55, 0.53], m.rose);
     }
     pts[r.tag] = hand;
   }
@@ -367,13 +420,22 @@ export function plush(card: CreatureCard): Creature['frame'] {
     const pivot = turn && Number.isInteger(side) ? (4 * t) % 1 : 0;
     const F = F3.yaw(card.life.yaw + ((side + pivot) * Math.PI) / 8 + (p.yaw ?? 0));
     const bob = walk ? 0.55 * (1 - Math.cos(2 * TAU * step)) : 0;
-    const B = F.at(p.lean ?? 0, p.shift ?? 0, 10.0 - 4.45 * (p.low ?? 0) + bob + (p.breath ?? 0)).roll(
-      (p.tilt ?? 0) * 0.2,
-    );
-    const H = B.at(0.15, 0, 10.7 - (p.low ?? 0) * 1.12)
+    const B = F.at(
+      p.lean ?? 0,
+      p.shift ?? 0,
+      10.0 - 4.45 * (p.low ?? 0) + (p.rise ?? 0) + bob + (p.breath ?? 0),
+    ).roll((p.tilt ?? 0) * 0.2);
+    const tuckFace = p.huddle ?? 0,
+      nest = p.nest ?? 0,
+      shy = p.shy ?? 0;
+    const H = B.at(
+      0.15 - 1.05 * tuckFace - 0.2 * shy - 1.35 * (p.reach ?? 0),
+      3.15 * (p.reach ?? 0) - (p.waveSide ?? -1) * 3.65 * (p.wave ?? 0),
+      10.7 - (p.low ?? 0) * 1.12 - 1.05 * tuckFace - 0.75 * shy - 0.48 * nest,
+    )
       .turn(p.head ?? 0)
       .roll(p.tilt ?? 0)
-      .pitch(p.nod ?? 0);
+      .pitch((p.nod ?? 0) + 0.55 * tuckFace + 0.35 * shy + 0.23 * nest);
     const r = new Rig(),
       m = mats[variant],
       pts: Sockets = { root: B.o, floor: [0, 0, 0] };
@@ -382,7 +444,7 @@ export function plush(card: CreatureCard): Creature['frame'] {
     feet(r, F, B, p, m, pts, walk, step, turn ? pivot : undefined, card.life.stride / scale);
     ears(r, H, p, m, pts);
     face(r, H, p, m, pts);
-    paws(r, F, B, H, p, m, pts, n, walk ? Math.sin(step * TAU) * 1.36 : 0, scale);
+    paws(r, B, H, p, m, pts, n, walk ? Math.sin(step * TAU) * 1.36 : 0, scale);
     finishSurfaces(
       r,
       F,
@@ -398,7 +460,7 @@ export function plush(card: CreatureCard): Creature['frame'] {
     scaleFigure(r, pts, scale);
     if (anim === 'trick' && heldPillow(n)) {
       const c = cushionAt(n);
-      placePillow(r, c, c.x - home[0] - (p.x ?? 0), c.y - home[1] + (p.alt ?? 0), 35.5);
+      placePillow(r, c, c.x - home[0] - (p.x ?? 0), c.y - home[1] - (p.y ?? 0) + (p.alt ?? 0), pillowDepth);
     }
     const frame = projectFigure(r, 96, [48, 75], pts, '#514454', 3.18, true);
     frame.dy = -(p.alt ?? 0);
