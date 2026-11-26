@@ -1,0 +1,19 @@
+{
+  "minPrimitives": 285,
+  "multiActTrick": true,
+  "bodyClips": ["walk_n","walk_ne","walk_e","walk_se","walk_s","walk_sw","walk_w","walk_nw","turn","tired","sleep"],
+  "keyframes": {
+    "idle": [{"frame":0,"points":{"head":[56,65,3],"hub":[57,50,3],"blade0":[35,53,3],"footR":[51,102,3]}},{"frame":16,"points":{"eyeR":[50,75,3],"tailTip":[44,54,3]}}],
+    "look": [{"frame":5,"points":{"mouth":[73,72,2],"eyeR":[64,71,3]}},{"frame":16,"points":{"head":[55,66,3]}}],
+    "prepare_walk": [{"frame":0,"points":{"footR":[51,102,3]}},{"frame":10,"points":{"head":[57,67,3]}},{"frame":35,"points":{"tailTip":[46,53,3]}}],
+    "fidget_a": [{"frame":0,"points":{"mouth":[63,79,2]}},{"frame":10,"points":{"head":[56,65,3],"mouth":[59,78,2]}},{"frame":23,"points":{"mouth":[60,78,2]}},{"frame":34,"points":{"mouth":[64,80,2]}}],
+    "fidget_b": [{"frame":0,"points":{"blade0":[35,53,3],"blade1":[58,27,3],"blade2":[81,61,3]}},{"frame":10,"points":{"hub":[55,48,3]}},{"frame":17,"points":{"blade0":[52,32,3],"blade2":[56,35,3]}},{"frame":34,"points":{"blade1":[60,26,3]}},{"frame":49,"points":{"blade0":[35,53,3]}}],
+    "happy": [{"frame":6,"points":{"footR":[51,102,3]}},{"frame":13,"points":{"handL":[80,53,3],"footL":[65,75,3]}},{"frame":19,"points":{"footR":[51,102,3]}}],
+    "sleep_in": [{"frame":16,"points":{"head":[56,73,3]}},{"frame":29,"points":{"hub":[59,63,3]}}],
+    "sleep_out": [{"frame":0,"points":{"head":[56,73,3]}},{"frame":12,"points":{"handR":[38,85,3]}}],
+    "wake_startled": [{"frame":0,"points":{"hub":[59,63,3]}},{"frame":8,"points":{"footR":[47,88,3]}},{"frame":23,"points":{"mouth":[63,79,2]}}],
+    "hatch": [{"frame":0,"points":{"hub":[-26,36,3]}},{"frame":10,"points":{"blade0":[-19,26,3]}},{"frame":20,"points":{"head":[26,52,3]}},{"frame":34,"points":{"footR":[51,102,3]}},{"frame":55,"points":{"mouth":[63,79,2]}}],
+    "trick": [{"frame":11,"points":{"eyeR":[62,70,3]}},{"frame":21,"points":{"footR":[51,102,3]}},{"frame":29,"points":{"hub":[68,32,3]}},{"frame":40,"points":{"footR":[75,96,3]}},{"frame":51,"points":{"mouth":[96,67,2]}},{"frame":57,"points":{"mouth":[99,68,2]}},{"frame":61,"points":{"mouth":[99,71,2]}},{"frame":79,"points":{"mouth":[98,70,2]}},{"frame":86,"points":{"footR":[44,81,3]}},{"frame":97,"points":{"footR":[28,102,3]}},{"frame":119,"points":{"footL":[55,87,3]}},{"frame":131,"points":{"mouth":[63,79,2]}}],
+    "trick_b": [{"frame":13,"points":{"eyeR":[37,67,3]}},{"frame":25,"points":{"footR":[51,102,3],"blade0":[77,49,3]}},{"frame":29,"points":{"footR":[42,91,3]}},{"frame":45,"points":{"pinch":[93,55,2]}},{"frame":51,"points":{"thumb":[101,48,2],"finger":[101,47,2]}},{"frame":59,"points":{"pinch":[101,47,2]}},{"frame":85,"points":{"footL":[93,125,3],"footR":[81,128,3]}},{"frame":96,"points":{"pinch":[126,104,2]}},{"frame":104,"points":{"pinch":[123,98,2]}},{"frame":107,"points":{"pinch":[135,91,2],"thumb":[135,92,2]}},{"frame":108,"points":{"finger":[131,89,2]}},{"frame":141,"points":{"footR":[51,102,3]}},{"frame":151,"points":{"hub":[57,50,3]}}]
+  }
+}
