@@ -54,7 +54,7 @@ export const bridgeTop = (x: number, sill: XY = bridgeRoot()) =>
 export const portalWidth = (n: number) => span(n, 108, 124, 176, 195);
 export const liftProgress = (n: number) => span(n, 84, 113, 142, 173);
 export const liftCentre = (u: number): XY => [44 + 109 * u, 166 - 68 * u];
-export const folded = (n: number) => span(n, 65, 94, 168, 190);
+export const folded = (n: number) => span(n, 65, 94, 193, 217);
 export const filed = (n: number) => span(n, 128, 143, 157, 166);
 export const stages: Record<string, number> = {
   trick: 236,
@@ -120,8 +120,8 @@ function courier(n: number) {
   p.chin = 0.2 * span(n, 50, 61, 68, 82);
   walk(p, n, 21, 40, 125, 170);
   walk(p, n, 49, 69, 170, 136);
-  walk(p, n, 88, 126, 136, 214);
-  walk(p, n, 145, 185, 214, 136);
+  walk(p, n, 88, 126, 136, 203);
+  walk(p, n, 145, 185, 203, 136);
   walk(p, n, 193, 210, 136, 168);
   walk(p, n, 215, 236, 168, 125);
   p.bridge = span(n, 61, 88, 189, 211);
@@ -165,8 +165,8 @@ function hoist(n: number) {
 function atlas(n: number) {
   const p = base(1);
   p.yaw = east * span(n, 9, 22, 211, 231) + turn(n, 166, 178, 209, 224);
-  walk(p, n, 21, 56, 125, 169);
-  walk(p, n, 102, 127, 169, 201);
+  walk(p, n, 24, 48, 125, 150);
+  walk(p, n, 99, 127, 150, 201);
   walk(p, n, 179, 216, 201, 125);
   p.turnHead = -0.48 * span(n, 5, 15, 23, 32);
   p.ear = 0.85 * span(n, 3, 12, 20, 30) + span(n, 145, 151, 157, 169);

@@ -37,11 +37,11 @@ test('the keeper alternates a planted paw and a swinging paw across the paving',
   const sloping = marks('trick_b', 55),
     base = marks('trick_b', 68);
   assert.ok(sloping.root[1] > base.root[1] + 8);
-  const frames = [25, 27, 29, 31].map((n) => marks('trick_b-f2', n));
+  const frames = [27, 29, 32, 35].map((n) => marks('trick_b-f2', n));
   for (const f of frames.slice(1)) near(f.bootR, frames[0].bootR);
   assert.ok(frames.at(-1)!.root[0] - frames[0].root[0] > 8);
   assert.ok(frames.at(-1)!.bootL[0] - frames[0].bootL[0] > 15);
-  const next = [33, 35, 37].map((n) => marks('trick_b-f2', n));
+  const next = [37, 39, 42].map((n) => marks('trick_b-f2', n));
   for (const f of next.slice(1)) near(f.bootL, next[0].bootL);
   assert.ok(next[2].bootR[0] - next[0].bootR[0] > 10);
 });
@@ -64,8 +64,8 @@ test('the cottage stands still, the source empties before a nose emerges at the 
 });
 
 test('the paw meets the pull, the wax letter and the slot before each prop responds', () => {
-  for (const n of [61, 63, 65, 67, 69, 71]) near(marks('trick_b', n).handR, [117, 139]);
-  for (const n of [119, 120, 121, 122, 123, 124]) near(marks('trick_b', n).handR, [228, 117]);
+  for (const n of [61, 63, 65, 67, 69, 71]) near(marks('trick_b', n).handR, [117, 155], 0.8);
+  for (const n of [119, 120, 121, 122, 123, 124]) near(marks('trick_b', n).handR, [228, 135]);
   for (const n of [181, 182, 183, 184, 185]) near(marks('trick_b', n).handR, [125, 149]);
 });
 test('the actual key eases into the slot and stays behind as the car carries the feet to the bell', () => {
@@ -80,14 +80,14 @@ test('the actual key eases into the slot and stays behind as the car carries the
       assert.ok(Math.abs(foot[1] - car[1]) < 12);
     }
   }
-  for (const n of [112, 114, 116, 120, 123]) near(marks('trick-f2', n).handR, [179, 81]);
+  for (const n of [112, 114, 116, 120, 123]) near(marks('trick-f2', n).handR, [179, 95]);
 });
 test('both paws press the creases of the town before filing its map at the opposite end of the journey', () => {
   for (const n of [65, 72, 78, 82]) {
     const m = marks('trick_b-f2', n);
     const h = 1 - scenePose('trick_b-f2', n)!.map;
-    near(m.handR, [city[0] - 9 - 7 * h, city[1] + 1], 1);
-    near(m.handL, [city[0] + 5 + 3 * h, city[1] - 7 * h + 1], 1);
+    near(m.handR, [city[0] - 16 - 8 * h, city[1] + 1], 1);
+    near(m.handL, [city[0] - 6 - 6 * h, city[1] - 7 * h + 1], 1);
   }
   for (const n of [131, 135, 141, 144]) {
     const m = marks('trick_b-f2', n);

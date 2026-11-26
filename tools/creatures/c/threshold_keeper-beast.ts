@@ -34,10 +34,10 @@ function tail(r: Rig, B: F3, p: JointPose, j: Marks) {
   const path = (u: number): V3 =>
     B.p(
       -15 - 40 * u + 4 * Math.sin(u * Math.PI),
-      9 + 27 * Math.sin(u * 1.8) + (6 * delay + 32 * balance) * u * u,
+      9 + 27 * Math.sin(u * 1.8) + (6 * delay + 32 * balance + 30 * (p.tunnel || 0)) * u * u,
       27 -
-        19 * Math.sin(Math.PI * u) +
-        u * u * (20 + curl * 14 - 34 * (p.tunnel || 0) - 18 * balance) +
+        (19 - 14 * (p.tunnel || 0) - 7 * Math.sin((p.footCycle || 0) * Math.PI) ** 2) * Math.sin(Math.PI * u) +
+        u * u * (20 + curl * 14 - 24 * (p.tunnel || 0) - 18 * balance) +
         4 * Math.sin(3.8 * u) * breathe +
         5 * delay * u,
     );
@@ -242,7 +242,7 @@ export function beast(r: Rig, F: F3, p: JointPose, j: Marks) {
   head(r, H, p, j);
   for (const s of [-1, 1]) {
     const tag = s < 0 ? 'L' : 'R',
-      reach = p.reach || 0,
+      reach = p['reach' + tag] ?? (p.reach || 0),
       lift = p.leap || 0,
       g = gait * s;
     const u = ((p.step ?? 0) + (s < 0 ? 0.5 : 0)) % 1,
@@ -285,7 +285,8 @@ export function beast(r: Rig, F: F3, p: JointPose, j: Marks) {
       const seen = proj(fingertip, 0, 0),
         dx = (p['goal' + tag + 'X'] - p.atX) / 1.115 - seen[0],
         dy = (p['goal' + tag + 'Y'] - p.atY) / 1.115 - seen[1];
-      const wanted = vadd(palm, [dx, 0, -dy / 0.8]);
+      const depth = p['palmDepth' + tag] || 0;
+      const wanted = vadd(palm, [dx, depth * 0.8, -dy / 0.8 + depth * 0.6]);
       const direction = vnorm(vsub(wanted, shoulder)),
         length = Math.min(33, vlen(vsub(wanted, shoulder))),
         distance = Math.max(1, length);

@@ -297,7 +297,8 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
   if (anim === 'trick_b' && p.handle) {
     p.goalR = p.handle;
     p.goalRX = 117;
-    p.goalRY = 132 + 7 * p.handle;
+    p.goalRY = 148 + 7 * p.handle;
+    p.palmDepthR = 6;
   }
   if (anim === 'trick_b' && n >= 111) {
     const take = span(n, 111, 119, 127, 140),
@@ -312,39 +313,43 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
         second = ease(169, 181, n);
       p.goalR = grip;
       p.goalRX = mix(mix(228, handX, first), 125, second);
-      p.goalRY = mix(mix(117, handY, first), 149, second);
+      p.goalRY = mix(mix(135, handY, first), 149, second);
     }
   }
   if (anim === 'phase' || anim === 'happy-f2' || anim === 'fidget_a') {
     const r = p.ring || 0;
     p.goalL = r;
     p.goalLX = 143 - 3 * r;
-    p.goalLY = 145 + 13 * r;
+    p.goalLY = 150 + 12 * r;
+    p.palmDepthL = 8;
   }
   if (anim === 'trick' && p.ring) {
     p.goalR = p.ring;
     p.goalRX = 144;
     p.goalRY = 150 + 5 * p.ring;
   }
+  if (anim === 'trick-f2') p.reachL = (p.reach || 0) * (1 - (p.engage || 0)) * (1 - (p.knock || 0));
   if (anim === 'trick-f2' && p.engage) {
     const g = p.engage * (1 - (p.keyPark || 0));
     p.goalR = g;
     p.goalRX = lock[0] + 15;
-    p.goalRY = lock[1] + (p.keyAngle || 0) * 5;
+    p.goalRY = lock[1] + 10 + (p.keyAngle || 0) * 3;
+    p.palmDepthR = 8;
     p.keyInLock = p.engage > 0.001 ? 1 : 0;
   }
   if (anim === 'trick-f2' && p.knock) {
     p.goalR = p.knock;
     p.goalRX = 179;
-    p.goalRY = 81;
+    p.goalRY = 95;
+    p.palmDepthR = 4;
   }
   if (anim === 'trick_b-f2') {
     const grip = span(n, 49, 63, 145, 154);
     const take = ease(85, 99, n),
       put = ease(118, 130, n),
       h = 1 - (p.map || 0);
-    const right = city[0] - 9 - 7 * h,
-      left = city[0] + 5 + 3 * h;
+    const right = city[0] - 16 - 8 * h,
+      left = city[0] - 6 - 6 * h;
     p.goalR = grip;
     p.goalL = grip;
     p.goalRX = mix(mix(right, p.atX + 17, take), drawer[0] - 7, put);
@@ -386,7 +391,7 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
       bow = fr.points.keyBow;
     const e = p.engage;
     fr.points.keyTip = [mix(tip[0], lock[0] + pad, e), mix(tip[1], lock[1] + pad, e)];
-    fr.points.keyBow = [mix(bow[0], lock[0] + 15 + pad, e), mix(bow[1], lock[1] + 5 * (p.keyAngle || 0) + pad, e)];
+    fr.points.keyBow = [mix(bow[0], lock[0] + 15 + pad, e), mix(bow[1], lock[1] + 10 + 3 * (p.keyAngle || 0) + pad, e)];
   }
   fr.groundShadow =
     p.floor !== undefined

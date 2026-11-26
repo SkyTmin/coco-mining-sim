@@ -213,30 +213,31 @@ function liftWorks(p: Pen, progress: number, open: number) {
   line(p, [sheave[0] - 4, sheave[1] + 18], [sheave[0] - 4, sheave[1]], stone);
   line(p, sheave, [sheave[0] + 6, sheave[1] + 4], warm);
   line(p, [sheave[0] + 4, sheave[1] + 1], weight, outline);
+  line(p, [sheave[0] + 5, sheave[1] + 1], weight, ivory);
   line(p, [sheave[0] + 5, sheave[1] + 1], [weight[0] + 1, weight[1]], gold);
   poly(
     p,
     [
-      [148, weight[1]],
-      [154, weight[1] - 1],
-      [156, weight[1] + 6],
-      [155, weight[1] + 15],
-      [147, weight[1] + 14],
-      [146, weight[1] + 6],
+      [weight[0] - 3, weight[1]],
+      [weight[0] + 3, weight[1] - 1],
+      [weight[0] + 5, weight[1] + 6],
+      [weight[0] + 4, weight[1] + 15],
+      [weight[0] - 4, weight[1] + 14],
+      [weight[0] - 5, weight[1] + 6],
     ],
     outline,
   );
   poly(
     p,
     [
-      [148, weight[1] + 3],
-      [153, weight[1] + 2],
-      [154, weight[1] + 12],
-      [149, weight[1] + 12],
+      [weight[0] - 3, weight[1] + 3],
+      [weight[0] + 2, weight[1] + 2],
+      [weight[0] + 3, weight[1] + 12],
+      [weight[0] - 2, weight[1] + 12],
     ],
     shade,
   );
-  line(p, [149, weight[1] + 5], [153, weight[1] + 5], warm);
+  line(p, [weight[0] - 2, weight[1] + 5], [weight[0] + 2, weight[1] + 5], warm);
   line(p, sheave, hook, outline);
   line(p, [sheave[0] - 1, sheave[1] - 1], [hook[0] - 1, hook[1] - 1], gold);
   wheel(p, sheave, 4.8, progress * 7);
@@ -429,6 +430,9 @@ function post(p: Pen, letterHere: boolean) {
   );
   line(p, [221, 115], [238, 114], gold);
   line(p, [221, 116], [221, 123], shade);
+  line(p, [224, 116], [224, 130], ocean);
+  line(p, [236, 116], [236, 130], ocean);
+  line(p, [224, 130], [236, 130], gold);
   if (letterHere) diamond(p, 235, 109, 2.2, true);
 }
 function popBook(p: Pen, origin: XY, fold: number) {
@@ -549,21 +553,21 @@ export function gestures(f: FxInput) {
   const sway = hoist ? span(n, 114, 119, 127, 137) * Math.sin((n - 114) * 0.52) * 2.4 : 0,
     bx = 179 + sway;
   line(B, [183, 72], [179, 72], warm);
-  line(B, [179, 72], [bx, 76], outline);
+  line(B, [179, 72], [bx, 89], outline);
   poly(
     B,
     [
-      [bx - 1, 75],
-      [bx + 2, 75],
-      [bx + 3, 79],
-      [bx + 5, 82],
-      [bx - 4, 82],
-      [bx - 2, 79],
+      [bx - 1, 89],
+      [bx + 2, 89],
+      [bx + 3, 93],
+      [bx + 5, 96],
+      [bx - 4, 96],
+      [bx - 2, 93],
     ],
     '#c29760',
   );
-  line(B, [bx - 4, 82], [bx + 5, 82], gold);
-  circ(B, [bx + 0.5, 83], 1.2, outline);
+  line(B, [bx - 4, 96], [bx + 5, 96], gold);
+  circ(B, [bx + 0.5, 97], 1.2, outline);
   post(B, courier && n < 126);
   atlasTable(B);
   if (!paper) popBook(B, city, 0);
@@ -575,9 +579,9 @@ export function gestures(f: FxInput) {
   if (through || show || courier) steps(U, j.sill, p.porch || 0);
   if (courier) {
     const homeSlot: XY = [j.sill[0] + 7, j.sill[1] + 10],
-      postClip: XY = [229, 115];
+      postClip: XY = [230, 136];
     bridge(U, bridgeRoot(j.sill), p.bridge || 0);
-    const rampPole: XY = [j.sill[0] - 2, j.sill[1] - 8],
+    const rampPole: XY = [j.sill[0] - 2, j.sill[1] + 8],
       rest: XY = [rampPole[0] + 1, rampPole[1] + 2];
     const grasp = lerp(rest, j.handR, p.handle || 0);
     line(U, rampPole, grasp, gold);
@@ -613,23 +617,29 @@ export function gestures(f: FxInput) {
       line(U, [X - 8, Y - 4], [X + 7, Y - 4], warm, p.park);
       line(U, [X - 6, Y + 1], [X + 7, Y + 1], outline, p.park);
     }
+    if (n >= 117) {
+      line(U, [224, 116], [224, 130], ocean);
+      line(U, [236, 116], [236, 130], ocean);
+      line(U, [224, 130], [236, 130], gold);
+    }
     if (n < 190) {
       if (n < 117) {
         const arrival = ease(2, 16, n);
+        // A brass chute is welded to the post. The paper feeds down into its open clips beside the paws.
+        const tray: Pen = F;
+        line(tray, [224, 116], [224, 130], ocean);
+        line(tray, [236, 116], [236, 130], ocean);
+        line(tray, [224, 130], [236, 130], gold);
         if (arrival > 0.01) {
-          letter(B, [loc[0], loc[1] - 8 * (1 - arrival)], 0.12 * Math.sin(n * 0.31));
-          poly(
-            B,
-            [
-              [219, 102],
-              [238, 102],
-              [238, 112],
-              [219, 112],
-            ],
-            ocean,
-          );
-          line(B, [220, 112], [237, 112], gold);
+          tray.g.save();
+          tray.g.beginPath();
+          tray.g.rect(tray.qx + 220, tray.qy + 129, 20, 18);
+          tray.g.clip();
+          letter(tray, [loc[0], loc[1] - 13 * (1 - arrival)], 0.06 * Math.sin(n * 0.31));
+          tray.g.restore();
         }
+        line(tray, [222, 129], [225, 131], outline);
+        line(tray, [235, 131], [238, 129], outline);
       } else {
         F.g.save();
         if (n >= 178) {
@@ -713,8 +723,9 @@ export function gestures(f: FxInput) {
     };
     if (n < 94) {
       // The standing paper roofs sit behind the working paws; the hinged leaves fold in order, under their fingers.
-      popBook(B, city, p.map);
-      if (n >= 85) foldedMap(U, lerp(city, [hand[0], hand[1] + 1], ease(85, 94, n)), ease(85, 94, n));
+      popBook(B, [city[0] - 10 * p.map, city[1]], p.map);
+      if (n >= 85)
+        foldedMap(U, lerp([city[0] - 10, city[1]], [hand[0], hand[1] + 1], ease(85, 94, n)), ease(85, 94, n));
     } else if (n < 151) {
       const c = n < 125 ? ([hand[0], hand[1] + 1] as XY) : lerp([hand[0], hand[1] + 1], slot, ease(125, 143, n));
       clipMap(F, c, n < 125 ? 208 : Y + 6);
@@ -726,11 +737,19 @@ export function gestures(f: FxInput) {
           }
     } else if (n < 169) {
       const t = ease(151, 165, n),
-        M: XY = [mix(slot[0], city[0], t), mix(slot[1], city[1] + 10, t) - 10 * ease(162, 169, n)];
+        M: XY = [mix(slot[0], city[0] - 10, t), mix(slot[1], city[1] + 10, t) - 10 * ease(162, 169, n)];
       line(U, [city[0] - 5, 169], [236, 169], ocean);
       line(U, [city[0] - 5, 172], [236, 172], warm);
       clipMap(F, M, 171, n < 160 ? 158 : 145);
-    } else popBook(B, city, p.map);
+    } else {
+      const book: XY = [city[0] - 10 * p.map, city[1]];
+      if (n < 193) foldedMap(F, book, 1);
+      else if (n < 222) {
+        // The same spread stays in sight on the near end of the rack as the buildings hinge upright.
+        foldedMap(F, book, 1);
+        if (n > 193) popBook(F, book, p.map);
+      } else popBook(B, city, 0);
+    }
   }
   if (through && p.portal > 0.02) {
     const u = p.portal,
@@ -804,7 +823,7 @@ export function gestures(f: FxInput) {
   const rest = through ? lerp(regular, [144, 150], p.porch || 0) : regular;
   const pulled = lerp(rest, through ? j.handR : j.handL, bell),
     bow: XY = [mix(pivot[0], pulled[0], 0.5) + 1, mix(pivot[1], pulled[1], 0.5) + 1];
-  if (!p.hide) {
+  if (!p.hide && !['phase', 'happy-f2', 'fidget_a'].includes(a)) {
     line(U, pivot, bow, outline);
     line(U, bow, pulled, outline);
     line(U, [pivot[0] + 1, pivot[1]], [bow[0] + 1, bow[1]], warm);
@@ -817,10 +836,11 @@ export function gestures(f: FxInput) {
     const active = a === 'phase' ? span(n, 3, 11, 48, 59) : bell;
     if (active > 0.01) {
       const c: XY = [j.sill[0] + 11, j.sill[1] + 1],
-        grip = lerp([143, 145], j.handL, bell);
-      const guide: XY = [c[0] + 6, c[1] + 3];
+        grip = lerp([140, 161], j.handL, bell);
+      const guide: XY = [c[0] - 2, grip[1] - 1];
       wheel(F, c, 4.6, (p.form || 0) * 4 + bell);
-      line(F, c, guide, outline);
+      line(U, c, guide, outline);
+      line(U, [c[0] + 1, c[1]], [guide[0] + 1, guide[1]], warm, active);
       line(F, guide, grip, '#673e50', active);
       line(F, [guide[0] + 1, guide[1]], [grip[0] + 1, grip[1]], warm, active);
       oval(F, grip, 3.4, 3.8, gold, active);

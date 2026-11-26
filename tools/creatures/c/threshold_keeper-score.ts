@@ -34,11 +34,11 @@ const tracks: Record<string, Track> = {
   ],
   look: [
     [0, rest],
-    [9, { ear: 0.65 }],
-    [21, { ear: 1, turnHead: 0.73, chin: -0.26 }],
-    [31, { ear: 1, turnHead: 0.8, chin: -0.19 }],
-    [44, { ear: 0.42, turnHead: 0.21 }],
-    [52, rest],
+    [6, { ear: 0.65 }],
+    [14, { ear: 1, turnHead: 0.73, chin: -0.26 }],
+    [22, { ear: 1, turnHead: 0.8, chin: -0.19 }],
+    [29, { ear: 0.42, turnHead: 0.21 }],
+    [35, rest],
   ],
   fidget_b: [
     [0, rest],
