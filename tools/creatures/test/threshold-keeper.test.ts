@@ -96,3 +96,19 @@ test('both paws press the creases of the town before filing its map at the oppos
     near(m.handL, [drawer[0] + 4, drawer[1] - 6 + 8 * e], 1);
   }
 });
+
+test('the filed map stays visible on the return tray while its owner turns away', () => {
+  for (const n of [167, 168, 169, 170, 180, 192, 194]) {
+    const f = frame('trick_b-f2', n);
+    const layer = f.layers.fxo;
+    const border = (layer.w - 256) / 2;
+    let paper = 0;
+    for (let y = 149; y <= 164; y++) {
+      for (let x = 171; x <= 212; x++) {
+        const i = ((y + border) * layer.w + x + border) * 4;
+        if (layer.data[i + 3] > 150 && layer.data[i] > 140 && layer.data[i + 1] > 120) paper++;
+      }
+    }
+    assert.ok(paper > 250, `the cream paper left the visible return tray on frame ${n}`);
+  }
+});
