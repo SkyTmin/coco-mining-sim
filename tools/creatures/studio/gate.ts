@@ -7,7 +7,7 @@ import { cardRuntimeIssues } from './card';
 import { studioConfig } from './checks';
 import { measureRef, readPoseRefs, refIssues } from './ref';
 import { petGate } from './pet-gate';
-import { sizeOf } from '../types';
+import { sizeOf, sizes } from '../types';
 import { compose, frameCount } from '../engine';
 
 export async function gateExtras(ids: string[]) {
@@ -85,30 +85,42 @@ export async function gateExtras(ids: string[]) {
 export function detailBar(painting: Awaited<ReturnType<typeof loadPainting>>, config = studioConfig(painting.c.id)) {
   const { c } = painting;
   const id = c.id;
-  const [, fieldHeight, canvas] = sizeOf(c);
+  const [width, fieldHeight, canvas] = sizeOf(c);
   const rest = c.frame('idle', 0, 0, 'normal');
   const m = measureDetail(rest.px);
   const secretTricks = c.rarity === 'secret' && c.behavior?.tricks;
   const minPrimitives = Math.max(config.minPrimitives ?? 0, secretTricks ? 900 : 0);
   const extent = Math.max(m.width, m.height);
   const detail: string[] = [];
+  const [oldWidth, oldHeight, oldCanvas] = sizes[c.rarity];
+  const native = config.nativeIdleHeight;
+  let minHeight = fieldHeight * 0.55, maxHeight = fieldHeight * 0.65;
+  if (native !== undefined) {
+    if (!Number.isInteger(native) || native < oldHeight * 0.55 || native > oldHeight * 0.65 ||
+        canvas !== oldCanvas || width < oldWidth || fieldHeight <= oldHeight) {
+      detail.push('nativeIdleHeight requires a larger field, the original body raster and an accepted native height');
+    } else {
+      minHeight = maxHeight = native;
+    }
+  }
   if (m.colours < minimumColours[c.rarity]) detail.push(`colours ${m.colours} < ${minimumColours[c.rarity]}`);
   if (m.edge < 0.85) detail.push(`edge ${m.edge.toFixed(2)} < 0.85`);
   if (m.flat > 0.03) detail.push(`flat ${(m.flat * 100).toFixed(1)}% > 3%`);
   if (minPrimitives && rest.primitives < minPrimitives) detail.push(`primitives ${rest.primitives} < ${minPrimitives}`);
   if (extent < canvas * 0.8 || extent > canvas * 0.9) detail.push(`extent ${extent} not in 80–90% of ${canvas}`);
-  if (m.height < fieldHeight * 0.55 || m.height > fieldHeight * 0.65)
-    detail.push(`height ${m.height} not in 55–65% of field ${fieldHeight}`);
-  if (extent < canvas * 0.8 || extent > canvas * 0.9 || m.height < fieldHeight * 0.55 || m.height > fieldHeight * 0.65) {
+  if (m.height < minHeight || m.height > maxHeight)
+    detail.push(minHeight === maxHeight ? `height ${m.height} differs from the original ${minHeight} px` : `height ${m.height} not in 55–65% of field ${fieldHeight}`);
+  if (extent < canvas * 0.8 || extent > canvas * 0.9 || m.height < minHeight || m.height > maxHeight) {
     // Both sizes scale with the figure: name the factor instead of leaving the author to guess [Раскат 21.11: 3.1 → 2.78].
-    const lo = Math.max((canvas * 0.8) / extent, (fieldHeight * 0.55) / m.height),
-      hi = Math.min((canvas * 0.9) / extent, (fieldHeight * 0.65) / m.height);
+    const lo = Math.max((canvas * 0.8) / extent, minHeight / m.height),
+      hi = Math.min((canvas * 0.9) / extent, maxHeight / m.height);
     detail.push(lo <= hi
       ? `scale the figure ×${((lo + hi) / 2).toFixed(3)} (any of ×${lo.toFixed(3)}–×${hi.toFixed(3)})`
       : `no single scale fits both: the silhouette is too ${extent / canvas > m.height / fieldHeight ? 'wide' : 'tall'} for the frame`);
   }
   const line =
     `${detail.length ? '✗' : '✓'} ${id} detail: ${rest.primitives} primitives, ${m.colours} colours, edge ${m.edge.toFixed(2)}, flat ${(m.flat * 100).toFixed(1)}%` +
+      (native === undefined ? '' : ` (idle ${m.height}/${fieldHeight} px, ${(100*m.height/fieldHeight).toFixed(1)}% of field)`) +
       (detail.length ? ' — ' + detail.join('; ') : '');
   return { line, issues: detail };
 }

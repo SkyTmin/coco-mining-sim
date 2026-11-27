@@ -16,6 +16,10 @@ import {
 } from './threshold_keeper-score';
 import {
   bellHandle,
+  bookRing,
+  ferryDeck,
+  looseLine,
+  sailHeight,
   bridgeEnd,
   bridgeRoot,
   fromWorld,
@@ -664,6 +668,142 @@ function atlasTable(p: Pen) {
   line(p, [x + 1, y + 8], [x + 27, y + 2], warm);
   diamond(p, x + 1, y + 8, 1.7);
 }
+// The stern and rigging sit behind the passenger. The near gunwale covers the soles on deck.
+function skyFerry(back: Pen, front: Pen, n: number) {
+  const deck = ferryDeck(n),
+    [cx, cy] = deck;
+  if (cx > 477 || cx < -152) return;
+  const B = shifted(back, cx, cy),
+    F = shifted(front, cx, cy);
+  const hoist = sailHeight(n),
+    wind = ease(184, 199, n);
+  const flutter = Math.sin(n * 0.23) * (0.55 + 1.8 * wind);
+  const mast = shifted(B, -26, -6),
+    head = -26 - 61 * hoist;
+  // The mast is on the port bow. Its entire sail clears the tail and is visible from the landing.
+  line(mast, [-10, 2], [-10, -92], outline);
+  line(mast, [-9, 1], [-9, -92], warm);
+  poly(
+    mast,
+    [
+      [-10, -92],
+      [-20, -95 + flutter],
+      [-31, -91 + flutter],
+      [-21, -90 + flutter],
+      [-10, -88],
+    ],
+    '#bf4c53',
+  );
+  line(mast, [-29, -92 + flutter], [-11, -92], gold);
+  circ(mast, [-10, -92], 2, gold);
+  const luff: XY = [-10, head],
+    clew: XY = [-67 - 5 * wind, -21 + flutter],
+    tack: XY = [-10, -23];
+  const cut = (u: number, v: number): XY => [
+    mix(mix(luff[0], tack[0], v), clew[0], u * v) - 8 * wind * Math.sin(Math.PI * v) * Math.sin(Math.PI * u),
+    mix(mix(luff[1], tack[1], v), clew[1], u * v),
+  ];
+  for (let panel = 0; panel < 5; panel++) {
+    const a = panel / 5,
+      b = (panel + 1) / 5;
+    const colour = ['#e7bb82', '#b95159', '#ffdda2', '#3b777a', '#d98566'][panel];
+    poly(mast, [cut(a, 0), cut(b, 0.52), cut(b, 1), cut(a, 1), cut(a, 0.52)], colour);
+    line(mast, cut(a, 0), cut(a, 0.52), warm);
+    line(mast, cut(a, 0.52), cut(a, 1), warm);
+    for (const h of [0.72, 0.91]) line(mast, cut(a + 0.05, h), cut(b - 0.04, h + 0.014), '#b18b78');
+  }
+  line(mast, luff, clew, ivory);
+  line(mast, tack, clew, outline);
+  line(mast, [-8, -22], [-69 - 5 * wind, -21 + flutter], gold);
+  line(mast, luff, [-10, -92], gold);
+  line(mast, [-10, -90], [-3, -21], warm);
+  line(B, [-36, -10], [-36, 1], warm);
+  wheel(B, [-29, -26], 2.5, hoist * 5);
+  const handle = looseLine(n),
+    grip: XY = [handle[0] - cx, handle[1] - cy];
+  line(F, [-29, -26], grip, outline);
+  line(F, [-28, -26], [grip[0] + 1, grip[1]], warm);
+  oval(F, grip, 2.6, 2.2, gold, 1);
+  // Low oak hull with a visible far rail, a woven deck, and a brass eye on the prow.
+  poly(
+    B,
+    [
+      [-49, -10],
+      [-39, -3],
+      [28, -6],
+      [46, -12],
+      [39, 4],
+      [-35, 10],
+    ],
+    '#715664',
+  );
+  line(B, [-44, -7], [31, -7], warm);
+  for (let x = -36; x < 34; x += 8) line(B, [x, -5], [x + 5, 3], stone);
+  const sheer: XY[] = [
+    [-49, -11],
+    [-36, 2],
+    [-15, 6],
+    [14, 6],
+    [39, 0],
+    [47, -11],
+  ];
+  const keel: XY[] = [
+    [-46, -2],
+    [-33, 15],
+    [-16, 20],
+    [16, 18],
+    [36, 11],
+    [44, 1],
+  ];
+  for (let bay = 0; bay < sheer.length - 1; bay++) {
+    const left = sheer[bay],
+      right = sheer[bay + 1],
+      foot = keel[bay],
+      end = keel[bay + 1];
+    for (let plank = 0; plank < 4; plank++) {
+      const t = plank / 4,
+        u = (plank + 1) / 4,
+        A = lerp(left, foot, t),
+        C = lerp(right, end, t);
+      poly(F, [A, C, lerp(right, end, u), lerp(left, foot, u)], ['#4f7379', '#38606b', '#805762', '#414c61'][plank]);
+      line(F, A, C, plank === 0 ? gold : plank === 2 ? '#bd7965' : '#62747a');
+    }
+    const peg = lerp(lerp(left, right, 0.46), lerp(foot, end, 0.46), 0.36);
+    circ(F, peg, 1.2, ivory);
+  }
+  oval(F, [12, 12], 4, 2.2, '#d9986d', 0.95);
+  line(F, [8, 12], [16, 12], '#6b4d59');
+  circ(F, [12, 12], 1, gold);
+  diamond(F, -39, 1, 2.5, true);
+  for (let k = 0; k < 3; k++) {
+    const u = ((n + 13 * k) % 37) / 37,
+      lift = 4 * Math.sin(u * Math.PI);
+    line(B, [34 + u * 22, 12 + k * 2 - lift], [42 + u * 24, 12 + k * 2 - lift], ivory, 0.4 * Math.sin(u * Math.PI));
+  }
+}
+function keySpell(far: Pen, near: Pen, n: number, p: ReturnType<typeof pose>, j: Record<string, XY>) {
+  if (!p.spell || p.hide) return;
+  const scale = p.s || 1,
+    root = j.root,
+    center: XY = [root[0], root[1] - 29 * scale];
+  const r = (43 * scale + 4) * p.spell;
+  const angle = n * 0.31,
+    height = 4 + 9 * scale;
+  // One strand passes behind the fur and one in front. The key sends the first sparks into that spiral.
+  for (let k = 0; k < 32; k++) {
+    const a = angle + (k * tau) / 32,
+      b = a + tau / 37,
+      nearSide = Math.sin(a) > 0,
+      pen = nearSide ? near : far;
+    const at = (v: number): XY => [
+      center[0] + r * Math.cos(v),
+      center[1] + height * Math.sin(v) - 10 * scale * Math.cos(v),
+    ];
+    line(pen, at(a), at(b), k % 5 < 2 ? ivory : '#7fe4d1', p.spell * (nearSide ? 0.88 : 0.67));
+    if (k % 8 === 0) shine(pen, at(a), 0.45 * p.spell);
+  }
+  shine(near, j.keyTip, 0.8 * p.spell);
+}
 export function gestures(f: FxInput) {
   const n = f.t * 24,
     a = f.anim,
@@ -723,7 +863,8 @@ export function gestures(f: FxInput) {
   chart(paper ? F : B, paper ? p.book || 0 : 0, paper ? p.trace || 0 : 0);
   if (p.floor !== undefined && !p.hide) {
     for (const boot of [j.bootL, j.bootR])
-      if (!((p.reveal || p.entryOnly) && boot[0] < j.door[0]) && !(p.exitOnly && boot[0] >= exit[0])) at(boot, 6.2);
+      if (!(through && n >= 113 && n <= 248) && !((p.reveal || p.entryOnly) && boot[0] < j.sill[0] + 11))
+        at(boot, 6.2 * (p.s || 1));
   }
   if (p.park > 0.02) at([j.house[0] - 2, 169], 22 * p.park);
   if (through || show || courier) steps(U, j.sill, p.porch || 0);
@@ -832,11 +973,22 @@ export function gestures(f: FxInput) {
     // The car and its cable remain moored between visits.
     liftWorks(B, 0, 0);
   }
+  if (paper && n >= 55 && n <= 182) {
+    const open = p.book || 0,
+      attach = lerp([city[0], city[1] - 2], leafTip(open), 0.37);
+    const ring = bookRing(open),
+      ready = span(n, 55, 64, 174, 182);
+    const handle = lerp([city[0] + 5, city[1] + 5], ring, ready);
+    const bend: XY = [(attach[0] + handle[0]) * 0.5, Math.max(attach[1], handle[1]) + 3 * (1 - ready)];
+    line(F, attach, bend, '#b34f5a', ready);
+    line(F, bend, handle, '#d87970', ready);
+    oval(F, handle, 2.4, 2, gold, ready);
+  }
   if (paper && (p.book || 0) > 0.5) {
     // The pen is nested in the book's spine. Its solid gold nib moves along the line under a fixed length of shaft.
     const tool = stylus(n),
       pen = F,
-      cap: XY = [tool.grip[0] + 4, tool.grip[1] - 2];
+      cap: XY = [tool.grip[0] + 4, tool.grip[1] + 1];
     line(pen, tool.tip, cap, outline);
     line(pen, [tool.tip[0] + 1, tool.tip[1] - 1], [cap[0], cap[1] - 1], gold);
     const nib = lerp(tool.tip, tool.grip, 0.23);
@@ -861,42 +1013,20 @@ export function gestures(f: FxInput) {
       line(F, [j.handR[0] - 2, j.handR[1]], j.handR, '#ffe2ac');
     }
   }
-  if (through && n >= 86 && n <= 166) {
-    const progress = n < 140 ? ease(86, 110, n) : 1 - ease(149, 166, n);
-    const ray = (t: number): XY => [
-      mix(j.lintel[0], exit[0] - 3, t),
-      mix(j.lintel[1] - 32, exit[1] - 55, t) - 54 * Math.sin(Math.PI * t),
-    ];
-    for (let i = 0; i < 40; i++) {
-      const t = i / 40,
-        w = Math.max(0, 1 - Math.abs(progress - t) * 6);
-      if (w > 0 && i % 4 < 3) line(B, ray(t), ray(t + 0.023), ivory, w * 0.84);
-    }
-    if (n < 111 || n > 148) shine(U, ray(progress), 1);
-  }
-  if (through && p.portal > 0.02) {
-    const u = p.portal,
-      [x, y] = exit;
-    poly(
-      U,
-      [
-        [x - 3, y + 14],
-        [x - 9, y + 18],
-        [x - 34, y + 20],
-        [x - 17, y + 13],
-      ],
-      '#edb686',
-      0.43 * u,
-    );
-    line(B, [x - 14 * u, y + 17 * u], [x - 24 * u, y + 20 * u], warm, u);
-  }
   if (through) {
-    const u = span(n, 1, 4, 6, 10) + span(n, 11, 14, 16, 21);
-    if (u > 0) {
-      diamond(B, exit[0] - 11, 139, 2 + u, true);
-      oval(B, [exit[0] - 11, 139], 3 + u * 2, 4 + u * 2, warm, u * 0.73);
+    skyFerry(U, F, n);
+    if (p.halyard > 0.8) {
+      circ(F, j.handR, 2.7, '#ac795f');
+      line(F, [j.handR[0] - 2, j.handR[1] - 1], j.handR, ivory);
+    }
+    if (n > 33 && n < 45) {
+      const ring = span(n, 33, 36, 39, 45);
+      const marker: XY = [exit[0] - 3, exit[1] - 13];
+      oval(B, marker, 3 + ring * 4, 3 + ring * 4, gold, ring);
+      shine(B, marker, ring * 0.7);
     }
   }
+  if (through || show) keySpell(U, F, n, p, j);
   if (hoist) {
     const [x, y] = liftCentre(p.car || 0);
     poly(

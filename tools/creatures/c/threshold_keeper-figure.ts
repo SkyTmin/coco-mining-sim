@@ -7,8 +7,8 @@ import { beast } from './threshold_keeper-beast';
 import { card, glint, milk, type Marks } from './threshold_keeper-craft';
 import { house } from './threshold_keeper-house';
 import { exit, home, lock, mix, span, pose, ease, clips } from './threshold_keeper-score';
-import { bellHandle, city, leafTip, margin, postShift, size, stylus } from './threshold_keeper-stage';
-import { unfoldingDoor } from './threshold_keeper-door';
+import { bellHandle, bookRing, city, looseLine, margin, postShift, size, stylus } from './threshold_keeper-stage';
+import { frameWicket, visibleAtDoor } from './threshold_keeper-door';
 
 const pad = 18,
   W = size[0] + 2 * pad,
@@ -34,67 +34,47 @@ function positionHouse(F: F3, p: ReturnType<typeof pose>) {
     .turn(0.23)
     .roll((p.trail || 0) * 0.019);
 }
-/** Two apertures share one cross-section. A source pixel belongs to exactly one room. */
+/** The creature and cottage have independent transforms. Both colour and emissive pixels use the same aperture. */
 function parted(
   a: BodyFrame,
   b: BodyFrame,
-  door: XY,
-  exitOnly: boolean,
+  far: boolean,
   hidden: boolean,
-  reveal: boolean,
-  arch: number,
+  crossing: boolean,
   remote: number,
 ): BodyFrame {
   const destination = new Px(W, H),
     clip: [number, number, number, number] = [0, 0, W, H];
-  const shift: XY = [exit[0] - door[0], exit[1] - door[1]];
-  const wrap = (v: XY): XY => (exitOnly ? [v[0] + shift[0], v[1] + shift[1]] : v);
-  // The near jamb is a foreground prop. The actor stays visible on the corridor floor until the second jamb.
-  const backWall = door[0] - 34 * arch;
-  const nearSill: XY = [door[0] + ox, door[1] + 13 + oy];
-  const farSill: XY = [exit[0] + ox, exit[1] + 13 + oy];
+  const near = field(b, 'sill'),
+    farSill: XY = [exit[0], exit[1] + 13],
+    mouth = far ? farSill : near;
   function paint(target: Px, houseImage: Px | null | undefined, beastImage: Px | null | undefined) {
     if (houseImage) sprite(target, houseImage, b, anchor, clip);
-    const surface = target === destination;
-    if (surface) {
-      unfoldingDoor(target, nearSill, arch, false);
-      unfoldingDoor(target, farSill, remote, false);
-    }
+    if (target === destination) frameWicket(target, [farSill[0] + ox, farSill[1] + oy], remote);
     if (hidden || !beastImage) return;
-    if (!exitOnly && !reveal) {
+    if (!crossing && !far) {
       sprite(target, beastImage, a, anchor, clip);
       return;
     }
+    // Inverse-sample the whole animal about its feet, then occlude against the arched opening, including the sill.
     const [left, top] = screenPoint(a, [0, 0], home),
-      src = new Uint32Array(beastImage.data.buffer),
+      scale = a.sx ?? 1;
+    const src = new Uint32Array(beastImage.data.buffer),
       dest = new Uint32Array(target.data.buffer);
-    for (let x = 0; x < beastImage.w; x++) {
-      const X = left + x;
-      if (exitOnly ? X >= door[0] : X < backWall) continue;
-      const xx = Math.round(X + (exitOnly ? shift[0] : 0) + ox);
-      if (xx < 0 || xx >= W) continue;
-      for (let y = 0; y < beastImage.h; y++) {
-        const ink = src[y * beastImage.w + x];
-        if (!ink) continue;
-        const Y = Math.round(y + top + (exitOnly ? shift[1] : 0) + oy);
-        if (Y < 0 || Y >= H) continue;
-        dest[Y * W + xx] = ink;
-        // Amber from the jamb passes across nose, ears, and tail as they cross the lit threshold.
-        const rim = 3.5 - Math.abs(X - door[0]);
-        if (
-          surface &&
-          rim > 0 &&
-          (!src[(y - 1) * beastImage.w + x] || !src[y * beastImage.w + x + (exitOnly ? -1 : 1)])
-        ) {
-          const i = 4 * (Y * W + xx),
-            alpha = 0.22 * rim;
-          target.data[i] += (255 - target.data[i]) * alpha;
-          target.data[i + 1] += (208 - target.data[i + 1]) * alpha;
-          target.data[i + 2] += (133 - target.data[i + 2]) * alpha;
-        }
+    const xa = Math.max(0, Math.floor(left + ox)),
+      xb = Math.min(W, Math.ceil(left + ox + beastImage.w * scale));
+    const ya = Math.max(0, Math.floor(top + oy)),
+      yb = Math.min(H, Math.ceil(top + oy + beastImage.h * scale));
+    for (let y = ya; y < yb; y++) {
+      const sy = Math.floor((y + 0.5 - oy - top) / scale);
+      if (sy < 0 || sy >= beastImage.h) continue;
+      for (let x = xa; x < xb; x++) {
+        const sx = Math.floor((x + 0.5 - ox - left) / scale);
+        if (sx < 0 || sx >= beastImage.w || !visibleAtDoor(x - ox, y - oy, mouth, far)) continue;
+        const colour = src[sy * beastImage.w + sx];
+        if (colour) dest[y * W + x] = colour;
       }
     }
-    if (surface) unfoldingDoor(target, exitOnly ? farSill : nearSill, exitOnly ? remote : arch, true);
   }
   let lit: Px | null = null;
   if (!pointsOnlyActive()) {
@@ -106,14 +86,15 @@ function parted(
   }
   const pts: Record<string, XY> = {};
   for (const k of Object.keys(a.points)) {
-    const v = wrap(field(a, k));
+    const v = field(a, k);
     pts[k] = [v[0] + ox, v[1] + oy];
   }
   for (const k of Object.keys(b.points)) {
     const v = field(b, k);
     pts[k] = [v[0] + ox, v[1] + oy];
   }
-  const eye = a.eye && !hidden ? wrap(screenPoint(a, a.eye, home)) : null;
+  const pupil = a.eye ? screenPoint(a, a.eye, home) : null;
+  const eye = !hidden && pupil && (!(crossing || far) || visibleAtDoor(...pupil, mouth, far)) ? pupil : null;
   return {
     px: destination,
     lit,
@@ -198,8 +179,8 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
     // Each back foot takes its own short step as the shoulders turn around the planted pair.
     const pivotWindows: Record<string, number[][]> = {
       trick: [
-        [37, 53],
-        [189, 202],
+        [33, 47],
+        [247, 257],
       ],
       trick_b: [
         [39, 52],
@@ -297,17 +278,25 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
     [p.goalRX, p.goalRY] = bellHandle(n);
     p.palmDepthR = 4;
   }
+  if (anim === 'trick' && p.halyard) {
+    p.goalR = p.halyard;
+    p.reachL = 0;
+    [p.goalRX, p.goalRY] = looseLine(n);
+    p.palmDepthR = 7;
+  }
   if (anim === 'trick_b-f2') {
     const grip = span(n, 54, 64, 173, 183),
       pen = span(n, 83, 91, 153, 159);
-    const cover = leafTip(p.book || 0),
+    const ring = bookRing(p.book || 0),
       tool = stylus(n);
-    p.goalL = grip;
-    p.goalLX = city[0] + 24;
-    p.goalLY = city[1] + 3;
+    p.goalL = grip * (1 - pen);
+    p.reachL = (p.reach || 0) * (1 - pen);
+    p.goalLX = city[0] + 32;
+    p.palmDepthL = -7;
+    p.goalLY = city[1] + 2;
     p.goalR = grip;
-    p.goalRX = mix(Math.max(cover[0], city[0] + 5), tool.grip[0], pen);
-    p.goalRY = mix(cover[1], tool.grip[1], pen);
+    p.goalRX = mix(ring[0], tool.grip[0], pen);
+    p.goalRY = mix(ring[1], tool.grip[1], pen);
     p.palmDepthR = 5;
   }
   const turn = anim === 'turn' && Number.isInteger(side) ? (t * 4) % 1 : 0;
@@ -334,18 +323,9 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
     };
     const hf = F3.yaw(yaw + (p.yaw || 0) * (1 - part));
     house(h, positionHouse(hf, hp), hp, k);
-    const cabin = locate(raster(h, k), (p.x || 0) * (1 - part), mix(home[1] - floor, -20, part), 1);
+    const cabin = locate(raster(h, k), (p.x || 0) * (1 - part), mix(home[1] - floor, -20 * (p.dockDrop || 0), part), 1);
     const a = locate(raster(r, j), p.x || 0, home[1] - floor, p.s);
-    fr = parted(
-      a,
-      cabin,
-      field(cabin, 'door'),
-      !!p.exitOnly,
-      !!p.hide,
-      !!(p.reveal || p.entryOnly),
-      p.arch || 0,
-      p.portal || 0,
-    );
+    fr = parted(a, cabin, !!p.exitOnly, !!p.hide, !!(p.reveal || p.entryOnly), p.portal || 0);
   }
   if (anim === 'trick-f2' && p.keyInLock) {
     fr = atField(fr);

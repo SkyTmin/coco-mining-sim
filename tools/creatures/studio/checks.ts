@@ -42,6 +42,8 @@ export interface StudioConfig {
   /** Detail floor: rig primitives in `idle` frame 0. Owner 19.11: the colossus (663) is the bar, the penguin (77)
    *  is too plain; new creatures start at 250 (`ws new` writes it). */
   minPrimitives?: number;
+  /** Accepted native idle silhouette to preserve when only the field is expanded around the original rig. */
+  nativeIdleHeight?: number;
   /** Animations or frames to skip for a check, e.g. { jump: ['show:74-77'] }. */
   skip?: Partial<Record<Finding['kind'], string[]>>;
 }

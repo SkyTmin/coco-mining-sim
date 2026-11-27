@@ -149,6 +149,14 @@
       72.16835025715163,
       52.100218725664945
     ],
+    "jambL": [
+      60.328860730177155,
+      85.03774433096157
+    ],
+    "jambR": [
+      84.32273309001374,
+      79.60583480439973
+    ],
     "latch": [
       81.52767170232329,
       70.14238278193025
@@ -156,6 +164,22 @@
     "hinge": [
       60.1123715823794,
       84.69348442319
+    ],
+    "shoeBL": [
+      76.8150707746617,
+      66.45372964081326
+    ],
+    "shoeBR": [
+      37.17302078884473,
+      75.4281888586111
+    ],
+    "shoeFL": [
+      86.26186995129098,
+      81.47598016175442
+    ],
+    "shoeFR": [
+      46.619819965474015,
+      90.45043937955225
     ]
   },
   "motion": {
@@ -368,87 +392,87 @@
     },
     {
       "name": "trick",
-      "frames": 236,
+      "frames": 289,
       "start": 751,
-      "end": 993
+      "end": 1046
     },
     {
       "name": "trick_b",
       "frames": 241,
-      "start": 993,
-      "end": 1240
+      "start": 1046,
+      "end": 1293
     },
     {
       "name": "tired",
       "frames": 36,
-      "start": 1240,
-      "end": 1282
+      "start": 1293,
+      "end": 1335
     },
     {
       "name": "sleep_in",
       "frames": 30,
-      "start": 1282,
-      "end": 1318
+      "start": 1335,
+      "end": 1371
     },
     {
       "name": "sleep",
       "frames": 72,
-      "start": 1318,
-      "end": 1396
+      "start": 1371,
+      "end": 1449
     },
     {
       "name": "wake_startled",
       "frames": 24,
-      "start": 1396,
-      "end": 1426
+      "start": 1449,
+      "end": 1479
     },
     {
       "name": "sleep_out",
       "frames": 30,
-      "start": 1426,
-      "end": 1462
+      "start": 1479,
+      "end": 1515
     },
     {
       "name": "show",
       "frames": 185,
-      "start": 1462,
-      "end": 1653
+      "start": 1515,
+      "end": 1706
     },
     {
       "name": "peek",
       "frames": 149,
-      "start": 1653,
-      "end": 1808
+      "start": 1706,
+      "end": 1861
     },
     {
       "name": "phase",
       "frames": 65,
-      "start": 1808,
-      "end": 1879
+      "start": 1861,
+      "end": 1932
     },
     {
       "name": "idle-f2",
       "frames": 36,
-      "start": 1879,
-      "end": 1921
+      "start": 1932,
+      "end": 1974
     },
     {
       "name": "happy-f2",
       "frames": 57,
-      "start": 1921,
-      "end": 1984
+      "start": 1974,
+      "end": 2037
     },
     {
       "name": "trick-f2",
       "frames": 227,
-      "start": 1984,
-      "end": 2217
+      "start": 2037,
+      "end": 2270
     },
     {
       "name": "trick_b-f2",
       "frames": 234,
-      "start": 2217,
-      "end": 2457
+      "start": 2270,
+      "end": 2510
     }
   ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
@@ -830,8 +854,8 @@
       ]
     },
     "trick": {
-      "seconds": 9.833333333333334,
-      "frames": 236,
+      "seconds": 12.041666666666666,
+      "frames": 289,
       "loop": false,
       "hit": [],
       "shake": 0,
@@ -877,7 +901,15 @@
         222,
         228,
         234,
-        235
+        240,
+        246,
+        252,
+        258,
+        264,
+        270,
+        276,
+        282,
+        288
       ]
     },
     "trick_b": {
@@ -1534,8 +1566,8 @@
       ]
     },
     "showreel": {
-      "seconds": 102.375,
-      "frames": 2457,
+      "seconds": 104.58333333333333,
+      "frames": 2510,
       "loop": true,
       "hit": [],
       "shake": 0,
@@ -1951,7 +1983,16 @@
         2442,
         2448,
         2454,
-        2456
+        2460,
+        2466,
+        2472,
+        2478,
+        2484,
+        2490,
+        2496,
+        2502,
+        2508,
+        2509
       ]
     }
   }

@@ -40,6 +40,8 @@ function entry(r: Rig, F: F3, p: JointPose, j: Marks) {
   j.door = F.p(0, 0, h * 0.48);
   j.sill = F.p(2, 0, 0);
   j.lintel = F.p(1, 0, h + 7.6);
+  j.jambL = F.p(1.4, width / 2, 0);
+  j.jambR = F.p(1.4, -width / 2, 0);
   const hinge = F.at(0.85, width / 2, 0).turn(-(p.open || 0) * 1.47);
   j.latch = hinge.p(1.4, -width + 3, 12);
   j.hinge = hinge.o;
@@ -55,12 +57,20 @@ function entry(r: Rig, F: F3, p: JointPose, j: Marks) {
   // The side wall, worn threshold and diamond pane are recessed behind the outside face of the leaf.
   const inside = (y: number, z: number) => F.p(0.34, y, z);
   r.poly([inside(-10, 0), inside(-5, 4), inside(-5, 24), inside(-10, 28)], wood, 0.12);
-  r.poly([inside(-5, 4), inside(10, 3), inside(10, 24), inside(-5, 24)], cherry, 0.16);
+  const opened = (p.open || 0) > 0.45;
+  r.poly([inside(-5, 4), inside(10, 3), inside(10, 24), inside(-5, 24)], opened ? night : cherry, 0.16);
   r.poly([inside(-10, 0), inside(10, 0), inside(10, 4), inside(-5, 5)], brass, 0.12);
-  for (const z of [8, 14, 20]) r.line(inside(-5, z), inside(10, z - 1), wood.T[1], 0, 0.45);
-  r.poly([inside(1, 12), inside(5, 17), inside(1, 22), inside(-3, 17)], lamp, 0.24);
-  r.line(inside(1, 12), inside(1, 22), bronze.T[2], 0, 0.55);
-  r.line(inside(-3, 17), inside(5, 17), bronze.T[2], 0, 0.55);
+  for (const z of [8, 14, 20]) r.line(inside(-5, z), inside(10, z - 1), opened ? slate.T[1] : wood.T[1], 0, 0.45);
+  // The blue leaded pane stays on the inner sidewall after the last strand of fur has passed.
+  if (opened) {
+    r.poly([inside(5, 14), inside(9, 14), inside(9, 21), inside(5, 21)], coat, 0.16);
+    r.line(inside(7, 14), inside(7, 21), slate.T[3], 0, 0.45);
+    r.line(inside(5, 17), inside(9, 17), slate.T[3], 0, 0.45);
+  } else {
+    r.poly([inside(1, 12), inside(5, 17), inside(1, 22), inside(-3, 17)], lamp, 0.24);
+    r.line(inside(1, 12), inside(1, 22), bronze.T[2], 0, 0.55);
+    r.line(inside(-3, 17), inside(5, 17), bronze.T[2], 0, 0.55);
+  }
   for (let i = 0; i < 11; i++) {
     const a = (i * Math.PI) / 11,
       b = ((i + 1) * Math.PI) / 11;
@@ -178,13 +188,21 @@ export function house(r: Rig, F: F3, p: JointPose, j: Marks) {
   if (form > 0.014) j.tower = stack.p(0, 0, (3 + form * 25) * 1.34);
   const facade = A.at(17.6, -3, 3.2);
   entry(r, facade, p, j);
+  const jackLength = 5 + parked * (49.42 - 22.42 * (p.dockDrop || 0));
+  for (const f of [-12, 12])
+    for (const y of [-19, 19]) j['shoe' + (f > 0 ? 'F' : 'B') + (y > 0 ? 'R' : 'L')] = A.p(f, y, -jackLength);
   if (pointsOnlyActive()) return;
   r.tag = 'house';
   for (const f of [-12, 12])
     for (const y of [-19, 19]) {
-      const leg = 5 + parked * 27;
+      // A screw jack extends to the street before the bearer moves. Once planted its shoe stays still.
+      const leg = jackLength;
       block(r, A, [f, y, -leg / 2], [3.7, 4, leg], wood, cherry);
       block(r, A, [f, y, -leg * 0.45], [5.2, 5.6, 2.3], bronze, brass);
+      if (parked > 0.02) {
+        block(r, A, [f, y, -4 - 3 * parked], [4.9, 5.4, 6 + 6 * parked], bronze, brass);
+        for (let k = 8; k < leg - 3; k += 5) rod(r, A, [f - 1.8, y + 2, -k], [f + 1.8, y + 2, -k - 1.7], 0.65, brass);
+      }
       block(r, A, [f, y, -leg], [6.4, 7, 2.7], wood, brass);
     }
   block(r, A, [0, 0, -0.8], [36, 49, 5], wood, brass);
