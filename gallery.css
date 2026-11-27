@@ -126,3 +126,11 @@ details[open] > summary.section-title h2::before { transform: rotate(90deg); }
 #directions button { font-size: 18px; line-height: 1; min-width: 36px; padding: 6px; }
 #directions button span { display: inline-block; }
 @media (pointer: coarse) { .stage-controls select, #directions button { min-height: 44px; } }
+
+/* The open Keeper is a panorama. Its native actor keeps the same pixel scale on a wide gallery wall. */
+.feature:has(.feature-painting[data-id="threshold_keeper"]) { grid-template-columns: minmax(0, 4fr) minmax(220px, 1fr); }
+.feature:has(.feature-painting[data-id="threshold_keeper"]) .wall { padding: clamp(6px, 1vw, 14px); }
+.feature-painting[data-id="threshold_keeper"] { width: min(100%, 1014px); }
+@media (max-width: 1200px) {
+  .feature:has(.feature-painting[data-id="threshold_keeper"]) { grid-template-columns: 1fr; }
+}
