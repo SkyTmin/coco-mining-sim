@@ -13,7 +13,9 @@ const teal = hx('#4f7978'),
   mint = hx('#8ca398'),
   brass = hx('#d5a466'),
   cream = hx('#efd19d');
-const edge = (x: number) => 179 + Math.sin(x / 69) * 4.5 + (x - 128) * 0.023;
+const edge = (x: number) => 285 + Math.sin(x / 69) * 3.6;
+const cliff = (y: number) => 321 - (y - 265) * 0.31;
+const opposite = (y: number) => 401 + (y - 240) * 0.28;
 function flagstone(p: Px, A: XY, B: XY, C: XY, D: XY, k: number) {
   const grain = hash(k, 15, 7),
     tone = mixc(pigments[3], pigments[6], 0.25 + 0.34 * grain);
@@ -35,136 +37,77 @@ function flagstone(p: Px, A: XY, B: XY, C: XY, D: XY, k: number) {
     p.line(x + 2, y + 3, x + 5, y + 3, pigments[3]);
   }
 }
-function terrace(p: Px) {
-  // The causeway is in front of the ravine. Its cut face and vanishing joints give the feet a common floor.
-  for (let x = 0; x < 256; x++) {
-    const y = edge(x);
-    p.line(x, 150, x, y, pigments[2]);
-  }
-  for (let row = 0; row < 5; row++) {
-    const a = [150, 153, 158, 164, 172, 184][row],
-      b = [150, 153, 158, 164, 172, 184][row + 1],
-      w = 16 + row * 5.3;
-    for (let i = -2; i < 21; i++) {
-      const x = i * w + (row % 2) * w * 0.52,
-        distort = (xx: number, yy: number) => yy + Math.sin(xx / 68) * 3.9 + (xx - 128) * 0.02;
-      const A: XY = [x + 1, distort(x, a)],
-        B: XY = [x + w - 1, distort(x + w, a)],
-        C: XY = [x + w + 4, distort(x + w, b) - 1],
-        D: XY = [x + 3, distort(x, b) - 1];
-      flagstone(p, A, B, C, D, row * 32 + i);
+// The main landing and the postal island have independently cut sides. The bridge crosses open sky.
+function ledge(p: Px, x0: number, x1: number, y: number, depth: number, island: boolean) {
+  const top = (x: number) => y + Math.sin(x / 77) * 3;
+  const inside = (x: number, z: number) => (island ? x >= opposite(z) : x <= cliff(z));
+  for (let x = x0; x <= x1; x++) {
+    const yy = top(x);
+    for (let k = 0; k < depth + 30; k++) {
+      if (!inside(x, yy + k)) continue;
+      const block = Math.floor(x / 24);
+      const jag = 18 * hash(block, 7, 3) + 6 * Math.sin(x / 7);
+      if (k > depth + jag + 5) continue;
+      const c = k < depth ? pigments[4] : k < depth + 3 ? pigments[6] : pigments[2 + (block % 3 === 0 ? 1 : 0)];
+      p.set(x, yy + k, c);
+      if (k > depth + 3 && (x % 23 === 0 || (x + Math.floor(k / 7)) % 37 === 0)) p.set(x, yy + k, pigments[1]);
     }
   }
-  for (let i = -1; i < 14; i++) {
-    const x = i * 24 + 5,
-      y = edge(x),
-      y2 = edge(x + 24),
-      h = 13 + hash(i, 2, 8) * 20;
-    face(
-      p,
-      [
-        [x, y],
-        [x + 23, y2],
-        [x + 21, y2 + h],
-        [x + 5, y + h + 4],
-      ],
-      mixc(pigments[1], pigments[3], hash(i, 3, 1)),
-    );
-    p.line(x, y, x + 23, y2, pigments[6]);
-    p.line(x + 2, y + 2, x + 22, y2 + 2, pigments[4]);
-    for (let k = 0; k < 14; k++) {
-      const xx = x + 4 + hash(k, i, 1) * 15,
-        yy = y + 4 + hash(k, i, 2) * (h - 6);
-      p.line(xx, yy, xx + 1, yy + 2 + hash(k, i, 3) * 3, mixc(pigments[2], pigments[4], hash(i, k, 9)));
-    }
-    if (i % 3 === 1) {
-      p.line(x + 4, y + 4, x + 12, y + 9, pigments[1]);
-      p.line(x + 12, y + 9, x + 12, y + 14, pigments[1]);
+  for (let row = 0; row < 4; row++) {
+    const w = 22 + 5 * row,
+      dy = depth / 4;
+    for (let i = -1; i < 26; i++) {
+      const x = x0 + i * w + (row % 2) * w * 0.52,
+        z = top(x) + row * dy;
+      if (x < x0 - 4 || x + w > x1 + 5 || !inside(x, z) || !inside(x + w + 3, z + dy)) continue;
+      flagstone(
+        p,
+        [x, z],
+        [x + w - 1, top(x + w) + row * dy],
+        [x + w + 2, top(x + w) + (row + 1) * dy - 1],
+        [x + 3, z + dy - 1],
+        row * 41 + i,
+      );
     }
   }
-}
-// A high postal landing, separated from the front promenade by a strip of sky.
-function island(p: Px) {
-  face(
-    p,
-    [
-      [204, 136],
-      [221, 129],
-      [255, 131],
-      [255, 151],
-      [246, 147],
-      [235, 161],
-      [225, 151],
-      [216, 153],
-    ],
-    pigments[1],
-  );
-  for (let k = 0; k < 10; k++) {
-    const x = 215 + k * 4,
-      y = 135 - (k > 2 ? 2 : 0),
-      h = 9 + hash(k, 9, 6) * 13;
-    face(
-      p,
-      [
-        [x, y],
-        [x + 4, y - 1],
-        [x + 2, y + h],
-        [x - 1, y + h - 3],
-      ],
-      mixc(pigments[2], pigments[4], hash(k, 8, 3)),
-    );
-    p.line(x, y + 1, x - 1, y + h - 4, pigments[4]);
-  }
-  face(
-    p,
-    [
-      [202, 136],
-      [221, 129],
-      [255, 129],
-      [255, 135],
-      [220, 140],
-    ],
-    pigments[5],
-  );
-  p.line(203, 137, 220, 140, cream);
-  p.line(220, 140, 255, 135, pigments[4]);
-  for (let k = 0; k < 8; k++) {
-    const x = 221 + k * 4;
-    p.set(x, 133 + hash(k, 4, 2) * 3, mint);
+  for (let k = 0; k < depth + 15; k++) {
+    const Y = y + k,
+      X = island ? opposite(Y) : cliff(Y);
+    p.line(X, Y, X + (island ? 4 : -4), Y, k < depth ? pigments[6] : pigments[3]);
   }
 }
 let still: Px;
 function matte() {
   if (still) return still;
   const png = PNG.sync.read(readFileSync(skyFile));
-  still = new Px(256, 208);
+  still = new Px(png.width, png.height);
   still.data.set(png.data);
-  terrace(still);
-  island(still);
+  ledge(still, 0, 326, 252, 34, false);
+  ledge(still, 396, 512, 232, 19, true);
   return still;
 }
 const scene: Scene = (p, t) => {
   p.data.set(matte().data);
   const a = (t * Math.PI * 2) / 3;
-  // Slowly turning weather vanes and warm high-altitude motes establish the wind direction.
-  for (let k = 0; k < 8; k++) {
-    const x = 10 + hash(k, 6, 14) * 230 + 2.4 * Math.sin(a + k),
-      y = 22 + hash(k, 5, 2) * 100 + Math.sin(a + k * 2) * 0.7;
-    if (Math.sin(a + k) > 0.25) p.set(x, y, mixc(pigments[5], cream, 0.57));
+  for (let i = 0; i < 5; i++) {
+    const x = 332 + i * 16 + 12 * Math.sin(a + i * 0.28),
+      y = 47 + i * 4 + 3 * Math.cos(a + i);
+    const wing = 2.2 * Math.sin(a * 3 + i);
+    p.line(x - 3, y - wing, x, y + 1, pigments[2]);
+    p.line(x, y + 1, x + 3, y - wing, pigments[2]);
   }
-  for (let i = 0; i < 3; i++) {
-    const x = 160 + i * 11 + 9 * Math.sin(a + i * 0.33),
-      y = 28 + i * 4 + 2 * Math.cos(a + i),
-      v = Math.sin(3 * a + i) * 1.3;
-    p.line(x - 2, y - v, x, y + 1, pigments[2]);
-    p.line(x, y + 1, x + 2, y - v, pigments[2]);
+  // Small flecks drifting over the fog make the empty space beneath the span visible.
+  for (let i = 0; i < 13; i++) {
+    const x = 318 + hash(i, 7, 3) * 68 + 4 * Math.sin(a + i),
+      y = 233 + hash(i, 4, 9) * 62 + 2 * Math.cos(a + i);
+    if (Math.sin(a + i) > 0.2) p.line(x, y, x + 2, y, mixc(pigments[5], cream, 0.4));
   }
 };
-scene.front = [3, 10, 244, 250].map((x) => ({
+scene.front = [5, 10, 287, 304, 474, 506].map((x) => ({
   id: 'terrace-grass-' + x,
-  depth: Math.round(edge(x) - 1),
+  depth: x > 390 ? 252 : Math.round(edge(x) - 1),
   paint(p: Px) {
-    const y = edge(x) - 1;
+    const y = x > 390 ? 250 + Math.sin(x / 77) * 3 : edge(x) - 1;
     for (let i = 0; i < 8; i++) {
       const h = 3 + hash(x, i, 2) * 7;
       p.line(x, y, x + (i - 3) * 1.3, y - h, i % 3 ? teal : mint);

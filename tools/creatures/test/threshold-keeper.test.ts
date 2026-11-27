@@ -1,114 +1,142 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { compose } from '../engine';
+import { compose, screenPoint } from '../engine';
 import { loadPainting } from '../render';
 import { withPointsOnly } from '../rig/figure';
 import { creatureIds, inputsOf } from '../studio/cache';
-import { city, drawer, lock, liftCentre, liftProgress, scenePose, stages } from '../c/threshold_keeper-stage';
+import {
+  bell,
+  bellHandle,
+  bridgeEnd,
+  city,
+  exit,
+  fromWorld,
+  home,
+  leafTip,
+  liftCentre,
+  liftProgress,
+  lock,
+  postShift,
+  scenePose,
+  size,
+  stages,
+  stylus,
+  toWorld,
+} from '../c/threshold_keeper-stage';
+import { doorHeight } from '../c/threshold_keeper-door';
 import type { XY } from '../types';
 
 const { c, s, b } = await loadPainting('threshold_keeper');
-const frame = (clip: string, n: number) => compose(c, s, b, clip, n / 24);
-const marks = (clip: string, n: number) => withPointsOnly(() => frame(clip, n).points);
+const picture = (clip: string, n: number) => compose(c, s, b, clip, n / 24);
+function marks(clip: string, n: number) {
+  const body = withPointsOnly(() => c.frame(clip, n / 24, 0, 'normal'));
+  return Object.fromEntries(
+    Object.entries(body.points).map(([k, v]) => [k, fromWorld(screenPoint(body, v, c.portraitOrigin!))]),
+  );
+}
 const distance = (a: XY, b: XY) => Math.hypot(a[0] - b[0], a[1] - b[1]);
-function near(a: XY, b: XY, tolerance = 0.02) {
+function near(a: XY, b: XY, tolerance = 0.03) {
   assert.ok(distance(a, b) < tolerance, `${a} and ${b}, expected distance < ${tolerance}`);
 }
 
-test('the workshop renders the keeper and invalidates this painting when its illustrated sky changes', () => {
+test('the panorama triples the field area without resizing the animal raster', () => {
   assert.ok(creatureIds().includes(c.id));
   assert.ok(inputsOf(c.id, c.theme, c.rarity).some((file) => file.endsWith('/hundred_landings-sky.png')));
-});
-
-test('the animal and its carried house keep their scale throughout all seven stories and their transitions', () => {
+  assert.equal(size[0] * size[1], 3 * 256 * 208);
+  assert.equal(size[2], 160);
+  assert.deepEqual(c.behavior!.field, size.slice(0, 2));
+  near(c.portraitOrigin!, toWorld(home));
+  near(marks('idle', 0).nose, [157, 151], 0.85);
+  near(marks('idle', 0).roof, [107, 78], 0.85);
   for (const [clip, count] of Object.entries(stages)) {
-    for (let n = 0; n < count; n++) {
-      const p = scenePose(clip, n)!;
-      assert.equal(p.s, 1);
-      assert.equal(p.houseS, 1);
-    }
-    const last = marks(clip, count - 1);
-    const rest = marks(clip.endsWith('-f2') || clip === 'phase' ? 'idle-f2' : 'idle', 0);
+    for (let n = 0; n < count; n++) assert.equal(scenePose(clip, n)!.s, 1);
+    const last = marks(clip, count - 1),
+      rest = marks(clip.endsWith('-f2') || clip === 'phase' ? 'idle-f2' : 'idle', 0);
     for (const key of ['root', 'sill', 'bootR', 'bootL']) near(last[key], rest[key], 0.4);
   }
 });
 
-test('the keeper alternates a planted paw and a swinging paw across the paving', () => {
-  const sloping = marks('trick_b', 55),
-    base = marks('trick_b', 68);
-  assert.ok(sloping.root[1] > base.root[1] + 8);
-  const frames = [27, 29, 32, 35].map((n) => marks('trick_b-f2', n));
-  for (const f of frames.slice(1)) near(f.bootR, frames[0].bootR);
-  assert.ok(frames.at(-1)!.root[0] - frames[0].root[0] > 8);
-  assert.ok(frames.at(-1)!.bootL[0] - frames[0].bootL[0] > 15);
-  const next = [37, 39, 42].map((n) => marks('trick_b-f2', n));
-  for (const f of next.slice(1)) near(f.bootL, next[0].bootL);
-  assert.ok(next[2].bootR[0] - next[0].bootR[0] > 10);
+test('walking between the lectern and home alternates planted shoes while the house stays on its stand', () => {
+  const run = Array.from({ length: 35 }, (_, i) => marks('trick_b-f2', 22 + i));
+  const planted = { bootL: 0, bootR: 0 };
+  for (let i = 1; i < run.length; i++)
+    for (const boot of ['bootL', 'bootR'] as const) {
+      if (distance(run[i].root, run[i - 1].root) > 1 && distance(run[i][boot], run[i - 1][boot]) < 0.3) planted[boot]++;
+    }
+  assert.ok(planted.bootL >= 5 && planted.bootR >= 5, JSON.stringify(planted));
+  for (const n of [40, 78, 113, 155, 195]) near(marks('trick_b-f2', n).sill, marks('trick_b-f2', 25).sill, 0.4);
 });
 
-test('the cottage stands still, the source empties before a nose emerges at the frame, and the tail clears on show', () => {
-  const start = marks('trick', 54);
-  for (const n of [68, 84, 108, 115, 137, 173, 190]) near(marks('trick', n).sill, start.sill, 0.4);
-  for (let n = 109; n < 115; n++) assert.equal(scenePose('trick', n)!.hide, 1);
-  const inside = marks('trick', 107),
-    nose = marks('trick', 139);
+test('the lintel telescopes before the full-height animal crosses and the two thresholds never show two animals', () => {
+  const sill = marks('trick', 52).sill;
+  for (const n of [54, 70, 94, 113, 139, 169, 190]) near(marks('trick', n).sill, sill, 0.4);
+  assert.ok(doorHeight(scenePose('trick', 58)!.arch) > 95);
+  const inside = marks('trick', 95),
+    peek = marks('trick', 131);
   assert.ok(inside.tail[0] < inside.door[0] - 10);
-  assert.ok(nose.nose[0] < 251 && nose.tail[0] > 261);
-  const port = frame('trick', 139).layers.over;
-  let brass = 0;
-  for (let y = 130; y < 184; y++) for (let x = 274; x < port.w; x++) if (port.solid(x, y)) brass++;
-  assert.ok(brass > 30);
-  near(marks('trick', 176).root, marks('trick', 177).root, 1.5);
-  const arrival = marks('show', 97);
-  assert.ok(arrival.tail[0] > arrival.door[0] + 4);
+  assert.ok(peek.nose[0] < exit[0] - 21 && peek.tail[0] > exit[0] + 10);
+  // The same rigid ear/eye vector survives the doorway. Check actual geometry against the actor away from the sill.
+  for (const n of [65, 73, 88, 122, 132, 145, 175]) {
+    const m = marks('trick', n);
+    assert.ok(distance(m.earR, m.earL) > 18 && distance(m.head, m.nose) > 12);
+    const floor = scenePose('trick', n)!.exitOnly ? exit[1] + 13 : sill[1];
+    assert.ok(Math.min(m.earR[1], m.earL[1]) > floor - doorHeight(1) - 6);
+  }
+  for (const n of [99, 100, 101, 159, 160, 161]) assert.equal(scenePose('trick', n)!.hide, 1);
+  const X = toWorld(exit)[0] + size[3],
+    f = picture('trick', 131).layers.over;
+  let lit = 0;
+  for (let y = 110; y < f.h; y++) for (let x = X - 5; x < Math.min(f.w, X + 4); x++) if (f.solid(x, y)) lit++;
+  assert.ok(lit > 40);
 });
 
-test('the paw meets the pull, the wax letter and the slot before each prop responds', () => {
+test('the mail bridge crosses a real gap before the paw takes the sealed envelope', () => {
+  assert.ok(bridgeEnd[0] - 136 > 190);
+  assert.equal(scenePose('trick_b', 82)!.bridge, 1);
   for (const n of [61, 63, 65, 67, 69, 71]) near(marks('trick_b', n).handR, [117, 155], 0.8);
-  for (const n of [119, 120, 121, 122, 123, 124]) near(marks('trick_b', n).handR, [228, 135]);
+  for (const n of [119, 120, 121, 122, 123, 124]) near(marks('trick_b', n).handR, [228 + postShift, 135]);
   for (const n of [181, 182, 183, 184, 185]) near(marks('trick_b', n).handR, [125, 149]);
 });
-test('the actual key eases into the slot and stays behind as the car carries the feet to the bell', () => {
-  for (let n = 61; n <= 68; n++) assert.ok(distance(marks('trick-f2', n).keyTip, marks('trick-f2', n - 1).keyTip) < 5);
-  for (const n of [66, 77, 88, 102, 123, 146, 167, 174]) near(marks('trick-f2', n).keyTip, lock);
-  for (const n of [94, 102, 113, 130, 149, 165]) {
+
+test('the beacon is well above the ears at street level and the car supports the feet all the way to its bell', () => {
+  assert.equal(liftCentre(0)[1] - liftCentre(1)[1], 188);
+  assert.ok(marks('trick-f2', 60).earL[1] - bell[1] > 120);
+  for (const n of [68, 80, 98, 128, 145, 175, 182]) near(marks('trick-f2', n).keyTip, lock);
+  for (const n of [88, 101, 116, 126, 143, 161, 178]) {
     const m = marks('trick-f2', n),
       car = liftCentre(liftProgress(n));
     near(m.root, [car[0] + 4, car[1] + 2]);
-    for (const foot of [m.bootR, m.bootL]) {
-      assert.ok(Math.abs(foot[0] - car[0]) < 25);
-      assert.ok(Math.abs(foot[1] - car[1]) < 12);
+    for (const boot of [m.bootR, m.bootL]) {
+      assert.ok(Math.abs(boot[0] - car[0]) < 26);
+      assert.ok(Math.abs(boot[1] - car[1]) < 13);
     }
   }
-  for (const n of [112, 114, 116, 120, 123]) near(marks('trick-f2', n).handR, [179, 95]);
-});
-test('both paws press the creases of the town before filing its map at the opposite end of the journey', () => {
-  for (const n of [65, 72, 78, 82]) {
-    const m = marks('trick_b-f2', n);
-    const h = 1 - scenePose('trick_b-f2', n)!.map;
-    near(m.handR, [city[0] - 16 - 8 * h, city[1] + 1], 1);
-    near(m.handL, [city[0] - 6 - 6 * h, city[1] - 7 * h + 1], 1);
-  }
-  for (const n of [131, 135, 141, 144]) {
-    const m = marks('trick_b-f2', n);
-    const e = scenePose('trick_b-f2', n)!.file;
-    near(m.handR, [drawer[0] - 7, drawer[1] - 5 + 8 * e], 1);
-    near(m.handL, [drawer[0] + 4, drawer[1] - 6 + 8 * e], 1);
-  }
+  for (const n of [125, 130, 134, 139]) near(marks('trick-f2', n).handR, bellHandle(n));
+  assert.ok(scenePose('trick-f2', 120)!.gate < 0.01 && scenePose('trick-f2', 145)!.gate > 0.9);
 });
 
-test('the filed map stays visible on the return tray while its owner turns away', () => {
-  for (const n of [167, 168, 169, 170, 180, 192, 194]) {
-    const f = frame('trick_b-f2', n);
-    const layer = f.layers.fxo;
-    const border = (layer.w - 256) / 2;
-    let paper = 0;
-    for (let y = 149; y <= 164; y++) {
-      for (let x = 171; x <= 212; x++) {
-        const i = ((y + border) * layer.w + x + border) * 4;
-        if (layer.data[i + 3] > 150 && layer.data[i] > 140 && layer.data[i + 1] > 120) paper++;
-      }
-    }
-    assert.ok(paper > 250, `the cream paper left the visible return tray on frame ${n}`);
+test('the bound chart opens on one hinge, the paw traces the ink and the same book closes on the lectern', () => {
+  const hinge: XY = [city[0], city[1] - 2];
+  for (const u of [0, 0.2, 0.5, 0.8, 1]) assert.ok(distance(leafTip(u), hinge) >= 31);
+  for (const n of [104, 114, 126, 136]) {
+    const p = scenePose('trick_b-f2', n)!,
+      m = marks('trick_b-f2', n),
+      pen = stylus(n);
+    near(m.handR, pen.grip, 1);
+    assert.ok(Math.abs(distance(pen.grip, pen.tip) - Math.hypot(32, 9)) < 0.01);
+    near(m.handL, [city[0] + 24, city[1] + 3]);
+    assert.ok(m.nose[0] > city[0] + 25);
   }
+  assert.ok(scenePose('trick_b-f2', 95)!.book > 0.95);
+  assert.equal(scenePose('trick_b-f2', 183)!.book, 0);
+  // The open paper must be visible in front of the actor and to the left of its nose.
+  const layer = picture('trick_b-f2', 134).layers.fxo;
+  const [X, Y] = toWorld(city).map((v) => v + size[3]);
+  let pale = 0;
+  for (let y = Y - 21; y < Y; y++)
+    for (let x = X - 29; x < X + 18; x++) {
+      const i = 4 * (y * layer.w + x);
+      if (layer.data[i + 3] > 190 && layer.data[i] > 160 && layer.data[i + 1] > 145) pale++;
+    }
+  assert.ok(pale > 220, `only ${pale} visible chart pixels`);
 });

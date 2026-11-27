@@ -3,11 +3,13 @@ import { card } from './threshold_keeper-craft';
 import { gestures } from './threshold_keeper-fx';
 import { figure } from './threshold_keeper-figure';
 import { clips, home } from './threshold_keeper-score';
+import { size, toWorld } from './threshold_keeper-stage';
 const keeper: Creature = {
   id: 'threshold_keeper',
   rarity: card.rarity,
   theme: card.theme,
-  portraitOrigin: home,
+  size,
+  portraitOrigin: toWorld(home),
   animations: clips,
   frame: figure,
   effects: gestures,
@@ -24,8 +26,8 @@ const keeper: Creature = {
     phase: 'Дом раскрывается в часовую башню',
     'idle-f2': 'Покой часовой башни',
     'happy-f2': 'Звонят башенные часы',
-    'trick-f2': 'Заводит ключом небесный подъёмник',
-    'trick_b-f2': 'Складывает бумажный город в карту',
+    'trick-f2': 'Поднимается зажечь маяк над облаками',
+    'trick_b-f2': 'Проводит свет по карте между маяками',
     show: 'Кто живёт за маленькой дверью',
     peek: 'Выглядывает из-за косяка',
     hatch: 'Первый порог',

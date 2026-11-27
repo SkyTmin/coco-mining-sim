@@ -4,15 +4,18 @@ import { pointsOnlyActive, projectFigure, scaleFigure } from '../rig/figure';
 import { Px } from '../rig/px';
 import type { BodyFrame, Creature, XY } from '../types';
 import { beast } from './threshold_keeper-beast';
-import { card, brass, deep, glint, ink, milk, mint, wood, type Marks } from './threshold_keeper-craft';
+import { card, glint, milk, type Marks } from './threshold_keeper-craft';
 import { house } from './threshold_keeper-house';
-import { exit, home, drawer, lock, mix, span, pose, ease, clips } from './threshold_keeper-score';
-import { city } from './threshold_keeper-stage';
+import { exit, home, lock, mix, span, pose, ease, clips } from './threshold_keeper-score';
+import { bellHandle, city, leafTip, margin, postShift, size, stylus } from './threshold_keeper-stage';
+import { unfoldingDoor } from './threshold_keeper-door';
 
 const pad = 18,
-  W = 256 + 2 * pad,
-  H = 208 + 2 * pad,
-  anchor: XY = [home[0] + pad, home[1] + pad];
+  W = size[0] + 2 * pad,
+  H = size[1] + 2 * pad,
+  ox = margin[0] + pad,
+  oy = margin[1] + pad,
+  anchor: XY = [home[0] + ox, home[1] + oy];
 const raster = (r: Rig, j: Marks) => {
   scaleFigure(r, j, 1.115);
   return projectFigure(r, 160, [80, 131], j, '#28283a', 4.8, true);
@@ -39,30 +42,24 @@ function parted(
   exitOnly: boolean,
   hidden: boolean,
   reveal: boolean,
-  opened: number,
+  arch: number,
+  remote: number,
 ): BodyFrame {
   const destination = new Px(W, H),
     clip: [number, number, number, number] = [0, 0, W, H];
   const shift: XY = [exit[0] - door[0], exit[1] - door[1]];
-  const squeeze = (v: XY): XY => {
-    if (!reveal && !exitOnly) return v;
-    const influence = 1 - ease(0, 34, Math.abs(v[0] - door[0]));
-    const top = door[1] - 25,
-      bottom = door[1] + 15;
-    const y =
-      v[1] < top
-        ? top - 2 * Math.tanh((top - v[1]) / 12)
-        : v[1] > bottom
-          ? bottom + 2 * Math.tanh((v[1] - bottom) / 12)
-          : v[1];
-    return [v[0], mix(v[1], y, influence)];
-  };
-  const wrap = (v: XY): XY => {
-    const q = squeeze(v);
-    return exitOnly ? [q[0] + shift[0], q[1] + shift[1]] : q;
-  };
+  const wrap = (v: XY): XY => (exitOnly ? [v[0] + shift[0], v[1] + shift[1]] : v);
+  // The near jamb is a foreground prop. The actor stays visible on the corridor floor until the second jamb.
+  const backWall = door[0] - 34 * arch;
+  const nearSill: XY = [door[0] + ox, door[1] + 13 + oy];
+  const farSill: XY = [exit[0] + ox, exit[1] + 13 + oy];
   function paint(target: Px, houseImage: Px | null | undefined, beastImage: Px | null | undefined) {
     if (houseImage) sprite(target, houseImage, b, anchor, clip);
+    const surface = target === destination;
+    if (surface) {
+      unfoldingDoor(target, nearSill, arch, false);
+      unfoldingDoor(target, farSill, remote, false);
+    }
     if (hidden || !beastImage) return;
     if (!exitOnly && !reveal) {
       sprite(target, beastImage, a, anchor, clip);
@@ -73,25 +70,31 @@ function parted(
       dest = new Uint32Array(target.data.buffer);
     for (let x = 0; x < beastImage.w; x++) {
       const X = left + x;
-      if (exitOnly ? X >= door[0] : X < door[0]) continue;
-      const xx = Math.round(X + (exitOnly ? shift[0] : 0) + pad);
+      if (exitOnly ? X >= door[0] : X < backWall) continue;
+      const xx = Math.round(X + (exitOnly ? shift[0] : 0) + ox);
       if (xx < 0 || xx >= W) continue;
       for (let y = 0; y < beastImage.h; y++) {
         const ink = src[y * beastImage.w + x];
         if (!ink) continue;
-        const Y = Math.round(squeeze([X, y + top])[1] + (exitOnly ? shift[1] : 0) + pad);
-        if (Y >= 0 && Y < H) dest[Y * W + xx] = ink;
+        const Y = Math.round(y + top + (exitOnly ? shift[1] : 0) + oy);
+        if (Y < 0 || Y >= H) continue;
+        dest[Y * W + xx] = ink;
+        // Amber from the jamb passes across nose, ears, and tail as they cross the lit threshold.
+        const rim = 3.5 - Math.abs(X - door[0]);
+        if (
+          surface &&
+          rim > 0 &&
+          (!src[(y - 1) * beastImage.w + x] || !src[y * beastImage.w + x + (exitOnly ? -1 : 1)])
+        ) {
+          const i = 4 * (Y * W + xx),
+            alpha = 0.22 * rim;
+          target.data[i] += (255 - target.data[i]) * alpha;
+          target.data[i + 1] += (208 - target.data[i + 1]) * alpha;
+          target.data[i + 2] += (133 - target.data[i + 2]) * alpha;
+        }
       }
     }
-    if (reveal && opened > 0.1 && target === destination) {
-      // Reveal the resisting near jamb: the changing silhouette passes under the arch and over the sill.
-      const x = Math.round(door[0] + pad),
-        y = door[1] + pad;
-      target.line(x - 1, y - 26, x - 1, y + 14, wood.T[0]);
-      target.line(x - 2, y - 24, x - 2, y + 13, brass.T[2]);
-      target.line(x - 2, y - 26, x + 3, y - 29, glint);
-      target.line(x - 2, y + 14, x + 3, y + 14, brass.T[2]);
-    }
+    if (surface) unfoldingDoor(target, exitOnly ? farSill : nearSill, exitOnly ? remote : arch, true);
   }
   let lit: Px | null = null;
   if (!pointsOnlyActive()) {
@@ -104,18 +107,18 @@ function parted(
   const pts: Record<string, XY> = {};
   for (const k of Object.keys(a.points)) {
     const v = wrap(field(a, k));
-    pts[k] = [v[0] + pad, v[1] + pad];
+    pts[k] = [v[0] + ox, v[1] + oy];
   }
   for (const k of Object.keys(b.points)) {
     const v = field(b, k);
-    pts[k] = [v[0] + pad, v[1] + pad];
+    pts[k] = [v[0] + ox, v[1] + oy];
   }
   const eye = a.eye && !hidden ? wrap(screenPoint(a, a.eye, home)) : null;
   return {
     px: destination,
     lit,
     anchor,
-    eye: eye ? [eye[0] + pad, eye[1] + pad] : null,
+    eye: eye ? [eye[0] + ox, eye[1] + oy] : null,
     points: pts,
     primitives: a.primitives + b.primitives,
     rig: a.rig,
@@ -127,7 +130,13 @@ function rail(fr: BodyFrame) {
   const fore = new Px(fr.px.w, fr.px.h);
   const [left, top] = screenPoint(fr, [0, 0], home),
     s = fr.sx ?? 1;
-  if (left >= 3 && top >= 3 && left + fr.px.w * s <= 253 && top + fr.px.h * s <= 205) return;
+  if (
+    left + margin[0] >= 3 &&
+    top + margin[1] >= 3 &&
+    left + margin[0] + fr.px.w * s <= size[0] - 3 &&
+    top + margin[1] + fr.px.h * s <= size[1] - 3
+  )
+    return;
   const from = new Uint32Array(fr.px.data.buffer),
     to = new Uint32Array(fore.data.buffer);
   let any = false;
@@ -135,9 +144,9 @@ function rail(fr: BodyFrame) {
     for (let x = 0; x < fore.w; x++) {
       const i = y * fore.w + x;
       if (!from[i]) continue;
-      const X = left + x * s,
-        Y = top + y * s;
-      if (X <= 2 || X >= 253 || Y <= 2 || Y >= 205) {
+      const X = left + x * s + margin[0],
+        Y = top + y * s + margin[1];
+      if (X <= 2 || X >= size[0] - 3 || Y <= 2 || Y >= size[1] - 3) {
         to[i] = from[i];
         any = true;
       }
@@ -166,72 +175,16 @@ function atField(fr: BodyFrame): BodyFrame {
     sy: 1,
   };
 }
-function lightOnFrame(fr: BodyFrame, anim: string, n: number) {
+function lightOnFrame(fr: BodyFrame, n: number) {
   if (pointsOnlyActive()) return;
-  const aperture = anim === 'trick',
-    opening = aperture ? pose(anim, n).portal || 0 : span(n, 65, 84, 158, 178);
+  const opening = span(n, 125, 140, 173, 190);
   if (opening < 0.01) return;
-  const fore = new Px(W, H),
-    x = exit[0] + pad,
-    y = exit[1] + pad;
-  if (aperture) {
-    // The visible cut in the metal is behind the emerging nose. Its near hinge stays in front.
-    const w = 14 * opening,
-      h = 31 * opening;
-    // The brass stile is in the frame. The warm rear wall is lit by the same diamond window as the cottage.
-    for (let k = 0; k < 2 * w; k++) {
-      const u = k / w - 1,
-        up = h * (1 - 0.22 * u * u),
-        X = x - w + k;
-      fore.line(X, y - up, X, y + 18 * opening, k < 4 ? deep.T[0] : k % 6 < 2 ? wood.T[0] : wood.T[1]);
-      fore.set(X, y - up, glint);
-      fore.set(X, y + 17 * opening, brass.T[2]);
-    }
-    fore.line(x - w + 2, y - 14 * opening, x - w + 2, y + 17 * opening, brass.T[2]);
-    if (opening > 0.5)
-      for (let k = -4; k <= 4; k++) {
-        const h = 5 - Math.abs(k);
-        fore.line(x - 5 + k, y - 9 - h, x - 5 + k, y - 9 + h, k === 0 ? brass.T[2] : k < 0 ? glint : milk);
-      }
-  } else {
-    const time = (n - 65) * 3;
-    for (let s = 0; s < 2 * (W + H); s++) {
-      const d = (((s - time) % (W + H)) + (W + H)) % (W + H);
-      if (d > 64 * opening || s % 5 === 4) continue;
-      const [u, v] =
-        s < W ? [s, 8] : s < W + H ? [W - 9, s - W] : s < 2 * W + H ? [2 * W + H - s, H - 9] : [8, 2 * (W + H) - s];
-      fore.set(u, v, d < 13 ? milk : glint);
-      if (s % 11 === 0) fore.set(u + 1, v + 1, mint);
-    }
+  const fore = fr.over ?? new Px(W, H);
+  for (let k = 0; k < W - 18; k++) {
+    const d = (((k - 7 * (n - 125)) % W) + W) % W;
+    if (d < 72 * opening && k % 7 < 5) fore.set(k + 9, 8, d < 15 ? milk : glint);
   }
-  if (fr.over) {
-    const from = new Uint32Array(fr.over.data.buffer),
-      to = new Uint32Array(fore.data.buffer);
-    for (let i = 0; i < from.length; i++) if (from[i]) to[i] = from[i];
-  }
-  if (aperture) fore.line(x + 2, y - 27 * opening, x + 2, y + 17 * opening, glint);
   fr.over = fore;
-}
-function openDrawer(fr: BodyFrame, n: number) {
-  if (pointsOnlyActive()) return;
-  const u = pose('trick_b-f2', n).drawer || 0;
-  if (u <= 0) return;
-  const layer = fr.over ?? new Px(W, H),
-    y = drawer[1] + pad,
-    x = pad + 252;
-  const end = x + 7,
-    lip = Math.round(x + 5 - 41 * u);
-  // Only the front apron is above the paws. The back, inner floor and the carried map stay visible.
-  layer.rect(lip, y + 6, end, y + 12, ink);
-  layer.rect(lip + 1, y + 7, end - 1, y + 11, wood.T[1]);
-  layer.line(lip + 1, y + 6, end, y + 6, glint);
-  layer.line(lip + 2, y + 11, end, y + 11, brass.T[2]);
-  for (let X = lip + 4; X < end; X += 7) layer.set(X, y + 9, milk);
-  if (u > 0.5) {
-    layer.line(lip + 12, y + 8, lip + 17, y + 8, ink);
-    layer.line(lip + 12, y + 9, lip + 17, y + 9, brass.T[3]);
-  }
-  fr.over = layer;
 }
 export const figure: Creature['frame'] = (anim, t, side, variant) => {
   const n = t * 24,
@@ -245,8 +198,8 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
     // Each back foot takes its own short step as the shoulders turn around the planted pair.
     const pivotWindows: Record<string, number[][]> = {
       trick: [
-        [39, 54],
-        [202, 220],
+        [37, 53],
+        [189, 202],
       ],
       trick_b: [
         [39, 52],
@@ -262,8 +215,8 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
         [173, 190],
       ],
       'trick_b-f2': [
-        [166, 178],
-        [209, 224],
+        [5, 21],
+        [179, 193],
       ],
       show: [
         [96, 110],
@@ -312,7 +265,7 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
       const first = ease(126, 139, n),
         second = ease(169, 181, n);
       p.goalR = grip;
-      p.goalRX = mix(mix(228, handX, first), 125, second);
+      p.goalRX = mix(mix(228 + postShift, handX, first), 125, second);
       p.goalRY = mix(mix(135, handY, first), 149, second);
     }
   }
@@ -341,23 +294,21 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
   }
   if (anim === 'trick-f2' && p.knock) {
     p.goalR = p.knock;
-    p.goalRX = 179;
-    p.goalRY = 95;
+    [p.goalRX, p.goalRY] = bellHandle(n);
     p.palmDepthR = 4;
   }
   if (anim === 'trick_b-f2') {
-    const grip = span(n, 49, 63, 145, 154);
-    const take = ease(85, 99, n),
-      put = ease(118, 130, n),
-      h = 1 - (p.map || 0);
-    const right = city[0] - 16 - 8 * h,
-      left = city[0] - 6 - 6 * h;
-    p.goalR = grip;
+    const grip = span(n, 54, 64, 173, 183),
+      pen = span(n, 83, 91, 153, 159);
+    const cover = leafTip(p.book || 0),
+      tool = stylus(n);
     p.goalL = grip;
-    p.goalRX = mix(mix(right, p.atX + 17, take), drawer[0] - 7, put);
-    p.goalLX = mix(mix(left, p.atX + 35, take), drawer[0] + 4, put);
-    p.goalRY = mix(mix(city[1] + 1, p.atY - 12, take), drawer[1] - 5 + 8 * (p.file || 0), put);
-    p.goalLY = mix(mix(city[1] - 7 * h + 1, p.atY - 16, take), drawer[1] - 6 + 8 * (p.file || 0), put);
+    p.goalLX = city[0] + 24;
+    p.goalLY = city[1] + 3;
+    p.goalR = grip;
+    p.goalRX = mix(Math.max(cover[0], city[0] + 5), tool.grip[0], pen);
+    p.goalRY = mix(cover[1], tool.grip[1], pen);
+    p.palmDepthR = 5;
   }
   const turn = anim === 'turn' && Number.isInteger(side) ? (t * 4) % 1 : 0;
   const yaw = card.life.yaw + ((side + turn) * Math.PI) / 8,
@@ -385,30 +336,34 @@ export const figure: Creature['frame'] = (anim, t, side, variant) => {
     house(h, positionHouse(hf, hp), hp, k);
     const cabin = locate(raster(h, k), (p.x || 0) * (1 - part), mix(home[1] - floor, -20, part), 1);
     const a = locate(raster(r, j), p.x || 0, home[1] - floor, p.s);
-    fr = parted(a, cabin, field(cabin, 'door'), !!p.exitOnly, !!p.hide, !!(p.reveal || p.entryOnly), p.open || 0);
+    fr = parted(
+      a,
+      cabin,
+      field(cabin, 'door'),
+      !!p.exitOnly,
+      !!p.hide,
+      !!(p.reveal || p.entryOnly),
+      p.arch || 0,
+      p.portal || 0,
+    );
   }
   if (anim === 'trick-f2' && p.keyInLock) {
     fr = atField(fr);
     const tip = fr.points.keyTip,
       bow = fr.points.keyBow;
     const e = p.engage;
-    fr.points.keyTip = [mix(tip[0], lock[0] + pad, e), mix(tip[1], lock[1] + pad, e)];
-    fr.points.keyBow = [mix(bow[0], lock[0] + 15 + pad, e), mix(bow[1], lock[1] + 10 + 3 * (p.keyAngle || 0) + pad, e)];
+    fr.points.keyTip = [mix(tip[0], lock[0] + ox, e), mix(tip[1], lock[1] + oy, e)];
+    fr.points.keyBow = [mix(bow[0], lock[0] + 15 + ox, e), mix(bow[1], lock[1] + 10 + 3 * (p.keyAngle || 0) + oy, e)];
   }
   fr.groundShadow =
     p.floor !== undefined
       ? { radius: 0, opacity: 0, reflectionOpacity: 0 }
       : { radius: 26, opacity: 0.53, offsetY: 3, reflectionOpacity: 0 };
   if (['trick', 'trick-f2', 'trick_b-f2', 'show', 'peek'].includes(anim)) rail(fr);
-  if ((anim === 'trick' && p.portal) || (anim === 'trick-f2' && p.engage)) {
+  if (anim === 'trick-f2' && p.engage) {
     fr = atField(fr);
     rail(fr);
-    lightOnFrame(fr, anim, n);
-  }
-  if (anim === 'trick_b-f2' && p.drawer) {
-    fr = atField(fr);
-    rail(fr);
-    openDrawer(fr, n);
+    lightOnFrame(fr, n);
   }
   if (variant === 'gold') fr.flash = 0.08;
   return fr;
