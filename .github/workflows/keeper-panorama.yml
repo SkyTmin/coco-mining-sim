@@ -14,7 +14,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-        with: { ref: c3d612600e086747be27d46bd381916cf61d1f77, persist-credentials: false }
+        with: { ref: bafa53f038a44f5a8f493460966743bcdadd574d, persist-credentials: false }
       - uses: actions/setup-node@v4
         with: { node-version: 24.22.1 }
       - run: npm ci --no-audit --no-fund
@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-        with: { ref: c3d612600e086747be27d46bd381916cf61d1f77, persist-credentials: false }
+        with: { ref: bafa53f038a44f5a8f493460966743bcdadd574d, persist-credentials: false }
       - uses: actions/setup-node@v4
         with: { node-version: 22.14.0 }
       - run: |
@@ -54,7 +54,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-        with: { ref: c3d612600e086747be27d46bd381916cf61d1f77, persist-credentials: false }
+        with: { ref: bafa53f038a44f5a8f493460966743bcdadd574d, persist-credentials: false }
       - uses: actions/setup-node@v4
         with: { node-version: 24.22.1 }
       - name: Render native artwork
@@ -80,7 +80,7 @@ jobs:
           python3 release.py "$RUNNER_TEMP/keeper-panorama.zip" --ids threshold_keeper
           test "$(gh api repos/SkyTmin/coco-mining-sim/releases/460162185 --jq .draft)" = true
           gh release download creatures-threshold-keeper-v2 --pattern hundred-landings-original.png --dir "$RUNNER_TEMP"
-          gh release upload creatures-threshold-keeper-panorama "$RUNNER_TEMP/keeper-panorama.zip" "$RUNNER_TEMP/hundred-landings-original.png"
+          gh release upload creatures-threshold-keeper-panorama --clobber "$RUNNER_TEMP/keeper-panorama.zip" "$RUNNER_TEMP/hundred-landings-original.png"
           cd ../../assets/creatures/threshold_keeper
           sha256sum gif/*.gif > "$RUNNER_TEMP/keeper-verify/gifs.sha256"
           cd ../../../tools/creatures
