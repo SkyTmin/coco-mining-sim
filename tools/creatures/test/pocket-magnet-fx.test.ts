@@ -40,8 +40,8 @@ test('the bench toys remain in the ordinary clips and both bursts have finished 
     const end = frameCount(experiment.c.animations[name].seconds) - 1;
     assert.equal(frame(experiment, name, end).light, undefined);
   }
-  assert.equal(frameCount(experiment.c.animations.trick_b.seconds),
-    frameCount(base.c.animations.trick_b.seconds) + 2);
+  // 28.11: the owner moved the B22 catch into the accepted Polyusik, so both carry the same two-frame hold.
+  assert.equal(frameCount(experiment.c.animations.trick_b.seconds), frameCount(base.c.animations.trick_b.seconds));
   const caught = frame(experiment, 'trick_b', catchStar);
   for (const offset of [1,2]) assert.deepEqual(frame(experiment,'trick_b',catchStar+offset).picture.data, caught.picture.data);
 });

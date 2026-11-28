@@ -210,6 +210,7 @@
     "body",
     "lit",
     "fxo",
+    "light",
     "bgf",
     "frame",
     "over"
@@ -545,31 +546,31 @@
     },
     {
       "name": "trick_b",
-      "frames": 178,
+      "frames": 180,
       "joined": false,
       "start": 1091,
-      "end": 1275
+      "end": 1277
     },
     {
       "name": "sleep_in",
       "frames": 34,
       "joined": true,
-      "start": 1275,
-      "end": 1309
+      "start": 1277,
+      "end": 1311
     },
     {
       "name": "sleep",
       "frames": 72,
       "joined": true,
-      "start": 1309,
-      "end": 1381
+      "start": 1311,
+      "end": 1383
     },
     {
       "name": "wake_startled",
       "frames": 28,
       "joined": false,
-      "start": 1381,
-      "end": 1415
+      "start": 1383,
+      "end": 1417
     }
   ],
   "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
@@ -929,7 +930,10 @@
       "seconds": 6.916666666666667,
       "frames": 166,
       "loop": false,
-      "hit": [],
+      "hit": [
+        44,
+        131
+      ],
       "shake": 0,
       "stop": 0,
       "interrupt": [
@@ -965,10 +969,12 @@
       ]
     },
     "trick_b": {
-      "seconds": 7.416666666666667,
-      "frames": 178,
+      "seconds": 7.5,
+      "frames": 180,
       "loop": false,
-      "hit": [],
+      "hit": [
+        111
+      ],
       "shake": 0,
       "stop": 0,
       "interrupt": [
@@ -1002,7 +1008,7 @@
         162,
         168,
         174,
-        177
+        179
       ]
     },
     "walk_n": {
@@ -1281,7 +1287,10 @@
       "seconds": 30,
       "frames": 720,
       "loop": true,
-      "hit": [],
+      "hit": [
+        597,
+        684
+      ],
       "shake": 0,
       "stop": 0,
       "interrupt": [
@@ -1409,10 +1418,14 @@
       ]
     },
     "showreel": {
-      "seconds": 58.958333333333336,
-      "frames": 1415,
+      "seconds": 59.041666666666664,
+      "frames": 1417,
       "loop": true,
-      "hit": [],
+      "hit": [
+        733,
+        820,
+        1202
+      ],
       "shake": 0,
       "stop": 0,
       "interrupt": [
@@ -1652,7 +1665,7 @@
         1398,
         1404,
         1410,
-        1414
+        1416
       ]
     }
   }

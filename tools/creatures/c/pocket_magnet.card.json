@@ -159,6 +159,14 @@
     "серые риски стали"
   ],
   "effects": "silk-wind",
+  "fxRamp": [
+    "#20334b",
+    "#265d70",
+    "#369ca9",
+    "#73d3ce",
+    "#b4efda",
+    "#e8ffe6"
+  ],
   "moves": [],
   "life": {
     "stride": 16,
