@@ -1,0 +1,36 @@
+import { readCreatureCard } from '../bodies/card-data';
+import type { Creature } from '../types';
+import { clips, home } from './pocket_magnet-poses';
+import { magnetCub } from './pocket_magnet-skin';
+import { benchToys } from './pocket_magnet-fx';
+const card = readCreatureCard('pocket_magnet');
+const painting: Creature = {
+  id: card.id,
+  rarity: card.rarity,
+  theme: card.theme,
+  portraitOrigin: home,
+  frame: magnetCub,
+  animations: clips,
+  effects: benchToys,
+  reelWalkRoute: ['nw', 'e', 'sw', 'n', 'se', 'w', 'ne', 's'],
+  reelGroups: [
+    ['hatch', 'idle', 'fidget_a', 'fidget_b'],
+    ['prepare_walk'],
+    ['look', 'trick', 'happy'],
+    ['tired', 'sleep_in', 'sleep', 'sleep_out'],
+    ['trick_b'],
+    ['sleep_in', 'sleep', 'wake_startled'],
+  ],
+  titles: {
+    look: 'Оглядывает мастерскую',
+    prepare_walk: 'Переносит вес на лапку',
+    fidget_a: 'Трёт щёчку',
+    fidget_b: 'Оглядывается на магнит',
+    happy: 'Подскакивает от радости',
+    hatch: 'Подпрыгивает и прислушивается',
+    tired: 'Сонно щурится',
+    trick: 'Поднимает жестяную рыбку',
+    trick_b: 'Раскачивает и ловит звезду',
+  },
+};
+export default painting;

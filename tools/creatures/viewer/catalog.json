@@ -3451,6 +3451,146 @@
     ]
   },
   {
+    "id": "pocket_magnet",
+    "name": "Полюсик",
+    "section": "ours",
+    "rarity": "common",
+    "color": "#347b7d",
+    "clips": [
+      {
+        "id": "life",
+        "name": "Жизнь",
+        "frames": 720
+      },
+      {
+        "id": "idle",
+        "name": "Покой",
+        "frames": 72
+      },
+      {
+        "id": "walk",
+        "name": "Ходьба",
+        "frames": 24
+      },
+      {
+        "id": "look",
+        "name": "Оглядывает мастерскую",
+        "frames": 36
+      },
+      {
+        "id": "sleep",
+        "name": "Сон",
+        "frames": 72
+      },
+      {
+        "id": "turn",
+        "name": "Разворот",
+        "frames": 96
+      },
+      {
+        "id": "happy",
+        "name": "Подскакивает от радости",
+        "frames": 46
+      },
+      {
+        "id": "tired",
+        "name": "Сонно щурится",
+        "frames": 36
+      },
+      {
+        "id": "hatch",
+        "name": "Подпрыгивает и прислушивается",
+        "frames": 54
+      },
+      {
+        "id": "prepare_walk",
+        "name": "Переносит вес на лапку",
+        "frames": 32,
+        "sequenceOnly": true
+      },
+      {
+        "id": "fidget_a",
+        "name": "Трёт щёчку",
+        "frames": 60
+      },
+      {
+        "id": "fidget_b",
+        "name": "Оглядывается на магнит",
+        "frames": 62
+      },
+      {
+        "id": "sleep_in",
+        "name": "Засыпание",
+        "frames": 34
+      },
+      {
+        "id": "sleep_out",
+        "name": "Пробуждение",
+        "frames": 36
+      },
+      {
+        "id": "wake_startled",
+        "name": "Испуг во сне",
+        "frames": 28
+      },
+      {
+        "id": "trick",
+        "name": "Поднимает жестяную рыбку",
+        "frames": 166
+      },
+      {
+        "id": "trick_b",
+        "name": "Раскачивает и ловит звезду",
+        "frames": 178
+      },
+      {
+        "id": "walk_n",
+        "name": "Шаг на север",
+        "frames": 24
+      },
+      {
+        "id": "walk_ne",
+        "name": "Шаг на северо-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_e",
+        "name": "Шаг на восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_se",
+        "name": "Шаг на юго-восток",
+        "frames": 24
+      },
+      {
+        "id": "walk_s",
+        "name": "Шаг на юг",
+        "frames": 24
+      },
+      {
+        "id": "walk_sw",
+        "name": "Шаг на юго-запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_w",
+        "name": "Шаг на запад",
+        "frames": 24
+      },
+      {
+        "id": "walk_nw",
+        "name": "Шаг на северо-запад",
+        "frames": 24
+      },
+      {
+        "id": "showreel",
+        "name": "Все анимации",
+        "frames": 1415
+      }
+    ]
+  },
+  {
     "id": "tuft_owlet",
     "name": "Совёнок Ушастик",
     "section": "ours",
