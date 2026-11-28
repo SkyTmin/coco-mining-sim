@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Проба взаимодействия на берегу</title>
+<style>
+:root{color-scheme:dark;background:#14232a;color:#f2dfbb;font:16px/1.5 system-ui}body{max-width:640px;margin:5vh auto;padding:0 12px}
+canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid #506168;touch-action:manipulation;cursor:pointer}
+button{font:inherit;padding:.3em .7em;background:#273f46;color:inherit;border:1px solid #869495;border-radius:4px}
+@media(prefers-reduced-motion:reduce){body{scroll-behavior:auto}}
+</style>
+<canvas id="scene" width="288" height="180" tabindex="0" role="button" aria-label="Вызвать волну"></canvas>
+<p>Коснитесь воды или нажмите пробел, чтобы вызвать волну. <button id="again">Сначала</button></p>
+<script>
+'use strict';
+const canvas=document.querySelector('canvas'), ctx=canvas.getContext('2d');
+const W=288,H=180, rate=24, duration=16;
+const sin=Math.sin, cos=Math.cos, abs=Math.abs, round=Math.round, pi=Math.PI;
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(x,b)), mix=(a,b,k)=>a+(b-a)*k;
+function ease(a,b,t){const k=clamp((t-a)/(b-a));return k*k*(3-2*k)}
+function noise(n){const f=sin(n*127.19+7.531)*43758.545;return f-Math.floor(f)}
+function rect(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(round(x),round(y),Math.max(1,round(w)),Math.max(1,round(h)))}
+function poly(c,points,col){c.fillStyle=col;c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(round(x)+.5,round(y)+.5):c.moveTo(round(x)+.5,round(y)+.5));c.closePath();c.fill()}
+function line(c,points,col,w=1){
+ c.strokeStyle=col;c.lineWidth=w;c.lineCap='round';c.lineJoin='round';c.beginPath();
+ points.forEach(([x,y],i)=>i?c.lineTo(round(x)+.5,round(y)+.5):c.moveTo(round(x)+.5,round(y)+.5));c.stroke()
+}
+function oval(c,x,y,rx,ry,col){c.fillStyle=col;c.beginPath();c.ellipse(round(x),round(y),rx,ry,0,0,2*pi);c.fill()}
+function strata(c,points,fill,top){
+ poly(c,points,fill);line(c,points.slice(0,-2),top,2)
+}
+const paper=document.createElement('canvas');paper.width=W;paper.height=H;
+const g=paper.getContext('2d');
+const gradient=g.createLinearGradient(0,0,0,100);
+gradient.addColorStop(0,'#315569');gradient.addColorStop(.43,'#e49b82');gradient.addColorStop(.82,'#ffe0ab');gradient.addColorStop(1,'#b2d2ae');
+g.fillStyle=gradient;g.fillRect(0,0,W,H);
+for(let j=0;j<19;j++){let x=noise(j+10)*W,y=8+noise(j+39)*38;rect(g,x,y,5+noise(j+51)*31,1,'#efc1a3')}
+oval(g,93,47,17,17,'#ffd99e');oval(g,93,46,13,13,'#ffedbc');
+for(let j=0;j<3;j++)rect(g,70+j*4,48+j*4,47-j*4,1,'#dbac90');
+for (const [x,y,w,h] of [[-18,71,43,24],[20,72,27,13],[128,70,31,12],[168,72,57,23],[253,72,39,32]]){
+ poly(g,[[x-w/2,y],[x-w*.3,y-h*.55],[x-w*.12,y-h*.62],[x-w*.07,y-h],[x+w*.12,y-h*.98],[x+w*.16,y-h*.66],[x+w*.3,y-h*.55],[x+w/2,y]],'#72868a')
+}
+rect(g,0,71,W,38,'#639f9c');
+for(let i=0;i<310;i++){
+ const x=noise(i+1)*W,y=72+noise(i+89)*36,w=2+noise(i+455)*12;
+ rect(g,x,y,w,1,(x>60&&x<110&&i%2)?'#e8cda1':['#86b6a6','#679b9d','#75aaa1','#82b2a4'][i%4])
+}
+// Folded, wind-carved rock frames a distant opening to the ocean.
+strata(g,[[-1,31],[10,26],[19,33],[23,48],[36,49],[40,58],[35,66],[47,70],[50,81],[43,91],[-1,108],[-2,100]],'#506478','#b99587');
+poly(g,[[0,36],[12,30],[17,38],[19,56],[31,57],[31,63],[17,69],[5,60],[0,65]],'#73818a');
+poly(g,[[0,76],[12,72],[27,78],[40,71],[47,75],[28,87],[16,86],[0,99]],'#344f60');
+strata(g,[[179,102],[190,91],[200,89],[209,76],[213,64],[224,63],[231,48],[245,40],[255,40],[264,27],[288,22],[288,130],[171,130]],'#725c60','#edaf89');
+for(const [pts,col] of [
+ [[[190,99],[214,82],[221,67],[230,67],[226,86],[215,91],[210,99]],'#9c716c'],
+ [[[223,79],[237,57],[245,43],[251,43],[245,64],[241,81]],'#ad7770'],
+ [[[245,81],[255,62],[261,54],[268,35],[282,31],[273,46],[270,64],[255,76]],'#b48170'],
+ [[[253,96],[266,84],[269,69],[284,51],[288,53],[288,103]],'#564c58']])poly(g,pts,col);
+for(let i=0;i<38;i++){let x=220+noise(i+833)*69,y=68+noise(i+555)*23;if(x>245||y>83)rect(g,x,y,2+noise(i+992)*5,1,'#ad8471')}
+strata(g,[[0,115],[20,111],[33,111],[49,105],[73,103],[88,106],[111,103],[130,105],[153,102],[176,99],[189,94],[212,98],[228,90],[251,91],[269,84],[288,80],[288,180],[0,180]],'#d1a477','#edc792');
+poly(g,[[0,130],[46,119],[75,119],[110,114],[147,119],[172,116],[203,111],[240,111],[268,98],[288,99],[288,180],[0,180]],'#e1bb88');
+for(let i=0;i<980;i++){const x=noise(i+2234)*W,y=111+noise(i+4488)*68;
+ rect(g,x,y,noise(i+620)>0.94?4:1,1,['#d4a477','#e8c896','#d8b17d','#c89870','#edcf9d'][i%5])}
+const nestX=213;
+oval(g,nestX+10,137,28,6,'#b48b68');oval(g,nestX+10,135,25,5,'#d3ad7a');
+for(let i=0;i<13;i++){const a=i/12*pi; oval(g,nestX+10+25*cos(a),135+4*sin(a),2.4,1.5,'#af936a')}
+function weed(c,x,y,scale,shift){
+ for(let a=0;a<5;a++){
+  const lean=(a-2)*5*scale,h=(7+((a+2)%4)*3)*scale;
+  line(c,[[x,y],[x+lean*.4,y-h*.35],[x+lean+shift,y-h]],a%2?'#5b796c':'#415c5a',2*scale);
+  rect(c,x+lean+shift-2*scale,y-h,3*scale,2*scale,'#899b79')
+ }
+}
+for(const [x,y,s] of [[24,112,.5],[188,101,.6],[266,100,.8],[254,105,.55],[62,109,.4]])weed(g,x,y,s,0);
+for(let i=0;i<40;i++){let x=noise(i+123)*W,y=151+noise(i+912)*29;oval(g,x,y,1.4+noise(i+812)*3,1,'#b28f70')}
+function newState(){return {tick:0, pulses:[],lastPulse:-1000,wet:0,drift:0,breached:false,stopped:false,front:78,height:0,automatic:false}}
+let world=newState(), playing=true, last=0, carry=0;
+function tickTime(s){return s.tick/rate}
+function stoneX(t){return mix(80,151,ease(4.15,8.30,t))}
+function pulse(s){
+ if(s.tick-s.lastPulse<64)return false;
+ s.lastPulse=s.tick;s.pulses.push({tick:s.tick,gate:null});return true
+}
+function step(s){
+ const t=tickTime(s);
+ if(t>=11.75&&!s.pulses.length){pulse(s);s.automatic=true}
+ let x=78, surf=0;
+ for(const wave of s.pulses){
+  const age=(s.tick-wave.tick)/rate;
+  if(age<0||age>4.8)continue;
+  const spread=ease(0,2.0,age)*(1-ease(2.0,4.8,age));
+  const open=76+183*spread;
+  // Each wave meets the barrier once. A past breach stays visible but cannot reopen the gate.
+  if(open>151 && wave.gate===null)wave.gate=stoneX(t)>146?'blocked':'passed';
+  if(wave.gate==='blocked')s.stopped=true;
+  const front=wave.gate==='blocked'?Math.min(open,152):open;
+  x=Math.max(front,x);surf=Math.max(surf,spread);
+  if(front>=204)s.breached=true;
+ }
+ s.front=x;s.height=surf;
+ if(s.breached){s.wet=Math.max(s.wet,x);s.drift=Math.max(s.drift,clamp((x-193)/62))}
+ s.tick++
+}
+function pool(c,s,t){
+ const edge=s.front+1.8*sin(3*t),water=['#3c7881','#468d8a','#59a299','#82b7a5'];
+ if(s.wet>90){let reach=s.wet;poly(c,[[-4,143],[reach-12,128],[reach,132],[reach-4,139],[125,150],[65,149],[-4,157]],'#b79577')}
+ for(let x=0;x<edge;x+=2){
+  const k=x/edge, mid=142-10*k+1.8*sin(x/25), wide=4+6*(1-k)+3*s.height;
+  const wob=sin(t*2+x*.13)*1.2*(1-k);
+  const top=mid-wide+wob, bottom=mid+wide*(1-k*.6);
+  rect(c,x,top,2,bottom-top,water[1]);rect(c,x,top+1,2,3,water[2]);
+  if(sin(x*.21-t*2)>0.2)rect(c,x,top+1,2,1,'#b8dcc1');
+  if(sin(x*.14+t)>0.33)rect(c,x,bottom-2,2,1,water[0])
+ }
+ for(let i=0;i<22;i++){const x=(noise(i+160)*290+t*(2+i%5))%290;if(x<edge-6)rect(c,x,141-9*x/edge+sin(i+3*t)*3,3+(i%4),1,'#86c0b1')}
+ const hit=s.stopped&&edge>149&&s.height>.5;
+ for(let i=0;i<(hit?13:5);i++){
+  const f=(t*1.5+i*.197)%1;
+  const spread=hit?16:5,hei=hit?24:6;
+  const xx=edge+(noise(i*4+9)-.65)*spread*f,yy=132-Math.sin(f*pi)*hei*(.3+.7*noise(i+13));
+  rect(c,xx,yy,2,2,hit?'#e6ead0':'#a9d5bd')
+ }
+}
+function stone(c,x,t){
+ oval(c,x,137,12,3,'#95846d');
+ poly(c,[[x-11,134],[x-11,124],[x-6,117],[x+2,115],[x+9,120],[x+12,130],[x+8,136]],'#4a6065');
+ poly(c,[[x-10,124],[x-5,118],[x+2,116],[x+7,120],[x+4,123],[x-3,123],[x-6,129]],'#a9b49c');
+ poly(c,[[x-5,128],[x+4,124],[x+9,122],[x+10,128],[x+4,133],[x-6,134]],'#738983');
+ rect(c,x-3+2*sin((x-80)/6),121,4,1,'#d5d3ac');rect(c,x+3,132,4,1,'#657b75')
+}
+function eggs(c,s,t){
+ const o=s.drift;
+ for(const [i,dx,dy] of [[0,-5,-1],[1,4,-5],[2,11,0]]){
+  const x=nestX+dx+o*(20+i*2), bob=(s.front>nestX+dx)?sin(t*4+i)*2:0;
+  const y=132+dy+o*(i-1)*3+bob;
+  oval(c,x,y+4,5,2,'#a58d72');oval(c,x,y,4,5,i===1?'#b68a58':'#926b59');
+  oval(c,x,y-1,3.3,4,'#ffd589');rect(c,x-2,y-4,2,2,'#fff0b6');rect(c,x+1,y,2,2,'#e4a363');
+ }
+}
+function beast(c,s,t){
+ const gathering=ease(.9,3.95,t), pushing=ease(4.15,8.3,t), returning=ease(8.8,12.2,t);
+ const finish=s.breached?205:169;
+ let x=t<4.15?mix(192,51,gathering):t<8.65?51+71*pushing:mix(122,finish,returning);
+ const moving=(t>.9&&t<3.95)||(t>4.15&&t<8.3)||(t>8.8&&t<12.2);
+ const face=t>.78 && t<3.98?-1:1;
+ const gait=moving?sin(t*(t<4?12:9.5)):0, effort=ease(4.1,4.4,t)*(1-ease(8.1,8.55,t));
+ const home=s.breached?ease(11,13,t):0, observe=(ease(.48,.85,t)*(1-ease(.95,1.25,t)))+home;
+ const y=122+moving*abs(gait)*1.7+sin(t*2)*.5+effort*2;
+ oval(c,x,139,20,3.6,'#aa9274');
+ c.save();c.translate(round(x),round(y));c.scale(face,1);
+ // Three articulated feet under each side support a low, broad shell.
+ for (let i=0;i<3;i++) {
+  const j=-11+i*8, kick=sin(t*10+i*2.4)*(moving?3:.28);
+  const foot=[[j,3],[j-5+kick,10],[j-8+kick,16-Math.max(0,kick)]];
+  line(c,foot,'#283a45',3);line(c,foot.slice(1),'#d67158',2);rect(c,j-10+kick,15-Math.max(0,kick),4,2,'#8c5950')
+ }
+ // Far claw and its open notch.
+ line(c,[[4,-2],[14,-5],[18,-12+2*gait]],'#475b60',4);
+ poly(c,[[12,-11],[15,-17],[22,-20],[20,-15],[23,-16],[25,-21],[26,-13],[21,-8],[15,-7]],'#b96456');
+ // Blue-green shell with three vertical ridges and a warm scalloped rim.
+ poly(c,[[-21,-2],[-21,-9],[-17,-15],[-12,-21],[-5,-24],[2,-22],[8,-23],[14,-18],[18,-12],[19,-5],[15,2],[8,6],[-7,8],[-14,6]],'#294953');
+ poly(c,[[-19,-6],[-18,-13],[-13,-18],[-5,-21],[0,-20],[6,-21],[13,-16],[17,-10],[13,-6],[3,-3],[-9,0],[-17,-1]],'#4f9389');
+ poly(c,[[-16,-12],[-12,-17],[-6,-19],[-2,-18],[-6,-13],[-11,-10]],'#99b69a');
+ poly(c,[[-6,-11],[0,-19],[5,-20],[2,-13],[-1,-10]],'#82ab95');
+ poly(c,[[4,-9],[9,-17],[12,-15],[14,-12],[11,-9]],'#78aa98');
+ poly(c,[[-20,-3],[-12,1],[-2,1],[11,-3],[17,-6],[17,-2],[11,2],[3,4],[-10,6],[-17,3]],'#de8f65');
+ for(const [a,b] of [[-10,-5],[-5,-7],[0,-5],[6,-8],[-14,-9]])rect(c,a,b,2,1,'#b7cf9d');
+ // Two stalk eyes lead the motion. A blink compresses the upper eyelids.
+ const blink=(t%3.7>3.51),ey=-14-observe*3;
+ line(c,[[7,-8],[8,ey-3]],'#294953',3);line(c,[[13,-7],[16,ey]],'#294953',3);
+ for(const [a,b] of [[8,ey-3],[16,ey]]){
+  oval(c,a,b,3.5,blink?1.1:4.1,'#253b48');
+  if(!blink){oval(c,a-.2,b-.7,2.6,2.8,'#fae7bb');rect(c,a+.1,b-.3,2,2,'#273742')}
+ }
+ const extend=effort*3+home*(-1),clawY=home*-6 + (effort?sin(t*8)*1.2:sin(t*2.1)*1.5);
+ line(c,[[8,3],[14,8],[20+extend,7+clawY]],'#613f46',5);
+ poly(c,[[15,5+clawY],[18,1+clawY],[22,-1+clawY],[27,-3+clawY],[25,1+clawY],[21,3+clawY],[25,4+clawY],[29,1+clawY],[29,5+clawY],[26,9+clawY],[20,10+clawY],[16,8+clawY]].map(([a,b])=>[a+extend,b]),'#874c4c');
+ poly(c,[[16,5],[20,1],[26,-2],[24,1],[20,4],[24,6],[28,3],[27,7],[23,9],[18,8]].map(([a,b])=>[a+extend,b+clawY]),'#ed9b68');
+ rect(c,19+extend,3+clawY,3,1,'#ffd18a');
+ c.restore();
+}
+function draw(s){
+ const t=tickTime(s);ctx.clearRect(0,0,W,H);ctx.drawImage(paper,0,0);
+ for(let i=0;i<20;i++){
+ const x=(i*31+t*(1+i%3))%W,y=72+(i*13)%32;
+ rect(ctx,x,y,3+(i%7),1,i%3?'#a4c1ad':'#dad0a9')
+ }
+ pool(ctx,s,t);stone(ctx,stoneX(t),t);eggs(ctx,s,t);beast(ctx,s,t);
+ for(let i=0;i<5;i++)weed(ctx,[6,22,275,281,264][i],174+i%2,1.1+.2*(i%3),sin(t*1.2+i)*1.7);
+ for(const [x,y,w] of [[47,173,9],[32,167,4],[252,168,7],[241,178,6]]){
+  poly(ctx,[[x-w,y],[x-w+3,y-6],[x+1,y-8],[x+w,y-3],[x+w,y]],'#6e7773');
+  line(ctx,[[x-w+2,y-4],[x,y-7],[x+3,y-6]],'#b2a68a',1)
+ }
+}
+function reset(){world=newState();playing=true;last=0;carry=0;draw(world)}
+function activate(){if(playing&&world.tick<rate*duration){pulse(world);draw(world)}}
+canvas.addEventListener('pointerdown',activate);
+canvas.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();activate()}});
+document.querySelector('#again').onclick=reset;
+function loop(now){
+ if(last&&playing){carry+=Math.min(.1,(now-last)/1000)*rate;
+ while(carry>=1&&world.tick<rate*duration){step(world);carry--}
+ if(world.tick>=rate*duration){carry=0;playing=false}
+ draw(world)}
+ last=now;requestAnimationFrame(loop)
+}
+// The exporter drives the same fixed-step simulation as the interactive canvas.
+window.study={
+ begin(){playing=false;world=newState();draw(world)},
+ sample(frame,taps=[]){
+   while(world.tick<frame){if(taps.includes(world.tick))pulse(world);step(world)}
+   draw(world);return {tick:world.tick,breached:world.breached,stopped:world.stopped,
+      displacement:Math.round(world.drift*1000)/1000,front:Math.round(world.front),wetExtent:Math.round(world.wet),stone:Math.round(stoneX(tickTime(world)))}
+ }
+};
+reset();requestAnimationFrame(loop);
+</script></html>

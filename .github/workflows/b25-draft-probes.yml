@@ -1,0 +1,58 @@
+name: Б25 — пробы для просмотра владельцем
+on:
+  push:
+    branches: [chatgpt/b25-research]
+    paths:
+      - '.github/workflows/b25-draft-probes.yml'
+      - 'docs/research/b24/probes/**'
+permissions:
+  contents: write
+jobs:
+  previews:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Set up the research tools
+        run: |
+          npm ci --prefix tools/creatures --no-audit --no-fund
+          python3 -m venv "$RUNNER_TEMP/probe-env"
+          "$RUNNER_TEMP/probe-env/bin/pip" install numpy==2.3.5 Pillow==13.0.0 playwright==1.62.0
+      - name: Render and package the three studies
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          base=docs/research/b24/probes
+          dest="$RUNNER_TEMP/b25-probes"
+          py="$RUNNER_TEMP/probe-env/bin/python"
+          mkdir -p "$dest"/{light-diorama,paper-portrait,tide-pool}
+          "$py" "$base/light-diorama/render.py" "$dest/light-diorama"
+          "$py" "$base/tide-pool/render.py" --chromium "$(command -v google-chrome)" --output "$dest/tide-pool"
+          node "$base/paper-portrait/render.mjs"
+          cp "$base/paper-portrait/out/"*.gif "$base/paper-portrait/out/"*.png "$dest/paper-portrait/"
+          cp "$base/tide-pool/probe.html" "$dest/tide-pool/"
+          cp "$base/index.html" "$dest/"
+          gh release download creatures-pocket-magnet --pattern pocket-magnet-fish.gif --dir "$dest"
+          cd "$dest"
+          zip -q -r "$RUNNER_TEMP/b24-v4-probes.zip" .
+      - name: Attach files only to the existing draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          suffix="${GITHUB_SHA:0:7}"
+          dest="$RUNNER_TEMP/b25-probes"
+          cp "$RUNNER_TEMP/b24-v4-probes.zip" "$RUNNER_TEMP/b24-v4-probes-$suffix.zip"
+          for src in "$dest/tide-pool/early.gif" "$dest/tide-pool/late.gif" "$dest/light-diorama/episode.gif" "$dest/paper-portrait/paper-portrait.gif"; do
+            folder="$(basename "$(dirname "$src")")"
+            cp "$src" "$RUNNER_TEMP/b24-v4-$folder-$(basename "$src" .gif)-$suffix.gif"
+          done
+          for artifact in "$RUNNER_TEMP"/b24-v4-*-"$suffix".{zip,gif}; do
+            test -f "$artifact" || continue
+            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/461736899" --jq '[.draft,.tag_name]|@tsv')" = "$(printf 'true\tb25-research-evidence')"
+            if gh api "repos/$GITHUB_REPOSITORY/releases/461736899/assets?per_page=100" --jq '.[].name' | grep -Fxq "$(basename "$artifact")"; then continue; fi
+            gh release upload b25-research-evidence "$artifact"
+          done

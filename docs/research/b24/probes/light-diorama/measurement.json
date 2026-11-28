@@ -1,0 +1,58 @@
+{
+  "light": {
+    "final_dose": 1.47461,
+    "first_open_frame": 122,
+    "final_open": 1
+  },
+  "weak": {
+    "final_dose": 0.0,
+    "first_open_frame": null,
+    "final_open": 0
+  },
+  "regions_frame_89": {
+    "shell": {
+      "box_xyxy_exclusive": [
+        78,
+        76,
+        94,
+        90
+      ],
+      "mean_red_delta_8bit": 18.62
+    },
+    "pot": {
+      "box_xyxy_exclusive": [
+        119,
+        100,
+        128,
+        108
+      ],
+      "mean_red_delta_8bit": 12.39
+    },
+    "pavement": {
+      "box_xyxy_exclusive": [
+        101,
+        101,
+        112,
+        108
+      ],
+      "mean_red_delta_8bit": 34.57
+    },
+    "sky": {
+      "box_xyxy_exclusive": [
+        61,
+        8,
+        78,
+        21
+      ],
+      "mean_red_delta_8bit": 0.0
+    }
+  },
+  "shell_pixels_changed_by_foreground_at_43": 37,
+  "frames": 192,
+  "fps": 16,
+  "wall_seconds": 1.623,
+  "gif_bytes": 1253551,
+  "cover_rgb_sha256": "c0fd709332fe8622fc541251bec4e56286860f2f28cb7ffbe986b7e4dc1acb1d",
+  "decoded_frames": 192,
+  "decoded_duration_ms": 12000
+}
