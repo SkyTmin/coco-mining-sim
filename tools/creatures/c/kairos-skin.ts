@@ -157,9 +157,9 @@ function head(r: Rig, H: F3, p: Pose, glow: number, j: Record<string, V3>) {
   if (mouth > 0.1) r.ell(H, [5.0, 0, -3.0], [0.5, 0.8, 0.5 + 0.8 * mouth], ink);
   // Whiskers are clock hands: an hour hand and a minute hand on each cheek, set at ten past ten.
   for (const s of [-1, 1]) {
-    const root = H.p(4.7, s * 1.6, -2.0);
-    r.line(root, H.p(3.6, s * 5.1, -0.8), hx('#d09a3c'), 0.05, 0.6);
-    r.dot(H.p(3.6, s * 5.1, -0.8), hx('#f4d27a'), 0.1, 1, 0.6);
+    const root = H.p(4.9, s * 1.9, -2.6);
+    r.line(root, H.p(4.0, s * 4.6, -2.0), hx('#d09a3c'), 0.05, 0.7);
+    r.line(root, H.p(4.2, s * 4.4, -3.4), hx('#9a6a24'), 0, 0.7);
   }
   j.head = H.o;
   j.muzzle = H.p(5.8, 0, -1.6);
@@ -170,9 +170,9 @@ function head(r: Rig, H: F3, p: Pose, glow: number, j: Record<string, V3>) {
     const E = H.at(-1.0, s * 3.2, 3.6).roll(s * (0.22 + 0.5 * droop)).pitch(-0.12 + 0.2 * droop);
     r.tag = s < 0 ? 'earL' : 'earR';
     r.ell(E, [0, 0, 2.8], [1.2, 1.7, 3.6], night);
-    r.ell(E, [0.75, 0, 2.6], [0.45, 1.05, 2.7], enamelShade);
+    r.ell(E, [0.8, 0, 2.4], [0.45, 0.85, 2.6], enamel);
     const tip = E.p(0, 0, 6.3);
-    r.spike(tip, vsub(E.p(0, 0, 9), tip), 2.6, 0.75, brass, 4, 0.4);
+    r.spike(tip, vsub(E.p(0, 0, 9), tip), 3.4, 0.9, brass, 4, 0.4);
     r.ball(tip, 0.75, brass);
     j[s < 0 ? 'earL' : 'earR'] = E.p(0, 0, 8.4);
     void base;
@@ -205,7 +205,7 @@ function arm(r: Rig, B: F3, s: number, goal: V3, j: Record<string, V3>, curl: nu
   void P;
 }
 function leg(r: Rig, B: F3, F: F3, s: number, foot: V3, tuck: number, j: Record<string, V3>) {
-  const hip = B.p(0, s * 3.1, 0.4);
+  const hip = B.p(0, s * 3.1, -0.9);
   // Digitigrade: the toes on the goal, the heel raised behind them; the knee points forward.
   const toe = foot;
   const back = vlerp(F.f, B.f, tuck);
@@ -216,7 +216,7 @@ function leg(r: Rig, B: F3, F: F3, s: number, foot: V3, tuck: number, j: Record<
   const heel = vadd(knee, vmul(dir, BONES.shin));
   const name = s < 0 ? 'L' : 'R';
   r.tag = 'leg' + name;
-  r.ball(hip, 2.4, night);
+  r.ball(hip, 2.0, night);
   r.cap(hip, knee, 2.2, 1.6, night);
   r.cap(knee, heel, 1.5, 1.0, nightSoft);
   r.cap(vlerp(knee, heel, 0.8), vlerp(knee, heel, 0.95), 1.15, 1.15, brass);
@@ -312,11 +312,11 @@ export const kairosFigure: Creature['frame'] = (anim, t, side, _variant, motion)
   // Upside down the sand falls back to the chest: the heaps are drawn in the frame of gravity, not of the body.
   const flipUp = Math.cos(get('pitch')) < 0;
   plate(r, B, 1.0, 4.5, 5.7, 1.0);
-  bulb(r, B, 6.6, [4.3, 5.3, 5.0], flipUp ? 0 : 1 - sandTop, 0.25, 'belly');
+  bulb(r, B, 6.6, [4.3, 5.3, 5.0], 0.75 * (flipUp ? 0 : 1 - sandTop), 0.25, 'belly');
   r.tag = 'hourglass';
   r.ell(B, [0, 0, 11.8], [1.9, 2.25, 1.05], brass);
   r.ell(B, [0, 0, 11.8], [1.2, 1.5, 1.4], brassDeep);
-  bulb(r, B, 17.0, [4.5, 5.6, 5.0], flipUp ? 1 - sandTop : sandTop, -0.15, 'chest');
+  bulb(r, B, 17.0, [4.5, 5.6, 5.0], 0.62 * (flipUp ? 1 - sandTop : sandTop), -0.15, 'chest');
   plate(r, B, 22.4, 4.8, 6.4, 1.0);
   r.tag = 'hourglass';
   for (const s of [-1, 1]) {
@@ -330,6 +330,11 @@ export const kairosFigure: Creature['frame'] = (anim, t, side, _variant, motion)
   for (const [z, rz] of [[6.6, 5.0], [17.0, 5.0]] as const) {
     r.line(B.p(4.0, -3.3, z + rz * 0.15), B.p(3.6, -3.1, z + rz * 0.62), hx('#d8fbff'), 0.2, 0.7);
     r.dot(B.p(3.9, -2.6, z + rz * 0.72), WHITE, 0.3, 1, 0.8);
+    // A pale rim along the outer edge of the glass on the lit side.
+    for (let i = 0; i < 7; i++) {
+      const a = -0.4 + i * 0.32;
+      r.dot(B.p(3.2 * Math.cos(a) + 0.8, -4.6 * Math.cos(a) * 0.8, z + rz * 0.82 * Math.sin(a + 0.6)), hx('#c4eef0'), 0.15, 1, 0.75);
+    }
   }
   // The stream through the waist: a thread of sand (turquoise-lit while time runs back).
   if (pour > 0.02) {
