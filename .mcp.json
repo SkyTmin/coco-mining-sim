@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "deft": {
+      "type": "http",
+      "url": "https://usedeft.dev/mcp"
+    }
+  }
+}
