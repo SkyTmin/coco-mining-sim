@@ -1,0 +1,1415 @@
+| `npm run ws -- detail <id\|all>` | планка подробностей §7.1в по кадру покоя — та же строка, что в `gate`: цвета, края, пятно, примитивы, размер фигуры и множитель масштаба. Запускать на первом кадре покоя, **до клипов**, а не узнавать в финальном гейте | 1 с |
+| `npm run ws -- baseline [id,…] [--force]` | **эталонные случаи** [23.11, исследование VIII.10 этап 0]: приёмка владельцем из `studio/acceptance.json` (кто, когда, основание файл:строка, замечания) рядом с последним гейтом **ровно этих входов** (ошибки, предупреждения, строки проблем), ревизия исходника, отпечатки исходника/рендера/проверки, дайджест эталона, все исключения проверки с записанной причиной или пометкой «основание не записано». Пишет `studio/baseline.json`. Приёмка и гейт не перетирают друг друга: принятая картина может быть красной по более строгой новой проверке — это задача, а не повод двигать руку ради цвета отчёта | 4,6 мин на шесть случаев с гейтом; дальше — по готовым меткам гейта |
+| `npm run ws -- probe <id> <anim> <кадр>` | числа одного кадра без картинки: ноги, рамка тела, центр, все сокеты в координатах поля, точки рождения эффектов, самые глубокие перекрытия рига с именами частей | 1–2 с |
+| `npm run ws -- ref <id> <anim> [sheet.png --grid 3x2 --frames 0,8,16,24,32,40] [--out file.png]` | Сопоставляет клетки оригинального рисунка с кадрами, выводит IoU и ошибки сокетов. Сохраняет лист сравнения в `.studio/` | по числу ключей |
+| `npm run ws -- sheet <id> <anim> [--frames a,b] [--every N] [--scale k]` | один PNG ≈ 1 Мп: ключи (синий), контакты (жёлтый), кадры с ошибками (красная рамка) и предупреждениями (оранжевая), несколько промежуточных; обрезка по действию | 3–8 с |
+| `npm run ws -- sheet <id> <anim> --against <git-ref>` | только изменившиеся кадры: старый над новым (рендер старой версии через `git worktree`) | 5–10 с |
+| `npm run ws -- render [id…\|all] [--anim a,b] [--jobs N] [--force]` | `render.ts` по процессу на клип [23.11]: у каждого существа сначала `idle` (он пишет сцену и раму), затем остальные клипы вперемешку между потоками, длинные первыми; так одна картина занимает все потоки, а не один. Существо без изменений во входных файлах пропускается (`assets/creatures/<id>/.ws-render.json`). Метка [23.11, исследование этап 4] хранит хэш каждого входного файла, след каждого клипа на диске (хэш GIF, число кадров) и отпечатки авторских дорожек клипов. Входы те же, а GIF удалён, обрезан или подменён — перерисовываются только эти клипы. Входы изменились — пишет, какие файлы (R07), и перерисовывает все клипы: какой файл кормит какой клип, не отслеживается, поэтому неизвестная зависимость значит полный пересчёт. Подсказка «движение изменилось в клипах X, Y» (по отпечаткам дорожек позы) только указывает, куда смотреть первым, и ничего не пропускает. `--anim` — только эти клипы (метку кэша не пишет). Основа любого кэша проверяется тестом `test/incremental.test.ts`: кадры, собранные в произвольном порядке, совпадают с эталоном (кальмар, Мурлен, Астрал, Пончик) | краб (25 клипов): 49 с вместо 91 с одним процессом; без изменений — < 1 с; два испорченных клипа — 2 с вместо 46 с |
+| `npm run ws -- snap <id\|all> [anim…]` | эталон: короткий хэш каждого кадра каждой анимации (с `life` и `showreel`) в `tools/creatures/golden/<id>.json`, лежит в git | все семь — 72 с, 10 026 кадров, 133 КБ |
+| `npm run ws -- snap <id\|all> [anim…] --check [--force]` | сравнить с эталоном: какие кадры каких анимаций изменились; код выхода 1 при отличии. Доказательство рефакторинга одной командой, без старых веток. Существо, у которого со времени последней совпавшей проверки не менялся ни один вход (свои файлы, общий код, эталон), пропускается (`.studio/snap-<id>.json`); `--force` проверяет всё | все семь — 72 с; Раскат один — 15 мин; без изменений — < 1 с |
+| `npm run ws -- seam <id> [anim…]` | стыки питомца без полного гейта: оба конца каждого разового клипа против позы, в которую он переходит (`idle`, `idle-f2`, `sleep`), и удержание конца `show`; ниже IoU 0,95 — сдвиг силуэта в пикселях и части рига, которые съехали (обычно движение не целым числом кругов → `kit/clock.ts`). Те же числа, что у `petGate` | Раскат: 6 с вместо полного гейта |
+| `npm run ws -- clip <id> <anim\|all> [a-b] [--tag часть] [--every N] [-v]` | проверка «рука в теле» на каждом кадре одного клипа, серии кадров с одной парой частей, `-v` — точные примитивы. `--tag` — запас движущейся части (обруч, копьё, хвост) до крупных объёмов тела по кадрам: 1 — касание, ниже 0,55 — уже пересечение по гейту; выводятся кадры, где часть ближе 1,2 и ближе, чем в покое. В отличие от гейта видит и шаровые части (барабаны, сферы) | Раскат: 276 кадров за 2 мин, `--every 2` — вдвое быстрее |
+
+Тяжёлые запуски (`render`, `snap`, `check`/`gate` нескольких существ) идут по очереди: второй ждёт первый
+(`.studio/heavy.lock`), а не валит машину по памяти, как было 21.11 (рендер + `snap all` в 4 потока). Потоков по
+умолчанию — по ядру, но не больше одного на 4,5 ГБ памяти (на облачной машине 16 ГБ — 3).
+
+`snap` одного существа делит его кадры между рабочими процессами (по ядру, не больше одного на 3 ГБ памяти; на облачной
+машине — 4; `--jobs N` задаёт сам; при `snap all` у каждого существа один рабочий). Каждый держит не больше
+`SNAP_CACHE_MB` (по умолчанию 512) повторяющихся поз и заменяется свежим между порциями кадров, когда перерос
+`SNAP_WORKER_MB` (по умолчанию 2048): нативная память холстов `@napi-rs/canvas` растёт ~120 МБ на 100 кадров Зенита и
+не отдаётся даже принудительной сборкой мусора, один процесс на весь Зенит убивался на 8,4–13,9 ГБ [22.11]. А в `compose` прошлые позы, которые
+эффекты спрашивают только ради точек (следы приёмов), строятся без картинки (`withPointsOnly` в `rig/figure.ts`).
+Растеризация была ~70% кадра трюка, так что шоурил Зенита стал в 4 раза быстрее. Разбивка и пропуск картинки дают
+кадр в кадр тот же эталон. Свой лишний растр (передний слой) скин пропускает по `pointsOnlyActive()`, точки сдвигает
+как обычно. Зенит целиком: 38 мин в один поток → 12 мин 45 с на 4 ядрах (до пропуска картинок).
+Счётчики `rig/stats.ts` (`rigStats`: compose, history, raster, wasted — растр, построенный внутри `withPointsOnly`)
+показывают, где картинку всё ещё рисуют зря. На 23.11 такой расход был у девяти скинов с передним слоем
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:56:08.522Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures ls scenes
+bamboo_mist.ts
+bell_courtyard.ts
+crystal_grotto.ts
+deep_sea.ts
+grove_heart.ts
+high_cloud_night.ts
+hundred_landings-sky.png
+hundred_landings.ts
+lantern_rink.ts
+low_tide.ts
+lullaby_valley.ts
+magic_tent.ts
+meadow.ts
+moon_nursery.ts
+mushroom_grotto.ts
+nebula_cradle.ts
+paper_updraft.ts
+polar_ice_lagoon.ts
+polar_night.ts
+polar_parade.ts
+pumpkin_moon.ts
+rainbow_falls.ts
+rat_throne.ts
+relief.ts
+ripple_court.ts
+root_edge.ts
+root_lantern_glade.ts
+sand_tomb.ts
+savanna_dusk.ts
+sky_islands.ts
+sky_post.ts
+star_abyss.ts
+star_meadow.ts
+sun_observatory.ts
+sunlit_bench-plate.png
+sunlit_bench.ts
+sunlit_bench_fx.ts
+tea_kitchen.ts
+thunder_peak.ts
+treasury.ts
+volcano.ts
+willow-terrain.ts
+willow_bend.ts
+windmill_hill.ts
+winter_glasshouse.ts
+[exit=0 wall_ms=7]
+
+[2026-11-28T17:56:08.537Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures node -v
+v24.22.3
+[exit=0 wall_ms=14]
+
+[2026-11-28T17:56:08.557Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,103p bodies/index.ts
+import { armedFrame, type ArmedAppearance } from './armed-biped';
+import { skySwimmerFrame, type SkySwimmerAppearance } from './sky-swimmer';
+import { arachnidFrame, type ArachnidAppearance } from './arachnid';
+import { cephalopodFrame, type CephalopodAppearance } from './cephalopod';
+import { lightFrame, type LightAppearance } from './light-quadruped';
+import { heavyFrame, type HeavyAppearance } from './heavy-quadruped';
+import { pilotFrame, type PilotAppearance } from './families';
+import { bodySources } from './sources';
+import type { BodyType, CreatureCard } from './card-data';
+import { buildEffects, type PaintHooks } from '../fx/presets';
+import { everyday } from '../rig/figure';
+import { attachMotion } from '../motion';
+import { withTechniques, type TechniqueBook } from '../technique';
+import type { Animation, Creature, MotionPlan } from '../types';
+
+export { bodySources };
+export const bodyTypes = Object.keys(bodySources) as BodyType[];
+
+export interface BodyAppearance {
+  skySwimmer?: SkySwimmerAppearance;
+  arachnid?: ArachnidAppearance;
+  heavy?: HeavyAppearance;
+  light?: LightAppearance;
+  armed?: ArmedAppearance;
+  cephalopod?: CephalopodAppearance;
+  draw?: PilotAppearance;
+  effects?: PaintHooks;
+}
+
+function frameFor(card: CreatureCard, route: MotionPlan, appearance: BodyAppearance): Creature['frame'] {
+  switch (card.body) {
+    case 'sky-swimmer': return skySwimmerFrame(card, route, appearance.skySwimmer);
+    case 'arachnid': return arachnidFrame(card, route, appearance.arachnid);
+    case 'heavy-quadruped': return heavyFrame(card, route, appearance.heavy);
+    case 'armed-biped': return armedFrame(card, route, appearance.armed);
+    case 'light-quadruped': return lightFrame(card, route, appearance.light);
+    case 'cephalopod': return cephalopodFrame(card, route, appearance.cephalopod);
+    default: return pilotFrame(card, route, appearance.draw);
+  }
+}
+
+export function makeBodyCreature(
+  card: CreatureCard,
+  book: TechniqueBook,
+  route: MotionPlan = card.life,
+  appearance: BodyAppearance = {},
+): Creature {
+  const animations: Record<string, Animation> = { ...everyday };
+  if (card.body === 'long-flier' || card.body === 'winged-dragon')
+    animations.fly = { seconds: 1, loop: true };
+  for (const [id, technique] of Object.entries(book)) {
+    animations[id] = { seconds: technique.seconds ?? (technique.keys.at(-1)!.frame + 1) / 24 };
+  }
+  const creature: Creature = {
+    id: card.id,
+    rarity: card.rarity,
+    theme: card.theme,
+    animations,
+    frame: frameFor(card, route, appearance),
+    ...buildEffects(card, book, appearance.effects),
+  };
+  return attachMotion(withTechniques(creature, book), route);
+}
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:56:08.571Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 10\,28p\;73\,88p\;101\,113p /tmp/b25-f0b/fresh-author/checkout/.agents/skills/pixel-bosses/references/10-prompts.md
+### 10.1. Правила (без исключений)
+
+1. **Не больше 6 поз на листе.** Длинное движение — несколько листов; второй лист получает первый как картинку-образец.
+   Короткие клипы одного существа можно сложить на один лист (`sleep_in` 3 клетки + `sleep_out` 3 клетки): в промте
+   у каждой клетки — имя клипа и роль, ряды листа = клипы. Какие клипы получают лист, а какие берутся из типа тела —
+   `0-quick.md`, «Бюджет». Чем больше клеток, тем больше повторов и лишних конечностей (так пишут и пользователи
+   генераторов).
+2. **Образец облика — наш рендер.** К каждому запросу прикладывай картинку существа из нашего движка: только тело,
+   ×4 ближайшим соседом, на `#FF00FF` (`npm run ws -- export-ref <id> [anim] [кадр]`). Облик берётся отсюда, а не из
+   слов. Для нового существа, у которого ещё нет рига, — сначала лист облика (одна поза спереди-справа и сбоку), его
+   принимает критик, дальше он и есть образец.
+3. **Текст на картинке не просим.** Подписи ролей ставит наш скрипт под клетками. Модель путает буквы и рисует мусор.
+4. **Всё механическое — числами и словами в промте**: какая рука что держит, где точка контакта, длина реквизита,
+   куда смотрит морда, на какой ноге вес. Не «замахивается посохом», а «посох обеими руками над головой, навершие за
+   затылком, локти выше ушей, вес на задних лапах».
+5. **Промт пишется на английском** (модели генерации понимают его точнее), объяснения в карточке — по-русски.
+   Промт целиком сохраняется в `docs/reports/creatures/<партия>/references/<id>/<anim>.prompt.txt` рядом с листом.
+6. **Исправляем по одной вещи за раз** (§10.5), а не переписываем весь промт.
+
+Contact cell — the {contact part} TOUCHES {the floor | the target} exactly at {position: e.g. "one body length in
+  front of the front feet, on open ground"}; the contact is fully visible, not hidden behind the body or a prop;
+  the face is visible (profile or three-quarter), not the back.
+
+AVOID
+extra limbs, extra fingers, missing hands, fused or melted limbs, duplicated characters, a second character,
+cropped body parts, the character touching cell borders, floating detached parts, a prop through the body or the
+face, inconsistent colours or design between cells, text of any kind, background details, shadows on the
+background, magenta tint on the character.
+```
+
+### 10.3. Позы по анимациям (что вписывать в POSES)
+
+Фазы — из аналога из жизни и подсмотренных примеров (§4.3в). Опорные наборы:
+
+| Анимация | Клетки (по порядку) |
+### 10.4. Самопроверка листа (автор отвечает письменно, по каждой клетке, до `ws sheet-lint`)
+
+1. Сколько глаз, рук, ног, пальцев, рогов — как в CHARACTER LOCK?
+2. Реквизит: одна цельная прямая деталь нужной длины; в той руке, что указано; пальцы обхватывают?
+3. Точка контакта: касается пола или цели там, где сказано; видна?
+4. Морда видна (кроме клеток, где спина задумана)?
+5. Все позы разные? Порядок соответствует фазам?
+6. Рост и линия ступней одинаковые (кроме прыжков)?
+7. Ничего не касается края клетки? Нет текста, теней, фона?
+8. Логика: из позы N в позу N+1 можно перейти, не телепортируя конечности и реквизит?
+
+Ответы — в карточку (`references/<id>/<anim>.check.md`). Есть «нет» — §10.5.
+
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:56:08.584Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 6\,29p\;78\,94p /tmp/b25-f0b/fresh-author/checkout/.agents/skills/pixel-bosses/references/11-fx-method.md
+## 11. Эффекты: подход pixelfx
+
+### 11.1. Три мысли, на которых всё стоит
+
+1. **Код — это глина.** С первого раза хорошего эффекта не бывает ни у человека, ни у модели. Хороший получается
+   из черновика, который отрендерили, посмотрели глазами и поправили. Промт «нарисуй красиво» даёт середняк, круги
+   правки дают качество.
+2. **Верь глазам, а не коду.** Решение «готово» принимается по листу кадров и по движению, а не по тому, что код
+   «правильный». Подозрительное смотри покадрово: в выборке кадров ошибки движения не видны.
+3. **Корми референсами.** Перед работой найди самый близкий хороший образец, положи рядом **в том же размере на
+   экране** и сравни. Если у образца больше подробностей, света или жизни — твой не готов.
+
+### 11.2. Удар продаётся телом
+
+Эффект без тела — наклейка. Продаёт удар то, что вокруг: замах, который говорит «сейчас будет»; **замирание на
+контакте**; цель, которая отшатнулась; возврат. Наши §4.3–4.3б про тело уже это требуют. Добавляется:
+
+- **Замирание (hit-stop).** На кадре контакта стоит всё — тело, эффект, предметы — 1–5 кадров (при 24 к/с; у них
+  0,03–0,2 с). Тяжелее удар — дольше. Это самый дешёвый способ дать вес.
+- **Тряска** поля на 2–5 px сразу после замирания, гаснет за 4–6 кадров. Не на каждом трюке: только где есть сила.
+- **Замах в обратную сторону от удара**, большая смена силуэта на кадре выпуска, проводка с перелётом.
+- **Цель отвечает**: предмет качнулся, отскочил, прогнулся, вспыхнул на 1–2 кадра.
+- Тайминг удара берётся **из констант эффекта**, а не на глаз: кадр контакта один на всё — позу, вспышку, замирание.
+
+### 11.5. Порядок работы над эффектом
+
+1. **Скажи одной строкой** с направлением: что это, как движется, палитра, тайминг. Пример: «Звезда ловится магнитом:
+   на касании голубая искра-крест, кольцо по шнуру, три уголька падают на стол и гаснут; удар 0,4 с, угольки ещё 1,5 с».
+2. **Найди образец.** Наш лучший эффект похожего рода (Астрал — планка §0), их эффект того же рода в
+   `vendor/pixelfx/src/fx/<категория>/` — читать **хореографию и числа**, не копировать файл.
+3. **Черновики.** Если направление открыто — 3–5 по-настоящему разных черновика, листы всех, выбрать лучший; владельцу —
+   два-три сильнейших. Черновик в коде дешёвый, переделка принятой картины дорогая.
+4. **Смотри, суди, чини самое плохое.** Рендер → лист → одна худшая проблема → рендер. **Минимум три круга**,
+   показательный эффект — больше. Движение — по соседним кадрам, не по выборке.
+5. **Сравни с образцом рядом**, в одном размере на экране.
+6. **Тело.** Если эффект от приёма — замах, выпуск, замирание, ответ цели, возврат (§11.2).
+7. **Проверка** автоматом (`ws gate`) до чистого прохода.
+
+### 11.6. Что видишь → как чинить
+
+| видишь | чинить |
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:56:24.253Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- new fzero_b --body light-quadruped --theme meadow --rarity common
+c/fzero_b.card.json
+c/fzero_b.studio.json
+c/fzero_b-life.ts
+c/fzero_b-keys.ts
+c/fzero_b.ts
+Заготовка готова. Заполни перечень видимых подробностей и пять ответов о каждом приёме перед gate.
+[exit=0 wall_ms=2198]
+
+[2026-11-28T17:56:26.459Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- detail fzero_b
+✗ fzero_b detail: 27 primitives, 9 colours, edge 0.80, flat 13.5% — colours 9 < 55; edge 0.80 < 0.85; flat 13.5% > 3%; primitives 27 < 250; extent 48 not in 80–90% of 96; height 46 not in 55–65% of field 128; scale the figure ×1.700 (any of ×1.600–×1.800)
+[exit=1 wall_ms=2054]
+
+[2026-11-28T17:56:28.521Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- probe fzero_b idle 0
+fzero_b idle frame 0/71  hits -
+feet 85,107  camera 0,0  side 0
+body bbox 63,71–110,116 (48×46)  centre 85.7,89.3  pixels 1088
+sockets footL 72.5,90.7  hindL 72.5,90.7  hindLKnee 76,80.2  hindLHock 69.9,82.9  footR 63.4,96.1  hindR 63.4,96.1  hindRKnee 66.3,85.9  hindRHock 60.7,88.2  handL 90.6,101.9  foreL 90.6,101.9  foreLKnee 86.2,86.8  foreLHock 90,97.1  shoulderL 89.4,81.8  elbowL 86.2,86.8  handR 81.5,107.3  foreR 81.5,107.3  foreRKnee 76.7,92.4  foreRHock 80.8,102.4  shoulderR 81.8,86.3  elbowR 76.7,92.4  body 77,77.4  neck 85,79.4  head 92.3,76.7  snout 100,83  mouth 100,83  hornTip 100,83  weaponTip 100,83  tail 65.2,67.7  tailTip 56.1,66.9  paw 81.5,107.3  footLGround 72.5,90.7  hindLGround 72.5,90.7  hindLKneeGround 76,92.6  hindLHockGround 69.9,89.1  footRGround 63.4,96.1  hindRGround 63.4,96.1  hindRKneeGround 66.3,98.2  hindRHockGround 60.7,94.4  handLGround 90.6,101.9  foreLGround 90.6,101.9  foreLKneeGround 86.2,99  foreLHockGround 90,101.5  shoulderLGround 89.4,102.1  elbowLGround 86.2,99  handRGround 81.5,107.3  foreRGround 81.5,107.3  foreRKneeGround 76.7,104.5  foreRHockGround 80.8,106.8  shoulderRGround 81.8,106.5  elbowRGround 76.7,104.5  bodyGround 77,99  neckGround 85,103.9  headGround 92.3,108.5  snoutGround 100,113.2  mouthGround 100,113.2  hornTipGround 100,113.2  weaponTipGround 100,113.2  tailGround 65.2,91.7  tailTipGround 56.1,86.1  pawGround 81.5,107.3
+rig 27 primitives; no deep overlaps
+layer pixels bg 20480  fxu 264  body 1088  bgf 485  frame 4864
+[exit=0 wall_ms=1570]
+
+[2026-11-28T17:56:30.099Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- sheet fzero_b idle --frames 0 --scale 1
+/tmp/b25-f0b/fresh-author/checkout/tools/creatures/.studio/fzero_b-idle.png  76×88  frames 0
+legend: yellow = contact, blue = key pose, red border = error, orange border = warning
+[exit=0 wall_ms=2673]
+
+[2026-11-28T17:56:32.779Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- export-ref fzero_b idle 0 --out /tmp/b25-f0b/fresh-author/idle-ref.png
+/tmp/b25-f0b/fresh-author/idle-ref.png
+[exit=0 wall_ms=1612]
+
+[2026-11-28T17:56:47.457Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 150\,350p bodies/light-quadruped.ts
+        fore > 0 ? -1.0 - 2.6 * tuck : -3.8 - 2.5 * tuck,
+        0,
+        (fore > 0 ? 5.5 : 7.8) * height * (1 - tuck * 0.54),
+      );
+      const knee = ik(
+        hip,
+        hock,
+        (fore > 0 ? 11.8 : 10.7) * height,
+        (fore > 0 ? 11.2 : 11.4) * height,
+        body.v(-fore, sign * 0.12, 0.12),
+      );
+      legs.push({ name, fore, side: sign, hip, knee, hock, foot, hoof });
+      points[name] = points[alias] = foot;
+      points[name + 'Knee'] = knee;
+      points[name + 'Hock'] = hock;
+      if (fore > 0) {
+        points['shoulder' + suffix] = hip;
+        points['elbow' + suffix] = knee;
+      }
+      if ((walking && g.planted) || (turning && pivot.planted)) planted.push(name);
+    }
+  const neck = body
+    .at(11.5 * length, 0, 3.7 * height)
+    .turn(0.87 * sleep)
+    .pitch(0.7 * tuck + 0.35 * l.tired + (pose['neck.pitch'] ?? 0));
+  let head = neck
+    .at(10.5 * neckLength + (pose.reach ?? 0), 0, (9 + (proportions.neckRise ?? 0)) * neckLength)
+    .turn((pose['head.yaw'] ?? 0) + l.look * 0.78 + headLead + turnLead + 0.55 * tuck)
+    .pitch((pose['head.pitch'] ?? 0) + 0.26 * tuck + 0.12 * l.tired - 0.12 * startle);
+  const muzzle: V3 = offsets.muzzle ?? [11, 0, -2];
+  const horn = offsets.hornTip ?? muzzle;
+  const aimHead = goal('head', head.p(18, 0, 0));
+  if (aimHead) {
+    const angles = lookAngles(head, head.o, aimHead);
+    head = head.turn(angles.yaw).pitch(angles.pitch);
+  }
+  // Orient the whole skull towards its target, then carry its pivot on the mobile neck.
+  // The hide spans neck.o to head.o, including the reaching pose.
+  const tipGoal = goal('weaponTip', head.p(...horn)) ?? goal('hornTip', head.p(...horn));
+  const mouthGoal = goal('mouth', head.p(...muzzle)) ?? goal('snout', head.p(...muzzle));
+  const target = tipGoal ?? mouthGoal;
+  if (target) {
+    const socket = tipGoal ? horn : muzzle;
+    const aim = lookAngles(head, head.o, target);
+    const rest = lookAngles(head, head.o, head.p(...socket));
+    head = head.turn(aim.yaw - rest.yaw).pitch(aim.pitch - rest.pitch);
+    head = new F3(vsub(target, head.v(...socket)), head.f, head.s, head.u);
+  }
+  const tail = body
+    .at(-17 * length, 0, 3 * height)
+    .turn((pose['tail.yaw'] ?? 0) + gait * 0.13 + 0.6 * tuck)
+    .pitch((pose['tail.pitch'] ?? 0) + 0.16 * tuck + 0.12 * l.tired);
+  points.body = body.o;
+  points.neck = neck.o;
+  points.head = head.o;
+  points.mouth = points.snout = head.p(...muzzle);
+  points.weaponTip = points.hornTip = offsets.hornTip ? head.p(...horn) : points.mouth;
+  points.tail = tail.o;
+  const tailEnd = tail.p(...(offsets.tailTip ?? [-13, 0, -6]));
+  points.tailTip = goal('tailTip', tailEnd) ?? tailEnd;
+  points.paw = points.foreR;
+  return {
+    anim,
+    time: t,
+    pose,
+    root,
+    body,
+    head,
+    neck,
+    tail,
+    legs,
+    points,
+    planted,
+    life: l,
+    width,
+    height,
+    length,
+    scale,
+  };
+}
+
+function defaultSkin(r: Rig, s: LightSkeleton, card: CreatureCard, variant: Variant) {
+  const ramp = card.materials[0].tones;
+  const mat = (tones: string[]): Mat => ({ T: tones.map((tone) => hx(tone)) as Mat['T'] });
+  const coat = mat(
+    variant === 'gold'
+      ? ['#68452b', '#ab713c', '#dfad5c', '#fff0a0']
+      : [ramp[0], ramp[1], ramp.at(-2)!, ramp.at(-1)!],
+  );
+  const point = mat(['#28232e', '#483c45', '#78696a', '#ac9891']);
+  for (const leg of s.legs) {
+    r.tag = leg.name;
+    r.cap(leg.hip, leg.knee, leg.fore > 0 ? 3.8 : 4.6, 2.2, coat);
+    r.cap(leg.knee, leg.hock, 2.3, 1.35, coat);
+    r.cap(leg.hock, leg.foot, 1.45, 0.95, point);
+    r.ell(leg.hoof, [1, 0, 1.2], [2.3, 1.4, 1.45], point);
+  }
+  r.tag = 'torso';
+  r.ell(s.body, [0, 0, 0], [18 * s.length, 7 * s.width, 8 * s.height], coat);
+  r.tag = 'tail';
+  r.cap(s.tail.o, s.points.tailTip, 3.5, 0.65, coat);
+  r.tag = 'neck';
+  r.cap(s.neck.o, s.head.o, 5.6, 4.2, coat);
+  r.tag = 'head';
+  r.ell(s.head, [2, 0, 0], [7.2, 4.8, 5.4], coat);
+  r.cap(s.head.p(5, 0, -0.7), s.points.mouth, 3.6, 1.8, coat);
+  if (s.points.weaponTip !== s.points.mouth) r.cap(s.head.p(3, 0, 0.7), s.points.weaponTip, 1.4, 0.6, point);
+  for (const sign of [-1, 1]) {
+    r.tag = 'ear' + (sign < 0 ? 'L' : 'R');
+    r.cap(s.head.p(-0.8, sign * 2.4, 3), s.head.p(-4, sign * 4.4, 10), 2, 0.28, coat);
+    const eye = s.head.p(4, sign * 4, 1.3);
+    r.tag = 'eye' + (sign < 0 ? 'L' : 'R');
+    const start = r.size;
+    r.ell(s.head, [4, sign * 4, 1.3], [1.6, 0.78, s.life.blink ? 0.35 : 1.25], point);
+    if (!s.life.blink) r.dot(vadd(eye, vmul(s.head.u, 0.55)), coat.T[3], 0, 0.65);
+    r.markEye(start, sign, !s.life.blink);
+    if (sign > 0) r.eye = eye;
+  }
+}
+
+export function lightFrame(
+  card: CreatureCard,
+  route: MotionPlan,
+  appearance?: LightAppearance,
+): Creature['frame'] {
+  return (anim, t, side, variant, steer) => {
+    const pose = steer?.techniquePose ?? appearance?.pose?.(anim, t) ?? {};
+    const lead = steer ? ((((steer.headSide - side + 24) % 16) - 8) * Math.PI) / 8 : 0;
+    const s = lightSkeleton(
+      anim,
+      t,
+      side,
+      pose,
+      lead,
+      route,
+      card.proportions,
+      appearance,
+      steer?.gaitPhase ?? t,
+    );
+    const rig = new Rig();
+    (appearance?.draw ?? defaultSkin)(rig, s, card, variant);
+    for (const [key, p] of Object.entries(s.points))
+      if (!key.endsWith('Ground')) s.points[key + 'Ground'] = [p[0], p[1], 0];
+    if (s.scale !== 1) scaleFigure(rig, s.points, s.scale);
+    const size = sizes[card.rarity][2];
+    const frame = projectFigure(
+      rig,
+      size,
+      [Math.round(size * 0.5), Math.round(size * 0.79)],
+      s.points,
+      '#272532',
+      undefined,
+      true,
+    );
+    const air = Math.max(0, Math.min(...s.legs.map((leg) => leg.foot[2])) * s.scale);
+    return {
+      ...frame,
+      planted: s.planted,
+      dx: pose.dx,
+      dy: pose.dy,
+      sx: pose.sx,
+      sy: pose.sy,
+      groundShadow: { radius: (size * 0.21) / (1 + 0.025 * air), opacity: 1 / (1 + 0.035 * air) },
+    };
+  };
+}
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:56:47.472Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n interface\ FX\|interface\ Creature\|type\ Fx\|backdrop\|type\ Painting\|fps\|type\ Animation types.ts
+72:  readonly backdrop: Pen;
+99:export interface Creature {
+157:export type PaintingSize = [number, number, number, number];
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:56:47.485Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n fidget\|phase\|draw\|compose\|points\|backdrop types.ts
+50:  points: Record<string, XY>; // named projected sockets, local sprite pixels
+55:  waterContacts?: { socket: string; kind: number; phase: number; size: number }[];
+68:/** Endpoints in field pixels. The first follows the performer and the second stays on the scenery. */
+72:  readonly backdrop: Pen;
+90:  points: Record<string, XY>;
+95:  /** Studio only (ws events): an effect draws a carried object off the body here, e.g. the hat on the floor. Absent
+107:  /** Clips besides show and peek whose `over` layer is drawn over the painting frame (a secret trick round the frame). */
+123:    motion?: { headSide: number; gaitPhase: number; techniquePose?: JointPose; pointsOnly?: boolean; secondaryTime?: number },
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:56:47.499Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n fidget\|everyday rig/figure.ts
+8:export const everyday: Record<string, Animation> = {
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:56:47.510Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,115p kit/pet-moves.ts
+// Proven pet moves. Every helper here was written once in a pet's own files, broke there, and was fixed; a new pet
+// takes it from here instead of re-deriving it (and re-breaking it). Origins in brackets.
+//
+//   keyframer      the key-and-lane sampler every Claude pet copied [Шмыг, Раскат: identical 40 lines]
+//   snapTo         a move at the Astral tempo: wind-up → fast action → overshoot → settle (skill §«Темп»)
+//   somersault     a whole flip: crouch, launch, a whole turn of `pitch`, landing squash [Шмыг, Раскат]
+//   spinLane       an n-fold object turning by whole steps so it ends on its rest look [Раскат drum ring]
+//   flipTuck       how tucked the legs are at a body pitch: knees up the moment he is thrown back [Раскат 21.11]
+//   pivotLift      hips offset so a flip turns round the middle, not round the feet [Раскат]
+//   takeoffFrame   the frame whose floor point a take-off effect uses [Раскат peek: the ring drew mid-air]
+// Time-driven wobble (breathing, hover, a churning mane) goes on kit/clock.ts.
+import type { JointPose } from '../technique';
+
+export type Track = [number, JointPose][];
+/** A single key on its own frames, laid over the main keys. */
+export type Lane = [number, number][];
+
+const smooth = (u: number) => u * u * (3 - 2 * u);
+
+export interface KeyframerSpec {
+  /** Main keys per clip: whole poses at frames (24 fps), smoothstep between them. */
+  tracks: Record<string, Track>;
+  /** Single keys per clip, laid over the main keys. */
+  lanes?: Record<string, Record<string, Lane>>;
+  /** Keys that switch at the next key's frame instead of blending (visibility, layer flags). */
+  switches?: ReadonlySet<string>;
+  /** Lane keys interpolated linearly (positions in flight, spins): no ease-in/out at every key. */
+  linear?: ReadonlySet<string>;
+  /** Clips with one fixed pose (e.g. sleep). */
+  fixed?: Record<string, JointPose>;
+}
+
+/** The pose sampler `(anim, t) → JointPose` with exactly the behaviour of the copies in the pet files. */
+export function keyframer({ tracks, lanes = {}, switches = new Set(), linear = new Set(), fixed = {} }: KeyframerSpec) {
+  function laneValue(name: string, keys: Lane, f: number) {
+    if (f <= keys[0][0]) return keys[0][1];
+    const i = keys.findIndex(([time]) => time >= f);
+    if (i < 0) return keys[keys.length - 1][1];
+    const [start, a] = keys[i - 1],
+      [end, b] = keys[i];
+    if (switches.has(name)) return f >= end ? b : a;
+    let u = (f - start) / (end - start);
+    if (!linear.has(name)) u = smooth(u);
+    return a + (b - a) * u;
+  }
+  return function gesture(anim: string, t: number): JointPose {
+    if (fixed[anim]) return fixed[anim];
+    const keys = tracks[anim];
+    if (!keys) return {};
+    const f = t * 24,
+      i = keys.findIndex(([time]) => time >= f);
+    let pose: JointPose = {};
+    if (i <= 0) pose = { ...keys[i === 0 ? 0 : keys.length - 1][1] };
+    else {
+      const [start, a] = keys[i - 1],
+        [end, b] = keys[i];
+      const u = smooth((f - start) / (end - start));
+      for (const name of new Set([...Object.keys(a), ...Object.keys(b)])) {
+        if (switches.has(name)) pose[name] = f >= end ? (b[name] ?? 0) : (a[name] ?? 0);
+        else pose[name] = (a[name] ?? 0) * (1 - u) + (b[name] ?? 0) * u;
+      }
+    }
+    for (const [name, lane] of Object.entries(lanes[anim] ?? {})) pose[name] = laneValue(name, lane, f);
+    return pose;
+  };
+}
+
+export interface SnapTiming {
+  /** Frame the fast action starts. */
+  at: number;
+  /** Wind-up frames before `at`, moving the other way. Default 4. */
+  windup?: number;
+  /** Frames of the action itself: 1–4 at the Astral tempo. Default 3. */
+  act?: number;
+  /** Frames from the overshoot back to the target: 6–10. Default 6. */
+  settle?: number;
+  /** Share of the travel for the wind-up (back) and the overshoot (past). Defaults 0.15 and 0.12. */
+  back?: number;
+  past?: number;
+}
+
+/** Lane keys for one move from `from` to `to`: wind-up against the move, a fast action, an overshoot, a settle. */
+export function snapTo(from: number, to: number, { at, windup = 4, act = 3, settle = 6, back = 0.15, past = 0.12 }: SnapTiming): Lane {
+  const d = to - from;
+  return [
+    [at - windup, from],
+    [at, from - d * back],
+    [at + act, to + d * past],
+    [at + act + settle, to],
+  ];
+}
+
+export interface SomersaultSpec {
+  /** Frame of the launch (feet leave the floor). */
+  at: number;
+  /** Airborne frames. 10–14 reads as a snap flip at 24 fps. */
+  air: number;
+  /** -1 = backwards (head first back), +1 = forwards. */
+  dir?: -1 | 1;
+  /** Whole turns. Default 1. */
+  turns?: number;
+  /** Apex height in the pet's jump units. */
+  height: number;
+  /** Crouch depth before and after. */
+  crouch: number;
+  /** Pitch at rest, kept exactly at both ends. Default 0. */
+  rest?: number;
+}
+
+/**
+ * `pitch` (linear), `jump` and `crouch` lanes of a whole flip: a 4-frame crouch, the launch, `turns` whole turns in
+ * the air (the jump arc is a parabola), a landing squash of 3 frames and a 6-frame settle. Pair with flipTuck and
+ * pivotLift in the skin, and put `pitch` in the keyframer's `linear` set.
+ */
+export function somersault({ at, air, dir = -1, turns = 1, height, crouch, rest = 0 }: SomersaultSpec): Record<string, Lane> {
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:57:04.211Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 65\,143p types.ts
+  flash?: number; // 0..1
+  over?: Px; // isolated foreground limb in local sprite coordinates
+}
+/** Endpoints in field pixels. The first follows the performer and the second stays on the scenery. */
+export type SceneryRay = [number, number, number, number, string, number];
+export interface FxInput {
+  /** Effects anchored to the field rather than to the performer. */
+  readonly backdrop: Pen;
+  sceneryRay(from: XY, to: XY, color: string, alpha: number): void;
+  /** Linear additive RGB energy, composited over the ordinary effect ink. */
+  readonly light: Pen;
+  readonly palette: FxPalette;
+  /** Surface height in field pixels at the particle position. */
+  readonly ground: (x: number) => number;
+  readonly seed: number;
+  readonly options: Readonly<Record<string, number | string | boolean>>;
+  under: Pen;
+  above: Pen;
+  anim: string;
+  t: number;
+  duration: number;
+  hits: number[];
+  w: number;
+  h: number;
+  feet: XY;
+  points: Record<string, XY>;
+  // Historical transformed socket in field coordinates for arcs and released missiles.
+  pointAt: (time: number, name: string) => XY;
+  variant: Variant;
+  techniqueTrace?: TechniqueTrace;
+  /** Studio only (ws events): an effect draws a carried object off the body here, e.g. the hat on the floor. Absent
+   * outside the studio journal; calling it changes no pixel. */
+  propAt?: (prop: string, at: XY) => void;
+}
+export interface Creature {
+  id: string;
+  rarity: Rarity;
+  theme: string;
+  fxRamp?: FxPalette;
+  fxOptions?: Readonly<Record<string, number | string | boolean>>;
+  /** Gallery titles for clips whose generic label says too little (named tricks). */
+  titles?: Record<string, string>;
+  /** Clips besides show and peek whose `over` layer is drawn over the painting frame (a secret trick round the frame). */
+  overClips?: string[];
+  /** Its own painting size instead of the rarity's (field w, h, body frame, border). */
+  size?: PaintingSize;
+  /** Standing position in field pixels for standalone clips and showreel chapters. */
+  portraitOrigin?: XY;
+  /** Chapters inside a group cut directly to the next pose, for authored continuous showreels. */
+  reelGroups?: string[][];
+  /** Order of the eight walking headings in this scene's continuous showreel. */
+  reelWalkRoute?: readonly Direction[];
+  animations: Record<string, Animation>;
+  frame: (
+    anim: string,
+    t: number,
+    side: number,
+    variant: Variant,
+    motion?: { headSide: number; gaitPhase: number; techniquePose?: JointPose; pointsOnly?: boolean; secondaryTime?: number },
+  ) => BodyFrame; // side 0..15; default 0 = artist's 3/4
+  props?: (input: FxInput) => void; // physical targets shown during both held keys and playback
+  effects?: (input: FxInput) => void;
+  motion?: MotionPlan;
+  behavior?: import('./viewer/behavior.mjs').BehaviorConfig;
+  techniques?: TechniqueBook;
+}
+export interface MotionBeat {
+  seconds: number;
+  at: XY;
+  anim: string;
+  side?: number;
+  lift?: number;
+}
+export interface MotionPlan {
+  stride: number;
+  yaw: number;
+  fly?: boolean;
+  beats: MotionBeat[];
+}
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:57:04.222Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n interface\ Pen\|class\ Pen\|type\ Pen
+c/moon_magician-fx.ts:5:import { disc, fillPoly, flare, star, type Pen } from '../fx/pen';
+c/herald_griffin-fx.ts:2:import { fillPoly, type Pen } from '../fx/pen';
+c/coin_dragon-actions.ts:3:import { fillPoly, flare, fly, type Pen } from '../fx/pen';
+c/kettle_crab-fx.ts:6:import { flare, star, type Pen } from '../fx/pen';
+c/sand_scorpion-fx.ts:2:import { fillPoly, type Pen } from '../fx/pen';
+c/ember_panda-fx.ts:10:import { flare, star, type Pen } from '../fx/pen';
+fx/presets/materials.ts:4:import { fillPoly, type Pen } from '../pen';
+c/puff_kit-fx.ts:8:import { flare, star, type Pen } from '../fx/pen';
+fx/field.ts:3:import { fillPoly,fly,type Pen } from './pen';
+fx/pen.ts:47:export class Pen {
+c/sky_whale-fx.ts:2:import { fillPoly, type Pen } from '../fx/pen';
+c/eclipse_drake-fx.ts:13:import { fillPoly, star, type Pen } from '../fx/pen';
+c/frost_fox-fx.ts:2:import {fillPoly,type Pen} from '../fx/pen';
+c/ball_pangolin-fx.ts:7:import { flare, star, type Pen } from '../fx/pen';
+c/garden_chameleon-fx.ts:1:import { fillPoly, type Pen } from '../fx/pen';
+c/toad_shaman-actions.ts:3:import { flare,fly,fillPoly,type Pen } from '../fx/pen';
+c/bun_panda-fx.ts:7:import { disc, fillPoly, fillSeg, star, type Pen } from '../fx/pen';
+c/crater_titan-actions.ts:3:import { chunks, dust, fillPoly, flare, type Pen } from '../fx/pen';
+c/dream_sneak-fx.ts:10:import { flare, star, type Pen } from '../fx/pen';
+c/storm_lord-fx.ts:9:import { fillPoly, star, type Pen } from '../fx/pen';
+c/strike-brush.ts:4:import { crackOf, drawCrack, fillPoly, starBranches, type Pen } from '../fx/pen';
+c/astral_seer-fx.ts:7:import { disc, fillPoly, flare, star, type Pen } from '../fx/pen';
+c/prism_serpent-fx.ts:9:import { disc, fillPoly, flare, star, type Pen } from '../fx/pen';
+c/grove_lord-fx.ts:2:import { fillPoly, type Pen } from '../fx/pen';
+c/root_stag-fx.ts:2:import { fillPoly, type Pen } from '../fx/pen';
+c/nebula_squid-fx.ts:2:import { fillPoly, type Pen } from '../fx/pen';
+c/tuft_owlet-fx.ts:8:import { flare, star, type Pen } from '../fx/pen';
+c/moon_warden-fx.ts:2:import { fillPoly, type Pen } from '../fx/pen';
+katorga/f1/source/dungeon-floors/f1-boss-fx.ts:91:interface Pen {
+[exit=0 wall_ms=27]
+
+[2026-11-28T17:57:04.256Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,28p rig/figure.ts
+// Shared projection for the articulated bodies and the action sockets carried by them.
+import { Px } from './px';
+import { proj, renderRig, Rig, type RigOut, type V3 } from './f15-rig';
+import { rigMode, rigStats } from './stats';
+import { hx, sstep, TAU } from '../kit/f11-mobkit';
+import type { Animation, BodyFrame, XY } from '../types';
+
+export const everyday: Record<string, Animation> = {
+  idle: { seconds: 3, loop: true },
+  walk: { seconds: 1, loop: true },
+  look: { seconds: 1.5 },
+  sleep: { seconds: 3, loop: true },
+  turn: { seconds: 4, loop: true },
+  happy: { seconds: 1.1 },
+  tired: { seconds: 1.5 },
+  hatch: { seconds: 1.5 },
+};
+export function life(anim: string, t: number, offset: number) {
+  const loop =
+    anim === 'idle' ||
+    anim === 'idle-f2' ||
+    anim === 'sleep' ||
+    anim === 'walk';
+  const q = (loop ? t / (anim === 'walk' ? 1 : 3) : 0) * TAU + offset;
+  const g = (len: number) =>
+    Math.pow(Math.sin(Math.PI * Math.max(0, Math.min(1, t / len))), 2);
+  return {
+    q,
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:57:04.270Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n \^\ \ \(ell\|dot\|cap\|facet\|box\|line\|bead\|markEye\)\\\( rig/f15-rig.ts
+195:  markEye(start: number, side: number, open: boolean) {
+202:  ell(F: F3, c: V3, r: V3, m: Mat, cut?: (q: V3) => boolean): this {
+227:  cap(a: V3, b: V3, r0: number, r1: number, m: Mat): this {
+254:  dot(p: V3, c: RGBA, glow = 0, s = 1, bias = 0.6): this {
+258:  line(a: V3, b: V3, c: RGBA, glow = 0, bias = 0.3): this {
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:57:04.282Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,30p c/fzero_b.card.json
+{
+  "id": "fzero_b",
+  "name": "fzero_b",
+  "body": "light-quadruped",
+  "theme": "meadow",
+  "rarity": "common",
+  "proportions": {
+    "length": 1,
+    "width": 1,
+    "height": 1
+  },
+  "parts": [
+    "torso",
+    "neck",
+    "head",
+    "foreL",
+    "foreR",
+    "hindL",
+    "hindR",
+    "tail"
+  ],
+  "materials": [
+    {
+      "name": "Основной материал",
+      "tones": [
+        "#473948",
+        "#775149",
+        "#a77357",
+        "#cba182",
+        "#efcfac"
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:57:04.295Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n \^export\ interface\ Pen\|\^export\ class\ Pen\|\^\(\ \ \[a-zA-Z\]+\)\[\(:\(\<\ \] kit/pen.ts
+rg: kit/pen.ts: IO error for operation on kit/pen.ts: No such file or directory (os error 2)
+[exit=2 wall_ms=6]
+
+[2026-11-28T17:57:11.785Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 47\,128p fx/pen.ts
+export class Pen {
+  readonly g: SKRSContext2D;
+  readonly qx: number;
+  readonly qy: number;
+  /**
+   * Заслон: прямоугольники тел ближе к камере (x0, y0, x1, y1 — мир), их
+   * пиксели не рисуются. Вычитается из каждой строки — без `clip()`: клип
+   * сложной формы растеризует маску на весь холст, и луч «тормозил».
+   */
+  occ: number[] | null = null;
+  constructor(g: SKRSContext2D, px: number, py: number, wx: number, wy: number) {
+    this.g = g;
+    const sc = g.getTransform().a || 1;
+    this.qx = Math.round((px - wx) * sc) / sc;
+    this.qy = Math.round((py - wy) * sc) / sc;
+  }
+  col(c: string, a = 1): void {
+    this.g.fillStyle = c;
+    this.g.globalAlpha = a < 0 ? 0 : a > 1 ? 1 : a;
+  }
+  alpha(a: number): void {
+    this.g.globalAlpha = a < 0 ? 0 : a > 1 ? 1 : a;
+  }
+  /** Строка [x, x + w) на высоте y (целые пиксели мира) — с вычетом заслона. */
+  span(x: number, y: number, w: number): void {
+    const o = this.occ;
+    if (o) {
+      let hit = false;
+      for (let i = 0; i < o.length; i += 4)
+        if (y >= o[i + 1] && y < o[i + 3] && x < o[i + 2] && x + w > o[i]) {
+          hit = true;
+          break;
+        }
+      if (hit) {
+        let segs = [x, x + w];
+        for (let i = 0; i < o.length; i += 4) {
+          if (y < o[i + 1] || y >= o[i + 3]) continue;
+          const next: number[] = [];
+          for (let k = 0; k < segs.length; k += 2) {
+            const s0 = segs[k];
+            const s1 = segs[k + 1];
+            if (o[i + 2] <= s0 || o[i] >= s1) {
+              next.push(s0, s1);
+              continue;
+            }
+            if (o[i] > s0) next.push(s0, o[i]);
+            if (o[i + 2] < s1) next.push(o[i + 2], s1);
+          }
+          segs = next;
+        }
+        for (let k = 0; k < segs.length; k += 2)
+          this.g.fillRect(segs[k] + this.qx, y + this.qy, segs[k + 1] - segs[k], 1);
+        return;
+      }
+    }
+    this.g.fillRect(x + this.qx, y + this.qy, w, 1);
+  }
+  dot(x: number, y: number, w = 1, h = 1): void {
+    this.rect(Math.floor(x), Math.floor(y), w, h);
+  }
+  rect(x: number, y: number, w: number, h: number): void {
+    if (!this.occ) {
+      this.g.fillRect(x + this.qx, y + this.qy, w, h);
+      return;
+    }
+    for (let r = 0; r < h; r++) this.span(x, y + r, w);
+  }
+  img(c: Canvas, x: number, y: number): void {
+    const X = Math.floor(x);
+    const Y = Math.floor(y);
+    const o = this.occ;
+    let hit = false;
+    if (o)
+      for (let i = 0; i < o.length; i += 4)
+        if (Y < o[i + 3] && Y + c.height > o[i + 1] && X < o[i + 2] && X + c.width > o[i]) {
+          hit = true;
+          break;
+        }
+    if (!hit || !o) {
+      this.g.drawImage(c, X + this.qx, Y + this.qy);
+      return;
+    }
+[exit=0 wall_ms=24]
+
+[2026-11-28T17:57:11.823Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n f\\.pointAt\|props\\\?\\.\|\\.props\\\( engine.ts
+492:    c.props?.(fx);
+[exit=0 wall_ms=15]
+
+[2026-11-28T17:57:11.854Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,76p motion.ts
+import { createPetBehavior, interruptFrames, turnFramesFor, validateBehavior,
+  type BehaviorConfig, type PetSample } from './viewer/behavior.mjs';
+import { SE } from './rig/f15-rig';
+import { sizeOf, type Creature, type MotionPlan, type XY } from './types';
+
+export const directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'] as const;
+export type Direction = (typeof directions)[number];
+export type { MotionPlan, MotionBeat } from './types';
+const wrap = (v: number, m: number) => ((v % m) + m) % m;
+const ease = (u: number) => u * u * (3 - 2 * u);
+const mix = (a: number, b: number, u: number) => a + (b - a) * u;
+const point = (a: XY, b: XY, u: number): XY => [
+  mix(a[0], b[0], u),
+  mix(a[1], b[1], u),
+];
+export function strideFoot(t: number, offset: number, stride: number) {
+  const phase = wrap(t + offset, 1);
+  if (phase < 0.5)
+    return { forward: stride * (0.25 - phase), lift: 0, planted: true };
+  const u = 2 * (phase - 0.5);
+  // Cubic swing with the same rearward velocity at toe-off and touchdown.
+  return {
+    forward: stride * (-0.25 - 0.5 * u + 3 * u * u - 2 * u * u * u),
+    lift: Math.sin(Math.PI * u) ** 2,
+    planted: false,
+  };
+}
+export function directionVector(dir: Direction, stride: number): XY {
+  const i = directions.indexOf(dir),
+    a = ((i - 2) * Math.PI) / 4;
+  return [
+    Math.abs(Math.cos(a)) < 1e-8 ? 0 : stride * Math.cos(a),
+    Math.abs(Math.sin(a)) < 1e-8 ? 0 : stride * Math.sin(a) * SE,
+  ];
+}
+function heading(v: XY, base: number) {
+  return wrap(((Math.atan2(v[1] / SE, v[0]) - base) * 8) / Math.PI, 16);
+}
+const turn = (a: number, b: number, u: number) =>
+  wrap(a + (wrap(b - a + 8, 16) - 8) * u, 16);
+export const lifeDuration = (p: MotionPlan) =>
+  p.beats.reduce((n, b) => n + b.seconds, 0);
+interface ReelPart {
+  name: string;
+  frames: number;
+  offset?: number;
+  joined?: boolean;
+  at?: XY;
+  pivot?: { at: XY; frames: number[] };
+}
+
+// Pets with a handoff take one continuous walk through the eight views and return to the same mark.
+const walkingDemos = new WeakMap<Creature, ReelPart[]>();
+function walkingDemo(c: Creature): ReelPart[] {
+  const cached = walkingDemos.get(c);
+  if (cached) return cached;
+  const frames = Math.round(c.animations.prepare_walk.seconds * 24), middle = Math.ceil(frames / 2);
+  const turnFrames = Math.round(c.animations.turn.seconds * 24), { yaw, stride } = c.motion!;
+  const bearings = c.animations.turn.bearings ?? Array.from({ length: turnFrames }, (_, i) => yaw + i * 2 * Math.PI / turnFrames);
+  const route: readonly Direction[] = c.reelWalkRoute ?? ['se', 's', 'w', 'nw', 'ne', 'n', 'e', 'sw'];
+  if (route.length !== directions.length || directions.some(d => !route.includes(d)))
+    throw new Error(c.id + ': the showreel walk must visit all eight headings once');
+  const bearing = (d: Direction) => (directions.indexOf(d) - 2) * Math.PI / 4;
+  const still: XY = [0, 0];
+  const parts: ReelPart[] = [
+    { name: 'prepare_walk', frames: middle, pivot: { at: still, frames: [] } },
+    { name: 'turn', frames: turnFrames, pivot: { at: still, frames: turnFramesFor(bearings, bearings.at(-1)!, bearing(route[0])) } },
+  ];
+  let floor: XY = still;
+  for (const [i, d] of route.entries()) {
+    const [vx, vy] = directionVector(d, stride);
+    const at: XY = [floor[0] + vx / 2, floor[1] + vy / 2];
+    floor = [floor[0] + vx, floor[1] + vy];
+    parts.push({ name: 'walk_' + d, frames: 24, at, pivot: { at: floor,
+      frames: turnFramesFor(bearings, bearing(d), route[i+1] ? bearing(route[i+1]) : yaw) } });
+  }
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:57:11.868Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,45p rig/f15-rig.ts
+// From SkyTmin/coco-instruments dungeon-floors/f15-rig.ts, commit 523bae1 (MIT).
+
+// Мини-3D для монстров «Ядра» (анимации 15). Ортографическая камера сверху
+// под углом: земля сжата до SE, высота — до CE, глубина к зрителю —
+// y·CE + z·SE. Мир кадра в пикселях: x — восток, y — юг (к зрителю), z —
+// вверх; начало — точка ног. Примитивы: эллипсоиды (точно, лучом),
+// сужающиеся капсулы, плоские многоугольники (грани кристаллов, крылья,
+// пластины), точки и линии. Буфер глубины, свет сверху-слева, тон
+// ступенями, внешний контур и внутренний — по разрыву глубины. Узор
+// считается в координатах тела, поэтому поворачивается вместе с ним и не
+// «кипит» на ходу.
+
+import { Px } from './px';
+import { rigMode, rigStats } from './stats';
+
+export type RGBA = [number, number, number, number];
+export type Tones = [RGBA, RGBA, RGBA, RGBA];
+export type V3 = [number, number, number];
+
+/** Сжатие земли и высоты: синус и косинус угла камеры. */
+export const SE = 0.6;
+export const CE = 0.8;
+
+export const v3 = (x: number, y: number, z: number): V3 => [x, y, z];
+export const vadd = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+export const vsub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+export const vmul = (a: V3, k: number): V3 => [a[0] * k, a[1] * k, a[2] * k];
+export const vdot = (a: V3, b: V3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+export const vlen = (a: V3) => Math.sqrt(vdot(a, a));
+export const vlerp = (a: V3, b: V3, k: number): V3 => [
+  a[0] + (b[0] - a[0]) * k,
+  a[1] + (b[1] - a[1]) * k,
+  a[2] + (b[2] - a[2]) * k,
+];
+export const vcross = (a: V3, b: V3): V3 => [
+  a[1] * b[2] - a[2] * b[1],
+  a[2] * b[0] - a[0] * b[2],
+  a[0] * b[1] - a[1] * b[0],
+];
+export function vnorm(a: V3): V3 {
+  const l = vlen(a) || 1;
+  return [a[0] / l, a[1] / l, a[2] / l];
+}
+
+// Свет экрана (сверху-слева, чуть к зрителю) — в мир: L = LX·R + LY·D + LZ·V.
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:57:19.130Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n \^export\ interface\ Mat\|pat\\\?\?:\|\\.pat\|class\ F3\|markEye\|panel\\\( rig/f15-rig.ts
+52:export class F3 {
+117:export interface Mat {
+128:  pat?: (q: V3, l: number) => RGBA | null;
+136:  gpat?: (q: V3) => number;
+195:  markEye(start: number, side: number, open: boolean) {
+395:    if (m.pat) {
+396:      const c = m.pat(q, l);
+[exit=0 wall_ms=8]
+
+[2026-11-28T17:57:19.145Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n function\ attachMotion\|fidget_ motion.ts
+88:    ? ['hatch', ...(demo ? [] : ['turn']), 'idle','fidget_a','fidget_b', ...(demo ? ['prepare_walk'] : directions.map(d => 'walk_' + d)),
+122:export function attachMotion(c: Creature, plan: MotionPlan): Creature {
+[exit=0 wall_ms=11]
+
+[2026-11-28T17:57:19.164Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 467\,497p engine.ts
+      techniqueTrace,
+      w,
+      h,
+      under: new Pen(under.getContext('2d'), 0, 0, 0, 0),
+      above: new Pen(above.getContext('2d'), 0, 0, 0, 0),
+      pointAt: (when, name) => {
+        // FX request authored times. Historical floor trajectories use the same unpaused local clock.
+        const worldAt = timing ? clock + (when - route.t) * worldScale :
+          timeToWorld(when) + (requested === 'showreel' ? at.start : 0);
+        const source =
+          (actionBeat || spec.groundOffset) && when !== poseTime
+            ? placement(c, requested, worldAt, side, ground(w, h))
+            : at;
+        let fr = historical.get(when);
+        if (!fr) {
+          rigStats.history++;
+          fr = projected(when, source, true);
+          historical.set(when, fr);
+        }
+        fxJournal.socket?.({ frame: n, when, name, ok: !!fr.points[name] });
+        if (!fr.points[name])
+          throw new Error(c.id + '/' + anim + ' missing socket ' + name);
+        return screenPoint(fr, fr.points[name], source.feet);
+      },
+    };
+    c.props?.(fx);
+    c.effects?.(fx);
+    if (lightCanvas) blit(layers.light, asPx(lightCanvas), b + dx, b + dy, clip);
+    if (field) {
+      const fieldPixels = asPx(field);
+      if (fieldPixels.data.some((value, index) => index % 4 === 3 && value > 0)) {
+[exit=0 wall_ms=15]
+
+[2026-11-28T17:57:19.204Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n \^export\ function\ \(disc\|fillSeg\|fillPoly\) fx/pen.ts
+287:export function fillPoly(p: Pen, pts: number[], dither = false): void {
+359:export function fillSeg(
+377:export function disc(p: Pen, cx: number, cy: number, r: number, dither = false): void {
+[exit=0 wall_ms=7]
+
+[2026-11-28T17:57:24.551Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 110\,139p rig/f15-rig.ts
+  }
+  /** Равномерный масштаб осей (раздувание, сжатие). */
+  scale(k: number): F3 {
+    return new F3(this.o, vmul(this.f, k), vmul(this.s, k), vmul(this.u, k));
+  }
+}
+
+export interface Mat {
+  T: Tones;
+  /** Свечение 0…1: такая доля яркости идёт в слой поверх темноты. */
+  glow?: number;
+  /** Сдвиг освещённости (+ светлее). */
+  bias?: number;
+  /**
+   * Узор: точка в координатах тела (у эллипсоида — на единичной сфере, у
+   * капсулы — [доля длины, x, y сечения], у грани — мир) и свет → свой
+   * цвет или null (тон по свету).
+   */
+  pat?: (q: V3, l: number) => RGBA | null;
+  /** Блик: на самом светлом — белая точка (кристалл, металл). */
+  spec?: boolean;
+  /** Без внутреннего контура (свечение, пламя, дым). */
+  soft?: boolean;
+  /** Ровный тон без света: номер ступени. */
+  flat?: number;
+  /** Свечение по точке тела 0…1 (трещины с магмой) — сверх `glow`. */
+  gpat?: (q: V3) => number;
+}
+
+interface PEll {
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:57:24.563Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 122\,160p motion.ts
+export function attachMotion(c: Creature, plan: MotionPlan): Creature {
+  if (
+    !Number.isFinite(plan.stride) ||
+    plan.stride <= 0 ||
+    !Number.isFinite(plan.yaw)
+  )
+    throw Error(c.id + ' invalid gait');
+  plan = resolveTechniqueBeats(c, plan);
+  const chapters = reelChapters(c);
+  const seconds = lifeDuration(plan);
+  let start = 0;
+  const lifeHits = plan.beats.flatMap((beat) => {
+    const action = c.animations[beat.anim];
+    const times = (action?.hits ?? []).map(
+      (hit) =>
+        Math.round((start + (hit * beat.seconds) / action.seconds) * 24) / 24,
+    );
+    start += beat.seconds;
+    return times;
+  });
+  if (seconds < 12 - 1e-8 || seconds > 20 + 1e-8)
+    throw Error(c.id + ' life must last 12–20 seconds');
+  for (const beat of plan.beats) {
+    if (
+      !(beat.seconds > 0) ||
+      beat.at.some((n) => !Number.isFinite(n) || n < 0 || n > 1)
+    )
+      throw Error(c.id + ' invalid life waypoint');
+    if (
+      !['walk', 'fly', 'turn'].includes(beat.anim) &&
+      !c.animations[beat.anim]
+    )
+      throw Error(c.id + ' missing ' + beat.anim);
+  }
+  return {
+    ...c,
+    motion: plan,
+    animations: {
+      ...c.animations,
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:57:24.574Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 359\,379p fx/pen.ts
+export function fillSeg(
+  p: Pen,
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  hw: number,
+  dither = false,
+): void {
+  const L = Math.hypot(x1 - x0, y1 - y0);
+  if (L < 0.01) {
+    disc(p, x0, y0, hw, dither);
+    return;
+  }
+  fillLane(p, x0, y0, (x1 - x0) / L, (y1 - y0) / L, 0, L, hw, dither);
+}
+
+/** Круг по пикселям. */
+export function disc(p: Pen, cx: number, cy: number, r: number, dither = false): void {
+  if (r < 0.5) {
+    p.dot(cx, cy);
+[exit=0 wall_ms=4]
+
+[2026-11-28T17:57:24.584Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 198\,234p rig/f15-rig.ts
+  }
+  /** Точка глаза (мир): движок светит ею в темноте. */
+  eye: V3 | null = null;
+  /** Эллипсоид по осям рамки: центр (f, s, u) и полуоси по f, s, u. */
+  ell(F: F3, c: V3, r: V3, m: Mat, cut?: (q: V3) => boolean): this {
+    this.prims.push({ t: this.tag,
+      k: 0,
+      c: F.p(c[0], c[1], c[2]),
+      a: [vmul(F.f, r[0]), vmul(F.s, r[1]), vmul(F.u, r[2])],
+      m,
+      cut,
+    });
+    return this;
+  }
+  /** Шар в мировой точке. */
+  ball(c: V3, r: number, m: Mat): this {
+    this.prims.push({ t: this.tag,
+      k: 0,
+      c,
+      a: [
+        [r, 0, 0],
+        [0, r, 0],
+        [0, 0, r],
+      ],
+      m,
+    });
+    return this;
+  }
+  /** Сужающаяся капсула (конечность, шея, хвост) между мировыми точками. */
+  cap(a: V3, b: V3, r0: number, r1: number, m: Mat): this {
+    this.prims.push({ t: this.tag, k: 1, a, b, r0, r1, m });
+    return this;
+  }
+  /** Плоская грань по мировым вершинам (видна с обеих сторон). */
+  poly(pts: V3[], m: Mat, bias = 0): this {
+    if (pts.length >= 3) this.prims.push({ t: this.tag, k: 2, pts, m, bias });
+    return this;
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:58:10.651Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp /tmp/b25-f0b/fresh-author/source/fzero_b.ts /tmp/b25-f0b/fresh-author/source/fzero_b-skin.ts c/
+[exit=0 wall_ms=7]
+
+[2026-11-28T17:58:10.667Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures python -c import\ json\;\ from\ pathlib\ import\ Path\;\ p=Path\(\"c/fzero_b.card.json\"\)\;\ c=json.loads\(p.read_text\(\)\)\;\ c\[\"proportions\"\]\[\"scale\"\]=1.55\;\ p.write_text\(json.dumps\(c\,ensure_ascii=False\,indent=2\)+\"\\n\"\)
+[exit=0 wall_ms=83]
+
+[2026-11-28T17:58:10.760Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- detail fzero_b
+✗ fzero_b detail: 139 primitives, 22 colours, edge 0.78, flat 10.1% — colours 22 < 55; edge 0.78 < 0.85; flat 10.1% > 3%; primitives 139 < 250; extent 76 not in 80–90% of 96; scale the figure ×1.053 (any of ×1.011–×1.095)
+[exit=1 wall_ms=3765]
+
+[2026-11-28T17:58:14.533Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- export-ref fzero_b idle 0 --out /tmp/b25-f0b/fresh-author/authored-ref.png
+/tmp/b25-f0b/fresh-author/authored-ref.png
+[exit=0 wall_ms=2779]
+
+[2026-11-28T17:58:17.319Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- probe fzero_b fidget_a 28
+fzero_b fidget_a frame 28/71  hits -
+feet 85,107  camera 0,0  side 0
+body bbox 54,54–131,122 (78×69)  centre 91.9,82.3  pixels 2560
+sockets footL 70.1,86.2  hindL 70.1,86.2  hindLKnee 76.1,71.1  hindLHock 66,74  footR 55.8,94.5  hindR 55.8,94.5  hindRKnee 61.1,79.9  hindRHock 51.7,82.3  handL 98.2,103.5  foreL 98.2,103.5  foreLKnee 93.2,80.4  foreLHock 97.1,96  shoulderL 99.6,74.5  elbowL 93.2,80.4  handR 83.9,111.8  foreR 83.9,111.8  foreRKnee 78.7,88.8  foreRHock 82.8,104.3  shoulderR 87.8,81.4  elbowR 78.7,88.8  body 80.5,67.7  neck 92.9,70.7  head 111.1,77.2  snout 120.9,91.4  mouth 120.9,91.4  hornTip 120.9,91.4  weaponTip 120.9,91.4  tail 62.1,52.6  tailTip 48.1,51.4  paw 83.9,111.8  footLGround 70.1,86.2  hindLGround 70.1,86.2  hindLKneeGround 76.1,89.4  hindLHockGround 66,83.6  footRGround 55.8,94.5  hindRGround 55.8,94.5  hindRKneeGround 61.1,98.2  hindRHockGround 51.7,91.9  handLGround 98.2,103.5  foreLGround 98.2,103.5  foreLKneeGround 93.2,100.3  foreLHockGround 97.1,102.9  shoulderLGround 99.6,105.9  elbowLGround 93.2,100.3  handRGround 83.9,111.8  foreRGround 83.9,111.8  foreRKneeGround 78.7,108.7  foreRHockGround 82.8,111.2  shoulderRGround 87.8,112.8  elbowRGround 78.7,108.7  bodyGround 80.5,101.1  neckGround 92.9,108.8  headGround 111.1,120.1  snoutGround 120.9,126.1  mouthGround 120.9,126.1  hornTipGround 120.9,126.1  weaponTipGround 120.9,126.1  tailGround 62.1,89.8  tailTipGround 48.1,81.1  pawGround 83.9,111.8
+rig 139 primitives; no deep overlaps
+layer pixels bg 20480  fxu 264  body 2560  bgf 485  frame 4864
+[exit=0 wall_ms=1501]
+
+[2026-11-28T17:58:18.826Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- sheet fzero_b fidget_a --frames 0\,12\,26\,34\,48\,71 --scale 2
+/tmp/b25-f0b/fresh-author/checkout/tools/creatures/.studio/fzero_b-fidget_a.png  1228×220  frames 0,12,26,34,48,71
+legend: yellow = contact, blue = key pose, red border = error, orange border = warning
+[exit=0 wall_ms=2871]
+
+[2026-11-28T17:58:40.741Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 420\,470p engine.ts
+          [r / count, g / count, bv / count, Math.round(42 * (body.groundShadow?.reflectionOpacity ?? 1))],
+        );
+    }
+  }
+  let backdrop: Px | undefined;
+  const sceneryRays: SceneryRay[] = [];
+  const techniqueTrace = emptyTechniqueTrace();
+  if ((c.props || c.effects) && !(finalFrame && anim === 'away')) {
+    const [under, above] = getFxCanvases(w, h);
+    const historical = new Map<number, BodyFrame>([[poseTime, body]]);
+    fxJournal.pose?.(n, points);
+    let field: Canvas | undefined;
+    let fieldPen: Pen | undefined;
+    let lightCanvas: Canvas | undefined, lightPen: Pen | undefined;
+    const fx: FxInput = {
+      ground: scene.ground ?? (() => feet[1]),
+      seed: Number(c.fxOptions?.seed ?? 1),
+      options: c.fxOptions ?? {},
+      palette: c.fxRamp ?? defaultPalette,
+      get light() {
+        if (!lightPen) {
+          lightCanvas = fieldCanvas(w, h, 'light');
+          const g = lightCanvas.getContext('2d');
+          g.globalCompositeOperation = 'lighter';
+          lightPen = new Pen(g, 0, 0, 0, 0);
+        }
+        return lightPen;
+      },
+      get backdrop() {
+        if (!fieldPen) {
+          field = fieldCanvas(w, h, 'backdrop');
+          fieldPen = new Pen(field.getContext('2d'), 0, 0, 0, 0);
+        }
+        return fieldPen;
+      },
+      sceneryRay(from, to, color, alpha) {
+        if (alpha > 0) sceneryRays.push([...from, ...to, color, Math.min(1, alpha)]);
+      },
+      anim: poseAnim,
+      t: finalFrame ? 0 : (contact[0] ?? t),
+      duration: poseAnim === anim ? localDuration : c.animations[poseAnim]?.seconds ?? localDuration,
+      hits: finalFrame ? [] : hits,
+      variant,
+      feet,
+      // with a socket journal the misses of the current pose are reported too (effects often fall back silently)
+      points: fxJournal.socket ? journaled(points, n) : points,
+      propAt: fxJournal.prop ? (prop, at) => fxJournal.prop?.({ frame: n, prop, at: [at[0], at[1]] }) : undefined,
+      techniqueTrace,
+      w,
+      h,
+      under: new Pen(under.getContext('2d'), 0, 0, 0, 0),
+[exit=0 wall_ms=8]
+
+[2026-11-28T17:58:40.756Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,64p studio/probe.ts
+// Numbers for one frame, so a pose can be tuned without looking at a picture: where every socket is on
+// the field, where the feet and the body are, how deep limbs sit in the body, what the effects spawned.
+import { loadPainting } from '../render';
+import { compose, frameCount, hitFrame } from '../engine';
+import { maskOf } from '../tech-metrics';
+import { captureRig } from './capture';
+import { clipPairs } from './clip';
+
+const r1 = (v: number) => Math.round(v * 10) / 10;
+
+export async function probe(id: string, anim: string, frame: number) {
+  const { c, s, b } = await loadPainting(id);
+  const spec = c.animations[anim];
+  if (!spec) throw new Error(`${id} has no animation ${anim}; known: ${Object.keys(c.animations).join(', ')}`);
+  const count = frameCount(spec.seconds);
+  const { result: f, rig } = captureRig(() => compose(c, s, b, anim, frame / 24));
+  const mask = maskOf(f.layers.body, [-f.camera[0], -f.camera[1]]);
+  const hits = (spec.hits ?? []).map(hitFrame);
+  const lines: string[] = [];
+  lines.push(`${id} ${anim} frame ${frame}/${count - 1}${hits.includes(frame) ? ' CONTACT' : ''}  hits ${hits.join(',') || '-'}`);
+  lines.push(`feet ${f.feet.map(r1).join(',')}  camera ${f.camera.map(r1).join(',')}  side ${f.motion?.side ?? 0}`);
+  const [x0, y0, x1, y1] = mask.bounds;
+  lines.push(`body bbox ${x0},${y0}–${x1},${y1} (${x1 - x0 + 1}×${y1 - y0 + 1})  centre ${mask.centre.map(r1).join(',')}  pixels ${mask.pixels.size}`);
+  const pts = Object.entries(f.points ?? {}).map(([k, v]) => `${k} ${(v as number[]).map(r1).join(',')}`);
+  if (pts.length) lines.push('sockets ' + pts.join('  '));
+  const births = f.techniqueTrace?.births ?? [];
+  if (births.length) lines.push('effect births ' + births.map((x) => `${x.socket}@${x.at.map(r1).join(',')}`).join('  '));
+  const flights = f.techniqueTrace?.projectiles ?? [];
+  if (flights.length) lines.push('projectiles ' + flights.map((p) => `${p.id} ${p.at.map(r1).join(',')}`).join('  '));
+  if (rig) {
+    const deep = clipPairs(rig)
+      .filter((p) => p.depth < 0.7)
+      .sort((a, z) => a.depth - z.depth)
+      .slice(0, 6);
+    lines.push(`rig ${rig.prims.length} primitives` + (deep.length ? '; deepest overlaps:' : '; no deep overlaps'));
+    for (const p of deep) lines.push(`  ${p.capLabel} (#${p.cap}) in ${p.ellLabel} (#${p.ell}) depth ${p.depth.toFixed(2)}`);
+  }
+  const used = Object.entries(f.layers)
+    .map(([k, p]) => {
+      let n = 0;
+      for (let i = 3; i < p.data.length; i += 4) if (p.data[i]) n++;
+      return n ? `${k} ${n}` : '';
+    })
+    .filter(Boolean);
+  lines.push('layer pixels ' + used.join('  '));
+  console.log(lines.join('\n'));
+}
+[exit=0 wall_ms=7]
+
+[2026-11-28T17:58:40.776Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures ls -a .studio
+.
+..
+fzero_b-fidget_a.png
+fzero_b-idle.png
+ws-log.jsonl
+[exit=0 wall_ms=7]
+
+[2026-11-28T17:58:53.232Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n points:\|points\ =\|feet:\|\[+\]-\?\ b\\b\|\\+\ b\, engine.ts
+102:export function screenPoint(fr: BodyFrame, p: XY, feet: XY): XY {
+116:  feet: XY,
+206:    p.data.fill(0, y * stride, y * stride + b * 4);
+251:function journaled(points: Record<string, XY>, frame: number): Record<string, XY> {
+275:    W = w + b * 2,
+276:    H = h + b * 2;
+356:  const fullFeet: XY = [feet[0] + b + dx, feet[1] + b + dy];
+365:  const points = Object.fromEntries(
+384:  const floorXY: XY = [origin[0] + b + dx, feet[1] + b + dy + (body.groundShadow?.offsetY ?? 0)];
+465:      points: fxJournal.socket ? journaled(points, n) : points,
+549:    feet: fullFeet,
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:58:53.246Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 382\,412p rig/f15-rig.ts
+    if (clipZ !== undefined && -CE * ((((i / w) | 0) + 0.5) - ay) + SE * z < clipZ) return;
+    zb[i] = z;
+    id[i] = pid;
+    const j = i * 4;
+    col[j] = c[0];
+    col[j + 1] = c[1];
+    col[j + 2] = c[2];
+    col[j + 3] = c[3];
+    gl[i] = g;
+    if (g) anyGlow = true;
+  };
+  const shade = (m: Mat, n: V3, q: V3): RGBA => {
+    const l = vdot(n, LIGHT) + (m.bias ?? 0);
+    if (m.pat) {
+      const c = m.pat(q, l);
+      if (c) return c;
+    }
+    if (m.flat !== undefined) return m.T[m.flat];
+    if (m.spec && l > 0.97) return [255, 255, 255, 255];
+    return band(m.T, l);
+  };
+  const glowOf = (m: Mat) => Math.round(Math.max(0, Math.min(1, m.glow ?? 0)) * 255);
+  const gq = (m: Mat, g: number, q: V3) =>
+    m.gpat ? Math.max(g, Math.round(Math.max(0, Math.min(1, m.gpat(q))) * 255)) : g;
+
+  rig.prims.forEach((q, pid) => {
+    if (q.k === 0) {
+      mats.push(q.m);
+      const [A1, A2, A3] = q.a;
+      const inv = [1 / vdot(A1, A1), 1 / vdot(A2, A2), 1 / vdot(A3, A3)];
+      const A = [A1, A2, A3];
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:58:53.262Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n frames\|png\|--anim\|scale render.ts
+46:  return existsSync(join(tools, 'frames', safeID(id) + '.ts'));
+51:    : join(dirname(output), 'frames', c.rarity);
+61:  const b: Border = (await import('./frames/' + safeID(frame) + '.ts')).default;
+76:function turnPivots(c: Creature, size: number, frames: number) {
+78:  for (let n = 0; n < frames; n++) {
+114:  scale: number,
+118:    frames = frameCount(spec.seconds),
+121:  const showcase = cycles > 1 ? new GifWriter(scale, true) : undefined;
+122:  const gif = new GifWriter(scale, true),
+125:        ? new GifWriter(scale, true)
+128:  const pivots = turn ? turnPivots(c, size, frames) : [];
+129:  const dir = join(output, 'frames', suffix),
+135:  for (let f = 0; f < frames; f++) {
+155:    const file = String(f).padStart(3, '0') + '.png';
+163:        join(output, 'frames', suffix, layer, file),
+195:  // Remove obsolete generated PNGs only after the new frames succeeded.
+199:      if (!/^\d{3,}\.png$/.test(file)) continue;
+201:        parseInt(file, 10) >= frames ||
+213:    for (let f = frames; f < frames * cycles; f++)
+231:    savePNG(join(output, 'bg', 'front', safeID(obj.id) + '.png'), framed);
+234:  savePNG(join(output, 'bg', 'front.png'), front);
+246:      file = String(f).padStart(3, '0') + '.png';
+255:      savePNG(join(output, 'bg', 'base.png'), framed);
+256:      savePNG(join(frameDir, 'base.png'), border);
+260:// Also usable independently: --anim idle --scale 1 renders just its two variants.
+264:  scale: number,
+277:    !existsSync(join(output, 'bg', 'base.png')) ||
+278:    !existsSync(join(paintingFrameDir(c, output), 'base.png'))
+283:    writePainting(c, s, b, anim, 'normal', scale, output);
+287:      writePainting(c, s, b, anim, 'gold', scale, output);
+298:    scale,
+311:          track: 'frames/<anim>/motion.json',
+332:      'Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.',
+334:      'use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png',
+340:          frames: frameCount(v.seconds),
+367:      'Usage: npx tsx render.ts --id ID [--anim NAME] [--scale N]',
+369:  await render(id, get('--anim'), Number(get('--scale') ?? 3));
+[exit=0 wall_ms=8]
+
+[2026-11-28T17:58:59.953Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 355\,377p\;538\,557p engine.ts
+    dy = Math.round(Math.cos(phaseY) * (timing ? amplitude * 0.6 : 6 * env)) || 0;
+  const fullFeet: XY = [feet[0] + b + dx, feet[1] + b + dy];
+  let lightPixels: Px | undefined;
+  const layers = { get light() { return lightPixels ??= new Px(W, H); } } as Layers;
+  for (const key of layerNames)

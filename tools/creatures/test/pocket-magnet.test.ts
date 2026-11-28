@@ -4,10 +4,12 @@ import { compose } from '../engine';
 import { loadPainting } from '../render';
 import { cord, fishAt, fishStop, hook, projectedPole, starAt } from '../c/pocket_magnet-poses';
 import type { XY } from '../types';
+import { displayFrame } from '../kit/impact-clock';
 
 const painting = await loadPainting('pocket_magnet');
 const gap = (a: XY, b: XY) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 const inFrame = (name: string, n: number) => compose(painting.c, painting.s, painting.b, name, n / 24);
+const starContacts = painting.c.animations.trick_b.contacts ?? [];
 
 test('the tin fish pivots out of its cradle, hangs from a pole and lands before the magnet peels off', () => {
   const first = fishAt(0);
@@ -38,7 +40,9 @@ test('the star travels on one fixed cord, clears the magnet, then meets it on th
   ]) {
     for (let n = first; n <= last; n++)
       assert.ok(gap(projectedPole('trick_b', n / 24), starAt(n).contact) < 0.001);
-    for (const n of [first, last]) assert.ok(gap(inFrame('trick_b', n).points.pole, starAt(n).contact) < 0.001);
+    // The catch holds for two frames (B22), so a source frame after it is displayed later.
+    for (const n of [first, last])
+      assert.ok(gap(inFrame('trick_b', displayFrame(n, starContacts)).points.pole, starAt(n).contact) < 0.001);
   }
   assert.ok(starAt(97).center[0] + 35 < starAt(76).center[0]);
   assert.ok(gap(projectedPole('trick_b', 97 / 24), starAt(97).contact) > 28);

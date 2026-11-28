@@ -1,0 +1,172 @@
+[
+  {
+    "catalogCount": 41,
+    "mode": "unique",
+    "posterSize": [
+      2048,
+      1332
+    ],
+    "posterFileBytes": 537556,
+    "sheetDecodedRGBA": 10911744,
+    "catalogBytes": 75277,
+    "coldWallMs": 1266,
+    "wallCanvasCount": 41,
+    "wallCanvasRGBA": 8693336,
+    "galleryMemory": {
+      "open": 429784,
+      "decoded": 2,
+      "bytes": 251224,
+      "cancelled": 0,
+      "actorPeak": 0
+    },
+    "domElements": 447,
+    "afterSwitch": {
+      "open": 14167768,
+      "decoded": 8,
+      "bytes": 41914800,
+      "cancelled": 0,
+      "actorPeak": 13737984
+    },
+    "errors": [],
+    "coldRequests": 16,
+    "coldHttpBytes": 1375462,
+    "switchRequests": 6,
+    "switchHttpBytes": 816460
+  },
+  {
+    "catalogCount": 100,
+    "mode": "shared",
+    "posterSize": [
+      2048,
+      1332
+    ],
+    "posterFileBytes": 537556,
+    "sheetDecodedRGBA": 10911744,
+    "catalogBytes": 188908,
+    "coldWallMs": 1275,
+    "wallCanvasCount": 100,
+    "wallCanvasRGBA": 21380736,
+    "galleryMemory": {
+      "open": null,
+      "decoded": 0,
+      "bytes": 0,
+      "cancelled": 0,
+      "actorPeak": 0
+    },
+    "domElements": 919,
+    "afterSwitch": {
+      "open": 14167768,
+      "decoded": 8,
+      "bytes": 41914800,
+      "cancelled": 0,
+      "actorPeak": 13737984
+    },
+    "errors": [],
+    "coldRequests": 14,
+    "coldHttpBytes": 1025556,
+    "switchRequests": 8,
+    "switchHttpBytes": 1282380
+  },
+  {
+    "catalogCount": 100,
+    "mode": "unique",
+    "posterSize": [
+      2048,
+      3108
+    ],
+    "posterFileBytes": 1306254,
+    "sheetDecodedRGBA": 25460736,
+    "catalogBytes": 185502,
+    "coldWallMs": 1443,
+    "wallCanvasCount": 100,
+    "wallCanvasRGBA": 21380736,
+    "galleryMemory": {
+      "open": 429784,
+      "decoded": 2,
+      "bytes": 251224,
+      "cancelled": 0,
+      "actorPeak": 0
+    },
+    "domElements": 919,
+    "afterSwitch": {
+      "open": 14167768,
+      "decoded": 8,
+      "bytes": 41914800,
+      "cancelled": 0,
+      "actorPeak": 13737984
+    },
+    "errors": [],
+    "coldRequests": 16,
+    "coldHttpBytes": 2256856,
+    "switchRequests": 10,
+    "switchHttpBytes": 1493282
+  },
+  {
+    "catalogCount": 300,
+    "mode": "shared",
+    "posterSize": [
+      2048,
+      1332
+    ],
+    "posterFileBytes": 537556,
+    "sheetDecodedRGBA": 10911744,
+    "catalogBytes": 569339,
+    "coldWallMs": 3056,
+    "wallCanvasCount": 300,
+    "wallCanvasRGBA": 63983552,
+    "galleryMemory": {
+      "open": null,
+      "decoded": 0,
+      "bytes": 0,
+      "cancelled": 0,
+      "actorPeak": 0
+    },
+    "domElements": 2519,
+    "afterSwitch": {
+      "open": 14167768,
+      "decoded": 8,
+      "bytes": 41914800,
+      "cancelled": 0,
+      "actorPeak": 13737984
+    },
+    "errors": [],
+    "coldRequests": 12,
+    "coldHttpBytes": 1402994,
+    "switchRequests": 10,
+    "switchHttpBytes": 1293642
+  },
+  {
+    "catalogCount": 300,
+    "mode": "unique",
+    "posterSize": [
+      2048,
+      8880
+    ],
+    "posterFileBytes": 3962166,
+    "sheetDecodedRGBA": 72744960,
+    "catalogBytes": 554435,
+    "coldWallMs": 5600,
+    "wallCanvasCount": 300,
+    "wallCanvasRGBA": 63983552,
+    "galleryMemory": {
+      "open": 429784,
+      "decoded": 2,
+      "bytes": 251224,
+      "cancelled": 0,
+      "actorPeak": 0
+    },
+    "domElements": 2519,
+    "afterSwitch": {
+      "open": 14167768,
+      "decoded": 8,
+      "bytes": 41914800,
+      "cancelled": 0,
+      "actorPeak": 13737984
+    },
+    "errors": [],
+    "coldRequests": 16,
+    "coldHttpBytes": 5290234,
+    "switchRequests": 10,
+    "switchHttpBytes": 1493282
+  }
+]

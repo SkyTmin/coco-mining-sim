@@ -1,0 +1,379 @@
+{
+  "paintings": 41,
+  "pairs": 820,
+  "verified_frames": 287,
+  "closest": {
+    "all": [
+      {
+        "ids": [
+          "bramble_warden",
+          "storm_ram"
+        ],
+        "shape": 0.29383,
+        "palette": 0.55031,
+        "motion": 0.00625,
+        "scene": 0.04783,
+        "all": 0.07265,
+        "actor": 0.08303
+      },
+      {
+        "ids": [
+          "frost_yeti",
+          "storm_ram"
+        ],
+        "shape": 0.36281,
+        "palette": 0.50391,
+        "motion": 0.02254,
+        "scene": 0.08011,
+        "all": 0.11538,
+        "actor": 0.09239
+      },
+      {
+        "ids": [
+          "moon_magician",
+          "moon_warden"
+        ],
+        "shape": 0.45122,
+        "palette": 0.33093,
+        "motion": 0.02297,
+        "scene": 0.08523,
+        "all": 0.12241,
+        "actor": 0.0928
+      },
+      {
+        "ids": [
+          "bramble_warden",
+          "crater_titan"
+        ],
+        "shape": 0.38174,
+        "palette": 0.43456,
+        "motion": 0.04115,
+        "scene": 0.06961,
+        "all": 0.1279,
+        "actor": 0.12658
+      },
+      {
+        "ids": [
+          "bramble_warden",
+          "toad_shaman"
+        ],
+        "shape": 0.42816,
+        "palette": 0.45085,
+        "motion": 0.03773,
+        "scene": 0.0579,
+        "all": 0.13278,
+        "actor": 0.14733
+      }
+    ],
+    "actor": [
+      {
+        "ids": [
+          "rat_king",
+          "river_otter"
+        ],
+        "shape": 0.34282,
+        "palette": 0.35196,
+        "motion": 0.01862,
+        "scene": 0.27943,
+        "all": 0.23016,
+        "actor": 0.02768
+      },
+      {
+        "ids": [
+          "bramble_warden",
+          "meadow_colossus"
+        ],
+        "shape": 0.23945,
+        "palette": 0.37677,
+        "motion": 0.0281,
+        "scene": 0.17774,
+        "all": 0.18376,
+        "actor": 0.04681
+      },
+      {
+        "ids": [
+          "bramble_warden",
+          "threshold_keeper"
+        ],
+        "shape": 0.36224,
+        "palette": 0.47915,
+        "motion": 0.01698,
+        "scene": 0.17333,
+        "all": 0.19689,
+        "actor": 0.06878
+      },
+      {
+        "ids": [
+          "ball_pangolin",
+          "rat_king"
+        ],
+        "shape": 0.27001,
+        "palette": 0.37691,
+        "motion": 0.03837,
+        "scene": 0.17776,
+        "all": 0.20849,
+        "actor": 0.07937
+      },
+      {
+        "ids": [
+          "ball_pangolin",
+          "river_otter"
+        ],
+        "shape": 0.34242,
+        "palette": 0.42904,
+        "motion": 0.03223,
+        "scene": 0.19518,
+        "all": 0.22344,
+        "actor": 0.08018
+      }
+    ],
+    "shape": [
+      {
+        "ids": [
+          "penguin_marshal",
+          "tuft_owlet"
+        ],
+        "shape": 0.21918,
+        "palette": 0.59595,
+        "motion": 0.14581,
+        "scene": 0.15323,
+        "all": 0.43742,
+        "actor": 0.41351
+      },
+      {
+        "ids": [
+          "bun_panda",
+          "penguin_marshal"
+        ],
+        "shape": 0.22399,
+        "palette": 0.63987,
+        "motion": 0.05669,
+        "scene": 0.14663,
+        "all": 0.33516,
+        "actor": 0.28775
+      },
+      {
+        "ids": [
+          "bramble_warden",
+          "meadow_colossus"
+        ],
+        "shape": 0.23945,
+        "palette": 0.37677,
+        "motion": 0.0281,
+        "scene": 0.17774,
+        "all": 0.18376,
+        "actor": 0.04681
+      },
+      {
+        "ids": [
+          "bun_panda",
+          "zephyr_whorl"
+        ],
+        "shape": 0.24054,
+        "palette": 0.85938,
+        "motion": 0.08207,
+        "scene": 0.32475,
+        "all": 0.634,
+        "actor": 0.5405
+      },
+      {
+        "ids": [
+          "penguin_marshal",
+          "zephyr_whorl"
+        ],
+        "shape": 0.24965,
+        "palette": 0.58414,
+        "motion": 0.05501,
+        "scene": 0.26342,
+        "all": 0.37943,
+        "actor": 0.23525
+      }
+    ],
+    "palette": [
+      {
+        "ids": [
+          "river_otter",
+          "root_stag"
+        ],
+        "shape": 0.62576,
+        "palette": 0.19358,
+        "motion": 0.19755,
+        "scene": 0.244,
+        "all": 0.64927,
+        "actor": 0.60806
+      },
+      {
+        "ids": [
+          "root_stag",
+          "tuft_owlet"
+        ],
+        "shape": 0.52611,
+        "palette": 0.25399,
+        "motion": 0.09582,
+        "scene": 0.08627,
+        "all": 0.35928,
+        "actor": 0.40619
+      },
+      {
+        "ids": [
+          "ball_pangolin",
+          "bramble_warden"
+        ],
+        "shape": 0.51509,
+        "palette": 0.26446,
+        "motion": 0.03298,
+        "scene": 0.12079,
+        "all": 0.24054,
+        "actor": 0.1978
+      },
+      {
+        "ids": [
+          "grove_lord",
+          "meadow_colossus"
+        ],
+        "shape": 0.5428,
+        "palette": 0.27051,
+        "motion": 0.05892,
+        "scene": 0.20408,
+        "all": 0.41514,
+        "actor": 0.32886
+      },
+      {
+        "ids": [
+          "grove_lord",
+          "root_stag"
+        ],
+        "shape": 0.55851,
+        "palette": 0.28198,
+        "motion": 0.14929,
+        "scene": 0.03239,
+        "all": 0.38431,
+        "actor": 0.50794
+      }
+    ],
+    "motion": [
+      {
+        "ids": [
+          "bramble_warden",
+          "storm_ram"
+        ],
+        "shape": 0.29383,
+        "palette": 0.55031,
+        "motion": 0.00625,
+        "scene": 0.04783,
+        "all": 0.07265,
+        "actor": 0.08303
+      },
+      {
+        "ids": [
+          "apricot_bubbler",
+          "pocket_magnet"
+        ],
+        "shape": 0.35005,
+        "palette": 0.7481,
+        "motion": 0.00794,
+        "scene": 0.16708,
+        "all": 0.35058,
+        "actor": 0.28246
+      },
+      {
+        "ids": [
+          "river_otter",
+          "storm_ram"
+        ],
+        "shape": 0.50904,
+        "palette": 0.67222,
+        "motion": 0.01074,
+        "scene": 0.18354,
+        "all": 0.39652,
+        "actor": 0.32479
+      },
+      {
+        "ids": [
+          "rat_king",
+          "storm_ram"
+        ],
+        "shape": 0.46679,
+        "palette": 0.56322,
+        "motion": 0.01101,
+        "scene": 0.10304,
+        "all": 0.21001,
+        "actor": 0.18071
+      },
+      {
+        "ids": [
+          "bramble_warden",
+          "rat_king"
+        ],
+        "shape": 0.49353,
+        "palette": 0.40331,
+        "motion": 0.01173,
+        "scene": 0.07335,
+        "all": 0.14683,
+        "actor": 0.14408
+      }
+    ],
+    "scene": [
+      {
+        "ids": [
+          "herald_griffin",
+          "silk_dragon"
+        ],
+        "shape": 0.52848,
+        "palette": 0.5969,
+        "motion": 0.17582,
+        "scene": 0.01234,
+        "all": 0.45085,
+        "actor": 0.60114
+      },
+      {
+        "ids": [
+          "frost_fox",
+          "frost_yeti"
+        ],
+        "shape": 0.55992,
+        "palette": 0.39922,
+        "motion": 0.10243,
+        "scene": 0.01955,
+        "all": 0.35348,
+        "actor": 0.4709
+      },
+      {
+        "ids": [
+          "coin_dragon",
+          "crater_titan"
+        ],
+        "shape": 0.46398,
+        "palette": 0.38746,
+        "motion": 0.05597,
+        "scene": 0.02049,
+        "all": 0.17063,
+        "actor": 0.2267
+      },
+      {
+        "ids": [
+          "silk_dragon",
+          "storm_ram"
+        ],
+        "shape": 0.52165,
+        "palette": 0.72514,
+        "motion": 0.22245,
+        "scene": 0.0219,
+        "all": 0.54976,
+        "actor": 0.73179
+      },
+      {
+        "ids": [
+          "crater_titan",
+          "rat_king"
+        ],
+        "shape": 0.5,
+        "palette": 0.47471,
+        "motion": 0.04654,
+        "scene": 0.0231,
+        "all": 0.20314,
+        "actor": 0.26923
+      }
+    ]
+  }
+}

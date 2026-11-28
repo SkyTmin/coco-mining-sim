@@ -1,0 +1,1851 @@
+[
+  {
+    "id": "study_case_0",
+    "body": "winged-dragon",
+    "theme": "winter_glasshouse",
+    "rarity": "uncommon",
+    "moves": "sweep,ram",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 25 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          180,
+          148
+        ],
+        "pixels": 2812,
+        "bbox": [
+          46,
+          42,
+          119,
+          116
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          180,
+          148
+        ],
+        "pixels": 2600,
+        "bbox": [
+          48,
+          44,
+          114,
+          112
+        ]
+      },
+      {
+        "anim": "tech_sweep",
+        "canvas": [
+          180,
+          148
+        ],
+        "pixels": 2838,
+        "bbox": [
+          40,
+          38,
+          111,
+          117
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_1",
+    "body": "arachnid",
+    "theme": "magic_tent",
+    "rarity": "epic",
+    "moves": "breath,roar,leap,sweep",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 35 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 2847,
+        "bbox": [
+          76,
+          65,
+          160,
+          156
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 2849,
+        "bbox": [
+          76,
+          66,
+          162,
+          155
+        ]
+      },
+      {
+        "anim": "tech_breath",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 2540,
+        "bbox": [
+          62,
+          74,
+          139,
+          156
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_2",
+    "body": "heavy-quadruped",
+    "theme": "volcano",
+    "rarity": "common",
+    "moves": "ram,breath",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 25 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 2524,
+        "bbox": [
+          49,
+          63,
+          122,
+          121
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 2294,
+        "bbox": [
+          56,
+          61,
+          117,
+          120
+        ]
+      },
+      {
+        "anim": "tech_ram",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 2637,
+        "bbox": [
+          36,
+          68,
+          112,
+          121
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_3",
+    "body": "winged-dragon",
+    "theme": "root_lantern_glade",
+    "rarity": "secret",
+    "moves": "summon,slide,volley,dive,pillars,breath",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 50 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\"",
+      "/moves/4/logic/0 must match pattern \"\\S\"",
+      "/moves/4/logic/1 must match pattern \"\\S\"",
+      "/moves/4/logic/2 must match pattern \"\\S\"",
+      "/moves/4/logic/3 must match pattern \"\\S\"",
+      "/moves/4/logic/4 must match pattern \"\\S\"",
+      "/moves/5/logic/0 must match pattern \"\\S\"",
+      "/moves/5/logic/1 must match pattern \"\\S\"",
+      "/moves/5/logic/2 must match pattern \"\\S\"",
+      "/moves/5/logic/3 must match pattern \"\\S\"",
+      "/moves/5/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 7407,
+        "bbox": [
+          74,
+          67,
+          194,
+          190
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 6869,
+        "bbox": [
+          76,
+          71,
+          186,
+          184
+        ]
+      },
+      {
+        "anim": "tech_summon",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 7299,
+        "bbox": [
+          90,
+          66,
+          211,
+          191
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_4",
+    "body": "sky-swimmer",
+    "theme": "lullaby_valley",
+    "rarity": "legendary",
+    "moves": "summon,leap,pillars,sweep,volley",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 50 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\"",
+      "/moves/4/logic/0 must match pattern \"\\S\"",
+      "/moves/4/logic/1 must match pattern \"\\S\"",
+      "/moves/4/logic/2 must match pattern \"\\S\"",
+      "/moves/4/logic/3 must match pattern \"\\S\"",
+      "/moves/4/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          288,
+          240
+        ],
+        "pixels": 2999,
+        "bbox": [
+          76,
+          93,
+          182,
+          178
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          288,
+          240
+        ],
+        "pixels": 2953,
+        "bbox": [
+          82,
+          89,
+          183,
+          173
+        ]
+      },
+      {
+        "anim": "tech_summon",
+        "canvas": [
+          288,
+          240
+        ],
+        "pixels": 2660,
+        "bbox": [
+          104,
+          90,
+          211,
+          179
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_5",
+    "body": "giant",
+    "theme": "sunlit_bench_fx",
+    "rarity": "common",
+    "moves": "roar,dive",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 25 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 3060,
+        "bbox": [
+          57,
+          45,
+          116,
+          125
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 3047,
+        "bbox": [
+          56,
+          45,
+          116,
+          125
+        ]
+      },
+      {
+        "anim": "tech_roar",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 2959,
+        "bbox": [
+          41,
+          50,
+          106,
+          124
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_6",
+    "body": "cephalopod",
+    "theme": "volcano",
+    "rarity": "epic",
+    "moves": "pillars,summon,sweep,breath",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 35 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 2089,
+        "bbox": [
+          81,
+          89,
+          146,
+          155
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 2069,
+        "bbox": [
+          81,
+          89,
+          146,
+          158
+        ]
+      },
+      {
+        "anim": "tech_pillars",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 2209,
+        "bbox": [
+          69,
+          85,
+          134,
+          155
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_7",
+    "body": "long-flier",
+    "theme": "sunlit_bench_fx",
+    "rarity": "common",
+    "moves": "roar,dive",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 25 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 2140,
+        "bbox": [
+          40,
+          29,
+          119,
+          96
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 1915,
+        "bbox": [
+          48,
+          29,
+          110,
+          90
+        ]
+      },
+      {
+        "anim": "tech_roar",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 1985,
+        "bbox": [
+          37,
+          29,
+          107,
+          92
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_8",
+    "body": "sky-swimmer",
+    "theme": "paper_updraft",
+    "rarity": "uncommon",
+    "moves": "volley,summon",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 25 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          180,
+          148
+        ],
+        "pixels": 1168,
+        "bbox": [
+          49,
+          59,
+          113,
+          110
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          180,
+          148
+        ],
+        "pixels": 1154,
+        "bbox": [
+          52,
+          55,
+          113,
+          106
+        ]
+      },
+      {
+        "anim": "tech_volley",
+        "canvas": [
+          180,
+          148
+        ],
+        "pixels": 1089,
+        "bbox": [
+          66,
+          80,
+          134,
+          114
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_9",
+    "body": "hexapod",
+    "theme": "thunder_peak",
+    "rarity": "epic",
+    "moves": "sweep,breath,slide,volley",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 35 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 4785,
+        "bbox": [
+          67,
+          66,
+          168,
+          160
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 4722,
+        "bbox": [
+          62,
+          64,
+          179,
+          158
+        ]
+      },
+      {
+        "anim": "tech_sweep",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 4763,
+        "bbox": [
+          58,
+          64,
+          160,
+          160
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_10",
+    "body": "squat-mage",
+    "theme": "bamboo_mist",
+    "rarity": "uncommon",
+    "moves": "breath,dive",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 25 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          180,
+          148
+        ],
+        "pixels": 2123,
+        "bbox": [
+          57,
+          63,
+          120,
+          121
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          180,
+          148
+        ],
+        "pixels": 2000,
+        "bbox": [
+          58,
+          65,
+          119,
+          125
+        ]
+      },
+      {
+        "anim": "tech_breath",
+        "canvas": [
+          180,
+          148
+        ],
+        "pixels": 2085,
+        "bbox": [
+          47,
+          64,
+          111,
+          121
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_11",
+    "body": "light-quadruped",
+    "theme": "nebula_cradle",
+    "rarity": "legendary",
+    "moves": "slide,ram,roar,overhead,volley",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 50 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\"",
+      "/moves/4/logic/0 must match pattern \"\\S\"",
+      "/moves/4/logic/1 must match pattern \"\\S\"",
+      "/moves/4/logic/2 must match pattern \"\\S\"",
+      "/moves/4/logic/3 must match pattern \"\\S\"",
+      "/moves/4/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          288,
+          240
+        ],
+        "pixels": 1088,
+        "bbox": [
+          117,
+          140,
+          164,
+          185
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          288,
+          240
+        ],
+        "pixels": 1082,
+        "bbox": [
+          116,
+          141,
+          164,
+          183
+        ]
+      },
+      {
+        "anim": "tech_slide",
+        "canvas": [
+          288,
+          240
+        ],
+        "pixels": 1080,
+        "bbox": [
+          110,
+          136,
+          153,
+          187
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_12",
+    "body": "arachnid",
+    "theme": "bamboo_mist",
+    "rarity": "mythic",
+    "moves": "leap,breath,dive,overhead,roar,pillars",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 50 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\"",
+      "/moves/4/logic/0 must match pattern \"\\S\"",
+      "/moves/4/logic/1 must match pattern \"\\S\"",
+      "/moves/4/logic/2 must match pattern \"\\S\"",
+      "/moves/4/logic/3 must match pattern \"\\S\"",
+      "/moves/4/logic/4 must match pattern \"\\S\"",
+      "/moves/5/logic/0 must match pattern \"\\S\"",
+      "/moves/5/logic/1 must match pattern \"\\S\"",
+      "/moves/5/logic/2 must match pattern \"\\S\"",
+      "/moves/5/logic/3 must match pattern \"\\S\"",
+      "/moves/5/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 2847,
+        "bbox": [
+          103,
+          106,
+          187,
+          197
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 2849,
+        "bbox": [
+          103,
+          107,
+          189,
+          196
+        ]
+      },
+      {
+        "anim": "tech_leap",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 2849,
+        "bbox": [
+          102,
+          86,
+          191,
+          171
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_13",
+    "body": "armed-biped",
+    "theme": "sky_islands",
+    "rarity": "mythic",
+    "moves": "breath,roar,volley,overhead,ram,summon",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 50 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\"",
+      "/moves/4/logic/0 must match pattern \"\\S\"",
+      "/moves/4/logic/1 must match pattern \"\\S\"",
+      "/moves/4/logic/2 must match pattern \"\\S\"",
+      "/moves/4/logic/3 must match pattern \"\\S\"",
+      "/moves/4/logic/4 must match pattern \"\\S\"",
+      "/moves/5/logic/0 must match pattern \"\\S\"",
+      "/moves/5/logic/1 must match pattern \"\\S\"",
+      "/moves/5/logic/2 must match pattern \"\\S\"",
+      "/moves/5/logic/3 must match pattern \"\\S\"",
+      "/moves/5/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 6559,
+        "bbox": [
+          90,
+          87,
+          201,
+          187
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 6161,
+        "bbox": [
+          97,
+          87,
+          202,
+          192
+        ]
+      },
+      {
+        "anim": "tech_breath",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 6522,
+        "bbox": [
+          73,
+          88,
+          178,
+          184
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_14",
+    "body": "cephalopod",
+    "theme": "polar_ice_lagoon",
+    "rarity": "mythic",
+    "moves": "dive,volley,leap,pillars,slide,ram",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 50 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\"",
+      "/moves/4/logic/0 must match pattern \"\\S\"",
+      "/moves/4/logic/1 must match pattern \"\\S\"",
+      "/moves/4/logic/2 must match pattern \"\\S\"",
+      "/moves/4/logic/3 must match pattern \"\\S\"",
+      "/moves/4/logic/4 must match pattern \"\\S\"",
+      "/moves/5/logic/0 must match pattern \"\\S\"",
+      "/moves/5/logic/1 must match pattern \"\\S\"",
+      "/moves/5/logic/2 must match pattern \"\\S\"",
+      "/moves/5/logic/3 must match pattern \"\\S\"",
+      "/moves/5/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 2089,
+        "bbox": [
+          108,
+          130,
+          173,
+          196
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 2069,
+        "bbox": [
+          108,
+          130,
+          173,
+          199
+        ]
+      },
+      {
+        "anim": "tech_dive",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 1942,
+        "bbox": [
+          124,
+          142,
+          189,
+          200
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_15",
+    "body": "long-flier",
+    "theme": "rainbow_falls",
+    "rarity": "mythic",
+    "moves": "volley,summon,leap,pillars,sweep,breath",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 50 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\"",
+      "/moves/4/logic/0 must match pattern \"\\S\"",
+      "/moves/4/logic/1 must match pattern \"\\S\"",
+      "/moves/4/logic/2 must match pattern \"\\S\"",
+      "/moves/4/logic/3 must match pattern \"\\S\"",
+      "/moves/4/logic/4 must match pattern \"\\S\"",
+      "/moves/5/logic/0 must match pattern \"\\S\"",
+      "/moves/5/logic/1 must match pattern \"\\S\"",
+      "/moves/5/logic/2 must match pattern \"\\S\"",
+      "/moves/5/logic/3 must match pattern \"\\S\"",
+      "/moves/5/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 5635,
+        "bbox": [
+          67,
+          48,
+          198,
+          160
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 5016,
+        "bbox": [
+          80,
+          49,
+          183,
+          153
+        ]
+      },
+      {
+        "anim": "tech_volley",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 5917,
+        "bbox": [
+          84,
+          27,
+          219,
+          143
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_16",
+    "body": "winged-dragon",
+    "theme": "rat_throne",
+    "rarity": "epic",
+    "moves": "leap,breath,dive,summon",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 35 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 4849,
+        "bbox": [
+          60,
+          48,
+          157,
+          147
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 4488,
+        "bbox": [
+          62,
+          51,
+          150,
+          142
+        ]
+      },
+      {
+        "anim": "tech_leap",
+        "canvas": [
+          236,
+          188
+        ],
+        "pixels": 5013,
+        "bbox": [
+          61,
+          41,
+          158,
+          132
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_17",
+    "body": "heavy-quadruped",
+    "theme": "tea_kitchen",
+    "rarity": "common",
+    "moves": "leap,summon",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 25 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 2524,
+        "bbox": [
+          49,
+          63,
+          122,
+          121
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 2294,
+        "bbox": [
+          56,
+          61,
+          117,
+          120
+        ]
+      },
+      {
+        "anim": "tech_leap",
+        "canvas": [
+          176,
+          144
+        ],
+        "pixels": 2670,
+        "bbox": [
+          46,
+          44,
+          124,
+          100
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_18",
+    "body": "giant",
+    "theme": "mushroom_grotto",
+    "rarity": "secret",
+    "moves": "leap,volley,summon,overhead,slide,roar",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 50 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\"",
+      "/moves/4/logic/0 must match pattern \"\\S\"",
+      "/moves/4/logic/1 must match pattern \"\\S\"",
+      "/moves/4/logic/2 must match pattern \"\\S\"",
+      "/moves/4/logic/3 must match pattern \"\\S\"",
+      "/moves/4/logic/4 must match pattern \"\\S\"",
+      "/moves/5/logic/0 must match pattern \"\\S\"",
+      "/moves/5/logic/1 must match pattern \"\\S\"",
+      "/moves/5/logic/2 must match pattern \"\\S\"",
+      "/moves/5/logic/3 must match pattern \"\\S\"",
+      "/moves/5/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 8195,
+        "bbox": [
+          95,
+          75,
+          192,
+          208
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 8173,
+        "bbox": [
+          94,
+          77,
+          193,
+          208
+        ]
+      },
+      {
+        "anim": "tech_leap",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 8257,
+        "bbox": [
+          90,
+          59,
+          193,
+          207
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_19",
+    "body": "hexapod",
+    "theme": "root_edge",
+    "rarity": "legendary",
+    "moves": "ram,volley,leap,sweep,summon",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 50 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\"",
+      "/moves/4/logic/0 must match pattern \"\\S\"",
+      "/moves/4/logic/1 must match pattern \"\\S\"",
+      "/moves/4/logic/2 must match pattern \"\\S\"",
+      "/moves/4/logic/3 must match pattern \"\\S\"",
+      "/moves/4/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          288,
+          240
+        ],
+        "pixels": 7360,
+        "bbox": [
+          81,
+          88,
+          207,
+          205
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          288,
+          240
+        ],
+        "pixels": 7240,
+        "bbox": [
+          75,
+          84,
+          220,
+          202
+        ]
+      },
+      {
+        "anim": "tech_ram",
+        "canvas": [
+          288,
+          240
+        ],
+        "pixels": 7309,
+        "bbox": [
+          67,
+          92,
+          195,
+          205
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_20",
+    "body": "arachnid",
+    "theme": "sunlit_bench_fx",
+    "rarity": "secret",
+    "moves": "overhead,breath,volley,dive,sweep,ram",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 50 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\"",
+      "/moves/3/logic/0 must match pattern \"\\S\"",
+      "/moves/3/logic/1 must match pattern \"\\S\"",
+      "/moves/3/logic/2 must match pattern \"\\S\"",
+      "/moves/3/logic/3 must match pattern \"\\S\"",
+      "/moves/3/logic/4 must match pattern \"\\S\"",
+      "/moves/4/logic/0 must match pattern \"\\S\"",
+      "/moves/4/logic/1 must match pattern \"\\S\"",
+      "/moves/4/logic/2 must match pattern \"\\S\"",
+      "/moves/4/logic/3 must match pattern \"\\S\"",
+      "/moves/4/logic/4 must match pattern \"\\S\"",
+      "/moves/5/logic/0 must match pattern \"\\S\"",
+      "/moves/5/logic/1 must match pattern \"\\S\"",
+      "/moves/5/logic/2 must match pattern \"\\S\"",
+      "/moves/5/logic/3 must match pattern \"\\S\"",
+      "/moves/5/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 2847,
+        "bbox": [
+          103,
+          106,
+          187,
+          197
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 2849,
+        "bbox": [
+          103,
+          107,
+          189,
+          196
+        ]
+      },
+      {
+        "anim": "tech_overhead",
+        "canvas": [
+          292,
+          244
+        ],
+        "pixels": 2782,
+        "bbox": [
+          100,
+          105,
+          179,
+          197
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_21",
+    "body": "squat-mage",
+    "theme": "windmill_hill",
+    "rarity": "rare",
+    "moves": "breath,pillars,leap",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 35 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          232,
+          184
+        ],
+        "pixels": 3655,
+        "bbox": [
+          73,
+          74,
+          157,
+          151
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          232,
+          184
+        ],
+        "pixels": 3444,
+        "bbox": [
+          74,
+          77,
+          154,
+          156
+        ]
+      },
+      {
+        "anim": "tech_breath",
+        "canvas": [
+          232,
+          184
+        ],
+        "pixels": 3608,
+        "bbox": [
+          59,
+          75,
+          143,
+          151
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_22",
+    "body": "squat-mage",
+    "theme": "star_meadow",
+    "rarity": "rare",
+    "moves": "pillars,roar,breath",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 35 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          232,
+          184
+        ],
+        "pixels": 3655,
+        "bbox": [
+          73,
+          74,
+          157,
+          151
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          232,
+          184
+        ],
+        "pixels": 3444,
+        "bbox": [
+          74,
+          77,
+          154,
+          156
+        ]
+      },
+      {
+        "anim": "tech_pillars",
+        "canvas": [
+          232,
+          184
+        ],
+        "pixels": 3661,
+        "bbox": [
+          56,
+          77,
+          145,
+          151
+        ]
+      }
+    ]
+  },
+  {
+    "id": "study_case_23",
+    "body": "light-quadruped",
+    "theme": "polar_parade",
+    "rarity": "rare",
+    "moves": "overhead,leap,summon",
+    "generated": true,
+    "schema": [
+      "/details must NOT have fewer than 35 items",
+      "/details must NOT have fewer than 25 items",
+      "/moves/0/logic/0 must match pattern \"\\S\"",
+      "/moves/0/logic/1 must match pattern \"\\S\"",
+      "/moves/0/logic/2 must match pattern \"\\S\"",
+      "/moves/0/logic/3 must match pattern \"\\S\"",
+      "/moves/0/logic/4 must match pattern \"\\S\"",
+      "/moves/1/logic/0 must match pattern \"\\S\"",
+      "/moves/1/logic/1 must match pattern \"\\S\"",
+      "/moves/1/logic/2 must match pattern \"\\S\"",
+      "/moves/1/logic/3 must match pattern \"\\S\"",
+      "/moves/1/logic/4 must match pattern \"\\S\"",
+      "/moves/2/logic/0 must match pattern \"\\S\"",
+      "/moves/2/logic/1 must match pattern \"\\S\"",
+      "/moves/2/logic/2 must match pattern \"\\S\"",
+      "/moves/2/logic/3 must match pattern \"\\S\"",
+      "/moves/2/logic/4 must match pattern \"\\S\""
+    ],
+    "runtime": [],
+    "samples": [
+      {
+        "anim": "idle",
+        "canvas": [
+          232,
+          184
+        ],
+        "pixels": 1088,
+        "bbox": [
+          90,
+          99,
+          137,
+          144
+        ]
+      },
+      {
+        "anim": "walk",
+        "canvas": [
+          232,
+          184
+        ],
+        "pixels": 1082,
+        "bbox": [
+          89,
+          100,
+          137,
+          142
+        ]
+      },
+      {
+        "anim": "tech_overhead",
+        "canvas": [
+          232,
+          184
+        ],
+        "pixels": 1245,
+        "bbox": [
+          89,
+          81,
+          127,
+          145
+        ]
+      }
+    ]
+  }
+]
+

@@ -1,0 +1,54 @@
+name: Б25 — листы Ф0 и опыт нового автора
+on:
+  push:
+    branches: [chatgpt/b25-research]
+    paths:
+      - '.github/workflows/b25-draft-measurements.yml'
+      - 'docs/research/b23/fresh-author/sha256.txt'
+      - 'docs/research/b23/fresh-author/reproduce.sh'
+permissions:
+  contents: write
+jobs:
+  measurements:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.22.3'
+      - name: Rebuild evidence on the measured revisions
+        shell: bash
+        run: |
+          set -eu
+          root="$GITHUB_WORKSPACE"
+          dest="$RUNNER_TEMP/measurements"
+          base="$root/docs/research/b23"
+          npm ci --prefix tools/creatures --no-audit --no-fund
+          python3 -m venv "$RUNNER_TEMP/eyes-env"
+          py="$RUNNER_TEMP/eyes-env/bin/python"
+          "$py" -m pip install Pillow==13.0.0
+          bash "$base/fresh-author/reproduce.sh" "$root" "$dest/fresh-author"
+          phases=$(seq -s, 0 2 70)
+          "$py" "$base/fresh-author/inspect.py" "$dest/fresh-author/episode.gif" "$dest/fresh-author/every-second.png" "$phases" 6
+          git worktree add --detach "$RUNNER_TEMP/before" d6ebb3145d47d6bed85b088ec30b0b2faa82da6f
+          git worktree add --detach "$RUNNER_TEMP/after" cced294
+          for rev in before after; do ln -s "$root/tools/creatures/node_modules" "$RUNNER_TEMP/$rev/tools/creatures/node_modules"; done
+          cd "$RUNNER_TEMP/before/tools/creatures"
+          node --import tsx "$base/measurements/blind-sheets.mjs" "$dest/blind"
+          node --import tsx "$base/measurements/refine-blind.mjs" "$dest/blind"
+          node --import tsx "$base/measurements/compare-pocket-revisions.mjs" "$PWD" "$RUNNER_TEMP/after/tools/creatures" "$dest/pocket"
+          cd "$dest"
+          zip -r -q "$RUNNER_TEMP/b23-f0-evidence-${GITHUB_SHA:0:7}.zip" .
+      - name: Attach the archive to the research draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          target="$RUNNER_TEMP/b23-f0-evidence-${GITHUB_SHA:0:7}.zip"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/461736899" --jq '[.draft,.tag_name]|@tsv')" = "$(printf 'true\tb25-research-evidence')"
+          if gh api "repos/$GITHUB_REPOSITORY/releases/461736899/assets?per_page=100" --jq '.[].name' | grep -Fxq "$(basename "$target")"; then exit 0; fi
+          gh release upload b25-research-evidence "$target"

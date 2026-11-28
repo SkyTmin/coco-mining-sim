@@ -1,0 +1,60 @@
+{
+  "frames22": {
+    "sampled": 287,
+    "mismatches": []
+  },
+  "frames24": {
+    "sampled": 287,
+    "mismatches": [
+      {
+        "id": "prism_serpent",
+        "clip": "idle",
+        "frame": 0,
+        "expected": "23546da9d1",
+        "actual": "77205edc60"
+      },
+      {
+        "id": "prism_serpent",
+        "clip": "idle",
+        "frame": 18,
+        "expected": "ec4ea08466",
+        "actual": "d4631efe9e"
+      },
+      {
+        "id": "prism_serpent",
+        "clip": "idle",
+        "frame": 36,
+        "expected": "8936419e7d",
+        "actual": "d40a094bca"
+      },
+      {
+        "id": "prism_serpent",
+        "clip": "idle",
+        "frame": 54,
+        "expected": "9806b435b8",
+        "actual": "0e9643561c"
+      },
+      {
+        "id": "prism_serpent",
+        "clip": "walk",
+        "frame": 0,
+        "expected": "13140852a3",
+        "actual": "bdf09d9a6d"
+      },
+      {
+        "id": "prism_serpent",
+        "clip": "walk",
+        "frame": 8,
+        "expected": "d1077e5c9f",
+        "actual": "5b11855f9f"
+      },
+      {
+        "id": "prism_serpent",
+        "clip": "walk",
+        "frame": 16,
+        "expected": "ba29347b8d",
+        "actual": "290eebea33"
+      }
+    ]
+  }
+}

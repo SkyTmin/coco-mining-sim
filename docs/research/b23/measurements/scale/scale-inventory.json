@@ -1,0 +1,410 @@
+{
+  "basisIds": [
+    "meadow_colossus",
+    "penguin_marshal",
+    "moon_warden",
+    "root_stag",
+    "frost_fox",
+    "herald_griffin",
+    "ink_admiral",
+    "grove_lord",
+    "sand_scorpion",
+    "sky_whale",
+    "nebula_squid",
+    "moon_magician",
+    "astral_seer",
+    "threshold_keeper",
+    "kettle_crab",
+    "ball_pangolin",
+    "river_otter",
+    "garden_chameleon",
+    "bell_magpie",
+    "zephyr_whorl",
+    "lunar_plush",
+    "opal_skater",
+    "apricot_bubbler",
+    "pocket_magnet",
+    "tuft_owlet",
+    "ember_panda",
+    "puff_kit",
+    "prism_serpent",
+    "dream_sneak",
+    "storm_lord",
+    "eclipse_drake",
+    "bun_panda",
+    "bramble_warden",
+    "gem_beetle",
+    "storm_ram",
+    "silk_dragon",
+    "frost_yeti",
+    "toad_shaman",
+    "crater_titan",
+    "coin_dragon",
+    "rat_king"
+  ],
+  "currentAtlasBytes": 227775480,
+  "actualShelfCatalogEntries": 74,
+  "sharedArchiveAndOtherBytes": 46869917,
+  "sharedArchiveAndOtherFiles": 197,
+  "model": [
+    {
+      "count": 41,
+      "files": 372,
+      "bytes": 181463504,
+      "frames": 164971,
+      "goldenBytes": 2162596,
+      "sourceBytes": 3316505,
+      "actorPages": 235
+    },
+    {
+      "count": 100,
+      "files": 903,
+      "bytes": 434474656,
+      "frames": 396466,
+      "goldenBytes": 5198342,
+      "sourceBytes": 7989898,
+      "actorPages": 566
+    },
+    {
+      "count": 300,
+      "files": 2699,
+      "bytes": 1317311906,
+      "frames": 1200241,
+      "goldenBytes": 15735201,
+      "sourceBytes": 24212428,
+      "actorPages": 1695
+    }
+  ],
+  "byPainting": {
+    "meadow_colossus": {
+      "files": 5,
+      "bytes": 1134022,
+      "frames": 2752,
+      "goldenBytes": 36190,
+      "sourceBytes": 85137,
+      "actorPages": 2
+    },
+    "penguin_marshal": {
+      "files": 4,
+      "bytes": 815091,
+      "frames": 2766,
+      "goldenBytes": 36365,
+      "sourceBytes": 31959,
+      "actorPages": 1
+    },
+    "moon_warden": {
+      "files": 5,
+      "bytes": 921916,
+      "frames": 2814,
+      "goldenBytes": 36992,
+      "sourceBytes": 57735,
+      "actorPages": 2
+    },
+    "root_stag": {
+      "files": 8,
+      "bytes": 2216668,
+      "frames": 2916,
+      "goldenBytes": 38348,
+      "sourceBytes": 65019,
+      "actorPages": 5
+    },
+    "frost_fox": {
+      "files": 8,
+      "bytes": 2650036,
+      "frames": 2916,
+      "goldenBytes": 38336,
+      "sourceBytes": 51067,
+      "actorPages": 5
+    },
+    "herald_griffin": {
+      "files": 7,
+      "bytes": 2270934,
+      "frames": 3042,
+      "goldenBytes": 40004,
+      "sourceBytes": 69206,
+      "actorPages": 4
+    },
+    "ink_admiral": {
+      "files": 8,
+      "bytes": 3387747,
+      "frames": 3066,
+      "goldenBytes": 40321,
+      "sourceBytes": 67629,
+      "actorPages": 4
+    },
+    "grove_lord": {
+      "files": 12,
+      "bytes": 4183257,
+      "frames": 3952,
+      "goldenBytes": 51989,
+      "sourceBytes": 103989,
+      "actorPages": 9
+    },
+    "sand_scorpion": {
+      "files": 7,
+      "bytes": 4244674,
+      "frames": 3468,
+      "goldenBytes": 45601,
+      "sourceBytes": 77303,
+      "actorPages": 3
+    },
+    "sky_whale": {
+      "files": 8,
+      "bytes": 6216156,
+      "frames": 3940,
+      "goldenBytes": 51778,
+      "sourceBytes": 91202,
+      "actorPages": 5
+    },
+    "nebula_squid": {
+      "files": 7,
+      "bytes": 9934238,
+      "frames": 3960,
+      "goldenBytes": 52039,
+      "sourceBytes": 94773,
+      "actorPages": 4
+    },
+    "moon_magician": {
+      "files": 8,
+      "bytes": 4116076,
+      "frames": 4974,
+      "goldenBytes": 65157,
+      "sourceBytes": 87460,
+      "actorPages": 3
+    },
+    "astral_seer": {
+      "files": 8,
+      "bytes": 4976563,
+      "frames": 4878,
+      "goldenBytes": 63909,
+      "sourceBytes": 114414,
+      "actorPages": 3
+    },
+    "threshold_keeper": {
+      "files": 44,
+      "bytes": 19063890,
+      "frames": 6310,
+      "goldenBytes": 82525,
+      "sourceBytes": 109912,
+      "actorPages": 38
+    },
+    "kettle_crab": {
+      "files": 5,
+      "bytes": 1277114,
+      "frames": 3600,
+      "goldenBytes": 47186,
+      "sourceBytes": 82179,
+      "actorPages": 2
+    },
+    "ball_pangolin": {
+      "files": 5,
+      "bytes": 1146319,
+      "frames": 3600,
+      "goldenBytes": 47186,
+      "sourceBytes": 80019,
+      "actorPages": 2
+    },
+    "river_otter": {
+      "files": 5,
+      "bytes": 1908602,
+      "frames": 3788,
+      "goldenBytes": 49651,
+      "sourceBytes": 46426,
+      "actorPages": 2
+    },
+    "garden_chameleon": {
+      "files": 5,
+      "bytes": 1084345,
+      "frames": 3782,
+      "goldenBytes": 49573,
+      "sourceBytes": 41459,
+      "actorPages": 2
+    },
+    "bell_magpie": {
+      "files": 5,
+      "bytes": 977002,
+      "frames": 3805,
+      "goldenBytes": 49872,
+      "sourceBytes": 43612,
+      "actorPages": 2
+    },
+    "zephyr_whorl": {
+      "files": 5,
+      "bytes": 942860,
+      "frames": 3794,
+      "goldenBytes": 49729,
+      "sourceBytes": 52635,
+      "actorPages": 2
+    },
+    "lunar_plush": {
+      "files": 5,
+      "bytes": 1147776,
+      "frames": 4070,
+      "goldenBytes": 53317,
+      "sourceBytes": 52676,
+      "actorPages": 2
+    },
+    "opal_skater": {
+      "files": 5,
+      "bytes": 1465594,
+      "frames": 3858,
+      "goldenBytes": 50561,
+      "sourceBytes": 39364,
+      "actorPages": 2
+    },
+    "apricot_bubbler": {
+      "files": 5,
+      "bytes": 2006420,
+      "frames": 4004,
+      "goldenBytes": 52459,
+      "sourceBytes": 40632,
+      "actorPages": 2
+    },
+    "pocket_magnet": {
+      "files": 6,
+      "bytes": 2603209,
+      "frames": 4079,
+      "goldenBytes": 53434,
+      "sourceBytes": 43295,
+      "actorPages": 3
+    },
+    "tuft_owlet": {
+      "files": 5,
+      "bytes": 1579703,
+      "frames": 3600,
+      "goldenBytes": 47186,
+      "sourceBytes": 92228,
+      "actorPages": 2
+    },
+    "ember_panda": {
+      "files": 8,
+      "bytes": 2506828,
+      "frames": 4626,
+      "goldenBytes": 60557,
+      "sourceBytes": 120234,
+      "actorPages": 4
+    },
+    "puff_kit": {
+      "files": 10,
+      "bytes": 3679682,
+      "frames": 5758,
+      "goldenBytes": 75289,
+      "sourceBytes": 103156,
+      "actorPages": 6
+    },
+    "prism_serpent": {
+      "files": 11,
+      "bytes": 4061793,
+      "frames": 5806,
+      "goldenBytes": 75913,
+      "sourceBytes": 96048,
+      "actorPages": 7
+    },
+    "dream_sneak": {
+      "files": 11,
+      "bytes": 8384466,
+      "frames": 7672,
+      "goldenBytes": 100231,
+      "sourceBytes": 153667,
+      "actorPages": 5
+    },
+    "storm_lord": {
+      "files": 21,
+      "bytes": 21921865,
+      "frames": 10732,
+      "goldenBytes": 140046,
+      "sourceBytes": 176087,
+      "actorPages": 14
+    },
+    "eclipse_drake": {
+      "files": 44,
+      "bytes": 33862986,
+      "frames": 10828,
+      "goldenBytes": 141294,
+      "sourceBytes": 250094,
+      "actorPages": 39
+    },
+    "bun_panda": {
+      "files": 21,
+      "bytes": 5879493,
+      "frames": 10852,
+      "goldenBytes": 141606,
+      "sourceBytes": 255407,
+      "actorPages": 16
+    },
+    "bramble_warden": {
+      "files": 4,
+      "bytes": 968831,
+      "frames": 1134,
+      "goldenBytes": 15044,
+      "sourceBytes": 30870,
+      "actorPages": 2
+    },
+    "gem_beetle": {
+      "files": 5,
+      "bytes": 1041082,
+      "frames": 1082,
+      "goldenBytes": 14368,
+      "sourceBytes": 22849,
+      "actorPages": 3
+    },
+    "storm_ram": {
+      "files": 4,
+      "bytes": 1031270,
+      "frames": 1238,
+      "goldenBytes": 16396,
+      "sourceBytes": 25922,
+      "actorPages": 2
+    },
+    "silk_dragon": {
+      "files": 5,
+      "bytes": 1652601,
+      "frames": 1201,
+      "goldenBytes": 15933,
+      "sourceBytes": 28124,
+      "actorPages": 3
+    },
+    "frost_yeti": {
+      "files": 7,
+      "bytes": 2181621,
+      "frames": 1381,
+      "goldenBytes": 18297,
+      "sourceBytes": 46932,
+      "actorPages": 5
+    },
+    "toad_shaman": {
+      "files": 9,
+      "bytes": 3545760,
+      "frames": 1632,
+      "goldenBytes": 21633,
+      "sourceBytes": 68332,
+      "actorPages": 7
+    },
+    "crater_titan": {
+      "files": 5,
+      "bytes": 4679875,
+      "frames": 1889,
+      "goldenBytes": 25019,
+      "sourceBytes": 62489,
+      "actorPages": 3
+    },
+    "coin_dragon": {
+      "files": 10,
+      "bytes": 3723523,
+      "frames": 1844,
+      "goldenBytes": 24430,
+      "sourceBytes": 67007,
+      "actorPages": 8
+    },
+    "rat_king": {
+      "files": 2,
+      "bytes": 71616,
+      "frames": 3562,
+      "goldenBytes": 46832,
+      "sourceBytes": 87957,
+      "actorPages": 0
+    }
+  },
+  "trackedBasis": "d6ebb3145d47d6bed85b088ec30b0b2faa82da6f",
+  "trackedFileBytes": 471963277
+}

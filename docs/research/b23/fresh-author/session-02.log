@@ -1,0 +1,887 @@
+   155	- `hidden-contact` измеряет, какую часть окна 5×5 вокруг точки удара закрывает передний план. Проверка переносит координаты с поля на картину с учётом рамы и дрожания камеры. Если предмет закрывает больше половины окна, это ошибка. При нескольких попаданиях проверяется сокет, назначенный именно этому кадру.
+   156	- `jump`: доля силуэта, сменившаяся между соседними кадрами, больше 30 % и больше пяти медиан анимации; окно
+   157	  удара (4 кадра до контакта) не проверяется. `end-pop` — такой скачок на последнем кадре разовой анимации.
+   158	- `foot-slide`: в `walk_e` / `walk_w` нога (сокеты `footL`, `hindR`, `foreL`, `legL2`…) в нижней точке своего шага
+   159	  сдвигается больше чем на 1 пиксель между кадрами. У семи принятых пилотов — 0 пикселей.
+   160	- `part-gone`: в окне удара (4 кадра до контакта и 2 после) часть с именем `rig.tag` видна меньше чем на 25 % своей
+   161	  площади, хотя в позе покоя была видна хотя бы на 75 %, и закрывает её тело (`torso`, `body`, `chest`, `belly`,
+   162	  `head`, `neck`…), а не другая рука. Это «рука ушла в тело» так, как видит зритель, включая кулак за корпусом без
+   163	  касания (`clip` такое не видит). Существа без `rig.tag` пропускаются: по одному примитиву видимость ничего не
+   164	  значит — пушистая рука Йети состоит из десятка перекрытых комков.
+   165	- Порядок частей — по глубине каждого пикселя, фиксированных слоёв нет (скилл, `2-pipeline.md` §2.2б).
+   166	- `weak-impact`: медиана разницы яркости пикселей эффекта и пола под ними в 8 кадрах после контакта меньше 12.
+   167	
+   168	
+   169	- `from-nowhere` запоминает первый видимый кадр каждого материального предмета. Когда хотя бы один его пиксель виден, расстояние от ближайшего края нарисованного предмета до физического сокета или до линии пола на его глубине должно быть не больше **6 px**. При рождении залпа соседний снаряд может закрывать край, касающийся пасти. Сокеты с суффиксом `Floor` или `Ground` служат проекциями на землю. При переходе из 3D в 2D сохраняют идентификатор, например `rig.tag = 'material:snowball'` и `paintMaterial(..., 'snowball', ...)`. Студия учитывает пиксели этой части, выигравшие тест глубины. Тень и траектория сами по себе не доказывают появления снаряда. Для 2D-предмета художник оборачивает в `paintMaterial` его обычную кисть на всех фазах, включая набор, удержание, полёт, и сохраняет одно имя. Если материал скрыт телом, передним планом или более поздней краской, проверка ждёт первого видимого пикселя. Объявленное попадание снаряда без единого видимого предмета — ошибка.
+   170	- `reach` проверяет в контакте указанную в `reachHand` ведущую руку при махе, тычке или ударе сверху. Прямая от плеча до запястья должна быть **строго длиннее 80 %** суммы длин плечо–локоть и локоть–запястье. Все три точки берутся из того же 3D-рига в позе удара. Отсутствующие суставы у назначенной руки — ошибка.
+   171	- `face-at-contact` требует хотя бы **1 пиксель** глаза на кадре каждого контакта, включая приземление снаряда. Проверка считает размеченные примитивы глаза, которые выдержали тест глубины и видны после наложения переднего плана и эффектов.
+   172	
+   173	Для намеренного появления из облака указывают в `c/<id>.studio.json` точное имя предмета, анимацию, кадр появления и причину. Для разворота спиной в кадре удара указывают анимацию, кадр и причину. Название каждой фазы и её кадр фиксированы. Для одной последовательности с общей причиной можно перечислить точные пары в `"appearances": { "drop-1": 8, "drop-2": 12 }` вместо полей `object` и `frame`.
+   174	
+   175	```json
+   176	{
+   177	  "contactAllow": [
+   178	    { "kind": "from-nowhere", "anim": "tech_rain", "frame": 8, "object": "drop-2", "reason": "Капля отделяется от нарисованного облака." },
+   179	    { "kind": "face-at-contact", "anim": "tech_tail", "frame": 19, "reason": "Удар хвостом выполняется спиной к зрителю." }
+   180	  ]
+   181	}
+   182	```
+   183	
+   184	## Сравнение с рисунком приёма
+   185	
+   186	Лист рисуют до постановки ключей. Камера видит существо под тем же углом, клетки читаются слева направо по строкам. Автор отмечает на исходном PNG опору и анатомические точки. Размерности — пиксели **внутри клетки**, отсчёт от её верхнего левого угла. Нижнюю полосу отводят под подписи. В файле `c/<id>.ref.json` каждому приёму соответствует отдельная запись. Пример структуры для двух клеток:
+   187	
+   188	```json
+   189	{
+   190	  "tech_snowball": {
+   191	    "sheet": "../../../docs/reports/creatures/b2b/references/frost_yeti/snowball.png",
+   192	    "grid": [2, 1],
+   193	    "frames": [0, 32],
+   194	    "idleHeight": 160,
+   195	    "captionHeight": 24,
+   196	    "keys": [
+   197	      { "ground": [110, 192], "points": { "handL": [94, 112] } },
+   198	      { "ground": [110, 192], "points": { "clubTip": [196, 115], "projectile:snowball": [196, 115] } }
+   199	    ]
+   200	  }
+   201	}
+   202	```
+   203	
+   204	- `sheet` указывает на версионируемый PNG относительно папки `c/`. `frames` сопоставляет клетки со временем проигрывателя при 24 кадрах/с, включая задержку на ударе. Для зарегистрированного листа хватает `npm run ws -- ref <id> <anim>`. Для проверки заведомо другой позы передайте другой `--frames` в том же порядке клеток.
+   205	- `idleHeight` — высота полного силуэта исходной стойки со снаряжением в масштабе художника. Все клетки масштабируются одним коэффициентом: высота родного `idle` в пикселях, делённая на `idleHeight`. `ground` обозначает пол под стойкой, включая кадры над землёй. Опора совмещается с полом картины с учётом положения персонажа, рамы и дрожания камеры. Так присед, подъём оружия и высота прыжка сохраняются. При разовой проверке листа без разметки положите в первую клетку стойку `idle`: программа использует её рост и нижний след стоп как общую калибровку.
+   206	- `captionHeight` — высота нижней полосы в пикселях; по умолчанию отрезается 12 % клетки. Фон снимается поканально с допуском 42 от `#FF00FF`. Порог покрытия для силуэта равен 128/255. IoU — площадь пересечения силуэта персонажа и рисунка, делённая на площадь их объединения. В силуэт входят оружие и видимые размеченные физические предметы. Искры, дуги и фон отделены рендером. Части рисунка за пределами картины тоже попадают в объединение.
+   207	- `points` необязателен. Ключ — имя сокета из `ws probe` либо `projectile:<id>` для предмета в руке или в полёте. Число под клеткой — евклидово расстояние от спроецированного сокета или центра снаряда до метки художника в родных пикселях картины. Пропавшая точка даёт `MISSING` и ошибку в `gate`.
+   208	- Слева — кадр в окружении, в центре — рисунок, справа — его бирюзовый контур поверх кадра. Бирюзовый круг показывает цель, золотой квадрат и отрезок — фактическое положение и величину промаха. Все панели одного листа используют общий масштаб и высоту пола. Команда `ref` сохраняет диагностику при любом результате. `gate` проверяет каждую клетку и запоминает зелёный результат до изменения входов, включая содержание файла PNG и разметки.
+   209	- `gate` требует **IoU ≥ 0,60 и ошибку каждой точки ≤ 18 родных пикселей** на каждом ключе. Единые границы получены по 24 клеткам четырёх исправленных приёмов Йети и Квакуньи. У старой версии этим условиям соответствовала одна клетка из 24 — исходная стойка Йети. Подмена кадров замаха и контакта в `tech_slam` даёт ошибку конца оружия более 150 px. Перед изменением границ приложите оба листа сравнения в [отчёт Б2б](../../../docs/reports/creatures/b2b/REPORT.md).
+   210	- Проверка инструмента запускается через `node --import tsx --test test/ref.test.ts`. Пиксельный контроль совпадающей позы даёт IoU 1. У клетки с силуэтом 4×2 над землёй против стоящего 4×5 значение равно 0,4. Тест с настоящим кадром тарана сравнивает контакт с тем же рисунком и затем подставляет исходную стойку.
+   211	
+   212	### Исходный облик, проверка и подписи листов поз
+   213	
+   214	Из `tools/creatures`:
+   215	
+   216	```sh
+   217	npm run ws -- export-ref meadow_colossus idle 0
+   218	npm run ws -- sheet-lint poses.png --grid 3x2 --ref .studio/meadow_colossus-idle-0-ref.png --air 3,4
+   219	npm run ws -- sheet-lint sleep-io.png --grid 3x2 --low 3,4,5   # присед, поклон, лёжа: рост не сравнивается, линия ступней — да
+   220	npm run ws -- label poses.png --grid 3x2 --roles 'стойка;сжатие;взлёт;вершина;опора;возврат'
+   221	```
+   222	
+   223	`export-ref` сохраняет слои `body` и `lit` указанного кадра без окружения и эффектов, с полем чистого `#FF00FF`. Каждый пиксель оригинала занимает блок 4×4. По умолчанию это `idle` и кадр 0. Файл попадает в `.studio/<id>-<anim>-<frame>-ref.png`, путь можно задать через `--out`.
+   224	
+   225	`sheet-lint` принимает исходный PNG **до подписей**. Клетки нумеруются с 1, по строкам слева направо. Ошибка даёт код выхода 1. Для машиночитаемого отчёта используйте `npm run -s ws -- sheet-lint … --json`. В отчёте по каждой клетке есть границы видимого тела, площади отдельных пятен, доля точного фона, примеси, кайма и доля чужих цветов при наличии эталона.
+   226	
+   227	При броске реквизита укажите клетки его свободного полёта, например `ws sheet-lint trick.png --grid 3x2 --air 2,3 --prop 2,3`. Числа начинаются с единицы. В этих клетках инструмент проверяет персонажа и один отделившийся предмет, включая контур, палитру и запас до границы у каждого.
+   228	
+   229	- Силуэт связан по 8 соседям. Главная компонента больше 12 пикселей. Дополнительная компонента больше 12 пикселей, прозрачность, тонированный фон или отступ тела меньше 4% дают ошибку.
+   230	- Рост и высота линии ступней измеряются в долях высоты клетки. За образец берётся первая наземная клетка, допустимое изменение каждого замера ±12%. В `--air` указывают **только** клетки прыжка. Для них сохраняются проверки отступа, состава рисунка и цветов.
+   231	- На контуре программа ищет смесь пурпура с соседним цветом тела. Допустимая доля каймы 2%. Чужие относительно `--ref` цвета могут занимать до 5% тела. Для сравнения близких оттенков допустима среднеквадратическая разница 16 по RGB и разница до 24 в каждом канале.
+   232	- `label` добавляет отдельную полосу под каждой строкой и переносит длинные подписи. По умолчанию пишет `poses.labeled.png`, явный путь принимается через `--out`. Исходник сохраняет все пиксели. Программа печатает `captionHeight` для регистрации подписанного листа в `<id>.ref.json`; у исходного листа с рисунком без подписей укажите `captionHeight: 0`.
+   233	
+   234	## Новая картина-питомец
+   235	
+   236	Набор включает `idle`, два жеста `fidget_a/b`, восемь `walk_<dir>`, взгляд `look`, радость `happy`, игру `trick`, приёмы своей редкости, три клипа сна, `wake_startled`, `hatch`, `turn` и `tired`. У каждого самостоятельного клипа есть свой рисунок с позами и запись в `c/<id>.ref.json`. Студия измеряет совпадение с рисунком и сверяет силуэт двух крайних кадров каждого разового клипа с покоем на тех же координатах. Для стыка требуется IoU ≥ 0,90.
+   237	
+   238	Маршрут, частоты и реакции задаются в `assets/creatures/<id>/behavior.json` по схеме `bodies/behavior.schema.json`. Точки остановок берутся из `life.beats[].at` карточки. Прогулки занимают 35–50 % времени, обычные атаки начинаются с интервалом 30–45 секунд. Прерывания указываются в кадрах при 24 кадрах/с, интервал между ними — не более семи кадров. Касание запускает радость, двойное касание — трюк, касание во сне — испуг и затем радость. Один автомат управляет показом в браузере и тридцатисекундным экспортом с фиксированным зерном.
+   239	
+   240	Чтобы открыть стену локально, из `tools/creatures` выполните `python3 -m http.server 8000 --directory viewer` и откройте `http://localhost:8000/`. Статический сервер также может раздавать содержимое архива `viewer.zip` из Release.
+   241	
+   242	После обычного рендера `meadow_colossus` атласы стены можно пересобрать из корня репозитория:
+   243	
+   244	```sh
+   245	python tools/creatures/viewer-atlas.py meadow_colossus
+   246	python -m http.server 8000 --directory tools/creatures/viewer
+   247	```
+   248	
+   249	Для просмотра готовой стены достаточно второй команды. Откройте `http://localhost:8000/` в браузере.
+   250	
+   251	Для общего листа нескольких клипов в `c/<id>.ref.json` укажите одинаковые `sheet` и `grid`. Поле `cells` выбирает клетки для конкретного клипа в том же порядке, что `frames` и `keys`. Нумерация начинается с нуля и идёт по строкам, например `[3,4,5]` выбирает второй ряд сетки 3×2. Без `cells` команда берёт клетки с начала листа. В `c/<id>.studio.json` массив `bodyClips` отмечает движения, полученные от типа тела: восемь направлений шага, разворот, усталость и петлю дыхания во сне. Проверки наличия клипов, стыков и опор продолжают действовать. Если `sleep` наследуется, конец `sleep_in` и начало `sleep_out` и `wake_startled` сверяются с первым кадром `sleep` при том же пороге IoU 0,90.
+   252	
+   253	## Публикация галереи
+   254	
+   255	Галерея-артефакт собирается из `tools/creatures/viewer` скриптом, без ручного списка файлов:
+   256	
+   257	0. `node viewer/make-posters.mjs [id…]` — обложки стены одним листом (`viewer/atlases/posters/`): новое или
+   258	   изменённое существо — его id, остальные обложки сохраняются. Стена показывает только обложки, атлас грузит одна
+   259	   открытая картина: живая стена из 64 картин занимала на телефоне >1,1 ГБ, Safari закрывал вкладку [22.11].
+   260	   Страницы атласа — не больше 4096 (лимит холста iPhone 16,7 Мпикс): лишние файлы освобождать, пересобирая на 4096
+   261	   атласы с мелкими страницами 2048 (`ATLAS_SIDE=4096 python3 viewer_repack.py <id>`), а не раздувая страницы.
+   262	1. `node viewer/publish-gallery.mjs prepare <папка> [--listing <файл>]` — собирает папку публикации (модули
+   263	   просмотрщика, `catalog.json`, `atlases/**` и страница под артефакт из `viewer/artifact/`: без обёртки `<html>`,
+   264	   шрифты, тёмная тема), копирует только изменённое и пишет `<папка>/.files.json` — карту `files` для публикации:
+   265	   новые и изменённые пути, `null` для исчезнувших. В новой сессии сначала список файлов артефакта
+   266	   (`Artifact list scope=files`), его текст — в файл и в `--listing`; перезаписывать можно только увиденные пути.
+   267	2. Публикация: `file_path <папка>/index.html`, `root <папка>`, `files` из `.files.json`.
+   268	3. `node viewer/publish-gallery.mjs done <папка>` — запомнить опубликованное, следующий `prepare` пойдёт от него.
+   269	
+   270	**GitHub Pages** [владелец 22.11: артефакт на телефоне открылся пустым]: та же галерея — сайт
+   271	https://skytmin.github.io/coco-mining-sim/ из ветки `gh-pages` (Settings → Pages → Deploy from a branch → `gh-pages`,
+   272	`/ (root)`). В ветке только сайт: `viewer/index.html`, `gallery.css`, `catalog.json`, модули `viewer/*.mjs` (без
+   273	`publish-gallery.mjs`, `make-posters.mjs`, `publish-pages.mjs`), `atlases/**` и пустой `.nojekyll`. Обновление — одной
+   274	командой [23.11]: `node viewer/publish-pages.mjs -m "<сообщение коммита>" --push`. Она берёт ветку во временную папку,
+   275	заменяет файлы сайта и целиком каждую папку атласа (папка, которая есть только в `gh-pages`, остаётся), сверяет каждый
+   276	файл побайтно, коммитит и пушит. Без `--push` — пробный прогон: покажет, что изменится, и ничего не отправит. Атласы
+   277	уже лежат в истории репозитория, поэтому пуш почти ничего не весит.
+   278	
+   279	Версия артефакта держит не больше 511 файлов. Атлас, которого нет в этой ветке (картина собрана из генератора и не
+   280	закоммичена, как Саламандр этапа ChatGPT), из галереи не удаляется. Длинные атласы упаковываются листами 4096
+   281	(`ATLAS_SIDE=4096 python3 viewer_repack.py <id>`, так сделаны `f15boss` и `f12boss`), иначе не влезают в лимит.
+   282	
+   283	### Проверка эффектов Б22
+   284	
+   285	`ws gate <id>` проверяет исходные клипы, в том числе восемь направлений ходьбы. «Жизнь» и общий показ собираются из них. Номера кадров в выводе начинаются с нуля.
+   286	
+   287	| Сообщение | Что проверить по указанному кадру |
+   288	| --- | --- |
+   289	| `fx-end` | На последнем показываемом кадре осталась краска или свет одноразового эффекта. Постоянные пиксели сравниваются со слоем покоя в тех же координатах и в ту же фазу. Постоянные предметы можно рисовать в `Creature.props`. |
+   290	| `fx-bounds` | Указан настоящий окрашенный пиксель за полем и его слой. Касание края допустимо. Прозрачные поля спрайта, нулевая альфа и удалённая маской краска проходят проверку. |
+   291	| `unseeded` | Файл и строка используют глобальный `Math.random`, `Date` или `performance.now` в каталогах `c/`, `fx/`, `scenes/`, `bodies/`, `kit/`. Бери время из `f.t`, случайность из seed эффекта. |
+   292	| `socket-teleport` | Кисть, лапа или кончик оружия переместились за соседний кадр больше чем на четверть стороны спрайта (минимум 12 px). В проверку входят зарегистрированные позы, события, ключи и контакты книги приёма. |
+   293	| `slow-frame` | При бюджете 24 к/с кадр занял больше 41,7 мс в двух повторных рендерах без измерителя эффектов. Это предупреждение. |
+   294	
+   295	Для 14 картин из [исходного прогона gate](https://github.com/SkyTmin/coco-mining-sim/actions/runs/46155357823/job/141010703342) новые правила дают предупреждения. Ошибки прежних проверок сохраняют свой уровень. У физического реквизита принятого Полюсика на кадрах 96–99 за левым краем находится по одному пикселю кончика звезды. Проверка узнаёт ровно эти четыре координаты той же кисти. Новый слой эффекта проверяется целиком.
+[exit=0 wall_ms=7]
+
+[2026-11-28T17:55:35.845Z] cwd=/workspace/repo rg -n ws\ --\ new\|new\ \<\|new\ \|card\|карточк\|bodies/\|preview tools/creatures/studio/README.md
+7:| `npm run ws -- new <id> --body <тип> --theme <сцена> --rarity <редкость>` | Создаёт модель, ключи приёмов, маршрут, настройки мастерской и карточку. Параметры `--moves ram,volley`, `--effects` и `--name` выбирают шаблоны, эффекты и имя. Существующие файлы сохраняются | < 1 с |
+69:В `c/<id>-fx.ts` возьми время контакта из того же ключа, которым поставлена поза. Тогда искра останется на месте встречи предметов, когда кисть уйдёт. Карточка `c/<id>.card.json` может задать `fxRamp` именем материала (например, `"material:coins"`) или массивом цветов от тёмного к светлому. Эту лестницу получает `f.palette`. Для отдельных деталей `fit(f.palette, n)` выбирает нужное число ступеней.
+124:В `c/<id>.card.json` автор задаёт пропорции, материалы, видимые подробности, маршрут и механику каждого приёма. Схема лежит в [card.schema.json](card.schema.json). Заготовку можно увидеть через `sheet` сразу. Перед приёмкой `gate` проверяет число подробностей по редкости, пять ответов на каждый удар, эталон, фактические анимации, сокеты и маршрут.
+238:Маршрут, частоты и реакции задаются в `assets/creatures/<id>/behavior.json` по схеме `bodies/behavior.schema.json`. Точки остановок берутся из `life.beats[].at` карточки. Прогулки занимают 35–50 % времени, обычные атаки начинаются с интервалом 30–45 секунд. Прерывания указываются в кадрах при 24 кадрах/с, интервал между ними — не более семи кадров. Касание запускает радость, двойное касание — трюк, касание во сне — испуг и затем радость. Один автомат управляет показом в браузере и тридцатисекундным экспортом с фиксированным зерном.
+291:| `unseeded` | Файл и строка используют глобальный `Math.random`, `Date` или `performance.now` в каталогах `c/`, `fx/`, `scenes/`, `bodies/`, `kit/`. Бери время из `f.t`, случайность из seed эффекта. |
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:55:35.858Z] cwd=/workspace/repo ls -1 tools/creatures/bodies
+arachnid.ts
+armed-biped.ts
+armed-keys.ts
+axial.ts
+behavior.schema.json
+card-data.ts
+cephalopod.ts
+families.ts
+giant-head.ts
+goals.ts
+grip.ts
+heavy-quadruped.ts
+index.ts
+kits
+light-quadruped.ts
+limbs.ts
+mage-grip.ts
+materials.ts
+proportions.ts
+rig-transform.ts
+sky-swimmer.ts
+sources.ts
+winged-dragon.ts
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:55:35.870Z] cwd=/workspace/repo ls -d tools/creatures/node_modules
+tools/creatures/node_modules
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:55:35.883Z] cwd=/workspace/repo nl -ba .agents/skills/pixel-bosses/references/motions/README.md
+     1	# Библиотека движений
+     2	
+     3	Для выбранного клипа открой соответствующую строку. Тайминг дан при 24 кадрах/с.
+     4	
+     5	- [idle.md](idle.md) — дыхание, перенос веса и моргание.
+     6	- [fidget.md](fidget.md) — два коротких жеста со своей целью.
+     7	- [look.md](look.md) — взгляд, поворот головы и возврат.
+     8	- [happy.md](happy.md) — сжатие и мягкая посадка, ритм хлопков ластами.
+     9	- [trick.md](trick.md) — подхват и ловля реквизита, равновесие на одной лапе и поклон.
+    10	- [sleep.md](sleep.md) — засыпание, шов дыхательной петли и пробуждение.
+    11	- [wake_startled.md](wake_startled.md) — испуг и переход к радости.
+    12	- [hatch.md](hatch.md) — освобождение из оболочки и первый жест.
+    13	- [gait.md](gait.md) — опора стопы, походка по параметрам типа тела и разворот.
+    14	- [slide.md](slide.md) — салют, разбег, скольжение и торможение, пример вертикальной посадки.
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:55:35.895Z] cwd=/workspace/repo du -sh tools/creatures
+310M	tools/creatures
+[exit=0 wall_ms=14]
+
+[2026-11-28T17:55:35.915Z] cwd=/workspace/repo ls -1 tools/creatures
+NOTES-bramble_warden.md
+NOTES-coin_dragon.md
+NOTES-crater_titan.md
+NOTES-frost_yeti.md
+NOTES-gem_beetle.md
+NOTES-silk_dragon.md
+NOTES-toad_shaman.md
+README.md
+bodies
+c
+chatgpt
+comparison.ts
+detail-metric.py
+detail.ts
+engine.ts
+frame-kit.ts
+frames
+fx
+gallery-catalog.ts
+gallery.ts
+golden
+katorga
+kit
+motion.ts
+moves
+node_modules
+package-lock.json
+package.json
+release.py
+render-io.ts
+render.ts
+review
+rig
+scenes
+studio
+tech-metrics.ts
+tech-sheets.ts
+technique-fx.ts
+technique.ts
+test
+types.ts
+vendor
+verify.ts
+viewer
+viewer-atlas.py
+viewer_repack.py
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:55:42.040Z] cwd=/workspace/repo sed -n 109\,146p tools/creatures/studio/README.md
+## Порядок работы
+
+1. Первый кадр покоя — сразу `detail <id>` (1 с): цвета, края, пятна и размер фигуры правятся до клипов, иначе
+   после них придётся перепроверять всё. Пончик узнал о провале планки только в финальном гейте.
+2. Меняешь позу — сначала `probe` (числа), потом `review <id> <приём>`: критик, лист и стыки за один проход, одна
+   картинка. `check`, `sheet`, `seam` по отдельности — когда нужен только один ответ. GIF — только в конце. Полный
+   `gate` — один раз перед критиком.
+3. Перед критиком — `gate <id>` без ошибок.
+4. Критик смотрит эпизод в галерее по [правилу первой версии](../../../.agents/skills/pixel-bosses/references/0-quick.md#поведение-в-первой-версии-картины).
+   Затем открывает `sheet` каждого приёма и сравнивает исправления через `--against` на втором круге.
+5. Меняешь общий код или переносишь существо на библиотеку — `snap all --check`: изменились только те кадры, которые
+   ты хотел изменить. Принятое владельцем существо — `snap <id>` и коммит `golden/<id>.json` вместе с работой.
+
+## Карточка и ключи нового существа
+
+В `c/<id>.card.json` автор задаёт пропорции, материалы, видимые подробности, маршрут и механику каждого приёма. Схема лежит в [card.schema.json](card.schema.json). Заготовку можно увидеть через `sheet` сразу. Перед приёмкой `gate` проверяет число подробностей по редкости, пять ответов на каждый удар, эталон, фактические анимации, сокеты и маршрут.
+
+В ключах координаты цели задаются относительно стоп тела в порядке «вперёд, вправо, вверх». Нулевая высота соответствует земле. Кисть ведёт `reach`, оружие — `aim`, голову — `look`. Вращение ракурса и перевод в пиксели выполняет тело. [Пример с ключами и своим обликом](../README.md)
+
+## Имена частей
+
+`clip` и `probe` называют части по `rig.tag`. Поставь перед построением части `r.tag = 'handR'`
+(`'torso'`, `'head'`, `'club'`…) — отчёт станет «handR in torso» вместо «cap #737a8b r2 in ell #c1cccd».
+
+## Задуманные перекрытия
+
+`c/<id>.studio.json` (необязателен):
+
+```json
+{
+  "clipAllow": [{ "a": "tongue", "b": "head" }],
+  "partGone": [
+    {"part": "coffer", "anim": "tech_dive", "frames": [30, 36], "reason": "При выходе из насыпи первой показывается морда, сундук ещё внизу."}
+  ],
+  "skip": { "jump": ["show:74-77"], "weak-impact": ["tech_croak"] }
+}
+```
+
+[exit=0 wall_ms=11]
+
+[2026-11-28T17:55:42.062Z] cwd=/workspace/repo ls -1 .agents/skills/pixel-bosses/references
+0-quick.md
+1-katorga.md
+10-prompts.md
+11-fx-method.md
+2-pipeline.md
+3-team.md
+4-style.md
+7-checks.md
+8-painting.md
+9-catalog.md
+anatomy-wyvern.md
+lessons.md
+motions
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:55:42.077Z] cwd=/workspace/repo nl -ba .agents/skills/pixel-bosses/references/motions/fidget.md
+     1	# Два разных жеста
+     2	
+     3	**Фазы при 24 кадрах/с.** 0 покой, 10–14 выбор объекта, 26–30 вершина жеста, 47 возврат. Второй жест имеет собственные цель и вершину.
+     4	
+     5	Взгляд первым находит цель. Вытяжение шеи помогает принюхаться; при кормлении клюв замыкается только у травы. Предмет остаётся в той же кисти.
+     6	
+     7	- Двуногий. Наклонить корпус над опорной стопой и дать второй конечности свободу.
+     8	- Четвероногий. Опереть грудь на передние лапы, повернуть или опустить шею в просвет между ними.
+     9	- Летун. Подобрать одно крыло на насесте, провести клювом по перьям, затем сложить крыло.
+    10	
+    11	Наблюдения Б3 и примеры, на которых основаны фазы.
+    12	
+    13	- [fidget_a](../../../../../docs/reports/creatures/b3/references/meadow_colossus/fidget_a.study.md)
+    14	- [fidget_b](../../../../../docs/reports/creatures/b3/references/meadow_colossus/fidget_b.study.md)
+    15	- [Turtle Stretching Its Neck.jpg](https://commons.wikimedia.org/wiki/File:Turtle_Stretching_Its_Neck.jpg)
+    16	- [Galápagos tortoise.jpg](https://commons.wikimedia.org/wiki/File:Gal%C3%A1pagos_tortoise.jpg)
+[exit=0 wall_ms=35]
+
+[2026-11-28T17:55:42.134Z] cwd=/workspace/repo rg -n new\|command tools/creatures/studio/ws.ts
+62:  const renderAndChecks = inputHash([...new Set([...renderInputs, ...studio, ...poseRefInputs(id), ...extra.filter((f) => existsSync(f))])]);
+64:  return createHash('sha256').update(renderAndChecks).update(JSON.stringify(lint ?? fxSourceIssues(id, creatureIds(), () => new Set(renderInputs)))).digest('hex').slice(0, 16);
+95:  const lint = new Map<string, string[]>();
+101:      lint.set(id, fxSourceIssues(id, known, () => new Set(inputsOf(id, c.theme, c.rarity))));
+158:    writeFileSync(stamp, JSON.stringify({ key, ok: !failed, at: new Date().toISOString().slice(0, 16), ...summary }) + '\n');
+164:// timing log: one line per command in .studio/ws-log.jsonl (gitignored) — what the loop really costs, measured, not guessed.
+167:// what the command handed back to the model (C01: the cost of talking to the tool, measured separately from the CPU)
+178:    const line = { at: new Date(startedAt).toISOString().slice(0, 19), cmd, args: rest, sec: +((Date.now() - startedAt) / 1000).toFixed(1), maxRssMB: Math.round(process.resourceUsage().maxRSS / 1024), outBytes, code };
+181:    // the log is a convenience; a read-only checkout must not fail the command
+239:  case 'new': {
+240:    const { newCommand } = await import('./new');
+241:    await newCommand(rest);
+296:    console.log('usage: npm run ws -- new|check|gate|review|context|help|detail|baseline|probe|seam|clip|sheet|drafts|against|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
+[exit=0 wall_ms=16]
+
+[2026-11-28T17:55:42.170Z] cwd=/workspace/repo rg --files tools/creatures/studio
+tools/creatures/studio/baseline.ts
+tools/creatures/studio/ws.ts
+tools/creatures/studio/probe.ts
+tools/creatures/studio/acceptance.json
+tools/creatures/studio/checks.ts
+tools/creatures/studio/peek-body.ts
+tools/creatures/studio/sheet.ts
+tools/creatures/studio/fx-gate.ts
+tools/creatures/studio/dump.ts
+tools/creatures/studio/ref.ts
+tools/creatures/studio/capture.ts
+tools/creatures/studio/README.md
+tools/creatures/studio/pet-gate.ts
+tools/creatures/studio/fx-ink.ts
+tools/creatures/studio/cache.ts
+tools/creatures/studio/card.schema.json
+tools/creatures/studio/clipscan.ts
+tools/creatures/studio/visibility.ts
+tools/creatures/studio/lock.ts
+tools/creatures/studio/clip.ts
+tools/creatures/studio/seam.ts
+tools/creatures/studio/baseline.json
+tools/creatures/studio/events.ts
+tools/creatures/studio/fx-sources.ts
+tools/creatures/studio/new.ts
+tools/creatures/studio/sheet-lint.ts
+tools/creatures/studio/snap-worker.ts
+tools/creatures/studio/help.ts
+tools/creatures/studio/snap.ts
+tools/creatures/studio/gate.ts
+tools/creatures/studio/profile.ts
+tools/creatures/studio/card.ts
+tools/creatures/studio/art-sheet.ts
+tools/creatures/studio/review.ts
+tools/creatures/studio/context.ts
+tools/creatures/studio/contact-audit.ts
+tools/creatures/studio/fx-sheets.ts
+[exit=0 wall_ms=46]
+
+[2026-11-28T17:55:51.526Z] cwd=/workspace/repo sed -n 1\,160p tools/creatures/studio/new.ts
+// Generate the five files in a fixed order. Publish the entry point last, and never replace user work.
+import { closeSync, existsSync, mkdirSync, openSync, unlinkSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parseArgs } from 'node:util';
+import { bodySources } from '../bodies/sources';
+import { defaultMoveParameters, moveTemplates, weaponFor } from '../moves/templates';
+import { sizes, type MotionPlan, type Rarity } from '../types';
+import {
+  bodyIds,
+  effectIds,
+  techniqueCounts,
+  templateIds,
+  type BodyType,
+  type CreatureCard,
+  type EffectId,
+  type TemplateId,
+} from './card';
+
+const tools = join(import.meta.dirname, '..');
+const families: Record<
+  BodyType,
+  { parts: string[]; moves: TemplateId[]; effects: EffectId; tones: string[] }
+> = {
+  'sky-swimmer': {
+    parts: ['body', 'head', 'finL', 'finR', 'tail', 'flukes', 'island', 'lamp'],
+    moves: ['pillars', 'ram', 'sweep', 'overhead', 'volley', 'summon'],
+    effects: 'silk-wind',
+    tones: ['#26384e', '#3a5572', '#527b91', '#8bb0b0', '#dacb9a'],
+  },
+  arachnid: {
+    parts: ['thorax', 'abdomen', 'clawL', 'clawR', 'tail', 'sting', ...['L', 'R'].flatMap(side =>
+      Array.from({length: 4}, (_, i) => 'foot' + side + i))],
+    moves: ['summon', 'overhead', 'sweep', 'volley', 'pillars'],
+    effects: 'crystal',
+    tones: ['#4c3941', '#795441', '#a97844', '#cba15c', '#f2d48e'],
+  },
+  cephalopod: {
+    parts: ['mantle', 'head', ...Array.from({ length: 8 }, (_, i) => 'arm' + i)],
+    moves: ['sweep', 'overhead', 'roar', 'summon'],
+    effects: 'silk-wind',
+    tones: ['#46314b', '#744257', '#ad5f61', '#dc8b73', '#f3bb8d'],
+  },
+  'light-quadruped': {
+    parts: ['torso', 'neck', 'head', 'foreL', 'foreR', 'hindL', 'hindR', 'tail'],
+    moves: ['ram', 'leap', 'volley'],
+    effects: 'thorns',
+    tones: ['#473948', '#775149', '#a77357', '#cba182', '#efcfac'],
+  },
+  'heavy-quadruped': {
+    parts: ['torso', 'head', 'foreL', 'foreR', 'hindL', 'hindR', 'horns'],
+    moves: ['ram', 'volley'],
+    effects: 'thorns',
+    tones: ['#302b29', '#54402d', '#83613b', '#a67f4f', '#d6bc80'],
+  },
+  hexapod: {
+    parts: ['thorax', 'head', 'abdomen', 'horn', 'elytra', 'legs'],
+    moves: ['ram', 'volley'],
+    effects: 'crystal',
+    tones: ['#21293c', '#344358', '#486780', '#6c9ca5', '#bfdbd0'],
+  },
+  'long-flier': {
+    parts: ['head', 'neck', 'body', 'tail', 'fins'],
+    moves: ['sweep', 'volley', 'summon'],
+    effects: 'silk-wind',
+    tones: ['#382c45', '#634257', '#976073', '#cb9786', '#ecd6ae'],
+  },
+  'armed-biped': {
+    parts: ['torso', 'head', 'armL', 'armR', 'legL', 'legR', 'club'],
+    moves: ['overhead', 'volley', 'sweep', 'roar'],
+    effects: 'ice',
+    tones: ['#28364e', '#415677', '#728ea8', '#9fbec7', '#e7f2ec'],
+  },
+  'squat-mage': {
+    parts: ['body', 'head', 'cloak', 'armL', 'armR', 'staff', 'legL', 'legR'],
+    moves: ['overhead', 'breath', 'leap', 'summon', 'roar'],
+    effects: 'spores',
+    tones: ['#28443e', '#405d4a', '#667b4a', '#91a465', '#d2cd83'],
+  },
+  giant: {
+    parts: ['chest', 'head', 'hips', 'armL', 'armR', 'legL', 'legR'],
+    moves: ['overhead', 'pillars', 'sweep', 'breath', 'volley', 'leap'],
+    effects: 'lava',
+    tones: ['#332c36', '#56444a', '#846058', '#b56e45', '#f8bd71'],
+  },
+  'winged-dragon': {
+    parts: ['body', 'neck', 'head', 'wingL', 'wingR', 'tail', 'claws'],
+    moves: ['sweep', 'breath', 'volley', 'summon', 'dive', 'ram'],
+    effects: 'coins',
+    tones: ['#403637', '#674e3a', '#997947', '#c79d50', '#f0d88e'],
+  },
+};
+const titles: Record<TemplateId, string> = {
+  overhead: 'Удар сверху',
+  ram: 'Таран',
+  sweep: 'Размашистый удар',
+  slide: 'Скольжение',
+  volley: 'Залп',
+  breath: 'Дыхание',
+  leap: 'Прыжок с ударом',
+  pillars: 'Столбы из земли',
+  roar: 'Рёв',
+  summon: 'Призыв предмета',
+  dive: 'Нырок',
+};
+
+function listed<T extends string>(
+  value: string | undefined,
+  values: readonly T[],
+  option: string,
+): T {
+  if (!values.includes(value as T)) throw Error(option + ' — ' + values.join(', '));
+  return value as T;
+}
+export function defaultLife(source: MotionPlan, moves: CreatureCard['moves']): MotionPlan {
+  const mapping = new Map<string, string>();
+  for (const beat of source.beats) {
+    if (beat.anim.startsWith('tech_') && !mapping.has(beat.anim))
+      mapping.set(beat.anim, moves[mapping.size % moves.length].id);
+  }
+  return {
+    ...source,
+    beats: source.beats.map((beat) => ({
+      ...beat,
+      at: [...beat.at],
+      anim: mapping.get(beat.anim) ?? beat.anim,
+    })),
+  };
+}
+
+export function writeCreatureDraft(card: CreatureCard, dir = join(tools, 'c')) {
+  if (!/^[a-z][a-z0-9_]*$/.test(card.id)) throw Error('Некорректный id существа');
+  const id = card.id;
+  const data = `import { readCreatureCard } from '../bodies/card-data';\n`;
+  const files = new Map([
+    [id + '.card.json', JSON.stringify(card, null, 2) + '\n'],
+    [id + '.studio.json', '{ "minPrimitives": 250 }\n'],
+    [id + '-life.ts', data + `\nexport default readCreatureCard('${id}').life;\n`],
+    [
+      id + '-keys.ts',
+      data +
+        `import { buildMoveBook } from '../moves';\n\nconst card = readCreatureCard('${id}');\nexport default buildMoveBook(card.moves, card.body);\n`,
+    ],
+    [
+      id + '.ts',
+      data +
+        `import { makeBodyCreature } from '../bodies';\nimport book from './${id}-keys';\nimport route from './${id}-life';\n\nexport default makeBodyCreature(readCreatureCard('${id}'), book, route);\n`,
+    ],
+  ]);
+  mkdirSync(dir, { recursive: true });
+  const conflict = [...files.keys()].find((name) => existsSync(join(dir, name)));
+  if (conflict) throw Error('Файл уже существует: ' + conflict);
+  const created: string[] = [];
+  try {
+    for (const [name, body] of files) {
+      const path = join(dir, name);
+      const fd = openSync(path, 'wx');
+      created.push(path);
+      try {
+        writeFileSync(fd, body);
+      } finally {
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:55:51.540Z] cwd=/workspace/repo rg -n \^##\|\^### .agents/skills/pixel-bosses/references/10-prompts.md .agents/skills/pixel-bosses/references/11-fx-method.md
+.agents/skills/pixel-bosses/references/11-fx-method.md:6:## 11. Эффекты: подход pixelfx
+.agents/skills/pixel-bosses/references/11-fx-method.md:8:### 11.1. Три мысли, на которых всё стоит
+.agents/skills/pixel-bosses/references/11-fx-method.md:18:### 11.2. Удар продаётся телом
+.agents/skills/pixel-bosses/references/11-fx-method.md:30:### 11.3. Планка эффекта (10 пунктов)
+.agents/skills/pixel-bosses/references/11-fx-method.md:54:### 11.4. Как устроен эффект в коде (понятия, которые мы переносим)
+.agents/skills/pixel-bosses/references/11-fx-method.md:78:### 11.5. Порядок работы над эффектом
+.agents/skills/pixel-bosses/references/11-fx-method.md:92:### 11.6. Что видишь → как чинить
+.agents/skills/pixel-bosses/references/11-fx-method.md:110:### 11.7. Чем это расходится с нашими правилами
+.agents/skills/pixel-bosses/references/10-prompts.md:3:## 10. Лист ключевых поз: промт, самопроверка, исправление
+.agents/skills/pixel-bosses/references/10-prompts.md:10:### 10.1. Правила (без исключений)
+.agents/skills/pixel-bosses/references/10-prompts.md:29:### 10.2. Шаблон (заполнить всё, что в фигурных скобках)
+.agents/skills/pixel-bosses/references/10-prompts.md:84:### 10.3. Позы по анимациям (что вписывать в POSES)
+.agents/skills/pixel-bosses/references/10-prompts.md:101:### 10.4. Самопроверка листа (автор отвечает письменно, по каждой клетке, до `ws sheet-lint`)
+.agents/skills/pixel-bosses/references/10-prompts.md:114:### 10.5. Исправление
+.agents/skills/pixel-bosses/references/10-prompts.md:125:### 10.6. Машинная проверка `ws sheet-lint`
+[exit=0 wall_ms=11]
+
+[2026-11-28T17:55:51.560Z] cwd=/workspace/repo taskset -c 4 git clone --local --shared --quiet --no-checkout /workspace/repo /tmp/b25-f0b/fresh-author/checkout
+[exit=0 wall_ms=137]
+
+[2026-11-28T17:55:51.705Z] cwd=/tmp/b25-f0b/fresh-author/checkout taskset -c 4 git sparse-checkout set tools/creatures assets/creatures .agents/skills/pixel-bosses
+[exit=0 wall_ms=11]
+
+[2026-11-28T17:55:51.724Z] cwd=/tmp/b25-f0b/fresh-author/checkout taskset -c 4 git checkout --quiet --detach c1eaf999c09d53ff72385721ddb09eaff1949b62
+[exit=0 wall_ms=1503]
+
+[2026-11-28T17:55:53.235Z] cwd=/tmp/b25-f0b/fresh-author/checkout ln -s /workspace/repo/tools/creatures/node_modules tools/creatures/node_modules
+[exit=0 wall_ms=4]
+
+[2026-11-28T17:56:02.130Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 165\,272p studio/new.ts
+    for (const path of created.reverse()) unlinkSync(path);
+    throw error;
+  }
+  return [...files.keys()];
+}
+
+export async function newCommand(args: string[]) {
+  const { values, positionals } = parseArgs({
+    args,
+    allowPositionals: true,
+    options: {
+      body: { type: 'string' },
+      theme: { type: 'string' },
+      rarity: { type: 'string' },
+      moves: { type: 'string' },
+      effects: { type: 'string' },
+      name: { type: 'string' },
+    },
+  });
+  const [id] = positionals;
+  if (positionals.length !== 1 || !/^[a-z][a-z0-9_]*$/.test(id))
+    throw Error('ws new <id> --body <тип> --theme <тема> --rarity <редкость>');
+  const body = listed(values.body, bodyIds, '--body'),
+    rarity = listed(values.rarity, Object.keys(sizes) as Rarity[], '--rarity');
+  const theme = values.theme;
+  if (
+    !theme ||
+    !/^[a-z][a-z0-9_]*$/.test(theme) ||
+    !existsSync(join(tools, 'scenes', theme + '.ts'))
+  )
+    throw Error('Укажи существующую сцену через --theme');
+  const family = families[body],
+    effects = listed(values.effects ?? family.effects, effectIds, '--effects');
+  const ids = values.moves
+    ? values.moves.split(',').map((v) => listed(v, templateIds, '--moves'))
+    : [...new Set([...family.moves, ...templateIds])].slice(0, techniqueCounts[rarity]);
+  const minimum = rarity === 'secret' || rarity === 'mythic' ? 5 : techniqueCounts[rarity];
+  if (
+    new Set(ids).size !== ids.length ||
+    ids.length < minimum ||
+    ids.length > techniqueCounts[rarity]
+  )
+    throw Error('Проверь число и уникальность шаблонов для ' + rarity);
+  const moves = ids.map((template) => ({
+    id: 'tech_' + template,
+    title: titles[template],
+    template,
+    weapon: weaponFor(body, template),
+    reference: moveTemplates[template].reference,
+    parameters: { ...defaultMoveParameters },
+    logic: ['', '', '', '', ''],
+  }));
+  const original: MotionPlan = (await import('../c/' + bodySources[body] + '-life.ts')).default;
+  // The blank model inherits the locomotion of its family. Its artist will
+  // supply a second form and a reveal before those beats can enter the route.
+  const life = defaultLife(original, moves);
+  for (const beat of life.beats) {
+    if (['phase', 'idle-f2', 'show'].includes(beat.anim)) beat.anim = 'idle';
+  }
+  const card: CreatureCard = {
+    id,
+    name: values.name ?? id,
+    body,
+    theme,
+    rarity,
+    proportions: { length: 1, width: 1, height: 1 },
+    parts: family.parts,
+    materials: [
+      { name: 'Основной материал', tones: family.tones, texture: 'Фактура исходного типа тела' },
+    ],
+    details: [],
+    effects,
+    moves,
+    life,
+  };
+  const files = writeCreatureDraft(card);
+  console.log(files.map((f) => 'c/' + f).join('\n'));
+  console.log(
+    'Заготовка готова. Заполни перечень видимых подробностей и пять ответов о каждом приёме перед gate.',
+  );
+}
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:56:02.142Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,140p bodies/light-quadruped.ts
+// Light digitigrade and unguligrade animals share a four-contact diagonal gait.
+// The feet live in the floor frame while the shoulder blades and hocks follow the trunk.
+import { hx, ik, TAU } from '../kit/f11-mobkit';
+import { life, projectFigure, scaleFigure } from '../rig/figure';
+import { F3, Rig, vadd, vmul, vsub, type Mat, type V3 } from '../rig/f15-rig';
+import { sizes, type Creature, type MotionPlan, type Variant } from '../types';
+import type { CreatureCard } from './card-data';
+import type { JointPose } from '../technique';
+import { goalAt, lookAngles, toLocal } from './goals';
+
+export interface LightLeg {
+  name: string;
+  fore: number;
+  side: number;
+  hip: V3;
+  knee: V3;
+  hock: V3;
+  foot: V3;
+  hoof: F3;
+}
+export interface LightSkeleton {
+  anim: string;
+  time: number;
+  pose: JointPose;
+  root: F3;
+  body: F3;
+  neck: F3;
+  head: F3;
+  tail: F3;
+  legs: LightLeg[];
+  points: Record<string, V3>;
+  planted: string[];
+  life: ReturnType<typeof life>;
+  width: number;
+  length: number;
+  height: number;
+  scale: number;
+}
+interface Offsets {
+  muzzle?: V3;
+  hornTip?: V3;
+  tailTip?: V3;
+}
+export interface LightAppearance extends Offsets {
+  draw(rig: Rig, skeleton: LightSkeleton, card: CreatureCard, variant: Variant): void;
+  pose?(anim: string, t: number): JointPose;
+}
+const saturate = (x: number) => Math.max(0, Math.min(1, x));
+function smooth(x: number) {
+  const u = saturate(x);
+  return u * u * (3 - 2 * u);
+}
+
+// Each foot carries the animal for 58% of the cycle. Hind feet touch slightly
+// before their opposite forefeet, which separates all four contacts at slow speed.
+function step(phase: number, stride: number) {
+  const t = ((phase % 1) + 1) % 1;
+  const stance = 0.58;
+  const swing = saturate((t - stance) / (1 - stance));
+  return {
+    x: stride * (stance / 2 - t + smooth(swing)),
+    lift: Math.sin(Math.PI * swing) ** 2,
+    planted: t < stance,
+  };
+}
+
+export function lightSkeleton(
+  anim: string,
+  t: number,
+  side: number,
+  pose: JointPose,
+  headLead: number,
+  route: MotionPlan,
+  proportions: Record<string, number> = {},
+  offsets: Offsets = {},
+  phase = t,
+): LightSkeleton {
+  const width = proportions.width ?? 1,
+    height = proportions.height ?? 1,
+    length = proportions.length ?? 1;
+  const neckLength = proportions.neckLength ?? 1,
+    scale = proportions.scale ?? 1;
+  const l = life(anim, t, 0),
+    walking = anim === 'walk';
+  const sleep =
+    pose.sleep ??
+    (anim === 'sleep_in'
+      ? smooth((t * 24 - 4) / 23)
+      : anim === 'sleep_out'
+        ? 1 - smooth((t * 24 - 1) / 25)
+        : anim === 'wake_startled'
+          ? 1 - smooth(t * 6)
+          : l.sleep);
+  l.sleep = sleep;
+  if (sleep > 0.82 || (pose.blink ?? 0) > 0.5) l.blink = 1;
+  const startle = anim === 'wake_startled' ? Math.sin(Math.PI * saturate((t - 0.09) / 0.48)) ** 2 : 0;
+  l.hatch *= smooth((t * 24) / 5);
+  const tuck = Math.max(sleep, l.hatch * 0.9);
+  const jump = (pose.lift ?? 0) + (pose.jump ?? 0) + 8 * startle + 5 * l.pop;
+  const gait = walking ? Math.sin(phase * TAU) : 0;
+  const breathing = anim === 'sleep' ? Math.sin((t * TAU) / 3.5) * 0.55 : Math.sin(l.q) * 0.55 * (1 - tuck);
+  const turnLead = anim === 'turn' ? 0.14 * Math.sin(t * TAU * 2) : 0;
+  // The route supplies sixteen quarter-second bearings for a four-second turn.
+  // Interpolate between them and replant alternate diagonals around the pivot.
+  const turning = anim === 'turn';
+  const subBearing = turning && Math.abs(side - Math.round(side)) < 1e-8 ? (t * 4) % 1 : 0;
+  const facing = F3.yaw(route.yaw + ((side + subBearing) * Math.PI) / 8);
+  const root = facing.turn(pose.yaw ?? 0);
+  const body = root
+    .at(
+      pose.lean ?? 0,
+      gait * 0.47,
+      (27 - 16.8 * tuck - 4.4 * l.tired) * height +
+        breathing +
+        (walking ? -0.95 * Math.cos(phase * TAU * 2) : 0) +
+        jump -
+        (pose.crouch ?? 0),
+    )
+    .pitch((pose.pitch ?? 0) + 0.12 * l.tired + 0.07 * tuck)
+    .roll((pose.roll ?? 0) + 0.035 * gait)
+    .turn((pose.twist ?? 0) - turnLead * 0.28);
+  const goal = (key: string, natural: V3) => {
+    const at = goalAt(pose, key, toLocal(facing, natural));
+    return at && facing.p(...at);
+  };
+  const points: Record<string, V3> = {},
+    planted: string[] = [],
+    legs: LightLeg[] = [];
+  for (const fore of [-1, 1])
+    for (const sign of [-1, 1]) {
+      const suffix = sign < 0 ? 'L' : 'R';
+      const name = (fore > 0 ? 'fore' : 'hind') + suffix;
+      const alias = (fore > 0 ? 'hand' : 'foot') + suffix;
+      const g = step(phase + (fore === sign ? 0 : 0.5) + (fore < 0 ? 0.06 : 0), route.stride / scale);
+      const hip = body.p(
+        fore * 12.3 * length + (walking ? 0.85 * Math.cos((phase + (fore === sign ? 0 : 0.5)) * TAU) : 0),
+        sign * 5.3 * width,
+        -1.7 * height,
+      );
+      const pivot = step(2 * t + (fore === sign ? 0 : 0.5), Math.PI / 4);
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:56:02.167Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n Preview\|PNG\|нов\|new\ \<\|model\|sockets\|idle\|pose\|Creature\|frame README.md
+5:Требуется Node.js 22 или новее. Команды запускаются в `tools/creatures`.
+11:npm run render -- --id bramble_warden --anim idle --scale 3
+12:npm run verify -- --all-frames bramble_warden
+15:Имя техники берётся из `animations` нужного существа. По умолчанию рендерятся все анимации, золотые версии покоя и первого приёма. Число в `--scale` задаёт только размер GIF. PNG всегда в исходной пиксельной сетке. Для совместной поставки вариантов одного существа применяйте один масштаб.
+17:Модель в `c/<id>.ts` экспортирует `Creature` из `types.ts`. Риг получает сторону 0–15, нулевая соответствует авторскому повороту в три четверти. `anchor`, `eye` и `points` измеряются в локальных пикселях спрайта. В `effects` те же точки уже перенесены в координаты поля. Для следа, дуги или снаряда `pointAt(time,name)` возвращает точку на момент выпуска. Контакты в исходнике задаются в секундах, в `meta.json` лежат номера кадров с нуля. Слои эффектов рисуются оригинальным `Pen`.
+19:`compose(creature, scene, border, anim, frame/24, side, variant)` возвращает готовую картину в `picture`, исходный кадр тела в `body` и RGBA-буферы в `layers`. У каждого `Px` есть ширина `w`, высота `h` и `data` в порядке RGBA. Файл сцены из `scenes/` и профиль редкости из `frames/` экспортируют функции или объект по умолчанию согласно `types.ts`.
+21:Главная анимация `life` длится 12–16 секунд. План маршрута в `c/<id>-life.ts` задаёт длину полного шага в финальных мировых пикселях, исходный yaw и последовательность остановок и движений. Координата `at` — положение ног на поле в начале сегмента (доли ширины/высоты). Шёлковый пролетает соседние точки по сплайну с переменной высотой. Для движения игры есть отдельные `walk_n`, `walk_ne`, `walk_e`, `walk_se`, `walk_s`, `walk_sw`, `walk_w`, `walk_nw`. Демонстрационный односекундный GIF проходит один шаг и начинает его снова. Игра продолжает маршрут, прибавляя смещение цикла к исходной точке ног. В `meta.json` для каждого направления записаны вектор скорости в пикселях поля за секунду, начальная точка ног и шаг в мире.
+23:Кадры для игры рендерятся в `assets/creatures/<id>/`. Сгенерированные PNG и GIF поставляются через Release. Для каждого кадра `frames/<anim>/motion.json` содержит фактическую точку ног в координатах поля, отдельный сдвиг камеры, номер кадра фона, сторону корпуса и головы, позу, высоту полёта и объявленные опорные стопы. При сборке берите фон `frames/<anim>/bg/NNN.png`, когда он есть, иначе `bg/loop/` по номеру `backgroundFrame` из этого трека. Маски предметов хранятся в `bg/front/<id>.png`, их глубина — в `bg/front-depth.json`, общий вид — в `bg/front.png`. После сдвига камеры предметы, чья глубина меньше либо равна высоте ног, рисуются позади модели. Затем идут слои `fxu`, `body`, `lit`, `fxo`, оставшиеся передние предметы, рама и `over` (у show/peek). Размер каждого PNG совпадает с размером картины с рамой. `compose` выполняет ту же сортировку и наложение. При увеличении GIF сохраняет единую сетку пикселей, а неподвижные области непрозрачных картин наследуются из предыдущего кадра.
+25:Исходные `Rig`, `F3`, `Px`, функции поз и пиксельных эффектов перенесены из [SkyTmin/coco-instruments](https://github.com/SkyTmin/coco-instruments/tree/523bae1fdc0e06052648a3c3d09e9f1642ca615d). В комментариях указаны исходные файлы, лицензия MIT приложена в `rig/LICENSE`. Тест паритета сверяет кадр жука-копилки с независимым снимком веб-стенда. Команда `verify` проверяет экспортированные файлы, размеры, тайминг каждого кадра GIF и сверяет декодированные кадры контактов и переходов с их исходными PNG-слоями.
+27:Ключ `--all-frames` сверяет каждый кадр каждой картины со всеми PNG-слоями и заново отрисованными исходниками, включая золотые варианты.
+37:npm run ws -- sheet forest_guard idle
+48:import { readCreatureCard } from '../bodies/card-data';
+50:const card = readCreatureCard('forest_guard');
+53:hit.pose = { ...hit.pose, crouch: 3, ...aim('weaponTip', [24, 9, 0], hit.frame) };
+57:Для положения кисти используется `reach('handR', цель)`, для взгляда — `look('head', цель)`. Эффект контакта берёт положение сокета после решения позы. Нарисовать собственные рога и шерсть можно в четвёртом аргументе `makeBodyCreature(card, book, route, { heavy: { hornTip, draw } })`. `hornTip` задаётся в системе головы, а `draw(rig, skeleton, card, variant)` получает кости и точки в уже решённой позе.
+63:Восемь `walk_<dir>` показывают сдвиг за один цикл шага. Скорости в метаданных заданы для сетки поля, точки опоры привязаны к той же сетке. Сценарии `c/<id>-life.ts` ведут существо между точками по полу в течение 12–16 секунд. У предметов переднего плана есть собственная глубина. При склейке `compose` сравнивает её с координатой ног, поэтому один и тот же предмет может оказаться за существом или перед ним. Для снятия отдельных стоп используйте имена сокетов из `planted`.
+65:Для воспроизведения всей партии выполните команды из `tools/creatures`. Архив содержит GIF ×3, нативные PNG всех слоёв, глубины, траектории, семь комплектов рам и метаданные. Предпросмотры в отчёте используют нативный масштаб и сохраняют хронометраж 24 к/с.
+73:  npm run verify -- --all-frames "$id"
+81:В книге `c/<id>-keys.ts` записаны позы приёма, имя физической точки для эффекта и номера кадров при 24 к/с. Автор готовит 4–6 поз, и критик сверяет их на листе до включения интерполяции. Скрипт измерений берёт силуэт из слоя тела, а точки рождения эффектов и пиксели следа из рисовальщика. Порог зависит от выбранного движения «Каторги». [Снятие эталонов](test/fixtures/tech-references/README.md)
+90:  npm run verify -- --all-frames "$id"
+109:npm run verify -- --all-frames bramble_warden gem_beetle silk_dragon frost_yeti toad_shaman crater_titan coin_dragon storm_ram
+[exit=0 wall_ms=12]
+
+[2026-11-28T17:56:02.192Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures ls scenes
+bamboo_mist.ts
+bell_courtyard.ts
+crystal_grotto.ts
+deep_sea.ts
+grove_heart.ts
+high_cloud_night.ts
+hundred_landings-sky.png
+hundred_landings.ts
+lantern_rink.ts
+low_tide.ts
+lullaby_valley.ts
+magic_tent.ts
+meadow.ts
+moon_nursery.ts
+mushroom_grotto.ts
+nebula_cradle.ts
+paper_updraft.ts
+polar_ice_lagoon.ts
+polar_night.ts
+polar_parade.ts
+pumpkin_moon.ts
+rainbow_falls.ts
+rat_throne.ts
+relief.ts
+ripple_court.ts
+root_edge.ts
+root_lantern_glade.ts
+sand_tomb.ts
+savanna_dusk.ts
+sky_islands.ts
+sky_post.ts
+star_abyss.ts
+star_meadow.ts
+sun_observatory.ts
+sunlit_bench-plate.png
+sunlit_bench.ts
+sunlit_bench_fx.ts
+tea_kitchen.ts
+thunder_peak.ts
+treasury.ts
+volcano.ts
+willow-terrain.ts
+willow_bend.ts
+windmill_hill.ts
+winter_glasshouse.ts
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:56:02.205Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 6\,43p studio/README.md
+|---|---|---|
+| `npm run ws -- new <id> --body <тип> --theme <сцена> --rarity <редкость>` | Создаёт модель, ключи приёмов, маршрут, настройки мастерской и карточку. Параметры `--moves ram,volley`, `--effects` и `--name` выбирают шаблоны, эффекты и имя. Существующие файлы сохраняются | < 1 с |
+| `npm run ws -- check <id\|all> [anim…] [--errors]` | автокритик по каждому кадру: руки и оружие в теле (`clip`), тонкие стержни в теле (`thin-clip`), удар закрыт предметом переднего плана (`hidden-contact`), щелчок в позу покоя на последнем кадре (`end-pop`), скачок силуэта между соседними кадрами (`jump`), эффект удара сливается с полом (`weak-impact`), стоящая нога едет по полу в боковой ходьбе (`foot-slide`), названная часть пропала из вида за корпусом или головой на ударе (`part-gone`, нужен `rig.tag`) | 3–43 с на существо; один приём — 3–5 с |
+| `npm run ws -- gate <id\|all> [--jobs N] [--force]` | `check` + планка подробностей (§7.1в) + числа приёмов (§7.1г); код выхода 1 при ошибке. Зелёный `gate` — условие, чтобы звать критика. Несколько существ — параллельно; зелёный результат запоминается, и существо без изменений во входах не проверяется снова | все семь — 60 с на 4 ядрах вместо 2 мин 45 с подряд; зелёное без изменений — 0,7 с вместо 5–75 с (красные проверяются всегда) |
+| `npm run ws -- drafts <id> <anim> --seeds 1..3` | 3–5 черновиков рядом. Вариант `--vary spread=0.6,1,1.4` перебирает параметр эффекта. Если две колонки выглядят одинаково, команда ищет кадр с отличием или сообщает об ошибке. Кадры, масштаб и путь задают `--frames a,b`, `--scale 1…4` и `--out file.png` | По выбранным кадрам |
+| `npm run ws -- against <id> <anim> --ref <образец>` | Сравнивает с другим существом, образцом `pixelfx:категория/имя`, PNG, WebP, JPEG или GIF. Одинаковая экранная высота, у каждого кадра свой номер. Пары задают `--frames a,b` и `--ref-frames a,b`. Доступны `--ref-anim клип`, `--ref-grid 3x2` (лист рисунков), `--pose-step 2` (левая колонка), `--scale` и `--out` | По выбранным кадрам |
+| `npm run ws -- review <id> <anim> [--goal overview\|contact\|timing\|refactor\|final] [--frames a,b] [--out f.png] [--fresh]` | **цикл одного клипа за один проход** [23.11, исследование VIII.10 этап 1]: каждый кадр собирается один раз и отвечает сразу за критик (`check`), события и предметы (`ws events`), лист кадров, стыки (`seam`) и — для `refactor`/`final` — сверку с эталоном `golden`. Цель задаёт охват и размер ответа: `contact` — лист контактов с соседями, `timing` — ключевые позы, `refactor` — пиксели обязаны совпасть с эталоном, лист только изменившихся кадров, `final` — ещё планка подробностей. Ответ: охват по каждой проверке (✓ прошла, ✗ нет, ? неполная, – неприменима), проблемы с устойчивыми id — новые / исправленные / оставшиеся против прошлого review клипа, исключения клипа с причиной или «основание не записано», что посчитано (сборки кадров, позы истории, растры, растры впустую в режиме «только точки»). Результат лежит в `.studio/review/<id>-<anim>.json` под ключом всех входов: тот же ключ отвечает из файла без сборки, красный остаётся красным (`--fresh` пересчитывает) | Пончик `peek`: 16 с вместо 31,6 с у трёх команд; Астрал `trick`: 8 с; повтор с теми же входами < 1 с |
+| `npm run ws -- events <id> [anim,…] [--reads]` | **события клипа из обеих схем** [23.11, исследование VIII.10 этап 3]: из `beats` и жестов (`c/<id>-poses.ts`) и из книги приёмов — события, фазы между ними, переключатели 0/1 в каналах, каналы, которых не читает ни один файл (опечатка). Проверки по кадрам «только точки», без растра: сокеты контактов книги и `requiredSockets` из `c/<id>.studio.json` есть в позе события (`expectedAbsence` — нарочные пропуски с причиной); предмет из `props` (шляпа Мурлена: на голове / в руке / в пути / снята) — не на теле и в эффектах одновременно, не исчезает в никуда, при передаче тело ↔ эффект не прыгает дальше `handoffPx`. Эффекты сообщают, где рисуют снятый предмет, через `f.propAt?.(имя, точка)` (пикселей не меняет). `--reads`: журнал настоящей сборки каждого кадра — какие позы других времён спрашивает каждый кадр (кальмар `trick`: кадры 29–87 читают позу кадра 88) и какие сокеты поза не дала (эффект молча подставил запасную точку). Те же проверки входят в `ws review` без второй сборки | без `--reads` < 3 с на клип; с ним — время сборки клипа (кальмар `trick` 5 с) |
+| `npm run ws -- profile <id> <anim>` | **куда уходит время рендера клипа** [23.11, исследование этап 5]: рендер во временную папку (настоящие `assets` не трогаются) под профайлером V8, собственное время по стадиям — `gif`, `png`, `rig`, `compose`, `skin`, `fx`, `scene`, `gc`, `io` — и самые тяжёлые функции. Оптимизацию выбирать по этой таблице на нескольких существах; чистая оптимизация обязана сохранить кадры (`snap --check`) и байты. На 23.11 у пяти существ GIF был 26–34%, после ускорения кодировщика 20–26% (дальше — LZW внутри `gifenc`, это зависимость) | время рендера клипа + 1–2 с |
+| `npm run ws -- context <id> <anim>` | **пакет контекста клипа** (C02): длина, контакты, события `beats`, ключи и контакты книги приёмов, где клип в исходниках (файл:строка, без текста), приёмка и замечания, исключения с причинами, последний review, материалы, ТЗ — вместо чтения файлов целиком | < 1 с, ~0,5 КБ |
+| `npm run ws -- help [тема] [--all]` | справка по разделу этого README (C03): без темы — разделы с размерами и список команд; имя команды — её строка таблицы; слово — раздел или строки с ним. Длинное режется на 3 КБ с явной пометкой | < 1 с |

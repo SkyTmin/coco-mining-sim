@@ -1,0 +1,14 @@
+{"at":"2026-11-28T17:56:26","cmd":"new","args":["fzero_b","--body","light-quadruped","--theme","meadow","--rarity","common"],"sec":0.2,"maxRssMB":124,"outBytes":269,"code":0}
+{"at":"2026-11-28T17:56:27","cmd":"detail","args":["fzero_b"],"sec":0.9,"maxRssMB":139,"outBytes":269,"code":1}
+{"at":"2026-11-28T17:56:29","cmd":"probe","args":["fzero_b","idle","0"],"sec":0.4,"maxRssMB":133,"outBytes":1509,"code":0}
+{"at":"2026-11-28T17:56:31","cmd":"sheet","args":["fzero_b","idle","--frames","0","--scale","1"],"sec":1.4,"maxRssMB":221,"outBytes":181,"code":0}
+{"at":"2026-11-28T17:56:33","cmd":"export-ref","args":["fzero_b","idle","0","--out","/tmp/b25-f0b/fresh-author/idle-ref.png"],"sec":0.5,"maxRssMB":134,"outBytes":39,"code":0}
+{"at":"2026-11-28T17:58:13","cmd":"detail","args":["fzero_b"],"sec":1.1,"maxRssMB":136,"outBytes":233,"code":1}
+{"at":"2026-11-28T17:58:16","cmd":"export-ref","args":["fzero_b","idle","0","--out","/tmp/b25-f0b/fresh-author/authored-ref.png"],"sec":0.5,"maxRssMB":136,"outBytes":43,"code":0}
+{"at":"2026-11-28T17:58:18","cmd":"probe","args":["fzero_b","fidget_a","28"],"sec":0.4,"maxRssMB":135,"outBytes":1558,"code":0}
+{"at":"2026-11-28T17:58:20","cmd":"sheet","args":["fzero_b","fidget_a","--frames","0,12,26,34,48,71","--scale","2"],"sec":1.6,"maxRssMB":244,"outBytes":203,"code":0}
+{"at":"2026-11-28T17:59:24","cmd":"sheet","args":["fzero_b","fidget_a","--frames","0,12,26,30,34,40,48,62,71","--scale","2"],"sec":2,"maxRssMB":255,"outBytes":212,"code":0}
+{"at":"2026-11-28T17:59:27","cmd":"render","args":["fzero_b","--anim","fidget_a","--jobs","1"],"sec":2.9,"maxRssMB":128,"outBytes":78,"code":0}
+{"at":"2026-11-28T18:00:32","cmd":"render","args":["fzero_b","--anim","fidget_a","--jobs","1"],"sec":3,"maxRssMB":122,"outBytes":78,"code":0}
+{"at":"2026-11-28T18:01:11","cmd":"render","args":["fzero_b","--anim","fidget_a","--jobs","1"],"sec":3.5,"maxRssMB":123,"outBytes":78,"code":0}
+{"at":"2026-11-28T18:01:16","cmd":"review","args":["fzero_b","fidget_a"],"sec":2.1,"maxRssMB":242,"outBytes":221,"code":0}

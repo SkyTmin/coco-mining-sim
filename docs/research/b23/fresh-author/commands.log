@@ -1,0 +1,206 @@
+[2026-11-28T17:55:21.650Z] cwd=/workspace/repo nl -ba AGENTS.md
+[exit=0 wall_ms=5]
+[2026-11-28T17:55:25.894Z] cwd=/workspace/repo nl -ba .agents/skills/pixel-bosses/SKILL.md
+[exit=0 wall_ms=8]
+[2026-11-28T17:55:25.909Z] cwd=/workspace/repo git rev-parse HEAD
+[exit=0 wall_ms=8]
+[2026-11-28T17:55:25.923Z] cwd=/workspace/repo taskset -pc 19301
+[exit=0 wall_ms=6]
+[2026-11-28T17:55:29.910Z] cwd=/workspace/repo nl -ba .agents/skills/pixel-bosses/references/0-quick.md
+[exit=0 wall_ms=8]
+[2026-11-28T17:55:29.925Z] cwd=/workspace/repo nl -ba tools/creatures/studio/README.md
+[exit=0 wall_ms=7]
+[2026-11-28T17:55:35.845Z] cwd=/workspace/repo rg -n ws\ --\ new\|new\ \<\|new\ \|card\|карточк\|bodies/\|preview tools/creatures/studio/README.md
+[exit=0 wall_ms=6]
+[2026-11-28T17:55:35.858Z] cwd=/workspace/repo ls -1 tools/creatures/bodies
+[exit=0 wall_ms=6]
+[2026-11-28T17:55:35.870Z] cwd=/workspace/repo ls -d tools/creatures/node_modules
+[exit=0 wall_ms=5]
+[2026-11-28T17:55:35.883Z] cwd=/workspace/repo nl -ba .agents/skills/pixel-bosses/references/motions/README.md
+[exit=0 wall_ms=5]
+[2026-11-28T17:55:35.895Z] cwd=/workspace/repo du -sh tools/creatures
+[exit=0 wall_ms=14]
+[2026-11-28T17:55:35.915Z] cwd=/workspace/repo ls -1 tools/creatures
+[exit=0 wall_ms=5]
+[2026-11-28T17:55:42.040Z] cwd=/workspace/repo sed -n 109\,146p tools/creatures/studio/README.md
+[exit=0 wall_ms=11]
+[2026-11-28T17:55:42.062Z] cwd=/workspace/repo ls -1 .agents/skills/pixel-bosses/references
+[exit=0 wall_ms=6]
+[2026-11-28T17:55:42.077Z] cwd=/workspace/repo nl -ba .agents/skills/pixel-bosses/references/motions/fidget.md
+[exit=0 wall_ms=35]
+[2026-11-28T17:55:42.134Z] cwd=/workspace/repo rg -n new\|command tools/creatures/studio/ws.ts
+[exit=0 wall_ms=16]
+[2026-11-28T17:55:42.170Z] cwd=/workspace/repo rg --files tools/creatures/studio
+[exit=0 wall_ms=46]
+[2026-11-28T17:55:51.526Z] cwd=/workspace/repo sed -n 1\,160p tools/creatures/studio/new.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:55:51.540Z] cwd=/workspace/repo rg -n \^##\|\^### .agents/skills/pixel-bosses/references/10-prompts.md .agents/skills/pixel-bosses/references/11-fx-method.md
+[exit=0 wall_ms=11]
+[2026-11-28T17:55:51.560Z] cwd=/workspace/repo taskset -c 4 git clone --local --shared --quiet --no-checkout /workspace/repo /tmp/b25-f0b/fresh-author/checkout
+[exit=0 wall_ms=137]
+[2026-11-28T17:55:51.705Z] cwd=/tmp/b25-f0b/fresh-author/checkout taskset -c 4 git sparse-checkout set tools/creatures assets/creatures .agents/skills/pixel-bosses
+[exit=0 wall_ms=11]
+[2026-11-28T17:55:51.724Z] cwd=/tmp/b25-f0b/fresh-author/checkout taskset -c 4 git checkout --quiet --detach c1eaf999c09d53ff72385721ddb09eaff1949b62
+[exit=0 wall_ms=1503]
+[2026-11-28T17:55:53.235Z] cwd=/tmp/b25-f0b/fresh-author/checkout ln -s /workspace/repo/tools/creatures/node_modules tools/creatures/node_modules
+[exit=0 wall_ms=4]
+[2026-11-28T17:56:02.130Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 165\,272p studio/new.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:56:02.142Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,140p bodies/light-quadruped.ts
+[exit=0 wall_ms=5]
+[2026-11-28T17:56:02.167Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n Preview\|PNG\|нов\|new\ \<\|model\|sockets\|idle\|pose\|Creature\|frame README.md
+[exit=0 wall_ms=12]
+[2026-11-28T17:56:02.192Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures ls scenes
+[exit=0 wall_ms=6]
+[2026-11-28T17:56:02.205Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 6\,43p studio/README.md
+[exit=0 wall_ms=5]
+[2026-11-28T17:56:08.522Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures ls scenes
+[exit=0 wall_ms=7]
+[2026-11-28T17:56:08.537Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures node -v
+[exit=0 wall_ms=14]
+[2026-11-28T17:56:08.557Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,103p bodies/index.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:56:08.571Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 10\,28p\;73\,88p\;101\,113p /tmp/b25-f0b/fresh-author/checkout/.agents/skills/pixel-bosses/references/10-prompts.md
+[exit=0 wall_ms=5]
+[2026-11-28T17:56:08.584Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 6\,29p\;78\,94p /tmp/b25-f0b/fresh-author/checkout/.agents/skills/pixel-bosses/references/11-fx-method.md
+[exit=0 wall_ms=5]
+[2026-11-28T17:56:24.253Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- new fzero_b --body light-quadruped --theme meadow --rarity common
+[exit=0 wall_ms=2198]
+[2026-11-28T17:56:26.459Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- detail fzero_b
+[exit=1 wall_ms=2054]
+[2026-11-28T17:56:28.521Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- probe fzero_b idle 0
+[exit=0 wall_ms=1570]
+[2026-11-28T17:56:30.099Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- sheet fzero_b idle --frames 0 --scale 1
+[exit=0 wall_ms=2673]
+[2026-11-28T17:56:32.779Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- export-ref fzero_b idle 0 --out /tmp/b25-f0b/fresh-author/idle-ref.png
+[exit=0 wall_ms=1612]
+[2026-11-28T17:56:47.457Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 150\,350p bodies/light-quadruped.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:56:47.472Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n interface\ FX\|interface\ Creature\|type\ Fx\|backdrop\|type\ Painting\|fps\|type\ Animation types.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:56:47.485Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n fidget\|phase\|draw\|compose\|points\|backdrop types.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:56:47.499Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n fidget\|everyday rig/figure.ts
+[exit=0 wall_ms=5]
+[2026-11-28T17:56:47.510Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,115p kit/pet-moves.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:57:04.211Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 65\,143p types.ts
+[exit=0 wall_ms=5]
+[2026-11-28T17:57:04.222Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n interface\ Pen\|class\ Pen\|type\ Pen
+[exit=0 wall_ms=27]
+[2026-11-28T17:57:04.256Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,28p rig/figure.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:57:04.270Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n \^\ \ \(ell\|dot\|cap\|facet\|box\|line\|bead\|markEye\)\\\( rig/f15-rig.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:57:04.282Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,30p c/fzero_b.card.json
+[exit=0 wall_ms=5]
+[2026-11-28T17:57:04.295Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n \^export\ interface\ Pen\|\^export\ class\ Pen\|\^\(\ \ \[a-zA-Z\]+\)\[\(:\(\<\ \] kit/pen.ts
+[exit=2 wall_ms=6]
+[2026-11-28T17:57:11.785Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 47\,128p fx/pen.ts
+[exit=0 wall_ms=24]
+[2026-11-28T17:57:11.823Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n f\\.pointAt\|props\\\?\\.\|\\.props\\\( engine.ts
+[exit=0 wall_ms=15]
+[2026-11-28T17:57:11.854Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,76p motion.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:57:11.868Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,45p rig/f15-rig.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:57:19.130Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n \^export\ interface\ Mat\|pat\\\?\?:\|\\.pat\|class\ F3\|markEye\|panel\\\( rig/f15-rig.ts
+[exit=0 wall_ms=8]
+[2026-11-28T17:57:19.145Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n function\ attachMotion\|fidget_ motion.ts
+[exit=0 wall_ms=11]
+[2026-11-28T17:57:19.164Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 467\,497p engine.ts
+[exit=0 wall_ms=15]
+[2026-11-28T17:57:19.204Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n \^export\ function\ \(disc\|fillSeg\|fillPoly\) fx/pen.ts
+[exit=0 wall_ms=7]
+[2026-11-28T17:57:24.551Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 110\,139p rig/f15-rig.ts
+[exit=0 wall_ms=5]
+[2026-11-28T17:57:24.563Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 122\,160p motion.ts
+[exit=0 wall_ms=5]
+[2026-11-28T17:57:24.574Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 359\,379p fx/pen.ts
+[exit=0 wall_ms=4]
+[2026-11-28T17:57:24.584Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 198\,234p rig/f15-rig.ts
+[exit=0 wall_ms=5]
+[2026-11-28T17:58:10.651Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp /tmp/b25-f0b/fresh-author/source/fzero_b.ts /tmp/b25-f0b/fresh-author/source/fzero_b-skin.ts c/
+[exit=0 wall_ms=7]
+[2026-11-28T17:58:10.667Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures python -c import\ json\;\ from\ pathlib\ import\ Path\;\ p=Path\(\"c/fzero_b.card.json\"\)\;\ c=json.loads\(p.read_text\(\)\)\;\ c\[\"proportions\"\]\[\"scale\"\]=1.55\;\ p.write_text\(json.dumps\(c\,ensure_ascii=False\,indent=2\)+\"\\n\"\)
+[exit=0 wall_ms=83]
+[2026-11-28T17:58:10.760Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- detail fzero_b
+[exit=1 wall_ms=3765]
+[2026-11-28T17:58:14.533Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- export-ref fzero_b idle 0 --out /tmp/b25-f0b/fresh-author/authored-ref.png
+[exit=0 wall_ms=2779]
+[2026-11-28T17:58:17.319Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- probe fzero_b fidget_a 28
+[exit=0 wall_ms=1501]
+[2026-11-28T17:58:18.826Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- sheet fzero_b fidget_a --frames 0\,12\,26\,34\,48\,71 --scale 2
+[exit=0 wall_ms=2871]
+[2026-11-28T17:58:40.741Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 420\,470p engine.ts
+[exit=0 wall_ms=8]
+[2026-11-28T17:58:40.756Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 1\,64p studio/probe.ts
+[exit=0 wall_ms=7]
+[2026-11-28T17:58:40.776Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures ls -a .studio
+[exit=0 wall_ms=7]
+[2026-11-28T17:58:53.232Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n points:\|points\ =\|feet:\|\[+\]-\?\ b\\b\|\\+\ b\, engine.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:58:53.246Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 382\,412p rig/f15-rig.ts
+[exit=0 wall_ms=6]
+[2026-11-28T17:58:53.262Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n frames\|png\|--anim\|scale render.ts
+[exit=0 wall_ms=8]
+[2026-11-28T17:58:59.953Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 355\,377p\;538\,557p engine.ts
+[exit=0 wall_ms=8]
+[2026-11-28T17:58:59.968Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n export\ const\ sizes\|common: types.ts
+[exit=0 wall_ms=10]
+[2026-11-28T17:58:59.992Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 274\,294p render.ts
+[exit=0 wall_ms=10]
+[2026-11-28T17:59:00.016Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n fidget\|phase kit/clock.ts
+[exit=0 wall_ms=11]
+[2026-11-28T17:59:23.086Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp /tmp/b25-f0b/fresh-author/source/fzero_b-props.ts /tmp/b25-f0b/fresh-author/source/fzero_b.ts c/
+[exit=0 wall_ms=6]
+[2026-11-28T17:59:23.100Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- sheet fzero_b fidget_a --frames 0\,12\,26\,30\,34\,40\,48\,62\,71 --scale 2
+[exit=0 wall_ms=3615]
+[2026-11-28T17:59:26.722Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp .studio/fzero_b-fidget_a.png /tmp/b25-f0b/fresh-author/pod-round1.png
+[exit=0 wall_ms=6]
+[2026-11-28T17:59:26.734Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- render fzero_b --anim fidget_a --jobs 1
+[exit=0 wall_ms=4070]
+[2026-11-28T17:59:50.431Z] cwd=/tmp/b25-f0b/fresh-author/checkout rg --files --hidden --no-ignore assets/creatures/fzero_b
+[exit=0 wall_ms=8]
+[2026-11-28T17:59:50.447Z] cwd=/tmp/b25-f0b/fresh-author/checkout ls -l assets/creatures/fzero_b/gif
+[exit=0 wall_ms=6]
+[2026-11-28T17:59:50.461Z] cwd=/tmp/b25-f0b/fresh-author/checkout which ffmpeg
+[exit=0 wall_ms=5]
+[2026-11-28T17:59:50.472Z] cwd=/tmp/b25-f0b/fresh-author/checkout which chromium
+[exit=0 wall_ms=5]
+[2026-11-28T18:00:08.355Z] cwd=/tmp/b25-f0b/fresh-author/checkout cp assets/creatures/fzero_b/gif/painting-fidget_a.gif /tmp/b25-f0b/fresh-author/round1.gif
+[exit=0 wall_ms=5]
+[2026-11-28T18:00:08.367Z] cwd=/tmp/b25-f0b/fresh-author/checkout taskset -c 4 python /tmp/b25-f0b/fresh-author/inspect.py /tmp/b25-f0b/fresh-author/round1.gif /tmp/b25-f0b/fresh-author/whole-round1.png 0\,24\,28\,30\,32\,34\,38\,43\,48\,53\,61\,71 4
+[exit=0 wall_ms=1215]
+[2026-11-28T18:00:09.591Z] cwd=/tmp/b25-f0b/fresh-author/checkout ffprobe -v error -select_streams v:0 -count_frames -show_entries stream=width\,height\,r_frame_rate\,nb_read_frames\,duration -of json /tmp/b25-f0b/fresh-author/round1.gif
+[exit=0 wall_ms=209]
+[2026-11-28T18:00:31.877Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp /tmp/b25-f0b/fresh-author/source/fzero_b-props.ts c/
+[exit=0 wall_ms=6]
+[2026-11-28T18:00:31.891Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- render fzero_b --anim fidget_a --jobs 1
+[exit=0 wall_ms=4144]
+[2026-11-28T18:00:36.041Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp ../../assets/creatures/fzero_b/gif/painting-fidget_a.gif /tmp/b25-f0b/fresh-author/round2.gif
+[exit=0 wall_ms=5]
+[2026-11-28T18:00:36.052Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 python /tmp/b25-f0b/fresh-author/inspect.py /tmp/b25-f0b/fresh-author/round2.gif /tmp/b25-f0b/fresh-author/whole-round2.png 0\,24\,28\,30\,32\,34\,38\,43\,48\,53\,61\,71 4
+[exit=0 wall_ms=236]
+[2026-11-28T18:01:10.173Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp /tmp/b25-f0b/fresh-author/source/fzero_b-props.ts c/
+[exit=0 wall_ms=4]
+[2026-11-28T18:01:10.183Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- render fzero_b --anim fidget_a --jobs 1
+[exit=0 wall_ms=4780]
+[2026-11-28T18:01:14.970Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp ../../assets/creatures/fzero_b/gif/painting-fidget_a.gif /tmp/b25-f0b/fresh-author/episode.gif
+[exit=0 wall_ms=5]
+[2026-11-28T18:01:14.984Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 python /tmp/b25-f0b/fresh-author/inspect.py /tmp/b25-f0b/fresh-author/episode.gif /tmp/b25-f0b/fresh-author/whole-round3.png 0\,24\,28\,30\,32\,34\,38\,43\,48\,53\,61\,71 4
+[exit=0 wall_ms=273]
+[2026-11-28T18:01:15.265Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 python /tmp/b25-f0b/fresh-author/inspect.py /tmp/b25-f0b/fresh-author/episode.gif /tmp/b25-f0b/fresh-author/every-second.png 0\,2\,4\,6\,8\,10\,12\,14\,16\,18\,20\,22\,24\,26\,28\,30\,32\,34\,36\,38\,40\,42\,44\,46\,48\,50\,52\,54\,56\,58\,60\,62\,64\,66\,68\,70 6
+[exit=0 wall_ms=279]
+[2026-11-28T18:01:15.553Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- review fzero_b fidget_a
+[exit=0 wall_ms=3331]
+[2026-11-28T18:01:18.892Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp .studio/ws-log.jsonl /tmp/b25-f0b/fresh-author/ws-log.jsonl
+[exit=0 wall_ms=5]
+[2026-11-28T18:01:18.905Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp c/fzero_b.card.json c/fzero_b-keys.ts c/fzero_b-life.ts c/fzero_b.studio.json /tmp/b25-f0b/fresh-author/source/
+[exit=0 wall_ms=6]
+[2026-11-28T18:01:18.918Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures git status --porcelain --untracked-files=normal
+[exit=0 wall_ms=378]
+[2026-11-28T18:01:19.304Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sha256sum /tmp/b25-f0b/fresh-author/episode.gif
+[exit=0 wall_ms=7]
+[2026-11-28T18:01:41.267Z] cwd=/tmp/b25-f0b/fresh-author taskset -c 4 ./reproduce.sh
+[exit=0 wall_ms=8712]

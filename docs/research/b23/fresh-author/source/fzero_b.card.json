@@ -1,0 +1,163 @@
+{
+  "id": "fzero_b",
+  "name": "fzero_b",
+  "body": "light-quadruped",
+  "theme": "meadow",
+  "rarity": "common",
+  "proportions": {
+    "length": 1,
+    "width": 1,
+    "height": 1,
+    "scale": 1.55
+  },
+  "parts": [
+    "torso",
+    "neck",
+    "head",
+    "foreL",
+    "foreR",
+    "hindL",
+    "hindR",
+    "tail"
+  ],
+  "materials": [
+    {
+      "name": "Основной материал",
+      "tones": [
+        "#473948",
+        "#775149",
+        "#a77357",
+        "#cba182",
+        "#efcfac"
+      ],
+      "texture": "Фактура исходного типа тела"
+    }
+  ],
+  "details": [],
+  "effects": "thorns",
+  "moves": [
+    {
+      "id": "tech_ram",
+      "title": "Таран",
+      "template": "ram",
+      "weapon": "weaponTip",
+      "reference": "mammoth-tusks",
+      "parameters": {
+        "strength": 1,
+        "amplitude": 1,
+        "side": 1,
+        "repeats": 1
+      },
+      "logic": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "id": "tech_leap",
+      "title": "Прыжок с ударом",
+      "template": "leap",
+      "weapon": "footL",
+      "reference": "mammoth-stomp",
+      "parameters": {
+        "strength": 1,
+        "amplitude": 1,
+        "side": 1,
+        "repeats": 1
+      },
+      "logic": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    }
+  ],
+  "life": {
+    "yaw": 0.8,
+    "stride": 23,
+    "beats": [
+      {
+        "at": [
+          0.47,
+          0.8
+        ],
+        "seconds": 1.5,
+        "anim": "idle",
+        "side": 0
+      },
+      {
+        "at": [
+          0.47,
+          0.8
+        ],
+        "seconds": 2,
+        "anim": "walk"
+      },
+      {
+        "at": [
+          0.52,
+          0.78
+        ],
+        "seconds": 1.5,
+        "anim": "look",
+        "side": 0
+      },
+      {
+        "at": [
+          0.52,
+          0.78
+        ],
+        "seconds": 2,
+        "anim": "walk"
+      },
+      {
+        "at": [
+          0.48,
+          0.85
+        ],
+        "seconds": 2,
+        "anim": "tech_ram",
+        "side": 0
+      },
+      {
+        "at": [
+          0.48,
+          0.85
+        ],
+        "seconds": 1.75,
+        "anim": "walk"
+      },
+      {
+        "at": [
+          0.435,
+          0.81
+        ],
+        "seconds": 1.5,
+        "anim": "look",
+        "side": 0
+      },
+      {
+        "at": [
+          0.435,
+          0.81
+        ],
+        "seconds": 1.5,
+        "anim": "walk"
+      },
+      {
+        "at": [
+          0.47,
+          0.8
+        ],
+        "seconds": 2,
+        "anim": "idle",
+        "side": 0
+      }
+    ]
+  }
+}

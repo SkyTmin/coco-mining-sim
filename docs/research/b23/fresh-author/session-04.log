@@ -1,0 +1,645 @@
+    if (key !== 'light') layers[key] = key === 'frame' ? frame : new Px(W, H);
+  const clip: [number, number, number, number] = [b, b, b + w, b + h];
+  // Edge-clamp the backdrop during shake so the field never reveals a transparent seam.
+  blit(layers.bg, bg, b, b);
+  if (dx || dy) blit(layers.bg, bg, b + dx, b + dy, clip);
+  const points = Object.fromEntries(
+    Object.entries(body.points).map(([k, p]) => [
+      k,
+      screenPoint(body, p, feet),
+    ]),
+  );
+  const waterContacts: WaterContact[] = (body.waterContacts ?? []).map(({ socket, kind, phase, size }) => {
+    const [x, y] = points[socket];
+    return [Math.round(x), Math.round(y), kind, Math.floor(phase * 24) % 24, size];
+  });
+  if (scene.waterRows && waterContacts.length) {
+    for (const front of [false, true]) {
+      const canvas = fieldCanvas(w, h, 'water');
+    }
+  }
+  clipFloor(layers.fxu, b, w, h);
+  return {
+    layers,
+    picture: stack(layers, !!lightPixels),
+    light: lightPixels,
+    backdrop,
+    sceneryRays,
+    waterContacts,
+    body,
+    feet: fullFeet,
+    worldFeet: feet,
+    techniqueTrace,
+    contact,
+    motion: at,
+    poseTime: spec.poseStep ? stepPose(poseTime, spec) : at.t,
+    sceneDelay: Math.round(sceneDelay),
+    backgroundFrame: loopFrame,
+    points,
+[exit=0 wall_ms=8]
+
+[2026-11-28T17:58:59.968Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n export\ const\ sizes\|common: types.ts
+158:export const sizes: Record<Rarity, PaintingSize> = {
+159:  common: [160, 128, 96, 8],
+160:  uncommon: [160, 128, 96, 10],
+[exit=0 wall_ms=10]
+
+[2026-11-28T17:58:59.992Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sed -n 274\,294p render.ts
+  if (
+    !name ||
+    name === 'idle' ||
+    !existsSync(join(output, 'bg', 'base.png')) ||
+    !existsSync(join(paintingFrameDir(c, output), 'base.png'))
+  )
+    writePaintingMaterials(c, s, b, output);
+  for (const anim of names) {
+    if (!c.animations[anim]) throw new Error('Unknown animation ' + anim);
+    writePainting(c, s, b, anim, 'normal', scale, output);
+    if (anim === 'life' && c.behavior && lifeCycleCount(c) === 1)
+      copyFileSync(join(output, 'gif', 'painting-life.gif'), join(output, 'gif', 'paintings.gif'));
+    if (anim === 'idle' || anim === main)
+      writePainting(c, s, b, anim, 'gold', scale, output);
+  }
+  const [w, h, bodySize, thickness] = sizeOf(c),
+    idle = c.frame('idle', 0, 0, 'normal');
+  const meta = {
+    id: c.id,
+    rarity: c.rarity,
+    theme: c.theme,
+[exit=0 wall_ms=10]
+
+[2026-11-28T17:59:00.016Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures rg -n fidget\|phase kit/clock.ts
+14:  /** Whole-cycle oscillation that starts and ends at 0 whatever the phase. */
+15:  osc(perSecond: number, phase?: number): number;
+30:    osc: (perSecond, phase = 0) => Math.sin((TAU * cycles(perSecond) * t) / D + phase) - Math.sin(phase),
+[exit=0 wall_ms=11]
+
+[2026-11-28T17:59:23.086Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp /tmp/b25-f0b/fresh-author/source/fzero_b-props.ts /tmp/b25-f0b/fresh-author/source/fzero_b.ts c/
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:59:23.100Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- sheet fzero_b fidget_a --frames 0\,12\,26\,30\,34\,40\,48\,62\,71 --scale 2
+/tmp/b25-f0b/fresh-author/checkout/tools/creatures/.studio/fzero_b-fidget_a.png  1252×436  frames 0,12,26,30,34,40,48,62,71
+legend: yellow = contact, blue = key pose, red border = error, orange border = warning
+[exit=0 wall_ms=3615]
+
+[2026-11-28T17:59:26.722Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp .studio/fzero_b-fidget_a.png /tmp/b25-f0b/fresh-author/pod-round1.png
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:59:26.734Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- render fzero_b --anim fidget_a --jobs 1
+✓ fzero_b: 1 clips, 3 s
+rendered 1/1 in 3 s with 1 jobs, one process a clip
+[exit=0 wall_ms=4070]
+
+[2026-11-28T17:59:50.431Z] cwd=/tmp/b25-f0b/fresh-author/checkout rg --files --hidden --no-ignore assets/creatures/fzero_b
+assets/creatures/fzero_b/bg/front/meadow-clover.png
+assets/creatures/fzero_b/bg/front/meadow-oats.png
+assets/creatures/fzero_b/bg/base.png
+assets/creatures/fzero_b/bg/front.png
+assets/creatures/fzero_b/bg/front-depth.json
+assets/creatures/fzero_b/gif/painting-fidget_a.gif
+assets/creatures/fzero_b/bg/loop/026.png
+assets/creatures/fzero_b/bg/loop/070.png
+assets/creatures/fzero_b/bg/loop/051.png
+assets/creatures/fzero_b/bg/loop/065.png
+assets/creatures/fzero_b/bg/loop/013.png
+assets/creatures/fzero_b/bg/loop/022.png
+assets/creatures/fzero_b/bg/loop/054.png
+assets/creatures/fzero_b/bg/loop/043.png
+assets/creatures/fzero_b/bg/loop/061.png
+assets/creatures/fzero_b/bg/loop/031.png
+assets/creatures/fzero_b/bg/loop/062.png
+assets/creatures/fzero_b/bg/loop/004.png
+assets/creatures/fzero_b/bg/loop/050.png
+assets/creatures/fzero_b/bg/loop/011.png
+assets/creatures/fzero_b/bg/loop/002.png
+assets/creatures/fzero_b/bg/loop/035.png
+assets/creatures/fzero_b/bg/loop/015.png
+assets/creatures/fzero_b/bg/loop/060.png
+assets/creatures/fzero_b/bg/loop/046.png
+assets/creatures/fzero_b/bg/loop/055.png
+assets/creatures/fzero_b/bg/loop/040.png
+assets/creatures/fzero_b/bg/loop/033.png
+assets/creatures/fzero_b/bg/loop/010.png
+assets/creatures/fzero_b/bg/loop/018.png
+assets/creatures/fzero_b/bg/loop/006.png
+assets/creatures/fzero_b/bg/loop/001.png
+assets/creatures/fzero_b/bg/loop/020.png
+assets/creatures/fzero_b/bg/loop/047.png
+assets/creatures/fzero_b/bg/loop/025.png
+assets/creatures/fzero_b/bg/loop/049.png
+assets/creatures/fzero_b/bg/loop/063.png
+assets/creatures/fzero_b/bg/loop/071.png
+assets/creatures/fzero_b/bg/loop/028.png
+assets/creatures/fzero_b/bg/loop/019.png
+assets/creatures/fzero_b/bg/loop/027.png
+assets/creatures/fzero_b/bg/loop/039.png
+assets/creatures/fzero_b/bg/loop/057.png
+assets/creatures/fzero_b/bg/loop/064.png
+assets/creatures/fzero_b/bg/loop/007.png
+assets/creatures/fzero_b/bg/loop/016.png
+assets/creatures/fzero_b/meta.json
+assets/creatures/fzero_b/bg/loop/069.png
+assets/creatures/fzero_b/bg/loop/036.png
+assets/creatures/fzero_b/bg/loop/058.png
+assets/creatures/fzero_b/bg/loop/014.png
+assets/creatures/fzero_b/bg/loop/068.png
+assets/creatures/fzero_b/bg/loop/003.png
+assets/creatures/fzero_b/bg/loop/023.png
+assets/creatures/fzero_b/bg/loop/037.png
+assets/creatures/fzero_b/bg/loop/041.png
+assets/creatures/fzero_b/bg/loop/034.png
+assets/creatures/fzero_b/bg/loop/045.png
+assets/creatures/fzero_b/bg/loop/038.png
+assets/creatures/fzero_b/bg/loop/009.png
+assets/creatures/fzero_b/bg/loop/024.png
+assets/creatures/fzero_b/bg/loop/059.png
+assets/creatures/fzero_b/bg/loop/008.png
+assets/creatures/fzero_b/bg/loop/053.png
+assets/creatures/fzero_b/bg/loop/030.png
+assets/creatures/fzero_b/bg/loop/005.png
+assets/creatures/fzero_b/bg/loop/000.png
+assets/creatures/fzero_b/bg/loop/056.png
+assets/creatures/fzero_b/bg/loop/017.png
+assets/creatures/fzero_b/bg/loop/042.png
+assets/creatures/fzero_b/bg/loop/052.png
+assets/creatures/fzero_b/bg/loop/029.png
+assets/creatures/fzero_b/bg/loop/021.png
+assets/creatures/fzero_b/bg/loop/012.png
+assets/creatures/fzero_b/bg/loop/048.png
+assets/creatures/fzero_b/bg/loop/044.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/016.png
+assets/creatures/fzero_b/bg/loop/032.png
+assets/creatures/fzero_b/bg/loop/066.png
+assets/creatures/fzero_b/bg/loop/067.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/006.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/001.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/020.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/047.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/025.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/049.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/063.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/071.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/028.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/021.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/012.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/048.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/044.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/029.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/032.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/066.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/067.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/053.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/030.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/005.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/000.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/056.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/017.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/042.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/052.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/069.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/036.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/058.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/014.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/068.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/003.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/023.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/037.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/041.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/034.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/045.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/038.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/009.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/024.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/059.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/008.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/026.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/070.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/051.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/065.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/013.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/022.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/054.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/043.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/061.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/031.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/062.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/004.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/050.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/011.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/002.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/035.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/015.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/060.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/046.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/055.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/040.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/033.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/010.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/018.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/019.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/027.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/039.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/057.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/064.png
+assets/creatures/fzero_b/frames/fidget_a/fxu/007.png
+assets/creatures/fzero_b/frames/fidget_a/motion.json
+assets/creatures/fzero_b/frames/fidget_a/fxo/070.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/051.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/065.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/013.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/022.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/054.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/043.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/061.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/031.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/062.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/004.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/050.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/011.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/002.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/035.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/015.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/060.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/046.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/055.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/040.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/033.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/010.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/018.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/019.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/027.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/039.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/057.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/064.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/007.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/016.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/006.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/001.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/020.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/047.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/025.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/049.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/063.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/071.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/028.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/021.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/012.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/048.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/044.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/029.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/032.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/066.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/067.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/053.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/030.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/005.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/000.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/056.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/017.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/042.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/052.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/069.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/036.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/058.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/014.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/068.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/003.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/023.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/037.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/041.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/034.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/045.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/038.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/009.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/024.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/059.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/008.png
+assets/creatures/fzero_b/frames/fidget_a/fxo/026.png
+assets/creatures/fzero_b/frames/fidget_a/body/006.png
+assets/creatures/fzero_b/frames/fidget_a/body/001.png
+assets/creatures/fzero_b/frames/fidget_a/body/020.png
+assets/creatures/fzero_b/frames/fidget_a/body/047.png
+assets/creatures/fzero_b/frames/fidget_a/body/025.png
+assets/creatures/fzero_b/frames/fidget_a/body/049.png
+assets/creatures/fzero_b/frames/fidget_a/body/063.png
+assets/creatures/fzero_b/frames/fidget_a/body/071.png
+assets/creatures/fzero_b/frames/fidget_a/body/028.png
+assets/creatures/fzero_b/frames/fidget_a/body/021.png
+assets/creatures/fzero_b/frames/fidget_a/body/012.png
+assets/creatures/fzero_b/frames/fidget_a/body/048.png
+assets/creatures/fzero_b/frames/fidget_a/body/044.png
+assets/creatures/fzero_b/frames/fidget_a/body/029.png
+assets/creatures/fzero_b/frames/fidget_a/body/032.png
+assets/creatures/fzero_b/frames/fidget_a/body/066.png
+assets/creatures/fzero_b/frames/fidget_a/body/067.png
+assets/creatures/fzero_b/frames/fidget_a/body/053.png
+assets/creatures/fzero_b/frames/fidget_a/body/030.png
+assets/creatures/fzero_b/frames/fidget_a/body/005.png
+assets/creatures/fzero_b/frames/fidget_a/body/000.png
+assets/creatures/fzero_b/frames/fidget_a/body/056.png
+assets/creatures/fzero_b/frames/fidget_a/body/017.png
+assets/creatures/fzero_b/frames/fidget_a/body/042.png
+assets/creatures/fzero_b/frames/fidget_a/body/052.png
+assets/creatures/fzero_b/frames/fidget_a/body/069.png
+assets/creatures/fzero_b/frames/fidget_a/body/036.png
+assets/creatures/fzero_b/frames/fidget_a/body/058.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/006.png
+assets/creatures/fzero_b/frames/fidget_a/body/014.png
+assets/creatures/fzero_b/frames/fidget_a/body/068.png
+assets/creatures/fzero_b/frames/fidget_a/body/003.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/001.png
+assets/creatures/fzero_b/frames/fidget_a/body/023.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/020.png
+assets/creatures/fzero_b/frames/fidget_a/body/037.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/047.png
+assets/creatures/fzero_b/frames/fidget_a/body/041.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/025.png
+assets/creatures/fzero_b/frames/fidget_a/body/034.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/049.png
+assets/creatures/fzero_b/frames/fidget_a/body/045.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/063.png
+assets/creatures/fzero_b/frames/fidget_a/body/038.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/071.png
+assets/creatures/fzero_b/frames/fidget_a/body/009.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/028.png
+assets/creatures/fzero_b/frames/fidget_a/body/024.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/021.png
+assets/creatures/fzero_b/frames/fidget_a/body/059.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/012.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/048.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/044.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/029.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/032.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/066.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/067.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/053.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/030.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/005.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/000.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/056.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/017.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/042.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/052.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/069.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/036.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/058.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/014.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/068.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/003.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/023.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/037.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/041.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/034.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/045.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/038.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/009.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/024.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/059.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/008.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/026.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/070.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/051.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/065.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/013.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/022.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/054.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/043.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/061.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/031.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/062.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/004.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/050.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/011.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/002.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/035.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/015.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/060.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/046.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/055.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/040.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/033.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/010.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/018.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/019.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/027.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/039.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/057.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/064.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/007.png
+assets/creatures/fzero_b/frames/fidget_a/backdrop/016.png
+assets/creatures/fzero_b/frames/fidget_a/body/035.png
+assets/creatures/fzero_b/frames/fidget_a/body/015.png
+assets/creatures/fzero_b/frames/fidget_a/body/060.png
+assets/creatures/fzero_b/frames/fidget_a/body/046.png
+assets/creatures/fzero_b/frames/fidget_a/body/055.png
+assets/creatures/fzero_b/frames/fidget_a/body/040.png
+assets/creatures/fzero_b/frames/fidget_a/body/033.png
+assets/creatures/fzero_b/frames/fidget_a/body/008.png
+assets/creatures/fzero_b/frames/fidget_a/body/010.png
+assets/creatures/fzero_b/frames/fidget_a/body/018.png
+assets/creatures/fzero_b/frames/fidget_a/body/026.png
+assets/creatures/fzero_b/frames/fidget_a/body/019.png
+assets/creatures/fzero_b/frames/fidget_a/body/027.png
+assets/creatures/fzero_b/frames/fidget_a/body/070.png
+assets/creatures/fzero_b/frames/fidget_a/body/039.png
+assets/creatures/fzero_b/frames/fidget_a/body/051.png
+assets/creatures/fzero_b/frames/fidget_a/body/057.png
+assets/creatures/fzero_b/frames/fidget_a/body/065.png
+assets/creatures/fzero_b/frames/fidget_a/body/064.png
+assets/creatures/fzero_b/frames/fidget_a/body/013.png
+assets/creatures/fzero_b/frames/fidget_a/body/007.png
+assets/creatures/fzero_b/frames/fidget_a/body/022.png
+assets/creatures/fzero_b/frames/fidget_a/body/016.png
+assets/creatures/fzero_b/frames/fidget_a/body/054.png
+assets/creatures/fzero_b/frames/fidget_a/body/043.png
+assets/creatures/fzero_b/frames/fidget_a/body/061.png
+assets/creatures/fzero_b/frames/fidget_a/body/004.png
+assets/creatures/fzero_b/frames/fidget_a/body/031.png
+assets/creatures/fzero_b/frames/fidget_a/body/050.png
+assets/creatures/fzero_b/frames/fidget_a/body/062.png
+assets/creatures/fzero_b/frames/fidget_a/body/011.png
+assets/creatures/fzero_b/frames/fidget_a/body/002.png
+assets/creatures/fzero_b/frames/fidget_a/lit/019.png
+assets/creatures/fzero_b/frames/fidget_a/lit/027.png
+assets/creatures/fzero_b/frames/fidget_a/lit/039.png
+assets/creatures/fzero_b/frames/fidget_a/lit/057.png
+assets/creatures/fzero_b/frames/fidget_a/lit/064.png
+assets/creatures/fzero_b/frames/fidget_a/lit/007.png
+assets/creatures/fzero_b/frames/fidget_a/lit/016.png
+assets/creatures/fzero_b/frames/fidget_a/lit/030.png
+assets/creatures/fzero_b/frames/fidget_a/lit/005.png
+assets/creatures/fzero_b/frames/fidget_a/lit/000.png
+assets/creatures/fzero_b/frames/fidget_a/lit/056.png
+assets/creatures/fzero_b/frames/fidget_a/lit/017.png
+assets/creatures/fzero_b/frames/fidget_a/lit/042.png
+assets/creatures/fzero_b/frames/fidget_a/lit/052.png
+assets/creatures/fzero_b/frames/fidget_a/lit/069.png
+assets/creatures/fzero_b/frames/fidget_a/lit/036.png
+assets/creatures/fzero_b/frames/fidget_a/lit/058.png
+assets/creatures/fzero_b/frames/fidget_a/lit/014.png
+assets/creatures/fzero_b/frames/fidget_a/lit/068.png
+assets/creatures/fzero_b/frames/fidget_a/lit/003.png
+assets/creatures/fzero_b/frames/fidget_a/lit/023.png
+assets/creatures/fzero_b/frames/fidget_a/lit/037.png
+assets/creatures/fzero_b/frames/fidget_a/lit/041.png
+assets/creatures/fzero_b/frames/fidget_a/lit/034.png
+assets/creatures/fzero_b/frames/fidget_a/lit/045.png
+assets/creatures/fzero_b/frames/fidget_a/lit/021.png
+assets/creatures/fzero_b/frames/fidget_a/lit/012.png
+assets/creatures/fzero_b/frames/fidget_a/lit/048.png
+assets/creatures/fzero_b/frames/fidget_a/lit/044.png
+assets/creatures/fzero_b/frames/fidget_a/lit/029.png
+assets/creatures/fzero_b/frames/fidget_a/lit/032.png
+assets/creatures/fzero_b/frames/fidget_a/lit/066.png
+assets/creatures/fzero_b/frames/fidget_a/lit/067.png
+assets/creatures/fzero_b/frames/fidget_a/lit/053.png
+assets/creatures/fzero_b/frames/fidget_a/lit/038.png
+assets/creatures/fzero_b/frames/fidget_a/lit/025.png
+assets/creatures/fzero_b/frames/fidget_a/lit/009.png
+assets/creatures/fzero_b/frames/fidget_a/lit/049.png
+assets/creatures/fzero_b/frames/fidget_a/lit/024.png
+assets/creatures/fzero_b/frames/fidget_a/lit/059.png
+assets/creatures/fzero_b/frames/fidget_a/lit/063.png
+assets/creatures/fzero_b/frames/fidget_a/lit/008.png
+assets/creatures/fzero_b/frames/fidget_a/lit/071.png
+assets/creatures/fzero_b/frames/fidget_a/lit/026.png
+assets/creatures/fzero_b/frames/fidget_a/lit/028.png
+assets/creatures/fzero_b/frames/fidget_a/lit/070.png
+assets/creatures/fzero_b/frames/fidget_a/lit/051.png
+assets/creatures/fzero_b/frames/fidget_a/lit/020.png
+assets/creatures/fzero_b/frames/fidget_a/lit/065.png
+assets/creatures/fzero_b/frames/fidget_a/lit/047.png
+assets/creatures/fzero_b/frames/fidget_a/lit/013.png
+assets/creatures/fzero_b/frames/fidget_a/lit/001.png
+assets/creatures/fzero_b/frames/fidget_a/lit/022.png
+assets/creatures/fzero_b/frames/fidget_a/lit/054.png
+assets/creatures/fzero_b/frames/fidget_a/lit/006.png
+assets/creatures/fzero_b/frames/fidget_a/lit/043.png
+assets/creatures/fzero_b/frames/fidget_a/lit/061.png
+assets/creatures/fzero_b/frames/fidget_a/lit/031.png
+assets/creatures/fzero_b/frames/fidget_a/lit/062.png
+assets/creatures/fzero_b/frames/fidget_a/lit/004.png
+assets/creatures/fzero_b/frames/fidget_a/lit/015.png
+assets/creatures/fzero_b/frames/fidget_a/lit/050.png
+assets/creatures/fzero_b/frames/fidget_a/lit/060.png
+assets/creatures/fzero_b/frames/fidget_a/lit/011.png
+assets/creatures/fzero_b/frames/fidget_a/lit/046.png
+assets/creatures/fzero_b/frames/fidget_a/lit/055.png
+assets/creatures/fzero_b/frames/fidget_a/lit/040.png
+assets/creatures/fzero_b/frames/fidget_a/lit/033.png
+assets/creatures/fzero_b/frames/fidget_a/lit/010.png
+assets/creatures/fzero_b/frames/fidget_a/lit/018.png
+assets/creatures/fzero_b/frames/fidget_a/lit/035.png
+assets/creatures/fzero_b/frames/fidget_a/lit/002.png
+[exit=0 wall_ms=8]
+
+[2026-11-28T17:59:50.447Z] cwd=/tmp/b25-f0b/fresh-author/checkout ls -l assets/creatures/fzero_b/gif
+total 188
+-rw------- 1 agent agent 191073 Nov 28 17:59 painting-fidget_a.gif
+[exit=0 wall_ms=6]
+
+[2026-11-28T17:59:50.461Z] cwd=/tmp/b25-f0b/fresh-author/checkout which ffmpeg
+/usr/bin/ffmpeg
+[exit=0 wall_ms=5]
+
+[2026-11-28T17:59:50.472Z] cwd=/tmp/b25-f0b/fresh-author/checkout which chromium
+/usr/bin/chromium
+[exit=0 wall_ms=5]
+
+[2026-11-28T18:00:08.355Z] cwd=/tmp/b25-f0b/fresh-author/checkout cp assets/creatures/fzero_b/gif/painting-fidget_a.gif /tmp/b25-f0b/fresh-author/round1.gif
+[exit=0 wall_ms=5]
+
+[2026-11-28T18:00:08.367Z] cwd=/tmp/b25-f0b/fresh-author/checkout taskset -c 4 python /tmp/b25-f0b/fresh-author/inspect.py /tmp/b25-f0b/fresh-author/round1.gif /tmp/b25-f0b/fresh-author/whole-round1.png 0\,24\,28\,30\,32\,34\,38\,43\,48\,53\,61\,71 4
+[exit=0 wall_ms=1215]
+
+[2026-11-28T18:00:09.591Z] cwd=/tmp/b25-f0b/fresh-author/checkout ffprobe -v error -select_streams v:0 -count_frames -show_entries stream=width\,height\,r_frame_rate\,nb_read_frames\,duration -of json /tmp/b25-f0b/fresh-author/round1.gif
+{
+    "programs": [
+
+    ],
+    "stream_groups": [
+
+    ],
+    "streams": [
+        {
+            "width": 528,
+            "height": 432,
+            "r_frame_rate": "24/1",
+            "duration": "3.000000",
+            "nb_read_frames": "72"
+        }
+    ]
+}
+[exit=0 wall_ms=209]
+
+[2026-11-28T18:00:31.877Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp /tmp/b25-f0b/fresh-author/source/fzero_b-props.ts c/
+[exit=0 wall_ms=6]
+
+[2026-11-28T18:00:31.891Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- render fzero_b --anim fidget_a --jobs 1
+✓ fzero_b: 1 clips, 3 s
+rendered 1/1 in 3 s with 1 jobs, one process a clip
+[exit=0 wall_ms=4144]
+
+[2026-11-28T18:00:36.041Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp ../../assets/creatures/fzero_b/gif/painting-fidget_a.gif /tmp/b25-f0b/fresh-author/round2.gif
+[exit=0 wall_ms=5]
+
+[2026-11-28T18:00:36.052Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 python /tmp/b25-f0b/fresh-author/inspect.py /tmp/b25-f0b/fresh-author/round2.gif /tmp/b25-f0b/fresh-author/whole-round2.png 0\,24\,28\,30\,32\,34\,38\,43\,48\,53\,61\,71 4
+[exit=0 wall_ms=236]
+
+[2026-11-28T18:01:10.173Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp /tmp/b25-f0b/fresh-author/source/fzero_b-props.ts c/
+[exit=0 wall_ms=4]
+
+[2026-11-28T18:01:10.183Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- render fzero_b --anim fidget_a --jobs 1
+✓ fzero_b: 1 clips, 3 s
+rendered 1/1 in 3 s with 1 jobs, one process a clip
+[exit=0 wall_ms=4780]
+
+[2026-11-28T18:01:14.970Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp ../../assets/creatures/fzero_b/gif/painting-fidget_a.gif /tmp/b25-f0b/fresh-author/episode.gif
+[exit=0 wall_ms=5]
+
+[2026-11-28T18:01:14.984Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 python /tmp/b25-f0b/fresh-author/inspect.py /tmp/b25-f0b/fresh-author/episode.gif /tmp/b25-f0b/fresh-author/whole-round3.png 0\,24\,28\,30\,32\,34\,38\,43\,48\,53\,61\,71 4
+[exit=0 wall_ms=273]
+
+[2026-11-28T18:01:15.265Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 python /tmp/b25-f0b/fresh-author/inspect.py /tmp/b25-f0b/fresh-author/episode.gif /tmp/b25-f0b/fresh-author/every-second.png 0\,2\,4\,6\,8\,10\,12\,14\,16\,18\,20\,22\,24\,26\,28\,30\,32\,34\,36\,38\,40\,42\,44\,46\,48\,50\,52\,54\,56\,58\,60\,62\,64\,66\,68\,70 6
+[exit=0 wall_ms=279]
+
+[2026-11-28T18:01:15.553Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures taskset -c 4 npm run -s ws -- review fzero_b fidget_a
+✓ fzero_b fidget_a [overview]: 72 frames, 1.9 s · composes 81 (history 0), rasters 101 (wasted 0, skipped 0)
+  coverage: critic ✓ · events ✓ · seams ✓ · sheet ✓
+  sheet .studio/fzero_b-fidget_a-overview.png
+[exit=0 wall_ms=3331]
+
+[2026-11-28T18:01:18.892Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp .studio/ws-log.jsonl /tmp/b25-f0b/fresh-author/ws-log.jsonl
+[exit=0 wall_ms=5]
+
+[2026-11-28T18:01:18.905Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures cp c/fzero_b.card.json c/fzero_b-keys.ts c/fzero_b-life.ts c/fzero_b.studio.json /tmp/b25-f0b/fresh-author/source/
+[exit=0 wall_ms=6]
+
+[2026-11-28T18:01:18.918Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures git status --porcelain --untracked-files=normal
+?? assets/creatures/fzero_b/
+?? tools/creatures/c/fzero_b-keys.ts
+?? tools/creatures/c/fzero_b-life.ts
+?? tools/creatures/c/fzero_b-props.ts
+?? tools/creatures/c/fzero_b-skin.ts
+?? tools/creatures/c/fzero_b.card.json
+?? tools/creatures/c/fzero_b.studio.json
+?? tools/creatures/c/fzero_b.ts
+?? tools/creatures/node_modules
+[exit=0 wall_ms=378]
+
+[2026-11-28T18:01:19.304Z] cwd=/tmp/b25-f0b/fresh-author/checkout/tools/creatures sha256sum /tmp/b25-f0b/fresh-author/episode.gif
+3a3a93a8a6290341c698b353740c2ebbcb31a9babb8b57b192164eee37037624  /tmp/b25-f0b/fresh-author/episode.gif
+[exit=0 wall_ms=7]
+
+[2026-11-28T18:01:41.267Z] cwd=/tmp/b25-f0b/fresh-author taskset -c 4 ./reproduce.sh
+c/fzero_b.card.json
+c/fzero_b.studio.json
+c/fzero_b-life.ts
+c/fzero_b-keys.ts
+c/fzero_b.ts
+Заготовка готова. Заполни перечень видимых подробностей и пять ответов о каждом приёме перед gate.
+✓ fzero_b: 1 clips, 3 s
+rendered 1/1 in 3 s with 1 jobs, one process a clip
+3a3a93a8a6290341c698b353740c2ebbcb31a9babb8b57b192164eee37037624  /tmp/tmp.1SD9wIUe0q/assets/creatures/fzero_b/gif/painting-fidget_a.gif
+Rebuilt identical bytes at /tmp/tmp.1SD9wIUe0q/assets/creatures/fzero_b/gif/painting-fidget_a.gif
+[exit=0 wall_ms=8712]
