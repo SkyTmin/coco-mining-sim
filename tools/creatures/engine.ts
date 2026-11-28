@@ -419,6 +419,7 @@ export function compose(
     let fieldPen: Pen | undefined;
     let lightCanvas: Canvas | undefined, lightPen: Pen | undefined;
     const fx: FxInput = {
+      ground: scene.ground ?? (() => feet[1]),
       seed: Number(c.fxOptions?.seed ?? 1),
       options: c.fxOptions ?? {},
       palette: c.fxRamp ?? defaultPalette,

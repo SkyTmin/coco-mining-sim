@@ -62,6 +62,8 @@ export interface FxInput {
   /** Linear additive RGB energy, composited over the ordinary effect ink. */
   readonly light: Pen;
   readonly palette: FxPalette;
+  /** Surface height in field pixels at the particle position. */
+  readonly ground: (x: number) => number;
   readonly seed: number;
   readonly options: Readonly<Record<string, number | string | boolean>>;
   under: Pen;
@@ -132,7 +134,7 @@ export interface ForegroundProp {
   depth: number;
   paint: (p: Px) => void;
 }
-export type Scene = ((p: Px, t: number) => void) & { front?: ForegroundProp[]; waterRows?: number[][] }; // opaque field bitmap; 3 s loop
+export type Scene = ((p: Px, t: number) => void) & { front?: ForegroundProp[]; waterRows?: number[][]; ground?: (x: number) => number }; // opaque field bitmap; 3 s loop
 export interface Border {
   wood: [string, string, string, string]; // profile, dark to light; hex strings
   accent: string;
