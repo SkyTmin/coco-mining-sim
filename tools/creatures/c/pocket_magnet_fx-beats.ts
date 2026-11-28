@@ -38,11 +38,16 @@ function fish(f: FxInput, n: number, spread: number) {
   if (after < 0 || after > 0.75) return;
   const [x, y] = stop;
   flash(f.light, x, y, 8, brass, after, 0.23, 0.8);
-  const chips = [-1, 0, 1].map((i) => ({
-    kind: 'grit' as const, x, y, vx: (-8 + i * 7) * spread, vy: -29 - i * 4,
-    life: 0.54 + i * 0.06, size: 0.85, bounce: 0.32, spread: 3,
+  // The stop releases one high chip, one low skip into the felt and a late, near-vertical fleck.
+  const chips = [
+    [-25, -82, 1.18, 0, 0.58],
+    [-4, -117, 1.08, 0.018, 0.71],
+    [8, -61, 0.78, 0.046, 0.50],
+  ].map(([vx, vy, size, delay, life]) => ({
+    kind: 'grit' as const, x: x - 1, y: y - 1,
+    vx: vx * spread, vy, size, delay, life, bounce: 0.43, spread: 3,
   }));
-  drawSim(f, simulate(after, chips, { seed: f.seed, ground: f.ground, palette: brass }));
+  drawSim(f, simulate(after, chips, { seed: f.seed, ground: f.ground, palette: 'material:coins' }));
 }
 
 function star(f: FxInput, n: number, spread: number) {
@@ -76,12 +81,28 @@ function star(f: FxInput, n: number, spread: number) {
     const crest = at(Math.PI * 0.72);
     pointLight(f.light, ...crest, brass, fade);
   }
-  const embers = [-1, 0, 1, 2].map((i) => ({
-    kind: 'ember' as const, x: cx, y: cy + 1,
-    vx: (-8 + i * 12) * spread, vy: -12 - (i % 2) * 9,
-    life: 0.91 + 0.09 * i, size: 0.9, gravity: 0.35, bounce: 0.46, spread: 6,
+  const embers = [
+    [-24, -32, 0.48, 0.74, 1.44, 0.032, 1.25],
+    [-3, 9, 0.37, 0.59, 1.18, 0.075, 0.91],
+    [19, -16, 0.42, 0.68, 1.30, 0.055, 1.08],
+  ].map(([vx, vy, gravity, bounce, size, delay, life]) => ({
+    kind: 'ember' as const, x: cx - 1, y: cy + 1, vx: vx * spread, vy,
+    gravity, bounce, size, delay, life, spread: 4,
   }));
-  drawSim(f, simulate(age, embers, { ground: f.ground, seed: f.seed, palette: brass }));
+  const coal = ['#502e46', '#843741', '#b04f3d', '#e67b39', '#ffc064', '#ffe6a1'];
+  const shower = simulate(age, embers, { ground: f.ground, seed: f.seed, palette: coal, cache: true });
+  for (const e of shower.particles) {
+    const speed = Math.hypot(e.vx, e.vy);
+    if (speed < 18 || e.rest) continue;
+    const tail = Math.min(5.2, speed * 0.037);
+    const tx = e.x - e.vx / speed * tail, ty = e.y - e.vy / speed * tail;
+    const k = Math.min(1, 3 * (1 - (age - e.birth) / e.life));
+    // The dark husk lets the cinders cross a sunbeam without turning into spots of sunlight.
+    f.above.lineS(tx, ty, e.x, e.y, coal[2], 0.88 * k, 0.85);
+    f.above.col(coal[4], 0.94 * k);
+    f.above.line((tx + e.x) / 2, (ty + e.y) / 2, e.x, e.y);
+  }
+  drawSim(f, shower);
   const x = caught.center[0];
   const pool = Math.min(1, age * 8) * Math.max(0, 1 - age / 1.2);
   glow(f.light, x, f.ground(x), 12, brass, 0.32 * pool, 0.26);
