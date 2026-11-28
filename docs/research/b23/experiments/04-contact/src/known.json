@@ -1,0 +1,122 @@
+[
+  {
+    "id": "astral_seer",
+    "clip": "trick",
+    "frame": 73,
+    "cap": "torc",
+    "ell": "armR",
+    "ciLine": 288
+  },
+  {
+    "id": "astral_seer",
+    "clip": "trick_b",
+    "frame": 6,
+    "cap": "torc",
+    "ell": "armR",
+    "ciLine": 291
+  },
+  {
+    "id": "astral_seer",
+    "clip": "phase",
+    "frame": 16,
+    "cap": "torc",
+    "ell": "cheekL",
+    "ciLine": 294
+  },
+  {
+    "id": "dream_sneak",
+    "clip": "trick_b",
+    "frame": 216,
+    "cap": "armL",
+    "ell": "head",
+    "ciLine": 376
+  },
+  {
+    "id": "dream_sneak",
+    "clip": "show",
+    "frame": 129,
+    "cap": "armR",
+    "ell": "chest",
+    "ciLine": 383
+  },
+  {
+    "id": "ember_panda",
+    "clip": "trick",
+    "frame": 79,
+    "cap": "legLF",
+    "ell": "body",
+    "ciLine": 431
+  },
+  {
+    "id": "ember_panda",
+    "clip": "fidget_c",
+    "frame": 43,
+    "cap": "legLF",
+    "ell": "body",
+    "ciLine": 435
+  },
+  {
+    "id": "moon_magician",
+    "clip": "trick",
+    "frame": 116,
+    "cap": "handL",
+    "ell": "hat",
+    "ciLine": 644
+  },
+  {
+    "id": "puff_kit",
+    "clip": "fidget_b",
+    "frame": 23,
+    "cap": "fur",
+    "ell": "head",
+    "ciLine": 780
+  },
+  {
+    "id": "puff_kit",
+    "clip": "trick",
+    "frame": 29,
+    "cap": "seeds",
+    "ell": "neck",
+    "ciLine": 781
+  },
+  {
+    "id": "puff_kit",
+    "clip": "trick_c",
+    "frame": 28,
+    "cap": "seeds",
+    "ell": "neck",
+    "ciLine": 783
+  },
+  {
+    "id": "puff_kit",
+    "clip": "trick_d",
+    "frame": 6,
+    "cap": "seeds",
+    "ell": "head",
+    "ciLine": 785
+  },
+  {
+    "id": "puff_kit",
+    "clip": "sleep_out",
+    "frame": 8,
+    "cap": "mane",
+    "ell": "body",
+    "ciLine": 786
+  },
+  {
+    "id": "puff_kit",
+    "clip": "wake_startled",
+    "frame": 1,
+    "cap": "mane",
+    "ell": "body",
+    "ciLine": 787
+  },
+  {
+    "id": "tuft_owlet",
+    "clip": "trick",
+    "frame": 29,
+    "cap": "legR",
+    "ell": "body",
+    "ciLine": 979
+  }
+]

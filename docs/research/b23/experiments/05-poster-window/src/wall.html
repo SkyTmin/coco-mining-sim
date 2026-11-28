@@ -1,0 +1,77 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* { box-sizing: border-box }
+body { margin: 0 }
+main { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; padding: 8px }
+article { height: 142px; display: grid; place-items: center }
+canvas { max-width:100%; max-height:100%; image-rendering:pixelated }
+</style>
+<main></main>
+<script type="module">
+const input = await (await fetch('/input')).json();
+const poster = new Image();
+poster.src = '/posters.webp';
+await poster.decode();
+const main = document.querySelector('main');
+let draws = 0;
+let cells = [];
+function draw(cell) {
+  const frame = input.rects[cell.id];
+  const [x, y, w, h] = frame;
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  canvas.getContext('2d', {willReadFrequently:true}).drawImage(poster, x,y,w,h, 0,0,w,h);
+  cell.node.append(canvas);
+  draws++;
+  return canvas;
+}
+function update(mode) {
+  for (const cell of cells) {
+    const box = cell.node.getBoundingClientRect();
+    const buffered = box.bottom > -150 && box.top < innerHeight + 150;
+    if (mode==='all' || buffered) {
+      if (!cell.canvas) cell.canvas = draw(cell);
+    } else if (cell.canvas) {
+      cell.canvas.remove();
+      cell.canvas = null;
+    }
+  }
+}
+async function hash(canvas) {
+  const {width:w, height:h} = canvas;
+  const bytes = canvas.getContext('2d').getImageData(0,0,w,h).data;
+  const buf = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(buf),b=>b.toString(16).padStart(2,'0')).join('');
+}
+window.run = async function (ids,mode) {
+  main.replaceChildren(); window.scrollTo(0,0); draws = 0;
+  cells = ids.map((id,index) => {
+    const node = document.createElement('article'); main.append(node);
+    return {id,index,node,canvas:null};
+  });
+  if (innerWidth!==390 || innerHeight!==844) throw new Error('Unexpected mobile viewport');
+  const maxScroll = Math.max(0,document.documentElement.scrollHeight-innerHeight);
+  const results = [];
+  for (const ratio of [0,0.5,1,0.25,0]) {
+    window.scrollTo(0,Math.round(maxScroll*ratio));
+    await new Promise(requestAnimationFrame);
+    const start=performance.now();
+    update(mode);
+    const updateMs=performance.now()-start;
+    let pixels = 0, count = 0;
+    const visible = [];
+    for(const cell of cells){
+      if(cell.canvas){pixels+=cell.canvas.width*cell.canvas.height;count++;}
+      const box=cell.node.getBoundingClientRect();
+      if(box.bottom>0 && box.top<innerHeight){
+        if(!cell.canvas) throw Error('Empty visible cell: '+cell.index);
+        visible.push([cell.index,cell.id,await hash(cell.canvas)]);
+      }
+    }
+    results.push({y:window.scrollY,count,bytes:pixels*4,updateMs,draws,visible});
+  }
+  return results;
+};
+</script>

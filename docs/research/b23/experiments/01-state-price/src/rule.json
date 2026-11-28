@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "painting": "pocket_magnet",
+  "id": "close-star-circuit",
+  "clip": "trick_b",
+  "hitIndex": 0,
+  "cost": 1,
+  "initialCharge": 1,
+  "landmark": "star-socket"
+}
