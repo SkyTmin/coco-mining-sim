@@ -1,0 +1,28 @@
+REFERENCE SHEET — Meadow Colossus, animation "sleep_in" (a grounded yawn folds into a low sleeping rest).
+
+LAYOUT
+One image, 2 columns × 2 rows = 4 equal cells; read left to right, top row first. Requested 1024×1024 px, each cell 512×512 px. Use a clean regular lattice but do not draw it. One complete creature alone in every cell. Flat opaque #FF00FF everywhere outside the creature; no gradient, vignette, shadow under feet, texture or ground. No grid, borders, words, labels, digits, arrows, logos or watermark. Centre each figure at x=50% of its cell, feet at y=86%, crown around y=15%, leave at least 8% empty margin around feet and top and both sides. Equal apparent size, consistent framing, no optical zoom. Ignore the second side-profile view in the attachment; use only its LEFT three-quarter creature for all poses.
+
+CHARACTER LOCK (every cell matches attached approved creature)
+One immense ancient terrestrial tortoise carrying a daisy meadow on one rigid domed shell with a yellow ochre lip. The head takes about 23% of total height, squat scaly column feet below the shell, total height including canopy is one unit. Exactly four legs, each three blunt ivory claws; near legs ochre and separate dark far legs readable behind, two amber eyes (naturally occluded on the far side), one short left-pointing tail, zero arms, ears or horns. Same hooked beak, wrinkled neck, hard shell plates, twisting S-shaped trunk at rear-left with exactly three connected clusters of leaves, three discrete gray stones: small at the roots, large middle crag and loose round front pebble. Earth #8f7958 and #c5ae7c, olive #454d32 and #728843, warm grass #a6b65b, rock #727874 and #b8b39c, eyes #e2b258, dark outline #322f2b. Rich ochre rims and warm yellow foliage highlights as in the specimen. Do not recolour or redesign. Body is about 70% of cell height, feet baseline 86% in every cell.
+
+PROP
+The single tree and the three stones are carried on the turf for the whole sheet, no gripped prop. Stiff roots are fixed to the same patch at rear-left; the trunk is one piece and has no face. Keep front round pebble separate from the mid crag but always on the shell, including under load. Nothing crosses the face.
+
+CAMERA
+Locked front-right three-quarter view, looking slightly down, exactly the same angle as the LEFT character of the specimen. Faces right; do not flip, revolve body or change projection.
+
+STYLE
+Match original crisp pixel clusters, ochre armored scutes, moss and high-contrast 1-pixel outline at sprite scale. Hard cel steps, top-left warm light, dark cool far limbs. No speed lines, motion blur, detached particles, shadow on floor or magenta fringe. Make the key differences clear in silhouette as well as face.
+
+POSES (each cell a different instant)
+Cell 1 — LAST WAKING PAUSE: Four standing columns; chin level, eye half-lidded, beak closed; upper root fixed in its turf and tree upright.
+Cell 2 — YAWN: All four soles stay in the same position. Extend the neck to the right; rotate the lower jaw down 24 degrees around its hinge, showing a dark triangular gape. Chin reaches slightly up, eyelid half closed. The hooked upper beak and eye remain outside the rim.
+Cell 3 — SETTLING: Transfer the weight onto bent nearer foreleg and hind heels. Near and far front knees fold, shell sinks 6% of standing height. Beak closes, chin retracts halfway toward front opening, eyelid a slit. The tree nods 5 degrees while roots stay fixed.
+Cell 4 — ASLEEP: Rest body on low folded legs with claws still visible at the floor. Tuck chin just within the arch, outside edge of the cheek and single unmistakably closed eye still visible. Arch lowers by 8% of standing height, tree bows a little more; no loose leaves. The shell has not changed size.
+
+CONTACT
+The weight-bearing soles TOUCH the same invisible flat floor; the lowest tip of each supporting near foot lies on the baseline. Show the underside gap only for deliberately raised feet. Use overlap and cast occlusion only inside the creature. Body cannot float.
+
+AVOID
+Extra limbs, toes, eyes, antlers or leaves floating outside the silhouette, duplicating or fusing legs, spurious front foot just behind the head, duplicated tortoise, cropped canopy or tail, detached head, arm-like limb, changes in boulder count, inconsistent design, pasted identical poses, frame edges, caption, shadow or scenery. Preserve physical support and visibility of the near eye.

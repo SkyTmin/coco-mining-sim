@@ -1,0 +1,1583 @@
+// Effects and kitchen props of Пончик и Шустрик, in the manner of the 1940s theatrical cartoons: circling stars and
+// little buns over a bonked head, a bump, speed lines, sweat drops, flour, water, honey. No fire, no explosions.
+// Props are painted like the background (duller than the heroes, a thin dark-brown outline) and stand where the
+// kitchen layout (KITCHEN in the poses) puts them; each one is drawn under the heroes, or over them when a hero is
+// behind it. Every prop comes from somewhere and goes somewhere (skill: logic of objects).
+import { hash } from '../kit/f11-mobkit';
+import { disc, fillPoly, fillSeg, star, type Pen } from '../fx/pen';
+import type { FxInput, XY } from '../types';
+import { DOOR } from '../scenes/tea_kitchen';
+import { beats, CUP_AT, DOOR_LEAF, doorAngle, gesture, KITCHEN, PAN_FLOOR, PAN_HOOK, PX } from './bun_panda-poses';
+
+const TAU = Math.PI * 2;
+const INK = '#1e1620';
+const LINE = '#2a1a10';
+const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
+const prog = (f: number, a: number, b: number) => clamp01((f - a) / (b - a));
+const smooth = (x: number) => x * x * (3 - 2 * x);
+const H = KITCHEN.home;
+/** World point (rig units) → painting px. */
+export const W = (x: number, y: number, z = 0): XY => [H[0] + PX.s * x, H[1] + PX.y * y - PX.z * z];
+/** Painting px → world Y on the floor. */
+const floorY = (py: number) => (py - H[1]) / PX.y;
+
+// ---- painting helpers ----------------------------------------------------------------------------------------------
+function ell(p: Pen, cx: number, cy: number, rx: number, ry: number, c: string, a = 1) {
+  if (rx < 0.3 || ry < 0.3 || a <= 0) return;
+  p.col(c, a);
+  for (let y = Math.ceil(cy - ry); y <= Math.floor(cy + ry); y++) {
+    const xr = rx * Math.sqrt(Math.max(0, 1 - ((y - cy) / ry) ** 2));
+    const x0 = Math.ceil(cx - xr),
+      x1 = Math.floor(cx + xr);
+    if (x1 >= x0) p.span(x0, y, x1 - x0 + 1);
+  }
+}
+/** A shaded ellipse with an outline: shadow band below, base, a light patch upper left. */
+function blob(p: Pen, cx: number, cy: number, rx: number, ry: number, t: [string, string, string], line = LINE, a = 1) {
+  ell(p, cx, cy, rx + 1, ry + 1, line, a);
+  ell(p, cx, cy, rx, ry, t[0], a);
+  ell(p, cx - rx * 0.06, cy - ry * 0.12, rx * 0.9, ry * 0.8, t[1], a);
+  ell(p, cx - rx * 0.32, cy - ry * 0.38, rx * 0.32, ry * 0.24, t[2], a);
+}
+function poly(p: Pen, pts: number[], c: string, a = 1) {
+  p.col(c, a);
+  fillPoly(p, pts);
+}
+function seg(p: Pen, x0: number, y0: number, x1: number, y1: number, w: number, c: string, a = 1) {
+  p.col(c, a);
+  fillSeg(p, x0, y0, x1, y1, w);
+}
+function dot(p: Pen, x: number, y: number, r: number, c: string, a = 1, line = INK) {
+  p.col(line, a);
+  disc(p, x, y, r + 1);
+  p.col(c, a);
+  disc(p, x, y, r);
+}
+function starInk(p: Pen, x: number, y: number, r: number, rot: number, c: string, a = 1) {
+  p.col(INK, a);
+  star(p, x, y, r + 1.5, 5, rot);
+  p.col(c, a);
+  star(p, x, y, r, 5, rot);
+  p.col('#fff8d0', a);
+  star(p, x - r * 0.15, y - r * 0.2, r * 0.35, 5, rot);
+}
+/** A cartoon impact: a white jagged burst with an ink rim and short strike lines. */
+export function boom(p: Pen, x: number, y: number, r: number, age: number, seed = 0) {
+  if (age < 0 || age > 6) return;
+  const k = age < 2 ? 0.6 + age * 0.3 : 1.2 - (age - 2) * 0.12;
+  const a = age < 4 ? 1 : 1 - (age - 4) / 2;
+  p.col(INK, a);
+  star(p, x, y, r * k + 2, 9, seed);
+  p.col('#fffbe8', a);
+  star(p, x, y, r * k, 9, seed);
+  p.col('#ffe27a', a);
+  star(p, x, y, r * k * 0.5, 9, seed + 0.3);
+  for (let i = 0; i < 6; i++) {
+    const ang = seed + (i / 6) * TAU + 0.26;
+    const r0 = r * k * 1.25,
+      r1 = r0 + 5 + age;
+    seg(p, x + Math.cos(ang) * r0, y + Math.sin(ang) * r0 * 0.8, x + Math.cos(ang) * r1, y + Math.sin(ang) * r1 * 0.8, 0.8, INK, a);
+  }
+}
+/** Speed lines trailing behind a mover (dir = direction of travel). */
+function speedLines(p: Pen, x: number, y: number, dx: number, dy: number, len: number, n: number, spread: number, seed: number, a = 0.8) {
+  const L = Math.hypot(dx, dy) || 1;
+  const ux = dx / L,
+    uy = dy / L;
+  for (let i = 0; i < n; i++) {
+    const off = (i / Math.max(1, n - 1) - 0.5) * spread;
+    const j = hash(i, seed) * 0.6 + 0.4;
+    const sx = x - ux * 6 - uy * off,
+      sy = y - uy * 6 + ux * off;
+    seg(p, sx, sy, sx - ux * len * j, sy - uy * len * j, 0.5, '#fffbe8', a);
+  }
+}
+/** Sweat drops flying off a head. */
+function sweat(p: Pen, x: number, y: number, age: number, seed: number) {
+  if (age < 0 || age > 10) return;
+  for (let i = 0; i < 3; i++) {
+    const side = i % 2 ? 1 : -1;
+    const vx = side * (6 + hash(i, seed) * 6),
+      vy = -10 - hash(i, seed + 1) * 6;
+    const tt = age / 10;
+    const px = x + side * 10 + vx * tt * 2,
+      py = y - 8 + vy * tt * 2 + 40 * tt * tt;
+    dot(p, px, py, 2, '#bfe6ff', 1 - tt * 0.6);
+    p.col('#ffffff', 1 - tt);
+    p.dot(px - 1, py - 1);
+  }
+}
+/** A puff of dust (a cartoon cloud with an outline), growing and fading. */
+function puff(p: Pen, x: number, y: number, r: number, age: number, life: number, seed: number, c = '#d8c8b0') {
+  if (age < 0 || age > life) return;
+  const tt = age / life;
+  const a = 1 - tt;
+  const R = r * (0.5 + tt * 0.8);
+  for (let i = 0; i < 5; i++) {
+    const ang = seed + (i / 5) * TAU;
+    const cx = x + Math.cos(ang) * R * 0.7,
+      cy = y + Math.sin(ang) * R * 0.35 - tt * 6;
+    ell(p, cx, cy, R * 0.55 + 1, R * 0.45 + 1, LINE, a * 0.8);
+  }
+  for (let i = 0; i < 5; i++) {
+    const ang = seed + (i / 5) * TAU;
+    const cx = x + Math.cos(ang) * R * 0.7,
+      cy = y + Math.sin(ang) * R * 0.35 - tt * 6;
+    ell(p, cx, cy, R * 0.55, R * 0.45, c, a);
+  }
+}
+
+// ---- the stars-and-buns ring --------------------------------------------------------------------------------------
+function bunMini(p: Pen, x: number, y: number, r: number) {
+  dot(p, x, y, r, '#f6ecdc');
+  p.col('#c8b49a');
+  p.dot(x - 1, y - r + 1, 2, 1);
+  p.dot(x, y - r, 1, 1);
+}
+/** Stars and buns circling a bonked head: the back half under the body, the front half over it. */
+export function dizzyRing(f: FxInput, at: XY, w: number, phase: number, k: number) {
+  const n = 5;
+  for (let i = 0; i < n; i++) {
+    const a = phase + (i / n) * TAU;
+    const x = at[0] + Math.cos(a) * w,
+      y = at[1] + Math.sin(a) * w * 0.32;
+    const front = Math.sin(a) > 0;
+    const pen = front ? f.above : f.under;
+    const s = (front ? 1 : 0.75) * k;
+    if (i % 2 === 0) starInk(pen, x, y, 5 * s, a * 2, '#ffd23a');
+    else bunMini(pen, x, y, 3.6 * s);
+  }
+}
+
+// ---- kitchen props -------------------------------------------------------------------------------------------------
+export interface Props {
+  /** Rug slide (rig units along x) and its crumple. */
+  rugX: number;
+  /** Lanterns swing amplitude (radians) and phase time. */
+  swing: number;
+  /** Steamers on the table: lid off (0..1), buns showing, the stack's hop (px). */
+  lidOff: number;
+  hop: number;
+  buns: number;
+  /** The bamboo stalk's tip in painting px when bent (null = at rest, `spring` = its decaying wobble). */
+  stalkTip: XY | null;
+  spring: number;
+  stalkFront?: boolean;
+  shoot: boolean;
+  /** Honey jar on the bench. */
+  jarOnBench: boolean;
+  /** Barrel water splash (0..1) and a puddle under it. */
+  splash: number;
+  puddle: number;
+  /** Floor wave from a fall: centre px, age in frames. */
+  wave: [number, number, number] | null;
+  /** The lattice door's swing (radians, 0 shut) and whether its leaf is in front of the heroes. */
+  door: number;
+  doorFront: boolean;
+  /** The frying pan on its hook by the door, and its swing (radians). */
+  panOnWall: boolean;
+  panSwing: number;
+}
+const REST_PROPS: Props = { rugX: 0, swing: 0, lidOff: 0, hop: 0, buns: 3, stalkTip: null, spring: 0, shoot: true, jarOnBench: true, splash: 0, puddle: 0, wave: null, door: 0, doorFront: false, panOnWall: true, panSwing: 0 };
+
+function shadow(p: Pen, at: XY | undefined, rx: number, ry: number, up: number) {
+  if (!at) return;
+  const k = 1 / (1 + 0.012 * Math.max(0, up));
+  ell(p, at[0], at[1], rx * k, ry * k, '#1a0e08', 0.32 * k + 0.08);
+}
+function table(p: Pen, pr: Props) {
+  const T = KITCHEN.table;
+  const [cx, cy] = W(T.x, T.y, T.top);
+  const rx = T.r * PX.s,
+    ry = T.r * PX.y;
+  const wood: [string, string, string] = ['#4a2c18', '#6e4428', '#93603a'];
+  // legs: the three we can see
+  for (const ang of [0.5, Math.PI / 2, Math.PI - 0.5]) {
+    const lx = cx + Math.cos(ang) * rx * 0.72,
+      ly = cy + Math.sin(ang) * ry * 0.72;
+    const [, fy] = W(T.x, T.y + Math.sin(ang) * T.r * 0.72, 0);
+    seg(p, lx, ly, lx, fy, 3, LINE);
+    seg(p, lx, ly, lx, fy - 1, 2, wood[1]);
+  }
+  // the top: a thick round board
+  ell(p, cx, cy + 4, rx + 1, ry + 1, LINE);
+  ell(p, cx, cy + 4, rx, ry, wood[0]);
+  ell(p, cx, cy, rx + 1, ry + 1, LINE);
+  ell(p, cx, cy, rx, ry, wood[1]);
+  ell(p, cx - rx * 0.15, cy - ry * 0.2, rx * 0.7, ry * 0.55, wood[2], 0.55);
+  // steamers: two bamboo baskets stacked with a lid
+  steamers(p, cx + STEAM_DX, cy + 2 - pr.hop, pr);
+}
+/** The steamers stand at the table's right edge (where Пончик can reach them). */
+const STEAM_DX = 27;
+function steamers(p: Pen, x: number, y: number, pr: Props) {
+  const bam: [string, string, string] = ['#8a6a2c', '#c49a48', '#ecd088'];
+  const rx = 15,
+    ry = 7;
+  for (let k = 0; k < 2; k++) {
+    const by = y - k * 8;
+    ell(p, x, by, rx + 1, ry + 1, LINE);
+    poly(p, [x - rx - 1, by, x + rx + 1, by, x + rx + 1, by - 8, x - rx - 1, by - 8], LINE);
+    ell(p, x, by, rx, ry, bam[0]);
+    poly(p, [x - rx, by, x + rx, by, x + rx, by - 7, x - rx, by - 7], bam[1]);
+    for (let i = -2; i <= 2; i++) seg(p, x + i * 6, by - 7, x + i * 6, by, 0.3, bam[0]);
+    seg(p, x - rx, by - 4, x + rx, by - 4, 0.4, bam[2]);
+  }
+  const top = y - 16;
+  ell(p, x, top, rx + 1, ry + 1, LINE);
+  ell(p, x, top, rx, ry, '#f2e6cc');
+  // the buns inside, then the lid (it lifts and slides off to the side)
+  for (let i = 0; i < pr.buns; i++) bunMini(p, x - 6 + i * 6, top - 1 + (i % 2), 3.4);
+  const lo = pr.lidOff;
+  if (lo < 0.99) {
+    const lx = x + lo * 22,
+      ly = top - 2 - Math.sin(lo * Math.PI) * 8;
+    ell(p, lx, ly, rx + 2, ry + 2, LINE);
+    ell(p, lx, ly, rx + 1, ry + 1, bam[1]);
+    ell(p, lx - 3, ly - 2, rx * 0.6, ry * 0.5, bam[2]);
+    seg(p, lx - 2, ly - 3, lx + 2, ly - 3, 1.2, LINE);
+  }
+  // steam curls
+  if (lo > 0.4) for (let i = 0; i < 3; i++) ell(p, x - 6 + i * 6, top - 10 - i * 3, 2.4, 1.8, '#fbf6ee', 0.5);
+}
+function rug(p: Pen, pr: Props) {
+  const R = KITCHEN.rug;
+  const [cx, cy] = W(R.x + pr.rugX, R.y);
+  const rx = R.rx * PX.s,
+    ry = R.ry * PX.y;
+  ell(p, cx, cy, rx + 1, ry + 1, LINE);
+  ell(p, cx, cy, rx, ry, '#8e2a22');
+  ell(p, cx, cy, rx - 4, ry - 2.5, '#c08a2c');
+  ell(p, cx, cy, rx - 6, ry - 4, '#a83a2c');
+  ell(p, cx, cy, rx * 0.45, ry * 0.45, '#c08a2c');
+  ell(p, cx, cy, rx * 0.45 - 2, ry * 0.45 - 1.5, '#7a2420');
+  // fringe at the two ends
+  for (const s of [-1, 1]) for (let i = -3; i <= 3; i++) seg(p, cx + s * rx, cy + i * 2.2, cx + s * (rx + 4), cy + i * 2.2, 0.3, '#e8c870');
+}
+function barrel(p: Pen, pr: Props, f: number) {
+  const B = KITCHEN.barrel;
+  const [cx, cy] = W(B.x, B.y);
+  const rx = B.r * PX.s,
+    ry = B.r * PX.y,
+    h = B.h * PX.z;
+  const wood: [string, string, string] = ['#3e2414', '#62391f', '#8a5630'];
+  if (pr.puddle > 0.02) ell(p, cx + 14, cy + 8, 30 * pr.puddle, 8 * pr.puddle, '#6aa8c8', 0.7);
+  ell(p, cx, cy, rx + 1, ry + 1, LINE);
+  poly(p, [cx - rx - 1, cy, cx + rx + 1, cy, cx + rx + 3, cy - h * 0.5, cx + rx + 1, cy - h, cx - rx - 1, cy - h, cx - rx - 3, cy - h * 0.5], LINE);
+  ell(p, cx, cy, rx, ry, wood[0]);
+  poly(p, [cx - rx, cy, cx + rx, cy, cx + rx + 2, cy - h * 0.5, cx + rx, cy - h, cx - rx, cy - h, cx - rx - 2, cy - h * 0.5], wood[1]);
+  poly(p, [cx - rx * 0.5, cy, cx - rx * 0.1, cy, cx - rx * 0.1, cy - h, cx - rx * 0.5, cy - h], wood[2]);
+  for (let i = -3; i <= 3; i++) seg(p, cx + i * rx * 0.28, cy - h + 2, cx + i * rx * 0.3, cy + ry * 0.6, 0.3, wood[0]);
+  for (const k of [0.2, 0.78]) seg(p, cx - rx - 2, cy - h * k, cx + rx + 2, cy - h * k, 1.2, '#2a2a34');
+  // the rim and the water (it heaves after a splash)
+  ell(p, cx, cy - h, rx + 1, ry + 1, LINE);
+  ell(p, cx, cy - h, rx, ry, wood[1]);
+  ell(p, cx, cy - h + 1, rx - 3, ry - 2, '#3e7aa0');
+  ell(p, cx - 4, cy - h, rx * 0.4, ry * 0.3, '#8ac8e8', 0.8 + 0.2 * Math.sin(f * 0.4));
+}
+function sack(p: Pen) {
+  const [cx, cy] = W(KITCHEN.sack.x, KITCHEN.sack.y);
+  ell(p, cx + 4, cy + 3, 26, 7, '#1a0e08', 0.25);
+  // a lumpy linen sack tied at the top, flour dusting the floor
+  ell(p, cx + 18, cy + 4, 10, 3, '#efe8dc', 0.7);
+  blob(p, cx, cy - 16, 19, 19, ['#a8977a', '#d2c4a6', '#f0e6cc']);
+  blob(p, cx - 1, cy - 34, 9, 6, ['#a8977a', '#d2c4a6', '#f0e6cc']);
+  seg(p, cx - 7, cy - 30, cx + 6, cy - 30, 1.4, '#7a3020');
+  ell(p, cx, cy - 15, 9, 7, '#5a7ab0', 0.8);
+  ell(p, cx, cy - 15, 5, 4, '#d2c4a6');
+}
+function tub(p: Pen, pr: Props, f: number, front: Pen | null = null) {
+  const Tb = KITCHEN.tub;
+  const [cx, cy] = W(Tb.x, Tb.y);
+  const base: XY = [cx, cy - 16];
+  // the stalk: rest tip straight up; bent to a held tip; springing back with a decaying wobble
+  const restTip: XY = [cx + 4, cy - Tb.stalk * PX.z];
+  let tip: XY = pr.stalkTip ?? [restTip[0] + pr.spring * 26 * Math.sin(f * 1.1), restTip[1] + Math.abs(pr.spring) * 6];
+  const ctrl: XY = [base[0] + (tip[0] - base[0]) * 0.1, base[1] + (tip[1] - base[1]) * 0.6];
+  const pts: XY[] = [];
+  for (let i = 0; i <= 14; i++) {
+    const u = i / 14;
+    pts.push([(1 - u) ** 2 * base[0] + 2 * u * (1 - u) * ctrl[0] + u * u * tip[0], (1 - u) ** 2 * base[1] + 2 * u * (1 - u) * ctrl[1] + u * u * tip[1]]);
+  }
+  const pen = (i: number) => (front && i > 8 ? front : p);
+  for (let i = 1; i < pts.length; i++) seg(pen(i), pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], 3.6 - i * 0.12, LINE);
+  for (let i = 1; i < pts.length; i++) seg(pen(i), pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], 2.6 - i * 0.12, '#5a9a3a');
+  for (let i = 3; i < pts.length; i += 3) {
+    seg(p, pts[i][0] - 3, pts[i][1], pts[i][0] + 3, pts[i][1], 0.8, '#2c5a22');
+    const s = i % 2 ? 1 : -1;
+    poly(pen(i), [pts[i][0], pts[i][1], pts[i][0] + s * 12, pts[i][1] - 5, pts[i][0] + s * 4, pts[i][1] - 2], '#2c5a22');
+    poly(pen(i), [pts[i][0], pts[i][1] - 1, pts[i][0] + s * 11, pts[i][1] - 5, pts[i][0] + s * 4, pts[i][1] - 3], '#5aa83a');
+  }
+  if (pr.shoot) {
+    // the juicy shoot at the top
+    const [tx, ty] = tip;
+    blob(front ?? p, tx, ty - 3, 3, 6, ['#6aa83a', '#a8e060', '#e8ffb0'], LINE);
+  }
+  tip = tip;
+  // the tub
+  const rx = 15,
+    ry = 7;
+  ell(p, cx, cy, rx + 1, ry + 1, LINE);
+  poly(p, [cx - rx - 1, cy, cx + rx + 1, cy, cx + rx + 3, cy - 16, cx - rx - 3, cy - 16], LINE);
+  ell(p, cx, cy, rx, ry, '#4a2c18');
+  poly(p, [cx - rx, cy, cx + rx, cy, cx + rx + 2, cy - 15, cx - rx - 2, cy - 15], '#7a4c2a');
+  seg(p, cx - rx - 2, cy - 11, cx + rx + 2, cy - 11, 1, '#2a2a34');
+  ell(p, cx, cy - 16, rx + 3, ry + 1, LINE);
+  ell(p, cx, cy - 16, rx + 2, ry, '#5a3a20');
+  ell(p, cx, cy - 16, rx - 1, ry - 2, '#3a2a18');
+}
+/** The honey pot (k = size): glazed body, cream label with a honey drop, honey at the open mouth. */
+function honeyJar(p: Pen, x: number, y: number, a = 1, k = 1.7) {
+  blob(p, x, y - 7 * k, 7 * k, 8 * k, ['#6a3418', '#a85a2c', '#dc8a4a'], LINE, a);
+  ell(p, x + 1, y - 6.5 * k, 4.6 * k, 2.6 * k, '#e8dcc0', a);
+  ell(p, x + 1, y - 6.5 * k, 1.4 * k, 1.6 * k, '#f0a820', a);
+  ell(p, x, y - 15 * k, 5 * k, 2 * k, '#f0a820', a);
+  seg(p, x + 3 * k, y - 14 * k, x + 3 * k, y - 8 * k, 0.8 * k, '#f0a820', a);
+  ell(p, x, y - 16 * k, 6 * k, 2.4 * k, LINE, a);
+  ell(p, x, y - 16.5 * k, 5 * k, 1.8 * k, '#e8d8b0', a);
+}
+function lanterns(p: Pen, pr: Props, f: number) {
+  const x0 = 150,
+    x1 = 330;
+  const n = 4;
+  for (let i = 0; i <= 20; i++) {
+    const u = i / 20;
+    const x = x0 + (x1 - x0) * u,
+      y = 12 + Math.sin(u * Math.PI) * 10;
+    p.col(LINE);
+    p.dot(x, y);
+  }
+  for (let i = 0; i < n; i++) {
+    const u = (i + 0.5) / n;
+    const ax = x0 + (x1 - x0) * u,
+      ay = 12 + Math.sin(u * Math.PI) * 10;
+    const sw = pr.swing * Math.sin(f * 0.5 + i * 0.9) + 0.03 * Math.sin(f * 0.13 + i);
+    const L = 9;
+    const lx = ax + Math.sin(sw) * L,
+      ly = ay + Math.cos(sw) * L;
+    seg(p, ax, ay, lx, ly - 6, 0.4, LINE);
+    blob(p, lx, ly, 6, 7, ['#8e1e1a', '#d0382a', '#ff7a5a'], LINE);
+    seg(p, lx - 4, ly - 7, lx + 4, ly - 7, 1, '#e8b040');
+    seg(p, lx - 4, ly + 7, lx + 4, ly + 7, 1, '#e8b040');
+    seg(p, lx, ly + 8, lx + Math.sin(sw) * 2, ly + 13, 0.5, '#e8b040');
+  }
+}
+
+// ---- who is where ---------------------------------------------------------------------------------------------------
+interface Who {
+  panda: XY | null;
+  monkey: XY | null;
+}
+/** Which pen a prop at floor depth `py` (painting px) belongs to: over the heroes when one of them stands behind it
+ * within `half` px across, otherwise the field-anchored backdrop. The kitchen stands still in the painting: in the
+ * gallery the performer's layers (`under`, `above`) travel with the pet when it walks, the backdrop does not
+ * [владелец 23.11: «когда панда ходит, вместе с ней ходят предметы и окружение»]. A hero stands behind a prop only in
+ * tricks at home, where the performer's layers are not shifted. */
+function penFor(f: FxInput, who: Who, px: number, py: number, half: number) {
+  for (const at of [who.panda, who.monkey])
+    if (at && Math.abs(at[0] - px) < half && at[1] < py - 2) return f.above;
+  return f.backdrop;
+}
+
+/** Decaying swing after an impact at frame `at`. */
+const ring = (fr: number, at: number, amp: number, life = 40) => (fr >= at ? amp * Math.max(0, 1 - (fr - at) / life) : 0);
+function propsFor(anim: string, fr: number, P: Record<string, number>, f: FxInput): Props {
+  const pr = { ...REST_PROPS };
+  pr.rugX = P.rugX ?? 0;
+  if (anim === 'trick') {
+    const b = beats.trick;
+    pr.lidOff = fr < b.lid[0] ? 0 : fr < b.lid[1] ? smooth(prog(fr, b.lid[0], b.lid[1])) : fr < b.lid[2] ? 1 : 1 - smooth(prog(fr, b.lid[2], b.lid[2] + 3));
+    pr.buns = fr < b.snatch ? 3 : 2;
+    pr.hop = fr >= b.land && fr < b.land + 8 ? Math.sin(prog(fr, b.land, b.land + 8) * Math.PI) * 6 : 0;
+    pr.swing = ring(fr, b.land, 0.6);
+    pr.wave = fr >= b.land && fr < b.land + 14 ? [...W(1.5, 3), fr - b.land] : null;
+  }
+  if (anim === 'trick_b') {
+    const b = beats.trick_b;
+    const held = b.hold.find(([a, c]) => fr >= a && fr < c);
+    const hl = f.points.handL,
+      hr = f.points.handR;
+    // paws far apart (up at the sides of his head) — the right paw has the stalk; together — between them
+    if (held && hl && hr) pr.stalkTip = Math.hypot(hl[0] - hr[0], hl[1] - hr[1]) > 40 ? [hr[0], hr[1] - 3] : [(hl[0] + hr[0]) / 2, (hl[1] + hr[1]) / 2 - 3];
+    else {
+      const rel = [b.hold[0][1], b.hold[1][1]].filter((r) => fr >= r).pop();
+      if (rel !== undefined) pr.spring = Math.max(0, 1 - (fr - rel) / 30) * (rel === b.hold[1][1] ? 1.2 : 0.9);
+    }
+    pr.stalkFront = !!held && fr >= 70;
+    pr.shoot = fr < b.shoot;
+    pr.puddle = fr < b.splash ? 0 : fr < 250 ? Math.min(1, (fr - b.splash) / 4) : 1 - 0.6 * prog(fr, 250, 276);
+    pr.swing = ring(fr, b.splash, 0.4);
+  }
+  if (anim === 'trick_c') {
+    const b = beats.trick_c;
+    // the pot leaves the bench, rides his head, flies back after the pop
+    pr.jarOnBench = fr < b.lift[0] || fr >= b.jarFly[1];
+    // the table jolts when his hip hits it; the steamer lid is off while it bounces on his jar
+    pr.hop = fr >= b.table && fr < b.table + 6 ? Math.sin(prog(fr, b.table, b.table + 6) * Math.PI) * 5 : 0;
+    pr.lidOff = fr >= b.table + 1 && fr < b.lidHome ? 1 : 0;
+    pr.swing = Math.max(ring(fr, b.door, 0.3), ring(fr, b.table, 0.4));
+  }
+  if (anim === 'trick-f2') {
+    const b = beats['trick-f2'];
+    // he sits down so hard the table jumps; the steamer lid is away while it flies and bounces
+    pr.hop = fr >= b.table && fr < b.table + 6 ? Math.sin(prog(fr, b.table, b.table + 6) * Math.PI) * 5 : 0;
+    pr.lidOff = fr > b.table && fr < b.lidHome ? 1 : 0;
+    pr.swing = Math.max(ring(fr, b.bong, 0.5), ring(fr, b.bong2, 0.35), ring(fr, b.table, 0.3));
+  }
+  if (anim === 'show') {
+    const b = beats.show;
+    // a pot bounces off the table: the steamers jump; the floor shakes when he lands
+    pr.hop = fr >= b.potB[2] && fr < b.potB[2] + 6 ? Math.sin(prog(fr, b.potB[2], b.potB[2] + 6) * Math.PI) * 5 : 0;
+    pr.swing = Math.max(ring(fr, b.floor, 0.4), ring(fr, b.bong, 0.3));
+  }
+  if (anim === 'trick_c-f2') {
+    const b = beats['trick_c-f2'];
+    pr.door = doorAngle(fr);
+    // the leaf passes in front of him as it sweeps him onto the wall, and in front of Шустрик as he pulls it shut
+    pr.doorFront = fr >= b.slam + 3 && fr < b.shut[1] + 2;
+    // pressed into his back on the wall; peeled off with him; flicked back onto its hook at the end
+    pr.panOnWall = fr < b.peel[0] || fr >= b.hook;
+    pr.panSwing = fr >= b.hook ? 0.5 * Math.exp(-(fr - b.hook) / 7) * Math.cos((fr - b.hook) * 0.9) : 0;
+    pr.swing = Math.max(ring(fr, b.slam, 0.4), ring(fr, b.bong, 0.35), ring(fr, b.floor, 0.2));
+  }
+  if (anim === 'trick_b-f2') {
+    const b = beats['trick_b-f2'];
+    // the whole room shakes when he hits the glass; the steamers jump when he walks into the table
+    pr.hop = fr >= b.thud && fr < b.thud + 6 ? Math.sin(prog(fr, b.thud, b.thud + 6) * Math.PI) * 6 : 0;
+    pr.swing = Math.max(ring(fr, b.splat, 0.6), ring(fr, b.thud, 0.3));
+  }
+  return pr;
+}
+
+function drawKitchen(f: FxInput, pr: Props, who: Who, fr: number) {
+  const T = KITCHEN.table;
+  const tb = W(T.x, T.y);
+  const tablePen = penFor(f, who, tb[0], tb[1] + T.r * PX.y * 0.6, T.r * PX.s + 10);
+  const back = f.backdrop;
+  rug(back, pr);
+  table(tablePen, pr);
+  const tbb = W(KITCHEN.tub.x, KITCHEN.tub.y);
+  tub(penFor(f, who, tbb[0], tbb[1], 22), pr, fr, pr.stalkFront ? f.above : null);
+  if (pr.door > 0.01) {
+    doorway(back);
+    doorLeaf(pr.doorFront ? f.above : back, pr.door);
+  }
+  if (pr.panOnWall) wallPan(back, pr.panSwing);
+  if (pr.jarOnBench) honeyJar(back, ...W(KITCHEN.jar.x, KITCHEN.jar.y, KITCHEN.jar.z));
+  const bb = W(KITCHEN.barrel.x, KITCHEN.barrel.y);
+  barrel(penFor(f, who, bb[0], bb[1], 30), pr, fr);
+  const sb = W(KITCHEN.sack.x, KITCHEN.sack.y);
+  const sackPen = penFor(f, who, sb[0], sb[1], 26);
+  sack(sackPen);
+  lanterns(back, pr, fr);
+}
+
+// ---- everyday effects ---------------------------------------------------------------------------------------------
+function everydayFx(f: FxInput, fr: number, P: Record<string, number>) {
+  const pt = f.points;
+  const head = pt.head,
+    nose = pt.nose;
+  switch (f.anim) {
+    case 'look': {
+      // scent curls from the steamers drift to his nose
+      const [a, b] = beats.look.sniff;
+      if (fr >= a && fr <= b + 6 && nose) {
+        const T = KITCHEN.table;
+        const src = W(T.x + 1.6, T.y, T.top + 6);
+        const al = Math.min(prog(fr, a, a + 4), 1 - prog(fr, b, b + 6));
+        for (let k = 0; k < 3; k++) {
+          for (let i = 0; i < 14; i++) {
+            const u = ((i / 14 + fr * 0.03 + k * 0.33) % 1);
+            const x = src[0] + (nose[0] - src[0]) * u + Math.sin(u * 9 + k) * 5;
+            const y = src[1] + (nose[1] - src[1]) * u - Math.sin(u * Math.PI) * 14;
+            f.above.col('#fff4dc', al * (0.3 + 0.6 * Math.sin(u * Math.PI)));
+            f.above.dot(x, y, 2, 1);
+          }
+        }
+      }
+      break;
+    }
+    case 'fidget_a':
+      if (head) sweat(f.above, head[0], head[1] - 20, fr - beats.fidget_a.sweat, 3);
+      break;
+    case 'fidget_b': {
+      const sn = beats.fidget_b.sneeze;
+      if (nose && fr >= sn && fr < sn + 12) {
+        const age = fr - sn;
+        // the sneeze: a white cloud with droplets bursting forward from the nose, lines toward Шустрик
+        puff(f.above, nose[0] + 10 + age * 2, nose[1] - 4 - age, 12, age, 12, 1.3, '#f8f4ee');
+        for (let i = 0; i < 6; i++) dot(f.above, nose[0] + 6 + age * (3 + hash(i, 4) * 3), nose[1] - 8 + (hash(i, 5) - 0.5) * 18 + age * 0.8, 1, '#cfefff', 1 - age / 12);
+      }
+      const m = pt.mBody;
+      if (m && fr > sn && fr < sn + 9) speedLines(f.above, m[0], m[1], -1, -1.2, 14, 4, 12, 9);
+      break;
+    }
+    case 'happy':
+      if (pt.footLGround && pt.footRGround) {
+        const c: XY = [(pt.footL[0] + pt.footR[0]) / 2, (pt.footL[1] + pt.footR[1]) / 2];
+        if (fr >= beats.happy.click && fr < beats.happy.click + 6) boom(f.above, c[0], c[1], 6, fr - beats.happy.click, 0.4);
+        const g = pt.bodyGround;
+        if (g) {
+          puff(f.under, g[0] - 22, g[1] + 2, 8, fr - beats.happy.land, 10, 0.4);
+          puff(f.under, g[0] + 22, g[1] + 2, 8, fr - beats.happy.land, 10, 2.1);
+        }
+      }
+      break;
+    case 'sleep':
+    case 'sleep_in':
+    case 'sleep_out': {
+      // a bubble from the nose that swells with each breath; it pops at the start of sleep_out
+      const n = pt.nose;
+      let r = 0;
+      if (f.anim === 'sleep') r = 4 + 3.5 * (0.5 + 0.5 * Math.sin((f.t / 3) * TAU));
+      else if (f.anim === 'sleep_in') r = 4 * prog(fr, 24, 36);
+      else r = fr < beats.sleep_out.pop ? 4 + fr * 0.8 : 0;
+      if (n && r > 0.5) {
+        const bx = n[0] + 2 + r * 0.6,
+          by = n[1] - 2 - r * 0.7;
+        f.above.col('#cfe8ff', 0.35);
+        disc(f.above, bx, by, r);
+        p_ring(f.above, bx, by, r, '#ffffff', 0.9);
+        f.above.col('#ffffff', 0.9);
+        f.above.dot(bx - r * 0.4, by - r * 0.5, 2, 1);
+      }
+      if (n && f.anim === 'sleep_out') {
+        const age = fr - beats.sleep_out.pop;
+        if (age >= 0 && age < 6) for (let i = 0; i < 8; i++) {
+          const ang = (i / 8) * TAU;
+          dot(f.above, n[0] + 6 + Math.cos(ang) * (6 + age * 2), n[1] - 8 + Math.sin(ang) * (6 + age * 2), 0.6, '#ffffff', 1 - age / 6, '#cfe8ff');
+        }
+      }
+      break;
+    }
+    case 'wake_startled':
+      if (head) {
+        const age = fr - beats.wake_startled.jolt;
+        if (age >= 0 && age < 10) for (let i = 0; i < 8; i++) {
+          const ang = -Math.PI / 2 + ((i - 3.5) / 8) * 2.4;
+          const r0 = 34 + age * 2;
+          seg(f.above, head[0] + Math.cos(ang) * r0, head[1] - 10 + Math.sin(ang) * r0, head[0] + Math.cos(ang) * (r0 + 7), head[1] - 10 + Math.sin(ang) * (r0 + 7), 0.7, INK, 1 - age / 10);
+        }
+        sweat(f.above, head[0], head[1] - 24, age - 2, 7);
+      }
+      break;
+    case 'hatch': {
+      const hb = beats.hatch;
+      const g = W(P.X ?? 0, P.Y ?? 0);
+      if (fr >= hb.burst && fr < hb.burst + 10) {
+        // shell bits burst out of the top
+        for (let i = 0; i < 10; i++) {
+          const ang = -Math.PI / 2 + (hash(i, 2) - 0.5) * 2.6;
+          const age = fr - hb.burst;
+          const v = 5 + hash(i, 3) * 4;
+          const x = g[0] + Math.cos(ang) * v * age,
+            y = g[1] - 60 + Math.sin(ang) * v * age + 0.5 * age * age;
+          poly(f.above, [x, y - 3, x + 3, y + 2, x - 3, y + 2], INK);
+          poly(f.above, [x, y - 2, x + 2, y + 1, x - 2, y + 1], i % 3 ? '#f6f2ea' : '#2c2736');
+        }
+        boom(f.above, g[0], g[1] - 64, 12, fr - hb.burst, 0.2);
+      }
+      // the bottom shell: kicked away as he hops out, it tumbles off to the left and out of the picture
+      if (fr >= hb.shellOff && fr < hb.shellOff + 18) {
+        const age = fr - hb.shellOff;
+        const x = g[0] - age * 9,
+          y = g[1] - 14 - age * 6 + age * age * 0.45;
+        const rot = age * 0.5;
+        shellHalf(f.above, x, y, 24, 14, rot);
+      }
+      const mg = W(9, 6);
+      if (fr >= hb.mBurst && fr < hb.mBurst + 8) {
+        boom(f.above, mg[0], mg[1] - 20, 7, fr - hb.mBurst, 1.1);
+        for (let i = 0; i < 6; i++) {
+          const ang = (i / 6) * TAU;
+          const age = fr - hb.mBurst;
+          const x = mg[0] + Math.cos(ang) * age * 4,
+            y = mg[1] - 12 + Math.sin(ang) * age * 2 + age * age * 0.4;
+          poly(f.under, [x, y - 2, x + 2, y + 1, x - 2, y + 1], '#f0c040');
+        }
+      }
+      break;
+    }
+    case 'peek': {
+      const pb = beats.peek;
+      const home = W(0, 0);
+      // a cloud where he stood, speed lines behind the wheel of legs, a cloud where he skids home
+      puff(f.under, home[0] - 4, home[1] - 4, 16, fr - pb.dash[0], 12, 0.4);
+      puff(f.under, home[0] + 10, home[1] - 2, 9, fr - pb.dash[0] - 1, 9, 1.7);
+      const body = pt.body;
+      if (body && fr >= pb.dash[0] && fr <= pb.dash[1]) speedLines(f.above, body[0], body[1], -1, -0.15, 30, 5, 34, fr, 0.8);
+      if (body && fr >= pb.back[0] + 3 && fr <= pb.back[1]) speedLines(f.above, body[0], body[1], 1, 0.35, 30, 5, 34, fr + 7, 0.8);
+      puff(f.under, home[0] + 14, home[1] - 2, 14, fr - pb.skid, 12, 2.2);
+      puff(f.under, home[0] - 8, home[1] - 1, 10, fr - pb.skid, 10, 0.9);
+      if (head && fr >= pb.bonk && fr < pb.bonk + 7) boom(f.above, 2, head[1] - 20, 11, fr - pb.bonk, 0.7);
+      if (head && fr >= pb.drop && fr < pb.drop + 7) boom(f.above, head[0] + 6, head[1] - 30, 9, fr - pb.drop, 1.9);
+      break;
+    }
+  }
+}
+function p_ring(p: Pen, x: number, y: number, r: number, c: string, a: number) {
+  p.col(c, a);
+  const n = Math.max(12, Math.round(r * 6));
+  for (let i = 0; i < n; i++) p.dot(x + Math.cos((i / n) * TAU) * r, y + Math.sin((i / n) * TAU) * r);
+}
+function shellHalf(p: Pen, x: number, y: number, rx: number, ry: number, rot: number) {
+  const pts: number[] = [];
+  const ptsI: number[] = [];
+  for (let i = 0; i <= 12; i++) {
+    const a = Math.PI * (i / 12);
+    const zig = i % 2 ? 0 : 3;
+    const lx = Math.cos(a) * rx,
+      ly = Math.sin(a) * ry - zig * (i === 0 || i === 12 ? 0 : 0);
+    pts.push(x + lx * Math.cos(rot) - ly * Math.sin(rot), y + lx * Math.sin(rot) + ly * Math.cos(rot));
+    ptsI.push(x + lx * 0.88 * Math.cos(rot) - ly * 0.88 * Math.sin(rot), y + lx * 0.88 * Math.sin(rot) + ly * 0.88 * Math.cos(rot));
+  }
+  poly(p, pts, INK);
+  poly(p, ptsI, '#f6f2ea');
+}
+
+/** Floorboards bulging in a ring out from a fall. */
+function floorWave(p: Pen, [x, y, age]: [number, number, number]) {
+  const r = 10 + age * 7;
+  const a = 1 - age / 14;
+  for (let i = 0; i < 40; i++) {
+    const ang = (i / 40) * TAU;
+    const px = x + Math.cos(ang) * r,
+      py = y + Math.sin(ang) * r * 0.32;
+    p.col('#2a1a10', a * 0.8);
+    p.dot(px, py + 1, 2, 1);
+    p.col('#a07a50', a * 0.8);
+    p.dot(px, py, 2, 1);
+  }
+}
+/** A flying bun (cartoon arc) from a to b over frames [f0, f1]. */
+function flyingBun(p: Pen, a: XY, b: XY, u: number, h: number) {
+  const x = a[0] + (b[0] - a[0]) * u,
+    y = a[1] + (b[1] - a[1]) * u - Math.sin(u * Math.PI) * h;
+  ell(p, x, y, 6, 5, INK);
+  ell(p, x, y, 5, 4, '#f6ecdc');
+  ell(p, x - 1, y - 1.5, 2.5, 1.5, '#ffffff');
+  p.col('#c8b49a');
+  p.dot(x - 1, y - 4, 3, 1);
+  seg(p, x - (b[0] - a[0]) * 0.08, y + 3, x - (b[0] - a[0]) * 0.2, y + 6, 0.5, '#fffbe8', 0.7);
+}
+function trickFx(f: FxInput, fr: number, P: Record<string, number>) {
+  const b = beats.trick;
+  const pt = f.points;
+  // steam puffs when the lid comes off; the snatch: a quick white smear
+  if (fr >= b.snatch - 2 && fr < b.snatch + 4 && pt.mHandR) speedLines(f.above, pt.mHandR[0], pt.mHandR[1], -1, -0.4, 12, 3, 8, 3);
+  // the chase: dust clouds kicked up behind the wheel legs, speed lines behind both
+  if ((P.wheel ?? 0) > 0.5 && pt.bodyGround) {
+    const g = pt.bodyGround;
+    const back = f.pointAt(Math.max(0, f.t - 2 / 24), 'bodyGround');
+    const dx = g[0] - back[0],
+      dy = g[1] - back[1];
+    for (let k = 0; k < 3; k++) {
+      const age = (fr + k * 3) % 9;
+      const tr = f.pointAt(Math.max(0, f.t - (age + 1) / 24), 'bodyGround');
+      puff(f.under, tr[0], tr[1] + 2, 9, age, 9, k * 1.7 + fr * 0.1);
+    }
+    if (Math.hypot(dx, dy) > 1) speedLines(f.above, g[0], g[1] - 40, dx, dy, 22, 5, 50, Math.floor(fr / 2));
+  }
+  if ((P.mRun ?? 0) > 0.5 && pt.mGround && pt.mBody) {
+    const back = f.pointAt(Math.max(0, f.t - 2 / 24), 'mGround');
+    const g = pt.mGround;
+    if (Math.hypot(g[0] - back[0], g[1] - back[1]) > 1) speedLines(f.above, pt.mBody[0], pt.mBody[1], g[0] - back[0], g[1] - back[1], 12, 3, 16, Math.floor(fr / 2) + 5);
+  }
+  // the giggle: little arcs beside Шустрик
+  if (fr >= 176 && fr < 192 && pt.mHead) for (let i = 0; i < 3; i++) {
+    const k = (fr * 0.5 + i) % 3;
+    seg(f.above, pt.mHead[0] + 10 + k * 3, pt.mHead[1] - 6 - i * 4, pt.mHead[0] + 14 + k * 3, pt.mHead[1] - 8 - i * 4, 0.5, INK, 1 - k / 3);
+  }
+  // the yank: the rug's trail and a puff where his feet were
+  if (fr >= b.yank && fr < b.yank + 8) {
+    const g = W(1.5, 3);
+    puff(f.under, g[0], g[1], 12, fr - b.yank, 8, 0.8);
+    speedLines(f.under, ...W(KITCHEN.rug.x + (P.rugX ?? 0) - KITCHEN.rug.rx, KITCHEN.rug.y), -1, 0, 20, 4, 14, 2);
+  }
+  // hang time: a little "gulp" sweat drop, then the landing: an impact burst and dust either side
+  if (fr >= b.land && fr < b.land + 6 && pt.body) boom(f.above, pt.body[0], pt.body[1] + 10, 18, fr - b.land, 0.3);
+  if (pt.bodyGround) {
+    puff(f.under, pt.bodyGround[0] - 34, pt.bodyGround[1], 10, fr - b.land, 12, 0.2);
+    puff(f.under, pt.bodyGround[0] + 34, pt.bodyGround[1], 10, fr - b.land, 12, 1.9);
+  }
+  // the bun: out of Шустрик's hands in an arc into the open mouth
+  const [b0, b1] = b.bunFly;
+  if (fr >= b0 && fr < b1) {
+    const from = f.pointAt((b0 - 1) / 24, 'mHandR'),
+      to = f.pointAt(b1 / 24, 'mouth');
+    flyingBun(f.above, from, to, smooth(prog(fr, b0, b1)), 46);
+  }
+  // munching: crumbs and happy marks
+  if (fr >= b.munch[0] && fr < b.munch[1] && pt.mouth && (fr % 6) < 3) {
+    dot(f.above, pt.mouth[0] + 6, pt.mouth[1] - 4, 1, '#f6ecdc');
+    dot(f.above, pt.mouth[0] - 5, pt.mouth[1] - 6, 1, '#f6ecdc');
+  }
+}
+
+/** Water drops: a burst of `n` drops from (x, y) at age `age` frames. */
+function drops(p: Pen, x: number, y: number, age: number, life: number, n: number, speed: number, seed: number, up = 1) {
+  if (age < 0 || age > life) return;
+  for (let i = 0; i < n; i++) {
+    const ang = -Math.PI / 2 * up + (hash(i, seed) - 0.5) * 3.4;
+    const v = speed * (0.5 + hash(i, seed + 1));
+    const px = x + Math.cos(ang) * v * age,
+      py = y + Math.sin(ang) * v * age + 0.35 * age * age;
+    dot(p, px, py, 1 + (i % 3 === 0 ? 1 : 0), '#9ad4f4', 1 - age / life, '#2a5a7a');
+  }
+}
+function trickBFx(f: FxInput, fr: number, P: Record<string, number>) {
+  const b = beats.trick_b;
+  const pt = f.points;
+  // the smack: a burst on his face, a ring of impact lines
+  if (pt.nose && fr >= b.smack && fr < b.smack + 6) boom(f.above, pt.nose[0], pt.nose[1] - 6, 14, fr - b.smack, 0.9);
+  // the spin: a blur of speed arcs round him
+  if (fr >= b.spin[0] && fr < b.spin[1] && pt.body) for (let i = 0; i < 4; i++) {
+    const ang = fr * 0.9 + (i / 4) * TAU;
+    const x = pt.body[0] + Math.cos(ang) * 30,
+      y = pt.body[1] - 6 + Math.sin(ang) * 10;
+    seg(Math.sin(ang) > 0 ? f.above : f.under, x, y, x - Math.sin(ang) * 8, y + Math.cos(ang) * 3, 0.6, '#fffbe8', 0.8);
+  }
+  // the tickle: little wiggle marks at his sole
+  if (fr >= b.tickle[0] + 6 && fr < b.tickle[1] && pt.footR) for (let i = 0; i < 3; i++) {
+    const k = (fr + i * 2) % 6;
+    seg(f.above, pt.footR[0] - 8 + i * 8, pt.footR[1] - 10 - k, pt.footR[0] - 6 + i * 8, pt.footR[1] - 14 - k, 0.5, INK, 1 - k / 6);
+  }
+  // the launch: a whoosh of speed lines up to the top; leaves drift down while he is gone
+  if (fr >= b.launch && fr < b.launch + 10 && pt.body) speedLines(f.above, pt.body[0], pt.body[1] + 30, 0, -1, 40, 6, 40, fr);
+  if (fr >= b.leaves[0] && fr < b.leaves[1])
+    for (let i = 0; i < 9; i++) {
+      const start = b.leaves[0] + hash(i, 4) * 26;
+      const age = fr - start;
+      if (age < 0) continue;
+      const x = 60 + hash(i, 5) * 280 + Math.sin(age * 0.25 + i) * 10,
+        y = -6 + age * 2.2;
+      if (y > 300) continue;
+      const tilt = Math.sin(age * 0.3 + i) * 3;
+      poly(f.above, [x - 5, y - tilt, x + 5, y + tilt, x + 1, y + 2], '#2c5a22');
+      poly(f.above, [x - 4, y - tilt, x + 4, y + tilt, x + 1, y + 1], '#6ab040');
+    }
+  // the splash: a crown of water out of the barrel and drops over the whole painting
+  const top = W(KITCHEN.barrel.x, KITCHEN.barrel.y, KITCHEN.barrel.h);
+  const sa = fr - b.splash;
+  if (sa >= 0 && sa < 14) {
+    for (let i = 0; i < 11; i++) {
+      const ang = Math.PI + (i / 10) * Math.PI;
+      const h = Math.sin(prog(sa, 0, 14) * Math.PI) * (36 + hash(i, 6) * 30);
+      const x0 = top[0] + Math.cos(ang) * 22,
+        y0 = top[1] + Math.sin(ang) * 6;
+      seg(f.above, x0, y0, x0 + Math.cos(ang) * 10, y0 - h, 2.6, '#2a5a7a', 1 - sa / 14);
+      seg(f.above, x0, y0, x0 + Math.cos(ang) * 10, y0 - h, 1.6, '#bfe8ff', 1 - sa / 14);
+    }
+    drops(f.above, top[0], top[1] - 10, sa, 14, 26, 9, 7);
+  }
+  // kicking: bubbles out of the barrel
+  if (fr >= b.kick[0] && fr < b.kick[1]) for (let i = 0; i < 3; i++) {
+    const age = (fr + i * 4) % 12;
+    p_ring(f.above, top[0] - 8 + i * 8, top[1] - age * 1.5, 1.5 + age * 0.15, '#dff4ff', 1 - age / 12);
+  }
+  // the jet of water from his mouth
+  if (fr >= b.spit[0] && fr < b.spit[1] && pt.mouth) {
+    // an arc from his mouth right into Шустрик's face
+    const u = prog(fr, b.spit[0], b.spit[1]);
+    const to = pt.mHead ?? [pt.mouth[0] + 50, pt.mouth[1] + 20];
+    for (let i = 0; i < 16; i++) {
+      const s = i / 16;
+      if (s > u * 1.6) break;
+      const x = pt.mouth[0] + (to[0] - pt.mouth[0]) * s,
+        y = pt.mouth[1] + (to[1] - pt.mouth[1]) * s - Math.sin(s * Math.PI) * 22;
+      dot(f.above, x, y, 1.6 - s * 0.4, '#bfe8ff', 1 - s * 0.3, '#2a5a7a');
+    }
+    if (u > 0.6) drops(f.above, to[0], to[1], (fr - b.spit[0]) % 4, 4, 6, 3, 9, 0.6);
+  }
+  // the shake: drops fly off him in every direction, onto Шустрик
+  if (pt.body) drops(f.above, pt.body[0], pt.body[1] - 10, fr - b.shake[0], 9, 20, 6, 3, 0.2);
+  if (pt.mBody) drops(f.above, pt.mBody[0], pt.mBody[1] - 4, fr - b.dry[0], 7, 12, 4, 5, 0.2);
+  // the ladle tossed back into the barrel
+  if (fr >= b.ladleToss[0] && fr < b.ladleToss[1] && pt.head) {
+    const u = prog(fr, b.ladleToss[0], b.ladleToss[1]);
+    const from = f.pointAt(b.ladleToss[0] / 24, 'crown');
+    const x = from[0] + (top[0] - from[0]) * u,
+      y = from[1] + (top[1] - from[1]) * u - Math.sin(u * Math.PI) * 30;
+    const a = u * 9;
+    ell(f.above, x, y, 6, 4, INK);
+    ell(f.above, x, y, 5, 3, '#8a8aa0');
+    seg(f.above, x, y, x + Math.cos(a) * 14, y + Math.sin(a) * 14, 1.2, INK);
+    seg(f.above, x, y, x + Math.cos(a) * 13, y + Math.sin(a) * 13, 0.6, '#a4a4bc');
+  }
+  void P;
+}
+
+/** A bamboo steamer lid (the same one as on the table) at (x, y), tilted by `rot`. */
+function steamerLid(p: Pen, x: number, y: number, rot: number) {
+  const rx = 15 * Math.max(0.25, Math.abs(Math.cos(rot))),
+    ry = 7 + 4 * Math.abs(Math.sin(rot));
+  ell(p, x, y, rx + 2, ry + 2, LINE);
+  ell(p, x, y, rx + 1, ry + 1, '#c49a48');
+  ell(p, x - 3, y - 2, rx * 0.6, ry * 0.5, '#ecd088');
+  seg(p, x - 2, y - 3, x + 2, y - 3, 1.2, LINE);
+}
+function trickCFx(f: FxInput, fr: number, P: Record<string, number>) {
+  const b = beats.trick_c;
+  const pt = f.points;
+  const bench = W(KITCHEN.jar.x, KITCHEN.jar.y, KITCHEN.jar.z);
+  // the smell: three wavy wisps from the pot to his nose
+  if (fr >= b.sniff[0] && fr < b.sniff[1] && pt.nose) {
+    for (let i = 0; i < 3; i++) {
+      const ph = (fr * 0.08 + i / 3) % 1;
+      const x = bench[0] + (pt.nose[0] - bench[0]) * ph + Math.sin(ph * 9 + i) * 5,
+        y = bench[1] - 30 + (pt.nose[1] - bench[1] + 30) * ph;
+      seg(f.above, x, y, x + 4, y - 3, 0.6, '#ffd870', 0.7 * Math.sin(ph * Math.PI));
+      seg(f.above, x + 4, y - 3, x + 8, y, 0.6, '#ffd870', 0.7 * Math.sin(ph * Math.PI));
+    }
+  }
+  // the pot in his paws on the way up to his head
+  if (fr >= b.lift[0] && fr < b.lift[1] && pt.handL && pt.handR) honeyJar(f.under, (pt.handL[0] + pt.handR[0]) / 2, (pt.handL[1] + pt.handR[1]) / 2 + 6);
+  // stuck: sweat flies
+  if (pt.jar) for (const s of [27, 33, 39]) sweat(f.above, pt.jar[0], pt.jar[1] - 20, fr - s, s);
+  // the door: clang rings round the pot, a star on the door
+  const jtop = pt.jar ? ([pt.jar[0], pt.jar[1] - 27] as XY) : null;
+  if (pt.jar && fr >= b.door && fr < b.door + 10) {
+    const age = fr - b.door;
+    boom(f.under, pt.jar[0] - 6, pt.jar[1] - 26, 12, age, 2);
+    for (let k = 0; k < 3; k++) p_ring(f.above, pt.jar[0], pt.jar[1], 32 + age * 3 + k * 6, '#fff4c0', Math.max(0, 0.7 - age * 0.07 - k * 0.15));
+  }
+  // the table: a thump star at his hip
+  if (pt.body && fr >= b.table && fr < b.table + 6) boom(f.under, pt.body[0] - 22, pt.body[1], 9, fr - b.table, 3);
+  // the steamer lid: up off the steamer, bom on the pot, a bounce, bom again, back home on the steamer
+  const T = KITCHEN.table;
+  const st = W(T.x, T.y, T.top);
+  const home: XY = [st[0] + STEAM_DX, st[1] + 2 - 18];
+  if (jtop && fr > b.table && fr < b.lidHome) {
+    const hits = b.lids;
+    let x: number, y: number, rot: number;
+    if (fr < hits[0]) {
+      const u = prog(fr, b.table + 1, hits[0]);
+      x = home[0] + (jtop[0] - home[0]) * u;
+      y = home[1] + (jtop[1] - home[1]) * u - Math.sin(u * Math.PI) * 40;
+      rot = u * 5;
+    } else if (fr < hits[1]) {
+      const u = prog(fr, hits[0], hits[1]);
+      x = jtop[0];
+      y = jtop[1] - Math.sin(u * Math.PI) * 26;
+      rot = Math.PI * 2 + u * 3.14;
+    } else {
+      const u = prog(fr, hits[1], b.lidHome);
+      x = jtop[0] + (home[0] - jtop[0]) * u;
+      y = jtop[1] + (home[1] - jtop[1]) * u - Math.sin(u * Math.PI) * 34;
+      rot = Math.PI * 3 + u * Math.PI * 3;
+    }
+    steamerLid(f.above, x, y, rot);
+  }
+  for (const h of b.lids)
+    if (jtop && fr >= h && fr < h + 8) {
+      const age = fr - h;
+      boom(f.above, jtop[0], jtop[1] - 2, 12, age, h);
+      for (let k = 0; k < 2; k++) p_ring(f.above, jtop[0], jtop[1] + 27, 30 + age * 3 + k * 6, '#fff4c0', Math.max(0, 0.6 - age * 0.08 - k * 0.15));
+    }
+  if (fr >= b.lidHome && fr < b.lidHome + 4) boom(f.under, home[0], home[1] - 4, 6, fr - b.lidHome, 5);
+  // dazed: little stars round the pot
+  if (jtop && fr >= b.lids[1] + 2 && fr < 112) dizzyRing(f, [jtop[0], jtop[1] + 4], 28, fr * 0.35, 1);
+  // Шустрик laughing: tears fly off him
+  if (pt.mHead && fr >= b.laugh[0] && fr < b.laugh[1] && fr % 4 < 3)
+    for (const s of [-1, 1]) dot(f.above, pt.mHead[0] + s * (6 + (fr % 4) * 3), pt.mHead[1] - 4 - (fr % 4) * 2 + ((fr % 4) * (fr % 4)) * 0.8, 1.2, '#bfe8ff', 0.9, '#2a5a7a');
+  // the tug: dust at his heels, strain marks
+  if (pt.mFootL && fr >= b.tug[0] && fr < b.tug[1] && fr % 6 === 0) puff(f.under, pt.mFootL[0] + 6, pt.mFootL[1], 4, 0, 6, fr);
+  if (pt.mFootL && fr >= b.tug[0] && fr < b.tug[1]) puff(f.under, pt.mFootL[0] + 8, pt.mFootL[1], 4, fr % 6, 6, fr - (fr % 6));
+  if (pt.jar && fr >= b.tug[0] + 4 && fr < b.tug[1]) for (const s of [b.tug[0] + 10, b.tug[0] + 22, b.tug[0] + 34]) sweat(f.above, pt.jar[0], pt.jar[1] - 24, fr - s, s);
+  // POP
+  const popAt = f.pointAt((b.pop - 1) / 24, 'jar');
+  if (fr >= b.pop && fr < b.pop + 6) boom(f.above, popAt[0], popAt[1], 22, fr - b.pop, 7);
+  // the pot flies back up onto the bench, a clink when it lands
+  if (fr >= b.jarFly[0] && fr < b.jarFly[1]) {
+    const u = prog(fr, b.jarFly[0], b.jarFly[1]);
+    const x = popAt[0] + (bench[0] - popAt[0]) * u,
+      y = popAt[1] + 20 + (bench[1] - popAt[1] - 20) * u - Math.sin(u * Math.PI) * 70;
+    honeyJar(f.above, x, y);
+    if (u < 0.5) speedLines(f.above, x, y - 12, bench[0] - popAt[0], bench[1] - popAt[1] - 60, 14, 3, 14, fr);
+  }
+  if (fr >= b.jarFly[1] && fr < b.jarFly[1] + 5) boom(f.under, bench[0], bench[1] - 30, 7, fr - b.jarFly[1], 8);
+  // Шустрик shot backward into the sack: speed lines, then a big cloud of flour that settles slowly
+  if (pt.mBody && fr >= b.pop && fr < b.flour) speedLines(f.above, pt.mBody[0], pt.mBody[1], 1, 0.4, 20, 4, 16, fr);
+  const sk = W(KITCHEN.sack.x, KITCHEN.sack.y, 6);
+  const fa = fr - b.flour;
+  if (fa >= 0 && fa < 60) {
+    const grow = Math.min(1, fa / 6);
+    const fade = fa < 24 ? 1 : 1 - (fa - 24) / 36;
+    for (let i = 0; i < 9; i++) {
+      const ang = (i / 9) * TAU + 0.3;
+      const rr = (20 + hash(i, 11) * 16) * grow;
+      const cx = sk[0] + Math.cos(ang) * rr * 1.3,
+        cy = sk[1] - 18 - Math.sin(ang) * rr * 0.8 + fa * 0.15;
+      ell(f.above, cx, cy, (12 + hash(i, 12) * 8) * grow, (10 + hash(i, 13) * 6) * grow, '#fbf6ee', 0.85 * fade);
+    }
+  }
+  // flour dust settling over the floor round the sack
+  if (fa >= 10 && fa < 90)
+    for (let i = 0; i < 14; i++) {
+      const x = sk[0] - 60 + hash(i, 14) * 120,
+        y = sk[1] - 70 + ((fa - 10) * (0.8 + hash(i, 15) * 0.6) + hash(i, 16) * 60) % 90;
+      dot(f.above, x + Math.sin(fa * 0.1 + i) * 4, y, 1, '#fbf6ee', 0.7 * (1 - (fa - 10) / 80));
+    }
+  // the sneeze: a little cloud of flour from his nose; the shake: flour off him all round
+  if (pt.mMouth) puff(f.above, pt.mMouth[0] + 8, pt.mMouth[1], 9, fr - b.sneeze, 12, 17, '#fbf6ee');
+  if (pt.mBody) for (let i = 0; i < 5; i++) puff(f.above, pt.mBody[0] + Math.cos(i * 1.3) * 10, pt.mBody[1] - 6 + Math.sin(i * 1.3) * 6, 6, fr - b.shake, 10, 20 + i, '#fbf6ee');
+  void P;
+}
+
+/** A cooking pot (side view), a pot lid and a ladle — the clatter of the cupboard. */
+function pot(p: Pen, x: number, y: number, rot: number, k = 1) {
+  const c = Math.cos(rot),
+    s = Math.sin(rot);
+  const P = (u: number, v: number): [number, number] => [x + (u * c - v * s) * k, y + (u * s + v * c) * k];
+  const q = [P(-8, -5), P(8, -5), P(7, 6), P(-7, 6)].flat();
+  poly(p, q, LINE);
+  poly(p, [P(-7, -4), P(7, -4), P(6, 5), P(-6, 5)].flat(), '#8a8aa0');
+  poly(p, [P(-6, -3), P(-2, -3), P(-2, 4), P(-5, 4)].flat(), '#b4b4c8');
+  seg(p, ...P(7, -2), ...P(12, -3), 1.6, LINE);
+  seg(p, ...P(-7, -2), ...P(-12, -3), 1.6, LINE);
+}
+function potLid(p: Pen, x: number, y: number, rot: number, k = 1) {
+  const rx = 9 * k * Math.max(0.2, Math.abs(Math.cos(rot))),
+    ry = 4 * k + 5 * k * Math.abs(Math.sin(rot));
+  ell(p, x, y, rx + 1, ry + 1, LINE);
+  ell(p, x, y, rx, ry, '#9a9ab0');
+  ell(p, x - rx * 0.3, y - ry * 0.3, rx * 0.4, ry * 0.4, '#c8c8dc');
+  dot(p, x, y - ry * 0.2, 1.4, '#3a3a48');
+}
+function ladle(p: Pen, x: number, y: number, rot: number) {
+  const dx = Math.cos(rot),
+    dy = Math.sin(rot);
+  seg(p, x, y, x + dx * 16, y + dy * 16, 1.4, LINE);
+  seg(p, x, y, x + dx * 15, y + dy * 15, 0.7, '#b4b4c8');
+  ell(p, x, y, 4, 3, LINE);
+  ell(p, x, y, 3, 2, '#8a8aa0');
+}
+function phaseFx(f: FxInput, fr: number) {
+  const b = beats.phase;
+  const pt = f.points;
+  // steam puffing from both ears as he goes red
+  if (pt.head && fr >= b.steam[0] && fr < b.steam[1])
+    for (const s of [-1, 1])
+      for (let k = 0; k < 3; k++) {
+        const age = (fr - b.steam[0] + k * 3) % 9;
+        puff(f.above, pt.head[0] + s * (24 + age * 1.5), pt.head[1] - 20 - age * 2.5, 4 + age * 0.4, age, 9, k + (s > 0 ? 5 : 0), '#fbf6ee');
+      }
+  // the dash: a streak and dust behind him
+  if (pt.body && fr >= b.dash[0] + 1 && fr < b.dash[1]) {
+    const back = f.pointAt(Math.max(0, f.t - 3 / 24), 'body');
+    speedLines(f.under, pt.body[0], pt.body[1], pt.body[0] - back[0], pt.body[1] - back[1], 30, 5, 30, fr);
+    const g = f.pointAt(Math.max(0, f.t - 2 / 24), 'bodyGround');
+    puff(f.under, g[0], g[1], 6, fr % 4, 4, fr);
+  }
+  // the clatter cloud at the cupboard: puffs boiling, stars, and things flying out
+  const cc = W(CUP_AT[0] - 2, CUP_AT[1] + 2, 14);
+  const ca = fr - b.cloud[0];
+  if (ca >= 0 && ca < b.cloud[1] - b.cloud[0] + 6) {
+    const life = b.cloud[1] - b.cloud[0];
+    const grow = Math.min(1, ca / 4),
+      fade = ca < life ? 1 : 1 - (ca - life) / 6;
+    for (let i = 0; i < 10; i++) {
+      const ang = (i / 10) * TAU + ca * 0.25 * (i % 2 ? 1 : -1);
+      const rr = (24 + 8 * Math.sin(ca * 0.7 + i)) * grow;
+      ell(f.above, cc[0] + Math.cos(ang) * rr * 1.4, cc[1] + Math.sin(ang) * rr * 0.8, 19 * grow + 1, 16 * grow + 1, LINE, 0.9 * fade);
+    }
+    for (let i = 0; i < 10; i++) {
+      const ang = (i / 10) * TAU + ca * 0.25 * (i % 2 ? 1 : -1);
+      const rr = (24 + 8 * Math.sin(ca * 0.7 + i)) * grow;
+      ell(f.above, cc[0] + Math.cos(ang) * rr * 1.4, cc[1] + Math.sin(ang) * rr * 0.8, 19 * grow, 16 * grow, i % 3 ? '#fbf6ee' : '#e8dcc8', fade);
+    }
+    // a paw, a foot, a ladle poking out of the cloud now and then
+    if (ca < life && ca % 6 < 3) {
+      const ang = hash(Math.floor(ca / 6), 41) * TAU;
+      const x = cc[0] + Math.cos(ang) * 44,
+        y = cc[1] + Math.sin(ang) * 26;
+      if (Math.floor(ca / 6) % 2) ell(f.above, x, y, 5, 4, '#2b2733');
+      else ladle(f.above, x, y, ang);
+    }
+    if (ca < life) for (let i = 0; i < 2; i++) starInk(f.above, cc[0] + Math.cos(ca * 0.9 + i * 3) * 48, cc[1] - 20 + Math.sin(ca * 1.1 + i) * 16, 5, ca * 0.3, '#ffe060');
+  }
+  // the things the cupboard throws out: up, out and away over the right side of the picture
+  for (let i = 0; i < 7; i++) {
+    const t0 = b.items[0] + i * 3.5;
+    const age = fr - t0;
+    if (age < 0 || age > 22) continue;
+    const vx = 3 + hash(i, 42) * 4,
+      vy = -6 - hash(i, 43) * 4;
+    const x = cc[0] + vx * age,
+      y = cc[1] - 10 + vy * age + 0.55 * age * age;
+    if (x > 400 || y > 330) continue;
+    const rot = age * (0.4 + hash(i, 44) * 0.4);
+    if (i % 3 === 0) pot(f.above, x, y, rot, 0.9);
+    else if (i % 3 === 1) potLid(f.above, x, y, rot);
+    else ladle(f.above, x, y, rot);
+  }
+  // the clang rings of the clatter
+  if (ca >= 0 && ca < b.cloud[1] - b.cloud[0] && ca % 5 === 0) p_ring(f.above, cc[0], cc[1], 58, '#fff4c0', 0.5);
+  // one steamer lid rolls on its rim all the way to Шустрик's feet; he picks it up for a shield
+  if (fr >= b.lidRoll[0] && fr < b.lidRoll[1] && pt.mFootL) {
+    const u = prog(fr, b.lidRoll[0], b.lidRoll[1]);
+    const to = pt.mFootL;
+    const x = cc[0] + (to[0] + 8 - cc[0]) * u,
+      y = cc[1] + 14 + (to[1] - 6 - cc[1] - 14) * u - Math.abs(Math.sin(u * Math.PI * 3)) * 10 * (1 - u);
+    steamerLid(f.above, x, y, Math.PI / 2 + Math.sin(fr * 0.8) * 0.3 * (1 - u));
+  }
+  // the helmet-pot lands on his head: BONG
+  if (pt.helmet && fr >= b.helmet && fr < b.helmet + 8) {
+    const age = fr - b.helmet;
+    boom(f.above, pt.helmet[0], pt.helmet[1] - 6, 14, age, 9);
+    for (let k = 0; k < 3; k++) p_ring(f.above, pt.helmet[0], pt.helmet[1] + 10, 26 + age * 3 + k * 6, '#fff4c0', Math.max(0, 0.7 - age * 0.08 - k * 0.15));
+  }
+  // clank, clank: a little spark at each step of the march
+  for (const c of b.clanks)
+    if (fr >= c && fr < c + 3 && pt.footL && pt.footR) {
+      const ft = (b.clanks.indexOf(c) % 2 ? pt.footR : pt.footL) as XY;
+      starInk(f.above, ft[0] + 6, ft[1] - 4, 3 - (fr - c), fr, '#fff4c0');
+    }
+  // the visor flips up with a clang
+  if (pt.helmet && fr >= b.visor && fr < b.visor + 5) starInk(f.above, pt.helmet[0] + 18, pt.helmet[1] + 8, 5 - (fr - b.visor), fr, '#fff4c0');
+}
+
+/** A clang where metal meets metal: a star and two rings. */
+function clang(p: Pen, x: number, y: number, age: number, r: number, seed: number) {
+  if (age < 0 || age > 7) return;
+  boom(p, x, y, r, age, seed);
+  for (let k = 0; k < 2; k++) p_ring(p, x, y, r * 1.4 + age * 3 + k * 5, '#fff4c0', Math.max(0, 0.7 - age * 0.1 - k * 0.15));
+}
+/** A whoosh: the arc the tip of a weapon swept over the last few frames. */
+function whoosh(f: FxInput, part: string, frames: number, c = '#fffbe8') {
+  for (let k = 1; k <= frames; k++) {
+    const a = f.pointAt(Math.max(0, f.t - (k - 1) / 24), part),
+      b = f.pointAt(Math.max(0, f.t - k / 24), part);
+    if (Math.hypot(a[0] - b[0], a[1] - b[1]) < 2) continue;
+    seg(f.under, a[0], a[1], b[0], b[1], 1.6 - k * 0.3, c, 0.8 - k * 0.2);
+  }
+}
+function happyF2Fx(f: FxInput, fr: number) {
+  const b = beats['happy-f2'];
+  const pt = f.points;
+  for (const c of b.clangs) if (pt.shield) clang(f.above, pt.shield[0], pt.shield[1], fr - c, 9, c);
+  if (pt.spoonTip && fr < b.spin[0]) whoosh(f, 'spoonTip', 3);
+  // the spin: speed arcs round him and the cape
+  if (pt.body && fr >= b.spin[0] && fr < b.spin[1])
+    for (let i = 0; i < 3; i++) {
+      const ang = fr * 0.8 + (i / 3) * TAU;
+      const x = pt.body[0] + Math.cos(ang) * 34,
+        y = pt.body[1] - 4 + Math.sin(ang) * 10;
+      seg(Math.sin(ang) > 0 ? f.above : f.under, x, y, x - Math.sin(ang) * 10, y + Math.cos(ang) * 3, 0.6, '#fffbe8', 0.8);
+    }
+  // Шустрик's little taps on his own lid
+  if (pt.mStickTip) for (const c of b.clangs) if (fr >= c && fr < c + 3) starInk(f.above, pt.mStickTip[0], pt.mStickTip[1], 3, fr, '#fff4c0');
+}
+function duelFx(f: FxInput, fr: number) {
+  const b = beats['trick-f2'];
+  const pt = f.points;
+  // the spoon sweeps and the clacks where it meets the shoot
+  if (pt.spoonTip && fr < 70) whoosh(f, 'spoonTip', 3);
+  if (pt.mStickTip && fr >= 66 && fr < 112) whoosh(f, 'mStickTip', 2, '#e8ffd0');
+  for (const c of b.clacks)
+    if (fr >= c && fr < c + 6 && pt.spoonTip && pt.mStickTip) {
+      const x = (pt.spoonTip[0] + pt.mStickTip[0]) / 2,
+        y = (pt.spoonTip[1] + pt.mStickTip[1]) / 2;
+      boom(f.above, x, y, 7, fr - c, c);
+    }
+  // the thrust and the stumble
+  if (pt.spoonTip && fr >= b.thrust && fr < b.thrust + 4) speedLines(f.above, pt.spoonTip[0], pt.spoonTip[1], 1, 0.2, 18, 3, 10, fr);
+  if (pt.footR) puff(f.under, pt.footR[0] + 4, pt.footR[1], 6, fr - b.stumble, 8, 3);
+  // Шустрик's lunges thud on the shield
+  for (const c of b.parries) if (pt.shield) boom(f.above, pt.shield[0] + 4, pt.shield[1], 6, fr - c, c);
+  // the dash under his arm: dust
+  if (pt.mGround && fr >= b.duck[0] && fr < b.duck[1]) puff(f.under, pt.mGround[0], pt.mGround[1], 4, fr % 4, 4, fr);
+  // BONG, and bong: the helmet rings; the whole of him shivers (vib)
+  if (pt.helmet) {
+    clang(f.above, pt.helmet[0], pt.helmet[1] - 4, fr - b.bong, 15, 4);
+    clang(f.above, pt.helmet[0] + 8, pt.helmet[1] - 2, fr - b.bong2, 10, 6);
+    if (fr >= b.stars[0] + 2 && fr < b.stars[1]) dizzyRing(f, [pt.helmet[0], pt.helmet[1] - 4], 30, fr * 0.35, 1);
+  }
+  // he sits down: a thud through the floor to the table
+  if (pt.bodyGround && fr >= b.table && fr < b.table + 8) {
+    const age = fr - b.table;
+    for (let k = 0; k < 2; k++) p_ring(f.under, pt.bodyGround[0], pt.bodyGround[1], 10 + age * 6 + k * 6, '#d8c8b0', Math.max(0, 0.6 - age * 0.08));
+    puff(f.under, pt.bodyGround[0] - 10, pt.bodyGround[1], 7, age, 8, 11);
+    puff(f.under, pt.bodyGround[0] + 10, pt.bodyGround[1], 7, age, 8, 12);
+  }
+  // the steamer lid jumps off and lands on the bowing Шустрик's head, then hops back home
+  const T = KITCHEN.table;
+  const st = W(T.x, T.y, T.top);
+  const home: XY = [st[0] + STEAM_DX, st[1] + 2 - 18];
+  const mh = f.pointAt((b.bonk - 0.5) / 24, 'mHead');
+  const hit: XY = [mh[0], mh[1] - 12];
+  if (fr > b.table && fr < b.lidHome) {
+    let x: number, y: number, rot: number;
+    if (fr < b.bonk) {
+      const u = prog(fr, b.table + 1, b.bonk);
+      x = home[0] + (hit[0] - home[0]) * u;
+      y = home[1] + (hit[1] - home[1]) * u - Math.sin(u * Math.PI) * 60;
+      rot = u * 6;
+    } else {
+      const u = prog(fr, b.bonk, b.lidHome);
+      x = hit[0] + (home[0] - hit[0]) * u;
+      y = hit[1] + (home[1] - hit[1]) * u - Math.sin(u * Math.PI) * 50;
+      rot = Math.PI * 2 + u * Math.PI * 4;
+    }
+    steamerLid(f.above, x, y, rot);
+  }
+  boom(f.above, hit[0], hit[1], 10, fr - b.bonk, 8);
+  if (fr >= b.lidHome && fr < b.lidHome + 4) boom(f.under, home[0], home[1] - 4, 6, fr - b.lidHome, 5);
+  if (pt.mHead && fr >= b.mStars[0] + 2 && fr < b.mStars[1]) dizzyRing(f, [pt.mHead[0], pt.mHead[1] - 10], 14, fr * 0.4, 0.6);
+}
+
+function squeak(p: Pen, x: number, y: number, side: number, age: number) {
+  if (age < 0 || age > 5) return;
+  const a = 1 - age / 6;
+  for (let i = 0; i < 3; i++) {
+    const y0 = y - 6 + i * 6,
+      x0 = x + side * (4 + age * 1.5);
+    seg(p, x0, y0, x0 + side * 4, y0 - 2, 0.7, INK, a);
+    seg(p, x0 + side * 4, y0 - 2, x0 + side * 8, y0, 0.7, INK, a);
+  }
+}
+function ramFx(f: FxInput, fr: number) {
+  const b = beats['trick_b-f2'];
+  const pt = f.points;
+  // pawing the floor like a bull: dust kicked back, two angry snorts
+  for (const c of [22, 26, 30, 34]) if (pt.footR) puff(f.under, pt.footR[0] - 6, pt.footR[1] + 1, 5, fr - c, 8, c);
+  for (const c of [28, 36])
+    if (pt.nose) {
+      puff(f.above, pt.nose[0] - 7, pt.nose[1] + 3, 3, fr - c, 7, c, '#f4f0e8');
+      puff(f.above, pt.nose[0] + 7, pt.nose[1] + 3, 3, fr - c, 7, c + 1, '#f4f0e8');
+    }
+  // the charge: dust from the wheel of legs, speed lines streaming back
+  if (fr >= b.charge[0] + 3 && fr < b.charge[1]) {
+    const k = prog(fr, b.charge[0], b.charge[1]);
+    if (pt.bodyGround) puff(f.under, pt.bodyGround[0] + (fr % 2 ? 9 : -9), pt.bodyGround[1] - 2, 5 + k * 6, fr % 5, 5, fr);
+    if (pt.body) speedLines(f.above, pt.body[0], pt.body[1] - 14, 0, 1, 18 + k * 26, 6, 56 + k * 30, fr, 0.9);
+  }
+  // olé: the lid sweeps aside like a cape
+  if (fr >= b.ole - 3 && fr < b.ole + 4) whoosh(f, 'mBody', 3, '#ffe7a0');
+  // SPLAT: a white flash on the glass, booms where the brim and the shield hit it, rings running out round him
+  const hat0 = f.pointAt((b.splat + 2) / 24, 'helmet');
+  if (fr >= b.splat && fr < b.splat + 3) poly(f.above, [0, 0, f.w, 0, f.w, f.h, 0, f.h], '#ffffff', 0.35 - (fr - b.splat) * 0.1);
+  clang(f.above, hat0[0] - 118, hat0[1] - 2, fr - b.splat, 18, 2);
+  clang(f.above, hat0[0] + 122, hat0[1] + 2, fr - b.splat - 1, 16, 5);
+  if (fr >= b.splat && fr < b.splat + 14) {
+    const age = fr - b.splat;
+    for (let k = 0; k < 3; k++) p_ring(f.above, hat0[0], hat0[1] + 70, 120 + age * 9 + k * 9, '#f4fbff', Math.max(0, 0.6 - age * 0.04 - k * 0.12));
+  }
+  if (fr >= b.splat + 2 && fr < b.splat + 16) {
+    const u = prog(fr, b.splat + 2, b.splat + 16);
+    const x = -60 + u * (f.w + 160);
+    for (const [off, w, a] of [[0, 9, 0.35], [16, 4, 0.25]] as const) {
+      const x0 = x + off;
+      poly(f.above, [x0, 0, x0 + w, 0, x0 + w - f.h * 0.5, f.h, x0 - f.h * 0.5, f.h], '#ffffff', a);
+    }
+  }
+  // sliding down: squeaks at the brim and a fogged smear left on the glass above him (it fades, like breath)
+  const top = f.pointAt((b.slide[0] + 1) / 24, 'helmet');
+  const now = f.pointAt(Math.min(fr, b.slide[1]) / 24, 'helmet');
+  if (fr >= b.slide[0] && fr < 140 && now[1] - top[1] > 4) {
+    const fade = fr < b.slide[1] ? 0.4 : 0.4 * (1 - prog(fr, b.slide[1], 140));
+    // breath fog where his face hit first, and wet streaks his cheeks and nose drew down the glass
+    ell(f.above, top[0], top[1] + 4, 40, 14, '#eef6ff', fade * 0.6);
+    for (let i = 0; i < 7; i++) {
+      const xo = (i - 3) * 17 + (hash(i, 7) - 0.5) * 8;
+      const len = (now[1] - top[1]) * (0.55 + 0.45 * hash(i, 9));
+      const w = 2 + hash(i, 11) * 3;
+      seg(f.above, top[0] + xo, top[1] + 2, top[0] + xo + (now[0] - top[0]) * 0.8, top[1] + 2 + len, w, '#eef6ff', fade * (0.6 + 0.4 * hash(i, 13)));
+      dot(f.above, top[0] + xo + (now[0] - top[0]) * 0.8, top[1] + 4 + len, w * 0.6, '#ffffff', fade, '#eef6ff');
+    }
+  }
+  if (fr >= b.slide[0] && fr < b.slide[1])
+    for (let c = b.slide[0]; c < b.slide[1]; c += 9) {
+      squeak(f.above, now[0] - 112, now[1] + 10, -1, fr - c);
+      squeak(f.above, now[0] + 116, now[1] + 12, 1, fr - c - 4);
+    }
+  // drops off the glass onto his bottom
+  if (pt.bodyGround) {
+    boom(f.under, pt.bodyGround[0], pt.bodyGround[1] - 6, 10, fr - (b.drop + 2), 3);
+    puff(f.under, pt.bodyGround[0] - 14, pt.bodyGround[1], 7, fr - (b.drop + 2), 9, 4);
+    puff(f.under, pt.bodyGround[0] + 14, pt.bodyGround[1], 7, fr - (b.drop + 2), 9, 5);
+  }
+  // blind, he walks into the table: thud
+  if (pt.helmet && fr >= b.thud && fr < b.thud + 8) {
+    const age = fr - b.thud;
+    boom(f.above, pt.helmet[0] - 24, pt.helmet[1] - 8, 12, age, 9);
+    for (let k = 0; k < 2; k++) p_ring(f.under, pt.helmet[0] - 8, pt.helmet[1] + 4, 22 + age * 5 + k * 6, '#fff4c0', Math.max(0, 0.6 - age * 0.08));
+  }
+}
+
+// ---- the door, the pan on its hook, the spoon ---------------------------------------------------------------------
+/** The dark next room seen through the open doorway. */
+function doorway(p: Pen) {
+  const { x0, x1, top } = DOOR;
+  poly(p, [x0 + 3, top + 3, x1 - 3, top + 3, x1 - 3, 150, x0 + 3, 150], '#140d0a');
+  poly(p, [x0 + 3, 138, x1 - 3, 138, x1 - 3, 150, x0 + 3, 150], '#2c1e15');
+  for (let x = x0 + 8; x < x1 - 4; x += 9) seg(p, x, 139, x - 2, 149, 0.5, '#3a281c');
+  poly(p, [x0 + 3, top + 3, x1 - 3, top + 3, x1 - 3, top + 12, x0 + 3, top + 12], '#0c0806', 0.8);
+}
+/** The door's leaf turned θ on its right post: timber frame, paper panes, a lattice, the brass pull at the free edge. */
+function doorLeaf(p: Pen, th: number) {
+  const { hinge, len, h } = DOOR_LEAF;
+  const ex = hinge[0] - len * Math.cos(th),
+    ey = hinge[1] + len * Math.sin(th);
+  const at = (u: number, z: number) => W(hinge[0] + (ex - hinge[0]) * u, hinge[1] + (ey - hinge[1]) * u, z);
+  const quad = (u0: number, u1: number, z0: number, z1: number, c: string, a = 1) => {
+    const A = at(u0, z0),
+      B = at(u1, z0),
+      C = at(u1, z1),
+      D = at(u0, z1);
+    poly(p, [A[0], A[1], B[0], B[1], C[0], C[1], D[0], D[1]], c, a);
+  };
+  const wpx = Math.abs(len * Math.cos(th)) * PX.s;
+  quad(0, 1, -0.3, h + 0.3, INK);
+  if (wpx < 3) return;
+  const light = Math.abs(Math.cos(th));
+  quad(0.02, 0.98, 0, h, th > Math.PI / 2 ? '#5a3c25' : '#6e4c2f');
+  const fr = Math.min(0.3, 3.5 / wpx);
+  const paper = th > Math.PI / 2 ? '#c8b48c' : light > 0.7 ? '#eadcbc' : '#d8c8a2';
+  quad(fr, 1 - fr, 1.4, h - 1.4, paper);
+  for (const u of [0.25, 0.5, 0.75]) {
+    const A = at(fr + (1 - 2 * fr) * u, 1.4),
+      B = at(fr + (1 - 2 * fr) * u, h - 1.4);
+    seg(p, A[0], A[1], B[0], B[1], 0.5, '#5a3c25');
+  }
+  for (let z = 1.4 + 4.1; z < h - 1.4; z += 4.1) {
+    const A = at(fr, z),
+      B = at(1 - fr, z);
+    seg(p, A[0], A[1], B[0], B[1], 0.5, '#5a3c25');
+  }
+  const pull = at(0.82, 14.2);
+  dot(p, pull[0], pull[1], 2.2, '#ffc860', 1, '#5a3010');
+}
+/** The frying pan hanging by its handle from a hook on the wall, swinging `sw` radians. */
+function wallPan(p: Pen, sw: number) {
+  const hk = W(PAN_HOOK.x, KITCHEN.wall, PAN_HOOK.z);
+  seg(p, hk[0] - 2, hk[1] - 1, hk[0] + 2, hk[1] - 1, 1, '#2a262e');
+  const dx = Math.sin(sw),
+    dy = Math.cos(sw);
+  const L = 16,
+    rx = 15,
+    ry = 12;
+  const c: XY = [hk[0] + dx * (L + ry), hk[1] + dy * (L + ry)];
+  seg(p, hk[0], hk[1], hk[0] + dx * (L + 2), hk[1] + dy * (L + 2), 2.4, INK);
+  seg(p, hk[0], hk[1], hk[0] + dx * (L + 2), hk[1] + dy * (L + 2), 1.4, '#30303e');
+  dot(p, hk[0], hk[1] + 1, 1.2, '#14141c', 1, INK);
+  ell(p, c[0], c[1], rx + 1.5, ry + 1.5, INK);
+  ell(p, c[0], c[1], rx, ry, '#565668');
+  ell(p, c[0], c[1], rx - 2.5, ry - 2.2, '#30303e');
+  ell(p, c[0] - 4, c[1] - 4, 4, 2, '#a4a4bc', 0.8);
+}
+/** A flying pan, face-on, its spin squeezing it edge-on. */
+function flyingPan(p: Pen, x: number, y: number, spin: number, k = 1) {
+  const c = Math.cos(spin);
+  const rx = Math.max(2, 15 * k * Math.abs(c)),
+    ry = 12 * k;
+  const hx = Math.sin(spin) * 18 * k;
+  seg(p, x, y, x + hx, y - 14 * k, 2.6, INK);
+  seg(p, x, y, x + hx, y - 14 * k, 1.4, '#30303e');
+  ell(p, x, y, rx + 1.5, ry + 1.5, INK);
+  ell(p, x, y, rx, ry, c > 0 ? '#565668' : '#30303e');
+  if (rx > 5) ell(p, x - rx * 0.25, y - ry * 0.3, rx * 0.3, ry * 0.18, '#a4a4bc', 0.8);
+}
+/** The pan lying on the floor (seen from above). */
+function floorPan(p: Pen, x: number, y: number, tilt = 0) {
+  seg(p, x + 12, y - 2 - tilt, x + 26, y - 6 - tilt * 2, 2.6, INK);
+  seg(p, x + 12, y - 2 - tilt, x + 26, y - 6 - tilt * 2, 1.4, '#30303e');
+  ell(p, x, y - tilt, 16.5, 10.5 + tilt * 0.3, INK);
+  ell(p, x, y - tilt, 15, 9, '#565668');
+  ell(p, x, y - tilt, 12, 7, '#30303e');
+}
+/** The wooden spoon: handle from (x, y) at angle `rot`, the bowl at its far end. */
+function woodSpoon(p: Pen, x: number, y: number, rot: number) {
+  const ex = x + Math.cos(rot) * 30,
+    ey = y + Math.sin(rot) * 30;
+  seg(p, x, y, ex, ey, 3.4, INK);
+  seg(p, x, y, ex, ey, 2, '#b8783a');
+  const bx = ex + Math.cos(rot) * 5,
+    by = ey + Math.sin(rot) * 5;
+  ell(p, bx, by, 6.5, 5.5, INK);
+  ell(p, bx, by, 5, 4, '#b8783a');
+  ell(p, bx - 1.5, by - 1.5, 2, 1.4, '#f0c070');
+}
+/** A little music note (Шустрик hums). */
+function note(p: Pen, x: number, y: number, a: number) {
+  ell(p, x, y, 2.4, 1.8, INK, a);
+  ell(p, x, y, 1.6, 1.1, '#fff4c0', a);
+  seg(p, x + 1.8, y, x + 1.8, y - 8, 0.7, INK, a);
+  seg(p, x + 1.8, y - 8, x + 4.6, y - 5.6, 0.7, INK, a);
+}
+function bezier(a: XY, b: XY, h: number, u: number): XY {
+  return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u - Math.sin(u * Math.PI) * h];
+}
+function panFx(f: FxInput, fr: number) {
+  const b = beats['trick_c-f2'];
+  const pt = f.points;
+  // the door slams: a boom where the leaf meets him and the wall; the shut door clacks
+  const pin = W(PAN_HOOK.x, -46.6, 18);
+  boom(f.above, pin[0] + 22, pin[1] - 6, 14, fr - (b.slam + 3), 3);
+  for (let k = 0; k < 2; k++) if (fr >= b.slam + 3 && fr < b.slam + 11) p_ring(f.above, pin[0] + 4, pin[1], 30 + (fr - b.slam - 3) * 6 + k * 7, '#fff4c0', Math.max(0, 0.6 - (fr - b.slam - 3) * 0.08));
+  const shut = W(DOOR_LEAF.hinge[0] - DOOR_LEAF.len, DOOR_LEAF.hinge[1], 14);
+  boom(f.under, shut[0] + 4, shut[1], 7, fr - b.shut[1], 6);
+  // Шустрик's giggles in the doorway
+  if (pt.mHead && fr >= b.giggle[0] && fr < b.giggle[1] && fr % 4 < 2) starInk(f.above, pt.mHead[0] + 10, pt.mHead[1] - 10, 2.2, fr, '#fff4c0');
+  // the spoon: knocked up into the ceiling beam, stuck there quivering, drops — tink — onto his helmet, into his paw
+  const s0 = f.pointAt(b.slam / 24, 'spoonTip');
+  const BEAM: XY = [176, 22];
+  if (fr >= b.slam + 1 && fr < b.tink + 4) {
+    let x: number, y: number, rot: number;
+    if (fr < b.slam + 7) {
+      const u = prog(fr, b.slam + 1, b.slam + 7);
+      [x, y] = bezier(s0, BEAM, 40, u);
+      rot = Math.PI / 2 + u * Math.PI * 4;
+    } else if (fr < b.tink - 2) {
+      x = BEAM[0];
+      y = BEAM[1];
+      rot = Math.PI / 2 + 0.35 * Math.exp(-(fr - b.slam - 7) / 6) * Math.sin((fr - b.slam - 7) * 1.3);
+    } else if (fr < b.tink + 1) {
+      const hel = f.pointAt((b.tink + 1) / 24, 'helmet');
+      const u = prog(fr, b.tink - 2, b.tink + 1);
+      x = BEAM[0] + (hel[0] - 6 - BEAM[0]) * u;
+      y = BEAM[1] + (hel[1] - 44 - BEAM[1]) * u * u;
+      rot = Math.PI / 2 + u * 0.8;
+    } else {
+      const hel = f.pointAt((b.tink + 1) / 24, 'helmet');
+      const hand = f.pointAt((b.tink + 4) / 24, 'handR');
+      const u = prog(fr, b.tink + 1, b.tink + 4);
+      [x, y] = bezier([hel[0] - 6, hel[1] - 44], [hand[0], hand[1] - 30], 16, u);
+      rot = Math.PI / 2 + 0.8 + u * 2.2;
+    }
+    woodSpoon(fr < b.tink - 2 ? f.under : f.above, x, y, rot);
+  }
+  if (pt.helmet) starInk(f.above, pt.helmet[0] - 4, pt.helmet[1] - 6, fr - b.tink - 1 < 4 && fr > b.tink ? 5 : 0, fr, '#fff4c0');
+  // sideways and paper-thin: the pan stuck flat on his back shows edge-on
+  if (pt.body && fr >= b.thin[0] - 1 && fr < b.thin[1] + 1) {
+    const x = pt.body[0] - 7,
+      y = pt.body[1] - 12;
+    seg(f.under, x, y - 13, x, y + 13, 3.4, INK);
+    seg(f.under, x, y - 13, x, y + 13, 1.8, '#565668');
+    seg(f.under, x, y - 13, x - 1, y - 30, 2.6, INK);
+    seg(f.under, x, y - 13, x - 1, y - 30, 1.4, '#30303e');
+  }
+  // the thumb-blow and «бульк!»: rings, a puff, the pan pops off his back into his paw
+  if (pt.body) {
+    for (let k = 0; k < 3; k++) if (fr >= b.bloop && fr < b.bloop + 8) p_ring(f.above, pt.body[0], pt.body[1] - 10, 26 + (fr - b.bloop) * 5 + k * 6, '#fffbe8', Math.max(0, 0.7 - (fr - b.bloop) * 0.09 - k * 0.15));
+    puff(f.under, pt.body[0] - 22, pt.body[1] + 8, 6, fr - b.bloop, 8, 2, '#f4f0e8');
+    puff(f.under, pt.body[0] + 22, pt.body[1] + 8, 6, fr - b.bloop, 8, 3, '#f4f0e8');
+  }
+  if (fr >= b.bloop && fr < b.catch[1]) {
+    const from = f.pointAt(b.bloop / 24, 'body');
+    const to = f.pointAt(b.catch[1] / 24, 'pan');
+    const u = prog(fr, b.bloop, b.catch[1]);
+    const [x, y] = bezier([from[0], from[1] - 14], to, 46, u);
+    flyingPan(f.above, x, y, u * Math.PI * 3);
+  }
+  // angry steam from under the helmet
+  if (pt.helmet && fr >= b.catch[1] && fr < 178)
+    for (const s of [-1, 1]) puff(f.above, pt.helmet[0] + s * 26, pt.helmet[1] + 6 - ((fr - b.catch[1]) % 6) * 2, 3.4, (fr - b.catch[1]) % 6, 6, s + fr, '#f4f0e8');
+  // Шустрик hums with his back to him
+  if (pt.mHead && fr >= b.hum[0] && fr < b.hum[1])
+    for (let i = 0; i < 2; i++) {
+      const age = (fr - b.hum[0] + i * 12) % 24;
+      note(f.above, pt.mHead[0] + 8 + age * 0.5 + Math.sin(age * 0.5) * 2, pt.mHead[1] - 12 - age * 1.1, 1 - age / 24);
+    }
+  // the swing, the floor, BONG
+  if (pt.pan && fr >= b.swing - 3 && fr <= b.floor) whoosh(f, 'pan', 3);
+  if (fr >= b.floor && fr < b.floor + 8) {
+    const fl = W(PAN_FLOOR[0], PAN_FLOOR[1]);
+    boom(f.under, fl[0], fl[1] - 2, 10, fr - b.floor, 7);
+    puff(f.under, fl[0] - 14, fl[1], 6, fr - b.floor, 8, 9);
+    puff(f.under, fl[0] + 14, fl[1], 6, fr - b.floor, 8, 10);
+  }
+  if (pt.helmet) {
+    clang(f.above, pt.helmet[0], pt.helmet[1] - 6, fr - b.bong - 1, 16, 4);
+    if (fr >= b.bong + 1 && fr < b.bong + 14) for (let k = 0; k < 2; k++) p_ring(f.above, pt.helmet[0], pt.helmet[1] + 14, 30 + (fr - b.bong) * 5 + k * 8, '#fff4c0', Math.max(0, 0.6 - (fr - b.bong) * 0.05 - k * 0.15));
+  }
+  // the pan drops off his chin, clatters on the floor and lies there until Шустрик flicks it home
+  const fl = W(PAN_FLOOR[0], PAN_FLOOR[1]);
+  if (fr >= b.drop && fr < b.drop + 3) {
+    const from = f.pointAt((b.drop - 1) / 24, 'pan');
+    const u = prog(fr, b.drop, b.drop + 3);
+    flyingPan(f.above, from[0] + (fl[0] - from[0]) * u, from[1] + (fl[1] - from[1]) * u * u, u * 1.2);
+  }
+  if (fr >= b.drop + 3 && fr < b.flick) floorPan(f.under, fl[0], fl[1], fr >= b.flick - 2 ? 4 : 0);
+  boom(f.under, fl[0], fl[1] - 4, 8, fr - b.drop - 3, 5);
+  if (fr >= b.flick && fr < b.hook) {
+    const hk = W(PAN_HOOK.x, KITCHEN.wall, PAN_HOOK.z);
+    const u = prog(fr, b.flick, b.hook);
+    const [x, y] = bezier([fl[0], fl[1] - 6], [hk[0], hk[1] + 28], 130, u);
+    flyingPan(u < 0.6 ? f.above : f.under, x, y, u * Math.PI * 4);
+  }
+  if (pt.mStickTip && fr >= b.flick - 2 && fr < b.flick + 3) whoosh(f, 'mStickTip', 3, '#e8ffd0');
+  const hk = W(PAN_HOOK.x, KITCHEN.wall, PAN_HOOK.z);
+  if (fr >= b.hook && fr < b.hook + 4) starInk(f.under, hk[0], hk[1] + 2, 4, fr, '#fff4c0');
+  // chattering teeth: little tinks at his mouth
+  if (pt.mouth && fr >= b.chatter[0] && fr < b.chatter[1] && fr % 2 === 0) {
+    const s = fr % 4 ? 1 : -1;
+    starInk(f.above, pt.mouth[0] + s * 9, pt.mouth[1] + 1, 2.2, fr, '#ffffff');
+    seg(f.above, pt.mouth[0] + s * 13, pt.mouth[1] - 3, pt.mouth[0] + s * 17, pt.mouth[1] - 4, 0.6, INK);
+  }
+  // shaking it off: a pop
+  if (pt.head) puff(f.above, pt.head[0], pt.head[1] - 4, 9, fr - 258, 7, 6, '#fffbe8');
+}
+
+// ---- show ---------------------------------------------------------------------------------------------------------
+/** Black over the whole painting but a circle of radius r round (cx, cy). */
+function iris(p: Pen, w: number, h: number, cx: number, cy: number, r: number) {
+  for (let y = 0; y < h; y++) {
+    const dy = y + 0.5 - cy;
+    const dx = Math.abs(dy) < r ? Math.sqrt(r * r - dy * dy) : 0;
+    if (dx <= 0) poly(p, [0, y, w, y, w, y + 1, 0, y + 1], '#0a0608');
+    else {
+      if (cx - dx > 0) poly(p, [0, y, cx - dx, y, cx - dx, y + 1, 0, y + 1], '#0a0608');
+      if (cx + dx < w) poly(p, [cx + dx, y, w, y, w, y + 1, cx + dx, y + 1], '#0a0608');
+    }
+  }
+}
+/** A pot in flight along a list of bounce points [frame, x, y, arc height], spinning; undefined outside the frames. */
+function potPath(fr: number, pts: [number, number, number, number][]): [number, number, number] | undefined {
+  for (let i = 0; i + 1 < pts.length; i++) {
+    const [f0, x0, y0] = pts[i],
+      [f1, x1, y1, h] = pts[i + 1];
+    if (fr >= f0 && fr < f1) {
+      const u = (fr - f0) / (f1 - f0);
+      return [x0 + (x1 - x0) * u, y0 + (y1 - y0) * u - Math.sin(u * Math.PI) * h, (fr - pts[0][0]) * 0.5];
+    }
+  }
+  return undefined;
+}
+function splash(p: Pen, x: number, y: number, age: number, seed: number) {
+  if (age < 0 || age > 12) return;
+  drops(p, x, y, age, 12, 7, 2.2, seed);
+  for (let k = 0; k < 2; k++) {
+    const r = 6 + age * 2.4 + k * 5;
+    ell(p, x, y, r, r * 0.35, '#bfe6ff', Math.max(0, 0.7 - age * 0.06 - k * 0.2));
+  }
+}
+function showFx(f: FxInput, fr: number) {
+  const b = beats.show;
+  const pt = f.points;
+  // the bun rolls in and wobbles to a stop where Шустрик pounces
+  if (fr >= b.bun[0] && fr < b.grab) {
+    const u = 1 - (1 - prog(fr, b.bun[0], b.bun[1])) ** 2;
+    const a = W(58, 2.6),
+      z = W(3, 3);
+    const x = a[0] + (z[0] - a[0]) * u,
+      y = a[1] + (z[1] - a[1]) * u;
+    bunMini(f.under, x, y - 5, 5.5);
+    const rot = -u * 9;
+    dot(f.under, x + Math.cos(rot) * 3, y - 5 + Math.sin(rot) * 3, 1, '#c8b49a', 1, '#c8b49a');
+    if (fr < b.bun[1] - 4) speedLines(f.under, x, y - 5, -1, 0, 10, 2, 5, fr, 0.6);
+  }
+  // a rumble in the loft: dust trickles down by the ladder
+  if (fr >= b.rumble[0] && fr < b.tumble[1])
+    for (let i = 0; i < 6; i++) {
+      const age = (fr - b.rumble[0] + i * 3) % 14;
+      dot(f.under, 112 + hash(i, 3) * 26, age * 6, 1, '#d8c8b0', 1 - age / 14, '#b8a890');
+    }
+  // off the rungs and the floor: dust and a thump; the roll trails dust and speed lines
+  if (pt.bodyGround) {
+    for (const c of [b.rungs[0], b.rungs[1]]) if (pt.body) puff(f.above, pt.body[0] - 10, pt.body[1] + 12, 6, fr - c, 7, c);
+    boom(f.under, pt.bodyGround[0], pt.bodyGround[1] - 6, 12, fr - b.floor, 2);
+    if (fr >= b.floor && fr < b.floor + 10) for (let k = 0; k < 2; k++) p_ring(f.under, pt.bodyGround[0], pt.bodyGround[1], 12 + (fr - b.floor) * 5 + k * 6, '#d8c8b0', Math.max(0, 0.6 - (fr - b.floor) * 0.07));
+    if (fr >= b.roll[0] && fr < b.roll[1]) {
+      puff(f.under, pt.bodyGround[0] - 10, pt.bodyGround[1] - 2, 5, fr % 4, 4, fr);
+      if (pt.body) speedLines(f.under, pt.body[0], pt.body[1], 18.4, 40.5 * 0.6, 24, 4, 30, fr);
+    }
+    boom(f.under, pt.bodyGround[0], pt.bodyGround[1] - 4, 9, fr - b.stop, 4);
+  }
+  if (pt.mBody) boom(f.above, pt.mBody[0], pt.mBody[1], 8, fr - b.sweep, 6);
+  // the pots: two bounce into the barrel, the third rolls up to him, hops off his foot onto his head
+  const ladderTop = 124;
+  const B = KITCHEN.barrel;
+  const rim = W(B.x, B.y, B.h);
+  const T = KITCHEN.table;
+  const tableTop = W(T.x + 4, T.y, T.top);
+  const potA = potPath(fr, [[b.potA[0], ladderTop, -14, 0], [b.potA[1], 130, 158, 8], [b.potA[2], rim[0], rim[1] - 6, 46]]);
+  if (potA) pot(f.above, potA[0], potA[1], potA[2], 1.7);
+  const potB = potPath(fr, [[b.potB[0], ladderTop - 4, -14, 0], [b.potB[1], 126, 158, 8], [b.potB[2], tableTop[0], tableTop[1] - 8, 26], [b.potB[3], rim[0] + 3, rim[1] - 6, 36]]);
+  if (potB) pot(f.above, potB[0], potB[1], potB[2], 1.7);
+  for (const [c, sd] of [[b.potA[2], 1], [b.potB[3], 2], [b.fling[1], 3]] as const) splash(f.above, rim[0], rim[1], fr - c, sd);
+  boom(f.under, tableTop[0], tableTop[1] - 4, 7, fr - b.potB[2], 5);
+  const head = (t: number) => {
+    const h = f.pointAt(t / 24, 'head');
+    return [h[0], h[1] - 44] as XY;
+  };
+  const foot = f.pointAt(b.foot / 24, 'footR');
+  if (fr >= b.potC[0] && fr < b.potC[1]) {
+    const q = potPath(fr, [[b.potC[0], ladderTop + 2, -16, 0], [b.potC[1], 132, 160, 10]]);
+    if (q) pot(f.above, q[0], q[1], q[2], 3.2);
+  } else if (fr >= b.potC[1] && fr < b.potC[2]) {
+    // rolling on its side across the floor
+    const u = prog(fr, b.potC[1], b.potC[2]);
+    const x = 132 + (foot[0] - 14 - 132) * u,
+      y = 166 + (foot[1] - 8 - 166) * u;
+    pot(f.under, x, y - 10, u * Math.PI * 6, 3.2);
+  } else if (fr >= b.potC[2] && fr < b.potC[3]) {
+    const hd = head(b.potC[3]);
+    const q = potPath(fr, [[b.potC[2], foot[0] - 14, foot[1] - 18, 0], [b.potC[3], hd[0], hd[1], 50]]);
+    if (q) pot(f.above, q[0], q[1], Math.PI * prog(fr, b.potC[2], b.potC[3]) * 3, 3.2);
+  } else if (fr >= b.potC[3] && fr < b.fling[0]) {
+    // upside down on his head over Шустрик; knocked on; lifted from inside
+    const hd = pt.head ? ([pt.head[0], pt.head[1] - 44] as XY) : head(fr);
+    const lift = fr >= b.lift[0] ? Math.min(1, prog(fr, b.lift[0], b.lift[1])) : 0;
+    const mh = pt.mHandR ?? hd;
+    const x = hd[0] + (mh[0] - hd[0]) * lift,
+      y = hd[1] + (mh[1] - 10 - hd[1]) * lift;
+    pot(f.above, x, y, Math.PI + (fr < b.bong + 6 ? 0.1 * Math.sin((fr - b.bong) * 2.5) : 0), 3.2);
+  } else if (fr >= b.fling[0] && fr < b.fling[1]) {
+    const from = f.pointAt(b.fling[0] / 24, 'mHandR');
+    const q = potPath(fr, [[b.fling[0], from[0], from[1] - 10, 0], [b.fling[1], rim[0] + 2, rim[1] - 6, 70]]);
+    if (q) pot(f.above, q[0], q[1], Math.PI + q[2] * 1.5, 3.2);
+  }
+  boom(f.under, foot[0] - 10, foot[1] - 6, 6, fr - b.foot, 3);
+  if (pt.head) {
+    clang(f.above, pt.head[0], pt.head[1] - 56, fr - b.bong, 16, 4);
+    for (const c of b.knocks) if (fr >= c && fr < c + 2 && pt.handL) starInk(f.above, pt.handL[0], pt.handL[1] - 4, 3, fr, '#fff4c0');
+    // foreheads: bonk
+    if (fr >= b.bonk && fr < b.bonk + 10) {
+      boom(f.above, pt.head[0] + 4, pt.head[1] - 20, 8, fr - b.bonk, 7);
+      for (let i = 0; i < 3; i++) starInk(f.above, pt.head[0] + Math.cos(fr * 0.4 + i * 2.1) * 18, pt.head[1] - 26 + Math.sin(fr * 0.4 + i * 2.1) * 5, 3.4, fr, '#ffd23a');
+    }
+    // a gulp
+    if (pt.mHead) puff(f.above, pt.mHead[0] + 8, pt.mHead[1] + 2, 3, fr - b.gulp, 6, 8, '#f4f0e8');
+  }
+  // the iris opens over everything
+  if (fr < b.iris[1]) iris(f.above, f.w, f.h, f.w / 2, f.h / 2, smooth(prog(fr, b.iris[0], b.iris[1])) * 260);
+}
+
+// ---- the effects entry --------------------------------------------------------------------------------------------
+export function pandaEffects(f: FxInput) {
+  const fr = f.t * 24;
+  const P = gesture(f.anim, f.t) as Record<string, number>;
+  const pt = f.points;
+  // the heroes' spots on the floor for depth order (Шустрик up on the table or a head does not count)
+  const who: Who = {
+    panda: (P.hidden ?? 0) > 0.5 && !P.egg ? null : (pt.bodyGround ?? pt.eggGround ?? null),
+    monkey: (P.mHidden ?? 0) > 0.5 || (P.mOn ?? 0) > 0.5 || (P.mZ ?? 0) > 5 ? null : (pt.mGround ?? pt.mEggGround ?? null),
+  };
+  // both shadows, under everything
+  if ((P.noShadow ?? 0) < 0.5) {
+    if (who.panda && pt.body) shadow(f.under, who.panda, 30, 9, who.panda[1] - pt.body[1] - 30);
+    else if (pt.eggGround) shadow(f.under, pt.eggGround, 28, 8, 0);
+  }
+  if (who.monkey && (P.mOn ?? 0) < 0.5 && pt.mBody) shadow(f.under, who.monkey, 11, 4, who.monkey[1] - pt.mBody[1] - 12);
+  const pr = propsFor(f.anim, fr, P, f);
+  drawKitchen(f, pr, who, fr);
+  if (pr.wave) floorWave(f.under, pr.wave);
+  everydayFx(f, fr, P);
+  if (f.anim === 'trick') trickFx(f, fr, P);
+  if (f.anim === 'trick_b') trickBFx(f, fr, P);
+  if (f.anim === 'trick_c') trickCFx(f, fr, P);
+  if (f.anim === 'phase') phaseFx(f, fr);
+  if (f.anim === 'happy-f2') happyF2Fx(f, fr);
+  if (f.anim === 'trick-f2') duelFx(f, fr);
+  if (f.anim === 'trick_b-f2') ramFx(f, fr);
+  if (f.anim === 'trick_c-f2') panFx(f, fr);
+  if (f.anim === 'show') showFx(f, fr);
+  // stars over a bonked head
+  if ((P.dizzy ?? 0) > 0.5 && pt.head) dizzyRing(f, [pt.head[0], pt.head[1] - 36], 30, f.t * TAU * 1.2, 1);
+  if ((P.mDizzy ?? 0) > 0.5 && pt.mHead) dizzyRing(f, [pt.mHead[0], pt.mHead[1] - 13], 12, -f.t * TAU * 1.5, 0.6);
+  // a popping fright: sweat drops
+  if ((P.pop ?? 0) > 0.5 && pt.head && f.anim !== 'wake_startled') sweat(f.above, pt.head[0], pt.head[1] - 24, (fr % 10), 11);
+  void floorY;
+  void smooth;
+}

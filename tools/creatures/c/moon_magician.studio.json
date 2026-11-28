@@ -1,0 +1,55 @@
+{
+  "minPrimitives": 900,
+  "multiActTrick": true,
+  "bodyClips": [
+    "walk_n",
+    "walk_ne",
+    "walk_e",
+    "walk_se",
+    "walk_s",
+    "walk_sw",
+    "walk_w",
+    "walk_nw",
+    "turn",
+    "tired",
+    "sleep"
+  ],
+  "skip": {
+    "clip": [
+      "trick_b-f2:6-13",
+      "trick_b-f2:42"
+    ]
+  },
+  "props": {
+    "hat": {
+      "doc": "Цилиндр Мурлена [описание уже сделанного перехода, исследование 23.11 этап 3]: на голове, в левой перчатке донцем вниз, в пути между ними, или снят с тела — тогда его рисуют эффекты (на полу, в полёте к голове).",
+      "states": [
+        [
+          "off",
+          "hatOff>=0.5"
+        ],
+        [
+          "inHand",
+          "hatInHand>=1"
+        ],
+        [
+          "passing",
+          "hatInHand>0"
+        ],
+        [
+          "onHead",
+          "always"
+        ]
+      ],
+      "rest": "onHead",
+      "between": {
+        "onHead>inHand": "passing",
+        "inHand>onHead": "passing"
+      },
+      "off": "off",
+      "absentWhile": "shrink>=0.2",
+      "socket": "hatOpening",
+      "handoffPx": 12
+    }
+  }
+}

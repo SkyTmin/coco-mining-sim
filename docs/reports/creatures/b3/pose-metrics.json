@@ -1,0 +1,911 @@
+{
+  "walk_e": {
+    "scores": [
+      {
+        "frame": 3,
+        "iou": 0.6453,
+        "landmarks": {
+          "eyeR": 7.74
+        }
+      },
+      {
+        "frame": 9,
+        "iou": 0.6179,
+        "landmarks": {
+          "eyeR": 9.95
+        }
+      },
+      {
+        "frame": 15,
+        "iou": 0.6385,
+        "landmarks": {
+          "eyeR": 7.83
+        }
+      },
+      {
+        "frame": 21,
+        "iou": 0.6455,
+        "landmarks": {
+          "eyeR": 9.81
+        }
+      }
+    ],
+    "issues": []
+  },
+  "walk_w": {
+    "scores": [
+      {
+        "frame": 3,
+        "iou": 0.6204,
+        "landmarks": {
+          "eyeL": 7.32
+        }
+      },
+      {
+        "frame": 9,
+        "iou": 0.6038,
+        "landmarks": {
+          "eyeL": 7.93
+        }
+      },
+      {
+        "frame": 15,
+        "iou": 0.6048,
+        "landmarks": {
+          "eyeL": 7.28
+        }
+      },
+      {
+        "frame": 21,
+        "iou": 0.6398,
+        "landmarks": {
+          "eyeL": 7.29
+        }
+      }
+    ],
+    "issues": []
+  },
+  "walk_s": {
+    "scores": [
+      {
+        "frame": 3,
+        "iou": 0.6434,
+        "landmarks": {
+          "noseTip": 9.4
+        }
+      },
+      {
+        "frame": 9,
+        "iou": 0.637,
+        "landmarks": {
+          "noseTip": 7.44
+        }
+      },
+      {
+        "frame": 15,
+        "iou": 0.6199,
+        "landmarks": {
+          "noseTip": 7.27
+        }
+      },
+      {
+        "frame": 21,
+        "iou": 0.6302,
+        "landmarks": {
+          "noseTip": 6.83
+        }
+      }
+    ],
+    "issues": []
+  },
+  "walk_n": {
+    "scores": [
+      {
+        "frame": 3,
+        "iou": 0.6432,
+        "landmarks": {
+          "tailTip": 1.84
+        }
+      },
+      {
+        "frame": 9,
+        "iou": 0.6402,
+        "landmarks": {
+          "tailTip": 0.76
+        }
+      },
+      {
+        "frame": 15,
+        "iou": 0.6708,
+        "landmarks": {
+          "tailTip": 1.85
+        }
+      },
+      {
+        "frame": 21,
+        "iou": 0.6689,
+        "landmarks": {
+          "tailTip": 2.39
+        }
+      }
+    ],
+    "issues": []
+  },
+  "walk_ne": {
+    "scores": [
+      {
+        "frame": 3,
+        "iou": 0.7608,
+        "landmarks": {
+          "eyeR": 7.81
+        }
+      },
+      {
+        "frame": 9,
+        "iou": 0.6984,
+        "landmarks": {
+          "eyeR": 8.59
+        }
+      },
+      {
+        "frame": 15,
+        "iou": 0.7268,
+        "landmarks": {
+          "eyeR": 6.7
+        }
+      },
+      {
+        "frame": 21,
+        "iou": 0.7225,
+        "landmarks": {
+          "eyeR": 7.68
+        }
+      }
+    ],
+    "issues": []
+  },
+  "walk_nw": {
+    "scores": [
+      {
+        "frame": 3,
+        "iou": 0.7886,
+        "landmarks": {
+          "eyeL": 3.71
+        }
+      },
+      {
+        "frame": 9,
+        "iou": 0.7617,
+        "landmarks": {
+          "eyeL": 4.24
+        }
+      },
+      {
+        "frame": 15,
+        "iou": 0.7935,
+        "landmarks": {
+          "eyeL": 3.56
+        }
+      },
+      {
+        "frame": 21,
+        "iou": 0.7378,
+        "landmarks": {
+          "eyeL": 4.24
+        }
+      }
+    ],
+    "issues": []
+  },
+  "walk_se": {
+    "scores": [
+      {
+        "frame": 3,
+        "iou": 0.6426,
+        "landmarks": {
+          "eyeR": 13.62
+        }
+      },
+      {
+        "frame": 9,
+        "iou": 0.6252,
+        "landmarks": {
+          "eyeR": 16.74
+        }
+      },
+      {
+        "frame": 15,
+        "iou": 0.6784,
+        "landmarks": {
+          "eyeR": 11.18
+        }
+      },
+      {
+        "frame": 21,
+        "iou": 0.6863,
+        "landmarks": {
+          "eyeR": 13.78
+        }
+      }
+    ],
+    "issues": []
+  },
+  "walk_sw": {
+    "scores": [
+      {
+        "frame": 3,
+        "iou": 0.6203,
+        "landmarks": {
+          "eyeL": 16.04
+        }
+      },
+      {
+        "frame": 9,
+        "iou": 0.6403,
+        "landmarks": {
+          "eyeL": 15.3
+        }
+      },
+      {
+        "frame": 15,
+        "iou": 0.6076,
+        "landmarks": {
+          "eyeL": 16.34
+        }
+      },
+      {
+        "frame": 21,
+        "iou": 0.6202,
+        "landmarks": {
+          "eyeL": 17.37
+        }
+      }
+    ],
+    "issues": []
+  },
+  "hatch": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.6525,
+        "landmarks": {
+          "eyeR": 4.92
+        }
+      },
+      {
+        "frame": 9,
+        "iou": 0.6294,
+        "landmarks": {
+          "eyeR": 7.08
+        }
+      },
+      {
+        "frame": 20,
+        "iou": 0.6313,
+        "landmarks": {
+          "eyeR": 9.91
+        }
+      },
+      {
+        "frame": 31,
+        "iou": 0.6615,
+        "landmarks": {
+          "eyeR": 9.82
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      1,
+      1
+    ]
+  },
+  "tired": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.6548,
+        "landmarks": {
+          "eyeR": 6.43
+        }
+      },
+      {
+        "frame": 10,
+        "iou": 0.6252,
+        "landmarks": {
+          "eyeR": 6.07
+        }
+      },
+      {
+        "frame": 21,
+        "iou": 0.6302,
+        "landmarks": {
+          "eyeR": 7.75
+        }
+      },
+      {
+        "frame": 30,
+        "iou": 0.6641,
+        "landmarks": {
+          "eyeR": 4.88
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      1,
+      1
+    ]
+  },
+  "turn": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.7161,
+        "landmarks": {
+          "noseTip": 3.63
+        }
+      },
+      {
+        "frame": 7,
+        "iou": 0.6698,
+        "landmarks": {
+          "noseTip": 4.85
+        }
+      },
+      {
+        "frame": 24,
+        "iou": 0.6212,
+        "landmarks": {
+          "noseTip": 4.5
+        }
+      },
+      {
+        "frame": 54,
+        "iou": 0.636,
+        "landmarks": {
+          "noseTip": 10.77
+        }
+      }
+    ],
+    "issues": []
+  },
+  "happy": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.7207,
+        "landmarks": {
+          "eyeR": 3.81,
+          "foreRAnkle": 6.7
+        }
+      },
+      {
+        "frame": 9,
+        "iou": 0.7089,
+        "landmarks": {
+          "eyeR": 7.58,
+          "foreRAnkle": 6.91
+        }
+      },
+      {
+        "frame": 17,
+        "iou": 0.7063,
+        "landmarks": {
+          "eyeR": 8.43,
+          "foreRAnkle": 8.84
+        }
+      },
+      {
+        "frame": 25,
+        "iou": 0.7236,
+        "landmarks": {
+          "eyeR": 6.66,
+          "foreRAnkle": 5.54
+        }
+      },
+      {
+        "frame": 36,
+        "iou": 0.7246,
+        "landmarks": {
+          "eyeR": 5.04,
+          "foreRAnkle": 6.32
+        }
+      },
+      {
+        "frame": 47,
+        "iou": 0.7376,
+        "landmarks": {
+          "eyeR": 2.91,
+          "foreRAnkle": 6.32
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      1,
+      1
+    ]
+  },
+  "sleep_in": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.7004,
+        "landmarks": {
+          "eyeR": 5.72,
+          "foreRAnkle": 6.44
+        }
+      },
+      {
+        "frame": 6,
+        "iou": 0.7076,
+        "landmarks": {
+          "eyeR": 6.67,
+          "foreRAnkle": 6.44
+        }
+      },
+      {
+        "frame": 14,
+        "iou": 0.7021,
+        "landmarks": {
+          "eyeR": 7.92,
+          "foreRAnkle": 4.64
+        }
+      },
+      {
+        "frame": 25,
+        "iou": 0.6987,
+        "landmarks": {
+          "eyeR": 6.68,
+          "foreRAnkle": 4.96
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      1,
+      0.9273
+    ]
+  },
+  "idle": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.713,
+        "landmarks": {
+          "eyeR": 7.54,
+          "foreRAnkle": 6.9
+        }
+      },
+      {
+        "frame": 22,
+        "iou": 0.7246,
+        "landmarks": {
+          "eyeR": 5.38,
+          "foreRAnkle": 6.9
+        }
+      },
+      {
+        "frame": 44,
+        "iou": 0.7258,
+        "landmarks": {
+          "eyeR": 7.05,
+          "foreRAnkle": 6.9
+        }
+      },
+      {
+        "frame": 63,
+        "iou": 0.7269,
+        "landmarks": {
+          "eyeR": 4.03,
+          "foreRAnkle": 6.9
+        }
+      }
+    ],
+    "issues": []
+  },
+  "fidget_a": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.7212,
+        "landmarks": {
+          "eyeR": 4.5,
+          "foreRAnkle": 7.45
+        }
+      },
+      {
+        "frame": 14,
+        "iou": 0.7273,
+        "landmarks": {
+          "eyeR": 11.5,
+          "foreRAnkle": 7.45
+        }
+      },
+      {
+        "frame": 28,
+        "iou": 0.7318,
+        "landmarks": {
+          "eyeR": 12.49,
+          "foreRAnkle": 7.45
+        }
+      },
+      {
+        "frame": 47,
+        "iou": 0.7228,
+        "landmarks": {
+          "eyeR": 4.68,
+          "foreRAnkle": 7.45
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      1,
+      1
+    ]
+  },
+  "fidget_b": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.7151,
+        "landmarks": {
+          "eyeR": 7.54,
+          "foreRAnkle": 5.7
+        }
+      },
+      {
+        "frame": 14,
+        "iou": 0.6917,
+        "landmarks": {
+          "eyeR": 11.02,
+          "foreRAnkle": 5.7
+        }
+      },
+      {
+        "frame": 28,
+        "iou": 0.738,
+        "landmarks": {
+          "eyeR": 5.11,
+          "foreRAnkle": 5.7
+        }
+      },
+      {
+        "frame": 47,
+        "iou": 0.7374,
+        "landmarks": {
+          "eyeR": 5.32,
+          "foreRAnkle": 5.7
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      1,
+      1
+    ]
+  },
+  "look": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.713,
+        "landmarks": {
+          "eyeR": 4.1,
+          "foreRAnkle": 7.19
+        }
+      },
+      {
+        "frame": 12,
+        "iou": 0.7185,
+        "landmarks": {
+          "eyeR": 6.76,
+          "foreRAnkle": 7.19
+        }
+      },
+      {
+        "frame": 22,
+        "iou": 0.715,
+        "landmarks": {
+          "eyeR": 7.14,
+          "foreRAnkle": 7.19
+        }
+      },
+      {
+        "frame": 35,
+        "iou": 0.7139,
+        "landmarks": {
+          "eyeR": 4.58,
+          "foreRAnkle": 7.19
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      1,
+      1
+    ]
+  },
+  "sleep": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.6965,
+        "landmarks": {
+          "eyeR": 4.64,
+          "foreRAnkle": 6.17
+        }
+      },
+      {
+        "frame": 42,
+        "iou": 0.6809,
+        "landmarks": {
+          "eyeR": 12.9,
+          "foreRAnkle": 6.43
+        }
+      }
+    ],
+    "issues": []
+  },
+  "sleep_out": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.7144,
+        "landmarks": {
+          "eyeR": 5.98,
+          "foreRAnkle": 5.2
+        }
+      },
+      {
+        "frame": 6,
+        "iou": 0.7307,
+        "landmarks": {
+          "eyeR": 7.28,
+          "foreRAnkle": 5.71
+        }
+      },
+      {
+        "frame": 16,
+        "iou": 0.7436,
+        "landmarks": {
+          "eyeR": 10.78,
+          "foreRAnkle": 6.67
+        }
+      },
+      {
+        "frame": 29,
+        "iou": 0.7255,
+        "landmarks": {
+          "eyeR": 4.24,
+          "foreRAnkle": 5.71
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      0.9273,
+      1
+    ]
+  },
+  "wake_startled": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.7054,
+        "landmarks": {
+          "eyeR": 6.01,
+          "foreRAnkle": 4.43
+        }
+      },
+      {
+        "frame": 5,
+        "iou": 0.7103,
+        "landmarks": {
+          "eyeR": 8.49,
+          "foreRAnkle": 6.91
+        }
+      },
+      {
+        "frame": 13,
+        "iou": 0.6726,
+        "landmarks": {
+          "eyeR": 7.44,
+          "foreRAnkle": 5.1
+        }
+      },
+      {
+        "frame": 23,
+        "iou": 0.7179,
+        "landmarks": {
+          "eyeR": 5.85,
+          "foreRAnkle": 5.1
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      0.9273,
+      1
+    ]
+  },
+  "tech_forefall": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.672,
+        "landmarks": {
+          "foreR": 4.3,
+          "foreL": 16.97,
+          "eyeR": 5.53
+        }
+      },
+      {
+        "frame": 16,
+        "iou": 0.6099,
+        "landmarks": {
+          "foreR": 14.46,
+          "foreL": 10.38,
+          "eyeR": 7.83
+        }
+      },
+      {
+        "frame": 21,
+        "iou": 0.6773,
+        "landmarks": {
+          "foreR": 13.52,
+          "foreL": 13.65,
+          "eyeR": 14.8
+        }
+      },
+      {
+        "frame": 24,
+        "iou": 0.6642,
+        "landmarks": {
+          "foreR": 12.15,
+          "foreL": 13.23,
+          "eyeR": 1.99
+        }
+      },
+      {
+        "frame": 29,
+        "iou": 0.6454,
+        "landmarks": {
+          "foreR": 17,
+          "foreL": 12.53,
+          "eyeR": 4.2
+        }
+      },
+      {
+        "frame": 41,
+        "iou": 0.6928,
+        "landmarks": {
+          "foreR": 6.09,
+          "foreL": 16.01,
+          "eyeR": 5.26
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      1,
+      1
+    ]
+  },
+  "tech_heelwave": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.7003,
+        "landmarks": {
+          "hindR": 7.66,
+          "eyeR": 4.76
+        }
+      },
+      {
+        "frame": 16,
+        "iou": 0.6228,
+        "landmarks": {
+          "hindR": 17.03,
+          "eyeR": 3.94
+        }
+      },
+      {
+        "frame": 21,
+        "iou": 0.6841,
+        "landmarks": {
+          "hindR": 11.59,
+          "eyeR": 6.9
+        }
+      },
+      {
+        "frame": 24,
+        "iou": 0.6143,
+        "landmarks": {
+          "hindR": 6.97,
+          "eyeR": 8.38
+        }
+      },
+      {
+        "frame": 29,
+        "iou": 0.6609,
+        "landmarks": {
+          "hindR": 6.33,
+          "eyeR": 12.37
+        }
+      },
+      {
+        "frame": 40,
+        "iou": 0.7101,
+        "landmarks": {
+          "hindR": 6.86,
+          "eyeR": 3.87
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      1,
+      1
+    ]
+  },
+  "trick": {
+    "scores": [
+      {
+        "frame": 0,
+        "iou": 0.6624,
+        "landmarks": {
+          "rock": 16.23,
+          "noseTip": 5.55
+        }
+      },
+      {
+        "frame": 12,
+        "iou": 0.6135,
+        "landmarks": {
+          "rock": 9.36,
+          "noseTip": 9.13
+        }
+      },
+      {
+        "frame": 22,
+        "iou": 0.649,
+        "landmarks": {
+          "rock": 5.34,
+          "noseTip": 9.23
+        }
+      },
+      {
+        "frame": 29,
+        "iou": 0.6621,
+        "landmarks": {
+          "rock": 11.25,
+          "noseTip": 5.24
+        }
+      },
+      {
+        "frame": 36,
+        "iou": 0.6674,
+        "landmarks": {
+          "rock": 6.57,
+          "noseTip": 4.05
+        }
+      },
+      {
+        "frame": 59,
+        "iou": 0.6597,
+        "landmarks": {
+          "rock": 16.11,
+          "noseTip": 4.42
+        }
+      }
+    ],
+    "issues": [],
+    "joins": [
+      1,
+      1
+    ]
+  }
+}

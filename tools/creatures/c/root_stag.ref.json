@@ -1,0 +1,1025 @@
+{
+  "idle": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/watch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      0,
+      19,
+      39
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            120.1,
+            116.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            118.6,
+            114.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            121.6,
+            118.8
+          ]
+        }
+      }
+    ]
+  },
+  "look": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/watch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      7,
+      15,
+      26
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            120.1,
+            116.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            120.5,
+            112.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            122.3,
+            119.6
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_a": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/groom.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      9,
+      20,
+      31
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            124,
+            122
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            133.3,
+            129.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            125.8,
+            125.1
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_b": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/groom.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      8,
+      19,
+      29
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            116.4,
+            112.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            129.8,
+            135.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            130.2,
+            130.6
+          ]
+        }
+      }
+    ]
+  },
+  "happy": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/gavotte.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      4,
+      11,
+      18,
+      26,
+      32,
+      40
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            117.8,
+            106.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            118,
+            124.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            128.8,
+            124.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            110.2,
+            91.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            128.7,
+            138.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            116.4,
+            112.9
+          ]
+        }
+      }
+    ]
+  },
+  "trick": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/constellation.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      13,
+      23,
+      47,
+      57,
+      73,
+      78
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            113,
+            115.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            102.5,
+            102.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            126.2,
+            128.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            134.6,
+            156.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            115.6,
+            112.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            131.8,
+            149.1
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_in": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/drowse.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      9,
+      20,
+      29
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            123.8,
+            129.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            113.5,
+            151.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            108.8,
+            159.4
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_out": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/drowse.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      0,
+      9,
+      20
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            108.8,
+            159.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            112.1,
+            153.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            116.9,
+            119.1
+          ]
+        }
+      }
+    ]
+  },
+  "wake_startled": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/rouse.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      0,
+      10,
+      16
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            108.8,
+            159.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            112.1,
+            104.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            120.1,
+            126.2
+          ]
+        }
+      }
+    ]
+  },
+  "hatch": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/rouse.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      0,
+      9,
+      21
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            120.1,
+            116.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            131.2,
+            153.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "head": [
+            112.8,
+            110
+          ]
+        }
+      }
+    ]
+  },
+  "tech_root_ring": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/roots.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      0,
+      18,
+      22,
+      25,
+      31,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hoofFR": [
+            106.5,
+            168.8
+          ],
+          "head": [
+            120.1,
+            116.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hoofFR": [
+            97.4,
+            141.2
+          ],
+          "head": [
+            94.6,
+            94.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hoofFR": [
+            108.7,
+            152.8
+          ],
+          "head": [
+            107.3,
+            103
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hoofFR": [
+            122.4,
+            180.8
+          ],
+          "head": [
+            137.6,
+            153
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hoofFR": [
+            115.9,
+            165.7
+          ],
+          "head": [
+            124.6,
+            123.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hoofFR": [
+            106.5,
+            168.8
+          ],
+          "head": [
+            120.1,
+            116.8
+          ]
+        }
+      }
+    ]
+  },
+  "tech_antler_sweep": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/hook.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      0,
+      18,
+      21,
+      24,
+      30,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hornTip": [
+            80,
+            88.5
+          ],
+          "head": [
+            120.1,
+            116.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hornTip": [
+            133.4,
+            103.1
+          ],
+          "head": [
+            120.5,
+            111.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hornTip": [
+            119.8,
+            114.8
+          ],
+          "head": [
+            132.6,
+            123.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hornTip": [
+            118.5,
+            108.9
+          ],
+          "head": [
+            122.6,
+            152.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hornTip": [
+            133.2,
+            98
+          ],
+          "head": [
+            120.8,
+            149
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "hornTip": [
+            80,
+            88.5
+          ],
+          "head": [
+            120.1,
+            116.8
+          ]
+        }
+      }
+    ]
+  },
+  "tech_firefly": {
+    "sheet": "../../../docs/reports/creatures/b8/references/root_stag/volley.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 104,
+    "frames": [
+      0,
+      18,
+      22,
+      25,
+      31,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "lanternR0": [
+            58.8,
+            103.2
+          ],
+          "head": [
+            120.1,
+            116.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "lanternR0": [
+            143.6,
+            196.3
+          ],
+          "head": [
+            134.8,
+            149
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "lanternR0": [
+            71.8,
+            119.4
+          ],
+          "head": [
+            123.8,
+            123.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "lanternR0": [
+            42.6,
+            118.4
+          ],
+          "head": [
+            103.1,
+            104.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "lanternR0": [
+            54.3,
+            122.9
+          ],
+          "head": [
+            100.6,
+            104.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "lanternR0": [
+            58.8,
+            103.2
+          ],
+          "head": [
+            120.1,
+            116.8
+          ]
+        }
+      }
+    ]
+  }
+}

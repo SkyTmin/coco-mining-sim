@@ -1,0 +1,296 @@
+{
+  "id": "storm_ram",
+  "bodyHeight": 72,
+  "techniques": [
+    {
+      "anim": "tech_ram",
+      "reference": "mammoth-tusks",
+      "weapon": "hornTip",
+      "bodyHeight": 72,
+      "prep": 16,
+      "strike": 18,
+      "hit": 21,
+      "follow": 26,
+      "comRatio": 0.5715084493920181,
+      "iou": 0.15771594953089615,
+      "tipRatio": 0.6825496927322913,
+      "prepFraction": 0.42105263157894735,
+      "strikeFraction": 0.47368421052631576,
+      "heldFrames": 1,
+      "attackFrames": 3,
+      "followPx": 3.024728746006396,
+      "stop": 0.04,
+      "contacts": [
+        {
+          "frame": 21,
+          "socket": "hornTip",
+          "kind": "floor",
+          "socketXY": [
+            112.51012667451712,
+            118.28400681495269
+          ],
+          "birthXY": [
+            112.51012667451712,
+            118.28400681495269
+          ],
+          "birthError": 0,
+          "floorError": 0,
+          "inkPixels": 101,
+          "nearestInk": 0.5662470714795996,
+          "launchError": null,
+          "landingError": null
+        }
+      ],
+      "projectiles": [],
+      "trailPixels": 219,
+      "trailFrames": 5,
+      "trailMax": 0.9209290080983765,
+      "worstTrailFrame": 21,
+      "limits": {
+        "comRatio": 0.1,
+        "iou": 0.75,
+        "tipRatio": 0.6
+      },
+      "issues": []
+    },
+    {
+      "anim": "tech_volley",
+      "reference": "puppeteer-cut",
+      "weapon": "hornTip",
+      "bodyHeight": 72,
+      "prep": 19,
+      "strike": 21,
+      "hit": 24,
+      "follow": 33,
+      "comRatio": 0.25618994752580304,
+      "iou": 0.43128161888701516,
+      "tipRatio": 0.66947741867303,
+      "prepFraction": 0.3958333333333333,
+      "strikeFraction": 0.4375,
+      "heldFrames": 0,
+      "attackFrames": 3,
+      "followPx": 5.792623050599959,
+      "stop": 0.04,
+      "contacts": [
+        {
+          "frame": 24,
+          "socket": "hornTip",
+          "kind": "body",
+          "socketXY": [
+            94.65296024997807,
+            59.83305833384029
+          ],
+          "birthXY": [
+            94.65296024997807,
+            59.83305833384029
+          ],
+          "birthError": 0,
+          "floorError": null,
+          "inkPixels": 30,
+          "nearestInk": 0.3851053206532812,
+          "launchError": null,
+          "landingError": null
+        },
+        {
+          "frame": 30,
+          "socket": "hornTip",
+          "kind": "projectile",
+          "socketXY": [
+            110.40666098248398,
+            112.5293783338403
+          ],
+          "birthXY": [
+            110.40666098248398,
+            112.5293783338403
+          ],
+          "birthError": 0,
+          "floorError": null,
+          "inkPixels": 32,
+          "nearestInk": 0.6219790248342566,
+          "launchError": 0,
+          "landingError": 0
+        },
+        {
+          "frame": 32,
+          "socket": "hornTip",
+          "kind": "projectile",
+          "socketXY": [
+            120.32565773998772,
+            118.5293783338403
+          ],
+          "birthXY": [
+            120.32565773998772,
+            118.5293783338403
+          ],
+          "birthError": 0,
+          "floorError": null,
+          "inkPixels": 40,
+          "nearestInk": 0.5723091090248711,
+          "launchError": 0,
+          "landingError": 0
+        },
+        {
+          "frame": 34,
+          "socket": "hornTip",
+          "kind": "projectile",
+          "socketXY": [
+            130.24465449749147,
+            109.5293783338403
+          ],
+          "birthXY": [
+            130.24465449749147,
+            109.5293783338403
+          ],
+          "birthError": 0,
+          "floorError": null,
+          "inkPixels": 37,
+          "nearestInk": 0.5304154747004801,
+          "launchError": 0,
+          "landingError": 0
+        },
+        {
+          "frame": 36,
+          "socket": "hornTip",
+          "kind": "projectile",
+          "socketXY": [
+            140.16365125499516,
+            117.5293783338403
+          ],
+          "birthXY": [
+            140.16365125499516,
+            117.5293783338403
+          ],
+          "birthError": 0,
+          "floorError": null,
+          "inkPixels": 45,
+          "nearestInk": 0.4982634703853211,
+          "launchError": 0,
+          "landingError": 0
+        },
+        {
+          "frame": 38,
+          "socket": "hornTip",
+          "kind": "projectile",
+          "socketXY": [
+            150.0826480124989,
+            112.5293783338403
+          ],
+          "birthXY": [
+            150.0826480124989,
+            112.5293783338403
+          ],
+          "birthError": 0,
+          "floorError": null,
+          "inkPixels": 48,
+          "nearestInk": 0.47782365641411345,
+          "launchError": 0,
+          "landingError": 0
+        }
+      ],
+      "projectiles": [
+        {
+          "id": "tech_volley-0-0",
+          "socket": "hornTip",
+          "release": 1,
+          "hit": 1.25,
+          "origin": [
+            94.65296024997807,
+            59.83305833384029
+          ],
+          "landing": [
+            110.40666098248398,
+            112.5293783338403
+          ],
+          "observations": 8,
+          "launchError": 0,
+          "arrivalError": 0
+        },
+        {
+          "id": "tech_volley-0-1",
+          "socket": "hornTip",
+          "release": 1,
+          "hit": 1.3333333333333333,
+          "origin": [
+            94.65296024997807,
+            59.83305833384029
+          ],
+          "landing": [
+            120.32565773998772,
+            118.5293783338403
+          ],
+          "observations": 10,
+          "launchError": 0,
+          "arrivalError": 0
+        },
+        {
+          "id": "tech_volley-0-2",
+          "socket": "hornTip",
+          "release": 1,
+          "hit": 1.4166666666666667,
+          "origin": [
+            94.65296024997807,
+            59.83305833384029
+          ],
+          "landing": [
+            130.24465449749147,
+            109.5293783338403
+          ],
+          "observations": 12,
+          "launchError": 0,
+          "arrivalError": 0
+        },
+        {
+          "id": "tech_volley-0-3",
+          "socket": "hornTip",
+          "release": 1,
+          "hit": 1.5,
+          "origin": [
+            94.65296024997807,
+            59.83305833384029
+          ],
+          "landing": [
+            140.16365125499516,
+            117.5293783338403
+          ],
+          "observations": 14,
+          "launchError": 0,
+          "arrivalError": 0
+        },
+        {
+          "id": "tech_volley-0-4",
+          "socket": "hornTip",
+          "release": 1,
+          "hit": 1.5833333333333333,
+          "origin": [
+            94.65296024997807,
+            59.83305833384029
+          ],
+          "landing": [
+            150.0826480124989,
+            112.5293783338403
+          ],
+          "observations": 16,
+          "launchError": 0,
+          "arrivalError": 0
+        }
+      ],
+      "trailPixels": 343,
+      "trailFrames": 5,
+      "trailMax": 1.7774631269400043,
+      "worstTrailFrame": 23,
+      "limits": {
+        "comRatio": 0.1,
+        "iou": 0.6212653778558875,
+        "tipRatio": 0.6
+      },
+      "issues": []
+    }
+  ],
+  "pairs": [
+    {
+      "a": "tech_ram",
+      "b": "tech_volley",
+      "iou": 0.4518944653838524
+    }
+  ]
+}

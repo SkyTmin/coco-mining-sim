@@ -1,0 +1,778 @@
+{
+  "idle": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/rest-look.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      0,
+      21,
+      39
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      }
+    ]
+  },
+  "look": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/rest-look.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      8,
+      16,
+      25
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      }
+    ]
+  },
+  "fidget_a": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/groom-listen.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      10,
+      22,
+      28
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      }
+    ]
+  },
+  "fidget_b": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/groom-listen.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      10,
+      21,
+      30
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      }
+    ]
+  },
+  "sleep_in": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/nest.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      9,
+      17,
+      29
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      }
+    ]
+  },
+  "sleep_out": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/nest.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      0,
+      17,
+      23
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      }
+    ]
+  },
+  "wake_startled": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/wake-hatch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      0,
+      9,
+      15
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      }
+    ]
+  },
+  "hatch": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/wake-hatch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      0,
+      9,
+      18
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      }
+    ]
+  },
+  "happy": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/joy.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      4,
+      10,
+      17,
+      23,
+      30,
+      36
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      }
+    ],
+    "study": "../../../docs/reports/creatures/b8/references/frost_fox/study-happy.png"
+  },
+  "trick": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/hoop.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      6,
+      18,
+      39,
+      53,
+      66,
+      77
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {}
+      }
+    ],
+    "study": "../../../docs/reports/creatures/b8/references/frost_fox/study-trick.png"
+  },
+  "tech_aurora": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/tech_aurora.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      0,
+      18,
+      22,
+      25,
+      31,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "tailTip": [
+            44.2,
+            87.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "tailTip": [
+            64.7,
+            90.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "tailTip": [
+            64.1,
+            128.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "tailTip": [
+            122.7,
+            151.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "tailTip": [
+            136.4,
+            156.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "tailTip": [
+            39,
+            90.9
+          ]
+        }
+      }
+    ],
+    "study": "../../../docs/reports/creatures/b8/references/frost_fox/study-aurora.png"
+  },
+  "tech_pounce": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/tech_pounce.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      0,
+      18,
+      23,
+      26,
+      32,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "foreR": [
+            109.9,
+            167.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "foreR": [
+            107.2,
+            136.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "foreR": [
+            113.9,
+            153
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "foreR": [
+            124.5,
+            172.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "foreR": [
+            124.5,
+            172.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "foreR": [
+            109.9,
+            167.7
+          ]
+        }
+      }
+    ],
+    "study": "../../../docs/reports/creatures/b8/references/frost_fox/study-pounce_rime.png"
+  },
+  "tech_rime": {
+    "sheet": "../../../docs/reports/creatures/b8/references/frost_fox/tech_rime.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "idleHeight": 101,
+    "frames": [
+      0,
+      18,
+      22,
+      25,
+      31,
+      47
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "keys": [
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "mouth": [
+            143.2,
+            136.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "mouth": [
+            124.7,
+            111.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "mouth": [
+            141.5,
+            137.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "mouth": [
+            152.7,
+            158.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "mouth": [
+            156,
+            161.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          100,
+          158
+        ],
+        "points": {
+          "mouth": [
+            143.2,
+            136.8
+          ]
+        }
+      }
+    ],
+    "study": "../../../docs/reports/creatures/b8/references/frost_fox/study-pounce_rime.png"
+  }
+}

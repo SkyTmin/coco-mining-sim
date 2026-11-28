@@ -1,0 +1,30 @@
+REFERENCE SHEET — Meadow Colossus, animation "happy" (a two-beat alternating forefoot dance with blossom buds opening).
+
+LAYOUT
+One image, 3 columns × 2 rows = 6 equal cells; read left to right, top row first. Requested 1536×1024 px, each cell 512×512 px. Use a clean regular lattice but do not draw it. One complete creature alone in every cell. Flat opaque #FF00FF everywhere outside the creature; no gradient, vignette, shadow under feet, texture or ground. No grid, borders, words, labels, digits, arrows, logos or watermark. Centre each figure at x=50% of its cell, feet at y=86%, crown around y=15%, leave at least 8% empty margin around feet and top and both sides. Equal apparent size, consistent framing, no optical zoom. Ignore the second side-profile view in the attachment; use only its LEFT three-quarter creature for all poses.
+
+CHARACTER LOCK (every cell matches attached approved creature)
+One immense ancient terrestrial tortoise carrying a daisy meadow on one rigid domed shell with a yellow ochre lip. The head takes about 23% of total height, squat scaly column feet below the shell, total height including canopy is one unit. Exactly four legs, each three blunt ivory claws; near legs ochre and separate dark far legs readable behind, two amber eyes (naturally occluded on the far side), one short left-pointing tail, zero arms, ears or horns. Same hooked beak, wrinkled neck, hard shell plates, twisting S-shaped trunk at rear-left with exactly three connected clusters of leaves, three discrete gray stones: small at the roots, large middle crag and loose round front pebble. Earth #8f7958 and #c5ae7c, olive #454d32 and #728843, warm grass #a6b65b, rock #727874 and #b8b39c, eyes #e2b258, dark outline #322f2b. Rich ochre rims and warm yellow foliage highlights as in the specimen. Do not recolour or redesign. Body is about 70% of cell height, feet baseline 86% in every cell.
+
+PROP
+The single tree and the three stones are carried on the turf for the whole sheet, no gripped prop. Stiff roots are fixed to the same patch at rear-left; the trunk is one piece and has no face. Keep front round pebble separate from the mid crag but always on the shell, including under load. Nothing crosses the face.
+
+CAMERA
+Locked front-right three-quarter view, looking slightly down, exactly the same angle as the LEFT character of the specimen. Faces right; do not flip, revolve body or change projection.
+
+STYLE
+Match original crisp pixel clusters, ochre armored scutes, moss and high-contrast 1-pixel outline at sprite scale. Hard cel steps, top-left warm light, dark cool far limbs. No speed lines, motion blur, detached particles, shadow on floor or magenta fringe. Make the key differences clear in silhouette as well as face.
+
+POSES (each cell a different instant)
+Cell 1 — SQUEEZE: All four soles touch the floor, near fore ankle bends 14 degrees, chin dips 10 degrees, shoulders sink 4% of height. The rigid dome keeps its shape. Tree vertical; buds closed.
+Cell 2 — FIRST UPBEAT: Both back feet and near forefoot bear weight; lift only the dark far front foot in front of the rim, exposing the gap of 7% of body height under it. Chin tilts up; eye open. Tree trails the initial weight shift.
+Cell 3 — FIRST FOOTFALL: Far front foot has just met the floor with its three claws. Load passes to that foot. Near front heel peels away, near toes still touch. Buds begin to open at the base of the crown.
+Cell 4 — JOY CREST: Both rear feet and the dark far front foot remain on the floor. The large lit nearer front foot swings forward and up by 13% of height. Arched, smiling eyelids cover both eyes, mouth corners turn up, neck reaches diagonally up-right 18 degrees. The tree bends left, its own attached meadow buds blossom; do not draw a free particle.
+Cell 5 — SECOND FOOTFALL: The large near three-toed forefoot TOUCHES the invisible floor right of its old footprint. Both rear feet remain planted. Chest compresses by 5%, chin dips while the tree lags back to the right. Eyes are starting to open.
+Cell 6 — REBOUND: Near foot settles under its shoulder; all four soles planted in the original stance. Neck relaxes almost horizontal, lids open, tree settles half an angle past vertical, buds remain attached.
+
+CONTACT
+The weight-bearing soles TOUCH the same invisible flat floor; the lowest tip of each supporting near foot lies on the baseline. Show the underside gap only for deliberately raised feet. Use overlap and cast occlusion only inside the creature. Body cannot float.
+
+AVOID
+Extra limbs, toes, eyes, antlers or leaves floating outside the silhouette, duplicating or fusing legs, spurious front foot just behind the head, duplicated tortoise, cropped canopy or tail, detached head, arm-like limb, changes in boulder count, inconsistent design, pasted identical poses, frame edges, caption, shadow or scenery. Preserve physical support and visibility of the near eye.

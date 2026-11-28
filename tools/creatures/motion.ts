@@ -1,0 +1,456 @@
+import { createPetBehavior, interruptFrames, turnFramesFor, validateBehavior,
+  type BehaviorConfig, type PetSample } from './viewer/behavior.mjs';
+import { SE } from './rig/f15-rig';
+import { sizeOf, type Creature, type MotionPlan, type XY } from './types';
+
+export const directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'] as const;
+export type Direction = (typeof directions)[number];
+export type { MotionPlan, MotionBeat } from './types';
+const wrap = (v: number, m: number) => ((v % m) + m) % m;
+const ease = (u: number) => u * u * (3 - 2 * u);
+const mix = (a: number, b: number, u: number) => a + (b - a) * u;
+const point = (a: XY, b: XY, u: number): XY => [
+  mix(a[0], b[0], u),
+  mix(a[1], b[1], u),
+];
+export function strideFoot(t: number, offset: number, stride: number) {
+  const phase = wrap(t + offset, 1);
+  if (phase < 0.5)
+    return { forward: stride * (0.25 - phase), lift: 0, planted: true };
+  const u = 2 * (phase - 0.5);
+  // Cubic swing with the same rearward velocity at toe-off and touchdown.
+  return {
+    forward: stride * (-0.25 - 0.5 * u + 3 * u * u - 2 * u * u * u),
+    lift: Math.sin(Math.PI * u) ** 2,
+    planted: false,
+  };
+}
+export function directionVector(dir: Direction, stride: number): XY {
+  const i = directions.indexOf(dir),
+    a = ((i - 2) * Math.PI) / 4;
+  return [
+    Math.abs(Math.cos(a)) < 1e-8 ? 0 : stride * Math.cos(a),
+    Math.abs(Math.sin(a)) < 1e-8 ? 0 : stride * Math.sin(a) * SE,
+  ];
+}
+function heading(v: XY, base: number) {
+  return wrap(((Math.atan2(v[1] / SE, v[0]) - base) * 8) / Math.PI, 16);
+}
+const turn = (a: number, b: number, u: number) =>
+  wrap(a + (wrap(b - a + 8, 16) - 8) * u, 16);
+export const lifeDuration = (p: MotionPlan) =>
+  p.beats.reduce((n, b) => n + b.seconds, 0);
+interface ReelPart {
+  name: string;
+  frames: number;
+  offset?: number;
+  joined?: boolean;
+  at?: XY;
+  pivot?: { at: XY; frames: number[] };
+}
+
+// Pets with a handoff take one continuous walk through the eight views and return to the same mark.
+const walkingDemos = new WeakMap<Creature, ReelPart[]>();
+function walkingDemo(c: Creature): ReelPart[] {
+  const cached = walkingDemos.get(c);
+  if (cached) return cached;
+  const frames = Math.round(c.animations.prepare_walk.seconds * 24), middle = Math.ceil(frames / 2);
+  const turnFrames = Math.round(c.animations.turn.seconds * 24), { yaw, stride } = c.motion!;
+  const bearings = c.animations.turn.bearings ?? Array.from({ length: turnFrames }, (_, i) => yaw + i * 2 * Math.PI / turnFrames);
+  const route: readonly Direction[] = c.reelWalkRoute ?? ['se', 's', 'w', 'nw', 'ne', 'n', 'e', 'sw'];
+  if (route.length !== directions.length || directions.some(d => !route.includes(d)))
+    throw new Error(c.id + ': the showreel walk must visit all eight headings once');
+  const bearing = (d: Direction) => (directions.indexOf(d) - 2) * Math.PI / 4;
+  const still: XY = [0, 0];
+  const parts: ReelPart[] = [
+    { name: 'prepare_walk', frames: middle, pivot: { at: still, frames: [] } },
+    { name: 'turn', frames: turnFrames, pivot: { at: still, frames: turnFramesFor(bearings, bearings.at(-1)!, bearing(route[0])) } },
+  ];
+  let floor: XY = still;
+  for (const [i, d] of route.entries()) {
+    const [vx, vy] = directionVector(d, stride);
+    const at: XY = [floor[0] + vx / 2, floor[1] + vy / 2];
+    floor = [floor[0] + vx, floor[1] + vy];
+    parts.push({ name: 'walk_' + d, frames: 24, at, pivot: { at: floor,
+      frames: turnFramesFor(bearings, bearing(d), route[i+1] ? bearing(route[i+1]) : yaw) } });
+  }
+  parts.push({ name: 'prepare_walk', offset: middle, frames: frames - middle });
+  walkingDemos.set(c, parts);
+  return parts;
+}
+
+// Frame indices keep short attacks and the six-frame rests exactly on a GIF tick.
+export function reelChapters(c: Creature) {
+  let cursor = 0;
+  const tricks = c.behavior?.tricks;
+  const demo = c.behavior && c.motion && c.animations.prepare_walk ? walkingDemo(c) : undefined;
+  const names = c.behavior
+    ? ['hatch', ...(demo ? [] : ['turn']), 'idle','fidget_a','fidget_b', ...(demo ? ['prepare_walk'] : directions.map(d => 'walk_' + d)),
+       'look','happy', ...(tricks?.f1 ?? ['trick']), ...Object.keys(c.animations).filter(key => c.animations[key].companion),
+       ...(c.behavior.attacks ?? []),'tired','sleep_in','sleep','wake_startled','sleep_out',
+       ...['show', 'peek'].filter(name => tricks && c.animations[name]),
+       ...['phase', 'idle-f2'].filter(name => c.animations[name]),
+       ...(tricks ? (tricks.f2 ? ['happy-f2', ...tricks.f2] : []) : ['show'].filter(name => c.animations[name]))]
+    : Object.keys(c.animations).filter(name => name.startsWith('tech_'));
+  const programme = c.reelGroups?.flatMap(group =>
+    group.map((name, i) => ({ name, joined: i < group.length - 1 })),
+  ) ?? names.map(name => ({ name, joined: false }));
+  const parts = programme.flatMap(({ name, joined }): ReelPart[] =>
+    name === 'prepare_walk' && demo ? demo : [{ name, frames: Math.round(c.animations[name].seconds * 24), joined }]);
+  return parts.map(part => {
+    const start = cursor;
+    cursor += part.frames + (part.pivot?.frames.length ?? (part.joined ? 0 : 6));
+    return { ...part, start, end: cursor };
+  });
+}
+
+/** Play the complete authored technique on the 24 Hz clock when it occurs in life. */
+export function resolveTechniqueBeats(c: Creature, plan: MotionPlan): MotionPlan {
+  return {
+    ...plan,
+    beats: plan.beats.map((beat) =>
+      beat.anim.startsWith('tech_') && c.animations[beat.anim]
+        ? {
+            ...beat,
+            seconds: Math.round(c.animations[beat.anim].seconds * 24) / 24,
+          }
+        : beat,
+    ),
+  };
+}
+
+export function attachMotion(c: Creature, plan: MotionPlan): Creature {
+  if (
+    !Number.isFinite(plan.stride) ||
+    plan.stride <= 0 ||
+    !Number.isFinite(plan.yaw)
+  )
+    throw Error(c.id + ' invalid gait');
+  plan = resolveTechniqueBeats(c, plan);
+  const chapters = reelChapters(c);
+  const seconds = lifeDuration(plan);
+  let start = 0;
+  const lifeHits = plan.beats.flatMap((beat) => {
+    const action = c.animations[beat.anim];
+    const times = (action?.hits ?? []).map(
+      (hit) =>
+        Math.round((start + (hit * beat.seconds) / action.seconds) * 24) / 24,
+    );
+    start += beat.seconds;
+    return times;
+  });
+  if (seconds < 12 - 1e-8 || seconds > 20 + 1e-8)
+    throw Error(c.id + ' life must last 12–20 seconds');
+  for (const beat of plan.beats) {
+    if (
+      !(beat.seconds > 0) ||
+      beat.at.some((n) => !Number.isFinite(n) || n < 0 || n > 1)
+    )
+      throw Error(c.id + ' invalid life waypoint');
+    if (
+      !['walk', 'fly', 'turn'].includes(beat.anim) &&
+      !c.animations[beat.anim]
+    )
+      throw Error(c.id + ' missing ' + beat.anim);
+  }
+  return {
+    ...c,
+    motion: plan,
+    animations: {
+      ...c.animations,
+      life: { seconds, loop: true, hits: lifeHits },
+      ...(chapters.length
+        ? {
+            showreel: {
+              seconds: chapters.at(-1)!.end / 24,
+              loop: true,
+              hits: chapters.flatMap(({ name, start }) =>
+                (c.animations[name].hits ?? []).map(
+                  (t) => (start + Math.round(t * 24)) / 24,
+                ),
+              ),
+            },
+          }
+        : {}),
+      ...Object.fromEntries(
+        directions.map((d) => ['walk_' + d, { seconds: 1, loop: true }]),
+      ),
+    },
+  };
+}
+// The viewer uses this same clock for its live events; baking only caches the
+// first fixed-seed excursion so a render may seek backwards or sample in parallel.
+const previews = new WeakMap<Creature, PetSample[]>();
+export function lifeCycleCount(c: Creature) {
+  const tricks = c.behavior?.tricks;
+  return tricks ? Math.max(tricks.f1.length, tricks.f2?.length ?? 0) : 1;
+}
+
+function petPreview(c: Creature) {
+  let rows = previews.get(c);
+  if (!rows) {
+    const machine = createPetBehavior(c.behavior!, c.animations);
+    rows = Array.from({ length: c.behavior!.previewSeconds * 24 * lifeCycleCount(c) }, (_, i) =>
+      i ? machine.advance(1 / 24) : machine.sample());
+    previews.set(c, rows);
+  }
+  return rows;
+}
+
+export function attachPetBehavior(raw: Creature, plan: MotionPlan, behavior: BehaviorConfig): Creature {
+  const c = { ...raw, behavior, motion: plan, animations: { ...raw.animations } };
+  for (const d of directions) c.animations['walk_' + d] ??= { seconds: 1, loop: true };
+  for (const [name, spec] of Object.entries(c.animations))
+    c.animations[name] = { ...spec, interrupt: interruptFrames(Math.round(spec.seconds * 24), name) };
+  const problems = validateBehavior(behavior, c.animations);
+  if (problems.length) throw Error(c.id + ' behavior: ' + problems.join(', '));
+  const [width, height] = sizeOf(c);
+  if (behavior.field[0] !== width || behavior.field[1] !== height ||
+      behavior.depthScale !== SE || behavior.stride !== plan.stride || behavior.yaw !== plan.yaw)
+    throw Error(c.id + ' behavior coordinate system differs from the card');
+  if (behavior.stops.some(p => !plan.beats.some(b => b.at[0] === p[0] && b.at[1] === p[1])))
+    throw Error(c.id + ' behavior stop is missing from card beats');
+  if (behavior.tricks) {
+    const home: XY = [behavior.stops[0][0] * width, behavior.stops[0][1] * height];
+    if (c.portraitOrigin?.some((value, i) => Math.abs(value - home[i]) > 1e-8))
+      throw Error(c.id + ' trick scenery and walking route must share the same home');
+    c.portraitOrigin = home;
+  }
+  const preview = petPreview(c).slice(0, behavior.previewSeconds * 24);
+  const chapters = reelChapters(c);
+  const reelTicks = chapters.at(-1)!.end;
+  c.animations.life = {
+    seconds: behavior.previewSeconds, loop: true, interrupt: interruptFrames(preview.length),
+    hits: preview.flatMap(({anim, frame}, i) =>
+      (c.animations[anim].hits ?? []).filter(t => Math.round(24 * t) === frame).map(() => i / 24)),
+  };
+  c.animations.showreel = {
+    seconds: reelTicks / 24, loop: true, interrupt: interruptFrames(reelTicks),
+    hits: chapters.flatMap(({name,start}) => (c.animations[name].hits ?? []).map(t => (start + Math.round(t * 24)) / 24)),
+  };
+  return c;
+}
+export interface Placement {
+  feet: XY;
+  side: number;
+  headSide: number;
+  anim: string;
+  t: number;
+  lift: number;
+  start: number;
+  duration: number;
+  beat: number;
+}
+function turnSide(c: Creature, t: number) {
+  const bearings = c.animations.turn?.bearings;
+  if (!bearings?.length || !c.motion) return wrap(Math.floor(t * 4), 16);
+  const frame = wrap(Math.round(t * 24), bearings.length);
+  return wrap((bearings[frame] - c.motion.yaw) * 8 / Math.PI, 16);
+}
+function routePlacement(
+  c: Creature,
+  anim: string,
+  t: number,
+  side: number,
+  origin: XY,
+): Placement {
+  const [w, h] = sizeOf(c),
+    plan = c.motion;
+  const facing = anim === 'turn' ? turnSide(c,t) : side;
+  const fixed = {
+    feet: origin,
+    anim,
+    t,
+    side: facing,
+    headSide: facing,
+    lift: 0,
+    start: 0,
+    duration: c.animations[anim]?.seconds ?? 1,
+    beat: -1,
+  };
+  if (anim === 'life' && c.behavior && plan) {
+    const rows = petPreview(c), i = wrap(Math.round(t * 24), rows.length);
+    const state = rows[i];
+    const stride = directionVector(state.direction, plan.stride);
+    const walking = state.anim.startsWith('walk_');
+    const side = walking ? heading(stride, plan.yaw) : state.anim === 'turn' ? turnSide(c,state.elapsed) : 0;
+    return { ...fixed, feet: [state.at[0] * w, state.at[1] * h],
+      anim: walking ? 'walk' : state.anim, side, headSide: side, t: state.elapsed,
+      start: (i - state.frame) / 24, duration: c.animations[state.anim].seconds };
+  }
+  if (anim === 'showreel') {
+    const chapters = reelChapters(c);
+    const tick = wrap(t * 24, chapters.at(-1)!.end);
+    const chapter = chapters.find(({ end }) => tick < end)!;
+    const age = tick - chapter.start;
+    if (c.behavior && age < chapter.frames) {
+      const mark: XY = chapter.at ? [origin[0] + chapter.at[0], origin[1] + chapter.at[1]] : origin;
+      return { ...routePlacement(c, chapter.name, ((chapter.offset ?? 0) + age) / 24, side, mark), start: chapter.start / 24 };
+    }
+    if (chapter.pivot) {
+      const mark: XY = [origin[0] + chapter.pivot.at[0], origin[1] + chapter.pivot.at[1]];
+      const frame = chapter.pivot.frames[Math.floor(age - chapter.frames)];
+      return { ...routePlacement(c, 'turn', frame / 24, side, mark), start: chapter.start / 24 };
+    }
+    return age < chapter.frames
+      ? {
+          ...fixed,
+          anim: chapter.name,
+          t: age / 24,
+          start: chapter.start / 24,
+          duration: c.animations[chapter.name].seconds,
+        }
+      : {
+          ...fixed,
+          anim: (c.behavior?.lifeAttacks || c.behavior?.tricks) &&
+            (chapter.name === 'phase' || chapter.name === 'idle-f2' ||
+             (c.behavior?.tricks && chapter.name.endsWith('-f2'))) ? 'idle-f2' : 'idle',
+          t: (age - chapter.frames) / 24,
+          start: (chapter.start + chapter.frames) / 24,
+          duration: 6 / 24,
+        };
+  }
+  if (!plan) return fixed;
+  const dir =
+    anim === 'walk'
+      ? 'se'
+      : anim.startsWith('walk_')
+        ? (anim.slice(5) as Direction)
+        : undefined;
+  if (dir && directions.includes(dir)) {
+    const v = directionVector(dir, plan.stride),
+      s = heading(v, plan.yaw);
+    return {
+      ...fixed,
+      anim: 'walk',
+      t,
+      side: s,
+      headSide: s,
+      feet: [origin[0] + (t - 0.5) * v[0], origin[1] + (t - 0.5) * v[1]],
+      lift: plan.fly ? 4 + 3 * Math.sin(t * Math.PI * 2) : 0,
+    };
+  }
+  if (anim !== 'life') return fixed;
+  const beats = plan.beats,
+    total = lifeDuration(plan);
+  const local = wrap(t, total);
+  let start = 0,
+    i = 0;
+  while (i < beats.length - 1 && local >= start + beats[i].seconds - 1e-9) {
+    start += beats[i].seconds;
+    i++;
+  }
+  const beat = beats[i],
+    next = beats[(i + 1) % beats.length];
+  const project = (a: XY): XY => [a[0] * w, a[1] * h];
+  const a = project(beat.at),
+    b = project(next.at);
+  const move = (index: number) => ['walk', 'fly'].includes(beats[index].anim);
+  const dirAt = (index: number) => {
+    const here = beats[index],
+      end = beats[(index + 1) % beats.length];
+    return move(index)
+      ? heading(
+          [(end.at[0] - here.at[0]) * w, (end.at[1] - here.at[1]) * h],
+          plan.yaw,
+        )
+      : (here.side ?? 0);
+  };
+  const age = Math.max(0, local - start),
+    u = Math.min(1, age / beat.seconds);
+  const prior = (i + beats.length - 1) % beats.length,
+    following = (i + 1) % beats.length;
+  const continuesIn = move(prior),
+    continuesOut = move(following);
+  const progress = (v: number) =>
+    continuesIn
+      ? continuesOut
+        ? v
+        : 1 - (1 - v) ** 2 * (1 + v)
+      : continuesOut
+        ? v * v * (2 - v)
+        : ease(v);
+  const speed = progress(u),
+    s = dirAt(i);
+  let feet = move(i) ? point(a, b, speed) : a;
+  const flight = plan.fly ? mix(beat.lift ?? 4, next.lift ?? 4, speed) : 0;
+  const duration = c.animations[beat.anim]?.seconds ?? beat.seconds;
+  if (move(i)) {
+    let direction = s,
+      head = s;
+    const distance = Math.hypot(b[0] - a[0], (b[1] - a[1]) / SE);
+    // Keep the leg clock running across intermediate waypoints.
+    let previousDistance = 0;
+    for (let j = i - 1; j >= 0 && move(j); j--) {
+      const x = project(beats[j].at),
+        y = project(beats[j + 1].at);
+      previousDistance += Math.hypot(y[0] - x[0], (y[1] - x[1]) / SE);
+    }
+    if (plan.fly) {
+      const prev = continuesIn ? project(beats[prior].at) : a;
+      const next2 = continuesOut
+        ? project(beats[(i + 2) % beats.length].at)
+        : b;
+      const curve = (v: number): XY =>
+        [0, 1].map(
+          (k) =>
+            0.5 *
+            (2 * a[k] +
+              (b[k] - prev[k]) * v +
+              (2 * prev[k] - 5 * a[k] + 4 * b[k] - next2[k]) * v * v +
+              (-prev[k] + 3 * a[k] - 3 * b[k] + next2[k]) * v * v * v),
+        ) as XY;
+      const tangent = (v: number) => {
+        const e = 0.0001,
+          x = curve(v - e),
+          y = curve(v + e);
+        return heading([y[0] - x[0], y[1] - x[1]], plan.yaw);
+      };
+      feet = curve(speed);
+      direction = tangent(speed);
+      head = tangent(progress(Math.min(1, u + 2 / (24 * beat.seconds))));
+    }
+    return {
+      feet,
+      side: direction,
+      headSide: head,
+      anim: 'walk',
+      t: (previousDistance + distance * speed) / plan.stride,
+      lift: flight,
+      start,
+      duration: 1,
+      beat: i,
+    };
+  }
+  // Turn in place during pauses: the head finds the new direction two frames first.
+  const before = dirAt((i + beats.length - 1) % beats.length),
+    after = dirAt((i + 1) % beats.length);
+  const face = (dt: number) => {
+    const age2 = Math.max(0, Math.min(beat.seconds, age + dt));
+    if (beat.anim === 'turn')
+      return turn(before, after, ease(age2 / beat.seconds));
+    const blend = Math.min(0.32, beat.seconds * 0.25);
+    if (age2 < blend) return turn(before, s, ease(age2 / blend));
+    if (age2 > beat.seconds - blend)
+      return turn(s, after, ease((age2 - beat.seconds + blend) / blend));
+    return s;
+  };
+  return {
+    feet,
+    side: face(0),
+    headSide: face(2 / 24),
+    anim: beat.anim === 'turn' ? 'idle' : beat.anim,
+    t: beat.anim === 'turn' ? 0 : u * duration,
+    lift: flight,
+    start,
+    duration,
+    beat: i,
+  };
+}
+
+/** Apply the action's own ground trajectory after resolving a life beat or showreel chapter. */
+export function placement(c: Creature, anim: string, t: number, side: number, origin: XY): Placement {
+  const at = routePlacement(c, anim, t, side, c.portraitOrigin ?? origin);
+  const delta = c.animations[at.anim]?.groundOffset?.(at.t, at.side);
+  return delta ? { ...at, feet: [at.feet[0] + delta[0], at.feet[1] + delta[1]] } : at;
+}

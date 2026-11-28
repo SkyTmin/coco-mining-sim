@@ -1,0 +1,794 @@
+{
+  "idle": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/idle-look.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      12,
+      30,
+      42
+    ],
+    "keys": [
+      {
+        "ground": [
+          92.1,
+          156.3
+        ],
+        "points": {
+          "head": [
+            99,
+            51
+          ]
+        }
+      },
+      {
+        "ground": [
+          91.5,
+          156.6
+        ],
+        "points": {
+          "head": [
+            98,
+            55
+          ]
+        }
+      },
+      {
+        "ground": [
+          92.1,
+          156.6
+        ],
+        "points": {
+          "head": [
+            99,
+            54
+          ]
+        }
+      }
+    ],
+    "idleHeight": 139,
+    "captionHeight": 0
+  },
+  "look": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/idle-look.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      8,
+      17,
+      26
+    ],
+    "keys": [
+      {
+        "ground": [
+          92.1,
+          156.0
+        ],
+        "points": {
+          "head": [
+            99,
+            58
+          ]
+        }
+      },
+      {
+        "ground": [
+          92.1,
+          155.1
+        ],
+        "points": {
+          "head": [
+            99,
+            48
+          ]
+        }
+      },
+      {
+        "ground": [
+          92.6,
+          155.5
+        ],
+        "points": {
+          "head": [
+            99,
+            52
+          ]
+        }
+      }
+    ],
+    "idleHeight": 139,
+    "captionHeight": 0
+  },
+  "fidget_a": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/fidgets.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      9,
+      20,
+      39
+    ],
+    "keys": [
+      {
+        "ground": [
+          92.1,
+          159.0
+        ],
+        "points": {
+          "head": [
+            99,
+            50
+          ]
+        }
+      },
+      {
+        "ground": [
+          90.7,
+          159.0
+        ],
+        "points": {
+          "head": [
+            97,
+            50
+          ]
+        }
+      },
+      {
+        "ground": [
+          89.1,
+          158.8
+        ],
+        "points": {
+          "head": [
+            96,
+            49
+          ]
+        }
+      }
+    ],
+    "idleHeight": 146,
+    "captionHeight": 0
+  },
+  "fidget_b": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/fidgets.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      10,
+      26,
+      47
+    ],
+    "keys": [
+      {
+        "ground": [
+          91.0,
+          157.0
+        ],
+        "points": {
+          "head": [
+            100,
+            48
+          ]
+        }
+      },
+      {
+        "ground": [
+          91.3,
+          156.9
+        ],
+        "points": {
+          "head": [
+            101,
+            47
+          ]
+        }
+      },
+      {
+        "ground": [
+          89.1,
+          157.1
+        ],
+        "points": {
+          "head": [
+            96,
+            49
+          ]
+        }
+      }
+    ],
+    "idleHeight": 146,
+    "captionHeight": 0
+  },
+  "happy": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/happy.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      1
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      8,
+      16,
+      36
+    ],
+    "keys": [
+      {
+        "ground": [
+          93.2,
+          160.7
+        ],
+        "points": {
+          "head": [
+            103,
+            71
+          ]
+        }
+      },
+      {
+        "ground": [
+          87.8,
+          159.7
+        ],
+        "points": {
+          "head": [
+            94,
+            59
+          ]
+        }
+      },
+      {
+        "ground": [
+          86.3,
+          161.1
+        ],
+        "points": {
+          "head": [
+            96,
+            54
+          ]
+        }
+      }
+    ],
+    "idleHeight": 134,
+    "captionHeight": 0
+  },
+  "trick": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/trick.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      1
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      0,
+      23,
+      45
+    ],
+    "keys": [
+      {
+        "ground": [
+          90.8,
+          155.1
+        ],
+        "points": {
+          "head": [
+            97,
+            59
+          ]
+        }
+      },
+      {
+        "ground": [
+          89.0,
+          155.2
+        ],
+        "points": {
+          "head": [
+            100,
+            60
+          ]
+        }
+      },
+      {
+        "ground": [
+          87.4,
+          156.8
+        ],
+        "points": {
+          "head": [
+            97,
+            79
+          ]
+        }
+      }
+    ],
+    "idleHeight": 128,
+    "captionHeight": 0
+  },
+  "sleep_in": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/sleep-io.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      8,
+      17,
+      29
+    ],
+    "keys": [
+      {
+        "ground": [
+          93.6,
+          161.7
+        ],
+        "points": {
+          "head": [
+            100,
+            50
+          ]
+        }
+      },
+      {
+        "ground": [
+          90.4,
+          162.9
+        ],
+        "points": {
+          "head": [
+            98,
+            64
+          ]
+        }
+      },
+      {
+        "ground": [
+          90.8,
+          162.0
+        ],
+        "points": {
+          "head": [
+            98,
+            75
+          ]
+        }
+      }
+    ],
+    "idleHeight": 151,
+    "captionHeight": 0
+  },
+  "sleep_out": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/sleep-io.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      10,
+      29
+    ],
+    "keys": [
+      {
+        "ground": [
+          90.8,
+          162.0
+        ],
+        "points": {
+          "head": [
+            98,
+            75
+          ]
+        }
+      },
+      {
+        "ground": [
+          95.6,
+          161.2
+        ],
+        "points": {
+          "head": [
+            104,
+            65
+          ]
+        }
+      },
+      {
+        "ground": [
+          92.5,
+          160.5
+        ],
+        "points": {
+          "head": [
+            100,
+            46
+          ]
+        }
+      }
+    ],
+    "idleHeight": 151,
+    "captionHeight": 0
+  },
+  "wake_startled": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/wake-hatch.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      0,
+      9,
+      14
+    ],
+    "keys": [
+      {
+        "ground": [
+          87.8,
+          165.0
+        ],
+        "points": {
+          "head": [
+            96,
+            89
+          ]
+        }
+      },
+      {
+        "ground": [
+          90.7,
+          156.6
+        ],
+        "points": {
+          "head": [
+            101,
+            45
+          ]
+        }
+      },
+      {
+        "ground": [
+          86.4,
+          163.9
+        ],
+        "points": {
+          "head": [
+            96,
+            76
+          ]
+        }
+      }
+    ],
+    "idleHeight": 143,
+    "captionHeight": 0
+  },
+  "hatch": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/wake-hatch.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      6,
+      15,
+      27
+    ],
+    "keys": [
+      {
+        "ground": [
+          88.5,
+          160.4
+        ],
+        "points": {
+          "head": [
+            98,
+            100
+          ]
+        }
+      },
+      {
+        "ground": [
+          91.3,
+          156.2
+        ],
+        "points": {
+          "head": [
+            101,
+            50
+          ]
+        }
+      },
+      {
+        "ground": [
+          90.4,
+          156.1
+        ],
+        "points": {
+          "head": [
+            98,
+            48
+          ]
+        }
+      }
+    ],
+    "idleHeight": 143,
+    "captionHeight": 0
+  },
+  "tech_slide": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/tech_slide.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      10,
+      28,
+      31,
+      39,
+      53
+    ],
+    "keys": [
+      {
+        "ground": [
+          95.1,
+          154.8
+        ],
+        "points": {
+          "head": [
+            101,
+            55
+          ]
+        }
+      },
+      {
+        "ground": [
+          97.6,
+          154.8
+        ],
+        "points": {
+          "head": [
+            98,
+            55
+          ]
+        }
+      },
+      {
+        "ground": [
+          87.6,
+          155.8
+        ],
+        "points": {
+          "head": [
+            89,
+            67
+          ]
+        }
+      },
+      {
+        "ground": [
+          59.4,
+          148.2
+        ],
+        "points": {
+          "head": [
+            119,
+            107
+          ],
+          "weaponTip": [
+            161,
+            153
+          ]
+        }
+      },
+      {
+        "ground": [
+          54.5,
+          149.8
+        ],
+        "points": {
+          "head": [
+            119,
+            101
+          ],
+          "weaponTip": [
+            123,
+            155
+          ]
+        }
+      },
+      {
+        "ground": [
+          95.1,
+          154.8
+        ],
+        "points": {
+          "head": [
+            101,
+            54
+          ]
+        }
+      }
+    ],
+    "idleHeight": 132,
+    "captionHeight": 0
+  },
+  "tech_leap": {
+    "sheet": "../../../docs/reports/creatures/b4/references/penguin_marshal/tech_leap.png",
+    "study": "study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      17,
+      24,
+      27,
+      33,
+      47
+    ],
+    "keys": [
+      {
+        "ground": [
+          95.8,
+          151.8
+        ],
+        "points": {
+          "head": [
+            102,
+            51
+          ]
+        }
+      },
+      {
+        "ground": [
+          107.1,
+          152.7
+        ],
+        "points": {
+          "head": [
+            98,
+            63
+          ]
+        }
+      },
+      {
+        "ground": [
+          90.4,
+          163.9
+        ],
+        "points": {
+          "head": [
+            100,
+            42
+          ]
+        }
+      },
+      {
+        "ground": [
+          71.7,
+          154.6
+        ],
+        "points": {
+          "head": [
+            101,
+            52
+          ],
+          "footL": [
+            105,
+            161
+          ]
+        }
+      },
+      {
+        "ground": [
+          70.4,
+          154.2
+        ],
+        "points": {
+          "head": [
+            100,
+            70
+          ]
+        }
+      },
+      {
+        "ground": [
+          92.8,
+          152.3
+        ],
+        "points": {
+          "head": [
+            100,
+            47
+          ]
+        }
+      }
+    ],
+    "idleHeight": 133,
+    "captionHeight": 0
+  }
+}

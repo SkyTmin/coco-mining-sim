@@ -1,0 +1,631 @@
+{
+  "id": "coin_dragon",
+  "rarity": "secret",
+  "theme": "treasury",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    256,
+    208
+  ],
+  "thickness": 18,
+  "bodySize": 160,
+  "canvas": [
+    292,
+    244
+  ],
+  "anchor": [
+    79,
+    120
+  ],
+  "eye": [
+    112,
+    41
+  ],
+  "primitives": 260,
+  "feet": [
+    141,
+    178
+  ],
+  "points": {
+    "footL": [
+      90.91900742435682,
+      107.1039039667915
+    ],
+    "footR": [
+      71.09020962660554,
+      129.95644115727697
+    ],
+    "tail": [
+      24.741530723238924,
+      101.08392105115654
+    ],
+    "tailFloor": [
+      24.741530723238924,
+      137.01720752249858
+    ],
+    "slot": [
+      76.99539147451881,
+      59.88568399943294
+    ],
+    "eye": [
+      111.74927159276928,
+      41.46769787279395
+    ],
+    "mouth": [
+      128.7059845817627,
+      48.48154129502724
+    ],
+    "chest": [
+      110.91230014737646,
+      101.09480892895917
+    ],
+    "chestLatch": [
+      110.91230014737646,
+      101.09480892895917
+    ],
+    "clawL": [
+      105.53441979235039,
+      109.86771128832149
+    ],
+    "claw": [
+      104.90246771781017,
+      112.01944094408624
+    ],
+    "clawR": [
+      102.96752010170715,
+      113.76415843452874
+    ],
+    "clawFloor": [
+      104.90246771781017,
+      141.65034178004993
+    ]
+  },
+  "motion": {
+    "life": {
+      "stride": 34,
+      "yaw": 0.48,
+      "beats": [
+        {
+          "seconds": 0.42,
+          "at": [
+            0.405,
+            0.76
+          ],
+          "anim": "idle",
+          "side": 0.35
+        },
+        {
+          "seconds": 1.7916666666666667,
+          "at": [
+            0.405,
+            0.76
+          ],
+          "anim": "tech_breath",
+          "side": 0
+        },
+        {
+          "seconds": 1.68,
+          "at": [
+            0.405,
+            0.76
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 0.31,
+          "at": [
+            0.32,
+            0.657
+          ],
+          "anim": "turn"
+        },
+        {
+          "seconds": 1.89,
+          "at": [
+            0.32,
+            0.657
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 1.5833333333333333,
+          "at": [
+            0.56,
+            0.695
+          ],
+          "anim": "tech_chest",
+          "side": 0
+        },
+        {
+          "seconds": 2.7,
+          "at": [
+            0.56,
+            0.695
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 0.25,
+          "at": [
+            0.7,
+            0.82
+          ],
+          "anim": "turn"
+        },
+        {
+          "seconds": 1.25,
+          "at": [
+            0.7,
+            0.82
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 2,
+          "at": [
+            0.683,
+            0.697
+          ],
+          "anim": "tech_dive",
+          "side": 2.45
+        },
+        {
+          "seconds": 0.28,
+          "at": [
+            0.683,
+            0.697
+          ],
+          "anim": "turn"
+        },
+        {
+          "seconds": 2.18,
+          "at": [
+            0.683,
+            0.697
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 0.44,
+          "at": [
+            0.405,
+            0.76
+          ],
+          "anim": "turn",
+          "side": 0.35
+        }
+      ]
+    },
+    "track": "frames/<anim>/motion.json",
+    "directions": {
+      "walk_n": {
+        "velocity": [
+          0,
+          -20.4
+        ],
+        "pixelsPerSecond": 20.4,
+        "worldStride": 34,
+        "feet": [
+          123,
+          170.2
+        ]
+      },
+      "walk_ne": {
+        "velocity": [
+          24.041630560342618,
+          -14.424978336205568
+        ],
+        "pixelsPerSecond": 28.03711825420009,
+        "worldStride": 34,
+        "feet": [
+          110.9791847198287,
+          167.2124891681028
+        ]
+      },
+      "walk_e": {
+        "velocity": [
+          34,
+          0
+        ],
+        "pixelsPerSecond": 34,
+        "worldStride": 34,
+        "feet": [
+          106,
+          160
+        ]
+      },
+      "walk_se": {
+        "velocity": [
+          24.041630560342618,
+          14.424978336205568
+        ],
+        "pixelsPerSecond": 28.03711825420009,
+        "worldStride": 34,
+        "feet": [
+          110.9791847198287,
+          152.7875108318972
+        ]
+      },
+      "walk_s": {
+        "velocity": [
+          0,
+          20.4
+        ],
+        "pixelsPerSecond": 20.4,
+        "worldStride": 34,
+        "feet": [
+          123,
+          149.8
+        ]
+      },
+      "walk_sw": {
+        "velocity": [
+          -24.041630560342615,
+          14.42497833620557
+        ],
+        "pixelsPerSecond": 28.037118254200088,
+        "worldStride": 34,
+        "feet": [
+          135.02081528017132,
+          152.7875108318972
+        ]
+      },
+      "walk_w": {
+        "velocity": [
+          -34,
+          0
+        ],
+        "pixelsPerSecond": 34,
+        "worldStride": 34,
+        "feet": [
+          140,
+          160
+        ]
+      },
+      "walk_nw": {
+        "velocity": [
+          -24.04163056034262,
+          -14.424978336205568
+        ],
+        "pixelsPerSecond": 28.037118254200095,
+        "worldStride": 34,
+        "feet": [
+          135.02081528017132,
+          167.2124891681028
+        ]
+      }
+    }
+  },
+  "layers": [
+    "bg",
+    "bgfBack",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "bgf",
+    "frame",
+    "over"
+  ],
+  "showreel": [
+    {
+      "name": "tech_breath",
+      "start": 0,
+      "frames": 43,
+      "end": 49
+    },
+    {
+      "name": "tech_tail",
+      "start": 49,
+      "frames": 26,
+      "end": 81
+    },
+    {
+      "name": "tech_chest",
+      "start": 81,
+      "frames": 38,
+      "end": 125
+    },
+    {
+      "name": "tech_claw",
+      "start": 125,
+      "frames": 22,
+      "end": 153
+    },
+    {
+      "name": "tech_rain",
+      "start": 153,
+      "frames": 53,
+      "end": 212
+    },
+    {
+      "name": "tech_dive",
+      "start": 212,
+      "frames": 48,
+      "end": 266
+    }
+  ],
+  "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "idle-f2": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tech_breath": {
+      "seconds": 1.8,
+      "frames": 43,
+      "loop": false,
+      "hit": [
+        23
+      ],
+      "shake": 0.13,
+      "stop": 0.04
+    },
+    "tech_tail": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [
+        14
+      ],
+      "shake": 0.19,
+      "stop": 0.06
+    },
+    "tech_chest": {
+      "seconds": 1.6,
+      "frames": 38,
+      "loop": false,
+      "hit": [
+        22
+      ],
+      "shake": 0.16,
+      "stop": 0.06
+    },
+    "tech_claw": {
+      "seconds": 0.9,
+      "frames": 22,
+      "loop": false,
+      "hit": [
+        13
+      ],
+      "shake": 0.18,
+      "stop": 0.04
+    },
+    "tech_rain": {
+      "seconds": 2.2,
+      "frames": 53,
+      "loop": false,
+      "hit": [
+        26,
+        32,
+        37,
+        42
+      ],
+      "shake": 0.09,
+      "stop": 0.04
+    },
+    "tech_dive": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        22,
+        34
+      ],
+      "shake": 0.17,
+      "stop": 0.04
+    },
+    "happy": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "phase": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        25
+      ],
+      "shake": 0,
+      "stop": 0.06
+    },
+    "show": {
+      "seconds": 5,
+      "frames": 120,
+      "loop": false,
+      "hit": [
+        60,
+        84,
+        104
+      ],
+      "shake": 0.2,
+      "stop": 0.06
+    },
+    "away": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "back": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "peek": {
+      "seconds": 1.8,
+      "frames": 43,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "life": {
+      "seconds": 16.775000000000002,
+      "frames": 403,
+      "loop": true,
+      "hit": [
+        33,
+        168,
+        307,
+        319
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "showreel": {
+      "seconds": 11.083333333333334,
+      "frames": 266,
+      "loop": true,
+      "hit": [
+        23,
+        63,
+        103,
+        138,
+        179,
+        185,
+        190,
+        195,
+        234,
+        246
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_n": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_ne": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_e": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_se": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_s": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_sw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_w": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_nw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    }
+  }
+}

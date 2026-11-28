@@ -1,0 +1,258 @@
+{
+  "tech_snowball": {
+    "sheet": "../../../docs/reports/creatures/b2b/references/frost_yeti/tech_snowball.png",
+    "grid": [
+      3,
+      2
+    ],
+    "idleHeight": 185,
+    "captionHeight": 38,
+    "keys": [
+      {
+        "ground": [
+          116,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            127,
+            40
+          ],
+          "handL": [
+            219,
+            221
+          ],
+          "projectile:snowball": [
+            219,
+            235
+          ]
+        }
+      },
+      {
+        "ground": [
+          122,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            115,
+            40
+          ],
+          "handL": [
+            217,
+            199
+          ],
+          "projectile:snowball": [
+            229,
+            172
+          ]
+        }
+      },
+      {
+        "ground": [
+          125,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            44,
+            59
+          ],
+          "clubGrip": [
+            86,
+            127
+          ],
+          "projectile:snowball": [
+            228,
+            180
+          ]
+        }
+      },
+      {
+        "ground": [
+          156,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            33,
+            181
+          ],
+          "clubGrip": [
+            150,
+            178
+          ],
+          "projectile:snowball": [
+            237,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          95,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            242,
+            163
+          ],
+          "clubGrip": [
+            165,
+            163
+          ],
+          "projectile:snowball": [
+            253,
+            169
+          ]
+        }
+      },
+      {
+        "ground": [
+          138,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            23,
+            102
+          ],
+          "clubGrip": [
+            115,
+            95
+          ],
+          "projectile:snowball": [
+            331,
+            157
+          ]
+        }
+      }
+    ],
+    "frames": [
+      8,
+      16,
+      25,
+      29,
+      32,
+      42
+    ],
+    "study": "../../../docs/reports/creatures/b2b/references/frost_yeti/cards.md#tech_snowball"
+  },
+  "tech_slam": {
+    "sheet": "../../../docs/reports/creatures/b2b/references/frost_yeti/tech_slam.png",
+    "grid": [
+      3,
+      2
+    ],
+    "idleHeight": 185,
+    "captionHeight": 38,
+    "keys": [
+      {
+        "ground": [
+          127,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            227,
+            119
+          ],
+          "clubGrip": [
+            145,
+            183
+          ]
+        }
+      },
+      {
+        "ground": [
+          118,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            212,
+            61
+          ],
+          "clubGrip": [
+            157,
+            145
+          ]
+        }
+      },
+      {
+        "ground": [
+          141,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            56,
+            57
+          ],
+          "clubGrip": [
+            140,
+            44
+          ]
+        }
+      },
+      {
+        "ground": [
+          106,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            226,
+            41
+          ],
+          "clubGrip": [
+            169,
+            113
+          ]
+        }
+      },
+      {
+        "ground": [
+          91,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            245,
+            226
+          ],
+          "clubGrip": [
+            170,
+            209
+          ]
+        }
+      },
+      {
+        "ground": [
+          95,
+          230
+        ],
+        "points": {
+          "clubTip": [
+            239,
+            94
+          ],
+          "clubGrip": [
+            170,
+            146
+          ]
+        }
+      }
+    ],
+    "frames": [
+      0,
+      8,
+      14,
+      16,
+      19,
+      23
+    ],
+    "study": "../../../docs/reports/creatures/b2b/references/frost_yeti/cards.md#tech_slam"
+  }
+}

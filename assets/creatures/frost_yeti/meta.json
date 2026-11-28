@@ -1,0 +1,618 @@
+{
+  "id": "frost_yeti",
+  "rarity": "epic",
+  "theme": "polar_night",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    208,
+    160
+  ],
+  "thickness": 14,
+  "bodySize": 128,
+  "canvas": [
+    236,
+    188
+  ],
+  "anchor": [
+    63,
+    100
+  ],
+  "eye": null,
+  "primitives": 130,
+  "feet": [
+    114,
+    137
+  ],
+  "points": {
+    "footL": [
+      79.35421480545013,
+      97.8849546305125
+    ],
+    "footR": [
+      51.456286480057464,
+      107.2654321372523
+    ],
+    "head": [
+      68.90146504046865,
+      45.025070978571584
+    ],
+    "mouth": [
+      77.91913083087984,
+      60.29923425272112
+    ],
+    "belt": [
+      57.163329200982446,
+      74.24852392444902
+    ],
+    "clubGrip": [
+      64.85076571183971,
+      82.07287641052713
+    ],
+    "clubTip": [
+      113.62461285527712,
+      42.98398008720794
+    ],
+    "weaponTip": [
+      113.62461285527712,
+      42.98398008720794
+    ],
+    "clubGripL": [
+      71.29259457984088,
+      76.9101919904661
+    ],
+    "handL": [
+      71.29259457984088,
+      76.9101919904661
+    ],
+    "shoulderL": [
+      84.41594936907234,
+      35.774781576679814
+    ],
+    "elbowL": [
+      89.66045259018377,
+      56.414346438044944
+    ],
+    "clubGripR": [
+      60.24945937755317,
+      85.76050813914215
+    ],
+    "handR": [
+      60.24945937755317,
+      85.76050813914215
+    ],
+    "shoulderR": [
+      37.20407066456167,
+      51.64943581885487
+    ],
+    "elbowR": [
+      31.911642441347468,
+      78.29779590208025
+    ],
+    "footLGround": [
+      79.35421480545013,
+      97.8849546305125
+    ],
+    "footRGround": [
+      51.456286480057464,
+      107.2654321372523
+    ],
+    "headGround": [
+      68.90146504046865,
+      106.31843245659773
+    ],
+    "mouthGround": [
+      77.91913083087984,
+      115.97324051225308
+    ],
+    "beltGround": [
+      57.163329200982446,
+      102.80852392444902
+    ],
+    "clubGripGround": [
+      64.85076571183971,
+      109.52951813371254
+    ],
+    "clubTipGround": [
+      113.62461285527712,
+      105.97100045547982
+    ],
+    "weaponTipGround": [
+      113.62461285527712,
+      105.97100045547982
+    ],
+    "clubGripLGround": [
+      71.29259457984088,
+      109.05952523281388
+    ],
+    "handLGround": [
+      71.29259457984088,
+      109.05952523281388
+    ],
+    "shoulderLGround": [
+      84.41594936907234,
+      89.71794937475214
+    ],
+    "elbowLGround": [
+      89.66045259018377,
+      91.73647364936949
+    ],
+    "clubGripRGround": [
+      60.24945937755317,
+      109.86522734864016
+    ],
+    "handRGround": [
+      60.24945937755317,
+      109.86522734864016
+    ],
+    "shoulderRGround": [
+      37.20407066456167,
+      105.59260361692719
+    ],
+    "elbowRGround": [
+      31.911642441347468,
+      109.75850837763691
+    ]
+  },
+  "motion": {
+    "life": {
+      "stride": 26,
+      "yaw": 1.06,
+      "beats": [
+        {
+          "seconds": 0.75,
+          "at": [
+            0.33653846153846156,
+            0.7375
+          ],
+          "anim": "idle",
+          "side": 0
+        },
+        {
+          "seconds": 1.5,
+          "at": [
+            0.33653846153846156,
+            0.7375
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 2.4166666666666665,
+          "at": [
+            0.4519230769230769,
+            0.74875
+          ],
+          "anim": "tech_snowball",
+          "side": 0
+        },
+        {
+          "seconds": 1,
+          "at": [
+            0.4519230769230769,
+            0.74875
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 1.5,
+          "at": [
+            0.5288461538461539,
+            0.75625
+          ],
+          "anim": "look",
+          "side": 1
+        },
+        {
+          "seconds": 1.2916666666666667,
+          "at": [
+            0.5288461538461539,
+            0.75625
+          ],
+          "anim": "tech_slam",
+          "side": 0
+        },
+        {
+          "seconds": 1.3,
+          "at": [
+            0.5288461538461539,
+            0.75625
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 0.31,
+          "at": [
+            0.6875,
+            0.85625
+          ],
+          "anim": "turn"
+        },
+        {
+          "seconds": 0.84,
+          "at": [
+            0.6875,
+            0.85625
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 1.5833333333333333,
+          "at": [
+            0.6923076923076923,
+            0.7375
+          ],
+          "anim": "tech_roar",
+          "side": 0
+        },
+        {
+          "seconds": 1.4,
+          "at": [
+            0.6923076923076923,
+            0.7375
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 1.4,
+          "at": [
+            0.5336538461538461,
+            0.7375
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 2.1,
+          "at": [
+            0.33653846153846156,
+            0.7375
+          ],
+          "anim": "idle",
+          "side": 0
+        }
+      ]
+    },
+    "track": "frames/<anim>/motion.json",
+    "directions": {
+      "walk_n": {
+        "velocity": [
+          0,
+          -15.6
+        ],
+        "pixelsPerSecond": 15.6,
+        "worldStride": 26,
+        "feet": [
+          100,
+          130.8
+        ]
+      },
+      "walk_ne": {
+        "velocity": [
+          18.38477631085024,
+          -11.030865786510141
+        ],
+        "pixelsPerSecond": 21.440149253211835,
+        "worldStride": 26,
+        "feet": [
+          90.80761184457488,
+          128.51543289325508
+        ]
+      },
+      "walk_e": {
+        "velocity": [
+          26,
+          0
+        ],
+        "pixelsPerSecond": 26,
+        "worldStride": 26,
+        "feet": [
+          87,
+          123
+        ]
+      },
+      "walk_se": {
+        "velocity": [
+          18.38477631085024,
+          11.030865786510141
+        ],
+        "pixelsPerSecond": 21.440149253211835,
+        "worldStride": 26,
+        "feet": [
+          90.80761184457488,
+          117.48456710674493
+        ]
+      },
+      "walk_s": {
+        "velocity": [
+          0,
+          15.6
+        ],
+        "pixelsPerSecond": 15.6,
+        "worldStride": 26,
+        "feet": [
+          100,
+          115.2
+        ]
+      },
+      "walk_sw": {
+        "velocity": [
+          -18.384776310850235,
+          11.030865786510143
+        ],
+        "pixelsPerSecond": 21.440149253211835,
+        "worldStride": 26,
+        "feet": [
+          109.19238815542512,
+          117.48456710674493
+        ]
+      },
+      "walk_w": {
+        "velocity": [
+          -26,
+          0
+        ],
+        "pixelsPerSecond": 26,
+        "worldStride": 26,
+        "feet": [
+          113,
+          123
+        ]
+      },
+      "walk_nw": {
+        "velocity": [
+          -18.38477631085024,
+          -11.030865786510141
+        ],
+        "pixelsPerSecond": 21.440149253211835,
+        "worldStride": 26,
+        "feet": [
+          109.19238815542512,
+          128.51543289325508
+        ]
+      }
+    }
+  },
+  "layers": [
+    "bg",
+    "bgfBack",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "bgf",
+    "frame",
+    "over"
+  ],
+  "showreel": [
+    {
+      "name": "tech_snowball",
+      "start": 0,
+      "frames": 58,
+      "end": 64
+    },
+    {
+      "name": "tech_slam",
+      "start": 64,
+      "frames": 31,
+      "end": 101
+    },
+    {
+      "name": "tech_icicles",
+      "start": 101,
+      "frames": 48,
+      "end": 155
+    },
+    {
+      "name": "tech_roar",
+      "start": 155,
+      "frames": 38,
+      "end": 199
+    }
+  ],
+  "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "happy": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tech_snowball": {
+      "seconds": 2.4166666666666665,
+      "frames": 58,
+      "loop": false,
+      "hit": [
+        32
+      ],
+      "shake": 0.25,
+      "stop": 0.06
+    },
+    "tech_slam": {
+      "seconds": 1.2916666666666667,
+      "frames": 31,
+      "loop": false,
+      "hit": [
+        19
+      ],
+      "shake": 0.35,
+      "stop": 0.08
+    },
+    "tech_icicles": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        24,
+        30,
+        32,
+        34,
+        36,
+        38
+      ],
+      "shake": 0.08,
+      "stop": 0.04
+    },
+    "tech_roar": {
+      "seconds": 1.5833333333333333,
+      "frames": 38,
+      "loop": false,
+      "hit": [
+        22
+      ],
+      "shake": 0,
+      "stop": 0.04
+    },
+    "life": {
+      "seconds": 17.39166666666667,
+      "frames": 417,
+      "loop": true,
+      "hit": [
+        86,
+        191,
+        284
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "showreel": {
+      "seconds": 8.291666666666666,
+      "frames": 199,
+      "loop": true,
+      "hit": [
+        32,
+        83,
+        125,
+        131,
+        133,
+        135,
+        137,
+        139,
+        177
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_n": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_ne": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_e": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_se": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_s": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_sw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_w": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_nw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    }
+  }
+}

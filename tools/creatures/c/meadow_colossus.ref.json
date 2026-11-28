@@ -1,0 +1,1838 @@
+{
+  "walk_e": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/walk_e.png",
+    "study": "walk_e.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "captionHeight": 0,
+    "idleHeight": 183.41,
+    "keys": [
+      {
+        "ground": [
+          117,
+          194
+        ],
+        "points": {
+          "eyeR": [
+            205,
+            127
+          ]
+        }
+      },
+      {
+        "ground": [
+          120,
+          195
+        ],
+        "points": {
+          "eyeR": [
+            213,
+            137
+          ]
+        }
+      },
+      {
+        "ground": [
+          116,
+          194
+        ],
+        "points": {
+          "eyeR": [
+            204,
+            127
+          ]
+        }
+      },
+      {
+        "ground": [
+          117,
+          196
+        ],
+        "points": {
+          "eyeR": [
+            210,
+            128
+          ]
+        }
+      }
+    ]
+  },
+  "walk_w": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/walk_w.png",
+    "study": "walk_w.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "captionHeight": 0,
+    "idleHeight": 171.19,
+    "keys": [
+      {
+        "ground": [
+          136,
+          188
+        ],
+        "points": {
+          "eyeL": [
+            55,
+            130
+          ]
+        }
+      },
+      {
+        "ground": [
+          137,
+          190
+        ],
+        "points": {
+          "eyeL": [
+            54,
+            136
+          ]
+        }
+      },
+      {
+        "ground": [
+          135,
+          188
+        ],
+        "points": {
+          "eyeL": [
+            54,
+            136
+          ]
+        }
+      },
+      {
+        "ground": [
+          136,
+          189
+        ],
+        "points": {
+          "eyeL": [
+            55,
+            132
+          ]
+        }
+      }
+    ]
+  },
+  "walk_s": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/walk_s.png",
+    "study": "walk_s.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "captionHeight": 0,
+    "idleHeight": 164.48,
+    "keys": [
+      {
+        "ground": [
+          127,
+          199
+        ],
+        "points": {
+          "noseTip": [
+            131,
+            143
+          ]
+        }
+      },
+      {
+        "ground": [
+          127,
+          200
+        ],
+        "points": {
+          "noseTip": [
+            134,
+            152
+          ]
+        }
+      },
+      {
+        "ground": [
+          128,
+          199
+        ],
+        "points": {
+          "noseTip": [
+            136,
+            148
+          ]
+        }
+      },
+      {
+        "ground": [
+          128,
+          201
+        ],
+        "points": {
+          "noseTip": [
+            134,
+            152
+          ]
+        }
+      }
+    ]
+  },
+  "walk_n": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/walk_n.png",
+    "study": "walk_n.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "captionHeight": 0,
+    "idleHeight": 187.2,
+    "keys": [
+      {
+        "ground": [
+          128,
+          193
+        ],
+        "points": {
+          "tailTip": [
+            128,
+            193
+          ]
+        }
+      },
+      {
+        "ground": [
+          128,
+          193
+        ],
+        "points": {
+          "tailTip": [
+            126,
+            197
+          ]
+        }
+      },
+      {
+        "ground": [
+          128,
+          193
+        ],
+        "points": {
+          "tailTip": [
+            127,
+            194
+          ]
+        }
+      },
+      {
+        "ground": [
+          128,
+          193
+        ],
+        "points": {
+          "tailTip": [
+            126,
+            195
+          ]
+        }
+      }
+    ]
+  },
+  "walk_ne": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/walk_ne.png",
+    "study": "walk_ne.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "captionHeight": 0,
+    "idleHeight": 176.26,
+    "keys": [
+      {
+        "ground": [
+          128,
+          183
+        ],
+        "points": {
+          "eyeR": [
+            188,
+            74
+          ]
+        }
+      },
+      {
+        "ground": [
+          128,
+          183
+        ],
+        "points": {
+          "eyeR": [
+            188,
+            74
+          ]
+        }
+      },
+      {
+        "ground": [
+          128,
+          183
+        ],
+        "points": {
+          "eyeR": [
+            189,
+            74
+          ]
+        }
+      },
+      {
+        "ground": [
+          128,
+          183
+        ],
+        "points": {
+          "eyeR": [
+            189,
+            74
+          ]
+        }
+      }
+    ]
+  },
+  "walk_nw": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/walk_nw.png",
+    "study": "walk_nw.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "captionHeight": 0,
+    "idleHeight": 184.46,
+    "keys": [
+      {
+        "ground": [
+          133,
+          186
+        ],
+        "points": {
+          "eyeL": [
+            61,
+            85
+          ]
+        }
+      },
+      {
+        "ground": [
+          133,
+          186
+        ],
+        "points": {
+          "eyeL": [
+            61,
+            84
+          ]
+        }
+      },
+      {
+        "ground": [
+          133,
+          186
+        ],
+        "points": {
+          "eyeL": [
+            61,
+            84
+          ]
+        }
+      },
+      {
+        "ground": [
+          133,
+          186
+        ],
+        "points": {
+          "eyeL": [
+            60,
+            85
+          ]
+        }
+      }
+    ]
+  },
+  "walk_se": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/walk_se.png",
+    "study": "walk_se.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "captionHeight": 0,
+    "idleHeight": 158.75,
+    "keys": [
+      {
+        "ground": [
+          123,
+          188
+        ],
+        "points": {
+          "eyeR": [
+            194,
+            131
+          ]
+        }
+      },
+      {
+        "ground": [
+          124,
+          189
+        ],
+        "points": {
+          "eyeR": [
+            205,
+            144
+          ]
+        }
+      },
+      {
+        "ground": [
+          123,
+          188
+        ],
+        "points": {
+          "eyeR": [
+            196,
+            145
+          ]
+        }
+      },
+      {
+        "ground": [
+          123,
+          189
+        ],
+        "points": {
+          "eyeR": [
+            200,
+            136
+          ]
+        }
+      }
+    ]
+  },
+  "walk_sw": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/walk_sw.png",
+    "study": "walk_sw.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      3,
+      9,
+      15,
+      21
+    ],
+    "captionHeight": 0,
+    "idleHeight": 154.27,
+    "keys": [
+      {
+        "ground": [
+          134,
+          191
+        ],
+        "points": {
+          "eyeL": [
+            57,
+            132
+          ]
+        }
+      },
+      {
+        "ground": [
+          135,
+          191
+        ],
+        "points": {
+          "eyeL": [
+            56,
+            143
+          ]
+        }
+      },
+      {
+        "ground": [
+          136,
+          190
+        ],
+        "points": {
+          "eyeL": [
+            59,
+            139
+          ]
+        }
+      },
+      {
+        "ground": [
+          136,
+          190
+        ],
+        "points": {
+          "eyeL": [
+            58,
+            138
+          ]
+        }
+      }
+    ]
+  },
+  "hatch": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/hatch.png",
+    "study": "hatch.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      0,
+      9,
+      20,
+      31
+    ],
+    "captionHeight": 0,
+    "idleHeight": 174,
+    "keys": [
+      {
+        "ground": [
+          124,
+          192
+        ],
+        "points": {
+          "eyeR": [
+            192,
+            138
+          ]
+        }
+      },
+      {
+        "ground": [
+          123,
+          192
+        ],
+        "points": {
+          "eyeR": [
+            178,
+            148
+          ]
+        }
+      },
+      {
+        "ground": [
+          124,
+          193
+        ],
+        "points": {
+          "eyeR": [
+            193,
+            136
+          ]
+        }
+      },
+      {
+        "ground": [
+          124,
+          193
+        ],
+        "points": {
+          "eyeR": [
+            202,
+            142
+          ]
+        }
+      }
+    ]
+  },
+  "tired": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/tired.png",
+    "study": "tired.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      0,
+      10,
+      21,
+      30
+    ],
+    "captionHeight": 0,
+    "idleHeight": 183,
+    "keys": [
+      {
+        "ground": [
+          124,
+          192
+        ],
+        "points": {
+          "eyeR": [
+            201,
+            124
+          ]
+        }
+      },
+      {
+        "ground": [
+          123,
+          192
+        ],
+        "points": {
+          "eyeR": [
+            208,
+            149
+          ]
+        }
+      },
+      {
+        "ground": [
+          124,
+          192
+        ],
+        "points": {
+          "eyeR": [
+            208,
+            171
+          ]
+        }
+      },
+      {
+        "ground": [
+          124,
+          192
+        ],
+        "points": {
+          "eyeR": [
+            201,
+            142
+          ]
+        }
+      }
+    ]
+  },
+  "turn": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/turn.png",
+    "study": "turn.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      0,
+      7,
+      24,
+      54
+    ],
+    "captionHeight": 0,
+    "idleHeight": 176,
+    "keys": [
+      {
+        "ground": [
+          124,
+          193
+        ],
+        "points": {
+          "noseTip": [
+            212,
+            145
+          ]
+        }
+      },
+      {
+        "ground": [
+          120,
+          194
+        ],
+        "points": {
+          "noseTip": [
+            227,
+            151
+          ]
+        }
+      },
+      {
+        "ground": [
+          132,
+          190
+        ],
+        "points": {
+          "noseTip": [
+            211,
+            132
+          ]
+        }
+      },
+      {
+        "ground": [
+          135,
+          193
+        ],
+        "points": {
+          "noseTip": [
+            23,
+            139
+          ]
+        }
+      }
+    ]
+  },
+  "happy": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/happy.png",
+    "study": "happy.study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "frames": [
+      0,
+      9,
+      17,
+      25,
+      36,
+      47
+    ],
+    "captionHeight": 0,
+    "idleHeight": 208,
+    "keys": [
+      {
+        "ground": [
+          124,
+          221
+        ],
+        "points": {
+          "eyeR": [
+            204,
+            153
+          ],
+          "foreRAnkle": [
+            138,
+            209
+          ]
+        }
+      },
+      {
+        "ground": [
+          124,
+          221
+        ],
+        "points": {
+          "eyeR": [
+            199,
+            126
+          ],
+          "foreRAnkle": [
+            137,
+            209
+          ]
+        }
+      },
+      {
+        "ground": [
+          124,
+          221
+        ],
+        "points": {
+          "eyeR": [
+            199,
+            127
+          ],
+          "foreRAnkle": [
+            132,
+            205
+          ]
+        }
+      },
+      {
+        "ground": [
+          124,
+          221
+        ],
+        "points": {
+          "eyeR": [
+            193,
+            109
+          ],
+          "foreRAnkle": [
+            151,
+            192
+          ]
+        }
+      },
+      {
+        "ground": [
+          124,
+          221
+        ],
+        "points": {
+          "eyeR": [
+            202,
+            146
+          ],
+          "foreRAnkle": [
+            140,
+            209
+          ]
+        }
+      },
+      {
+        "ground": [
+          124,
+          221
+        ],
+        "points": {
+          "eyeR": [
+            202,
+            145
+          ],
+          "foreRAnkle": [
+            140,
+            209
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_in": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/sleep_in.png",
+    "study": "sleep_in.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      0,
+      6,
+      14,
+      25
+    ],
+    "captionHeight": 0,
+    "idleHeight": 255,
+    "keys": [
+      {
+        "ground": [
+          148,
+          266
+        ],
+        "points": {
+          "eyeR": [
+            243,
+            160
+          ],
+          "foreRAnkle": [
+            163,
+            254
+          ]
+        }
+      },
+      {
+        "ground": [
+          148,
+          266
+        ],
+        "points": {
+          "eyeR": [
+            250,
+            154
+          ],
+          "foreRAnkle": [
+            163,
+            254
+          ]
+        }
+      },
+      {
+        "ground": [
+          148,
+          257
+        ],
+        "points": {
+          "eyeR": [
+            246,
+            174
+          ],
+          "foreRAnkle": [
+            169,
+            244
+          ]
+        }
+      },
+      {
+        "ground": [
+          148,
+          257
+        ],
+        "points": {
+          "eyeR": [
+            242,
+            188
+          ],
+          "foreRAnkle": [
+            169,
+            245
+          ]
+        }
+      }
+    ]
+  },
+  "idle": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/idle.png",
+    "study": "idle.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      0,
+      22,
+      44,
+      63
+    ],
+    "captionHeight": 0,
+    "idleHeight": 255,
+    "keys": [
+      {
+        "ground": [
+          152,
+          268
+        ],
+        "points": {
+          "eyeR": [
+            245,
+            155
+          ],
+          "foreRAnkle": [
+            170,
+            252
+          ]
+        }
+      },
+      {
+        "ground": [
+          152,
+          268
+        ],
+        "points": {
+          "eyeR": [
+            244,
+            171
+          ],
+          "foreRAnkle": [
+            170,
+            252
+          ]
+        }
+      },
+      {
+        "ground": [
+          152,
+          268
+        ],
+        "points": {
+          "eyeR": [
+            246,
+            158
+          ],
+          "foreRAnkle": [
+            170,
+            252
+          ]
+        }
+      },
+      {
+        "ground": [
+          152,
+          268
+        ],
+        "points": {
+          "eyeR": [
+            244,
+            168
+          ],
+          "foreRAnkle": [
+            170,
+            252
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_a": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/fidget_a.png",
+    "study": "fidget_a.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      0,
+      14,
+      28,
+      47
+    ],
+    "captionHeight": 0,
+    "idleHeight": 245,
+    "keys": [
+      {
+        "ground": [
+          144,
+          264
+        ],
+        "points": {
+          "eyeR": [
+            236,
+            167
+          ],
+          "foreRAnkle": [
+            159,
+            248
+          ]
+        }
+      },
+      {
+        "ground": [
+          144,
+          264
+        ],
+        "points": {
+          "eyeR": [
+            257,
+            157
+          ],
+          "foreRAnkle": [
+            159,
+            248
+          ]
+        }
+      },
+      {
+        "ground": [
+          144,
+          264
+        ],
+        "points": {
+          "eyeR": [
+            256,
+            127
+          ],
+          "foreRAnkle": [
+            159,
+            248
+          ]
+        }
+      },
+      {
+        "ground": [
+          144,
+          264
+        ],
+        "points": {
+          "eyeR": [
+            238,
+            168
+          ],
+          "foreRAnkle": [
+            159,
+            248
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_b": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/fidget_b.png",
+    "study": "fidget_b.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      0,
+      14,
+      28,
+      47
+    ],
+    "captionHeight": 0,
+    "idleHeight": 244,
+    "keys": [
+      {
+        "ground": [
+          146,
+          259
+        ],
+        "points": {
+          "eyeR": [
+            250,
+            185
+          ],
+          "foreRAnkle": [
+            165,
+            247
+          ]
+        }
+      },
+      {
+        "ground": [
+          146,
+          259
+        ],
+        "points": {
+          "eyeR": [
+            264,
+            234
+          ],
+          "foreRAnkle": [
+            165,
+            247
+          ]
+        }
+      },
+      {
+        "ground": [
+          146,
+          259
+        ],
+        "points": {
+          "eyeR": [
+            245,
+            167
+          ],
+          "foreRAnkle": [
+            165,
+            247
+          ]
+        }
+      },
+      {
+        "ground": [
+          146,
+          259
+        ],
+        "points": {
+          "eyeR": [
+            244,
+            166
+          ],
+          "foreRAnkle": [
+            165,
+            247
+          ]
+        }
+      }
+    ]
+  },
+  "look": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/look.png",
+    "study": "look.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      0,
+      12,
+      22,
+      35
+    ],
+    "captionHeight": 0,
+    "idleHeight": 260,
+    "keys": [
+      {
+        "ground": [
+          146,
+          274
+        ],
+        "points": {
+          "eyeR": [
+            241,
+            171
+          ],
+          "foreRAnkle": [
+            162,
+            258
+          ]
+        }
+      },
+      {
+        "ground": [
+          146,
+          274
+        ],
+        "points": {
+          "eyeR": [
+            249,
+            167
+          ],
+          "foreRAnkle": [
+            162,
+            258
+          ]
+        }
+      },
+      {
+        "ground": [
+          146,
+          274
+        ],
+        "points": {
+          "eyeR": [
+            225,
+            164
+          ],
+          "foreRAnkle": [
+            162,
+            258
+          ]
+        }
+      },
+      {
+        "ground": [
+          146,
+          274
+        ],
+        "points": {
+          "eyeR": [
+            244,
+            171
+          ],
+          "foreRAnkle": [
+            162,
+            258
+          ]
+        }
+      }
+    ]
+  },
+  "sleep": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/sleep.png",
+    "study": "sleep.study.md",
+    "grid": [
+      2,
+      1
+    ],
+    "frames": [
+      0,
+      42
+    ],
+    "captionHeight": 0,
+    "idleHeight": 343,
+    "keys": [
+      {
+        "ground": [
+          212,
+          365
+        ],
+        "points": {
+          "eyeR": [
+            340,
+            256
+          ],
+          "foreRAnkle": [
+            232,
+            349
+          ]
+        }
+      },
+      {
+        "ground": [
+          212,
+          365
+        ],
+        "points": {
+          "eyeR": [
+            345,
+            258
+          ],
+          "foreRAnkle": [
+            232,
+            349
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_out": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/sleep_out.png",
+    "study": "sleep_out.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      0,
+      6,
+      16,
+      29
+    ],
+    "captionHeight": 0,
+    "idleHeight": 255,
+    "keys": [
+      {
+        "ground": [
+          149,
+          262
+        ],
+        "points": {
+          "eyeR": [
+            246,
+            190
+          ],
+          "foreRAnkle": [
+            172,
+            248
+          ]
+        }
+      },
+      {
+        "ground": [
+          149,
+          262
+        ],
+        "points": {
+          "eyeR": [
+            255,
+            180
+          ],
+          "foreRAnkle": [
+            172,
+            248
+          ]
+        }
+      },
+      {
+        "ground": [
+          149,
+          262
+        ],
+        "points": {
+          "eyeR": [
+            255,
+            136
+          ],
+          "foreRAnkle": [
+            188,
+            248
+          ]
+        }
+      },
+      {
+        "ground": [
+          149,
+          262
+        ],
+        "points": {
+          "eyeR": [
+            249,
+            168
+          ],
+          "foreRAnkle": [
+            172,
+            248
+          ]
+        }
+      }
+    ]
+  },
+  "wake_startled": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/wake_startled.png",
+    "study": "wake_startled.study.md",
+    "grid": [
+      2,
+      2
+    ],
+    "frames": [
+      0,
+      5,
+      13,
+      23
+    ],
+    "captionHeight": 0,
+    "idleHeight": 236,
+    "keys": [
+      {
+        "ground": [
+          152,
+          259
+        ],
+        "points": {
+          "eyeR": [
+            243,
+            190
+          ],
+          "foreRAnkle": [
+            180,
+            247
+          ]
+        }
+      },
+      {
+        "ground": [
+          152,
+          259
+        ],
+        "points": {
+          "eyeR": [
+            251,
+            144
+          ],
+          "foreRAnkle": [
+            188,
+            221
+          ]
+        }
+      },
+      {
+        "ground": [
+          152,
+          259
+        ],
+        "points": {
+          "eyeR": [
+            231,
+            175
+          ],
+          "foreRAnkle": [
+            180,
+            247
+          ]
+        }
+      },
+      {
+        "ground": [
+          152,
+          259
+        ],
+        "points": {
+          "eyeR": [
+            249,
+            170
+          ],
+          "foreRAnkle": [
+            180,
+            247
+          ]
+        }
+      }
+    ]
+  },
+  "tech_forefall": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/tech_forefall.png",
+    "study": "tech_forefall.study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "frames": [
+      0,
+      16,
+      21,
+      24,
+      29,
+      41
+    ],
+    "captionHeight": 0,
+    "idleHeight": 177,
+    "keys": [
+      {
+        "ground": [
+          125,
+          207
+        ],
+        "points": {
+          "foreR": [
+            139,
+            223
+          ],
+          "foreL": [
+            200,
+            218
+          ],
+          "eyeR": [
+            197,
+            150
+          ]
+        }
+      },
+      {
+        "ground": [
+          125,
+          207
+        ],
+        "points": {
+          "foreR": [
+            138,
+            188
+          ],
+          "foreL": [
+            193,
+            182
+          ],
+          "eyeR": [
+            199,
+            117
+          ]
+        }
+      },
+      {
+        "ground": [
+          125,
+          207
+        ],
+        "points": {
+          "foreR": [
+            151,
+            189
+          ],
+          "foreL": [
+            206,
+            190
+          ],
+          "eyeR": [
+            200,
+            132
+          ]
+        }
+      },
+      {
+        "ground": [
+          125,
+          207
+        ],
+        "points": {
+          "foreR": [
+            152,
+            223
+          ],
+          "foreL": [
+            218,
+            218
+          ],
+          "eyeR": [
+            202,
+            176
+          ]
+        }
+      },
+      {
+        "ground": [
+          125,
+          207
+        ],
+        "points": {
+          "foreR": [
+            141,
+            223
+          ],
+          "foreL": [
+            202,
+            218
+          ],
+          "eyeR": [
+            200,
+            157
+          ]
+        }
+      },
+      {
+        "ground": [
+          125,
+          207
+        ],
+        "points": {
+          "foreR": [
+            133,
+            222
+          ],
+          "foreL": [
+            199,
+            216
+          ],
+          "eyeR": [
+            197,
+            148
+          ]
+        }
+      }
+    ]
+  },
+  "tech_heelwave": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/tech_heelwave.png",
+    "study": "tech_heelwave.study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "frames": [
+      0,
+      16,
+      21,
+      24,
+      29,
+      40
+    ],
+    "captionHeight": 0,
+    "idleHeight": 187,
+    "keys": [
+      {
+        "ground": [
+          127,
+          199
+        ],
+        "points": {
+          "hindR": [
+            57,
+            213
+          ],
+          "eyeR": [
+            202,
+            136
+          ]
+        }
+      },
+      {
+        "ground": [
+          127,
+          199
+        ],
+        "points": {
+          "hindR": [
+            50,
+            190
+          ],
+          "eyeR": [
+            201,
+            161
+          ]
+        }
+      },
+      {
+        "ground": [
+          127,
+          199
+        ],
+        "points": {
+          "hindR": [
+            40,
+            201
+          ],
+          "eyeR": [
+            194,
+            171
+          ]
+        }
+      },
+      {
+        "ground": [
+          127,
+          199
+        ],
+        "points": {
+          "hindR": [
+            45,
+            214
+          ],
+          "eyeR": [
+            186,
+            164
+          ]
+        }
+      },
+      {
+        "ground": [
+          127,
+          199
+        ],
+        "points": {
+          "hindR": [
+            43,
+            213
+          ],
+          "eyeR": [
+            195,
+            124
+          ]
+        }
+      },
+      {
+        "ground": [
+          127,
+          199
+        ],
+        "points": {
+          "hindR": [
+            60,
+            212
+          ],
+          "eyeR": [
+            200,
+            135
+          ]
+        }
+      }
+    ]
+  },
+  "trick": {
+    "sheet": "../../../docs/reports/creatures/b3/references/meadow_colossus/trick.png",
+    "study": "trick.study.md",
+    "grid": [
+      3,
+      2
+    ],
+    "frames": [
+      0,
+      12,
+      22,
+      29,
+      36,
+      59
+    ],
+    "captionHeight": 0,
+    "idleHeight": 188,
+    "keys": [
+      {
+        "ground": [
+          125,
+          199
+        ],
+        "points": {
+          "rock": [
+            193,
+            111
+          ],
+          "noseTip": [
+            224,
+            141
+          ]
+        }
+      },
+      {
+        "ground": [
+          125,
+          199
+        ],
+        "points": {
+          "rock": [
+            205,
+            146
+          ],
+          "noseTip": [
+            215,
+            153
+          ]
+        }
+      },
+      {
+        "ground": [
+          125,
+          199
+        ],
+        "points": {
+          "rock": [
+            194,
+            96
+          ],
+          "noseTip": [
+            204,
+            107
+          ]
+        }
+      },
+      {
+        "ground": [
+          125,
+          199
+        ],
+        "points": {
+          "rock": [
+            171,
+            90
+          ],
+          "noseTip": [
+            206,
+            97
+          ]
+        }
+      },
+      {
+        "ground": [
+          125,
+          199
+        ],
+        "points": {
+          "rock": [
+            158,
+            97
+          ],
+          "noseTip": [
+            219,
+            140
+          ]
+        }
+      },
+      {
+        "ground": [
+          125,
+          199
+        ],
+        "points": {
+          "rock": [
+            192,
+            113
+          ],
+          "noseTip": [
+            220,
+            139
+          ]
+        }
+      }
+    ]
+  }
+}

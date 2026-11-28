@@ -1,0 +1,616 @@
+{
+  "id": "crater_titan",
+  "rarity": "mythic",
+  "theme": "volcano",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    256,
+    208
+  ],
+  "thickness": 18,
+  "bodySize": 160,
+  "canvas": [
+    292,
+    244
+  ],
+  "anchor": [
+    80,
+    119
+  ],
+  "eye": [
+    100,
+    66
+  ],
+  "primitives": 239,
+  "feet": [
+    141,
+    178
+  ],
+  "points": {
+    "footL": [
+      111.44665253579805,
+      117.14516300215841
+    ],
+    "footR": [
+      79.70288565439058,
+      136.78719892271383
+    ],
+    "foot": [
+      78.06604932767763,
+      137.88288591627162
+    ],
+    "footFloor": [
+      78.06604932767763,
+      137.88288591627162
+    ],
+    "chest": [
+      98.28250916862329,
+      79.34819341434007
+    ],
+    "fist": [
+      55.9249150849092,
+      143.94629077468505
+    ],
+    "fistFloor": [
+      55.9249150849092,
+      149.61798199072274
+    ],
+    "eye": [
+      100.3363225263819,
+      65.80953166490622
+    ],
+    "vent": [
+      82.01088247298546,
+      33.53827774850518
+    ]
+  },
+  "motion": {
+    "life": {
+      "stride": 30,
+      "yaw": 0.77,
+      "beats": [
+        {
+          "seconds": 0.53,
+          "at": [
+            0.47,
+            0.76
+          ],
+          "anim": "idle",
+          "side": 0.45
+        },
+        {
+          "seconds": 2,
+          "at": [
+            0.47,
+            0.76
+          ],
+          "anim": "tech_ash",
+          "side": 0
+        },
+        {
+          "seconds": 2.07,
+          "at": [
+            0.47,
+            0.76
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 0.34,
+          "at": [
+            0.27,
+            0.83
+          ],
+          "anim": "turn"
+        },
+        {
+          "seconds": 0.91,
+          "at": [
+            0.27,
+            0.83
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 0.35,
+          "at": [
+            0.255,
+            0.78
+          ],
+          "anim": "turn"
+        },
+        {
+          "seconds": 2.7,
+          "at": [
+            0.255,
+            0.78
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 1.5833333333333333,
+          "at": [
+            0.52,
+            0.612
+          ],
+          "anim": "tech_quake",
+          "side": 0.4
+        },
+        {
+          "seconds": 2.5,
+          "at": [
+            0.52,
+            0.612
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 1.2083333333333333,
+          "at": [
+            0.645,
+            0.755
+          ],
+          "anim": "tech_fist",
+          "side": 0
+        },
+        {
+          "seconds": 0.3,
+          "at": [
+            0.645,
+            0.755
+          ],
+          "anim": "turn"
+        },
+        {
+          "seconds": 2.04,
+          "at": [
+            0.645,
+            0.755
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 0.46,
+          "at": [
+            0.47,
+            0.76
+          ],
+          "anim": "turn",
+          "side": 0.45
+        }
+      ]
+    },
+    "track": "frames/<anim>/motion.json",
+    "directions": {
+      "walk_n": {
+        "velocity": [
+          0,
+          -18
+        ],
+        "pixelsPerSecond": 18,
+        "worldStride": 30,
+        "feet": [
+          123,
+          169
+        ]
+      },
+      "walk_ne": {
+        "velocity": [
+          21.213203435596427,
+          -12.727922061357853
+        ],
+        "pixelsPerSecond": 24.73863375370596,
+        "worldStride": 30,
+        "feet": [
+          112.39339828220179,
+          166.36396103067892
+        ]
+      },
+      "walk_e": {
+        "velocity": [
+          30,
+          0
+        ],
+        "pixelsPerSecond": 30,
+        "worldStride": 30,
+        "feet": [
+          108,
+          160
+        ]
+      },
+      "walk_se": {
+        "velocity": [
+          21.213203435596427,
+          12.727922061357853
+        ],
+        "pixelsPerSecond": 24.73863375370596,
+        "worldStride": 30,
+        "feet": [
+          112.39339828220179,
+          153.63603896932108
+        ]
+      },
+      "walk_s": {
+        "velocity": [
+          0,
+          18
+        ],
+        "pixelsPerSecond": 18,
+        "worldStride": 30,
+        "feet": [
+          123,
+          151
+        ]
+      },
+      "walk_sw": {
+        "velocity": [
+          -21.213203435596423,
+          12.727922061357855
+        ],
+        "pixelsPerSecond": 24.73863375370596,
+        "worldStride": 30,
+        "feet": [
+          133.6066017177982,
+          153.63603896932108
+        ]
+      },
+      "walk_w": {
+        "velocity": [
+          -30,
+          0
+        ],
+        "pixelsPerSecond": 30,
+        "worldStride": 30,
+        "feet": [
+          138,
+          160
+        ]
+      },
+      "walk_nw": {
+        "velocity": [
+          -21.21320343559643,
+          -12.727922061357853
+        ],
+        "pixelsPerSecond": 24.738633753705965,
+        "worldStride": 30,
+        "feet": [
+          133.6066017177982,
+          166.36396103067892
+        ]
+      }
+    }
+  },
+  "layers": [
+    "bg",
+    "bgfBack",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "bgf",
+    "frame",
+    "over"
+  ],
+  "showreel": [
+    {
+      "name": "tech_eruption",
+      "start": 0,
+      "frames": 58,
+      "end": 64
+    },
+    {
+      "name": "tech_fist",
+      "start": 64,
+      "frames": 29,
+      "end": 99
+    },
+    {
+      "name": "tech_sweep",
+      "start": 99,
+      "frames": 34,
+      "end": 139
+    },
+    {
+      "name": "tech_quake",
+      "start": 139,
+      "frames": 38,
+      "end": 183
+    },
+    {
+      "name": "tech_ash",
+      "start": 183,
+      "frames": 48,
+      "end": 237
+    },
+    {
+      "name": "tech_pillar",
+      "start": 237,
+      "frames": 43,
+      "end": 286
+    }
+  ],
+  "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "idle-f2": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tech_eruption": {
+      "seconds": 2.4,
+      "frames": 58,
+      "loop": false,
+      "hit": [
+        30,
+        36,
+        41,
+        46
+      ],
+      "shake": 0.22,
+      "stop": 0.06
+    },
+    "tech_fist": {
+      "seconds": 1.2,
+      "frames": 29,
+      "loop": false,
+      "hit": [
+        18
+      ],
+      "shake": 0.4,
+      "stop": 0.08
+    },
+    "tech_sweep": {
+      "seconds": 1.4,
+      "frames": 34,
+      "loop": false,
+      "hit": [
+        17
+      ],
+      "shake": 0.19,
+      "stop": 0.04
+    },
+    "tech_quake": {
+      "seconds": 1.6,
+      "frames": 38,
+      "loop": false,
+      "hit": [
+        23
+      ],
+      "shake": 0.33,
+      "stop": 0.06
+    },
+    "tech_ash": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        23
+      ],
+      "shake": 0.07,
+      "stop": 0.04
+    },
+    "tech_pillar": {
+      "seconds": 1.8,
+      "frames": 43,
+      "loop": false,
+      "hit": [
+        23,
+        28,
+        32,
+        36
+      ],
+      "shake": 0.19,
+      "stop": 0.04
+    },
+    "happy": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "phase": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        25
+      ],
+      "shake": 0,
+      "stop": 0.06
+    },
+    "show": {
+      "seconds": 5,
+      "frames": 120,
+      "loop": false,
+      "hit": [
+        77
+      ],
+      "shake": 0.25,
+      "stop": 0.08
+    },
+    "away": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "back": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "peek": {
+      "seconds": 1.8,
+      "frames": 43,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "life": {
+      "seconds": 16.991666666666667,
+      "frames": 408,
+      "loop": true,
+      "hit": [
+        36,
+        236,
+        330
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "showreel": {
+      "seconds": 11.916666666666666,
+      "frames": 286,
+      "loop": true,
+      "hit": [
+        30,
+        36,
+        41,
+        46,
+        82,
+        116,
+        162,
+        206,
+        260,
+        265,
+        269,
+        273
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_n": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_ne": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_e": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_se": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_s": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_sw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_w": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_nw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    }
+  }
+}
