@@ -399,8 +399,9 @@ class Painting {
       y += Math.round(targetY) - Math.round(feetY);
       feetY = targetY;
     }
-    if (living) phase = state.tick;
-    else if (typeof data.scene === 'string')
+    const delay = data.sceneDelays?.[state.anim]?.[frame] ?? 0;
+    if (living) phase = state.tick - delay;
+    else if (typeof data.scene === 'string' && !data.sceneDelays?.[state.anim])
       phase = Math.floor((performance.now() * 24) / 1000) % border.phases;
     const signature = [state.anim, frame, phase, x, y].join('/');
     if (this.previous === signature) return;

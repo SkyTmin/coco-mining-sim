@@ -15,7 +15,17 @@ export type Rarity =
   | 'legendary'
   | 'mythic'
   | 'secret';
+export interface ImpactContact {
+  frame: number;
+  freeze?: number; // extra frames held on the contact (0–5)
+  shake?: number; // duration in displayed frames after the hold
+  amp?: number; // peak camera excursion in field pixels
+}
 export interface Animation {
+  contacts?: readonly ImpactContact[];
+  /** Internal clocks retained when the workshop inserts contact holds. */
+  authoredSeconds?: number;
+  authoredHits?: number[];
   /** A separately selectable performance by a second character in this painting. */
   companion?: boolean;
   bearings?: number[]; // world bearing in radians of each authored turntable frame
