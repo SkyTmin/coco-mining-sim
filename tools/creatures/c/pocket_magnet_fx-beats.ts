@@ -37,15 +37,22 @@ function fish(f: FxInput, n: number, spread: number) {
   const after = (n - fishReturn) / 24;
   if (after < 0 || after > 0.75) return;
   const [x, y] = stop;
-  flash(f.light, x, y, 8, brass, after, 0.23, 0.8);
+  // A hair of light on the wooden bevel leaves the coral fin readable inside it.
+  const click = Math.max(0, 1 - after / 0.17);
+  if (click > 0) {
+    f.above.lineS(x, y, x + 2, y - 3 * click, '#ffe0a0', click, 0.66);
+    glowLine(f.light, x, y, x + 1.5, y - 2.5 * click, 2.3, brass, 0.39 * click);
+  }
+  flash(f.light, x + 1, y - 1, 7.5, brass, after, 0.20, 0.39);
   // The stop releases one high chip, one low skip into the felt and a late, near-vertical fleck.
   const chips = [
-    [-25, -82, 1.18, 0, 0.58],
-    [-4, -117, 1.08, 0.018, 0.71],
-    [8, -61, 0.78, 0.046, 0.50],
-  ].map(([vx, vy, size, delay, life]) => ({
+    [-14, -101, 1.18, 0, 0.63],
+    [3, -135, 1.22, 0.018, 0.74],
+    [-28, -79, 1.1, 0.065, 0.58],
+  ].map(([vx, vy, size, delay, life], i) => ({
     kind: 'grit' as const, x: x - 1, y: y - 1,
-    vx: vx * spread, vy, size, delay, life, bounce: 0.43, spread: 3,
+    vx: vx * spread, vy, size, delay, life, bounce: 0.47, spread: 3,
+    palette: i === 1 ? f.palette : 'material:coins' as const,
   }));
   drawSim(f, simulate(after, chips, { seed: f.seed, ground: f.ground, palette: 'material:coins' }));
 }
@@ -92,6 +99,10 @@ function star(f: FxInput, n: number, spread: number) {
   const coal = ['#502e46', '#843741', '#b04f3d', '#e67b39', '#ffc064', '#ffe6a1'];
   const shower = simulate(age, embers, { ground: f.ground, seed: f.seed, palette: coal, cache: true });
   for (const e of shower.particles) {
+    const depth = f.ground(e.x) - e.y;
+    const nearFloor = Math.max(0, 1 - depth / 9);
+    const heat = Math.max(0, 1 - (age - e.birth) / e.life);
+    if (nearFloor > 0) glow(f.light, e.x, f.ground(e.x) + 1, 5.6, brass, 0.34 * heat * nearFloor ** 2, 0.34);
     const speed = Math.hypot(e.vx, e.vy);
     if (speed < 18 || e.rest) continue;
     const tail = Math.min(5.2, speed * 0.037);
@@ -103,9 +114,15 @@ function star(f: FxInput, n: number, spread: number) {
     f.above.line((tx + e.x) / 2, (ty + e.y) / 2, e.x, e.y);
   }
   drawSim(f, shower);
-  const x = caught.center[0];
-  const pool = Math.min(1, age * 8) * Math.max(0, 1 - age / 1.2);
-  glow(f.light, x, f.ground(x), 12, brass, 0.32 * pool, 0.26);
+  const x = current.center[0], floor = f.ground(x);
+  const rise = Math.max(0, Math.min(1, (age - 0.20) / 0.23));
+  const tail = Math.max(0, Math.min(1, (1.43 - age) / 0.91));
+  const warmth = rise * tail;
+  if (warmth > 0) {
+    // The star is still swinging after the catch. The soft reflection stays below its brass face.
+    glow(f.light, x, floor + 0.4, 17, brass, 0.48 * warmth, 0.29);
+    glow(f.light, x - 1.5, floor, 8.5, ['#e97838', '#ffc16e'], 0.46 * warmth, 0.28);
+  }
 }
 
 export function magneticContact(f: FxInput) {
