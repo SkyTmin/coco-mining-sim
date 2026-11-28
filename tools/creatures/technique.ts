@@ -1,5 +1,5 @@
 // Authored joint controls are sampled before projection on the existing creature rig.
-import type { Animation, Creature } from './types';
+import type { Animation, Creature, ImpactContact } from './types';
 
 export type ContactKind = 'floor' | 'air' | 'body' | 'projectile';
 export type PoseRole = 'rest' | 'prep' | 'strike' | 'hit' | 'follow' | 'return';
@@ -12,8 +12,7 @@ export interface PoseKey {
   /** Timing on the segment approaching this key. */
   ease?: 'smooth' | 'in' | 'out' | 'linear';
 }
-export interface TechniqueContact {
-  frame: number;
+export interface TechniqueContact extends ImpactContact {
   socket: string;
   kind: ContactKind;
   projectile?: string;
@@ -36,6 +35,7 @@ export interface Technique {
   contacts?: readonly TechniqueContact[];
   floorSocket?: string;
   seconds?: number;
+  poseStep?: 2;
   stop?: number;
   shake?: number;
   /** The director switches this on after the critic has seen the held keys. */
@@ -147,6 +147,8 @@ export function withTechniques(c: Creature, book: TechniqueBook): Creature {
       ...original,
       seconds,
       ...(contacts.length || spec.contacts ? { hits: contacts.map((hit) => hit.frame / 24) } : {}),
+      ...(contacts.some(h => h.freeze || h.shake || h.amp) ? { contacts } : {}),
+      ...(spec.poseStep ? { poseStep: spec.poseStep } : {}),
       ...(spec.shake === undefined ? {} : { shake: spec.shake }),
       ...(spec.stop === undefined ? {} : { stop: spec.stop }),
     };
@@ -159,6 +161,7 @@ export function withTechniques(c: Creature, book: TechniqueBook): Creature {
       const spec = book[anim];
       if (!spec) return c.frame(anim, t, side, variant, motion);
       return c.frame(anim, t, side, variant, {
+        ...motion,
         headSide: motion?.headSide ?? side,
         gaitPhase: motion?.gaitPhase ?? t,
         techniquePose: techniquePoseAt(spec, t),

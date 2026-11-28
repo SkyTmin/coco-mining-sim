@@ -194,6 +194,11 @@ export function buildMove(move: CardMove, body: BodyType, overrides: MoveOverrid
       );
     }
   }
+  for (const weight of move.contacts ?? []) {
+    const at = contacts.filter(hit => hit.frame === weight.frame);
+    if (!at.length) throw Error(move.id + ' has no contact at frame ' + weight.frame);
+    for (const hit of at) Object.assign(hit, weight);
+  }
   contacts.sort((a, b) => a.frame - b.frame);
   return {
     title: move.title,

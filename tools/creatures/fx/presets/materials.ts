@@ -8,6 +8,7 @@ import type { XY } from '../../types';
 type Brush = (p: Pen, at: XY, size: number, angle: number, alpha: number) => void;
 interface Material {
   source: string;
+  ramp: readonly string[];
   edge: string;
   light: string;
   fragment: Brush;
@@ -24,6 +25,7 @@ function branch(p: Pen, at: XY, angle: number, run: number, color: string, alpha
 }
 export const effectPresets = {
   ice: {
+    ramp: ['#233c61', '#467aab', '#83adc6', '#a3d4e4', '#cbe6ed', '#eefcfc'],
     source: 'frost_yeti/tech_icicles',
     edge: '#467aab',
     light: '#eefcfc',
@@ -39,6 +41,7 @@ export const effectPresets = {
     },
   },
   lava: {
+    ramp: ['#3c272a', '#7e5045', '#a25a41', '#e18e51', '#ffc263', '#ffd47a'],
     source: 'crater_titan/tech_pillar',
     edge: '#a25a41',
     light: '#ffd47a',
@@ -54,6 +57,7 @@ export const effectPresets = {
     },
   },
   crystal: {
+    ramp: ['#354858', '#508598', '#72aaa8', '#97cdbd', '#97e3ca', '#d6fff1'],
     source: 'gem_beetle/tech_prism',
     edge: '#508598',
     light: '#d6fff1',
@@ -81,6 +85,7 @@ export const effectPresets = {
     },
   },
   spores: {
+    ramp: ['#293a47', '#365957', '#477874', '#7d9b74', '#b6cd81', '#e6eeb0'],
     source: 'toad_shaman/tech_spores',
     edge: '#527d76',
     light: '#e6eeb0',
@@ -100,6 +105,7 @@ export const effectPresets = {
     },
   },
   coins: {
+    ramp: ['#4a342e', '#775033', '#91683f', '#c6a168', '#f2d48f', '#fff4bc'],
     source: 'coin_dragon/tech_rain',
     edge: '#91683f',
     light: '#fff4bc',
@@ -116,6 +122,7 @@ export const effectPresets = {
     },
   },
   'silk-wind': {
+    ramp: ['#4d3852', '#895361', '#b97873', '#d99886', '#f5b05f', '#f6deb0'],
     source: 'silk_dragon/tech_kites',
     edge: '#b97873',
     light: '#f6deb0',
@@ -133,6 +140,7 @@ export const effectPresets = {
     },
   },
   thorns: {
+    ramp: ['#342c34', '#594132', '#744528', '#966341', '#bc8756', '#ecbd7d'],
     source: 'bramble_warden/tech_volley',
     edge: '#856a48',
     light: '#ecbd7d',

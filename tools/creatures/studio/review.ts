@@ -30,7 +30,7 @@ import { checkerFingerprint, exceptionRules, readAcceptance } from './baseline';
 import { clipReport, recordFx } from './events';
 
 const tools = join(import.meta.dirname, '..');
-const SHOWN = ['body', 'lit', 'fxu', 'fxo', 'over'];
+const SHOWN = ['body', 'lit', 'fxu', 'fxo', 'light', 'over'];
 const GOALS = ['overview', 'contact', 'timing', 'refactor', 'final'] as const;
 type Goal = (typeof GOALS)[number];
 /** Most flagged frames kept from the walk (pictures are ~0.6 MB a layer on a 384×312 field). */

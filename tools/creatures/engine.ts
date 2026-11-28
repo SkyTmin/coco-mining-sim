@@ -1,9 +1,11 @@
 import { createCanvas, type Canvas } from '@napi-rs/canvas';
 import { Px } from './rig/px';
 import { placement } from './motion';
+import { impactClock, displayFrame, timedAnimation, stepPose } from './kit/impact-clock';
 import { paintWater } from './viewer/water.mjs';
 import { paintSceneryRays } from './viewer/scenery.mjs';
 import { Pen } from './fx/pen';
+import { defaultPalette } from './fx/palette';
 import { emptyTechniqueTrace } from './technique-fx';
 import { frameImage } from './frame-kit';
 import { withPointsOnly } from './rig/figure';
@@ -36,6 +38,7 @@ export const layerNames = [
   'body',
   'lit',
   'fxo',
+  'light',
   'bgf',
   'frame',
   'over',
@@ -76,9 +79,24 @@ export function blit(
     }
   }
 }
-export function stack(layers: Layers) {
+/** Porter-Duff plus in premultiplied RGB, with straight RGBA storage on either side. */
+export function addLight(dst: Px, light: Px) {
+  for (let i = 0; i < light.data.length; i += 4) {
+    const sa = light.data[i + 3];
+    if (!sa) continue;
+    const da = dst.data[i + 3], a = Math.min(255, da + sa);
+    for (let ch = i; ch < i + 3; ch++)
+      dst.data[ch] = Math.min(255, Math.round((dst.data[ch] * da + light.data[ch] * sa) / a));
+    dst.data[i + 3] = a;
+  }
+}
+export function stack(layers: Layers, hasLight = true) {
   const p = new Px(layers.bg.w, layers.bg.h);
-  for (const key of layerNames) blit(p, layers[key]);
+  for (const key of layerNames) {
+    if (key === 'light') {
+      if (hasLight && layers.light) addLight(p, layers.light);
+    } else blit(p, layers[key]);
+  }
   return p;
 }
 export function screenPoint(fr: BodyFrame, p: XY, feet: XY): XY {
@@ -256,12 +274,18 @@ export function compose(
   const [w, h, , b] = sizeOf(c),
     W = w + b * 2,
     H = h + b * 2;
-  const at = placement(c, requested, t, side, ground(w, h));
-  anim = at.anim;
-  t = at.t;
-  const spec = c.animations[anim] ?? outer,
-    feet = at.feet,
-    loopFrame = loopSample(clock, requested, outer.seconds);
+  const route = placement(c, requested, t, side, ground(w, h));
+  anim = route.anim;
+  const spec = timedAnimation(c.animations[anim] ?? outer);
+  const localDuration = spec.authoredSeconds ?? spec.seconds;
+  const timing = spec.contacts?.length ? impactClock(route.t, spec.contacts) : undefined;
+  const worldScale = requested === 'life' && c.motion && !c.behavior ? route.duration / spec.seconds : 1;
+  const sceneDelay = (timing?.delay ?? 0) * worldScale;
+  const sceneClock = clock - sceneDelay / fps;
+  // Re-evaluate floor trajectory, head direction, gait and lift at the same held instant.
+  const at = sceneDelay ? placement(c, requested, sceneClock, side, ground(w, h)) : route;
+  t = timing?.time ?? at.t;
+  const feet = at.feet, loopFrame = loopSample(sceneClock, requested, outer.seconds);
 
   const bg = cached(scene, w + '-' + h + '-' + loopFrame, () => {
     const p = new Px(w, h);
@@ -272,7 +296,7 @@ export function compose(
     frameImage(border, w, h, b, loopFrame / fps),
   );
   const n = Math.round(t * fps);
-  const hits = spec.hits ?? [];
+  const hits = spec.authoredHits ?? spec.hits ?? [];
   const beat =
     requested === 'life' && c.behavior && anim.startsWith('tech_')
       ? { anim, seconds: spec.seconds }
@@ -281,19 +305,20 @@ export function compose(
     beat && beat.anim === anim && anim.startsWith('tech_') ? beat : undefined;
   const timeToWorld = (local: number) =>
     actionBeat ? at.start + (local * actionBeat.seconds) / spec.seconds : local;
-  const contactFrames = hits.map((h) => hitFrame(timeToWorld(h)));
-  const onTimeline = actionBeat
+  const contactFrames = hits.map((h) => hitFrame(timing ? h : timeToWorld(h)));
+  const onTimeline = actionBeat && !timing
     ? hitFrame(((clock % outer.seconds) + outer.seconds) % outer.seconds)
     : n;
   const last = contactFrames.findLastIndex((f) => f <= onTimeline);
   const since = last < 0 ? Infinity : (onTimeline - contactFrames[last]) / fps;
-  const hold = spec.stop ?? 0;
+  const hold = timing ? 0 : spec.stop ?? 0;
   const sample = last >= 0 && onTimeline - contactFrames[last] <= Math.round(hold * fps) ? hits[last] : t;
-  const contact = hits.filter((h, i) => contactFrames[i] === onTimeline);
+  const contact = hits.filter((h, i) => contactFrames[i] === onTimeline &&
+    (!timing || Math.round(route.t * fps) === displayFrame(hitFrame(h), spec.contacts!)));
   const dir = anim === 'turn' && !c.behavior ? Math.floor(t * 4) % 16 : at.side;
   // The pilot one-shots share a generic exit pose. A pet owns its final key,
   // including the shut eyes and withdrawn head leading from sleep_in to sleep.
-  const finalFrame = !c.behavior && !spec.loop && n >= frameCount(spec.seconds) - 1;
+  const finalFrame = !c.behavior && !spec.loop && n >= frameCount(localDuration) - 1;
   const poseAnim =
     finalFrame && anim !== 'away'
       ? anim === 'phase' && c.animations['idle-f2']
@@ -303,14 +328,16 @@ export function compose(
   const poseTime = finalFrame ? (anim === 'away' ? spec.seconds : 0) : sample;
   // Earlier poses serve effects only through their sockets: they are built without a picture.
   const projected = (time: number, position = at, pointsOnly = false): BodyFrame => {
+    const bodyTime = finalFrame ? time : stepPose(time, spec);
+    const gaitPhase = spec.poseStep ? bodyTime : position.t;
     const pose = () => c.frame(
       poseAnim,
-      time,
+      bodyTime,
       position === at ? dir : position.side,
       variant,
-      pointsOnly
-        ? { headSide: position.headSide, gaitPhase: position.t, pointsOnly }
-        : { headSide: position.headSide, gaitPhase: position.t },
+      { headSide: position.headSide, gaitPhase,
+        ...(pointsOnly ? { pointsOnly } : {}),
+        ...(spec.poseStep ? { secondaryTime: time } : {}) },
     );
     const body = pointsOnly ? withPointsOnly(pose) : pose();
     return position.lift
@@ -318,15 +345,19 @@ export function compose(
       : body;
   };
   const body = projected(poseTime);
-  const env = finalFrame
+  const env = finalFrame || timing
     ? 0
     : Math.max(0, 1 - since / 0.24) * (spec.shake ?? 0);
-  const dx = Math.round(Math.sin(n * 2.3) * 10 * env) || 0,
-    dy = Math.round(Math.cos(n * 2.1) * 6 * env) || 0;
+  const amplitude = timing?.shake ?? 10 * env;
+  const phaseX = timing ? timing.shakeFrame * 2.3 + Math.PI / 2 : n * 2.3;
+  const phaseY = timing ? timing.shakeFrame * 2.1 : n * 2.1;
+  const dx = Math.round(Math.sin(phaseX) * amplitude) || 0,
+    dy = Math.round(Math.cos(phaseY) * (timing ? amplitude * 0.6 : 6 * env)) || 0;
   const fullFeet: XY = [feet[0] + b + dx, feet[1] + b + dy];
-  const layers = {} as Layers;
+  let lightPixels: Px | undefined;
+  const layers = { get light() { return lightPixels ??= new Px(W, H); } } as Layers;
   for (const key of layerNames)
-    layers[key] = key === 'frame' ? frame : new Px(W, H);
+    if (key !== 'light') layers[key] = key === 'frame' ? frame : new Px(W, H);
   const clip: [number, number, number, number] = [b, b, b + w, b + h];
   // Edge-clamp the backdrop during shake so the field never reveals a transparent seam.
   blit(layers.bg, bg, b, b);
@@ -399,7 +430,21 @@ export function compose(
     fxJournal.pose?.(n, points);
     let field: Canvas | undefined;
     let fieldPen: Pen | undefined;
+    let lightCanvas: Canvas | undefined, lightPen: Pen | undefined;
     const fx: FxInput = {
+      ground: scene.ground ?? (() => feet[1]),
+      seed: Number(c.fxOptions?.seed ?? 1),
+      options: c.fxOptions ?? {},
+      palette: c.fxRamp ?? defaultPalette,
+      get light() {
+        if (!lightPen) {
+          lightCanvas = fieldCanvas(w, h, 'light');
+          const g = lightCanvas.getContext('2d');
+          g.globalCompositeOperation = 'lighter';
+          lightPen = new Pen(g, 0, 0, 0, 0);
+        }
+        return lightPen;
+      },
       get backdrop() {
         if (!fieldPen) {
           field = fieldCanvas(w, h, 'backdrop');
@@ -412,7 +457,7 @@ export function compose(
       },
       anim: poseAnim,
       t: finalFrame ? 0 : (contact[0] ?? t),
-      duration: c.animations[poseAnim]?.seconds ?? spec.seconds,
+      duration: poseAnim === anim ? localDuration : c.animations[poseAnim]?.seconds ?? localDuration,
       hits: finalFrame ? [] : hits,
       variant,
       feet,
@@ -425,9 +470,12 @@ export function compose(
       under: new Pen(under.getContext('2d'), 0, 0, 0, 0),
       above: new Pen(above.getContext('2d'), 0, 0, 0, 0),
       pointAt: (when, name) => {
+        // FX request authored times. Historical floor trajectories use the same unpaused local clock.
+        const worldAt = timing ? clock + (when - route.t) * worldScale :
+          timeToWorld(when) + (requested === 'showreel' ? at.start : 0);
         const source =
           (actionBeat || spec.groundOffset) && when !== poseTime
-            ? placement(c, requested, timeToWorld(when) + (requested === 'showreel' ? at.start : 0), side, ground(w, h))
+            ? placement(c, requested, worldAt, side, ground(w, h))
             : at;
         let fr = historical.get(when);
         if (!fr) {
@@ -443,6 +491,7 @@ export function compose(
     };
     c.props?.(fx);
     c.effects?.(fx);
+    if (lightCanvas) blit(layers.light, asPx(lightCanvas), b + dx, b + dy, clip);
     if (field) {
       const fieldPixels = asPx(field);
       if (fieldPixels.data.some((value, index) => index % 4 === 3 && value > 0)) {
@@ -461,7 +510,7 @@ export function compose(
   if (body.ghost && !body.ghost.front) drawGhost(body.ghost);
   const flash =
     body.flash ??
-    (!finalFrame && hits.length === 1 && since < 0.1
+    (!timing && !finalFrame && hits.length === 1 && since < 0.1
       ? 0.09 * (1 - since / 0.1)
       : 0);
   sprite(
@@ -491,7 +540,8 @@ export function compose(
   clipFloor(layers.fxu, b, w, h);
   return {
     layers,
-    picture: stack(layers),
+    picture: stack(layers, !!lightPixels),
+    light: lightPixels,
     backdrop,
     sceneryRays,
     waterContacts,
@@ -501,6 +551,8 @@ export function compose(
     techniqueTrace,
     contact,
     motion: at,
+    poseTime: spec.poseStep ? stepPose(poseTime, spec) : at.t,
+    sceneDelay: Math.round(sceneDelay),
     backgroundFrame: loopFrame,
     points,
     camera: [dx, dy] as XY,
