@@ -1,0 +1,35 @@
+name: Б25 — кадры в черновик исследования
+on:
+  push:
+    branches: [chatgpt/b25-research]
+    paths:
+      - '.github/workflows/b25-draft-frames.yml'
+      - 'docs/research/b24/render-comparisons.mjs'
+permissions:
+  contents: write
+jobs:
+  comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Render the accepted paintings from the research revision
+        working-directory: tools/creatures
+        run: |
+          npm ci --no-audit --no-fund
+          node --import tsx ../../docs/research/b24/render-comparisons.mjs "$RUNNER_TEMP/b25"
+          diff ../../docs/research/b24/b24-v2-frames.json "$RUNNER_TEMP/b25/b24-v2-frames.json"
+      - name: Attach each PNG to the existing draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          for frame in "$RUNNER_TEMP"/b25/*.png; do
+            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/461736899" --jq '[.draft,.tag_name]|@tsv')" = "$(printf 'true\tb25-research-evidence')"
+            if gh api "repos/$GITHUB_REPOSITORY/releases/461736899/assets" --jq '.[].name' | grep -Fxq "$(basename "$frame")"; then
+              continue
+            fi
+            gh release upload b25-research-evidence "$frame"
+          done
