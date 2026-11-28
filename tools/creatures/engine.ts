@@ -4,6 +4,7 @@ import { placement } from './motion';
 import { paintWater } from './viewer/water.mjs';
 import { paintSceneryRays } from './viewer/scenery.mjs';
 import { Pen } from './fx/pen';
+import { defaultPalette } from './fx/palette';
 import { emptyTechniqueTrace } from './technique-fx';
 import { frameImage } from './frame-kit';
 import { withPointsOnly } from './rig/figure';
@@ -418,6 +419,9 @@ export function compose(
     let fieldPen: Pen | undefined;
     let lightCanvas: Canvas | undefined, lightPen: Pen | undefined;
     const fx: FxInput = {
+      seed: Number(c.fxOptions?.seed ?? 1),
+      options: c.fxOptions ?? {},
+      palette: c.fxRamp ?? defaultPalette,
       get light() {
         if (!lightPen) {
           lightCanvas = fieldCanvas(w, h, 'light');

@@ -2,6 +2,7 @@ import type { Rig, V3 } from './rig/f15-rig';
 import type { Px } from './rig/px';
 import type { Direction } from './motion';
 import type { Pen } from './fx/pen';
+import type { FxPalette } from './fx/palette';
 import type { JointPose, TechniqueBook } from './technique';
 import type { TechniqueTrace } from './technique-fx';
 export type XY = [number, number];
@@ -60,6 +61,9 @@ export interface FxInput {
   sceneryRay(from: XY, to: XY, color: string, alpha: number): void;
   /** Linear additive RGB energy, composited over the ordinary effect ink. */
   readonly light: Pen;
+  readonly palette: FxPalette;
+  readonly seed: number;
+  readonly options: Readonly<Record<string, number | string | boolean>>;
   under: Pen;
   above: Pen;
   anim: string;
@@ -82,6 +86,8 @@ export interface Creature {
   id: string;
   rarity: Rarity;
   theme: string;
+  fxRamp?: FxPalette;
+  fxOptions?: Readonly<Record<string, number | string | boolean>>;
   /** Gallery titles for clips whose generic label says too little (named tricks). */
   titles?: Record<string, string>;
   /** Clips besides show and peek whose `over` layer is drawn over the painting frame (a secret trick round the frame). */

@@ -32,6 +32,7 @@ import { reelChapters, attachMotion, attachPetBehavior, directions, directionVec
 import { GifWriter, savePNG } from './render-io';
 import { frameImage } from './frame-kit';
 import { Px } from './rig/px';
+import { cardDirectory, cardPath, readCreatureCard } from './bodies/card-data';
 import { hx } from './kit/f11-mobkit';
 
 const tools = dirname(fileURLToPath(import.meta.url));
@@ -49,7 +50,9 @@ export function paintingFrameDir(c: Creature, output: string) {
     : join(dirname(output), 'frames', c.rarity);
 }
 export async function loadPainting(id: string) {
-  const c: Creature = (await import('./c/' + safeID(id) + '.ts')).default;
+  const source: Creature = (await import('./c/' + safeID(id) + '.ts')).default;
+  const card = /^[a-z][a-z0-9_]*$/.test(id) && existsSync(cardPath(id, cardDirectory)) ? readCreatureCard(id) : undefined;
+  const c = card?.fxRamp ? { ...source, fxRamp: card.fxRamp } : source;
   if (c.id !== id) throw new Error('Creature id mismatch');
   const s: Scene = (await import('./scenes/' + safeID(c.theme) + '.ts'))
     .default;

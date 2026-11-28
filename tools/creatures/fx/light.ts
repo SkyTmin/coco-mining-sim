@@ -1,19 +1,21 @@
 // Light is sampled once per pixel. Crossed lines, flash cores and pools add on f.light.
 import type { Pen } from './pen';
 
-type Colors = string | readonly string[];
-function tone(colors: Colors) {
-  return typeof colors === 'string' ? colors : colors[colors.length - 1];
+import { resolveRamp, type FxPalette } from './palette';
+
+type Colors = FxPalette | string;
+function inks(colors: Colors): readonly string[] {
+  return typeof colors === 'string' && colors.startsWith('#') ? [colors] : resolveRamp(colors as FxPalette);
 }
 
 function wash(p: Pen, x0: number, y0: number, x1: number, y1: number, colors: Colors, power: number, falloff: (x: number, y: number) => number) {
   if (!(power > 0)) return;
-  p.col(tone(colors));
+  const ramp = inks(colors);
   for (let y = Math.floor(y0); y <= Math.ceil(y1); y++) {
     for (let x = Math.floor(x0); x <= Math.ceil(x1); x++) {
       const k = Math.max(0, 1 - falloff(x, y));
       if (power * k * k < 0.5 / 255) continue;
-      p.alpha(power * k * k);
+      p.col(ramp[Math.min(ramp.length - 1, Math.floor(k * ramp.length))], power * k * k);
       p.dot(x, y);
     }
   }
@@ -44,7 +46,8 @@ export function glowRing(p: Pen, x: number, y: number, r: number, width: number,
 
 export function pointLight(p: Pen, x: number, y: number, colors: Colors, strength = 1) {
   if (!(strength > 0)) return;
-  p.col(tone(colors), strength);
+  const ramp = inks(colors);
+  p.col(ramp[ramp.length - 1], strength);
   p.dot(Math.round(x), Math.round(y));
 }
 
