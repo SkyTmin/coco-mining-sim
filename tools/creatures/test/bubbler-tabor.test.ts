@@ -82,13 +82,20 @@ test('the dragon leaves the supporting diagonal planted while trotting and turni
 });
 test('all eight headings in the dragon’s showreel run on the paving behind the trough', () => {
   const { c, s, b } = bubbler;
-  const route = reelChapters(c).filter(chapter => chapter.name.startsWith('walk_'));
-  assert.equal(new Set(route.map(chapter => chapter.name)).size, 8);
+  const route = reelChapters(c).filter((chapter) => chapter.name.startsWith('walk_'));
+  assert.equal(new Set(route.map((chapter) => chapter.name)).size, 8);
   for (const chapter of route) {
     for (let n = chapter.start; n < chapter.end; n++) {
-      const feet = compose(c, s, b, 'showreel', n / 24).points;
+      const frame = compose(c, s, b, 'showreel', n / 24);
+      const feet = frame.points,
+        body = frame.layers.body;
       for (const key of ['footFL', 'footFR', 'footHL', 'footHR'])
         assert.ok(feet[key][1] < 107, key + ' reaches the water on frame ' + n);
+      // Eight pixels of rail and at least six pixels of clear field on every side.
+      for (let y = 8; y < body.h - 8; y++)
+        for (let x = 8; x < body.w - 8; x++)
+          if (x < 14 || y < 14 || x >= body.w - 14 || y >= body.h - 14)
+            assert.ok(!body.solid(x, y), 'silhouette reaches the margin on frame ' + n);
     }
   }
 });

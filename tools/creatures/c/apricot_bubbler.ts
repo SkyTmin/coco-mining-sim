@@ -13,7 +13,7 @@ const painting: Creature = {
   frame: bubbler,
   effects: courtyardPlay,
   // Begin away from the water. All eight strides fit on the tiled promenade.
-  reelWalkRoute: ['ne', 'se', 'n', 'w', 'sw', 'nw', 'e', 's'],
+  reelWalkRoute: ['ne', 'e', 'nw', 'sw', 'se', 'n', 'w', 's'],
   reelGroups: [
     ['hatch', 'idle', 'fidget_a', 'fidget_b'],
     ['prepare_walk'],
