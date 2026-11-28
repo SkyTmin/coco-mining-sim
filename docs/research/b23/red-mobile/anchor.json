@@ -1,0 +1,17 @@
+{
+  "painting": "penguin_marshal",
+  "opaque": 2638,
+  "window": [
+    44,
+    36
+  ],
+  "best_agreement": 2638,
+  "best_shift": [
+    -39,
+    2
+  ],
+  "second_agreement": 953,
+  "agreement_unshifted": 7,
+  "inside_source": 1444,
+  "inside_gallery": 105
+}

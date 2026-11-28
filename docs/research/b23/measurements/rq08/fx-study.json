@@ -1,0 +1,94 @@
+{
+  "target_alpha": 0.6,
+  "opacity": [
+    {
+      "slices": 1,
+      "naive_out": 0.6,
+      "corrected_per_slice": 0.6,
+      "corrected_out": 0.6
+    },
+    {
+      "slices": 2,
+      "naive_out": 0.84,
+      "corrected_per_slice": 0.367544,
+      "corrected_out": 0.6
+    },
+    {
+      "slices": 4,
+      "naive_out": 0.9744,
+      "corrected_per_slice": 0.204729,
+      "corrected_out": 0.6
+    },
+    {
+      "slices": 8,
+      "naive_out": 0.999345,
+      "corrected_per_slice": 0.10822,
+      "corrected_out": 0.6
+    },
+    {
+      "slices": 16,
+      "naive_out": 1.0,
+      "corrected_per_slice": 0.055659,
+      "corrected_out": 0.6
+    }
+  ],
+  "thresholds": [
+    0,
+    8,
+    2,
+    10,
+    12,
+    4,
+    14,
+    6,
+    3,
+    11,
+    1,
+    9,
+    15,
+    7,
+    13,
+    5
+  ],
+  "samples": 512,
+  "coverage": 192,
+  "motion": [
+    {
+      "dx": 1,
+      "material_changed": 0,
+      "screen_changed_after_aligning_actor": 384
+    },
+    {
+      "dx": 2,
+      "material_changed": 0,
+      "screen_changed_after_aligning_actor": 128
+    },
+    {
+      "dx": 3,
+      "material_changed": 0,
+      "screen_changed_after_aligning_actor": 384
+    },
+    {
+      "dx": 4,
+      "material_changed": 0,
+      "screen_changed_after_aligning_actor": 0
+    }
+  ],
+  "emitter": [
+    {
+      "spawn_tick": 0,
+      "world_x_at_8": 8,
+      "local_x_at_8": 24
+    },
+    {
+      "spawn_tick": 2,
+      "world_x_at_8": 10,
+      "local_x_at_8": 22
+    },
+    {
+      "spawn_tick": 4,
+      "world_x_at_8": 12,
+      "local_x_at_8": 20
+    }
+  ]
+}

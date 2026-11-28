@@ -1,0 +1,492 @@
+{
+  "paintings": 41,
+  "clips": 1139,
+  "frames": 164971,
+  "within_clip_triples": 162693,
+  "all_by_painting": {
+    "apricot_bubbler": 0,
+    "astral_seer": 0,
+    "ball_pangolin": 0,
+    "bell_magpie": 4,
+    "bramble_warden": 2,
+    "bun_panda": 0,
+    "coin_dragon": 0,
+    "crater_titan": 0,
+    "dream_sneak": 0,
+    "eclipse_drake": 0,
+    "ember_panda": 0,
+    "frost_fox": 0,
+    "frost_yeti": 0,
+    "garden_chameleon": 11,
+    "gem_beetle": 0,
+    "grove_lord": 0,
+    "herald_griffin": 0,
+    "ink_admiral": 0,
+    "kettle_crab": 0,
+    "lunar_plush": 26,
+    "meadow_colossus": 0,
+    "moon_magician": 0,
+    "moon_warden": 0,
+    "nebula_squid": 0,
+    "opal_skater": 13,
+    "penguin_marshal": 0,
+    "pocket_magnet": 0,
+    "prism_serpent": 0,
+    "puff_kit": 0,
+    "rat_king": 0,
+    "river_otter": 0,
+    "root_stag": 0,
+    "sand_scorpion": 0,
+    "silk_dragon": 0,
+    "sky_whale": 0,
+    "storm_lord": 0,
+    "storm_ram": 0,
+    "threshold_keeper": 0,
+    "toad_shaman": 0,
+    "tuft_owlet": 0,
+    "zephyr_whorl": 7
+  },
+  "hits": [
+    {
+      "id": "bell_magpie",
+      "clip": "sleep",
+      "frame": 18,
+      "neighbour": "286f088c47",
+      "middle": "36146c1ec6"
+    },
+    {
+      "id": "bell_magpie",
+      "clip": "sleep",
+      "frame": 54,
+      "neighbour": "cce841220b",
+      "middle": "66730cbd00"
+    },
+    {
+      "id": "bell_magpie",
+      "clip": "showreel",
+      "frame": 1110,
+      "neighbour": "286f088c47",
+      "middle": "36146c1ec6"
+    },
+    {
+      "id": "bell_magpie",
+      "clip": "showreel",
+      "frame": 1146,
+      "neighbour": "cce841220b",
+      "middle": "66730cbd00"
+    },
+    {
+      "id": "bramble_warden",
+      "clip": "look",
+      "frame": 18,
+      "neighbour": "155b1dc627",
+      "middle": "72a49e8272"
+    },
+    {
+      "id": "bramble_warden",
+      "clip": "life",
+      "frame": 102,
+      "neighbour": "0681645505",
+      "middle": "ca21e62dfb"
+    },
+    {
+      "id": "garden_chameleon",
+      "clip": "idle",
+      "frame": 18,
+      "neighbour": "3a1086bd23",
+      "middle": "f4f6778bf4"
+    },
+    {
+      "id": "garden_chameleon",
+      "clip": "idle",
+      "frame": 54,
+      "neighbour": "e7572e0746",
+      "middle": "e283aec8ef"
+    },
+    {
+      "id": "garden_chameleon",
+      "clip": "sleep",
+      "frame": 18,
+      "neighbour": "94703ed744",
+      "middle": "c97158f0fc"
+    },
+    {
+      "id": "garden_chameleon",
+      "clip": "sleep",
+      "frame": 54,
+      "neighbour": "2b3fba0645",
+      "middle": "8028e31066"
+    },
+    {
+      "id": "garden_chameleon",
+      "clip": "life",
+      "frame": 455,
+      "neighbour": "006973d196",
+      "middle": "5e2d2510ee"
+    },
+    {
+      "id": "garden_chameleon",
+      "clip": "life",
+      "frame": 491,
+      "neighbour": "e7572e0746",
+      "middle": "e283aec8ef"
+    },
+    {
+      "id": "garden_chameleon",
+      "clip": "life",
+      "frame": 1210,
+      "neighbour": "5159e001b6",
+      "middle": "e6dcab9a1a"
+    },
+    {
+      "id": "garden_chameleon",
+      "clip": "showreel",
+      "frame": 88,
+      "neighbour": "3a1086bd23",
+      "middle": "f4f6778bf4"
+    },
+    {
+      "id": "garden_chameleon",
+      "clip": "showreel",
+      "frame": 124,
+      "neighbour": "e7572e0746",
+      "middle": "e283aec8ef"
+    },
+    {
+      "id": "garden_chameleon",
+      "clip": "showreel",
+      "frame": 1098,
+      "neighbour": "94703ed744",
+      "middle": "c97158f0fc"
+    },
+    {
+      "id": "garden_chameleon",
+      "clip": "showreel",
+      "frame": 1134,
+      "neighbour": "2b3fba0645",
+      "middle": "8028e31066"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "idle",
+      "frame": 18,
+      "neighbour": "11611c6a22",
+      "middle": "794fd7aafe"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "idle",
+      "frame": 54,
+      "neighbour": "1bc404ee25",
+      "middle": "131894274c"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "sleep",
+      "frame": 18,
+      "neighbour": "f446a5436f",
+      "middle": "ca237ca936"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "sleep",
+      "frame": 54,
+      "neighbour": "6132bdab19",
+      "middle": "6cefda3962"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "fidget_a",
+      "frame": 16,
+      "neighbour": "d6bc0fad2a",
+      "middle": "5ba296dd7f"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "fidget_a",
+      "frame": 21,
+      "neighbour": "8cb42d3397",
+      "middle": "6a0b99bd82"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "fidget_b",
+      "frame": 16,
+      "neighbour": "79477b4c57",
+      "middle": "d23ef63323"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "fidget_b",
+      "frame": 36,
+      "neighbour": "8e55ef09f9",
+      "middle": "9ae5c45349"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "life",
+      "frame": 369,
+      "neighbour": "d6bc0fad2a",
+      "middle": "5ba296dd7f"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "life",
+      "frame": 374,
+      "neighbour": "8cb42d3397",
+      "middle": "6a0b99bd82"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "life",
+      "frame": 415,
+      "neighbour": "11611c6a22",
+      "middle": "794fd7aafe"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "life",
+      "frame": 451,
+      "neighbour": "1bc404ee25",
+      "middle": "131894274c"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "life",
+      "frame": 487,
+      "neighbour": "11611c6a22",
+      "middle": "794fd7aafe"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "life",
+      "frame": 523,
+      "neighbour": "1bc404ee25",
+      "middle": "131894274c"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "life",
+      "frame": 578,
+      "neighbour": "a0bfb956ad",
+      "middle": "a4ac67f6af"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "life",
+      "frame": 1085,
+      "neighbour": "79477b4c57",
+      "middle": "d23ef63323"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "life",
+      "frame": 1105,
+      "neighbour": "8e55ef09f9",
+      "middle": "9ae5c45349"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "life",
+      "frame": 1135,
+      "neighbour": "11611c6a22",
+      "middle": "794fd7aafe"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "showreel",
+      "frame": 80,
+      "neighbour": "11611c6a22",
+      "middle": "794fd7aafe"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "showreel",
+      "frame": 116,
+      "neighbour": "1bc404ee25",
+      "middle": "131894274c"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "showreel",
+      "frame": 156,
+      "neighbour": "d6bc0fad2a",
+      "middle": "5ba296dd7f"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "showreel",
+      "frame": 161,
+      "neighbour": "8cb42d3397",
+      "middle": "6a0b99bd82"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "showreel",
+      "frame": 206,
+      "neighbour": "79477b4c57",
+      "middle": "d23ef63323"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "showreel",
+      "frame": 226,
+      "neighbour": "8e55ef09f9",
+      "middle": "9ae5c45349"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "showreel",
+      "frame": 1241,
+      "neighbour": "f446a5436f",
+      "middle": "ca237ca936"
+    },
+    {
+      "id": "lunar_plush",
+      "clip": "showreel",
+      "frame": 1277,
+      "neighbour": "6132bdab19",
+      "middle": "6cefda3962"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "idle",
+      "frame": 18,
+      "neighbour": "2d4fc1e6e6",
+      "middle": "59cd480bc4"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "sleep",
+      "frame": 18,
+      "neighbour": "d8ac12f7e3",
+      "middle": "3679395f6d"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "sleep",
+      "frame": 54,
+      "neighbour": "9f3ecac053",
+      "middle": "fb75f94310"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "life",
+      "frame": 383,
+      "neighbour": "2d4fc1e6e6",
+      "middle": "59cd480bc4"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "life",
+      "frame": 491,
+      "neighbour": "2d4fc1e6e6",
+      "middle": "59cd480bc4"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "life",
+      "frame": 609,
+      "neighbour": "2d4fc1e6e6",
+      "middle": "59cd480bc4"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "life",
+      "frame": 1121,
+      "neighbour": "2d4fc1e6e6",
+      "middle": "59cd480bc4"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "life",
+      "frame": 1275,
+      "neighbour": "2d4fc1e6e6",
+      "middle": "59cd480bc4"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "showreel",
+      "frame": 94,
+      "neighbour": "2d4fc1e6e6",
+      "middle": "59cd480bc4"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "showreel",
+      "frame": 903,
+      "neighbour": "d8ac12f7e3",
+      "middle": "3679395f6d"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "showreel",
+      "frame": 939,
+      "neighbour": "9f3ecac053",
+      "middle": "fb75f94310"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "showreel",
+      "frame": 1204,
+      "neighbour": "d8ac12f7e3",
+      "middle": "3679395f6d"
+    },
+    {
+      "id": "opal_skater",
+      "clip": "showreel",
+      "frame": 1240,
+      "neighbour": "9f3ecac053",
+      "middle": "fb75f94310"
+    },
+    {
+      "id": "zephyr_whorl",
+      "clip": "idle",
+      "frame": 18,
+      "neighbour": "13e86ad650",
+      "middle": "e1c702bff7"
+    },
+    {
+      "id": "zephyr_whorl",
+      "clip": "sleep",
+      "frame": 18,
+      "neighbour": "9662976417",
+      "middle": "dc5a322fd9"
+    },
+    {
+      "id": "zephyr_whorl",
+      "clip": "sleep",
+      "frame": 54,
+      "neighbour": "e5e590f497",
+      "middle": "fe337e6f66"
+    },
+    {
+      "id": "zephyr_whorl",
+      "clip": "life",
+      "frame": 1279,
+      "neighbour": "fa29bcb4dd",
+      "middle": "dd7c148466"
+    },
+    {
+      "id": "zephyr_whorl",
+      "clip": "showreel",
+      "frame": 80,
+      "neighbour": "33c8d74988",
+      "middle": "b61fed8303"
+    },
+    {
+      "id": "zephyr_whorl",
+      "clip": "showreel",
+      "frame": 1103,
+      "neighbour": "9662976417",
+      "middle": "dc5a322fd9"
+    },
+    {
+      "id": "zephyr_whorl",
+      "clip": "showreel",
+      "frame": 1139,
+      "neighbour": "e5e590f497",
+      "middle": "fe337e6f66"
+    }
+  ]
+}

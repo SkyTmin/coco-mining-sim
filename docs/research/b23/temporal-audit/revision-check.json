@@ -1,0 +1,12 @@
+{
+  "before": "d6ebb3145d47d6bed85b088ec30b0b2faa82da6f",
+  "after": "957f878c176954e8d8e2230db169258ac7182721",
+  "afterGoldenTree": "a2a49bd316193cae46f760932b89fda16dd97640",
+  "afterFrames": 164975,
+  "afterClips": 1139,
+  "afterWithinClipTriples": 162697,
+  "afterHits": 63,
+  "allHitRecordFieldsEqual": true,
+  "allPaintingHitCountsEqual": true,
+  "afterFullScreenSHA256": "8c07ffd575a2d5c3fe2ff74a8e9cd790a536fcf61a44d0d6ef65ecc56f4ea68e"
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "hz": 2,
+    "substeps": 1,
+    "samples": 48,
+    "max_error": 0.2685762989152458,
+    "peak_at_output": 0.7258443221919624
+  },
+  {
+    "hz": 2,
+    "substeps": 2,
+    "samples": 48,
+    "max_error": 0.12664101094485986,
+    "peak_at_output": 0.8080525487000965
+  },
+  {
+    "hz": 2,
+    "substeps": 4,
+    "samples": 48,
+    "max_error": 0.061870310180489,
+    "peak_at_output": 0.8436481854203552
+  },
+  {
+    "hz": 2,
+    "substeps": 8,
+    "samples": 48,
+    "max_error": 0.030622119079003973,
+    "peak_at_output": 0.8605325209209177
+  },
+  {
+    "hz": 6,
+    "substeps": 1,
+    "samples": 48,
+    "max_error": 14.233443204997032,
+    "peak_at_output": 14.233443199077428
+  },
+  {
+    "hz": 6,
+    "substeps": 2,
+    "samples": 48,
+    "max_error": 0.43560346749719847,
+    "peak_at_output": 0.3155958508279636
+  },
+  {
+    "hz": 6,
+    "substeps": 4,
+    "samples": 48,
+    "max_error": 0.19518957498880032,
+    "peak_at_output": 0.4177850399671884
+  },
+  {
+    "hz": 6,
+    "substeps": 8,
+    "samples": 48,
+    "max_error": 0.09384173324165909,
+    "peak_at_output": 0.43594408827978454
+  },
+  {
+    "hz": 12,
+    "substeps": 1,
+    "samples": 48,
+    "max_error": 7.982562436817088e+46,
+    "peak_at_output": 7.982562436817088e+46
+  },
+  {
+    "hz": 12,
+    "substeps": 2,
+    "samples": 48,
+    "max_error": 135.30290419135247,
+    "peak_at_output": 135.30290419135247
+  },
+  {
+    "hz": 12,
+    "substeps": 4,
+    "samples": 48,
+    "max_error": 0.12635106806568397,
+    "peak_at_output": 0.3155958508279636
+  },
+  {
+    "hz": 12,
+    "substeps": 8,
+    "samples": 48,
+    "max_error": 0.024161878926459157,
+    "peak_at_output": 0.4177850399671884
+  }
+]

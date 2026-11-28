@@ -1,0 +1,1136 @@
+[
+  {
+    "id": "bell_magpie",
+    "clip": "sleep",
+    "frame": 18,
+    "neighbour": "286f088c47",
+    "middle": "36146c1ec6",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 28,
+    "box": [
+      28,
+      78,
+      85,
+      103
+    ]
+  },
+  {
+    "id": "bell_magpie",
+    "clip": "sleep",
+    "frame": 54,
+    "neighbour": "cce841220b",
+    "middle": "66730cbd00",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 35,
+    "box": [
+      26,
+      73,
+      96,
+      104
+    ]
+  },
+  {
+    "id": "bell_magpie",
+    "clip": "showreel",
+    "frame": 1110,
+    "neighbour": "286f088c47",
+    "middle": "36146c1ec6",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 28,
+    "box": [
+      28,
+      78,
+      85,
+      103
+    ]
+  },
+  {
+    "id": "bell_magpie",
+    "clip": "showreel",
+    "frame": 1146,
+    "neighbour": "cce841220b",
+    "middle": "66730cbd00",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 35,
+    "box": [
+      26,
+      73,
+      96,
+      104
+    ]
+  },
+  {
+    "id": "bramble_warden",
+    "clip": "look",
+    "frame": 18,
+    "neighbour": "155b1dc627",
+    "middle": "72a49e8272",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 69,
+    "box": [
+      91,
+      83,
+      114,
+      113
+    ]
+  },
+  {
+    "id": "bramble_warden",
+    "clip": "life",
+    "frame": 102,
+    "neighbour": "0681645505",
+    "middle": "ca21e62dfb",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 68,
+    "box": [
+      75,
+      95,
+      104,
+      123
+    ]
+  },
+  {
+    "id": "garden_chameleon",
+    "clip": "idle",
+    "frame": 18,
+    "neighbour": "3a1086bd23",
+    "middle": "f4f6778bf4",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 26,
+    "box": [
+      47,
+      56,
+      114,
+      92
+    ]
+  },
+  {
+    "id": "garden_chameleon",
+    "clip": "idle",
+    "frame": 54,
+    "neighbour": "e7572e0746",
+    "middle": "e283aec8ef",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 14,
+    "box": [
+      43,
+      53,
+      105,
+      83
+    ]
+  },
+  {
+    "id": "garden_chameleon",
+    "clip": "sleep",
+    "frame": 18,
+    "neighbour": "94703ed744",
+    "middle": "c97158f0fc",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 16,
+    "box": [
+      47,
+      67,
+      106,
+      95
+    ]
+  },
+  {
+    "id": "garden_chameleon",
+    "clip": "sleep",
+    "frame": 54,
+    "neighbour": "2b3fba0645",
+    "middle": "8028e31066",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 17,
+    "box": [
+      50,
+      69,
+      108,
+      90
+    ]
+  },
+  {
+    "id": "garden_chameleon",
+    "clip": "life",
+    "frame": 455,
+    "neighbour": "006973d196",
+    "middle": "5e2d2510ee",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 26,
+    "box": [
+      47,
+      56,
+      114,
+      92
+    ]
+  },
+  {
+    "id": "garden_chameleon",
+    "clip": "life",
+    "frame": 491,
+    "neighbour": "e7572e0746",
+    "middle": "e283aec8ef",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 14,
+    "box": [
+      43,
+      53,
+      105,
+      83
+    ]
+  },
+  {
+    "id": "garden_chameleon",
+    "clip": "life",
+    "frame": 1210,
+    "neighbour": "5159e001b6",
+    "middle": "e6dcab9a1a",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 26,
+    "box": [
+      47,
+      56,
+      114,
+      92
+    ]
+  },
+  {
+    "id": "garden_chameleon",
+    "clip": "showreel",
+    "frame": 88,
+    "neighbour": "3a1086bd23",
+    "middle": "f4f6778bf4",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 26,
+    "box": [
+      47,
+      56,
+      114,
+      92
+    ]
+  },
+  {
+    "id": "garden_chameleon",
+    "clip": "showreel",
+    "frame": 124,
+    "neighbour": "e7572e0746",
+    "middle": "e283aec8ef",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 14,
+    "box": [
+      43,
+      53,
+      105,
+      83
+    ]
+  },
+  {
+    "id": "garden_chameleon",
+    "clip": "showreel",
+    "frame": 1098,
+    "neighbour": "94703ed744",
+    "middle": "c97158f0fc",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 16,
+    "box": [
+      47,
+      67,
+      106,
+      95
+    ]
+  },
+  {
+    "id": "garden_chameleon",
+    "clip": "showreel",
+    "frame": 1134,
+    "neighbour": "2b3fba0645",
+    "middle": "8028e31066",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 17,
+    "box": [
+      50,
+      69,
+      108,
+      90
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "idle",
+    "frame": 18,
+    "neighbour": "11611c6a22",
+    "middle": "794fd7aafe",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 15,
+    "box": [
+      42,
+      45,
+      111,
+      102
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "idle",
+    "frame": 54,
+    "neighbour": "1bc404ee25",
+    "middle": "131894274c",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 16,
+    "box": [
+      41,
+      49,
+      113,
+      101
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "sleep",
+    "frame": 18,
+    "neighbour": "f446a5436f",
+    "middle": "ca237ca936",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 9,
+    "box": [
+      38,
+      57,
+      101,
+      110
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "sleep",
+    "frame": 54,
+    "neighbour": "6132bdab19",
+    "middle": "6cefda3962",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 11,
+    "box": [
+      41,
+      59,
+      102,
+      110
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "fidget_a",
+    "frame": 16,
+    "neighbour": "d6bc0fad2a",
+    "middle": "5ba296dd7f",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 83,
+    "box": [
+      96,
+      82,
+      108,
+      95
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "fidget_a",
+    "frame": 21,
+    "neighbour": "8cb42d3397",
+    "middle": "6a0b99bd82",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 86,
+    "box": [
+      96,
+      77,
+      108,
+      89
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "fidget_b",
+    "frame": 16,
+    "neighbour": "79477b4c57",
+    "middle": "d23ef63323",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 111,
+    "box": [
+      57,
+      92,
+      70,
+      103
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "fidget_b",
+    "frame": 36,
+    "neighbour": "8e55ef09f9",
+    "middle": "9ae5c45349",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 101,
+    "box": [
+      84,
+      90,
+      96,
+      102
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "life",
+    "frame": 369,
+    "neighbour": "d6bc0fad2a",
+    "middle": "5ba296dd7f",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 83,
+    "box": [
+      96,
+      82,
+      108,
+      95
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "life",
+    "frame": 374,
+    "neighbour": "8cb42d3397",
+    "middle": "6a0b99bd82",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 86,
+    "box": [
+      96,
+      77,
+      108,
+      89
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "life",
+    "frame": 415,
+    "neighbour": "11611c6a22",
+    "middle": "794fd7aafe",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 15,
+    "box": [
+      42,
+      45,
+      111,
+      102
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "life",
+    "frame": 451,
+    "neighbour": "1bc404ee25",
+    "middle": "131894274c",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 16,
+    "box": [
+      41,
+      49,
+      113,
+      101
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "life",
+    "frame": 487,
+    "neighbour": "11611c6a22",
+    "middle": "794fd7aafe",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 15,
+    "box": [
+      42,
+      45,
+      111,
+      102
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "life",
+    "frame": 523,
+    "neighbour": "1bc404ee25",
+    "middle": "131894274c",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 16,
+    "box": [
+      41,
+      49,
+      113,
+      101
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "life",
+    "frame": 578,
+    "neighbour": "a0bfb956ad",
+    "middle": "a4ac67f6af",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 354,
+    "box": [
+      34,
+      40,
+      115,
+      108
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "life",
+    "frame": 1085,
+    "neighbour": "79477b4c57",
+    "middle": "d23ef63323",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 111,
+    "box": [
+      57,
+      92,
+      70,
+      103
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "life",
+    "frame": 1105,
+    "neighbour": "8e55ef09f9",
+    "middle": "9ae5c45349",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 101,
+    "box": [
+      84,
+      90,
+      96,
+      102
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "life",
+    "frame": 1135,
+    "neighbour": "11611c6a22",
+    "middle": "794fd7aafe",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 15,
+    "box": [
+      42,
+      45,
+      111,
+      102
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "showreel",
+    "frame": 80,
+    "neighbour": "11611c6a22",
+    "middle": "794fd7aafe",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 15,
+    "box": [
+      42,
+      45,
+      111,
+      102
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "showreel",
+    "frame": 116,
+    "neighbour": "1bc404ee25",
+    "middle": "131894274c",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 16,
+    "box": [
+      41,
+      49,
+      113,
+      101
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "showreel",
+    "frame": 156,
+    "neighbour": "d6bc0fad2a",
+    "middle": "5ba296dd7f",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 83,
+    "box": [
+      96,
+      82,
+      108,
+      95
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "showreel",
+    "frame": 161,
+    "neighbour": "8cb42d3397",
+    "middle": "6a0b99bd82",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 86,
+    "box": [
+      96,
+      77,
+      108,
+      89
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "showreel",
+    "frame": 206,
+    "neighbour": "79477b4c57",
+    "middle": "d23ef63323",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 111,
+    "box": [
+      57,
+      92,
+      70,
+      103
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "showreel",
+    "frame": 226,
+    "neighbour": "8e55ef09f9",
+    "middle": "9ae5c45349",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 101,
+    "box": [
+      84,
+      90,
+      96,
+      102
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "showreel",
+    "frame": 1241,
+    "neighbour": "f446a5436f",
+    "middle": "ca237ca936",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 9,
+    "box": [
+      38,
+      57,
+      101,
+      110
+    ]
+  },
+  {
+    "id": "lunar_plush",
+    "clip": "showreel",
+    "frame": 1277,
+    "neighbour": "6132bdab19",
+    "middle": "6cefda3962",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 11,
+    "box": [
+      41,
+      59,
+      102,
+      110
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "idle",
+    "frame": 18,
+    "neighbour": "2d4fc1e6e6",
+    "middle": "59cd480bc4",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 52,
+    "box": [
+      50,
+      38,
+      107,
+      100
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "sleep",
+    "frame": 18,
+    "neighbour": "d8ac12f7e3",
+    "middle": "3679395f6d",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 16,
+    "box": [
+      61,
+      54,
+      108,
+      108
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "sleep",
+    "frame": 54,
+    "neighbour": "9f3ecac053",
+    "middle": "fb75f94310",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 12,
+    "box": [
+      60,
+      54,
+      105,
+      105
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "life",
+    "frame": 383,
+    "neighbour": "2d4fc1e6e6",
+    "middle": "59cd480bc4",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 52,
+    "box": [
+      50,
+      38,
+      107,
+      100
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "life",
+    "frame": 491,
+    "neighbour": "2d4fc1e6e6",
+    "middle": "59cd480bc4",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 52,
+    "box": [
+      50,
+      38,
+      107,
+      100
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "life",
+    "frame": 609,
+    "neighbour": "2d4fc1e6e6",
+    "middle": "59cd480bc4",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 52,
+    "box": [
+      50,
+      38,
+      107,
+      100
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "life",
+    "frame": 1121,
+    "neighbour": "2d4fc1e6e6",
+    "middle": "59cd480bc4",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 52,
+    "box": [
+      50,
+      38,
+      107,
+      100
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "life",
+    "frame": 1275,
+    "neighbour": "2d4fc1e6e6",
+    "middle": "59cd480bc4",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 52,
+    "box": [
+      50,
+      38,
+      107,
+      100
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "showreel",
+    "frame": 94,
+    "neighbour": "2d4fc1e6e6",
+    "middle": "59cd480bc4",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 52,
+    "box": [
+      50,
+      38,
+      107,
+      100
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "showreel",
+    "frame": 903,
+    "neighbour": "d8ac12f7e3",
+    "middle": "3679395f6d",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 16,
+    "box": [
+      61,
+      54,
+      108,
+      108
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "showreel",
+    "frame": 939,
+    "neighbour": "9f3ecac053",
+    "middle": "fb75f94310",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 12,
+    "box": [
+      60,
+      54,
+      105,
+      105
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "showreel",
+    "frame": 1204,
+    "neighbour": "d8ac12f7e3",
+    "middle": "3679395f6d",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 16,
+    "box": [
+      61,
+      54,
+      108,
+      108
+    ]
+  },
+  {
+    "id": "opal_skater",
+    "clip": "showreel",
+    "frame": 1240,
+    "neighbour": "9f3ecac053",
+    "middle": "fb75f94310",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 12,
+    "box": [
+      60,
+      54,
+      105,
+      105
+    ]
+  },
+  {
+    "id": "zephyr_whorl",
+    "clip": "idle",
+    "frame": 18,
+    "neighbour": "13e86ad650",
+    "middle": "e1c702bff7",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 20,
+    "box": [
+      51,
+      53,
+      84,
+      97
+    ]
+  },
+  {
+    "id": "zephyr_whorl",
+    "clip": "sleep",
+    "frame": 18,
+    "neighbour": "9662976417",
+    "middle": "dc5a322fd9",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 4,
+    "box": [
+      55,
+      67,
+      70,
+      99
+    ]
+  },
+  {
+    "id": "zephyr_whorl",
+    "clip": "sleep",
+    "frame": 54,
+    "neighbour": "e5e590f497",
+    "middle": "fe337e6f66",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 10,
+    "box": [
+      47,
+      62,
+      76,
+      103
+    ]
+  },
+  {
+    "id": "zephyr_whorl",
+    "clip": "life",
+    "frame": 1279,
+    "neighbour": "fa29bcb4dd",
+    "middle": "dd7c148466",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 20,
+    "box": [
+      51,
+      53,
+      84,
+      97
+    ]
+  },
+  {
+    "id": "zephyr_whorl",
+    "clip": "showreel",
+    "frame": 80,
+    "neighbour": "33c8d74988",
+    "middle": "b61fed8303",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 20,
+    "box": [
+      51,
+      53,
+      84,
+      97
+    ]
+  },
+  {
+    "id": "zephyr_whorl",
+    "clip": "showreel",
+    "frame": 1103,
+    "neighbour": "9662976417",
+    "middle": "dc5a322fd9",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 4,
+    "box": [
+      55,
+      67,
+      70,
+      99
+    ]
+  },
+  {
+    "id": "zephyr_whorl",
+    "clip": "showreel",
+    "frame": 1139,
+    "neighbour": "e5e590f497",
+    "middle": "fe337e6f66",
+    "w": 176,
+    "h": 144,
+    "fingerprints": true,
+    "neighboursIdentical": true,
+    "changed": 10,
+    "box": [
+      47,
+      62,
+      76,
+      103
+    ]
+  }
+]

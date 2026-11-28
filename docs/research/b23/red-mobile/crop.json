@@ -1,0 +1,47 @@
+[
+  {
+    "id": "penguin_marshal",
+    "clip": "idle",
+    "frame": 4,
+    "native": [
+      176,
+      144
+    ],
+    "layer": [
+      176,
+      144
+    ],
+    "all": 2638,
+    "inside": 1444
+  },
+  {
+    "id": "threshold_keeper",
+    "clip": "look",
+    "frame": 2,
+    "native": [
+      548,
+      348
+    ],
+    "layer": [
+      548,
+      348
+    ],
+    "all": 9522,
+    "inside": 25
+  },
+  {
+    "id": "pocket_magnet",
+    "clip": "prepare_walk",
+    "frame": 1,
+    "native": [
+      176,
+      144
+    ],
+    "layer": [
+      176,
+      144
+    ],
+    "all": 3088,
+    "inside": 1531
+  }
+]

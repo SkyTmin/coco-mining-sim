@@ -33,7 +33,7 @@ jobs:
           "$py" -m pip install Pillow==13.0.0
           bash "$base/fresh-author/reproduce.sh" "$root" "$dest/fresh-author"
           phases=$(seq -s, 0 2 70)
-          "$py" "$base/fresh-author/inspect.py" "$dest/fresh-author/episode.gif" "$dest/fresh-author/every-second.png" "$phases" 6
+          "$py" -I "$base/fresh-author/inspect.py" "$dest/fresh-author/episode.gif" "$dest/fresh-author/every-second.png" "$phases" 6
           git worktree add --detach "$RUNNER_TEMP/before" d6ebb3145d47d6bed85b088ec30b0b2faa82da6f
           git worktree add --detach "$RUNNER_TEMP/after" cced294
           for rev in before after; do ln -s "$root/tools/creatures/node_modules" "$RUNNER_TEMP/$rev/tools/creatures/node_modules"; done

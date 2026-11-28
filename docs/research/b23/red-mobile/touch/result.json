@@ -1,0 +1,87 @@
+{
+  "viewport": [
+    390,
+    844
+  ],
+  "devicePixelRatio": 2,
+  "browser": "156.0.8078.79",
+  "samples": [
+    {
+      "frame": 123,
+      "clip": "trick",
+      "bright": 0,
+      "width": 292,
+      "height": 244
+    },
+    {
+      "frame": 124,
+      "clip": "trick",
+      "bright": 0,
+      "width": 292,
+      "height": 244
+    },
+    {
+      "frame": 125,
+      "clip": "trick",
+      "bright": 0,
+      "width": 292,
+      "height": 244
+    },
+    {
+      "frame": 126,
+      "clip": "trick",
+      "bright": 0,
+      "width": 292,
+      "height": 244
+    },
+    {
+      "frame": 127,
+      "clip": "trick",
+      "bright": 0,
+      "width": 292,
+      "height": 244
+    },
+    {
+      "frame": 128,
+      "clip": "trick",
+      "bright": 0,
+      "width": 292,
+      "height": 244
+    },
+    {
+      "frame": 129,
+      "clip": "trick",
+      "bright": 3,
+      "width": 292,
+      "height": 244
+    },
+    {
+      "frame": 130,
+      "clip": "trick",
+      "bright": 84,
+      "width": 292,
+      "height": 244
+    },
+    {
+      "frame": 131,
+      "clip": "trick",
+      "bright": 244,
+      "width": 292,
+      "height": 244
+    },
+    {
+      "frame": 31,
+      "clip": "turn",
+      "bright": 0,
+      "width": 292,
+      "height": 244
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "final": {
+    "id": "moon_magician",
+    "clip": "turn",
+    "frame": "35"
+  }
+}

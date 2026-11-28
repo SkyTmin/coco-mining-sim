@@ -1,0 +1,119 @@
+{
+  "browser": "156.0.8078.79",
+  "artificial_image_delay_ms": 200,
+  "share": {
+    "selection_before_copy": "pocket_magnet",
+    "copied_address": "/?pet=moon_magician",
+    "opened_copied": "moon_magician",
+    "opened_explicit": "pocket_magnet"
+  },
+  "closed_advance_calls_in_one_sec": {
+    "moon_magician": 60
+  },
+  "switches": [
+    {
+      "id": "kettle_crab",
+      "at_ms": 1
+    },
+    {
+      "id": "ember_panda",
+      "at_ms": 74
+    },
+    {
+      "id": "moon_magician",
+      "at_ms": 145
+    },
+    {
+      "id": "pocket_magnet",
+      "at_ms": 223
+    }
+  ],
+  "switched_to": "pocket_magnet",
+  "memory_before": {
+    "open": 14266928,
+    "decoded": 7,
+    "bytes": 73578800,
+    "cancelled": 0,
+    "actorPeak": 54607872
+  },
+  "memory_after": {
+    "open": 14967312,
+    "decoded": 20,
+    "bytes": 201289184,
+    "cancelled": 0,
+    "actorPeak": 100581376
+  },
+  "downloads": [
+    {
+      "url": "/atlases/kettle_crab/atlas.json",
+      "start": 5,
+      "end": 20
+    },
+    {
+      "url": "/atlases/kettle_crab/behavior.json",
+      "start": 41,
+      "end": 53
+    },
+    {
+      "url": "/atlases/kettle_crab/tiles-0.png",
+      "start": 41,
+      "end": 267
+    },
+    {
+      "url": "/atlases/ember_panda/atlas.json",
+      "start": 79,
+      "end": 93
+    },
+    {
+      "url": "/atlases/frames/rare/atlas.json",
+      "start": 110,
+      "end": 132
+    },
+    {
+      "url": "/atlases/ember_panda/behavior.json",
+      "start": 111,
+      "end": 132
+    },
+    {
+      "url": "/atlases/ember_panda/tiles-1.png",
+      "start": 111,
+      "end": 356
+    },
+    {
+      "url": "/atlases/ember_panda/tiles-0.png",
+      "start": 111,
+      "end": 357
+    },
+    {
+      "url": "/atlases/frames/rare/tiles-0.png",
+      "start": 142,
+      "end": 366
+    },
+    {
+      "url": "/atlases/moon_magician/atlas.json",
+      "start": 151,
+      "end": 164
+    },
+    {
+      "url": "/atlases/moon_magician/behavior.json",
+      "start": 203,
+      "end": 208
+    },
+    {
+      "url": "/atlases/moon_magician/p-2.webp",
+      "start": 220,
+      "end": 447
+    },
+    {
+      "url": "/atlases/pocket_magnet/atlas.json",
+      "start": 235,
+      "end": 268
+    },
+    {
+      "url": "/atlases/pocket_magnet/behavior.json",
+      "start": 410,
+      "end": 415
+    }
+  ],
+  "errors": []
+}
