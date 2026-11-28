@@ -1,0 +1,120 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Б24 В3 · изолированная проверка Canvas 2D</title>
+<pre id="result"></pre>
+<script>
+"use strict";
+const events = [{tick: 7, mark: 1}, {tick: 14, mark: 3}, {tick: 31, mark: 5}];
+function advance(world, target) {
+  if (target < world.tick) throw Error("Reverse seek requires a checkpoint");
+  for (const event of events) {
+    if (event.tick > world.tick && event.tick <= target) world.marks.push(event.mark);
+  }
+  world.tick = target;
+}
+function replay(stops) {
+  const world = {tick: 0, marks: []};
+  for (const t of stops) advance(world, t);
+  return world;
+}
+const complete = replay([64]);
+const partial = JSON.parse(JSON.stringify(replay([7, 14])));
+advance(partial, 64);
+if (JSON.stringify(complete) !== JSON.stringify(partial) ||
+    JSON.stringify(complete) !== JSON.stringify(replay([1, 7, 7, 8, 19, 30, 31, 64])) ||
+    complete.marks.join() !== "1,3,5") throw Error("Lost or duplicate mark");
+
+function surface(w, h) {
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  return canvas.getContext("2d", {willReadFrequently: true});
+}
+function readMarks(world, clip) {
+  const ctx = surface(12, 4);
+  ctx.fillStyle = clip === "idle" ? "#aaa" : "#555";
+  ctx.fillRect(0, 0, 12, 1);
+  ctx.fillStyle = "#f00";
+  for (const mark of world.marks) ctx.fillRect(mark, 2, 1, 1);
+  return [...ctx.getImageData(0, 2, 12, 1).data].filter((_, i) => i % 4 === 0);
+}
+const afterIdle = readMarks(complete, "idle"), afterTurn = readMarks(partial, "turn");
+if (afterIdle.join() !== afterTurn.join() ||
+    afterTurn.filter(value => value === 255).length !== 3 ||
+    readMarks(replay([0]), "turn").some(value => value)) throw Error("Wrong visible marks");
+
+function scene(w, h) {
+  const ctx = surface(w, h);
+  const panels = Array.from({length: 3}, (_, i) => {
+    const p = surface(w + 16, h);
+    p.fillStyle = ["#364473", "#416c75", "#938959"][i];
+    p.fillRect(0, (i * h / 3) | 0, w + 16, h - ((i * h / 3) | 0));
+    p.fillStyle = ["#8096a1", "#70927f", "#bca566"][i];
+    for (let x = 4; x < w; x += 13) p.fillRect(x, ((i + 0.5) * h / 3) | 0, 2, 2);
+    return p.canvas;
+  });
+  function paint(x, parallax) {
+    for (let i = 0; i < panels.length; i++) {
+      const shift = parallax ? Math.round(x * [0.25, 0.5, 1][i]) : 0;
+      ctx.drawImage(panels[i], -shift, 0);
+    }
+    ctx.fillStyle = "#ad673f";
+    ctx.fillRect(w >> 1, h >> 1, 12, 13);
+  }
+  // Two authored normal directions for flat synthetic regions.
+  function lighting(x) {
+    const pixels = ctx.getImageData(0, 0, w, h);
+    const lx = w * 0.5 + x, ly = h * 0.5;
+    for (let y = 0; y < h; y++) {
+      for (let px = 0; px < w; px++) {
+        const i = (y * w + px) * 4;
+        const actor = px >= (w >> 1) && px < (w >> 1) + 12 && y >= (h >> 1) && y < (h >> 1) + 13;
+        const dx = lx - px, dy = ly - y, z = 12;
+        const distance = Math.hypot(dx, dy, z);
+        const dot = Math.max(0, (dx * (actor ? -0.6 : 0.6) + z * 0.8) / distance);
+        const gain = 0.48 + dot / (1 + distance / 48);
+        for (let c = 0; c < 3; c++) pixels.data[i+c] *= gain;
+      }
+    }
+    ctx.putImageData(pixels, 0, 0);
+  }
+  function sample(x) {
+    paint(0, false); lighting(x);
+    return [ctx.getImageData((w>>1)+2,(h>>1)+2,1,1).data[0],
+            ctx.getImageData((w>>1)-2,(h>>1)+2,1,1).data[0]];
+  }
+  function bench(mode) {
+    const blocks = [];
+    let checksum = 0;
+    for (let series = 0; series < 10; series++) {
+      const t = performance.now();
+      for (let frame = 0; frame < 10; frame++) {
+        paint(frame, mode === "parallax");
+        if (mode === "light") lighting(frame-5);
+        // Force completion for every mode and sample the same point.
+        checksum += ctx.getImageData(w>>1,h>>1,1,1).data[0];
+      }
+      if (series) blocks.push((performance.now()-t)/10);
+    }
+    blocks.sort((a,b) => a-b);
+    return {medianMs: +blocks[4].toFixed(3), maxBlockMs:+blocks[8].toFixed(3), checksum};
+  }
+  function markers(cameraX) {
+    paint(cameraX, true);
+    return [0, 1, 2].map((layer) => {
+      const y = ((layer + 0.5) * h / 3) | 0;
+      const red = [128, 112, 188][layer];
+      const scan = ctx.getImageData(20, y, 13, 1).data;
+      for (let p = 0; p < scan.length; p += 4) if (scan[p] === red) return 20 + p / 4;
+      return null;
+    });
+  }
+  const nearFar = [markers(0), markers(8)];
+  if (nearFar[0].join() !== "30,30,30" || nearFar[1].join() !== "28,26,22") throw Error("Wrong parallax phase");
+  return {size:[w,h], markersAt0And8:nearFar, lightsLeftRight:[sample(-12), sample(12)], flat:bench("flat"),
+          parallax:bench("parallax"), light:bench("light"), cpuRGBABytes:w*h*4};
+}
+const report = {world:complete, visibleMarks:afterTurn, snapshotBytes:new TextEncoder().encode(JSON.stringify(complete)).length,
+                browser:navigator.userAgent, results:[[176,144],[292,244]].map(([w,h])=>scene(w,h))};
+document.getElementById("result").textContent = JSON.stringify(report);
+</script>

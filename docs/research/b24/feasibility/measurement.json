@@ -1,0 +1,116 @@
+{
+  "world": {
+    "tick": 64,
+    "marks": [
+      1,
+      3,
+      5
+    ]
+  },
+  "visibleMarks": [
+    0,
+    255,
+    0,
+    255,
+    0,
+    255,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "snapshotBytes": 27,
+  "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+  "results": [
+    {
+      "size": [
+        176,
+        144
+      ],
+      "markersAt0And8": [
+        [
+          30,
+          30,
+          30
+        ],
+        [
+          28,
+          26,
+          22
+        ]
+      ],
+      "lightsLeftRight": [
+        [
+          204,
+          42
+        ],
+        [
+          113,
+          77
+        ]
+      ],
+      "flat": {
+        "medianMs": 0.04,
+        "maxBlockMs": 0.09,
+        "checksum": 17300
+      },
+      "parallax": {
+        "medianMs": 0.07,
+        "maxBlockMs": 0.19,
+        "checksum": 17300
+      },
+      "light": {
+        "medianMs": 1.75,
+        "maxBlockMs": 2.33,
+        "checksum": 19330
+      },
+      "cpuRGBABytes": 101376
+    },
+    {
+      "size": [
+        292,
+        244
+      ],
+      "markersAt0And8": [
+        [
+          30,
+          30,
+          30
+        ],
+        [
+          28,
+          26,
+          22
+        ]
+      ],
+      "lightsLeftRight": [
+        [
+          204,
+          42
+        ],
+        [
+          113,
+          77
+        ]
+      ],
+      "flat": {
+        "medianMs": 0.08,
+        "maxBlockMs": 0.13,
+        "checksum": 17300
+      },
+      "parallax": {
+        "medianMs": 0.08,
+        "maxBlockMs": 0.09,
+        "checksum": 17300
+      },
+      "light": {
+        "medianMs": 5.67,
+        "maxBlockMs": 6.24,
+        "checksum": 19330
+      },
+      "cpuRGBABytes": 284992
+    }
+  ]
+}
