@@ -1,0 +1,39 @@
+$ node --import tsx studio/ws.ts profile astral_seer idle
+astral_seer idle: 8.9 s · composes 144 (history 0), rasters 145 (wasted 0)
+  stages: rig 25% · gif 23% · compose 12% · io 12% · scene 8% · other 7% · gc 5% · skin 5% · png 3% · fx 0%
+  functions: blit engine.ts 11% · writeSync native 10% · lzwEncode gifenc.js 8% · (anonymous) f11-mobkit.ts 8% · reducePalette render-io.ts 8% · (anonymous) f15-rig.ts 8% · (garbage collector) native 4% · renderRig f15-rig.ts 4%
+
+$ node --import tsx studio/ws.ts profile pocket_magnet idle
+pocket_magnet idle: 2.3 s · composes 144 (history 0), rasters 145 (wasted 0)
+  stages: gif 23% · compose 23% · rig 22% · other 15% · gc 8% · io 4% · skin 4% · fx 1% · scene 1%
+  functions: blit engine.ts 17% · (anonymous) f15-rig.ts 12% · lzwEncode gifenc.js 10% · renderRig f15-rig.ts 6% · update native 5% · reducePalette render-io.ts 5% · compose engine.ts 4% · indexed render-io.ts 4%
+
+$ node --import tsx studio/ws.ts profile eclipse_drake idle
+eclipse_drake idle: 24.3 s · composes 144 (history 0), rasters 145 (wasted 0)
+  stages: rig 23% · gif 17% · compose 16% · scene 11% · io 11% · skin 11% · other 4% · gc 4% · png 3% · fx 0%
+  functions: (anonymous) f15-rig.ts 11% · blit engine.ts 11% · writeSync native 10% · lzwEncode gifenc.js 10% · renderRig f15-rig.ts 8% · compose engine.ts 4% · vnoise sun_observatory.ts 3% · pat surface-work.ts 3%
+
+$ node --import tsx studio/ws.ts profile ember_panda idle
+ember_panda idle: 4.2 s · composes 144 (history 0), rasters 145 (wasted 0)
+  stages: rig 25% · gif 23% · compose 16% · skin 10% · other 10% · scene 8% · gc 5% · io 2% · fx 0%
+  functions: blit engine.ts 14% · (anonymous) f15-rig.ts 13% · lzwEncode gifenc.js 11% · renderRig f15-rig.ts 5% · reducePalette render-io.ts 4% · post node:inspector 4% · (garbage collector) native 4% · indexed render-io.ts 3%
+
+$ node --import tsx studio/ws.ts profile bun_panda idle
+bun_panda idle: 18.4 s · composes 144 (history 0), rasters 145 (wasted 0)
+  stages: rig 32% · gif 19% · scene 18% · compose 18% · gc 6% · other 4% · skin 1% · io 1% · fx 1%
+  functions: (anonymous) f15-rig.ts 15% · blit engine.ts 13% · lzwEncode gifenc.js 12% · renderRig f15-rig.ts 10% · (anonymous) tea_kitchen.ts 9% · vnoise tea_kitchen.ts 4% · custom_gc native 4% · projectFigure figure.ts 4%
+
+$ node --import tsx studio/ws.ts profile crater_titan idle
+crater_titan idle: 8.3 s · composes 144 (history 0), rasters 145 (wasted 0)
+  stages: rig 30% · gif 14% · compose 14% · io 13% · skin 11% · other 9% · gc 5% · png 4% · scene 1% · fx 0%
+  functions: (anonymous) f15-rig.ts 14% · blit engine.ts 12% · writeSync native 11% · lzwEncode gifenc.js 9% · (anonymous) relief-material.ts 5% · fill2 f11-mobkit.ts 5% · renderRig f15-rig.ts 5% · pat crater_titan.ts 4%
+
+$ node --import tsx studio/ws.ts profile kettle_crab idle
+kettle_crab idle: 3.2 s · composes 144 (history 0), rasters 262 (wasted 0)
+  stages: rig 31% · skin 15% · gif 13% · compose 13% · gc 11% · other 10% · scene 4% · io 2%
+  functions: (anonymous) f15-rig.ts 12% · renderRig f15-rig.ts 11% · blit engine.ts 10% · (garbage collector) native 8% · lzwEncode gifenc.js 7% · mark surface-work.ts 4% · (anonymous) kettle_crab-skin.ts 4% · fill2 f11-mobkit.ts 4%
+
+$ node --import tsx studio/ws.ts profile moon_magician idle
+moon_magician idle: 8.3 s · composes 144 (history 0), rasters 145 (wasted 0)
+  stages: gif 31% · rig 24% · compose 15% · scene 10% · skin 7% · other 6% · gc 5% · io 1% · fx 0%
+  functions: blit engine.ts 13% · reducePalette render-io.ts 13% · (anonymous) f15-rig.ts 10% · lzwEncode gifenc.js 9% · add render-io.ts 5% · renderRig f15-rig.ts 4% · (garbage collector) native 4% · indexed render-io.ts 4%
