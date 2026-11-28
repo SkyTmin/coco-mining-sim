@@ -11,6 +11,7 @@ import { maskOf, maskIoU, type BodyMask } from '../tech-metrics';
 import type { Creature, Scene, Border, XY } from '../types';
 import type { Px } from '../rig/px';
 import { captureRig } from './capture';
+import { frameRanges as ranges, FxFrameGate, scanFxClip, type FxIssue } from './fx-gate';
 import { baselineOf, worstClip, type ClipAllow, type ClipBaseline } from './clip';
 import { visibleEyePixels, visibleOwnedPixels, viewBaseline, worstGone, type ViewBaseline } from './visibility';
 
@@ -21,7 +22,7 @@ export interface Painting {
 }
 export interface Finding {
   anim: string;
-  kind: ContactIssue | 'clip' | 'thin-clip' | 'jump' | 'hidden-contact' | 'weak-impact' | 'end-pop' | 'foot-slide' | 'part-gone';
+  kind: ContactIssue | FxIssue | 'clip' | 'thin-clip' | 'jump' | 'hidden-contact' | 'weak-impact' | 'end-pop' | 'foot-slide' | 'part-gone';
   /** errors fail the gate; warnings are listed for the author and the critic. */
   level: 'error' | 'warn';
   frames: number[];
@@ -73,16 +74,6 @@ const median = (v: number[]) => {
   const s = [...v].sort((a, b) => a - b);
   return s[s.length >> 1];
 };
-function ranges(frames: number[]) {
-  const out: string[] = [];
-  for (let i = 0; i < frames.length; i++) {
-    let j = i;
-    while (j + 1 < frames.length && frames[j + 1] === frames[j] + 1) j++;
-    out.push(i === j ? String(frames[i]) : frames[i] + '–' + frames[j]);
-    i = j;
-  }
-  return out.join(', ');
-}
 export function skipped(cfg: StudioConfig, kind: Finding['kind'], anim: string, frame: number) {
   return (cfg.skip?.[kind] ?? []).some((rule) => {
     const [a, span] = rule.split(':');
@@ -162,6 +153,7 @@ export function sampleAnimation(
   anim: string,
   cfg: StudioConfig = {},
   onFrame?: (n: number, frame: ReturnType<typeof compose>, sample: FrameSample) => void,
+  fxGate?: FxFrameGate,
 ): FrameSample[] {
   const { c, s, b } = p;
   const spec = c.animations[anim];
@@ -180,7 +172,10 @@ export function sampleAnimation(
     for (const contact of techniqueContacts(technique))
       if (contact.projectile) flights.set(contact.projectile, contact.frame);
   for (let n = 0; n < count; n++) {
-    const { result: f, rig } = captureRig(() => traceMaterials(seen, () => compose(c, s, b, anim, n / 24)));
+    fxGate?.begin();
+    const start = fxGate ? performance.now() : 0;
+    const { result: f, rig } = captureRig(() => traceMaterials(seen, () => compose(fxGate?.creature ?? c, s, b, anim, n / 24)));
+    fxGate?.frame(n, f, performance.now() - start);
     const contactIssues: NonNullable<FrameSample['contactIssues']> = [];
     const births = new Map<string, ReturnType<typeof birthDistance>>();
     const bodyRig = f.body.rig;
@@ -412,11 +407,20 @@ export function footSlide(p: Painting, cfg: StudioConfig = {}, anims = ['walk_e'
   return out;
 }
 
-export function checkCreature(p: Painting, anims = defaultAnims(p.c), cfg = studioConfig(p.c.id), walks = true) {
+export function checkCreature(p: Painting, anims = defaultAnims(p.c), cfg = studioConfig(p.c.id), walks = true,
+  fxKeys?: Map<string, Set<number>>, allClips = false) {
   restCache = new WeakMap();
   viewCache = new WeakMap();
   const all: Finding[] = [];
-  for (const a of anims) all.push(...findings(p, a, sampleAnimation(p, a, cfg), cfg));
+  for (const a of anims) {
+    const fxGate = fxKeys && new FxFrameGate(p, a, fxKeys.get(a));
+    all.push(...findings(p, a, sampleAnimation(p, a, cfg, undefined, fxGate), cfg));
+    if (fxGate) all.push(...fxGate.findings());
+  }
+  if (fxKeys && allClips) for (const a of Object.keys(p.c.animations)) {
+    if (!anims.includes(a) && a !== 'life' && a !== 'showreel')
+      all.push(...scanFxClip(new FxFrameGate(p, a, fxKeys.get(a))));
+  }
   if (walks) all.push(...footSlide(p, cfg));
   return all;
 }

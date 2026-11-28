@@ -110,6 +110,7 @@ def pack_actor(source, dest, ident, meta, scene, rarity, border=None):
     has_behavior = (source / 'behavior.json').is_file()
     names = list(meta['animations'])
     clips = {}
+    delays = {}
     rays = {}
     water = {}
     sprites = Atlas()
@@ -138,6 +139,14 @@ def pack_actor(source, dest, ident, meta, scene, rarity, border=None):
             if backdrop.is_file():
                 with Image.open(backdrop) as image:
                     row.append(sprites.trim(image.convert('RGBA')))
+            light = directory / 'light' / filename
+            if light.is_file():
+                # Slots 9 and 10 already belong to the over-rail and backdrop sprites.
+                row.extend([None] * (11 - len(row)))
+                with Image.open(light) as image:
+                    row.append(sprites.trim(image.convert('RGBA')))
+            if sample.get('sceneDelay'):
+                delays.setdefault(name, {})[n] = sample['sceneDelay']
             if sample.get('waterContacts'):
                 water.setdefault(name, {})[n] = sample['waterContacts']
             if sample.get('sceneryRays'):
@@ -152,6 +161,7 @@ def pack_actor(source, dest, ident, meta, scene, rarity, border=None):
         'field': meta['field'], 'thickness': meta['thickness'], 'origin': origin, 'scene': scene,
         'actors': sprites.write(dest, 'sprites'), 'clips': clips,
         **({'sceneryRays': rays} if rays else {}),
+        **({'sceneDelays': delays} if delays else {}),
         **({'water': {'rows': meta['waterRows'], 'clips': water}} if water else {}),
         **({'border': border} if border else {}),
         'animations': {name: meta['animations'][name] for name in names}, 'behavior': has_behavior,

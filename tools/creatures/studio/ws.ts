@@ -17,11 +17,14 @@
 // check/gate/snap on several creatures run in parallel child processes (--jobs N, default = cores, at most one per 4.5 GB);
 // heavy runs (render, snap, check/gate of several) wait for each other instead of running out of memory together;
 // gate remembers a green result per creature and skips it while none of its inputs changed (--force re-runs).
+import { createHash } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadPainting } from '../render';
 import { checkCreature, defaultAnims, studioConfig } from './checks';
 import { defaultJobs, heavyLock } from './lock';
+import { authoredKeys, fxFinding } from './fx-gate';
+import { fxSourceIssues } from './fx-sources';
 
 export const pilotIds = [
   'bramble_warden',
@@ -49,13 +52,16 @@ function jobsOf(args: string[]) {
 const tools = join(import.meta.dirname, '..');
 const studioDir = join(tools, '.studio');
 /** Everything a gate result depends on: render inputs, the studio code, the creature's rules, the references. */
-async function gateKey(id: string) {
-  const { inputsOf, inputHash } = await import('./cache');
+async function gateKey(id: string, lint?: string[]) {
+  const { inputsOf, inputHash, creatureIds } = await import('./cache');
   const { c } = await loadPainting(id);
   const { poseRefInputs } = await import('./ref');
-  const studio = ['ref', 'capture', 'checks', 'clip', 'contact-audit', 'gate', 'pet-gate', 'visibility', 'ws'].map((f) => join(tools, 'studio', f + '.ts'));
+  const studio = ['ref', 'capture', 'checks', 'clip', 'contact-audit', 'gate', 'pet-gate', 'visibility', 'fx-gate', 'fx-ink', 'fx-sources', 'ws'].map((f) => join(tools, 'studio', f + '.ts'));
   const extra = [join(tools, '../../assets/creatures', id, 'meta.json'), join(tools, 'studio', 'card.ts'), join(tools, 'studio', 'card.schema.json'), join(tools, 'c', id + '.studio.json'), join(tools, '../../docs/reports/creatures/pilot-3/reference/tech-metrics.json')];
-  return inputHash([...new Set([...inputsOf(id, c.theme, c.rarity), ...studio, ...poseRefInputs(id), ...extra.filter((f) => existsSync(f))])]);
+  const renderInputs = inputsOf(id, c.theme, c.rarity);
+  const renderAndChecks = inputHash([...new Set([...renderInputs, ...studio, ...poseRefInputs(id), ...extra.filter((f) => existsSync(f))])]);
+  // The lint scans the five authoring trees. An unrelated, clean source edit must not launch every painting's gate again.
+  return createHash('sha256').update(renderAndChecks).update(JSON.stringify(lint ?? fxSourceIssues(id, creatureIds(), () => new Set(renderInputs)))).digest('hex').slice(0, 16);
 }
 
 async function check(args: string[], strict: boolean) {
@@ -86,7 +92,16 @@ async function check(args: string[], strict: boolean) {
   }
   // A green gate is remembered: an unchanged creature is not checked again (the slowest step of a batch).
   const cacheable = strict && list.length === 1 && !animFilter.length && !args.includes('--force');
-  const key = strict && list.length === 1 && !animFilter.length ? await gateKey(list[0]) : '';
+  const lint = new Map<string, string[]>();
+  if (strict) {
+    const { creatureIds, inputsOf } = await import('./cache');
+    const known = creatureIds();
+    for (const id of list) {
+      const { c } = await loadPainting(id);
+      lint.set(id, fxSourceIssues(id, known, () => new Set(inputsOf(id, c.theme, c.rarity))));
+    }
+  }
+  const key = strict && list.length === 1 && !animFilter.length ? await gateKey(list[0], lint.get(list[0])) : '';
   const stamp = join(studioDir, 'gate-' + list[0] + '.json');
   if (cacheable && existsSync(stamp)) {
     const old = JSON.parse(readFileSync(stamp, 'utf8'));
@@ -105,7 +120,10 @@ async function check(args: string[], strict: boolean) {
     const p = await loadPainting(id);
     const anims = animFilter.length ? animFilter : defaultAnims(p.c);
     const t0 = Date.now();
-    const found = checkCreature(p, anims, studioConfig(id), !animFilter.length || animFilter.some((a) => a.startsWith('walk')));
+    const config = studioConfig(id);
+    const keys = strict ? await authoredKeys(p.c, config) : undefined;
+    const found = checkCreature(p, anims, config, !animFilter.length || animFilter.some((a) => a.startsWith('walk')), keys, !animFilter.length);
+    for (const issue of lint.get(id) ?? []) found.push(fxFinding(id, 'source', 'unseeded', [], issue));
     const sec = ((Date.now() - t0) / 1000).toFixed(1);
     const errors = found.filter((f) => f.level === 'error'),
       warns = found.length - errors.length;
@@ -113,6 +131,10 @@ async function check(args: string[], strict: boolean) {
     else {
       failed++;
       console.log(`✗ ${id}: ${errors.length} errors, ${warns} warnings in ${anims.length} animations (${sec} s)`);
+    }
+    if (strict) {
+      const clips = animFilter.length ? anims : Object.keys(p.c.animations).filter(a => a !== 'life' && a !== 'showreel');
+      console.log(`  ${id}: FX gate checked ${clips.length} source clips and authored code`);
     }
     const quiet = args.includes('--errors');
     for (const f of found)
@@ -235,6 +257,16 @@ switch (cmd) {
     await refCommand(rest);
     break;
   }
+  case 'drafts': {
+    const { draftsCommand } = await import('./fx-sheets');
+    await draftsCommand(rest);
+    break;
+  }
+  case 'against': {
+    const { againstCommand } = await import('./fx-sheets');
+    await againstCommand(rest);
+    break;
+  }
   case 'sheet': {
     const { sheetCommand } = await import('./sheet');
     await sheetCommand(rest);
@@ -261,6 +293,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: npm run ws -- new|check|gate|review|context|help|detail|baseline|probe|seam|clip|sheet|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
+    console.log('usage: npm run ws -- new|check|gate|review|context|help|detail|baseline|probe|seam|clip|sheet|drafts|against|ref|export-ref|sheet-lint|label|render|snap … (see studio/README.md)');
     process.exitCode = cmd ? 1 : 0;
 }

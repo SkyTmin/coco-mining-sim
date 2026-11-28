@@ -5,7 +5,7 @@ import { spawn } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
 import { bodySources } from '../bodies/sources';
 import type { CreatureCard } from './card';
-import { join, relative } from 'node:path';
+import { basename, join, relative, dirname, resolve } from 'node:path';
 
 const tools = join(import.meta.dirname, '..');
 const assets = join(tools, '../../assets/creatures');
@@ -55,9 +55,32 @@ export function inputsOf(id: string, theme: string, rarity: string) {
     // checker settings (clipAllow, skip) do not change a single pixel: the gate key adds them itself
     .filter((f) => !f.endsWith('.studio.json'))
     .map((f) => join(tools, 'c', f));
+  // Experiments may reuse another painting's authored body, clocks and props.
+  const creatureDir = join(tools, 'c');
+  const authors = parent ? [id, parent] : [id];
+  const imported = new Set(own.filter(file => {
+    const name = basename(file);
+    return authors.some(author => name.startsWith(author + '.') || name.startsWith(author + '-'));
+  }));
+  for (const file of imported) {
+    if (!file.endsWith('.ts')) continue;
+    const text = readFileSync(file, 'utf8');
+    for (const match of text.matchAll(/\bfrom\s*['"](\.[^'"]+)['"]/g)) {
+      const path = resolve(dirname(file), match[1]);
+      const target = /\.(ts|json)$/.test(path) ? path : path + '.ts';
+      if (dirname(target) !== creatureDir || !existsSync(target)) continue;
+      imported.add(target);
+      // A painting module loads its matching card at runtime, outside the import graph.
+      if (target.endsWith('.ts')) {
+        const sourceCard = target.slice(0, -3) + '.card.json';
+        if (existsSync(sourceCard)) imported.add(sourceCard);
+      }
+    }
+  }
   const files = [
     ...walk(tools),
     ...own,
+    ...imported,
     join(tools, 'viewer/behavior.mjs'),
     join(tools, 'viewer/scenery.mjs'),
     join(tools, 'viewer/water.mjs'),

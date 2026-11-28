@@ -2,6 +2,7 @@ import type { Rig, V3 } from './rig/f15-rig';
 import type { Px } from './rig/px';
 import type { Direction } from './motion';
 import type { Pen } from './fx/pen';
+import type { FxPalette } from './fx/palette';
 import type { JointPose, TechniqueBook } from './technique';
 import type { TechniqueTrace } from './technique-fx';
 export type XY = [number, number];
@@ -14,7 +15,19 @@ export type Rarity =
   | 'legendary'
   | 'mythic'
   | 'secret';
+export interface ImpactContact {
+  frame: number;
+  freeze?: number; // extra frames held on the contact (0–5)
+  shake?: number; // duration in displayed frames after the hold
+  amp?: number; // peak camera excursion in field pixels
+}
 export interface Animation {
+  /** Experimental 12 Hz primary pose on the 24 Hz picture clock. */
+  poseStep?: 2;
+  contacts?: readonly ImpactContact[];
+  /** Internal clocks retained when the workshop inserts contact holds. */
+  authoredSeconds?: number;
+  authoredHits?: number[];
   /** A separately selectable performance by a second character in this painting. */
   companion?: boolean;
   bearings?: number[]; // world bearing in radians of each authored turntable frame
@@ -58,6 +71,13 @@ export interface FxInput {
   /** Effects anchored to the field rather than to the performer. */
   readonly backdrop: Pen;
   sceneryRay(from: XY, to: XY, color: string, alpha: number): void;
+  /** Linear additive RGB energy, composited over the ordinary effect ink. */
+  readonly light: Pen;
+  readonly palette: FxPalette;
+  /** Surface height in field pixels at the particle position. */
+  readonly ground: (x: number) => number;
+  readonly seed: number;
+  readonly options: Readonly<Record<string, number | string | boolean>>;
   under: Pen;
   above: Pen;
   anim: string;
@@ -80,6 +100,8 @@ export interface Creature {
   id: string;
   rarity: Rarity;
   theme: string;
+  fxRamp?: FxPalette;
+  fxOptions?: Readonly<Record<string, number | string | boolean>>;
   /** Gallery titles for clips whose generic label says too little (named tricks). */
   titles?: Record<string, string>;
   /** Clips besides show and peek whose `over` layer is drawn over the painting frame (a secret trick round the frame). */
@@ -98,7 +120,7 @@ export interface Creature {
     t: number,
     side: number,
     variant: Variant,
-    motion?: { headSide: number; gaitPhase: number; techniquePose?: JointPose; pointsOnly?: boolean },
+    motion?: { headSide: number; gaitPhase: number; techniquePose?: JointPose; pointsOnly?: boolean; secondaryTime?: number },
   ) => BodyFrame; // side 0..15; default 0 = artist's 3/4
   props?: (input: FxInput) => void; // physical targets shown during both held keys and playback
   effects?: (input: FxInput) => void;
@@ -124,7 +146,7 @@ export interface ForegroundProp {
   depth: number;
   paint: (p: Px) => void;
 }
-export type Scene = ((p: Px, t: number) => void) & { front?: ForegroundProp[]; waterRows?: number[][] }; // opaque field bitmap; 3 s loop
+export type Scene = ((p: Px, t: number) => void) & { front?: ForegroundProp[]; waterRows?: number[][]; ground?: (x: number) => number }; // opaque field bitmap; 3 s loop
 export interface Border {
   wood: [string, string, string, string]; // profile, dark to light; hex strings
   accent: string;

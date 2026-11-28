@@ -171,8 +171,8 @@ export async function verifyRelease(
           w - thickness * 2, h - thickness * 2, thickness, track[n].camera[0], track[n].camera[1]);
         for (const key of layerNames) {
           if (key === 'bgf' || key === 'bgfBack') continue;
-          if (key === 'over' && !hasOver && !existsSync(join(dir, key, file))) {
-            layers.over = new Px(w, h);
+          if ((key === 'light' || (key === 'over' && !hasOver)) && !existsSync(join(dir, key, file))) {
+            layers[key] = new Px(w, h);
             continue;
           }
           const source =

@@ -30,8 +30,10 @@ import {
 } from './engine';
 import { reelChapters, attachMotion, attachPetBehavior, directions, directionVector, lifeCycleCount } from './motion';
 import { GifWriter, savePNG } from './render-io';
+import { withImpactTiming } from './kit/impact-clock';
 import { frameImage } from './frame-kit';
 import { Px } from './rig/px';
+import { cardDirectory, cardPath, readCreatureCard } from './bodies/card-data';
 import { hx } from './kit/f11-mobkit';
 
 const tools = dirname(fileURLToPath(import.meta.url));
@@ -49,7 +51,9 @@ export function paintingFrameDir(c: Creature, output: string) {
     : join(dirname(output), 'frames', c.rarity);
 }
 export async function loadPainting(id: string) {
-  const c: Creature = (await import('./c/' + safeID(id) + '.ts')).default;
+  const source: Creature = (await import('./c/' + safeID(id) + '.ts')).default;
+  const card = /^[a-z][a-z0-9_]*$/.test(id) && existsSync(cardPath(id, cardDirectory)) ? readCreatureCard(id) : undefined;
+  const c = withImpactTiming(card?.fxRamp ? { ...source, fxRamp: card.fxRamp } : source);
   if (c.id !== id) throw new Error('Creature id mismatch');
   const s: Scene = (await import('./scenes/' + safeID(c.theme) + '.ts'))
     .default;
@@ -125,6 +129,7 @@ function writePainting(
   const dir = join(output, 'frames', suffix),
     movedFrames = new Set<string>(),
     backdropFrames = new Set<string>(),
+    lightFrames = new Set<string>(),
     overFrames = new Set<string>();
   const track = [];
   for (let f = 0; f < frames; f++) {
@@ -135,13 +140,14 @@ function writePainting(
     track.push({
       feet: r.worldFeet,
       ...(r.waterContacts.length ? { waterContacts: r.waterContacts } : {}),
+      ...(r.sceneDelay ? { sceneDelay: r.sceneDelay } : {}),
       ...(r.sceneryRays.length ? { sceneryRays: r.sceneryRays } : {}),
       camera: r.camera,
       backgroundFrame: r.backgroundFrame,
       side: r.motion.side,
       headSide: r.motion.headSide,
       pose: r.motion.anim,
-      poseTime: r.motion.t,
+      poseTime: r.poseTime,
       lift: r.motion.lift,
       planted: r.body.planted ?? [],
       contacts: r.contact,
@@ -152,7 +158,6 @@ function writePainting(
       'body',
       'lit',
       'fxo',
-
     ] as const) {
       savePNG(
         join(output, 'frames', suffix, layer, file),
@@ -162,6 +167,10 @@ function writePainting(
     if (overAllowed(c, name) || (r.body.over && overAllowed(c, r.motion.anim))) {
       savePNG(join(dir, 'over', file), r.layers.over);
       overFrames.add(file);
+    }
+    if (r.light?.data.some((v, i) => i % 4 === 3 && v > 0)) {
+      savePNG(join(dir, 'light', file), r.light);
+      lightFrames.add(file);
     }
     if (r.backdrop) {
       savePNG(join(dir, 'backdrop', file), r.backdrop);
@@ -191,6 +200,7 @@ function writePainting(
       if (
         parseInt(file, 10) >= frames ||
         (layer.name === 'bg' && !movedFrames.has(file)) ||
+        (layer.name === 'light' && !lightFrames.has(file)) ||
         (layer.name === 'backdrop' && !backdropFrames.has(file)) ||
         (layer.name === 'over' && !overFrames.has(file))
       )

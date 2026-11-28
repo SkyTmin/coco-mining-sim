@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { MotionPlan, Rarity } from '../types';
+import type { FxPalette } from '../fx/palette';
+import type { ImpactContact, MotionPlan, Rarity } from '../types';
 
 export const cardDirectory = join(import.meta.dirname, '../c');
 
@@ -37,6 +38,7 @@ export interface CardMove {
   reference: string;
   parameters: { strength: number; amplitude: number; side: number; repeats: number };
   logic: string[];
+  contacts?: ImpactContact[];
 }
 export interface CreatureCard {
   id: string;
@@ -50,6 +52,7 @@ export interface CreatureCard {
   materials: { name: string; tones: string[]; texture: string }[];
   details: string[];
   effects: EffectId;
+  fxRamp?: FxPalette;
   moves: CardMove[];
   life: MotionPlan;
 }
