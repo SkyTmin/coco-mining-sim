@@ -1,0 +1,261 @@
+import { reach } from '../bodies/goals';
+import { everyday } from '../rig/figure';
+import type { JointPose } from '../technique';
+export const clips = {
+  ...everyday,
+  happy: { seconds: 2 },
+  trick: { seconds: 5.5 },
+  show: { seconds: 5.5 },
+  hatch: { seconds: 2 },
+  phase: { seconds: 2 },
+  'idle-f2': { seconds: 3, loop: true },
+  fidget_a: { seconds: 2 },
+  fidget_b: { seconds: 2 },
+  sleep: { seconds: 3.5, loop: true },
+  sleep_in: { seconds: 1.25 },
+  sleep_out: { seconds: 1.25 },
+  wake_startled: { seconds: 1 },
+};
+const tracks: Record<string, [number, JointPose][]> = {
+  idle: [
+    [0, {}],
+    [18, { mantlePulse: 0.15, finBeat: 0.15 }],
+    [40, { mantlePitch: 0.06, clubCurl: 0.17 }],
+    [57, { blink: 1 }],
+    [71, {}],
+  ],
+  look: [
+    [0, {}],
+    [8, { 'head.pitch': -0.19, finBeatL: 0.22 }],
+    [15, { 'head.yaw': -0.51, mantleRoll: -0.12 }],
+    [26, { 'head.yaw': 0.65, clubFan: 0.24 }],
+    [35, {}],
+  ],
+  fidget_a: [
+    [0, {}],
+    [9, { 'head.yaw': 0.26 }],
+    [20, { 'head.yaw': 0.57, finBeatR: 0.38, ...reach('star4', [27, 12, 45]) }],
+    [31, { 'head.yaw': 0.33, blink: 0.84, ...reach('star4', [29, 10, 40]) }],
+    [47, {}],
+  ],
+  fidget_b: [
+    [0, {}],
+    [10, { curl: 0.22, clubCurl: 0.45 }],
+    [23, { mantlePulse: 0.62, clubCurl: 0.72, roll: 0.13 }],
+    [35, { mantlePulse: 0.2, finBeatL: 0.46 }],
+    [47, {}],
+  ],
+  sleep_in: [
+    [0, {}],
+    [8, { sleep: 0.2, curl: 0.25 }],
+    [17, { sleep: 0.72, blink: 0.7 }],
+    [29, { sleep: 1, blink: 1 }],
+  ],
+  sleep_out: [
+    [0, { sleep: 1, blink: 1 }],
+    [8, { sleep: 0.74 }],
+    [17, { sleep: 0.23, finBeat: 0.24 }],
+    [23, { 'head.pitch': -0.16 }],
+    [29, {}],
+  ],
+  wake_startled: [
+    [0, { sleep: 1, blink: 1 }],
+    [4, { sleep: 0.45 }],
+    [9, { roll: -0.16, finBeat: 0.82, spread: 0.8, glow: 0.71 }],
+    [17, { 'head.yaw': 0.5 }],
+    [23, {}],
+  ],
+  happy: [
+    [0, {}],
+    [4, { crouch: 5, roll: -0.15, finBeat: 0.75, glow: 0.5, ...reach('clubL', [-2, -35, 53]) }],
+    [
+      9,
+      {
+        lift: 6,
+        roll: -0.25,
+        spread: 0.9,
+        finBeat: 0.94,
+        glow: 0.89,
+        ...reach('clubL', [-7, -32, 72]),
+        ...reach('clubR', [35, 21, 38]),
+      },
+    ],
+    [
+      16,
+      {
+        lift: 5,
+        roll: 0.23,
+        finBeatL: -0.51,
+        finBeatR: 0.86,
+        glow: 1,
+        ...reach('clubR', [0, 36, 71]),
+        ...reach('star4', [32, 17, 29]),
+      },
+    ],
+    [24, { roll: -0.2, curl: 0.25, glow: 0.8, clubFan: 1 }],
+    [31, { lift: 3, roll: 0.16, spread: 0.7, finBeat: 0.67, glow: 0.81 }],
+    [39, { crouch: 4, curl: 0.35, finBeat: -0.28 }],
+    [47, {}],
+  ],
+  hatch: [
+    [
+      0,
+      {
+        sleep: 0.67,
+        curl: 0.94,
+        clubCurl: 0.87,
+        finBeat: -0.52,
+        mantlePulse: 0.75,
+        dy: 12,
+        sy: 0.8,
+        sx: 0.9,
+      },
+    ],
+    [6, { crouch: 7, clubCurl: 0.7, curl: 0.7, mantlePulse: 0.62, sleep: 0.61, dy: 10, sy: 0.82, sx: 0.91 }],
+    [
+      12,
+      {
+        crouch: 7,
+        finBeat: -0.32,
+        clubCurl: 0.54,
+        sleep: 0.43,
+        dy: 8,
+        sy: 0.88,
+        sx: 0.95,
+        ...reach('clubL', [30, -21, 15]),
+        ...reach('clubR', [30, 17, 17]),
+      },
+    ],
+    [
+      21,
+      {
+        lift: 4,
+        roll: -0.22,
+        spread: 0.68,
+        finBeat: 0.76,
+        glow: 0.71,
+        sx: 1,
+        sy: 1,
+        ...reach('clubL', [26, -35, 26]),
+        ...reach('clubR', [37, 34, 27]),
+      },
+    ],
+    [29, { lift: 6, roll: 0.12, finBeat: 0.86, glow: 0.92, clubFan: 0.6, sx: 1, sy: 1 }],
+    [39, { curl: 0.21, finBeat: -0.24, sx: 1, sy: 1 }],
+    [47, { sx: 1, sy: 1 }],
+  ],
+  phase: [
+    [0, {}],
+    [8, { crouch: 3, mantlePulse: 0.65, finBeat: -0.3 }],
+    [16, { phase: 0.21, mantlePulse: 0.84, glow: 0.4, roll: -0.16 }],
+    [26, { phase: 0.55, spread: 0.47, glow: 0.69, finBeat: 0.6, clubFan: 0.57 }],
+    [36, { phase: 0.9, glow: 1, spread: 0.76, finSpread: 1, clubFan: 0.93 }],
+    [47, { phase: 1, glow: 0.9, spread: 0.53, finSpread: 0.68 }],
+  ],
+  'idle-f2': [
+    [0, { phase: 1, glow: 0.9, spread: 0.53, finSpread: 0.68 }],
+    [21, { phase: 1, glow: 0.9, spread: 0.53, finSpread: 0.68, finBeat: 0.23, clubFan: 0.2 }],
+    [43, { phase: 1, glow: 0.9, spread: 0.53, finSpread: 0.68, mantlePulse: 0.21, 'head.yaw': 0.16 }],
+    [71, { phase: 1, glow: 0.9, spread: 0.53, finSpread: 0.68 }],
+  ],
+  show: [
+    [0, { showReveal: 0 }],
+    [24, { showReveal: 0 }],
+    [41, { showReveal: 0, curl: 1, clubCurl: 1 }],
+    [44, { clubCurl: 0.94815, curl: 0.97148, mantlePulse: 0.16852, showReveal: 0.035 }],
+    [46, { clubCurl: 0.8834, curl: 0.93587, mantlePulse: 0.37894, showReveal: 0.074 }],
+    [47, { clubCurl: 0.85185, curl: 0.91852, mantlePulse: 0.48148, showReveal: 0.095 }],
+    [48, { clubCurl: 0.82524, curl: 0.90388, mantlePulse: 0.56797, showReveal: 0.146 }],
+    [50, { clubCurl: 0.8, curl: 0.89, mantlePulse: 0.65, showReveal: 0.1605 }],
+    [52, { clubCurl: 0.78296, curl: 0.87, finSpread: 0.01481, mantlePulse: 0.60185, showReveal: 0.185 }],
+    [54, { clubCurl: 0.74037, curl: 0.82, finSpread: 0.05185, mantlePulse: 0.48148, showReveal: 0.2035 }],
+    [57, { clubCurl: 0.65652, curl: 0.72156, finSpread: 0.12477, mantlePulse: 0.2445, showReveal: 0.243 }],
+    [60, { clubCurl: 0.58704, curl: 0.64, finSpread: 0.18519, mantlePulse: 0.04815, showReveal: 0.27 }],
+    [62, { clubCurl: 0.57, curl: 0.62, finSpread: 0.2, showReveal: 0.294 }],
+    [
+      63,
+      {
+        clubCurl: 0.56169,
+        clubFan: 0.00525,
+        curl: 0.61096,
+        finBeat: 0.00641,
+        finSpread: 0.19708,
+        showReveal: 0.309,
+        spread: 0.00714,
+      },
+    ],
+    [
+      66,
+      {
+        clubCurl: 0.457,
+        clubFan: 0.07137,
+        curl: 0.49708,
+        finBeat: 0.08723,
+        finSpread: 0.16035,
+        showReveal: 0.374,
+        spread: 0.09714,
+      },
+    ],
+    [
+      70,
+      {
+        clubCurl: 0.22434,
+        clubFan: 0.21831,
+        curl: 0.24402,
+        finBeat: 0.26682,
+        finSpread: 0.07872,
+        showReveal: 0.509,
+        spread: 0.29714,
+      },
+    ],
+    [
+      73,
+      {
+        clubCurl: 0.0673,
+        clubFan: 0.31749,
+        curl: 0.07321,
+        finBeat: 0.38805,
+        finSpread: 0.02362,
+        showReveal: 0.615,
+        spread: 0.43214,
+      },
+    ],
+    [76, { showReveal: 0.68, spread: 0.49, finBeat: 0.44, clubFan: 0.36 }],
+    [89, { showReveal: 0.93, spread: 0.71, finSpread: 0.7, clubFan: 0.75 }],
+    [101, { showReveal: 1, showHold: 0.25, spread: 0.25, glow: 0.5 }],
+    [109, { showReveal: 1, showHold: 1 }],
+    [131, { showReveal: 1, showHold: 1 }],
+  ],
+  trick: [
+    [0, {}],
+    [8, { 'head.yaw': -0.29, mantlePulse: 0.31, ...reach('clubL', [28, -21, 28]) }],
+    [18, { curl: 0.3, finBeat: 0.6, 'head.pitch': -0.15, ...reach('clubL', [32, -25, 40]) }],
+    [28, { roll: -0.16, crouch: 3, glow: 0.73, ...reach('clubL', [22, -26, 61]) }],
+    [38, { astrolabe: 0.31, roll: -0.2, finSpread: 0.7, 'head.pitch': -0.3 }],
+    [51, { astrolabe: 0.83, roll: -0.21, finSpread: 1, glow: 0.72 }],
+    [64, { astrolabe: 1, roll: 0.06, glow: 0.98 }],
+    [78, { astrolabe: 1, roll: 0.38, glow: 1 }],
+    [88, { astrolabe: 0.85, roll: 0.23, finBeat: 0.25, ...reach('clubR', [26, 24, 55]) }],
+    [99, { astrolabe: 0.38, roll: 0.13, glow: 0.73, ...reach('clubR', [35, 25, 38]) }],
+    [110, { crouch: 5, 'head.pitch': 0.25, spread: 0.75, ...reach('clubR', [34, 22, 30]) }],
+    [121, { 'head.pitch': 0.16, finBeat: -0.22 }],
+    [131, {}],
+  ],
+};
+export function gesture(anim: string, t: number): JointPose {
+  if (anim === 'sleep') return { sleep: 1 };
+  const keys = tracks[anim];
+  if (!keys) return {};
+  const n = t * 24,
+    i = keys.findIndex(([frame]) => frame >= n - 1e-8);
+  if (i <= 0) return keys[i === 0 ? 0 : keys.length - 1][1];
+  const [start, a] = keys[i - 1],
+    [end, b] = keys[i],
+    u = Math.min(1, (n - start) / (end - start)),
+    s = u * u * (3 - 2 * u);
+  const result: JointPose = {};
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    result[k] = (a[k] ?? 0) * (1 - s) + (b[k] ?? 0) * s;
+  }
+  return result;
+}

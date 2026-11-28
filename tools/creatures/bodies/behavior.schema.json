@@ -1,0 +1,251 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pet painting behavior",
+  "type": "object",
+  "required": [
+    "seed",
+    "previewSeconds",
+    "field",
+    "stride",
+    "depthScale",
+    "stops",
+    "walkShare",
+    "events",
+    "yaw"
+  ],
+  "if": { "required": ["tricks"] },
+  "then": {
+    "properties": {
+      "attacks": false,
+      "attackInterval": false,
+      "lifeAttacks": false,
+      "attackBounds": false,
+      "events": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "array",
+          "items": { "not": { "const": "attack" } }
+        }
+      }
+    }
+  },
+  "else": {
+    "required": ["attacks"],
+    "anyOf": [
+      { "required": ["attackInterval"] },
+      { "required": ["lifeAttacks"] }
+    ],
+    "properties": {
+      "weights": {
+        "type": "object",
+        "required": ["trick"]
+      },
+      "events": {
+        "type": "object",
+        "required": ["skill_ready"],
+        "properties": { "skill_ready": { "const": ["attack"] } }
+      }
+    }
+  },
+  "allOf": [{
+    "if": { "required": ["lifeProgram"] },
+    "then": { "required": ["tricks"], "properties": { "walkShare": { "const": [0, 0] } } },
+    "else": { "required": ["weights"], "properties": { "stops": { "type":"array", "minItems": 3 }, "walkShare": { "type":"array", "items": { "type":"number", "minimum": 0.35 } } } }
+  }],
+  "additionalProperties": false,
+  "properties": {
+    "finishBeforeEvent": {
+      "type": "array", "uniqueItems": true, "items": { "type": "string" }
+    },
+    "lifeProgram": {
+      "type": "array", "minItems": 1,
+      "items": { "type": "string", "pattern": "^(idle|look|fidget_[a-h])$" }
+    },
+    "$schema": {
+      "type": "string"
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "previewSeconds": {
+      "type": "integer",
+      "minimum": 30
+    },
+    "field": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "stride": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "depthScale": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "stops": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "walkShare": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 0.5
+      }
+    },
+    "attackInterval": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number",
+        "minimum": 30,
+        "maximum": 45
+      }
+    },
+    "attacks": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^tech_[a-z0-9_]+$"
+      }
+    },
+    "lifeAttacks": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^tech_[a-z0-9_]+$" }
+    },
+    "tricks": {
+      "type": "object",
+      "required": ["f1"],
+      "additionalProperties": false,
+      "properties": {
+        "f1": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["trick", "trick_b", "trick_c", "trick_d", "trick_e", "trick_f"] },
+          "contains": { "const": "trick" }
+        },
+        "f2": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["trick-f2", "trick_b-f2", "trick_c-f2", "trick_d-f2", "trick_e-f2", "trick_f-f2"] },
+          "contains": { "const": "trick-f2" }
+        }
+      }
+    },
+    "weights": {
+      "type": "object",
+      "required": [
+        "idle",
+        "fidget_a",
+        "fidget_b",
+        "look"
+      ],
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "attackBounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^tech_[a-z0-9_]+$": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "events": {
+      "type": "object",
+      "required": [
+        "tap",
+        "tap_asleep",
+        "like",
+        "idle_owner",
+        "owner_back"
+      ],
+      "properties": {
+        "tap": {
+          "const": [
+            "happy"
+          ]
+        },
+        "tap_asleep": {
+          "const": [
+            "wake_startled",
+            "happy"
+          ]
+        },
+        "like": {
+          "const": [
+            "trick"
+          ]
+        },
+        "double_tap": {
+          "const": [
+            "trick"
+          ]
+        },
+        "rare_find": {
+          "const": [
+            "happy"
+          ]
+        },
+        "approach": {
+          "const": [
+            "look"
+          ]
+        },
+        "idle_owner": {
+          "const": [
+            "sleep_in",
+            "sleep"
+          ]
+        },
+        "owner_back": {
+          "const": [
+            "sleep_out"
+          ]
+        }
+      },
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "yaw": {
+      "type": "number"
+    }
+  }
+}

@@ -1,0 +1,274 @@
+{
+ "_doc": "ws baseline: acceptance facts next to the last gate of the exact inputs (studio/baseline.ts)",
+ "at": "2026-11-23T09:42",
+ "creatures": {
+  "astral_seer": {
+   "acceptance": {
+    "owner": "accepted",
+    "date": "2026-11-20",
+    "basis": "docs/tz/TZ-B11-sekretnyj-claude.md:3",
+    "remarks": []
+   },
+   "covers": [
+    "обычный кадр и тяжёлый передний/широкий слой: trick 77–91, trick-f2 84–94 (камень за раму, звезда)",
+    "будущая точка pointAt: fidget_a toss=14 / catch=30 строят весь перелёт огонька",
+    "двойник и орбита: собственный генератор промежуточных ключей"
+   ],
+   "source": {
+    "revision": "0f2c19d9 2026-11-20",
+    "fingerprint": "daa646d1992eaf08"
+   },
+   "renderer": "99fe78d9f76d2c79",
+   "checker": "c12258035120d890",
+   "golden": "12e0a650833a117f",
+   "gate": {
+    "key": "5cc33f17da85e42e",
+    "ok": false,
+    "at": "2026-11-23T09:39",
+    "errors": 22,
+    "warnings": 12,
+    "issues": [
+     "✗ astral_seer: 3 errors, 12 warnings in 20 animations (64.7 s)",
+     "  ! trick          clip           65–77 — worst 73: torc in armR @0.06",
+     "  ! trick_b        clip           6–8 — worst 6: torc in armR @0.50",
+     "  ! phase          clip           6–12, 15–19 — worst 16: torc in cheekL @0.06",
+     "  ! astral_seer pet: idle has no registered sheet",
+     "  ! astral_seer pet: look has no registered sheet",
+     "  ! astral_seer pet: happy has no registered sheet",
+     "  ! astral_seer pet: hatch has no registered sheet",
+     "  ! astral_seer pet: fidget_a has no registered sheet",
+     "  ! astral_seer pet: fidget_b has no registered sheet",
+     "  ! astral_seer pet: happy-f2 has no registered sheet",
+     "  ! astral_seer pet: trick has no registered sheet"
+    ],
+    "more": 11
+   },
+   "exceptions": [
+    {
+     "rule": "skip foot-slide walk_e,walk_w",
+     "reason": "провидец парит, ступнями земли не касается — docs/tz/TZ-B11-sekretnyj-claude.md:64"
+    }
+   ]
+  },
+  "moon_magician": {
+   "acceptance": {
+    "owner": "accepted",
+    "date": "2026-11-19",
+    "basis": "docs/tz/TZ-B11-sekretnyj-claude.md:8",
+    "remarks": [
+     "достаёт из цилиндра предметы, а дырки цилиндра не видно (docs/tz/TZ-B11-sekretnyj-claude.md:10)"
+    ]
+   },
+   "covers": [
+    "смена владения цилиндром голова↔рука (непрерывный канал hatInHand) и переход шляпы rig↔fx",
+    "дробная задержка 2,5 кадра в прошлых позах (время нельзя округлять до кадра)",
+    "карта-дверь: полёт от handR, посадка, возврат к handL; front-риг перчатки и цилиндра в peek"
+   ],
+   "source": {
+    "revision": "3ffb4a26 2026-11-19",
+    "fingerprint": "d9ec6682a2abefba"
+   },
+   "renderer": "8d611518c8c1dfab",
+   "checker": "c12258035120d890",
+   "golden": "fe9825d5de2af7b3",
+   "gate": {
+    "key": "0632d4a2812d7d8e",
+    "ok": false,
+    "at": "2026-11-23T09:39",
+    "errors": 20,
+    "warnings": 10,
+    "issues": [
+     "✗ moon_magician: 1 errors, 10 warnings in 20 animations (74.4 s)",
+     "  ! trick          clip           19, 34–38, 43–46, 48–54, 57, 60–118 — worst 116: handL in hat @0.24",
+     "  ! moon_magician pet: idle has no registered sheet",
+     "  ! moon_magician pet: look has no registered sheet",
+     "  ! moon_magician pet: happy has no registered sheet",
+     "  ! moon_magician pet: hatch has no registered sheet",
+     "  ! moon_magician pet: fidget_a has no registered sheet",
+     "  ! moon_magician pet: fidget_b has no registered sheet",
+     "  ! moon_magician pet: happy-f2 has no registered sheet",
+     "  ! moon_magician pet: trick has no registered sheet",
+     "  ! moon_magician pet: trick_b has no registered sheet",
+     "  ! moon_magician pet: phase has no registered sheet"
+    ],
+    "more": 9
+   },
+   "exceptions": [
+    {
+     "rule": "skip clip trick_b-f2:6-13",
+     "reason": null
+    },
+    {
+     "rule": "skip clip trick_b-f2:42",
+     "reason": null
+    }
+   ]
+  },
+  "nebula_squid": {
+   "acceptance": {
+    "owner": "unknown",
+    "date": "2026-11-19",
+    "basis": "docs/PROGRESS.md:831 (Б9: выпуск, независимый критик; приёмки владельцем в документах не найдено)",
+    "remarks": []
+   },
+   "covers": [
+    "полупрозрачность (alpha 153–203 мантии) и маска show, меняющая alpha на месте",
+    "будущая точка: камень астролябии на кадрах 28–88 читает clubR на кадре 88",
+    "phase → idle-f2 и конец show: поза + свечение, тень, отражение, внутреннее время",
+    "контакты книги приёмов (tech_tidal_club: пол, clubLGround, rebound, hit 27)"
+   ],
+   "source": {
+    "revision": "63210036 2026-11-19",
+    "fingerprint": "5bada32c224126cb"
+   },
+   "renderer": "7098e9872a9a5b73",
+   "checker": "c12258035120d890",
+   "golden": "f4de2fd4d65a1fbb",
+   "gate": {
+    "key": "f0a24d8d013dcccf",
+    "ok": true,
+    "at": "2026-11-23T09:39",
+    "errors": 0,
+    "warnings": 6,
+    "issues": [],
+    "more": 0
+   },
+   "exceptions": []
+  },
+  "sky_whale": {
+   "acceptance": {
+    "owner": "unknown",
+    "date": "2026-11-19",
+    "basis": "docs/PROGRESS.md:831 (Б9: выпуск, независимый критик; приёмки владельцем в документах не найдено)",
+    "remarks": []
+   },
+   "covers": [
+    "лучи сцены (sceneryRays) и движущаяся декорация; крупные страницы атласа"
+   ],
+   "source": {
+    "revision": "ef8d749b 2026-11-19",
+    "fingerprint": "673a60b2ce2a9e8f"
+   },
+   "renderer": "7d0b0cf6b53671ae",
+   "checker": "c12258035120d890",
+   "golden": "97979b0ffefa852e",
+   "gate": {
+    "key": "1de2225fd7dd3071",
+    "ok": true,
+    "at": "2026-11-23T09:41",
+    "errors": 0,
+    "warnings": 2,
+    "issues": [],
+    "more": 0
+   },
+   "exceptions": []
+  },
+  "grove_lord": {
+   "acceptance": {
+    "owner": "unknown",
+    "date": "2026-11-19",
+    "basis": "docs/PROGRESS.md:831 (Б9: выпуск, независимый критик; приёмки владельцем в документах не найдено)",
+    "remarks": []
+   },
+   "covers": [
+    "второй актёр (белка) и наземный контакт"
+   ],
+   "source": {
+    "revision": "1c039ce4 2026-11-19",
+    "fingerprint": "c47956fd48b0e9b0"
+   },
+   "renderer": "aa4166528969803a",
+   "checker": "c12258035120d890",
+   "golden": "e16343ae08c39e81",
+   "gate": {
+    "key": "d5311d83f6ffd562",
+    "ok": true,
+    "at": "2026-11-23T09:40",
+    "errors": 0,
+    "warnings": 5,
+    "issues": [],
+    "more": 0
+   },
+   "exceptions": []
+  },
+  "bun_panda": {
+   "acceptance": {
+    "owner": "pending",
+    "date": "2026-11-23",
+    "basis": "docs/PROGRESS.md (23.11, Б21: на приёмке; проверка в игре владельцем не проводилась)",
+    "remarks": [
+     "планка подробностей §7.1в не пройдена (мультяшная манера по замыслу)",
+     "листов ключевых поз (c/bun_panda.ref.json) нет",
+     "23.11 владелец: кухня ходила вместе с пандой — исправлено (f.backdrop)"
+    ]
+   },
+   "covers": [
+    "два героя в одном риге, реквизит в руках обоих, кухня между эпизодами",
+    "предметы сцены на неподвижном слое"
+   ],
+   "source": {
+    "revision": "e09f76fa 2026-11-23",
+    "fingerprint": "5dec956dabbbbc6d"
+   },
+   "renderer": "68af4355f8d3ae92",
+   "checker": "c12258035120d890",
+   "golden": "e30119e35d828c3a",
+   "gate": {
+    "key": "8e16d20b33effac2",
+    "ok": false,
+    "at": "2026-11-23T09:42",
+    "errors": 21,
+    "warnings": 13,
+    "issues": [
+     "  ! bun_panda pet: idle has no registered sheet",
+     "  ! bun_panda pet: look has no registered sheet",
+     "  ! bun_panda pet: happy has no registered sheet",
+     "  ! bun_panda pet: hatch has no registered sheet",
+     "  ! bun_panda pet: fidget_a has no registered sheet",
+     "  ! bun_panda pet: fidget_b has no registered sheet",
+     "  ! bun_panda pet: happy-f2 has no registered sheet",
+     "  ! bun_panda pet: trick has no registered sheet",
+     "  ! bun_panda pet: trick_b has no registered sheet",
+     "  ! bun_panda pet: trick_c has no registered sheet",
+     "  ! bun_panda pet: phase has no registered sheet",
+     "  ! bun_panda pet: idle-f2 has no registered sheet"
+    ],
+    "more": 10
+   },
+   "exceptions": [
+    {
+     "rule": "skip foot-slide walk_e,walk_w",
+     "reason": null
+    },
+    {
+     "rule": "skip clip phase:36-43",
+     "reason": null
+    },
+    {
+     "rule": "skip clip trick-f2:121-133",
+     "reason": null
+    },
+    {
+     "rule": "skip clip trick-f2:147-152",
+     "reason": null
+    },
+    {
+     "rule": "skip clip show:72-74",
+     "reason": null
+    },
+    {
+     "rule": "skip clip trick:111-113",
+     "reason": null
+    },
+    {
+     "rule": "skip clip wake_startled:9",
+     "reason": null
+    },
+    {
+     "rule": "clipAllow",
+     "reason": "задуманные касания Шустрика и реквизита о голову панды — docs/tz/TZ-B21-sekretnyj-ponchik.md §10"
+    }
+   ]
+  }
+ }
+}

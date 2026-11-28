@@ -1,0 +1,2441 @@
+// Рисовальщик подземелья. Мир меряется «игровыми пикселями» (клетка — 16), а
+// рисуется СРАЗУ на экран с целым множителем: пиксель спрайта — ровный
+// квадрат из нескольких точек экрана, но сдвигаться он может на одну точку.
+// Первая сборка рисовала в маленький буфер и растягивала его: камера и
+// спрайты прыгали целыми игровыми пикселями (7 точек на телефоне), и при
+// ходьбе всё тряслось — владелец: «очень быстро, очень сильно трясёт».
+//
+// Порядок кадра: куски карты из кеша → метки угроз на полу → предметы, мобы
+// и герой по глубине → частицы и следы ударов → свет → растяжка → цифры.
+// Анимируем только то, что в канве: DOM страницы этот цикл не трогает.
+
+import { t as tr } from '@/i18n/core';
+import { areaOf, MOBS, stackOf } from './dungeon';
+import type { AreaId, Gear, MobId } from './dungeon';
+import {
+  boardTile,
+  burrowFront,
+  burrowSide,
+  crackWallTile,
+  floorTile,
+  glowBlob,
+  grateTile,
+  heroFlash,
+  heroFrame,
+  heroFrames,
+  itemArt,
+  liftFloorTile,
+  lightBlob,
+  minePortal,
+  propArt,
+  puddleTile,
+  railTile,
+  rubbleTile,
+  TS,
+  wallLamp,
+  wallTile,
+  weaponArt,
+} from './dungeon-art';
+import type { Dir, HeroAnim, PropArt } from './dungeon-art';
+import { Px } from './dungeon-art';
+import { SKILL, SWORD } from './dungeon-sim';
+import type { Mob, Sim, SimEvent } from './dungeon-sim';
+import { bandAt, fogGet, Tile, walkableTile } from './dungeon-world';
+import type { World } from './dungeon-world';
+import { bladeSprite, fxCount, fxFrame, heroSprite, ROW, spritesReady } from './dungeon-sprites';
+import { ratEye, ratFrame, ratSize } from './dungeon-rats';
+import {
+  CELL_PAINTERS,
+  IMPACT_PAINTERS,
+  MOB_PAINTERS,
+  MOB_WARM,
+  PROP_PAINTERS,
+  resetFrameCaches,
+  SHOT_PAINTERS,
+  setPaintSim,
+  ZONE_PAINTERS,
+} from './dungeon-paint';
+import type { ImpactDef, ImpactRec, MobFrame, MobPose } from './dungeon-paint';
+import {
+  blobFrame,
+  deepPx,
+  orbSprite,
+  sealSprite,
+  stairsPx,
+  statusRgb,
+  x72MobFrame,
+} from './dungeon-mobart';
+import { boardX72, burrowX72, minePortalX72, propX72, wallLampX72 } from './dungeon-props';
+import type { RatAnim } from './dungeon-rats';
+import {
+  blit,
+  floorCell,
+  floorLookOf,
+  railCell,
+  rimOverFloor,
+  wallCell,
+  waterCell,
+  x72Ready,
+} from './dungeon-tiles';
+import type { Dir4, FxId } from './dungeon-sprites';
+import { walkRow } from './walk';
+// Рисовальщики этажей регистрируются при загрузке своих модулей: без этого
+// импорта монстры этажей рисовались бы комками, а клетки — общей водой.
+import './dungeon-floors/art';
+
+const CHUNK = 16;
+/** Сколько кусков карты держать в памяти (кусок — 256×256 точек). */
+const CHUNK_KEEP = 40;
+
+/**
+ * Насколько снимается темнота с разведанного. Владелец: «прошёлся один раз —
+ * туман исчезает и там больше не появляется». Не 1: чуть сумрака оставляет
+ * лампам и фонарю героя работу — светлое пятно вокруг всё ещё видно.
+ */
+const EXPLORED_LIT = 0.82;
+
+interface Particle {
+  x: number;
+  y: number;
+  z: number;
+  vx: number;
+  vy: number;
+  vz: number;
+  life: number;
+  max: number;
+  size: number;
+  color: string;
+  /** Пыль и дым не прыгают — расплываются. */
+  soft: boolean;
+  glow: boolean;
+}
+
+interface Float {
+  x: number;
+  y: number;
+  text: string;
+  color: string;
+  size: number;
+  life: number;
+  max: number;
+  vx: number;
+}
+
+interface Slash {
+  x: number;
+  y: number;
+  ang: number;
+  arc: number;
+  reach: number;
+  life: number;
+  max: number;
+  heavy: boolean;
+  flip: boolean;
+  step: number;
+}
+
+/** Рисованный эффект из набора: кадры листа по времени жизни. */
+interface Fx {
+  id: FxId;
+  x: number;
+  y: number;
+  life: number;
+  max: number;
+  ang: number;
+  scale: number;
+  /** Отражение по вертикали — серп, идущий сверху вниз. */
+  flip: boolean;
+  /** Идёт за героем: след клинка и кольцо уровня не висят в воздухе. */
+  follow: boolean;
+  /** Смещение от героя в мировых пикселях — для тех, что идут за ним. */
+  dx: number;
+  dy: number;
+  alpha: number;
+}
+
+interface Ring {
+  x: number;
+  y: number;
+  r: number;
+  life: number;
+  max: number;
+  color: string;
+}
+
+/** Цвет события в «r,g,b» для rgba(): '#rrggbb', '#rgb' или уже «r,g,b». */
+function rgbOf(c: string): string {
+  if (!c.startsWith('#')) return c;
+  const h = c.length === 4 ? c.replace(/^#(.)(.)(.)$/, '#$1$1$2$2$3$3') : c;
+  const n = parseInt(h.slice(1, 7), 16);
+  return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+}
+
+const reduce = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+
+/** Гладкий шум для тряски (как в `juice.ts`): случайное число на кадр — это брак. */
+function noise(t: number, seed: number): number {
+  const i = Math.floor(t);
+  const f = t - i;
+  const h = (n: number) => {
+    const s = Math.sin(n * 127.1 + seed * 311.7) * 43758.5453;
+    return (s - Math.floor(s)) * 2 - 1;
+  };
+  const u = f * f * (3 - 2 * f);
+  return h(i) * (1 - u) + h(i + 1) * u;
+}
+
+interface Ghost {
+  x: number;
+  y: number;
+  img: HTMLCanvasElement;
+  life: number;
+  /** Где верх картинки относительно ног: у старого героя и у спрайта разный. */
+  top: number;
+}
+
+/** Как лёг кадр моба на экран (v2.85): шлейф и слой поверх темноты повторяют его. */
+interface Placed {
+  img: HTMLCanvasElement;
+  /** Точка ног на экране, игровые пиксели. */
+  px: number;
+  py: number;
+  ax: number;
+  ay: number;
+  sx: number;
+  sy: number;
+  rot: number;
+  alpha: number;
+}
+
+/** Силуэт шлейфа моба. */
+interface MobGhost extends Placed {
+  wx: number;
+  wy: number;
+  life: number;
+  max: number;
+  a0: number;
+}
+
+/** Копия убранного босса, чья смерть длиннее, чем живёт моб (`linger`). */
+interface Remains {
+  m: Mob;
+  linger: number;
+}
+
+/** Силуэт кадра цветом шлейфа — один раз на холст и цвет. */
+const tinted = new WeakMap<HTMLCanvasElement, Map<string, HTMLCanvasElement>>();
+function tintOf(img: HTMLCanvasElement, color: string): HTMLCanvasElement {
+  let byColor = tinted.get(img);
+  if (!byColor) {
+    byColor = new Map();
+    tinted.set(img, byColor);
+  }
+  let c = byColor.get(color);
+  if (!c) {
+    c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    const g = c.getContext('2d')!;
+    g.drawImage(img, 0, 0);
+    g.globalCompositeOperation = 'source-in';
+    g.fillStyle = color;
+    g.fillRect(0, 0, c.width, c.height);
+    byColor.set(color, c);
+  }
+  return c;
+}
+
+let stairsImg: HTMLCanvasElement | null = null;
+const stairsCanvas = () => (stairsImg ??= stairsPx().canvas());
+
+/**
+ * Перекраска клетки под облик района (`AreaSkin.tint`): множители каналов
+ * и подмешанный цвет. Считается по пикселям буфера куска — один раз на
+ * кусок, в кадре ничего не стоит.
+ */
+function tintCell(buf: Px, px: number, py: number, area: string): void {
+  const tint = areaOf(area).spec.skin.tint;
+  if (!tint) return;
+  const [mr, mg, mb] = tint.mul;
+  const k = tint.k ?? 0;
+  const v = tint.mix ? parseInt(tint.mix.slice(1), 16) : 0;
+  const cr = (v >> 16) & 255;
+  const cg = (v >> 8) & 255;
+  const cb = v & 255;
+  const d = buf.data;
+  for (let y = py; y < py + TS && y < buf.h; y++)
+    for (let x = px; x < px + TS && x < buf.w; x++) {
+      const o = (y * buf.w + x) * 4;
+      if (!d[o + 3]) continue;
+      d[o] = d[o] * mr * (1 - k) + cr * k;
+      d[o + 1] = d[o + 1] * mg * (1 - k) + cg * k;
+      d[o + 2] = d[o + 2] * mb * (1 - k) + cb * k;
+    }
+}
+
+/** Этаж, чьи кадры сейчас в кешах (`resetFrameCaches`); общий на все рендеры. */
+let cacheFloor: number | null = null;
+
+export class DungeonRenderer {
+  readonly view: HTMLCanvasElement;
+  private vctx: CanvasRenderingContext2D;
+  /** Контекст рисования мира — экранная канва с масштабом. */
+  private bctx: CanvasRenderingContext2D;
+  private light: HTMLCanvasElement;
+  private lctx: CanvasRenderingContext2D;
+  /** Масштаб: игровой пиксель = столько экранных. */
+  scale = 4;
+  gw = 160;
+  gh = 300;
+  private ox = 0;
+  private oy = 0;
+  private dpr = 1;
+  /** Камера — мировые пиксели центра кадра. */
+  camX = 0;
+  camY = 0;
+  private camReady = false;
+  /** Сколько переносов героя уже видели: новый — камера встаёт сразу. */
+  private warps = 0;
+  private chunks = new Map<
+    number,
+    { c: HTMLCanvasElement; snap: Uint8Array; sig: string; used: number }
+  >();
+  /** Трещины по куску карты — их стадия меняет картинку стены. */
+  private crackObjs = new Map<number, { id: string; x: number; y: number }[]>();
+  private crackWorld: World | null = null;
+  private parts: Particle[] = [];
+  private floats: Float[] = [];
+  private slashes: Slash[] = [];
+  private rings: Ring[] = [];
+  private fx: Fx[] = [];
+  private trauma = 0;
+  private shakeT = 0;
+  private flash = 0;
+  /** Цвет вспышки (Движок 3: молния, остановка времени); null — белая. */
+  private flashRgb: string | null = null;
+  private time = 0;
+  /** Взрыв светит пару кадров. */
+  private blasts: { x: number; y: number; r: number; life: number }[] = [];
+  /** Глаза крыс светятся поверх темноты — видно, откуда лезут. */
+  private eyes: { x: number; y: number; c: string }[] = [];
+  /** Шлейф рывка: силуэты героя, тающие за ним. */
+  private ghosts: Ghost[] = [];
+  // ---- Движок анимаций (v2.85) ----
+  /** Контакт ударов: запись живёт `life` секунд после приземления. */
+  private impacts: { rec: ImpactRec; def: ImpactDef; age: number }[] = [];
+  /** Шлейф мобов (`MobFrame.ghost`) и часы шлейфа по мобу. */
+  private mobGhosts: MobGhost[] = [];
+  private ghostClock = new Map<number, number>();
+  /** Слои поверх темноты (`MobFrame.lit`) этого кадра. */
+  private lits: Placed[] = [];
+  /** Долгая смерть (`MobFrame.linger`): копии убранных боссов. */
+  private remains = new Map<number, Remains>();
+  private remainsOf: Sim | null = null;
+  /** Прогрев кадров (`registerMobWarm`): текущий генератор и готовые. */
+  private warmIt: Iterator<unknown> | null = null;
+  private warmQueue: (() => Iterator<unknown>)[] = [];
+  private warmDone = new Set<string>();
+  /** Рисовальщики этажей, упавшие с ошибкой: больше не зовутся (v2.85). */
+  private broken = new Set<string>();
+  private ghostT = 0;
+  private dt = 0;
+  /** Куски карты нарисованы плитками 0x72 (иначе — прежними). */
+  private x72 = false;
+  /** Маска разведанного: точка на клетку, на свет ложится со сглаживанием. */
+  private fogCv: HTMLCanvasElement | null = null;
+  /** Упреждение камеры по ходу — сглажено отдельно от самой камеры. */
+  private leadX = 0;
+  private leadY = 0;
+
+  constructor(view: HTMLCanvasElement) {
+    this.view = view;
+    this.vctx = view.getContext('2d')!;
+    this.bctx = this.vctx;
+    this.light = document.createElement('canvas');
+    this.lctx = this.light.getContext('2d')!;
+  }
+
+  /** Подогнать под размер экрана: множитель целый, игровой кадр ~160 пикселей в ширину. */
+  resize(cssW: number, cssH: number, dpr: number): void {
+    this.dpr = Math.min(3, Math.max(1, dpr));
+    const w = Math.max(1, Math.round(cssW * this.dpr));
+    const h = Math.max(1, Math.round(cssH * this.dpr));
+    this.view.width = w;
+    this.view.height = h;
+    this.scale = Math.max(1, Math.floor(w / 150));
+    this.gw = w / this.scale;
+    this.gh = h / this.scale;
+    this.light.width = Math.ceil(this.gw) + 2;
+    this.light.height = Math.ceil(this.gh) + 2;
+    this.ox = 0;
+    this.oy = 0;
+    this.vctx.imageSmoothingEnabled = false;
+  }
+
+  /** Координата в игровых пикселях, прижатая к точке экрана. */
+  private q = (v: number) => Math.round(v * this.scale) / this.scale;
+
+  /** Экранные CSS-координаты точки мира — для тапа по мобу. */
+  toScreen(x: number, y: number): { x: number; y: number } {
+    const gx = x * TS - this.camX + this.gw / 2;
+    const gy = y * TS - this.camY + this.gh / 2;
+    return {
+      x: (this.ox + gx * this.scale) / this.dpr,
+      y: (this.oy + gy * this.scale) / this.dpr,
+    };
+  }
+
+  toWorld(cssX: number, cssY: number): { x: number; y: number } {
+    const gx = (cssX * this.dpr - this.ox) / this.scale;
+    const gy = (cssY * this.dpr - this.oy) / this.scale;
+    return { x: (gx + this.camX - this.gw / 2) / TS, y: (gy + this.camY - this.gh / 2) / TS };
+  }
+
+  addTrauma(t: number): void {
+    this.trauma = Math.min(1, this.trauma + t);
+  }
+
+  // ---- События симуляции → эффекты -------------------------------------
+
+  onEvents(sim: Sim, events: SimEvent[]): void {
+    for (const e of events) {
+      switch (e.t) {
+        case 'swing':
+          this.slashes.push({
+            x: e.x,
+            y: e.y,
+            ang: e.ang,
+            arc: e.arc,
+            reach: e.reach,
+            life: 0,
+            max: e.heavy ? 0.24 : 0.16,
+            heavy: e.heavy,
+            flip: e.step % 2 === 1,
+            step: e.step,
+          });
+          break;
+        case 'hit': {
+          const big = e.crit || e.kill;
+          this.burst(
+            e.x,
+            e.y,
+            e.boss ? ['#8a7a68', '#c8b8a0', '#ffffff'] : ['#6b6158', '#978b80', '#3d3630'],
+            big ? 10 : 5,
+            big ? 1.6 : 1,
+          );
+          if (e.dmg > 0)
+            this.floats.push({
+              x: e.x + (Math.random() - 0.5) * 0.4,
+              y: e.y - 0.6,
+              text: e.crit ? `${e.dmg}!` : `${e.dmg}`,
+              color: e.crit ? '#ffd24a' : e.kill ? '#ffffff' : '#f0e6d8',
+              size: e.crit ? 1.5 : 1,
+              life: 0,
+              max: e.crit ? 0.9 : 0.7,
+              vx: (Math.random() - 0.5) * 0.8,
+            });
+          // Искра попадания — звезда набора; крит — крест, его видно издалека.
+          this.addFx(
+            e.crit ? 7 : 5,
+            e.x + (Math.random() - 0.5) * 0.3,
+            e.y - 0.35,
+            e.crit ? 0.26 : 0.18,
+            {
+              scale: e.crit ? 0.85 : 0.55,
+              ang: e.crit ? 0 : (Math.random() - 0.5) * 0.6,
+            },
+          );
+          if (e.crit) this.addTrauma(0.18);
+          if (e.boss) this.addTrauma(0.08);
+          break;
+        }
+        case 'kill': {
+          const kd = MOBS[e.mob];
+          const colors = e.albino
+            ? ['#ebe4de', '#ffffff', '#b3a79f']
+            : (kd?.gore ?? ['#6b6158', '#978b80', '#3d3630', '#c68d84']);
+          const big = !!kd?.boss;
+          this.burst(e.x, e.y, colors, big ? 40 : 14, 1.8);
+          // Клуб дыма набора на месте крысы: тело не «исчезает», а лопается.
+          // Небольшой и полупрозрачный: четыре крысы одним ударом — это четыре
+          // клуба, и крупные сливались в белую кляксу поверх выпавшего мяса.
+          if (
+            !this.addFx(18, e.x, e.y - 0.25, big ? 0.6 : 0.36, {
+              scale: big ? 1.5 : 0.6,
+              alpha: big ? 0.9 : 0.7,
+            })
+          )
+            this.puff(e.x, e.y, 'rgba(160,140,120,0.8)', 5);
+          if (e.elite || e.albino) {
+            this.rings.push({ x: e.x, y: e.y, r: 2.2, life: 0, max: 0.4, color: '#ffd24a' });
+            this.addTrauma(0.25);
+          }
+          break;
+        }
+        case 'hurt':
+          this.addTrauma(0.3);
+          this.flash = Math.max(this.flash, 0.12);
+          this.floats.push({
+            x: e.x,
+            y: e.y - 1.2,
+            text: `−${e.dmg}`,
+            color: '#ff5a4a',
+            size: 1.2,
+            life: 0,
+            max: 0.8,
+            vx: 0,
+          });
+          break;
+        case 'boom':
+          if (e.r > 0) {
+            this.addTrauma(0.55);
+            this.flash = Math.max(this.flash, 0.1);
+            this.blasts.push({ x: e.x, y: e.y, r: e.r * 2.2, life: 0.35 });
+            if (!this.addFx(12, e.x, e.y - 0.3, 0.4, { scale: (e.r * TS) / 14 }))
+              this.rings.push({ x: e.x, y: e.y, r: e.r, life: 0, max: 0.35, color: '#ffb040' });
+            this.burst(e.x, e.y, ['#ffd24a', '#ff7a2a', '#fff3b0', '#5a4a3e'], 30, 2.4, true);
+            this.puff(e.x, e.y, 'rgba(70,60,52,0.9)', 12);
+          } else {
+            this.addTrauma(0.2);
+            this.puff(e.x, e.y, 'rgba(150,130,110,0.8)', 6);
+          }
+          break;
+        case 'break':
+          this.burst(
+            e.x,
+            e.y,
+            e.kind === 'crack'
+              ? ['#65554a', '#463a31', '#7d6b5c']
+              : ['#8a6038', '#b0804e', '#5a3a1e'],
+            16,
+            1.6,
+          );
+          this.puff(e.x, e.y, 'rgba(160,140,120,0.8)', 6);
+          this.addTrauma(0.12);
+          break;
+        case 'emerge':
+          this.puff(e.x, e.y, 'rgba(120,96,70,0.8)', 4);
+          break;
+        case 'dash':
+          this.puff(e.x, e.y + 0.3, 'rgba(160,140,120,0.7)', 5);
+          break;
+        case 'dodge':
+          if (!this.addFx(1, e.x, e.y - 0.3, 0.3, { scale: 1.2 }))
+            this.rings.push({ x: e.x, y: e.y, r: 1.6, life: 0, max: 0.45, color: '#8fd6ff' });
+          break;
+        case 'pick':
+          this.floatPick(e.x, e.y, e.what, e.n);
+          break;
+        case 'eat':
+          this.floats.push({
+            x: sim.hero.x,
+            y: sim.hero.y - 1.3,
+            text: `+${e.heal}`,
+            color: '#7ae07a',
+            size: 1.1,
+            life: 0,
+            max: 0.9,
+            vx: 0,
+          });
+          break;
+        case 'level':
+          if (!this.addFx(4, 0, 0, 0.6, { scale: 1.4, follow: true, dy: -5 }))
+            this.rings.push({
+              x: sim.hero.x,
+              y: sim.hero.y,
+              r: 2.6,
+              life: 0,
+              max: 0.7,
+              color: '#ffe08a',
+            });
+          this.burst(sim.hero.x, sim.hero.y, ['#ffe08a', '#fff6c8', '#ffb040'], 24, 1.8, true);
+          break;
+        case 'skill':
+          if (
+            !this.addFx(9, 0, 0, SKILL.dur * 0.8, {
+              scale: (SKILL.reach * TS) / 14,
+              follow: true,
+              dy: -5,
+            })
+          )
+            this.rings.push({
+              x: e.x,
+              y: e.y,
+              r: SKILL.reach,
+              life: 0,
+              max: 0.5,
+              color: '#ffffff',
+            });
+          break;
+        case 'strike': {
+          // Удар по площади, упавший камень, лопнувший снаряд.
+          const near = Math.hypot(e.x - sim.hero.x, e.y - sim.hero.y) < 6;
+          // Свой контакт удара этажа (v2.85): волна, пыль, осколки — вместо
+          // общего взрыва; тряска и вспышка — по силе этого удара.
+          const imp = IMPACT_PAINTERS.get(e.art);
+          if (imp) {
+            this.impacts.push({
+              rec: {
+                art: e.art,
+                x: e.x,
+                y: e.y,
+                ...(e.s ?? {}),
+                vx: e.v?.[0],
+                vy: e.v?.[1],
+                seed: Math.floor(Math.random() * 1e9),
+              },
+              def: imp,
+              age: 0,
+            });
+            const close = Math.hypot(e.x - sim.hero.x, e.y - sim.hero.y) < 7;
+            if (close) this.addTrauma(imp.shake ?? 0.12);
+            if (imp.flash && close) {
+              this.flash = Math.max(this.flash, Math.min(0.5, imp.flash * 0.35));
+              this.flashRgb = imp.flashRgb ?? null;
+            }
+            if (!imp.keepBurst) break;
+          }
+          this.burst(e.x, e.y, ['#ffffff', '#ffd9a0', '#a08070'], 8, 1.1);
+          this.rings.push({ x: e.x, y: e.y, r: 1.2, life: 0, max: 0.3, color: '#ffe0b0' });
+          if (near && !imp) this.addTrauma(0.12);
+          break;
+        }
+        case 'boss':
+          if (e.what === 'wake' || e.what === 'split' || e.what === 'phase') this.addTrauma(0.6);
+          if (e.what === 'seal') this.flash = Math.max(this.flash, 0.15);
+          if (e.what === 'dead') {
+            this.addTrauma(0.9);
+            this.flash = 0.2;
+          }
+          break;
+        case 'clank':
+          this.burst(e.x, e.y, ['#ffd24a', '#ffffff'], 6, 1.2, true);
+          this.addFx(5, e.x, e.y - 0.35, 0.16, { scale: 0.45 });
+          break;
+        // Движок 3: тряска и вспышка без звука, падение в пропасть, рывок крюка.
+        case 'shake':
+          this.addTrauma(Math.max(0, Math.min(1, e.k)));
+          break;
+        case 'flash':
+          this.flash = Math.max(this.flash, Math.min(0.5, e.k * 0.35));
+          this.flashRgb = rgbOf(e.color);
+          break;
+        case 'fall':
+          this.puff(e.x, e.y + 0.2, 'rgba(20,16,24,0.55)', 4);
+          break;
+        case 'pull':
+          if (!e.end) this.puff(e.x, e.y + 0.3, 'rgba(200,190,170,0.4)', 3);
+          break;
+      }
+    }
+  }
+
+  /** Эффект из набора. false — картинки ещё не пришли, пусть рисуется прежний. */
+  private addFx(id: FxId, x: number, y: number, max: number, o: Partial<Fx> = {}): boolean {
+    if (!fxCount(id)) return false;
+    this.fx.push({
+      id,
+      x,
+      y,
+      life: 0,
+      max,
+      ang: 0,
+      scale: 1,
+      flip: false,
+      follow: false,
+      dx: 0,
+      dy: 0,
+      alpha: 1,
+      ...o,
+    });
+    return true;
+  }
+
+  private burst(
+    x: number,
+    y: number,
+    colors: string[],
+    n: number,
+    power: number,
+    glow = false,
+  ): void {
+    if (reduce()) n = Math.min(n, 4);
+    for (let i = 0; i < n && this.parts.length < 500; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const s = (1.5 + Math.random() * 3) * power;
+      this.parts.push({
+        x,
+        y,
+        z: 0.3,
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s * 0.7,
+        vz: 2 + Math.random() * 4 * power,
+        life: 0,
+        max: 0.5 + Math.random() * 0.5,
+        size: Math.random() < 0.3 ? 2 : 1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        soft: false,
+        glow,
+      });
+    }
+  }
+
+  private puff(x: number, y: number, color: string, n: number): void {
+    for (let i = 0; i < n && this.parts.length < 500; i++) {
+      const a = Math.random() * Math.PI * 2;
+      this.parts.push({
+        x: x + Math.cos(a) * 0.2,
+        y: y + Math.sin(a) * 0.2,
+        z: 0.2,
+        vx: Math.cos(a) * 0.8,
+        vy: Math.sin(a) * 0.5 - 0.3,
+        vz: 0,
+        life: 0,
+        max: 0.5 + Math.random() * 0.3,
+        size: 3 + Math.random() * 2,
+        color,
+        soft: true,
+        glow: false,
+      });
+    }
+  }
+
+  private floatPick(x: number, y: number, what: string, n: number): void {
+    const names: Record<string, [string, string]> = {
+      coin: [`+${n}`, '#ffd24a'],
+      token: [`+${n}✦`, '#7fe6d0'],
+      key: [tr('dungeon.float.key'), '#9fe6f0'],
+      crown: [tr('dungeon.float.crown'), '#ffd24a'],
+    };
+    const t = names[what];
+    if (!t) return;
+    this.floats.push({ x, y: y - 0.6, text: t[0], color: t[1], size: 1, life: 0, max: 0.8, vx: 0 });
+  }
+
+  // ---- Кадр -------------------------------------------------------------
+
+  frame(sim: Sim, gear: Gear, dt: number): void {
+    this.time += dt;
+    this.dt = dt;
+    setPaintSim(sim);
+    const w = sim.world;
+    const h = sim.hero;
+    const g = this.bctx;
+    // Камера: впереди по ходу, герой чуть ниже середины — вглубь смотрим вверх.
+    // Упреждение сглажено само по себе и не берёт скорость рывка: иначе каждый
+    // рывок и каждое скольжение вдоль стены дёргали бы весь кадр.
+    if (h.mode !== 'dash') {
+      const kl = 1 - Math.exp(-2.5 * dt);
+      this.leadX += (h.vx * 0.3 * TS - this.leadX) * kl;
+      this.leadY += (h.vy * 0.3 * TS - this.leadY) * kl;
+    }
+    // Сменённые на ходу клетки (`api.setTile`): их куски и соседние — заново
+    // (стены рисуются по соседям).
+    if (sim.retiled.length) {
+      for (const i of sim.retiled) {
+        const cx = Math.floor((i % w.w) / CHUNK);
+        const cy = Math.floor(Math.floor(i / w.w) / CHUNK);
+        for (let oy = -1; oy <= 1; oy++)
+          for (let ox = -1; ox <= 1; ox++) this.chunks.delete((cy + oy) * 1000 + cx + ox);
+      }
+      sim.retiled.length = 0;
+    }
+    if (sim.warps !== this.warps) {
+      this.warps = sim.warps;
+      this.camReady = false;
+      this.leadX = 0;
+      this.leadY = 0;
+    }
+    let tx = h.x * TS + this.leadX;
+    let ty = h.y * TS + this.leadY - this.gh * 0.1;
+    // Камера-кинематограф (Движок 3, `api.camera`): уходит к точке за
+    // первую четверть, держит, возвращается за последнюю.
+    const cam = sim.cam;
+    if (cam) {
+      const e = Math.min(0.6, cam.dur / 4);
+      const u = Math.min(1, cam.t / e, (cam.dur - cam.t) / e);
+      const wgt = u <= 0 ? 0 : u * u * (3 - 2 * u);
+      tx += (cam.x * TS - tx) * wgt;
+      ty += (cam.y * TS - ty) * wgt;
+    }
+    if (!this.camReady) {
+      this.camX = tx;
+      this.camY = ty;
+      this.camReady = true;
+    }
+    const k = 1 - Math.exp(-6 * dt);
+    this.camX += (tx - this.camX) * k;
+    this.camY += (ty - this.camY) * k;
+    const maxX = w.w * TS - this.gw / 2;
+    this.camX = Math.max(this.gw / 2, Math.min(maxX, this.camX));
+    this.camY = Math.max(
+      this.gh / 2 - TS * 2,
+      Math.min(w.h * TS - this.gh / 2 + TS * 2, this.camY),
+    );
+
+    // Тряска по Айзерло: смещение ∝ квадрату травмы, гладкий шум.
+    this.trauma = Math.max(0, this.trauma - dt * 1.4);
+    this.shakeT += dt * 30;
+    const sh = reduce() ? 0 : this.trauma * this.trauma;
+    const sx = noise(this.shakeT, 1) * 4 * sh;
+    const sy = noise(this.shakeT, 2) * 4 * sh;
+    const left = this.q(this.camX - this.gw / 2 + sx);
+    const top = this.q(this.camY - this.gh / 2 + sy);
+
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.imageSmoothingEnabled = false;
+    g.fillStyle = areaOf(bandAt(w, h.y).def.id).spec.skin.fog ?? '#07060a';
+    g.fillRect(0, 0, this.view.width, this.view.height);
+    g.setTransform(this.scale, 0, 0, this.scale, 0, 0);
+
+    // Куски карты.
+    const c0 = Math.floor(left / (CHUNK * TS));
+    const c1 = Math.floor((left + this.gw) / (CHUNK * TS));
+    const r0 = Math.floor(top / (CHUNK * TS));
+    const r1 = Math.floor((top + this.gh) / (CHUNK * TS));
+    for (let cy = r0; cy <= r1; cy++)
+      for (let cx = c0; cx <= c1; cx++) {
+        if (cx < 0 || cy < 0 || cx * CHUNK >= w.w || cy * CHUNK >= w.h) continue;
+        const c = this.chunk(sim, cx, cy);
+        g.drawImage(c, cx * CHUNK * TS - left, cy * CHUNK * TS - top);
+      }
+    // Заготовка: один ещё не нарисованный кусок вокруг кадра — за кадр.
+    // Иначе кусок рисовался в тот кадр, когда въезжал в экран, и шаг
+    // запинался.
+    this.prefetch(sim, c0 - 1, c1 + 1, r0 - 1, r1 + 1);
+
+    // Метки угроз на полу.
+    this.drawTelegraphs(sim, left, top);
+    this.drawImpacts(false, left, top);
+
+    // Предметы, мобы, герой, добыча — по глубине.
+    type D = { y: number; draw: () => void };
+    const list: D[] = [];
+    const inView = (x: number, y: number, m = 3) =>
+      x * TS > left - m * TS &&
+      x * TS < left + this.gw + m * TS &&
+      y * TS > top - m * TS &&
+      y * TS < top + this.gh + m * 4 * TS;
+
+    for (const p of sim.props) {
+      if (!p.alive || !inView(p.x, p.y)) continue;
+      if (p.kind === 'deco' || p.kind === 'breakable') {
+        // Предмет этажа рисует сам этаж; нет рисовальщика — не рисуем.
+        const f = PROP_PAINTERS.get(p.obj.ref ?? '');
+        const sp = f
+          ? this.guard(`prop:${p.obj.ref}`, () => f(p.obj, this.time, p.alive, p.flash > 0), null)
+          : null;
+        if (!sp) continue;
+        const bottom = Math.floor(p.y) + 1;
+        const x0 = p.x * TS - left - sp.ax;
+        const y0 = bottom * TS - top - sp.ay;
+        // Герой зашёл за высокий предмет (ворота, колонна, статуя) — предмет
+        // просвечивает: иначе героя не видно вовсе.
+        const hx = h.x * TS - left;
+        const hy = h.y * TS - top - 6;
+        const behind =
+          !p.obj.flat &&
+          h.y < bottom &&
+          sp.img.height > TS * 1.5 &&
+          hx > x0 + 2 &&
+          hx < x0 + sp.img.width - 2 &&
+          hy > y0 &&
+          hy < y0 + sp.img.height - 3;
+        list.push({
+          // Плоское (руны, решётки, ковры — Движок 3) — всегда под всеми.
+          y: p.obj.flat ? -1e9 + bottom : bottom,
+          draw: () => {
+            if (behind) g.globalAlpha = 0.45;
+            g.drawImage(sp.img, this.q(x0), this.q(y0));
+            g.globalAlpha = 1;
+          },
+        });
+        continue;
+      }
+      const art: PropArt =
+        p.kind === 'secret'
+          ? p.on
+            ? 'chestOpen'
+            : 'chest'
+          : p.kind === 'unlit' && p.on
+            ? 'lantern'
+            : (p.kind as PropArt);
+      const img = (this.x72 && propX72(art, p.flash > 0)) || propArt(art, p.flash > 0);
+      const bottom = p.kind === 'cart' ? p.y + 0.45 : Math.floor(p.y) + 1;
+      list.push({
+        y: bottom - (p.kind === 'pillar' ? 0.05 : 0),
+        draw: () => {
+          g.fillStyle = 'rgba(0,0,0,0.28)';
+          g.beginPath();
+          g.ellipse(
+            p.x * TS - left,
+            bottom * TS - top - 2,
+            img.width * 0.45,
+            2.5,
+            0,
+            0,
+            Math.PI * 2,
+          );
+          g.fill();
+          g.drawImage(
+            img,
+            this.q(p.x * TS - left - img.width / 2),
+            this.q(bottom * TS - top - img.height),
+          );
+        },
+      });
+    }
+    // Клеть и ворота арены.
+    for (const o of w.objs) {
+      if (o.kind === 'lift' && inView(o.x, o.y, 4)) {
+        const img = propArt('liftFrame');
+        list.push({
+          y: o.y - 1.3,
+          draw: () =>
+            g.drawImage(
+              img,
+              this.q((o.x + 0.5) * TS - left - img.width / 2),
+              this.q((o.y + 2) * TS - top - img.height),
+            ),
+        });
+      }
+      if (o.kind === 'seal' && inView(o.x, o.y) && sim.tiles[o.y * w.w + o.x] === Tile.Seal) {
+        const sp = sealSprite(Math.floor(this.time * 6 + o.x));
+        list.push({
+          y: o.y + 1,
+          draw: () =>
+            g.drawImage(sp.img, this.q(o.x * TS - left), this.q((o.y + 1) * TS - top - sp.ay)),
+        });
+      }
+      if (o.kind === 'gate' && inView(o.x, o.y) && sim.tiles[o.y * w.w + o.x] === Tile.Gate) {
+        const img = propArt('gate');
+        list.push({
+          y: o.y + 1,
+          draw: () =>
+            g.drawImage(img, this.q(o.x * TS - left), this.q((o.y + 1) * TS - top - img.height)),
+        });
+      }
+    }
+    for (const m of sim.mobs) {
+      if (!inView(m.x, m.y)) continue;
+      list.push({ y: m.y + 0.01, draw: () => this.drawMob(sim, m, left, top) });
+    }
+    // Долгая смерть босса (v2.85): моб уже убран, а сцена доигрывает.
+    if (this.remainsOf !== sim) {
+      this.remains.clear();
+      this.ghostClock.clear();
+      this.mobGhosts = [];
+      this.impacts = [];
+      this.warmIt = null;
+      this.warmQueue = [];
+      this.warmDone.clear();
+      this.remainsOf = sim;
+      // Другой этаж — кадры прошлого не нужны (v2.110); тот же этаж заново — кеш живёт.
+      if (cacheFloor !== sim.floor) {
+        if (cacheFloor !== null) resetFrameCaches();
+        cacheFloor = sim.floor;
+      }
+    }
+    for (const [id, r] of this.remains) {
+      const live = sim.mobs.find((m) => m.id === id);
+      if (live) {
+        // Пока симуляция держит моба, копия идёт за ним.
+        r.m.t = live.t;
+        r.m.x = live.x;
+        r.m.y = live.y;
+        continue;
+      }
+      r.m.t += dt;
+      // Вспышка добившего удара гаснет, как у живого: иначе труп весь
+      // `linger` рисовался бы белым.
+      r.m.flash = Math.max(0, r.m.flash - dt);
+      if (r.m.t >= r.linger) {
+        this.remains.delete(id);
+        continue;
+      }
+      if (!inView(r.m.x, r.m.y)) continue;
+      list.push({ y: r.m.y + 0.01, draw: () => this.drawMob(sim, r.m, left, top) });
+    }
+    for (const b of sim.bombs) {
+      if (!inView(b.x, b.y)) continue;
+      list.push({
+        y: b.y,
+        draw: () => {
+          const img = propArt('bomb');
+          g.drawImage(img, this.q(b.x * TS - left - 4), this.q(b.y * TS - top - 5));
+          // Фитиль искрит, тем чаще, чем меньше осталось.
+          if (Math.sin(this.time * (8 + (1.6 - b.fuse) * 20)) > 0) {
+            g.fillStyle = '#fff3b0';
+            g.fillRect(this.q(b.x * TS - left + 3), this.q(b.y * TS - top - 6), 1, 1);
+          }
+        },
+      });
+    }
+    for (const s of sim.shots) {
+      if (!inView(s.x, s.y)) continue;
+      list.push({ y: s.y, draw: () => this.drawShot(s, left, top) });
+    }
+    for (const d of sim.drops) {
+      if (!inView(d.x, d.y)) continue;
+      list.push({
+        y: d.y,
+        draw: () => {
+          const img = itemArt(d.kind);
+          const bob = d.z <= 0 ? Math.sin(this.time * 4 + d.id) * 0.8 : 0;
+          g.fillStyle = 'rgba(0,0,0,0.3)';
+          g.fillRect(this.q(d.x * TS - left - 3), this.q(d.y * TS - top + 2), 6, 1);
+          g.drawImage(img, this.q(d.x * TS - left - 5), this.q((d.y - d.z) * TS - top - 8 + bob));
+        },
+      });
+    }
+    list.push({ y: h.y + 0.02, draw: () => this.drawHero(sim, gear, left, top) });
+    list.sort((a, b) => a.y - b.y);
+    // Шлейф мобов — под мобами, как у героя: поверх тела силуэт подкрашивал бы его.
+    this.drawMobGhosts(left, top);
+    for (const d of list) d.draw();
+
+    // Частицы.
+    this.drawParticles(dt, left, top);
+    this.drawSlashes(sim, dt, left, top);
+    this.drawRings(dt, left, top);
+    this.drawFx(sim, dt, left, top);
+
+    // Свет.
+    this.drawLight(sim, left, top, dt);
+    // Поверх темноты (Движок 3): молнии, лазеры, свечение — `above`.
+    this.drawTelegraphs(sim, left, top, true);
+    this.drawImpacts(true, left, top);
+    for (const p of this.lits) this.place(p, p.img);
+    this.lits.length = 0;
+    for (const e of this.eyes) {
+      g.fillStyle = e.c;
+      g.globalAlpha = 0.9;
+      g.fillRect(e.x, e.y, 1, 1);
+    }
+    g.globalAlpha = 1;
+    this.eyes.length = 0;
+
+    // Вспышка удара и замедление — поверх мира.
+    if (this.flash > 0) {
+      g.fillStyle = `rgba(${this.flashRgb ?? '255,240,230'},${Math.min(0.35, this.flash * 2)})`;
+      g.fillRect(0, 0, this.gw, this.gh);
+      this.flash = Math.max(0, this.flash - dt);
+      if (this.flash <= 0) this.flashRgb = null;
+    }
+    // Время остановлено (Движок 3, `api.timeScale`): кадр теряет цвет —
+    // тем сильнее, чем медленнее мир. Режим «насыщенность» — один проход.
+    if (sim.scaleT > 0 && sim.worldScale < 0.95 && !reduce()) {
+      g.globalCompositeOperation = 'saturation';
+      g.fillStyle = `rgba(128,128,128,${Math.min(0.92, 1 - sim.worldScale)})`;
+      g.fillRect(0, 0, this.gw, this.gh);
+      g.globalCompositeOperation = 'source-over';
+    }
+    if (sim.slowmo > 0) {
+      g.fillStyle = `rgba(80,150,255,${Math.min(0.14, sim.slowmo * 0.3)})`;
+      g.fillRect(0, 0, this.gw, this.gh);
+    }
+
+    // Цифры — уже в точках экрана.
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    this.drawFloats(dt, left, top);
+    this.warmStep(sim);
+  }
+
+  // ---- Движок анимаций (v2.85) ----------------------------------------------
+
+  /**
+   * Вызов рисовальщика этажа под защитой. Упал — пишем один раз в консоль,
+   * больше его не зовём (рисуется запасной вид), а кадр и бой идут дальше.
+   * Без этого одно исключение в картинке останавливало цикл кадров: игра
+   * замирала намертво.
+   */
+  private guard<T>(key: string, fn: () => T, fallback: T): T {
+    if (this.broken.has(key)) return fallback;
+    try {
+      return fn();
+    } catch (e) {
+      this.broken.add(key);
+      console.error(`рисовальщик ${key} упал и отключён`, e);
+      const g = this.bctx;
+      g.setTransform(this.scale, 0, 0, this.scale, 0, 0);
+      g.globalAlpha = 1;
+      g.globalCompositeOperation = 'source-over';
+      return fallback;
+    }
+  }
+
+  /** Кадр моба на экран: сдвиг, сжатие, наклон от точки ног, прозрачность. */
+  private place(p: Placed, img: HTMLCanvasElement): void {
+    const g = this.bctx;
+    g.globalAlpha = p.alpha;
+    if (p.sx === 1 && p.sy === 1 && p.rot === 0) {
+      g.drawImage(img, this.q(p.px - p.ax), this.q(p.py - p.ay));
+    } else {
+      g.save();
+      g.translate(this.q(p.px), this.q(p.py));
+      if (p.rot) g.rotate(p.rot);
+      g.scale(p.sx, p.sy);
+      g.drawImage(img, -p.ax, -p.ay);
+      g.restore();
+    }
+    g.globalAlpha = 1;
+  }
+
+  /** Контакт ударов (`registerImpactPainter`): на полу или поверх темноты. */
+  private drawImpacts(above: boolean, left: number, top: number): void {
+    if (!this.impacts.length) return;
+    const g = this.bctx;
+    const keep: typeof this.impacts = [];
+    for (const it of this.impacts) {
+      if (!!it.def.above !== above) {
+        keep.push(it);
+        continue;
+      }
+      it.age += this.dt;
+      if (it.age >= it.def.life) continue;
+      const px = this.q(it.rec.x * TS - left);
+      const py = this.q(it.rec.y * TS - top);
+      g.save();
+      const alive = this.guard(
+        `impact:${it.rec.art}`,
+        () => it.def.paint(g, it.rec, px, py, TS, it.age, this.time),
+        false,
+      );
+      g.restore();
+      g.globalAlpha = 1;
+      if (alive !== false) keep.push(it);
+    }
+    this.impacts = keep;
+  }
+
+  /** Шлейф мобов: силуэты тают на месте, где их оставили. */
+  private drawMobGhosts(left: number, top: number): void {
+    if (!this.mobGhosts.length) return;
+    const keep: MobGhost[] = [];
+    for (const gh of this.mobGhosts) {
+      gh.life += this.dt;
+      if (gh.life >= gh.max) continue;
+      keep.push(gh);
+      this.place(
+        {
+          ...gh,
+          px: gh.wx - left,
+          py: gh.wy - top,
+          alpha: gh.a0 * (1 - gh.life / gh.max),
+        },
+        gh.img,
+      );
+    }
+    this.mobGhosts = keep;
+  }
+
+  /** Прогрев: до 3 мс за кадр на генераторы кадров боссов, что есть в мире. */
+  private warmStep(sim: Sim): void {
+    if (!MOB_WARM.size) return;
+    if (!this.warmIt && !this.warmQueue.length)
+      for (const m of sim.mobs) {
+        const art = MOBS[m.kind]?.art;
+        if (!art || art.kind !== 'paint' || this.warmDone.has(art.id)) continue;
+        this.warmDone.add(art.id);
+        const gens = MOB_WARM.get(art.id);
+        if (gens?.length) {
+          this.warmQueue = [...gens];
+          break;
+        }
+      }
+    const t0 = performance.now();
+    while (performance.now() - t0 < 3) {
+      if (!this.warmIt) {
+        const next = this.warmQueue.shift();
+        if (!next) return;
+        this.warmIt = next();
+      }
+      const it = this.warmIt;
+      if (this.guard('warm', () => it.next().done, true)) this.warmIt = null;
+    }
+  }
+
+  private prefetch(sim: Sim, c0: number, c1: number, r0: number, r1: number): void {
+    const w = sim.world;
+    for (let cy = r0; cy <= r1; cy++)
+      for (let cx = c0; cx <= c1; cx++) {
+        if (cx < 0 || cy < 0 || cx * CHUNK >= w.w || cy * CHUNK >= w.h) continue;
+        if (this.chunks.has(cy * 1000 + cx)) continue;
+        this.chunk(sim, cx, cy);
+        return;
+      }
+  }
+
+  // ---- Куски карты -------------------------------------------------------
+
+  private chunk(sim: Sim, cx: number, cy: number): HTMLCanvasElement {
+    const w = sim.world;
+    const key = cy * 1000 + cx;
+    const x0 = cx * CHUNK;
+    const y0 = cy * CHUNK;
+    // Кусок устарел, если в нём сменилась клетка (решётка, осыпавшаяся
+    // трещина, ворота арены) или трещина получила удар.
+    if (this.crackWorld !== w) {
+      this.crackWorld = w;
+      this.crackObjs.clear();
+      for (const o of w.objs) {
+        if (o.kind !== 'crack') continue;
+        const k = Math.floor(o.y / CHUNK) * 1000 + Math.floor(o.x / CHUNK);
+        const list = this.crackObjs.get(k) ?? [];
+        list.push({ id: o.id, x: o.x, y: o.y });
+        this.crackObjs.set(k, list);
+      }
+    }
+    // Пришёл атлас — куски, нарисованные прежними плитками, перерисовать.
+    if (this.x72 !== x72Ready()) {
+      this.x72 = x72Ready();
+      this.chunks.clear();
+    }
+    const cracks = this.crackObjs.get(key) ?? [];
+    const sig = cracks.map((c) => sim.cracks.get(c.id) ?? 0).join(',');
+    let hit = this.chunks.get(key);
+    let stale = !hit || hit.sig !== sig;
+    if (hit && !stale) {
+      for (let y = 0; y < CHUNK && !stale; y++)
+        for (let x = 0; x < CHUNK; x++) {
+          const tx = x0 + x;
+          const ty = y0 + y;
+          if (tx >= w.w || ty >= w.h) continue;
+          if (hit.snap[y * CHUNK + x] !== sim.tiles[ty * w.w + tx]) {
+            stale = true;
+            break;
+          }
+        }
+    }
+    if (!stale && hit) {
+      hit.used = this.time;
+      return hit.c;
+    }
+    const c = hit?.c ?? document.createElement('canvas');
+    c.width = CHUNK * TS;
+    c.height = CHUNK * TS;
+    const g = c.getContext('2d')!;
+    g.imageSmoothingEnabled = false;
+    g.clearRect(0, 0, c.width, c.height);
+    const snap = new Uint8Array(CHUNK * CHUNK);
+    // Плитки 0x72 собираются в одном буфере пикселей и выводятся одной
+    // операцией; то, что рисуется холстами (площадка клети, решётка,
+    // трещины, завал), — следом, поверх.
+    const buf = this.x72 ? new Px(CHUNK * TS, CHUNK * TS) : null;
+    const late: (() => void)[] = [];
+    const t = (x: number, y: number) => {
+      if (x < 0 || y < 0 || x >= w.w || y >= w.h) return Tile.Wall;
+      return sim.tiles[y * w.w + x];
+    };
+    const open = (v: number) => walkableTile(v) || v === Tile.Gate || v === Tile.Grate;
+    for (let y = 0; y < CHUNK; y++)
+      for (let x = 0; x < CHUNK; x++) {
+        const tx = x0 + x;
+        const ty = y0 + y;
+        if (tx >= w.w || ty >= w.h) continue;
+        const v = t(tx, ty);
+        snap[y * CHUNK + x] = v;
+        const area: AreaId = bandAt(w, ty).def.id;
+        const deco = w.deco[ty * w.w + tx];
+        const px = x * TS;
+        const py = y * TS;
+        if (buf && this.cellX72(buf, late, g, sim, area, tx, ty, px, py, v, cracks)) continue;
+        if (v === Tile.Deep) {
+          g.drawImage(deepPx(tx, ty, () => false).canvas(), px, py);
+          continue;
+        }
+        if (open(v) || v === Tile.Lift || v === Tile.Seal) {
+          g.drawImage(v === Tile.Lift ? liftFloorTile() : floorTile(area, deco), px, py);
+          if (v === Tile.RailV) g.drawImage(railTile(area, 'v'), px, py);
+          if (v === Tile.RailH) g.drawImage(railTile(area, 'h'), px, py);
+          if (v === Tile.Puddle) g.drawImage(puddleTile(deco), px, py);
+          if (v === Tile.Grate) g.drawImage(grateTile(false), px, py);
+          // Тень от стен у подножия: сверху — полоса, сбоку — кромка.
+          if (!open(t(tx, ty - 1)) && t(tx, ty - 1) !== Tile.Lift) {
+            g.fillStyle = 'rgba(0,0,0,0.38)';
+            g.fillRect(px, py, TS, 2);
+            g.fillStyle = 'rgba(0,0,0,0.18)';
+            g.fillRect(px, py + 2, TS, 2);
+          }
+          if (!open(t(tx - 1, ty))) {
+            g.fillStyle = 'rgba(0,0,0,0.25)';
+            g.fillRect(px, py, 2, TS);
+          }
+          if (!open(t(tx + 1, ty))) {
+            g.fillStyle = 'rgba(0,0,0,0.25)';
+            g.fillRect(px + TS - 2, py, 2, TS);
+          }
+        } else {
+          const front = open(t(tx, ty + 1)) || t(tx, ty + 1) === Tile.Lift;
+          if (v === Tile.Crack) {
+            const c = cracks.find((o) => o.x === tx && o.y === ty);
+            g.drawImage(crackWallTile(area, c ? (sim.cracks.get(c.id) ?? 0) : 0), px, py);
+          } else if (v === Tile.Rubble) {
+            g.drawImage(floorTile(area, deco), px, py);
+            g.drawImage(rubbleTile(area, deco), px, py);
+          } else
+            g.drawImage(
+              wallTile(area, deco, front, open(t(tx - 1, ty)), open(t(tx + 1, ty))),
+              px,
+              py,
+            );
+        }
+      }
+    if (buf) {
+      // Клетки прежним путём (если атласа не хватило) уже на холсте — буфер
+      // кладём под них: прозрачное в буфере их не трогает.
+      g.globalCompositeOperation = 'destination-over';
+      g.drawImage(buf.canvas(), 0, 0);
+      g.globalCompositeOperation = 'source-over';
+      for (const f of late) f();
+    }
+    // Настенное: норы, лампы, шахты, доска; открытая решётка.
+    for (const o of w.objs) {
+      if (o.x < x0 || o.x >= x0 + CHUNK || o.y < y0 || o.y >= y0 + CHUNK) continue;
+      const px = (o.x - x0) * TS;
+      const py = (o.y - y0) * TS;
+      if (o.kind === 'burrow' && o.out) {
+        if (o.face === 'front') g.drawImage(this.x72 ? burrowX72() : burrowFront(), px, py);
+        else {
+          const right = o.out[0] < o.x;
+          g.drawImage(burrowSide(right), (o.out[0] - x0) * TS, (o.out[1] - y0) * TS);
+        }
+      }
+      if (o.kind === 'lamp') g.drawImage(this.x72 ? wallLampX72() : wallLamp(true), px, py);
+      if (o.kind === 'stairs') g.drawImage(stairsCanvas(), px, py);
+      if (o.kind === 'board') g.drawImage(this.x72 ? boardX72() : boardTile(), px, py);
+      if (o.kind === 'mine') g.drawImage(this.x72 ? minePortalX72() : minePortal(), px - TS, py);
+      if (o.kind === 'grate' && sim.tiles[o.y * w.w + o.x] !== Tile.Grate) {
+        g.drawImage(floorTile(bandAt(w, o.y).def.id, 1), px, py);
+        g.drawImage(grateTile(true), px, py);
+      }
+    }
+    hit = { c, snap, sig, used: this.time };
+    this.chunks.set(key, hit);
+    // Мир теперь в 100+ кусков по 256 КБ: держим в памяти ближние, дальние
+    // выбрасываем — нарисуются снова, когда герой вернётся.
+    if (this.chunks.size > CHUNK_KEEP) {
+      let old = -1;
+      let at = Infinity;
+      for (const [k, v] of this.chunks)
+        if (v.used < at && k !== key) {
+          at = v.used;
+          old = k;
+        }
+      if (old >= 0) this.chunks.delete(old);
+    }
+    return c;
+  }
+
+  /**
+   * Клетка плитками 0x72. false — клетку этим способом не нарисовать (её
+   * рисует прежний путь).
+   */
+  private cellX72(
+    buf: Px,
+    late: (() => void)[],
+    g: CanvasRenderingContext2D,
+    sim: Sim,
+    area: AreaId,
+    tx: number,
+    ty: number,
+    px: number,
+    py: number,
+    v: number,
+    cracks: { id: string; x: number; y: number }[],
+  ): boolean {
+    const w = sim.world;
+    const t = (x: number, y: number) => {
+      if (x < 0 || y < 0 || x >= w.w || y >= w.h) return Tile.Wall;
+      return sim.tiles[y * w.w + x];
+    };
+    // «Глубина» и печать — не стены: у стены над ними есть лицо, у пола
+    // рядом нет тени подножия.
+    const open = (x: number, y: number) => {
+      const k = t(x, y);
+      return (
+        walkableTile(k) ||
+        k === Tile.Gate ||
+        k === Tile.Grate ||
+        k === Tile.Lift ||
+        k === Tile.Deep ||
+        k === Tile.Seal
+      );
+    };
+    const put = (p: Px | null) => {
+      if (p) blit(buf, p, px, py);
+      return p !== null;
+    };
+    const around = { open: (dx: number, dy: number) => open(tx + dx, ty + dy) };
+    // Своя клетка этажа (вода, лава, грибница, кости) — рисовальщик района.
+    const own = CELL_PAINTERS.get(area);
+    const i = ty * w.w + tx;
+    const mark = w.mark[i];
+    // Рисовальщик района на всё (Движок 3): и клетки без метки.
+    const paintAll = !!own && !!areaOf(area).spec.paintAll;
+    const ownCell = () =>
+      own?.({
+        tile: v,
+        mark,
+        wx: tx,
+        wy: ty,
+        open: (dx, dy) => open(tx + dx, ty + dy),
+        markAt: (dx, dy) => {
+          const x = tx + dx;
+          const y = ty + dy;
+          return x < 0 || y < 0 || x >= w.w || y >= w.h ? 0 : w.mark[y * w.w + x];
+        },
+      }) ?? null;
+    if (v === Tile.Deep) {
+      const deep = (x: number, y: number) => t(x, y) === Tile.Deep;
+      return put(ownCell() ?? deepPx(tx, ty, (dx, dy) => !deep(tx + dx, ty + dy)));
+    }
+    if (open(tx, ty)) {
+      if (v === Tile.Lift) late.push(() => g.drawImage(liftFloorTile(), px, py));
+      else {
+        const alt = w.alt[ty * w.w + tx] === 1;
+        const base = floorLookOf(area);
+        const look = alt ? (base === 'slab' ? 'ground' : 'slab') : base;
+        const f = floorCell(
+          area,
+          tx,
+          ty,
+          !open(tx, ty - 1),
+          !open(tx - 1, ty),
+          !open(tx + 1, ty),
+          look,
+          v !== Tile.Floor,
+        );
+        if (!put(f)) return false;
+      }
+      if (v === Tile.RailV) put(railCell('v', tx, ty));
+      if (v === Tile.RailH) put(railCell('h', tx, ty));
+      if (v === Tile.Puddle) {
+        const wet = (dx: number, dy: number) => t(tx + dx, ty + dy) === Tile.Puddle;
+        put(waterCell(wet, tx, ty));
+      }
+      if (v === Tile.Grate) late.push(() => g.drawImage(grateTile(false), px, py));
+      // Стена в одну клетку толщиной: кромка её верха ложится на пол.
+      if (!open(tx, ty + 1) && open(tx, ty + 2)) put(rimOverFloor(tx));
+      // Облик района — под своими клетками этажа: их цвета не трогаем.
+      tintCell(buf, px, py, area);
+      if (mark || v === Tile.Hazard || paintAll) put(ownCell());
+      return true;
+    }
+    if (v === Tile.Rubble) {
+      if (!put(floorCell(area, tx, ty, false, false, false))) return false;
+      late.push(() => g.drawImage(rubbleTile(area, w.deco[ty * w.w + tx]), px, py));
+      return true;
+    }
+    // Лицо стены — по полу под ней: над плитами кирпичная крепь, над грунтом
+    // дикая порода. Иначе в природной пещере Устья вырастал кирпич.
+    const below = ty + 1 < w.h ? ty + 1 : ty;
+    const alt = w.alt[below * w.w + tx] === 1;
+    const base = floorLookOf(bandAt(w, below).def.id);
+    const floorBelow = alt ? (base === 'slab' ? 'ground' : 'slab') : base;
+    if (!put(wallCell(around, floorBelow === 'slab' ? 'brick' : 'rock', tx, ty))) return false;
+    tintCell(buf, px, py, area);
+    if (mark || paintAll) put(ownCell());
+    if (v === Tile.Crack) {
+      const o = cracks.find((k) => k.x === tx && k.y === ty);
+      late.push(() =>
+        g.drawImage(crackWallTile(area, o ? (sim.cracks.get(o.id) ?? 0) : 0), px, py),
+      );
+    }
+    return true;
+  }
+
+  // ---- Герой ------------------------------------------------------------
+
+  private drawHero(sim: Sim, gear: Gear, left: number, top: number): void {
+    const g = this.bctx;
+    const h = sim.hero;
+    const px = this.q(h.x * TS - left);
+    const py = this.q(h.y * TS - top);
+    // Тень.
+    const sprite = spritesReady();
+    g.fillStyle = 'rgba(0,0,0,0.35)';
+    g.beginPath();
+    g.ellipse(px, py + (sprite ? 2 : 3), sprite ? 5 : 6, 2, 0, 0, Math.PI * 2);
+    g.fill();
+    if (sprite && this.drawHeroSprite(sim, gear, px, py, left, top)) return;
+    if (h.mode === 'dead' || h.mode === 'dying') {
+      const img = heroFrame(gear, 'down', 'dead', 0, false);
+      g.drawImage(img, px - 8, py - 18);
+      return;
+    }
+    const f = h.face;
+    const c = Math.cos(f);
+    const s = Math.sin(f);
+    const dir: Dir = Math.abs(c) > Math.abs(s) * 1.15 ? 'side' : s < 0 ? 'up' : 'down';
+    const leftFace = c < 0;
+    const speed = Math.hypot(h.vx, h.vy);
+    let anim: HeroAnim = speed > 0.6 ? 'walk' : 'idle';
+    if (h.mode === 'attack' || h.mode === 'heavy' || h.mode === 'skill') anim = 'attack';
+    if (h.mode === 'dash') anim = 'dash';
+    const frame =
+      anim === 'walk'
+        ? Math.floor(h.walk * 2.4) % heroFrames('walk')
+        : anim === 'idle'
+          ? Math.floor(this.time * 1.6) % 2
+          : anim === 'attack'
+            ? h.t < 0.08
+              ? 0
+              : 1
+            : 0;
+    // Мигает только неуязвимость после укуса. Рывок тоже даёт неуязвимость,
+    // и мигание на нём выглядело как исчезновение — отсюда «телепорт».
+    const blink =
+      h.mode !== 'dash' && h.inv > 0.08 && h.inv < 0.5 && Math.floor(this.time * 20) % 2 === 0;
+    const img =
+      h.flash > 0
+        ? heroFlash(gear, dir, anim, frame, leftFace)
+        : heroFrame(gear, dir, anim, frame, leftFace);
+    // Шлейф рывка: силуэты остаются на пути и тают — глаз видит, КУДА
+    // пролетел герой, а не что он пропал в одном месте и возник в другом.
+    if (h.mode === 'dash') {
+      this.ghostT -= this.dt;
+      if (this.ghostT <= 0) {
+        this.ghostT = 0.03;
+        this.ghosts.push({
+          x: h.x,
+          y: h.y,
+          img: heroFlash(gear, dir, anim, frame, leftFace),
+          life: 0,
+          top: 19,
+        });
+        this.puff(h.x, h.y + 0.25, 'rgba(170,150,125,0.55)', 1);
+      }
+    } else this.ghostT = 0;
+    this.drawGhosts(left, top);
+    // Оружие: за спиной, если смотрит вверх.
+    const behind = dir === 'up';
+    if (behind) this.drawWeapon(sim, gear, px, py);
+    if (!blink || h.flash > 0) g.drawImage(img, px - 8, py - 19);
+    if (!behind) this.drawWeapon(sim, gear, px, py);
+    // Набор тяжёлого удара: кольцо растёт.
+    if (h.mode === 'charge') {
+      g.strokeStyle = h.charge >= 1 ? '#ffe08a' : 'rgba(255,255,255,0.7)';
+      g.lineWidth = 1;
+      g.beginPath();
+      g.arc(px + 0.5, py - 6.5, 4 + h.charge * 7, 0, Math.PI * 2);
+      g.stroke();
+    }
+  }
+
+  private drawGhosts(left: number, top: number): void {
+    if (!this.ghosts.length) return;
+    const g = this.bctx;
+    const keep: Ghost[] = [];
+    for (const gh of this.ghosts) {
+      gh.life += this.dt;
+      if (gh.life >= 0.24) continue;
+      keep.push(gh);
+      g.globalAlpha = 0.38 * (1 - gh.life / 0.24);
+      g.drawImage(gh.img, this.q(gh.x * TS - left) - 8, this.q(gh.y * TS - top) - gh.top);
+    }
+    g.globalAlpha = 1;
+    this.ghosts = keep;
+  }
+
+  /** Сторона взгляда с запасом: по диагонали герой не мигает между боком и спиной. */
+  private heroDir: Dir4 = 'down';
+
+  private dir4(ang: number): Dir4 {
+    const c = Math.cos(ang);
+    const s = Math.sin(ang);
+    const side = Math.abs(c) > Math.abs(s);
+    const prevSide = this.heroDir === 'left' || this.heroDir === 'right';
+    // Меняем ось, только когда новая перевесила заметно.
+    const keepAxis = side === prevSide || Math.abs(Math.abs(c) - Math.abs(s)) < 0.18;
+    const useSide = keepAxis ? prevSide : side;
+    this.heroDir = useSide ? (c < 0 ? 'left' : 'right') : s < 0 ? 'up' : 'down';
+    return this.heroDir;
+  }
+
+  /**
+   * Герой из набора: четыре стороны, шаг в 4 кадра по ПРОЙДЕННОМУ пути (ноги
+   * не скользят по полу при любой скорости), поза удара, прыжок на рывке.
+   * false — кадра нет, пусть рисует прежний герой.
+   */
+  private drawHeroSprite(
+    sim: Sim,
+    gear: Gear,
+    px: number,
+    py: number,
+    left: number,
+    top: number,
+  ): boolean {
+    const g = this.bctx;
+    const h = sim.hero;
+    const tier = gear.robe.tier;
+    if (h.mode === 'dead' || h.mode === 'dying') {
+      const img = heroSprite(tier, 'down', 0, h.flash > 0);
+      if (!img) return false;
+      // Лёг на бок: головой в сторону, лицом к нам.
+      g.save();
+      g.translate(px, py - 3);
+      g.rotate(-Math.PI / 2);
+      g.drawImage(img, -8, -8);
+      g.restore();
+      return true;
+    }
+    const attacking = h.mode === 'attack' || h.mode === 'heavy' || h.mode === 'skill';
+    let dir = this.dir4(h.face);
+    // Вихрь — оборот на месте: сторона меняется восемь раз за умение.
+    if (h.mode === 'skill') {
+      const spin: Dir4[] = ['down', 'left', 'up', 'right'];
+      dir = spin[Math.floor((h.t / SKILL.dur) * 8) % 4];
+    }
+    const speed = Math.hypot(h.vx, h.vy);
+    let row = speed > 0.6 ? walkRow(h.walk) : 0;
+    if (attacking) row = ROW.attack;
+    if (h.mode === 'dash') row = ROW.jump;
+    const img = heroSprite(tier, dir, row, h.flash > 0);
+    if (!img) return false;
+    if (h.mode === 'dash') {
+      this.ghostT -= this.dt;
+      if (this.ghostT <= 0) {
+        this.ghostT = 0.03;
+        const ghost = heroSprite(tier, dir, row, true);
+        if (ghost) this.ghosts.push({ x: h.x, y: h.y, img: ghost, life: 0, top: 13 });
+        this.puff(h.x, h.y + 0.25, 'rgba(170,150,125,0.55)', 1);
+      }
+    } else this.ghostT = 0;
+    this.drawGhosts(left, top);
+    const blink =
+      h.mode !== 'dash' && h.inv > 0.08 && h.inv < 0.5 && Math.floor(this.time * 20) % 2 === 0;
+    const blade = this.bladeAngle(h);
+    // Клинок, поднятый вверх, — за головой; остальное — перед телом.
+    const behind = blade !== null && (Math.sin(blade) < -0.35 || dir === 'up');
+    // Кулак — там, куда тянется рука в позе удара: по ходу удара от груди.
+    const aim = h.mode === 'charge' ? h.face + Math.PI : h.aim;
+    const hx = px + Math.cos(aim) * 5;
+    const hy = py - 4 + Math.sin(aim) * 4;
+    if (blade !== null && behind) this.drawBlade(gear, hx, hy, blade);
+    if (!blink || h.flash > 0) g.drawImage(img, px - 8, py - 13);
+    if (blade !== null && !behind) this.drawBlade(gear, hx, hy, blade);
+    if (h.mode === 'charge') {
+      g.strokeStyle = h.charge >= 1 ? '#ffe08a' : 'rgba(255,255,255,0.7)';
+      g.lineWidth = 1;
+      g.beginPath();
+      g.arc(px + 0.5, py - 4.5, 4 + h.charge * 7, 0, Math.PI * 2);
+      g.stroke();
+    }
+    return true;
+  }
+
+  /** Куда смотрит остриё; null — клинок убран (в покое и на ходу его нет). */
+  private bladeAngle(h: Sim['hero']): number | null {
+    if (h.mode === 'attack' || h.mode === 'heavy') {
+      const heavy = h.mode === 'heavy';
+      const st = heavy ? SWORD.heavy : SWORD.steps[Math.max(0, Math.min(2, h.step))];
+      const arc = heavy ? SWORD.heavy.arc : SWORD.arc * (st as { arc: number }).arc;
+      // Замах до задевающей фазы, дальше — до конца дуги с торможением.
+      const k = Math.min(1, Math.max(0, h.t / st.to));
+      const dir = heavy ? -1 : h.step % 2 === 1 ? -1 : 1;
+      return h.aim - (dir * arc) / 2 + dir * arc * (1 - Math.pow(1 - k, 3));
+    }
+    if (h.mode === 'skill') return h.aim + (h.t / SKILL.dur) * Math.PI * 2;
+    if (h.mode === 'charge') {
+      // Замах за плечо: назад и вверх, за головой — лицо не закрыто.
+      const back = h.face + Math.PI;
+      const a = Math.atan2(Math.sin(back) - 0.8, Math.cos(back));
+      return a + Math.sin(this.time * 40) * 0.04 * h.charge;
+    }
+    return null;
+  }
+
+  /** Клинок в кулаке (hx, hy): рукоять в руке, остриё по углу `a`. */
+  private drawBlade(gear: Gear, hx: number, hy: number, a: number): void {
+    const img = bladeSprite(gear.weapon.tier);
+    if (!img) return;
+    const g = this.bctx;
+    g.save();
+    // Клинки набора нарисованы остриём ВНИЗ (удар по умолчанию — к нам), так
+    // что «вниз» картинки поворачиваем на угол удара; навершие — за кулаком.
+    g.translate(hx, hy);
+    g.rotate(a - Math.PI / 2);
+    g.drawImage(img, -Math.floor(img.width / 2), -3);
+    g.restore();
+  }
+
+  private drawWeapon(sim: Sim, gear: Gear, px: number, py: number): void {
+    const g = this.bctx;
+    const h = sim.hero;
+    const img = weaponArt(gear.weapon.tier);
+    let ang: number;
+    if (h.mode === 'attack' || h.mode === 'heavy') {
+      const heavy = h.mode === 'heavy';
+      const st = heavy ? SWORD.heavy : SWORD.steps[Math.max(0, h.step)];
+      const arc = heavy
+        ? SWORD.heavy.arc
+        : SWORD.arc * (SWORD.steps[Math.max(0, h.step)]?.arc ?? 1);
+      const k = Math.min(1, Math.max(0, (h.t - st.from * 0.6) / (st.to - st.from * 0.6)));
+      const dir = h.step % 2 === 1 ? -1 : 1;
+      ang = h.aim - (dir * arc) / 2 + dir * arc * (1 - Math.pow(1 - k, 3));
+    } else if (h.mode === 'skill') {
+      ang = h.aim;
+    } else if (h.mode === 'charge') {
+      ang = h.face + Math.PI * 0.85;
+    } else {
+      // В покое клинок опущен у бедра.
+      ang = Math.cos(h.face) < 0 ? Math.PI * 0.62 : Math.PI * 0.38;
+    }
+    g.save();
+    g.translate(px, py - 7);
+    g.rotate(ang);
+    g.drawImage(img, 3 - 2, -Math.floor(img.height / 2));
+    g.restore();
+  }
+
+  // ---- Мобы -------------------------------------------------------------
+
+  /** Какое действие крысы рисовать и какой кадр — по режиму ИИ. */
+  private ratAnim(m: Mob): { anim: RatAnim; frame: number } {
+    const speed = Math.hypot(m.vx, m.vy);
+    const t = this.time + m.id * 0.37;
+    switch (m.mode) {
+      case 'dying':
+      case 'escape':
+        return { anim: 'dead', frame: 0 };
+      case 'sleep':
+        return { anim: 'sleep', frame: Math.floor(t * 1.5) };
+      case 'windup':
+      case 'rollAim':
+      case 'whipAim':
+      case 'plant':
+      case 'summon':
+      case 'roar':
+      case 'aim':
+      case 'cast':
+        return { anim: 'wind', frame: m.t < 0.12 ? 0 : 1 };
+      case 'recover':
+        return m.t < 0.18
+          ? { anim: 'bite', frame: m.t < 0.09 ? 0 : 1 }
+          : { anim: 'idle', frame: Math.floor(t * 5) };
+      case 'stun':
+      case 'dizzy':
+        return { anim: 'hurt', frame: 0 };
+      case 'roll':
+        return { anim: 'sleep', frame: 0 };
+      default:
+        // Бег — по скорости: быстрый галоп чаще перебирает лапами.
+        if (speed > 0.4 || m.mode === 'emerge' || m.mode === 'drop')
+          return { anim: 'run', frame: Math.floor(t * (8 + speed * 2.2)) };
+        return { anim: 'idle', frame: Math.floor(t * 4) };
+    }
+  }
+
+  /** Поза для рисовальщика этажа — та же, что у крыс, плюс режим как есть. */
+  private mobPose(m: Mob): MobPose {
+    const { anim, frame } = this.ratAnim(m);
+    const hurtNow = m.flash > 0 && m.mode !== 'dying' && anim !== 'wind' && anim !== 'bite';
+    return {
+      anim: hurtNow ? 'hurt' : anim,
+      frame,
+      mode: m.mode,
+      t: m.t,
+      left: Math.cos(m.face) < 0,
+      flash: m.flash > 0.05,
+      look: m.albino ? 'albino' : m.elite ? 'elite' : 'normal',
+      now: this.time,
+    };
+  }
+
+  private drawMob(sim: Sim, m: Mob, left: number, top: number): void {
+    const g = this.bctx;
+    const def = MOBS[m.kind];
+    const art = def?.art ?? { kind: 'rat' as const };
+    const px = this.q(m.x * TS - left);
+    const py = this.q(m.y * TS - top);
+    const boss = !!def?.boss;
+    const leftFace = Math.cos(m.face) < 0;
+    // Кадр: крыса — своим рисовальщиком, остальные — атласом или этажом.
+    let fr: MobFrame;
+    let eye: [number, number] | null = null;
+    if (art.kind === 'rat') {
+      const { anim, frame } = this.ratAnim(m);
+      const look = m.albino ? 'albino' : m.elite ? 'elite' : 'normal';
+      // Вспышка удара — белым; сразу после — поза «ушибленной» ещё миг.
+      const hurtNow = m.flash > 0 && m.mode !== 'dying' && anim !== 'wind' && anim !== 'bite';
+      const img = ratFrame(m.kind, look, hurtNow ? 'hurt' : anim, frame, leftFace, m.flash > 0.05);
+      const size = ratSize(m.kind);
+      // Середина тела — в точке моба; земля кадра — на два пикселя ниже.
+      fr = { img, ax: leftFace ? size.w - size.body : size.body, ay: size.h - 2 };
+      const [ex, ey] = ratEye(m.kind, hurtNow ? 'hurt' : anim, frame);
+      eye = [leftFace ? size.w - 1 - ex : ex, ey];
+    } else {
+      const pose = this.mobPose(m);
+      const got =
+        art.kind === 'x72'
+          ? x72MobFrame(art, pose.anim, pose.frame, pose.left, pose.flash, pose.look)
+          : this.guard(`mob:${art.id}`, () => MOB_PAINTERS.get(art.id)?.(m, pose) ?? null, null);
+      fr = got ?? blobFrame(m.r, pose.flash);
+      eye = fr.eye ?? null;
+    }
+    // Появление: из норы выползает, со свода падает.
+    let dy = 0;
+    let alpha = 1;
+    // Ждёт очереди в норе — не видна; выползая, проявляется из темноты дыры.
+    if (m.mode === 'emerge') {
+      if (m.t <= 0) return;
+      alpha = Math.min(1, m.t / 0.25);
+    }
+    if (m.mode === 'drop') {
+      // До своей очереди тень только намечается: радиус эллипса не бывает
+      // отрицательным (канва на нём падает).
+      const k = Math.max(0, Math.min(1, m.t / 0.55));
+      dy = -(1 - k * k) * 40;
+      g.fillStyle = `rgba(0,0,0,${0.15 + 0.3 * k})`;
+      g.beginPath();
+      g.ellipse(px, py + 2, 2 + 4 * k, 1 + 1.5 * k, 0, 0, Math.PI * 2);
+      g.fill();
+      if (m.t < 0) return;
+    } else if (m.fell) {
+      // Сорвался — тени под ним нет: под ним пропасть.
+    } else if (fr.shadow !== undefined) {
+      // Тень задал кадр (v2.85): не «дышит» с шириной холста.
+      if (fr.shadow > 0) {
+        g.fillStyle = def?.fly ? 'rgba(0,0,0,0.22)' : 'rgba(0,0,0,0.32)';
+        g.beginPath();
+        g.ellipse(px, py + 2, fr.shadow, Math.max(1.5, fr.shadow * 0.28), 0, 0, Math.PI * 2);
+        g.fill();
+      }
+      if (def?.fly)
+        dy = -(fr.lift ?? 6) + (fr.still ? 0 : Math.round(Math.sin(this.time * 5 + m.id) * 1.5));
+    } else if (!def?.fly) {
+      g.fillStyle = 'rgba(0,0,0,0.32)';
+      g.beginPath();
+      g.ellipse(
+        px,
+        py + 2,
+        Math.max(2, (boss ? 0.36 : 0.3) * fr.img.width * 0.7),
+        boss ? 4 : 2,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      g.fill();
+    } else {
+      // Летун: тень на полу, сам — выше, покачиваясь.
+      g.fillStyle = 'rgba(0,0,0,0.22)';
+      g.beginPath();
+      g.ellipse(px, py + 2, Math.max(2, m.r * TS * 0.8), 1.5, 0, 0, Math.PI * 2);
+      g.fill();
+      dy = -(fr.lift ?? 6) + (fr.still ? 0 : Math.round(Math.sin(this.time * 5 + m.id) * 1.5));
+    }
+    if (m.mode === 'dying') {
+      if (fr.linger !== undefined) {
+        // Долгая смерть (v2.85): прозрачность решает кадр, а моб, убранный
+        // симуляцией, доигрывает копией.
+        alpha = 1;
+        if (!this.remains.has(m.id) && fr.linger > m.t)
+          this.remains.set(m.id, { m: { ...m, data: { ...m.data } }, linger: fr.linger });
+      } else alpha = Math.max(0, 1 - Math.max(0, m.t - 0.35) / 0.35);
+    }
+    if (fr.alpha !== undefined) alpha *= fr.alpha;
+    // Замах: мелкая дрожь — если кадр не рисует подготовку сам.
+    let jx = 0;
+    if (
+      !fr.still &&
+      (m.mode === 'windup' || m.mode === 'rollAim' || m.mode === 'whipAim' || m.tele)
+    )
+      jx = Math.round(Math.sin(this.time * 70 + m.id) * (boss ? 1.4 : 0.6));
+    const x0 = px - fr.ax + jx + (fr.dx ?? 0);
+    const y0 = py + 2 - fr.ay + dy + (fr.dy ?? 0);
+    // Движок анимаций (v2.85): трансформ, шлейф, слой поверх темноты.
+    const placed: Placed = {
+      img: fr.img,
+      px: x0 + fr.ax,
+      py: y0 + fr.ay,
+      ax: fr.ax,
+      ay: fr.ay,
+      sx: fr.sx ?? 1,
+      sy: fr.sy ?? 1,
+      rot: fr.rot ?? 0,
+      alpha,
+    };
+    if (fr.ghost && m.mode !== 'dying') {
+      const next = (this.ghostClock.get(m.id) ?? 0) - this.dt;
+      if (next <= 0) {
+        this.mobGhosts.push({
+          ...placed,
+          img: tintOf(fr.img, fr.ghost.tint),
+          wx: placed.px + left,
+          wy: placed.py + top,
+          life: 0,
+          max: fr.ghost.life,
+          a0: (fr.ghost.alpha ?? 0.38) * alpha,
+        });
+        this.ghostClock.set(m.id, fr.ghost.every);
+      } else this.ghostClock.set(m.id, next);
+    }
+    if (fr.lit) this.lits.push({ ...placed, img: fr.lit });
+    const moved = fr.sx !== undefined || fr.sy !== undefined || fr.rot !== undefined;
+    g.globalAlpha = alpha;
+    if (m.fell) {
+      // Сорвался в пропасть (Движок 3): уменьшается, уходя вниз, без тени.
+      const k = Math.min(1, m.t / 0.6);
+      const s = Math.max(0.05, 1 - k);
+      g.globalAlpha = 1 - k * 0.6;
+      g.save();
+      g.translate(px, py + k * 10);
+      g.rotate(k * 2.4 * (leftFace ? -1 : 1));
+      g.scale(s, s);
+      g.drawImage(fr.img, -fr.ax, 2 - fr.ay);
+      g.restore();
+      g.globalAlpha = 1;
+      return;
+    }
+    if (m.mode === 'roll' && art.kind === 'rat') {
+      // Король катится — клубок вращается вокруг своей середины.
+      const size = fr.img.height;
+      g.save();
+      g.translate(px, py - size * 0.3);
+      g.rotate(this.time * 14 * (Math.cos(m.dir) >= 0 ? 1 : -1));
+      g.drawImage(fr.img, -fr.ax, -size * 0.55);
+      g.restore();
+    } else if (moved) this.place(placed, fr.img);
+    else g.drawImage(fr.img, this.q(x0), this.q(y0));
+    g.globalAlpha = 1;
+    // Глаза светятся поверх темноты — видно, откуда лезут.
+    if (
+      eye &&
+      m.mode !== 'dying' &&
+      m.mode !== 'sleep' &&
+      m.mode !== 'escape' &&
+      m.mode !== 'drop' &&
+      m.mode !== 'roll'
+    ) {
+      // Глаз следует за наклоном и сжатием кадра.
+      let ex = x0 + eye[0];
+      let ey = y0 + eye[1];
+      if (moved) {
+        const lx = (eye[0] - fr.ax) * placed.sx;
+        const ly = (eye[1] - fr.ay) * placed.sy;
+        const c = Math.cos(placed.rot);
+        const sn = Math.sin(placed.rot);
+        ex = placed.px + lx * c - ly * sn;
+        ey = placed.py + lx * sn + ly * c;
+      }
+      this.eyes.push({
+        x: this.q(ex),
+        y: this.q(ey),
+        c: m.albino ? '#ff6a88' : m.elite && !boss ? '#ffb020' : (def?.eye ?? '#ff3a28'),
+      });
+    }
+    // Полоска здоровья — только у раненых.
+    if (!boss && m.hp < m.maxHp && m.hp > 0) {
+      const w = Math.max(10, Math.min(18, Math.round(10 + (m.r - 0.26) * 40)));
+      const x = px - w / 2;
+      const y = y0 + 2;
+      g.fillStyle = 'rgba(0,0,0,0.7)';
+      g.fillRect(x - 1, y - 1, w + 2, 3);
+      g.fillStyle = m.elite ? '#ffcc40' : '#e04a3a';
+      g.fillRect(x, y, Math.max(1, Math.round((w * m.hp) / m.maxHp)), 1);
+    }
+  }
+
+  // ---- Снаряды ------------------------------------------------------------
+
+  private drawShot(s: Sim['shots'][number], left: number, top: number): void {
+    const g = this.bctx;
+    const sp =
+      this.guard(`shot:${s.art}`, () => SHOT_PAINTERS.get(s.art)?.(s, this.time) ?? null, null) ??
+      orbSprite(s.status);
+    const px = s.x * TS - left;
+    const py = s.y * TS - top;
+    // Тень на полу — видно, куда упадёт навесной.
+    g.fillStyle = 'rgba(0,0,0,0.3)';
+    g.beginPath();
+    g.ellipse(px, py + 2, 2.5, 1, 0, 0, Math.PI * 2);
+    g.fill();
+    if (s.lob) {
+      // Метка приземления навесного — наливается к падению.
+      const k = Math.min(1, s.age / s.lob.T);
+      const [r, gg, b] = statusRgb(s.status);
+      g.strokeStyle = `rgba(${r},${gg},${b},${0.3 + 0.5 * k})`;
+      g.lineWidth = 1;
+      g.beginPath();
+      g.arc(s.lob.x1 * TS - left, s.lob.y1 * TS - top, s.r * TS, 0, Math.PI * 2);
+      g.stroke();
+    }
+    g.drawImage(sp.img, this.q(px - sp.ax), this.q(py - s.z * TS - sp.ay));
+  }
+
+  // ---- Метки на полу: всё, что бьёт, сперва предупреждает -----------------
+
+  /** Метка формы удара: круг, кольцо, линия, конус; `k` — насколько налилась. */
+  private drawShape(
+    shape: 'circle' | 'line' | 'cone' | 'ring',
+    x: number,
+    y: number,
+    r: number,
+    k: number,
+    rgb: [number, number, number],
+    w?: number,
+    ang?: number,
+    arc?: number,
+  ): void {
+    const g = this.bctx;
+    const [cr, cg, cb] = rgb;
+    const fill = (a: number) => `rgba(${cr},${cg},${cb},${a})`;
+    const R = r * TS;
+    switch (shape) {
+      case 'circle':
+        g.strokeStyle = fill(0.5 + 0.4 * k);
+        g.lineWidth = 1;
+        g.beginPath();
+        g.arc(x, y, R, 0, Math.PI * 2);
+        g.stroke();
+        g.fillStyle = fill(0.12 + 0.25 * k);
+        g.beginPath();
+        g.arc(x, y, R * k, 0, Math.PI * 2);
+        g.fill();
+        break;
+      case 'ring': {
+        const t = (w ?? 0.6) * TS;
+        // Дуга кольца (Движок 3): `arc` — сектор вокруг `ang`.
+        const part = arc !== undefined && arc < Math.PI * 2;
+        const a0 = part ? (ang ?? 0) - arc / 2 : 0;
+        const a1 = part ? (ang ?? 0) + arc / 2 : Math.PI * 2;
+        g.strokeStyle = fill(0.2 + 0.4 * k);
+        g.lineWidth = t * 2;
+        g.beginPath();
+        g.arc(x, y, R, a0, a1);
+        g.stroke();
+        g.strokeStyle = fill(0.6 + 0.3 * k);
+        g.lineWidth = 1;
+        g.beginPath();
+        g.arc(x, y, R, a0, a1);
+        g.stroke();
+        break;
+      }
+      case 'line': {
+        const hw = (w ?? 0.5) * TS;
+        g.save();
+        g.translate(x, y);
+        g.rotate(ang ?? 0);
+        g.fillStyle = fill(0.15 + 0.35 * k);
+        g.fillRect(0, -hw, R, hw * 2);
+        g.fillStyle = fill(0.5 * k);
+        for (let i = 1; i * TS < R; i++) g.fillRect(i * TS - 2, -2, 3, 4);
+        g.restore();
+        break;
+      }
+      case 'cone': {
+        const a = ang ?? 0;
+        const h = (arc ?? 1) / 2;
+        g.fillStyle = fill(0.18 + 0.3 * k);
+        g.beginPath();
+        g.moveTo(x, y);
+        g.arc(x, y, R, a - h, a + h);
+        g.closePath();
+        g.fill();
+        break;
+      }
+    }
+  }
+
+  private drawTelegraphs(sim: Sim, left: number, top: number, above = false): void {
+    const g = this.bctx;
+    // Лужи и облака — самые нижние: на них стоят.
+    for (const z of sim.zones) {
+      if (!!z.above !== above) continue;
+      const px = z.x * TS - left;
+      const py = z.y * TS - top;
+      // Зона-картинка с упавшим рисовальщиком не рисуется вовсе; зона с
+      // действием — запасным кругом (её обязаны видеть).
+      const zp = ZONE_PAINTERS.get(z.art ?? '');
+      const bare = !z.dps && !z.status && !z.slow;
+      if (zp && this.guard(`zone:${z.art}`, () => zp(g, z, px, py, TS, this.time), bare)) continue;
+      const warn = z.warn ?? 0;
+      const [r, gg, b] = statusRgb(z.status ?? (z.slow ? 'slow' : undefined));
+      const life = z.t - warn;
+      const fade = Math.min(1, (z.life - life) / 0.6);
+      if (z.t < warn) {
+        this.drawShape('circle', px, py, z.r, z.t / warn, [r, gg, b]);
+        continue;
+      }
+      g.fillStyle = `rgba(${r},${gg},${b},${0.22 * fade})`;
+      g.beginPath();
+      g.arc(px, py, z.r * TS, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = `rgba(${r},${gg},${b},${0.3 * fade})`;
+      for (let i = 0; i < 5; i++) {
+        const a = this.time * 0.7 + i * 1.26 + z.id;
+        const rr = z.r * TS * (0.3 + 0.5 * ((i * 0.37 + this.time * 0.2) % 1));
+        g.fillRect(Math.round(px + Math.cos(a) * rr), Math.round(py + Math.sin(a) * rr), 2, 2);
+      }
+    }
+    // Удары по площади, пока горит метка.
+    for (const st of sim.strikes) {
+      if (!!st.above !== above) continue;
+      const px = st.x * TS - left;
+      const py = st.y * TS - top;
+      const sp = ZONE_PAINTERS.get(st.art ?? '');
+      if (sp && this.guard(`zone:${st.art}`, () => sp(g, st, px, py, TS, this.time), false))
+        continue;
+      const k = Math.min(1, st.t / st.warn);
+      this.drawShape(st.shape, px, py, st.r, k, statusRgb(st.status), st.w, st.ang, st.arc);
+    }
+    if (above) return;
+    for (const m of sim.mobs) {
+      const px = m.x * TS - left;
+      const py = m.y * TS - top;
+      const def = MOBS[m.kind];
+      // Этаж рисует метки этого моба сам (v2.85, `m.data.vNoTele`): красная
+      // заливка движка легла бы поверх его картинки.
+      if (m.data.vNoTele) continue;
+      if (m.mode === 'windup' && def) {
+        const k = Math.min(1, m.t / Math.max(0.05, def.windup));
+        const reach = (def.reach + m.r + 0.2) * TS;
+        g.fillStyle = `rgba(255,60,40,${0.18 + 0.3 * k})`;
+        g.beginPath();
+        g.moveTo(px, py);
+        g.arc(px, py, reach, m.face - 0.6, m.face + 0.6);
+        g.closePath();
+        g.fill();
+      }
+      // Метка ИИ: куда придётся удар (перекат, хлыст, рывок, выстрел).
+      const t = m.tele;
+      if (t) {
+        const tx = t.x !== undefined ? t.x * TS - left : px;
+        const ty = t.y !== undefined ? t.y * TS - top : py;
+        this.drawShape(t.shape, tx, ty, t.r, t.k, [255, 60, 40], t.w, t.ang, t.arc);
+      }
+    }
+    for (const b of sim.bombs) {
+      const k = 1 - Math.min(1, b.fuse / 1.6);
+      g.strokeStyle = `rgba(255,120,40,${0.3 + 0.6 * k})`;
+      g.lineWidth = 1;
+      g.beginPath();
+      g.arc(b.x * TS - left, b.y * TS - top, b.r * TS, 0, Math.PI * 2);
+      g.stroke();
+      g.fillStyle = `rgba(255,90,30,${0.08 + 0.2 * k})`;
+      g.fill();
+    }
+    for (const p of sim.props) {
+      if (p.kind === 'powder' && p.fuse > 0) {
+        g.strokeStyle = 'rgba(255,120,40,0.9)';
+        g.beginPath();
+        g.arc(p.x * TS - left, p.y * TS - top, 2.4 * TS, 0, Math.PI * 2);
+        g.stroke();
+      }
+    }
+  }
+
+  // ---- Частицы, удары, кольца ---------------------------------------------
+
+  private drawParticles(dt: number, left: number, top: number): void {
+    const g = this.bctx;
+    const keep: Particle[] = [];
+    for (const p of this.parts) {
+      p.life += dt;
+      if (p.life >= p.max) continue;
+      if (p.soft) {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.size += dt * 4;
+        const a = 1 - p.life / p.max;
+        g.globalAlpha = a * 0.5;
+        g.fillStyle = p.color;
+        g.fillRect(
+          this.q(p.x * TS - left - p.size / 2),
+          this.q(p.y * TS - top - p.size / 2),
+          Math.round(p.size),
+          Math.round(p.size),
+        );
+      } else {
+        p.vz -= 22 * dt;
+        p.z += p.vz * dt;
+        if (p.z <= 0) {
+          p.z = 0;
+          p.vz = Math.abs(p.vz) > 2 ? -p.vz * 0.35 : 0;
+          p.vx *= 0.6;
+          p.vy *= 0.6;
+        }
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        const a = p.life > p.max * 0.7 ? 1 - (p.life - p.max * 0.7) / (p.max * 0.3) : 1;
+        g.globalAlpha = a;
+        g.fillStyle = p.color;
+        g.fillRect(
+          this.q(p.x * TS - left),
+          this.q((p.y - p.z * 0.5) * TS - top - 4),
+          p.size,
+          p.size,
+        );
+      }
+      keep.push(p);
+    }
+    g.globalAlpha = 1;
+    this.parts = keep;
+  }
+
+  private drawSlashes(sim: Sim, dt: number, left: number, top: number): void {
+    const g = this.bctx;
+    const keep: Slash[] = [];
+    for (const s of this.slashes) {
+      s.life += dt;
+      if (s.life >= s.max) continue;
+      keep.push(s);
+      const k = s.life / s.max;
+      // Серп из набора: смотрит вправо и идёт снизу вверх — поворачиваем на
+      // угол удара и отражаем, если удар идёт сверху вниз. Третий удар серии —
+      // двойной серп, тяжёлый — тройной.
+      const id: FxId = s.heavy ? 11 : s.step === 2 ? 10 : 8;
+      const img = fxFrame(id, k * fxCount(id));
+      if (img) {
+        const sc = (s.reach * TS) / 16;
+        g.save();
+        g.translate(
+          this.q(sim.hero.x * TS - left + Math.cos(s.ang) * 2),
+          this.q(sim.hero.y * TS - top - 5 + Math.sin(s.ang) * 2),
+        );
+        g.rotate(s.ang);
+        g.scale(sc, s.flip ? sc : -sc);
+        g.drawImage(img, -16, -16);
+        g.restore();
+        continue;
+      }
+      // След клинка идёт за героем, а не висит в воздухе.
+      const hx = sim.hero.x * TS - left;
+      const hy = sim.hero.y * TS - top - 6;
+      const r0 = s.reach * TS * 0.35;
+      const r1 = s.reach * TS * (s.heavy ? 1.05 : 1);
+      const dir = s.flip ? -1 : 1;
+      const a0 = s.ang - (dir * s.arc) / 2;
+      const sweep = s.arc * Math.min(1, k * 2.2);
+      const a1 = a0 + dir * sweep;
+      g.globalAlpha = (1 - k) * (s.heavy ? 0.95 : 0.8);
+      g.fillStyle = s.heavy ? '#fff2c0' : '#ffffff';
+      g.beginPath();
+      g.arc(hx, hy, r1, Math.min(a0, a1), Math.max(a0, a1));
+      g.arc(hx, hy, r0 + (r1 - r0) * 0.55, Math.max(a0, a1), Math.min(a0, a1), true);
+      g.closePath();
+      g.fill();
+      g.globalAlpha = 1;
+    }
+    this.slashes = keep;
+  }
+
+  private drawRings(dt: number, left: number, top: number): void {
+    const g = this.bctx;
+    const keep: Ring[] = [];
+    for (const r of this.rings) {
+      r.life += dt;
+      if (r.life >= r.max) continue;
+      keep.push(r);
+      const k = r.life / r.max;
+      g.globalAlpha = 1 - k;
+      g.strokeStyle = r.color;
+      g.lineWidth = 1;
+      g.beginPath();
+      g.arc(r.x * TS - left, r.y * TS - top, r.r * TS * (0.3 + 0.7 * k), 0, Math.PI * 2);
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+    this.rings = keep;
+  }
+
+  private drawFx(sim: Sim, dt: number, left: number, top: number): void {
+    if (!this.fx.length) return;
+    const g = this.bctx;
+    const keep: Fx[] = [];
+    for (const f of this.fx) {
+      f.life += dt;
+      if (f.life >= f.max) continue;
+      keep.push(f);
+      const img = fxFrame(f.id, (f.life / f.max) * fxCount(f.id));
+      if (!img) continue;
+      const bx = f.follow ? sim.hero.x * TS + f.dx : f.x * TS;
+      const by = f.follow ? sim.hero.y * TS + f.dy : f.y * TS;
+      g.save();
+      g.globalAlpha = f.alpha;
+      g.translate(this.q(bx - left), this.q(by - top));
+      if (f.ang) g.rotate(f.ang);
+      g.scale(f.scale, f.flip ? -f.scale : f.scale);
+      g.drawImage(img, -16, -16);
+      g.restore();
+    }
+    this.fx = keep;
+  }
+
+  // ---- Свет -------------------------------------------------------------
+
+  private drawLight(sim: Sim, left: number, top: number, dt: number): void {
+    const l = this.lctx;
+    const band = bandAt(sim.world, sim.hero.y);
+    const amb = areaOf(band.def.id).ambient;
+    // Маска света — целыми игровыми пикселями, на пиксель шире кадра; на
+    // экран она ложится со сдвигом и сглаживанием: свет мягкий, а не лесенкой.
+    const lx = Math.floor(left) - 1;
+    const ly = Math.floor(top) - 1;
+    const LW = this.light.width;
+    const LH = this.light.height;
+    l.globalCompositeOperation = 'source-over';
+    l.clearRect(0, 0, LW, LH);
+    l.fillStyle = `rgba(6,4,10,${1 - amb})`;
+    l.fillRect(0, 0, LW, LH);
+    l.globalCompositeOperation = 'destination-out';
+    this.cutExplored(sim, lx, ly);
+    const blob = lightBlob();
+    const hole = (x: number, y: number, r: number, a = 1) => {
+      const px = x * TS - lx;
+      const py = y * TS - ly;
+      const rr = r * TS;
+      if (px + rr < 0 || py + rr < 0 || px - rr > LW || py - rr > LH) return;
+      l.globalAlpha = a;
+      l.drawImage(blob, px - rr, py - rr, rr * 2, rr * 2);
+    };
+    const lights = sim.world.lights;
+    for (const li of lights) {
+      if (li.lamp && !sim.lit.has(li.lamp)) continue;
+      const flick =
+        1 + Math.sin(this.time * 7 + li.x * 3.1) * 0.03 + noise(this.time * 3, li.y) * 0.04;
+      hole(li.x, li.y, li.r * flick);
+    }
+    // Фонарь героя.
+    const h = sim.hero;
+    hole(h.x, h.y - 0.4, sim.stats.light);
+    // Взрывы светят.
+    this.blasts = this.blasts.filter((b) => (b.life -= dt) > 0);
+    for (const b of this.blasts) hole(b.x, b.y, b.r, Math.min(1, b.life * 4));
+    // Добыча и золотая крыса светятся сами.
+    for (const d of sim.drops)
+      if (
+        d.kind === 'coin' ||
+        d.kind === 'token' ||
+        d.kind === 'key' ||
+        d.kind.startsWith('block:') ||
+        stackOf(d.kind) === 1
+      )
+        hole(d.x, d.y, 0.9, 0.6);
+    for (const m of sim.mobs) {
+      const def = MOBS[m.kind];
+      if (def?.coins || m.albino) hole(m.x, m.y, 1.8, 0.7);
+      else if (def?.light) hole(m.x, m.y, def.light, 0.8);
+    }
+    // Снаряды и огонь светят сами.
+    for (const s of sim.shots) hole(s.x, s.y - s.z, 0.8, 0.5);
+    l.globalAlpha = 1;
+    l.globalCompositeOperation = 'source-over';
+    const g = this.bctx;
+    g.imageSmoothingEnabled = true;
+    g.drawImage(this.light, lx - left, ly - top);
+    g.imageSmoothingEnabled = false;
+    // Тёплый подсвет от ламп — сложением, слабый.
+    g.globalCompositeOperation = 'lighter';
+    const tints: Record<string, HTMLCanvasElement> = {
+      warm: glowBlob('rgba(255,170,80,0.22)'),
+      cold: glowBlob('rgba(140,190,255,0.16)'),
+      teal: glowBlob('rgba(90,230,200,0.18)'),
+      red: glowBlob('rgba(255,70,50,0.2)'),
+      violet: glowBlob('rgba(190,120,255,0.2)'),
+      green: glowBlob('rgba(120,240,110,0.18)'),
+    };
+    for (const li of lights) {
+      if (li.lamp && !sim.lit.has(li.lamp)) continue;
+      const px = li.x * TS - left;
+      const py = li.y * TS - top;
+      const rr = li.r * TS * 0.7;
+      if (px + rr < 0 || py + rr < 0 || px - rr > this.gw || py - rr > this.gh) continue;
+      g.drawImage(tints[li.tint] ?? tints.warm, px - rr, py - rr, rr * 2, rr * 2);
+    }
+    for (const b of this.blasts) {
+      const rr = b.r * TS;
+      g.drawImage(
+        glowBlob('rgba(255,150,60,0.6)'),
+        b.x * TS - left - rr,
+        b.y * TS - top - rr,
+        rr * 2,
+        rr * 2,
+      );
+    }
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /**
+   * Разведанное — светлым. Маска по клеткам рисуется в крошечную канву (точка
+   * на клетку) и растягивается на свет со сглаживанием: край разведанного
+   * плавный, а не лесенкой из квадратов 16×16.
+   */
+  private cutExplored(sim: Sim, lx: number, ly: number): void {
+    const w = sim.world;
+    const tx0 = Math.floor(lx / TS) - 1;
+    const ty0 = Math.floor(ly / TS) - 1;
+    const tw = Math.ceil(this.light.width / TS) + 3;
+    const th = Math.ceil(this.light.height / TS) + 3;
+    const c = (this.fogCv ??= document.createElement('canvas'));
+    if (c.width !== tw || c.height !== th) {
+      c.width = tw;
+      c.height = th;
+    }
+    const fx = c.getContext('2d')!;
+    const img = fx.createImageData(tw, th);
+    const d = img.data;
+    let any = false;
+    for (let j = 0; j < th; j++) {
+      const y = ty0 + j;
+      if (y < 0 || y >= w.h) continue;
+      const band = bandAt(w, y);
+      const bits = sim.fog[band.def.id];
+      if (!bits) continue;
+      for (let i = 0; i < tw; i++) {
+        const x = tx0 + i;
+        if (x < 0 || x >= w.w || !fogGet(bits, x, y - band.top, w.w)) continue;
+        d[(j * tw + i) * 4 + 3] = 255;
+        any = true;
+      }
+    }
+    if (!any) return;
+    fx.putImageData(img, 0, 0);
+    const l = this.lctx;
+    l.globalAlpha = EXPLORED_LIT;
+    l.imageSmoothingEnabled = true;
+    l.drawImage(c, tx0 * TS - lx, ty0 * TS - ly, tw * TS, th * TS);
+    l.globalAlpha = 1;
+  }
+
+  // ---- Цифры — на экранной канве, чёткие -------------------------------
+
+  private drawFloats(dt: number, left: number, top: number): void {
+    const v = this.vctx;
+    const keep: Float[] = [];
+    const base = Math.round(this.scale * 2.2);
+    for (const f of this.floats) {
+      f.life += dt;
+      if (f.life >= f.max) continue;
+      keep.push(f);
+      const k = f.life / f.max;
+      const rise = (1 - (1 - k) * (1 - k)) * 0.9;
+      const gx = (f.x + f.vx * k) * TS - left;
+      const gy = (f.y - rise) * TS - top;
+      const x = this.ox + gx * this.scale;
+      const y = this.oy + gy * this.scale;
+      const pop = k < 0.15 ? 0.7 + (k / 0.15) * 0.5 : 1.2 - Math.min(0.2, (k - 0.15) * 0.6);
+      const size = Math.round(base * f.size * pop);
+      v.globalAlpha = k > 0.7 ? 1 - (k - 0.7) / 0.3 : 1;
+      v.font = `900 ${size}px system-ui, sans-serif`;
+      v.textAlign = 'center';
+      v.lineWidth = Math.max(2, Math.round(size / 5));
+      v.strokeStyle = 'rgba(12,8,6,0.95)';
+      v.strokeText(f.text, x, y);
+      v.fillStyle = f.color;
+      v.fillText(f.text, x, y);
+    }
+    v.globalAlpha = 1;
+    this.floats = keep;
+  }
+
+  /** Сбросить кеш карты — после смены мира. */
+  invalidate(): void {
+    this.chunks.clear();
+  }
+}
+
+export type { MobId, World };

@@ -1,0 +1,57 @@
+{
+  "minPrimitives": 900,
+  "multiActTrick": true,
+  "bodyClips": [
+    "walk_n",
+    "walk_ne",
+    "walk_e",
+    "walk_se",
+    "walk_s",
+    "walk_sw",
+    "walk_w",
+    "walk_nw",
+    "turn",
+    "tired",
+    "sleep"
+  ],
+  "skip": {
+    "foot-slide": [
+      "walk_e",
+      "walk_w"
+    ]
+  },
+  "clipAllow": [
+    {
+      "a": "membrane",
+      "b": "thigh"
+    },
+    {
+      "a": "membrane",
+      "b": "shin"
+    },
+    {
+      "a": "arm",
+      "b": "egg"
+    },
+    {
+      "a": "horn",
+      "b": "egg"
+    },
+    {
+      "a": "wingBone",
+      "b": "egg"
+    },
+    {
+      "a": "wingArm",
+      "b": "egg"
+    },
+    {
+      "a": "membrane",
+      "b": "egg"
+    },
+    {
+      "a": "membrane",
+      "b": "wingArm"
+    }
+  ]
+}

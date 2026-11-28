@@ -1,0 +1,570 @@
+{
+  "id": "bramble_warden",
+  "rarity": "common",
+  "theme": "root_edge",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    160,
+    128
+  ],
+  "thickness": 8,
+  "bodySize": 96,
+  "canvas": [
+    176,
+    144
+  ],
+  "anchor": [
+    46,
+    72
+  ],
+  "eye": null,
+  "primitives": 102,
+  "feet": [
+    85,
+    107
+  ],
+  "points": {
+    "hindL": [
+      35.73879758166138,
+      57.521737259420156
+    ],
+    "footL": [
+      35.73879758166138,
+      57.521737259420156
+    ],
+    "hindR": [
+      24.76191936595729,
+      69.86945621595365
+    ],
+    "footR": [
+      24.76191936595729,
+      69.86945621595365
+    ],
+    "foreL": [
+      65.13812843055062,
+      66.93049001573794
+    ],
+    "handL": [
+      65.13812843055062,
+      66.93049001573794
+    ],
+    "foreR": [
+      54.16125021484653,
+      79.27820897227143
+    ],
+    "handR": [
+      54.16125021484653,
+      79.27820897227143
+    ],
+    "paw": [
+      54.16125021484653,
+      79.27820897227143
+    ],
+    "tailTip": [
+      11.490152376696344,
+      33.953116399360304
+    ],
+    "head": [
+      59.64968932269858,
+      56.78434949400469
+    ],
+    "snout": [
+      80.64921135761946,
+      65.68088717708882
+    ],
+    "mouth": [
+      80.64921135761946,
+      65.68088717708882
+    ],
+    "hornTip": [
+      76.23896641433136,
+      59.33277425922037
+    ],
+    "weaponTip": [
+      80.64921135761946,
+      65.68088717708882
+    ],
+    "hornRootL": [
+      66.71993127640246,
+      46.854530519133924
+    ],
+    "hornRootR": [
+      58.87930397947096,
+      55.6743297738007
+    ],
+    "hindLGround": [
+      35.73879758166138,
+      60.78573725942016
+    ],
+    "footLGround": [
+      35.73879758166138,
+      60.78573725942016
+    ],
+    "hindRGround": [
+      24.76191936595729,
+      73.13345621595364
+    ],
+    "footRGround": [
+      24.76191936595729,
+      73.13345621595364
+    ],
+    "foreLGround": [
+      65.13812843055062,
+      70.19449001573794
+    ],
+    "handLGround": [
+      65.13812843055062,
+      70.19449001573794
+    ],
+    "foreRGround": [
+      54.16125021484653,
+      82.54220897227142
+    ],
+    "handRGround": [
+      54.16125021484653,
+      82.54220897227142
+    ],
+    "pawGround": [
+      54.16125021484653,
+      82.54220897227142
+    ],
+    "tailTipGround": [
+      11.490152376696344,
+      69.85711639936031
+    ],
+    "headGround": [
+      59.64968932269858,
+      76.36834949400469
+    ],
+    "snoutGround": [
+      80.64921135761946,
+      83.08888717708882
+    ],
+    "mouthGround": [
+      80.64921135761946,
+      83.08888717708882
+    ],
+    "hornTipGround": [
+      76.23896641433136,
+      86.53277425922037
+    ],
+    "weaponTipGround": [
+      80.64921135761946,
+      83.08888717708882
+    ],
+    "hornRootLGround": [
+      66.71993127640246,
+      72.96653051913393
+    ],
+    "hornRootRGround": [
+      58.87930397947096,
+      81.7863297738007
+    ],
+    "spine": [
+      28.03787933500042,
+      29.083206817230575
+    ]
+  },
+  "motion": {
+    "life": {
+      "yaw": 0.49,
+      "stride": 23,
+      "beats": [
+        {
+          "seconds": 0.8,
+          "at": [
+            0.3375,
+            0.640625
+          ],
+          "anim": "idle",
+          "side": 1.4
+        },
+        {
+          "seconds": 2.7,
+          "at": [
+            0.3375,
+            0.640625
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 1.5,
+          "at": [
+            0.55,
+            0.8515625
+          ],
+          "anim": "look",
+          "side": 2.8
+        },
+        {
+          "seconds": 2.2,
+          "at": [
+            0.55,
+            0.8515625
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 2,
+          "at": [
+            0.45,
+            0.765625
+          ],
+          "anim": "tech_ram",
+          "side": 0
+        },
+        {
+          "seconds": 2,
+          "at": [
+            0.45,
+            0.765625
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 0.25,
+          "at": [
+            0.6,
+            0.734375
+          ],
+          "anim": "turn"
+        },
+        {
+          "seconds": 0.75,
+          "at": [
+            0.6,
+            0.734375
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 0.3,
+          "at": [
+            0.56875,
+            0.6484375
+          ],
+          "anim": "turn"
+        },
+        {
+          "seconds": 2,
+          "at": [
+            0.56875,
+            0.6484375
+          ],
+          "anim": "walk"
+        },
+        {
+          "seconds": 0.5,
+          "at": [
+            0.3375,
+            0.640625
+          ],
+          "anim": "turn",
+          "side": 1.4
+        }
+      ]
+    },
+    "track": "frames/<anim>/motion.json",
+    "directions": {
+      "walk_n": {
+        "velocity": [
+          0,
+          -13.799999999999999
+        ],
+        "pixelsPerSecond": 13.799999999999999,
+        "worldStride": 23,
+        "feet": [
+          77,
+          105.9
+        ]
+      },
+      "walk_ne": {
+        "velocity": [
+          16.263455967290593,
+          -9.758073580374356
+        ],
+        "pixelsPerSecond": 18.966285877841237,
+        "worldStride": 23,
+        "feet": [
+          68.86827201635471,
+          103.87903679018717
+        ]
+      },
+      "walk_e": {
+        "velocity": [
+          23,
+          0
+        ],
+        "pixelsPerSecond": 23,
+        "worldStride": 23,
+        "feet": [
+          65.5,
+          99
+        ]
+      },
+      "walk_se": {
+        "velocity": [
+          16.263455967290593,
+          9.758073580374356
+        ],
+        "pixelsPerSecond": 18.966285877841237,
+        "worldStride": 23,
+        "feet": [
+          68.86827201635471,
+          94.12096320981283
+        ]
+      },
+      "walk_s": {
+        "velocity": [
+          0,
+          13.799999999999999
+        ],
+        "pixelsPerSecond": 13.799999999999999,
+        "worldStride": 23,
+        "feet": [
+          77,
+          92.1
+        ]
+      },
+      "walk_sw": {
+        "velocity": [
+          -16.263455967290593,
+          9.758073580374356
+        ],
+        "pixelsPerSecond": 18.966285877841237,
+        "worldStride": 23,
+        "feet": [
+          85.13172798364529,
+          94.12096320981283
+        ]
+      },
+      "walk_w": {
+        "velocity": [
+          -23,
+          0
+        ],
+        "pixelsPerSecond": 23,
+        "worldStride": 23,
+        "feet": [
+          88.5,
+          99
+        ]
+      },
+      "walk_nw": {
+        "velocity": [
+          -16.263455967290597,
+          -9.758073580374356
+        ],
+        "pixelsPerSecond": 18.96628587784124,
+        "worldStride": 23,
+        "feet": [
+          85.1317279836453,
+          103.87903679018717
+        ]
+      }
+    }
+  },
+  "layers": [
+    "bg",
+    "bgfBack",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "bgf",
+    "frame",
+    "over"
+  ],
+  "showreel": [
+    {
+      "name": "tech_ram",
+      "start": 0,
+      "frames": 48,
+      "end": 54
+    },
+    {
+      "name": "tech_volley",
+      "start": 54,
+      "frames": 38,
+      "end": 98
+    }
+  ],
+  "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "happy": {
+      "seconds": 1.1,
+      "frames": 26,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tech_ram": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [
+        27
+      ],
+      "shake": 0.2,
+      "stop": 0.06
+    },
+    "tech_volley": {
+      "seconds": 1.6,
+      "frames": 38,
+      "loop": false,
+      "hit": [
+        18,
+        22,
+        26
+      ],
+      "shake": 0.08,
+      "stop": 0.04
+    },
+    "life": {
+      "seconds": 15,
+      "frames": 360,
+      "loop": true,
+      "hit": [
+        200
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "showreel": {
+      "seconds": 4.083333333333333,
+      "frames": 98,
+      "loop": true,
+      "hit": [
+        27,
+        72,
+        76,
+        80
+      ],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_n": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_ne": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_e": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_se": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_s": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_sw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_w": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_nw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    }
+  }
+}

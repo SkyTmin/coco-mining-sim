@@ -1,0 +1,80 @@
+{
+  "$schema": "../../../tools/creatures/bodies/behavior.schema.json",
+  "seed": 71137,
+  "previewSeconds": 30,
+  "field": [
+    160,
+    128
+  ],
+  "stride": 18,
+  "yaw": 0.96,
+  "depthScale": 0.6,
+  "stops": [
+    [
+      0.47,
+      0.79
+    ],
+    [
+      0.63,
+      0.75
+    ],
+    [
+      0.49,
+      0.805
+    ],
+    [
+      0.38,
+      0.74
+    ]
+  ],
+  "walkShare": [
+    0.4,
+    0.48
+  ],
+  "weights": {
+    "idle": 4,
+    "fidget_a": 2,
+    "fidget_b": 2,
+    "look": 2,
+    "trick": 2
+  },
+  "attackInterval": [
+    30,
+    40
+  ],
+  "attacks": [
+    "tech_crescent",
+    "tech_tide"
+  ],
+  "events": {
+    "tap": [
+      "happy"
+    ],
+    "tap_asleep": [
+      "wake_startled",
+      "happy"
+    ],
+    "like": [
+      "trick"
+    ],
+    "double_tap": [
+      "trick"
+    ],
+    "rare_find": [
+      "happy"
+    ],
+    "approach": [
+      "look"
+    ],
+    "idle_owner": [
+      "sleep_in",
+      "sleep"
+    ],
+    "owner_back": [
+      "sleep_out"
+    ],
+    "skill_ready": [
+      "attack"
+    ]
+  }
+}

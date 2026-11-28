@@ -1,0 +1,98 @@
+{
+  "reproduction": {
+    "workingDirectory": "tools/creatures",
+    "reference": "9b40c148",
+    "pilotCommands": ["npm run ws -- gate bramble_warden,frost_yeti --force", "npm run ws -- gate all --force", "npm run ws -- snap bramble_warden,frost_yeti --check", "npm run ws -- snap all --check"],
+    "familyCommands": ["npm run ws -- new <id> --body <body> --theme <theme> --rarity <rarity>", "node --import tsx --test test/library.test.ts test/armed-goals.test.ts test/heavy-body.test.ts"],
+    "sample": "В отдельном рабочем дереве создать карточки без --moves, открыть через loadPainting. Для каждого приёма вызвать creature.frame от 0 до последнего ключа включительно при t=n/24, side=0 и normal. На каждом контакте в compose проверить непустые birth.pixels и расстояние до сокета или снаряда ≤1 px. Пересечения считать sampleAnimation(painting, move, {}) на той же последовательности.",
+    "retarget": "Семь карточек исходных редкостей. Для каждого ключа hit при неизменном времени заменить forward на forward+2. Сверить точки и пиксели непосредственно окрашенного тела. Раздельно увеличить ширину на 6% и заменить оттенки основного материала, каждый раз заново загрузить карточку."
+  },
+  "migratedPair": {
+    "ids": ["bramble_warden", "frost_yeti"],
+    "identicalFrames": 2457,
+    "gateGreen": 2,
+    "passedTechniques": 6
+  },
+  "sevenPilots": {
+    "columns": ["id", "identicalFrames", "gateAnimations", "passedTechniques"],
+    "rows": [
+      ["bramble_warden", 1134, 8, 2],
+      ["frost_yeti", 1323, 10, 4],
+      ["gem_beetle", 1082, 8, 2],
+      ["coin_dragon", 1844, 18, 6],
+      ["silk_dragon", 1201, 9, 3],
+      ["crater_titan", 1889, 18, 6],
+      ["toad_shaman", 1553, 15, 5]
+    ],
+    "identicalFrames": 10026,
+    "gateGreen": 7,
+    "gateWarnings": 0,
+    "passedTechniques": 28
+  },
+  "generatedCards": {
+    "columns": ["id", "rarity", "animations", "rawTechniqueFrames", "paintedBirths"],
+    "rows": [
+      ["qa_heavy_quadruped", "common", 2, 86, 7],
+      ["qa_hexapod", "uncommon", 2, 86, 7],
+      ["qa_long_flier", "rare", 3, 113, 11],
+      ["qa_armed_biped", "epic", 4, 139, 9],
+      ["qa_squat_mage", "legendary", 5, 198, 9],
+      ["qa_giant", "mythic", 6, 230, 15],
+      ["qa_winged_dragon", "secret", 6, 242, 15],
+      ["qa_heavy_quadruped_common", "common", 2, 86, 7],
+      ["qa_heavy_quadruped_secret", "secret", 6, 225, 12],
+      ["qa_hexapod_common", "common", 2, 86, 7],
+      ["qa_hexapod_secret", "secret", 6, 225, 12],
+      ["qa_long_flier_common", "common", 2, 70, 7],
+      ["qa_long_flier_secret", "secret", 6, 225, 14],
+      ["qa_armed_biped_common", "common", 2, 79, 7],
+      ["qa_armed_biped_secret", "secret", 6, 220, 11],
+      ["qa_squat_mage_common", "common", 2, 74, 2],
+      ["qa_squat_mage_secret", "secret", 6, 236, 10],
+      ["qa_giant_common", "common", 2, 74, 5],
+      ["qa_giant_secret", "secret", 6, 230, 15],
+      ["qa_winged_dragon_common", "common", 2, 65, 2],
+      ["qa_winged_dragon_secret", "secret", 6, 242, 15]
+    ],
+    "animations": 84,
+    "rawTechniqueFrames": 3231,
+    "paintedBirths": 199,
+    "frameExceptions": 0,
+    "clipFramesWithEmptyConfig": 0,
+    "directionsPerCard": 8
+  },
+  "physicalControls": {
+    "columns": ["body", "theme", "retargetedMoves", "minDisplacementPx", "maxDisplacementPx"],
+    "rows": [
+      ["heavy-quadruped", "root_edge", 2, 2.205, 2.205],
+      ["hexapod", "crystal_grotto", 2, 1.847, 1.847],
+      ["long-flier", "sky_islands", 3, 1.919, 1.919],
+      ["armed-biped", "polar_night", 4, 1.48, 1.48],
+      ["squat-mage", "mushroom_grotto", 5, 1.082, 1.082],
+      ["giant", "volcano", 6, 1.661, 1.661],
+      ["winged-dragon", "treasury", 6, 1.859, 1.859]
+    ],
+    "movesWithChangedBodyRaster": 28,
+    "widthChangedAlphaMaskFamilies": 7,
+    "materialsChangedBodyRasterFamilies": 7,
+    "flightFamilies": ["long-flier", "winged-dragon"]
+  },
+  "scaffolding": {
+    "filesPerDraft": 5,
+    "duplicateIdsPreservedOriginals": 7,
+    "invalidCardRejectedBeforeArtworkImport": true,
+    "validCardAccepted": true,
+    "completeRenderThenCacheSkip": "qa_heavy_quadruped"
+  },
+  "explicitTemplates": {
+    "combinationsPerSide": 70,
+    "parameterSide": [
+      1,
+      -1
+    ],
+    "nativeFramesPerBodyAndSide": 397,
+    "totalRenderedFrames": 5558,
+    "renderExceptions": 0,
+    "sample": "Каждому из семи тел задать по очереди 10 шаблонов через weaponFor, без изменения пропорций. Проверить каждый кадр makeBodyCreature(...).frame при обоих знаках parameters.side."
+  }
+}

@@ -1,0 +1,938 @@
+{
+  "idle": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/idle-look.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      14,
+      33,
+      60
+    ],
+    "idleHeight": 145,
+    "keys": [
+      {
+        "ground": [
+          104.82,
+          145.0
+        ],
+        "points": {
+          "head": [
+            110,
+            45
+          ]
+        }
+      },
+      {
+        "ground": [
+          103.07,
+          150.24
+        ],
+        "points": {
+          "head": [
+            105,
+            54
+          ]
+        }
+      },
+      {
+        "ground": [
+          106.57,
+          151.99
+        ],
+        "points": {
+          "head": [
+            111,
+            48
+          ]
+        }
+      }
+    ]
+  },
+  "look": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/idle-look.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      8,
+      16,
+      26
+    ],
+    "idleHeight": 145,
+    "keys": [
+      {
+        "ground": [
+          101.33,
+          151.99
+        ],
+        "points": {
+          "head": [
+            111,
+            53
+          ]
+        }
+      },
+      {
+        "ground": [
+          104.82,
+          150.24
+        ],
+        "points": {
+          "head": [
+            115,
+            49
+          ]
+        }
+      },
+      {
+        "ground": [
+          99.58,
+          150.24
+        ],
+        "points": {
+          "head": [
+            96,
+            49
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_a": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/fidgets.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      9,
+      20,
+      38
+    ],
+    "idleHeight": 142,
+    "keys": [
+      {
+        "ground": [
+          104.36,
+          150.55
+        ],
+        "points": {
+          "head": [
+            112,
+            55
+          ]
+        }
+      },
+      {
+        "ground": [
+          104.36,
+          152.27
+        ],
+        "points": {
+          "head": [
+            112,
+            55
+          ]
+        }
+      },
+      {
+        "ground": [
+          104.36,
+          150.55
+        ],
+        "points": {
+          "head": [
+            109,
+            50
+          ]
+        }
+      }
+    ]
+  },
+  "fidget_b": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/fidgets.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      8,
+      19,
+      36
+    ],
+    "idleHeight": 142,
+    "keys": [
+      {
+        "ground": [
+          102.65,
+          147.13
+        ],
+        "points": {
+          "head": [
+            109,
+            48
+          ]
+        }
+      },
+      {
+        "ground": [
+          104.36,
+          148.84
+        ],
+        "points": {
+          "head": [
+            110,
+            54
+          ]
+        }
+      },
+      {
+        "ground": [
+          106.07,
+          148.84
+        ],
+        "points": {
+          "head": [
+            112,
+            50
+          ]
+        }
+      }
+    ]
+  },
+  "happy": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/happy.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      7,
+      15,
+      21,
+      27,
+      39,
+      47
+    ],
+    "idleHeight": 83,
+    "keys": [
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            101.4,
+            123.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            103.4,
+            112
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            97.9,
+            116.4
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            92.3,
+            108.5
+          ],
+          "footL": [
+            94.7,
+            137.7
+          ],
+          "footR": [
+            93.3,
+            138.3
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            100.3,
+            112.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            97.4,
+            113.9
+          ]
+        }
+      }
+    ]
+  },
+  "trick": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/trick.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      16,
+      21,
+      34,
+      48,
+      75,
+      89
+    ],
+    "idleHeight": 83,
+    "keys": [
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            104.3,
+            129.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            97.4,
+            113.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          167
+        ],
+        "points": {
+          "head": [
+            94.6,
+            147.2
+          ],
+          "weaponGrip": [
+            54.9,
+            116
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            98.2,
+            119.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            109.5,
+            137
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            97.4,
+            113.9
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_in": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/sleep.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      7,
+      15,
+      29
+    ],
+    "idleHeight": 83,
+    "keys": [
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            97.4,
+            113.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            100.3,
+            125.8
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            102.3,
+            138
+          ]
+        }
+      }
+    ]
+  },
+  "sleep_out": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/sleep.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      17,
+      29
+    ],
+    "idleHeight": 83,
+    "keys": [
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            102.3,
+            138
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            99.2,
+            121
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            97.4,
+            113.9
+          ]
+        }
+      }
+    ]
+  },
+  "wake_startled": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/wake-hatch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      0,
+      1,
+      2
+    ],
+    "frames": [
+      0,
+      9,
+      14
+    ],
+    "idleHeight": 83,
+    "keys": [
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            102.3,
+            138
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            100.5,
+            107.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            96.4,
+            118.3
+          ]
+        }
+      }
+    ]
+  },
+  "hatch": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/wake-hatch.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      7,
+      21,
+      27
+    ],
+    "idleHeight": 83,
+    "keys": [
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            103.9,
+            131.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            97.4,
+            113.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            97.4,
+            113.9
+          ]
+        }
+      }
+    ]
+  },
+  "tech_crescent": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/tech_crescent.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      18,
+      22,
+      25,
+      30,
+      47
+    ],
+    "idleHeight": 83,
+    "keys": [
+      {
+        "ground": [
+          96,
+          150
+        ],
+        "points": {
+          "head": [
+            97.4,
+            105.9
+          ],
+          "weaponTip": [
+            80.2,
+            99.4
+          ],
+          "footL": [
+            104.3,
+            149.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          150
+        ],
+        "points": {
+          "head": [
+            102.5,
+            117.5
+          ],
+          "weaponTip": [
+            55.2,
+            99.5
+          ],
+          "footL": [
+            104.3,
+            149.5
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          150
+        ],
+        "points": {
+          "head": [
+            102.5,
+            106.9
+          ],
+          "weaponTip": [
+            67,
+            85.7
+          ],
+          "footL": [
+            113.2,
+            153.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          150
+        ],
+        "points": {
+          "head": [
+            103.5,
+            118.4
+          ],
+          "weaponTip": [
+            123.2,
+            154.8
+          ],
+          "footL": [
+            114.8,
+            156.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          150
+        ],
+        "points": {
+          "head": [
+            102.2,
+            119.7
+          ],
+          "weaponTip": [
+            113.2,
+            176.1
+          ],
+          "footL": [
+            114.8,
+            156.9
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          150
+        ],
+        "points": {
+          "head": [
+            97.4,
+            105.9
+          ],
+          "weaponTip": [
+            80.2,
+            99.4
+          ],
+          "footL": [
+            104.3,
+            149.5
+          ]
+        }
+      }
+    ]
+  },
+  "tech_tide": {
+    "sheet": "../../../docs/reports/creatures/b7/references/moon_warden/tech_tide.png",
+    "grid": [
+      3,
+      2
+    ],
+    "captionHeight": 0,
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frames": [
+      0,
+      19,
+      23,
+      27,
+      32,
+      47
+    ],
+    "idleHeight": 83,
+    "keys": [
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            97.4,
+            113.9
+          ],
+          "weaponHeel": [
+            80.2,
+            166.6
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          174
+        ],
+        "points": {
+          "head": [
+            92.2,
+            112.6
+          ],
+          "weaponHeel": [
+            67.8,
+            134
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            97.4,
+            114.6
+          ],
+          "weaponHeel": [
+            80.6,
+            140.7
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            106.7,
+            138.8
+          ],
+          "weaponHeel": [
+            93.6,
+            177.1
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            101.5,
+            123.6
+          ],
+          "weaponHeel": [
+            93,
+            167
+          ]
+        }
+      },
+      {
+        "ground": [
+          96,
+          158
+        ],
+        "points": {
+          "head": [
+            97.4,
+            113.9
+          ],
+          "weaponHeel": [
+            80.2,
+            166.6
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,3141 @@
+[
+  {
+    "id": "bramble_warden",
+    "bodyHeight": 74,
+    "techniques": [
+      {
+        "anim": "tech_ram",
+        "reference": "mammoth-stomp",
+        "weapon": "snout",
+        "bodyHeight": 74,
+        "prep": 20,
+        "strike": 24,
+        "hit": 27,
+        "follow": 33,
+        "comRatio": 0.674879094268098,
+        "iou": 0.04330254041570439,
+        "tipRatio": 2.7951498551025162,
+        "prepFraction": 0.4166666666666667,
+        "strikeFraction": 0.5,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 14.352778998807176,
+        "stop": 0.06,
+        "contacts": [
+          {
+            "frame": 27,
+            "socket": "snout",
+            "kind": "body",
+            "socketXY": [
+              130.87096887751085,
+              89.12593097190987
+            ],
+            "birthXY": [
+              130.87096887751085,
+              89.12593097190987
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 16,
+            "nearestInk": 0.18029875278818291,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 502,
+        "trailFrames": 4,
+        "trailMax": 1.6733754054013623,
+        "worstTrailFrame": 26,
+        "limits": {
+          "comRatio": 0.24229055295386978,
+          "iou": 0.45294270158154004,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_volley",
+        "reference": "guardian-strike",
+        "weapon": "spine",
+        "bodyHeight": 74,
+        "prep": 14,
+        "strike": 15,
+        "hit": 18,
+        "follow": 28,
+        "comRatio": 0.64915345446588,
+        "iou": 0.10036231884057971,
+        "tipRatio": 1.4254808186272625,
+        "prepFraction": 0.3684210526315789,
+        "strikeFraction": 0.39473684210526316,
+        "heldFrames": 0,
+        "attackFrames": 3,
+        "followPx": 8.222416105813105,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 18,
+            "socket": "spine",
+            "kind": "air",
+            "socketXY": [
+              112.51624503503714,
+              33.19692704710927
+            ],
+            "birthXY": [
+              112.51624503503714,
+              33.19692704710927
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 8,
+            "nearestInk": 0.5223017595312027,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 22,
+            "socket": "spine",
+            "kind": "air",
+            "socketXY": [
+              110.29834298407954,
+              40.84510809744482
+            ],
+            "birthXY": [
+              110.29834298407954,
+              40.84510809744482
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 7,
+            "nearestInk": 0.3361547822456899,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 26,
+            "socket": "spine",
+            "kind": "air",
+            "socketXY": [
+              113.17562221872832,
+              42.574718361392925
+            ],
+            "birthXY": [
+              113.17562221872832,
+              42.574718361392925
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 8,
+            "nearestInk": 0.4601169806118624,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [
+          {
+            "id": "briar-0--1",
+            "socket": "spine",
+            "release": 0.75,
+            "hit": 0.9583333333333334,
+            "origin": [
+              112.51624503503714,
+              33.19692704710927
+            ],
+            "landing": [
+              130.20624503503714,
+              90
+            ],
+            "observations": 7,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "briar-0-0",
+            "socket": "spine",
+            "release": 0.75,
+            "hit": 0.9583333333333334,
+            "origin": [
+              112.51624503503714,
+              33.19692704710927
+            ],
+            "landing": [
+              135.42624503503714,
+              100
+            ],
+            "observations": 7,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "briar-0-1",
+            "socket": "spine",
+            "release": 0.75,
+            "hit": 0.9583333333333334,
+            "origin": [
+              112.51624503503714,
+              33.19692704710927
+            ],
+            "landing": [
+              140.64624503503714,
+              110
+            ],
+            "observations": 7,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "briar-1--1",
+            "socket": "spine",
+            "release": 0.9166666666666666,
+            "hit": 1.125,
+            "origin": [
+              110.29834298407954,
+              40.84510809744482
+            ],
+            "landing": [
+              131.64834298407953,
+              92
+            ],
+            "observations": 7,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "briar-1-0",
+            "socket": "spine",
+            "release": 0.9166666666666666,
+            "hit": 1.125,
+            "origin": [
+              110.29834298407954,
+              40.84510809744482
+            ],
+            "landing": [
+              137.94834298407955,
+              102
+            ],
+            "observations": 7,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "briar-1-1",
+            "socket": "spine",
+            "release": 0.9166666666666666,
+            "hit": 1.125,
+            "origin": [
+              110.29834298407954,
+              40.84510809744482
+            ],
+            "landing": [
+              144.24834298407953,
+              112
+            ],
+            "observations": 7,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "briar-2--1",
+            "socket": "spine",
+            "release": 1.0833333333333333,
+            "hit": 1.2916666666666667,
+            "origin": [
+              113.17562221872832,
+              42.574718361392925
+            ],
+            "landing": [
+              138.18562221872833,
+              94
+            ],
+            "observations": 7,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "briar-2-0",
+            "socket": "spine",
+            "release": 1.0833333333333333,
+            "hit": 1.2916666666666667,
+            "origin": [
+              113.17562221872832,
+              42.574718361392925
+            ],
+            "landing": [
+              145.56562221872832,
+              104
+            ],
+            "observations": 7,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "briar-2-1",
+            "socket": "spine",
+            "release": 1.0833333333333333,
+            "hit": 1.2916666666666667,
+            "origin": [
+              113.17562221872832,
+              42.574718361392925
+            ],
+            "landing": [
+              152.94562221872832,
+              114
+            ],
+            "observations": 7,
+            "launchError": 0,
+            "arrivalError": 0
+          }
+        ],
+        "trailPixels": 542,
+        "trailFrames": 9,
+        "trailMax": 1.743180454480254,
+        "worstTrailFrame": 17,
+        "limits": {
+          "comRatio": 0.38081169827958333,
+          "iou": 0.35405516673528203,
+          "tipRatio": 1.29118720959553
+        },
+        "issues": []
+      }
+    ],
+    "pairs": [
+      {
+        "a": "tech_ram",
+        "b": "tech_volley",
+        "iou": 0.5910058541777541
+      }
+    ]
+  },
+  {
+    "id": "gem_beetle",
+    "bodyHeight": 72,
+    "techniques": [
+      {
+        "anim": "tech_horn",
+        "reference": "mammoth-tusks",
+        "weapon": "horn",
+        "bodyHeight": 72,
+        "prep": 16,
+        "strike": 18,
+        "hit": 21,
+        "follow": 26,
+        "comRatio": 0.60245086303419,
+        "iou": 0.08591885441527446,
+        "tipRatio": 0.686691170981126,
+        "prepFraction": 0.42105263157894735,
+        "strikeFraction": 0.47368421052631576,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 21.61962445373886,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 21,
+            "socket": "horn",
+            "kind": "body",
+            "socketXY": [
+              130.71234468869247,
+              71.84388632006042
+            ],
+            "birthXY": [
+              130.71234468869247,
+              71.84388632006042
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 41,
+            "nearestInk": 0.7292505992953636,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 149,
+        "trailFrames": 4,
+        "trailMax": 1.7447121491935287,
+        "worstTrailFrame": 20,
+        "limits": {
+          "comRatio": 0.1,
+          "iou": 0.75,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_prism",
+        "reference": "guardian-strike",
+        "weapon": "leftWing",
+        "bodyHeight": 72,
+        "prep": 14,
+        "strike": 16,
+        "hit": 19,
+        "follow": 25,
+        "comRatio": 0.8023043645746151,
+        "iou": 0.040929762506316324,
+        "tipRatio": 1.6185026655734829,
+        "prepFraction": 0.4117647058823529,
+        "strikeFraction": 0.47058823529411764,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 6.618364322057715,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 19,
+            "socket": "leftWing",
+            "kind": "air",
+            "socketXY": [
+              42.923501142909885,
+              24.347840372170552
+            ],
+            "birthXY": [
+              42.923501142909885,
+              24.347840372170552
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 52,
+            "nearestInk": 0.35615305649094453,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 727,
+        "trailFrames": 4,
+        "trailMax": 1.8166453648739995,
+        "worstTrailFrame": 18,
+        "limits": {
+          "comRatio": 0.38081169827958333,
+          "iou": 0.35405516673528203,
+          "tipRatio": 1.29118720959553
+        },
+        "issues": []
+      }
+    ],
+    "pairs": [
+      {
+        "a": "tech_horn",
+        "b": "tech_prism",
+        "iou": 0.17786003878018686
+      }
+    ]
+  },
+  {
+    "id": "silk_dragon",
+    "bodyHeight": 88,
+    "techniques": [
+      {
+        "anim": "tech_loop",
+        "reference": "mammoth-tusks",
+        "weapon": "head",
+        "bodyHeight": 88,
+        "prep": 19,
+        "strike": 23,
+        "hit": 26,
+        "follow": 34,
+        "comRatio": 0.6600856485766271,
+        "iou": 0.039218275452264625,
+        "tipRatio": 0.960481670788582,
+        "prepFraction": 0.3958333333333333,
+        "strikeFraction": 0.4791666666666667,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 11.855134425480536,
+        "stop": 0.06,
+        "contacts": [
+          {
+            "frame": 26,
+            "socket": "head",
+            "kind": "air",
+            "socketXY": [
+              183.0367411358713,
+              81.67716177640943
+            ],
+            "birthXY": [
+              183.0367411358713,
+              81.67716177640943
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 58,
+            "nearestInk": 0.324922190187474,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 353,
+        "trailFrames": 4,
+        "trailMax": 1.6533046779085308,
+        "worstTrailFrame": 24,
+        "limits": {
+          "comRatio": 0.1,
+          "iou": 0.75,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_lash",
+        "reference": "hourlord-hour",
+        "weapon": "tail",
+        "bodyHeight": 88,
+        "prep": 10,
+        "strike": 12,
+        "hit": 15,
+        "follow": 20,
+        "comRatio": 0.23566152086677097,
+        "iou": 0.34419109663409336,
+        "tipRatio": 1.917551833819602,
+        "prepFraction": 0.38461538461538464,
+        "strikeFraction": 0.46153846153846156,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 5.796730084420849,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 15,
+            "socket": "tail",
+            "kind": "floor",
+            "socketXY": [
+              158.99663422904683,
+              117.67242185945871
+            ],
+            "birthXY": [
+              158.99663422904683,
+              117.67242185945871
+            ],
+            "birthError": 0,
+            "floorError": 0,
+            "inkPixels": 59,
+            "nearestInk": 0.32759543124805524,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 1126,
+        "trailFrames": 4,
+        "trailMax": 1.5707090528997527,
+        "worstTrailFrame": 14,
+        "limits": {
+          "comRatio": 0.10811542697159329,
+          "iou": 0.5541845493562232,
+          "tipRatio": 1.1478972997926988
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_kites",
+        "reference": "puppeteer-cut",
+        "weapon": "finR",
+        "bodyHeight": 88,
+        "prep": 17,
+        "strike": 18,
+        "hit": 21,
+        "follow": 31,
+        "comRatio": 0.3303524140881413,
+        "iou": 0.22974176313446126,
+        "tipRatio": 0.6962701823591279,
+        "prepFraction": 0.3953488372093023,
+        "strikeFraction": 0.4186046511627907,
+        "heldFrames": 0,
+        "attackFrames": 3,
+        "followPx": 15.380023764549227,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 21,
+            "socket": "finR",
+            "kind": "air",
+            "socketXY": [
+              32.83916112745493,
+              32.081012108388066
+            ],
+            "birthXY": [
+              32.83916112745493,
+              32.081012108388066
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 18,
+            "nearestInk": 0.18008915743889,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 21,
+            "socket": "finL",
+            "kind": "air",
+            "socketXY": [
+              130.7905484493418,
+              50.587910933207425
+            ],
+            "birthXY": [
+              130.7905484493418,
+              50.587910933207425
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 18,
+            "nearestInk": 0.6241067356293717,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 25,
+            "socket": "finR",
+            "kind": "projectile",
+            "socketXY": [
+              61.83916112745493,
+              131
+            ],
+            "birthXY": [
+              61.83916112745493,
+              131
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 48,
+            "nearestInk": 0.1608388725450709,
+            "launchError": 0,
+            "landingError": 0
+          },
+          {
+            "frame": 29,
+            "socket": "finL",
+            "kind": "projectile",
+            "socketXY": [
+              172.7905484493418,
+              116
+            ],
+            "birthXY": [
+              172.7905484493418,
+              116
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 48,
+            "nearestInk": 0.2094515506582013,
+            "launchError": 0,
+            "landingError": 0
+          },
+          {
+            "frame": 33,
+            "socket": "finR",
+            "kind": "projectile",
+            "socketXY": [
+              89.83916112745493,
+              137
+            ],
+            "birthXY": [
+              89.83916112745493,
+              137
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 48,
+            "nearestInk": 0.1608388725450709,
+            "launchError": 0,
+            "landingError": 0
+          }
+        ],
+        "projectiles": [
+          {
+            "id": "kite-0",
+            "socket": "finR",
+            "release": 0.875,
+            "hit": 1.0416666666666667,
+            "origin": [
+              32.83916112745493,
+              32.081012108388066
+            ],
+            "landing": [
+              61.83916112745493,
+              131
+            ],
+            "observations": 6,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "kite-1",
+            "socket": "finL",
+            "release": 0.875,
+            "hit": 1.2083333333333333,
+            "origin": [
+              130.7905484493418,
+              50.587910933207425
+            ],
+            "landing": [
+              172.7905484493418,
+              116
+            ],
+            "observations": 10,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "kite-2",
+            "socket": "finR",
+            "release": 0.875,
+            "hit": 1.375,
+            "origin": [
+              32.83916112745493,
+              32.081012108388066
+            ],
+            "landing": [
+              89.83916112745493,
+              137
+            ],
+            "observations": 14,
+            "launchError": 0,
+            "arrivalError": 0
+          }
+        ],
+        "trailPixels": 318,
+        "trailFrames": 4,
+        "trailMax": 1.4585581934602816,
+        "worstTrailFrame": 19,
+        "limits": {
+          "comRatio": 0.1,
+          "iou": 0.6212653778558875,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      }
+    ],
+    "pairs": [
+      {
+        "a": "tech_loop",
+        "b": "tech_lash",
+        "iou": 0.07037371910789632
+      },
+      {
+        "a": "tech_loop",
+        "b": "tech_kites",
+        "iou": 0.05094736842105263
+      },
+      {
+        "a": "tech_lash",
+        "b": "tech_kites",
+        "iou": 0.40650703710473407
+      }
+    ]
+  },
+  {
+    "id": "frost_yeti",
+    "bodyHeight": 96,
+    "techniques": [
+      {
+        "anim": "tech_snowball",
+        "reference": "hourlord-hour",
+        "weapon": "clubTip",
+        "bodyHeight": 96,
+        "prep": 25,
+        "strike": 29,
+        "hit": 32,
+        "follow": 42,
+        "comRatio": 0.451223310840801,
+        "iou": 0.20690083157502792,
+        "tipRatio": 1.6080406531225961,
+        "prepFraction": 0.43103448275862066,
+        "strikeFraction": 0.5,
+        "heldFrames": 0,
+        "attackFrames": 3,
+        "followPx": 64.86415809070692,
+        "stop": 0.06,
+        "contacts": [
+          {
+            "frame": 32,
+            "socket": "clubTip",
+            "kind": "body",
+            "socketXY": [
+              162.6442970912084,
+              99.38595343823424
+            ],
+            "birthXY": [
+              162.6442970912084,
+              99.38595343823424
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 8,
+            "nearestInk": 0.5248662837405784,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 47,
+            "socket": "clubTip",
+            "kind": "projectile",
+            "socketXY": [
+              200,
+              132
+            ],
+            "birthXY": [
+              200,
+              132
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 12,
+            "nearestInk": 0,
+            "launchError": 0,
+            "landingError": 0
+          }
+        ],
+        "projectiles": [
+          {
+            "id": "snowball",
+            "socket": "clubTip",
+            "release": 1.3333333333333333,
+            "hit": 1.9583333333333333,
+            "origin": [
+              162.6442970912084,
+              99.38595343823424
+            ],
+            "landing": [
+              200,
+              132
+            ],
+            "observations": 17,
+            "launchError": 0,
+            "arrivalError": 0
+          }
+        ],
+        "trailPixels": 598,
+        "trailFrames": 4,
+        "trailMax": 1.4970830957097863,
+        "worstTrailFrame": 32,
+        "limits": {
+          "comRatio": 0.10811542697159329,
+          "iou": 0.5541845493562232,
+          "tipRatio": 1.1478972997926988
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_slam",
+        "reference": "mammoth-stomp",
+        "weapon": "clubTip",
+        "bodyHeight": 96,
+        "prep": 14,
+        "strike": 16,
+        "hit": 19,
+        "follow": 23,
+        "comRatio": 0.49109516892290567,
+        "iou": 0.19265060240963855,
+        "tipRatio": 1.949748311865358,
+        "prepFraction": 0.45161290322580644,
+        "strikeFraction": 0.5161290322580645,
+        "heldFrames": 2,
+        "attackFrames": 3,
+        "followPx": 7.875920595997375,
+        "stop": 0.08,
+        "contacts": [
+          {
+            "frame": 19,
+            "socket": "clubTip",
+            "kind": "floor",
+            "socketXY": [
+              168.38170802103602,
+              129.2543331281303
+            ],
+            "birthXY": [
+              168.38170802103602,
+              129.2543331281303
+            ],
+            "birthError": 0,
+            "floorError": 0,
+            "inkPixels": 15,
+            "nearestInk": 0.4586789218917483,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 936,
+        "trailFrames": 4,
+        "trailMax": 1.7541931363631864,
+        "worstTrailFrame": 19,
+        "limits": {
+          "comRatio": 0.24229055295386978,
+          "iou": 0.45294270158154004,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_icicles",
+        "reference": "puppeteer-cut",
+        "weapon": "clubTip",
+        "bodyHeight": 96,
+        "prep": 19,
+        "strike": 21,
+        "hit": 24,
+        "follow": 33,
+        "comRatio": 0.24800424664315032,
+        "iou": 0.3734563309031394,
+        "tipRatio": 1.3514458675993983,
+        "prepFraction": 0.3958333333333333,
+        "strikeFraction": 0.4375,
+        "heldFrames": 0,
+        "attackFrames": 3,
+        "followPx": 28.010255338592984,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 24,
+            "socket": "clubTip",
+            "kind": "body",
+            "socketXY": [
+              140.67625479782413,
+              51.314815925912754
+            ],
+            "birthXY": [
+              140.67625479782413,
+              51.314815925912754
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 6,
+            "nearestInk": 0.45157504707434876,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 30,
+            "socket": "clubTip",
+            "kind": "projectile",
+            "socketXY": [
+              157.56690345443337,
+              135
+            ],
+            "birthXY": [
+              157.56690345443337,
+              135
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 9,
+            "nearestInk": 0.43309654556662736,
+            "launchError": 0,
+            "landingError": 0
+          },
+          {
+            "frame": 32,
+            "socket": "clubTip",
+            "kind": "projectile",
+            "socketXY": [
+              167.82194013880328,
+              122
+            ],
+            "birthXY": [
+              167.82194013880328,
+              122
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 11,
+            "nearestInk": 0.17805986119671502,
+            "launchError": 0,
+            "landingError": 0
+          },
+          {
+            "frame": 34,
+            "socket": "clubTip",
+            "kind": "projectile",
+            "socketXY": [
+              178.07697682317317,
+              141
+            ],
+            "birthXY": [
+              178.07697682317317,
+              141
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 11,
+            "nearestInk": 0.0769768231731689,
+            "launchError": 0,
+            "landingError": 0
+          },
+          {
+            "frame": 36,
+            "socket": "clubTip",
+            "kind": "projectile",
+            "socketXY": [
+              188.33201350754308,
+              127
+            ],
+            "birthXY": [
+              188.33201350754308,
+              127
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 11,
+            "nearestInk": 0.33201350754308123,
+            "launchError": 0,
+            "landingError": 0
+          },
+          {
+            "frame": 38,
+            "socket": "clubTip",
+            "kind": "projectile",
+            "socketXY": [
+              198.58705019191297,
+              135
+            ],
+            "birthXY": [
+              198.58705019191297,
+              135
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 9,
+            "nearestInk": 0.41294980808703485,
+            "launchError": 0,
+            "landingError": 0
+          }
+        ],
+        "projectiles": [
+          {
+            "id": "icicle-0",
+            "socket": "clubTip",
+            "release": 1,
+            "hit": 1.25,
+            "origin": [
+              140.67625479782413,
+              51.314815925912754
+            ],
+            "landing": [
+              157.56690345443337,
+              135
+            ],
+            "observations": 8,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "icicle-1",
+            "socket": "clubTip",
+            "release": 1,
+            "hit": 1.3333333333333333,
+            "origin": [
+              140.67625479782413,
+              51.314815925912754
+            ],
+            "landing": [
+              167.82194013880328,
+              122
+            ],
+            "observations": 10,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "icicle-2",
+            "socket": "clubTip",
+            "release": 1,
+            "hit": 1.4166666666666667,
+            "origin": [
+              140.67625479782413,
+              51.314815925912754
+            ],
+            "landing": [
+              178.07697682317317,
+              141
+            ],
+            "observations": 12,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "icicle-3",
+            "socket": "clubTip",
+            "release": 1,
+            "hit": 1.5,
+            "origin": [
+              140.67625479782413,
+              51.314815925912754
+            ],
+            "landing": [
+              188.33201350754308,
+              127
+            ],
+            "observations": 14,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "icicle-4",
+            "socket": "clubTip",
+            "release": 1,
+            "hit": 1.5833333333333333,
+            "origin": [
+              140.67625479782413,
+              51.314815925912754
+            ],
+            "landing": [
+              198.58705019191297,
+              135
+            ],
+            "observations": 16,
+            "launchError": 0,
+            "arrivalError": 0
+          }
+        ],
+        "trailPixels": 411,
+        "trailFrames": 4,
+        "trailMax": 1.4842883614851237,
+        "worstTrailFrame": 23,
+        "limits": {
+          "comRatio": 0.1,
+          "iou": 0.6212653778558875,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_roar",
+        "reference": "mammoth-stomp",
+        "weapon": "mouth",
+        "bodyHeight": 96,
+        "prep": 16,
+        "strike": 19,
+        "hit": 22,
+        "follow": 28,
+        "comRatio": 0.2878079792546117,
+        "iou": 0.3387734915924827,
+        "tipRatio": 1.131539580497593,
+        "prepFraction": 0.42105263157894735,
+        "strikeFraction": 0.5,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 2.248193892351437,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 22,
+            "socket": "mouth",
+            "kind": "air",
+            "socketXY": [
+              141.88986135040707,
+              45.54165526608078
+            ],
+            "birthXY": [
+              141.88986135040707,
+              45.54165526608078
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 6,
+            "nearestInk": 0.471391999556243,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 362,
+        "trailFrames": 4,
+        "trailMax": 1.6155568450059834,
+        "worstTrailFrame": 22,
+        "limits": {
+          "comRatio": 0.24229055295386978,
+          "iou": 0.45294270158154004,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      }
+    ],
+    "pairs": [
+      {
+        "a": "tech_snowball",
+        "b": "tech_slam",
+        "iou": 0.5671641791044776
+      },
+      {
+        "a": "tech_snowball",
+        "b": "tech_icicles",
+        "iou": 0.3317883352645809
+      },
+      {
+        "a": "tech_slam",
+        "b": "tech_icicles",
+        "iou": 0.2653806047966632
+      },
+      {
+        "a": "tech_snowball",
+        "b": "tech_roar",
+        "iou": 0.5145686809243577
+      },
+      {
+        "a": "tech_slam",
+        "b": "tech_roar",
+        "iou": 0.40433366378699903
+      },
+      {
+        "a": "tech_icicles",
+        "b": "tech_roar",
+        "iou": 0.5760869565217391
+      }
+    ]
+  },
+  {
+    "id": "toad_shaman",
+    "bodyHeight": 117,
+    "techniques": [
+      {
+        "anim": "tech_croak",
+        "reference": "mammoth-stomp",
+        "weapon": "mouth",
+        "bodyHeight": 117,
+        "prep": 21,
+        "strike": 23,
+        "hit": 26,
+        "follow": 33,
+        "comRatio": 0.3063640978437682,
+        "iou": 0.3151185328760996,
+        "tipRatio": 0.9721360221721269,
+        "prepFraction": 0.4375,
+        "strikeFraction": 0.4791666666666667,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 19.404569530760995,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 26,
+            "socket": "mouth",
+            "kind": "air",
+            "socketXY": [
+              181.64344871344184,
+              97.00853527406484
+            ],
+            "birthXY": [
+              181.64344871344184,
+              97.00853527406484
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 7,
+            "nearestInk": 0.3566534324097271,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 303,
+        "trailFrames": 4,
+        "trailMax": 1.9334191840621848,
+        "worstTrailFrame": 25,
+        "limits": {
+          "comRatio": 0.24229055295386978,
+          "iou": 0.45294270158154004,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_tongue",
+        "reference": "mammoth-tusks",
+        "weapon": "tongueTip",
+        "bodyHeight": 117,
+        "prep": 9,
+        "strike": 10,
+        "hit": 13,
+        "follow": 16,
+        "comRatio": 0.23579489301371803,
+        "iou": 0.47050902235389175,
+        "tipRatio": 1.2093349024151578,
+        "prepFraction": 0.4090909090909091,
+        "strikeFraction": 0.45454545454545453,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 2.997968648094964,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 13,
+            "socket": "tongueTip",
+            "kind": "floor",
+            "socketXY": [
+              212.99991623633815,
+              163.9619996990496
+            ],
+            "birthXY": [
+              212.99991623633815,
+              163.9619996990496
+            ],
+            "birthError": 0,
+            "floorError": 1.260959999999983,
+            "inkPixels": 9,
+            "nearestInk": 0.03800039326995186,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 590,
+        "trailFrames": 4,
+        "trailMax": 1.3367952262708784,
+        "worstTrailFrame": 12,
+        "limits": {
+          "comRatio": 0.1,
+          "iou": 0.75,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_staff",
+        "reference": "guardian-strike",
+        "weapon": "staffFoot",
+        "bodyHeight": 117,
+        "prep": 15,
+        "strike": 17,
+        "hit": 20,
+        "follow": 25,
+        "comRatio": 0.5670527221844179,
+        "iou": 0.16358337557019767,
+        "tipRatio": 1.4227583030109405,
+        "prepFraction": 0.4411764705882353,
+        "strikeFraction": 0.5,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 1.2341907840609732,
+        "stop": 0.06,
+        "contacts": [
+          {
+            "frame": 20,
+            "socket": "staffFoot",
+            "kind": "floor",
+            "socketXY": [
+              99.12449668231066,
+              166.72051842689953
+            ],
+            "birthXY": [
+              99.12449668231066,
+              166.72051842689953
+            ],
+            "birthError": 0,
+            "floorError": 1.260959999999983,
+            "inkPixels": 7,
+            "nearestInk": 0.30595648973191447,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 457,
+        "trailFrames": 4,
+        "trailMax": 1.7586489632449758,
+        "worstTrailFrame": 20,
+        "limits": {
+          "comRatio": 0.38081169827958333,
+          "iou": 0.35405516673528203,
+          "tipRatio": 1.29118720959553
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_leap",
+        "reference": "mammoth-stomp",
+        "weapon": "footL",
+        "bodyHeight": 117,
+        "prep": 17,
+        "strike": 24,
+        "hit": 27,
+        "follow": 33,
+        "comRatio": 0.4656780547350471,
+        "iou": 0.19064721835373452,
+        "tipRatio": 0.9443650283288394,
+        "prepFraction": 0.3953488372093023,
+        "strikeFraction": 0.5581395348837209,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 2.5096253036322427,
+        "stop": 0.06,
+        "contacts": [
+          {
+            "frame": 27,
+            "socket": "footL",
+            "kind": "floor",
+            "socketXY": [
+              214.5214259151919,
+              189.581507572333
+            ],
+            "birthXY": [
+              214.5214259151919,
+              189.581507572333
+            ],
+            "birthError": 0,
+            "floorError": 0,
+            "inkPixels": 21,
+            "nearestInk": 0.6357429249818749,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 27,
+            "socket": "footR",
+            "kind": "floor",
+            "socketXY": [
+              71.43952617464383,
+              193.30960269755803
+            ],
+            "birthXY": [
+              71.43952617464383,
+              193.30960269755803
+            ],
+            "birthError": 0,
+            "floorError": 0,
+            "inkPixels": 23,
+            "nearestInk": 0.5376216964857826,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 248,
+        "trailFrames": 4,
+        "trailMax": 1.9619692646966733,
+        "worstTrailFrame": 25,
+        "limits": {
+          "comRatio": 0.24229055295386978,
+          "iou": 0.45294270158154004,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_spores",
+        "reference": "guardian-strike",
+        "weapon": "mouth",
+        "bodyHeight": 117,
+        "prep": 20,
+        "strike": 21,
+        "hit": 24,
+        "follow": 36,
+        "comRatio": 0.5731856208072744,
+        "iou": 0.13965998140523309,
+        "tipRatio": 1.36541366704874,
+        "prepFraction": 0.4166666666666667,
+        "strikeFraction": 0.4375,
+        "heldFrames": 0,
+        "attackFrames": 3,
+        "followPx": 14.974489920491681,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 24,
+            "socket": "mouth",
+            "kind": "air",
+            "socketXY": [
+              200.26797732703562,
+              115.8880091167199
+            ],
+            "birthXY": [
+              200.26797732703562,
+              115.8880091167199
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 4,
+            "nearestInk": 0.29043726645011414,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 30,
+            "socket": "mouth",
+            "kind": "air",
+            "socketXY": [
+              207.83034432016814,
+              106.61571385442677
+            ],
+            "birthXY": [
+              207.83034432016814,
+              106.61571385442677
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 6,
+            "nearestInk": 0.4200701029337119,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 37,
+            "socket": "mouth",
+            "kind": "air",
+            "socketXY": [
+              207.82348330303512,
+              103.8961762107179
+            ],
+            "birthXY": [
+              207.82348330303512,
+              103.8961762107179
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 4,
+            "nearestInk": 0.20478653160861532,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 311,
+        "trailFrames": 4,
+        "trailMax": 1.1709635828591367,
+        "worstTrailFrame": 24,
+        "limits": {
+          "comRatio": 0.38081169827958333,
+          "iou": 0.35405516673528203,
+          "tipRatio": 1.29118720959553
+        },
+        "issues": []
+      }
+    ],
+    "pairs": [
+      {
+        "a": "tech_croak",
+        "b": "tech_tongue",
+        "iou": 0.6563255439161966
+      },
+      {
+        "a": "tech_croak",
+        "b": "tech_staff",
+        "iou": 0.42887205387205385
+      },
+      {
+        "a": "tech_tongue",
+        "b": "tech_staff",
+        "iou": 0.46743910690121787
+      },
+      {
+        "a": "tech_croak",
+        "b": "tech_leap",
+        "iou": 0.25756060023085803
+      },
+      {
+        "a": "tech_tongue",
+        "b": "tech_leap",
+        "iou": 0.352479572850093
+      },
+      {
+        "a": "tech_staff",
+        "b": "tech_leap",
+        "iou": 0.37804585763361825
+      },
+      {
+        "a": "tech_croak",
+        "b": "tech_spores",
+        "iou": 0.6246861924686192
+      },
+      {
+        "a": "tech_tongue",
+        "b": "tech_spores",
+        "iou": 0.5331534309946029
+      },
+      {
+        "a": "tech_staff",
+        "b": "tech_spores",
+        "iou": 0.5197374503096976
+      },
+      {
+        "a": "tech_leap",
+        "b": "tech_spores",
+        "iou": 0.32667450058754405
+      }
+    ]
+  },
+  {
+    "id": "crater_titan",
+    "bodyHeight": 135,
+    "techniques": [
+      {
+        "anim": "tech_eruption",
+        "reference": "mammoth-stomp",
+        "weapon": "vent",
+        "bodyHeight": 135,
+        "prep": 25,
+        "strike": 27,
+        "hit": 30,
+        "follow": 44,
+        "comRatio": 0.3368473597424278,
+        "iou": 0.16841538875437181,
+        "tipRatio": 0.6699172711858261,
+        "prepFraction": 0.43103448275862066,
+        "strikeFraction": 0.46551724137931033,
+        "heldFrames": 0,
+        "attackFrames": 3,
+        "followPx": 6.976735304827325,
+        "stop": 0.06,
+        "contacts": [
+          {
+            "frame": 30,
+            "socket": "vent",
+            "kind": "air",
+            "socketXY": [
+              120.34242544424865,
+              58.18141322010949
+            ],
+            "birthXY": [
+              120.34242544424865,
+              58.18141322010949
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 23,
+            "nearestInk": 0.38751250470065857,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 36,
+            "socket": "vent",
+            "kind": "projectile",
+            "socketXY": [
+              46.08,
+              158.08
+            ],
+            "birthXY": [
+              46.08,
+              158.08
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 50,
+            "nearestInk": 0.11313708498985524,
+            "launchError": 0,
+            "landingError": 0
+          },
+          {
+            "frame": 41,
+            "socket": "vent",
+            "kind": "projectile",
+            "socketXY": [
+              199.68,
+              178.88
+            ],
+            "birthXY": [
+              199.68,
+              178.88
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 60,
+            "nearestInk": 0.3417601498126965,
+            "launchError": 0,
+            "landingError": 0
+          },
+          {
+            "frame": 46,
+            "socket": "vent",
+            "kind": "projectile",
+            "socketXY": [
+              227.84,
+              128.96
+            ],
+            "birthXY": [
+              227.84,
+              128.96
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 72,
+            "nearestInk": 0.16492422502470117,
+            "launchError": 0,
+            "landingError": 0
+          }
+        ],
+        "projectiles": [
+          {
+            "id": "bomb-0",
+            "socket": "vent",
+            "release": 1.25,
+            "hit": 1.5,
+            "origin": [
+              120.34242544424865,
+              58.18141322010949
+            ],
+            "landing": [
+              46.08,
+              158.08
+            ],
+            "observations": 8,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "bomb-1",
+            "socket": "vent",
+            "release": 1.2916666666666667,
+            "hit": 1.7083333333333333,
+            "origin": [
+              120.23289691450456,
+              57.181764763679624
+            ],
+            "landing": [
+              199.68,
+              178.88
+            ],
+            "observations": 12,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "bomb-2",
+            "socket": "vent",
+            "release": 1.3333333333333333,
+            "hit": 1.9166666666666667,
+            "origin": [
+              120.13173170514116,
+              56.257056440626286
+            ],
+            "landing": [
+              227.84,
+              128.96
+            ],
+            "observations": 16,
+            "launchError": 0,
+            "arrivalError": 0
+          }
+        ],
+        "trailPixels": 292,
+        "trailFrames": 7,
+        "trailMax": 1.0319505959374549,
+        "worstTrailFrame": 28,
+        "limits": {
+          "comRatio": 0.24229055295386978,
+          "iou": 0.45294270158154004,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_fist",
+        "reference": "guardian-strike",
+        "weapon": "fist",
+        "bodyHeight": 135,
+        "prep": 13,
+        "strike": 15,
+        "hit": 18,
+        "follow": 22,
+        "comRatio": 0.5204828453816182,
+        "iou": 0.11227498448168839,
+        "tipRatio": 1.455615086594111,
+        "prepFraction": 0.4482758620689655,
+        "strikeFraction": 0.5172413793103449,
+        "heldFrames": 2,
+        "attackFrames": 3,
+        "followPx": 7.739176889481843,
+        "stop": 0.08,
+        "contacts": [
+          {
+            "frame": 18,
+            "socket": "fist",
+            "kind": "floor",
+            "socketXY": [
+              71.08784888475711,
+              199.10099276101613
+            ],
+            "birthXY": [
+              71.08784888475711,
+              199.10099276101613
+            ],
+            "birthError": 0,
+            "floorError": 0,
+            "inkPixels": 64,
+            "nearestInk": 0.133854265269093,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 1331,
+        "trailFrames": 7,
+        "trailMax": 1.8078963006588102,
+        "worstTrailFrame": 18,
+        "limits": {
+          "comRatio": 0.38081169827958333,
+          "iou": 0.35405516673528203,
+          "tipRatio": 1.29118720959553
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_sweep",
+        "reference": "hourlord-hour",
+        "weapon": "fist",
+        "bodyHeight": 135,
+        "prep": 13,
+        "strike": 14,
+        "hit": 17,
+        "follow": 23,
+        "comRatio": 0.5234957512542276,
+        "iou": 0.10039978879082749,
+        "tipRatio": 1.5215034158854277,
+        "prepFraction": 0.38235294117647056,
+        "strikeFraction": 0.4117647058823529,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 16.289147872361738,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 17,
+            "socket": "fist",
+            "kind": "floor",
+            "socketXY": [
+              24.497842991154272,
+              175.64612947996983
+            ],
+            "birthXY": [
+              24.497842991154272,
+              175.64612947996983
+            ],
+            "birthError": 0,
+            "floorError": 0,
+            "inkPixels": 22,
+            "nearestInk": 0.6107961925125727,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 1588,
+        "trailFrames": 7,
+        "trailMax": 1.9187167058598193,
+        "worstTrailFrame": 17,
+        "limits": {
+          "comRatio": 0.10811542697159329,
+          "iou": 0.5541845493562232,
+          "tipRatio": 1.1478972997926988
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_quake",
+        "reference": "mammoth-stomp",
+        "weapon": "foot",
+        "bodyHeight": 135,
+        "prep": 17,
+        "strike": 20,
+        "hit": 23,
+        "follow": 28,
+        "comRatio": 0.2630563755132261,
+        "iou": 0.30190831777639493,
+        "tipRatio": 0.6669988523122103,
+        "prepFraction": 0.4473684210526316,
+        "strikeFraction": 0.5263157894736842,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 4.58145781212268,
+        "stop": 0.06,
+        "contacts": [
+          {
+            "frame": 23,
+            "socket": "foot",
+            "kind": "floor",
+            "socketXY": [
+              145.3016366380948,
+              186.54997335350077
+            ],
+            "birthXY": [
+              145.3016366380948,
+              186.54997335350077
+            ],
+            "birthError": 0,
+            "floorError": 0,
+            "inkPixels": 37,
+            "nearestInk": 0.5417643805202361,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 584,
+        "trailFrames": 7,
+        "trailMax": 1.5435518162212456,
+        "worstTrailFrame": 26,
+        "limits": {
+          "comRatio": 0.24229055295386978,
+          "iou": 0.45294270158154004,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_ash",
+        "reference": "guardian-strike",
+        "weapon": "vent",
+        "bodyHeight": 135,
+        "prep": 19,
+        "strike": 20,
+        "hit": 23,
+        "follow": 34,
+        "comRatio": 0.48444289480486474,
+        "iou": 0.2045326689705055,
+        "tipRatio": 1.3816335879783668,
+        "prepFraction": 0.3958333333333333,
+        "strikeFraction": 0.4166666666666667,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 9.4270653374541,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 23,
+            "socket": "vent",
+            "kind": "air",
+            "socketXY": [
+              194.2603789161898,
+              94.89273774231053
+            ],
+            "birthXY": [
+              194.2603789161898,
+              94.89273774231053
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 40,
+            "nearestInk": 0.2816067682439846,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 693,
+        "trailFrames": 7,
+        "trailMax": 1.4548153079674964,
+        "worstTrailFrame": 22,
+        "limits": {
+          "comRatio": 0.38081169827958333,
+          "iou": 0.35405516673528203,
+          "tipRatio": 1.29118720959553
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_pillar",
+        "reference": "guardian-strike",
+        "weapon": "fist",
+        "bodyHeight": 135,
+        "prep": 18,
+        "strike": 20,
+        "hit": 23,
+        "follow": 34,
+        "comRatio": 0.6768328139674616,
+        "iou": 0.0009545487921286438,
+        "tipRatio": 1.776763495805258,
+        "prepFraction": 0.4186046511627907,
+        "strikeFraction": 0.46511627906976744,
+        "heldFrames": 0,
+        "attackFrames": 3,
+        "followPx": 19.141286510553684,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 23,
+            "socket": "fist",
+            "kind": "floor",
+            "socketXY": [
+              196.3505015455126,
+              198.42168204595126
+            ],
+            "birthXY": [
+              196.3505015455126,
+              198.42168204595126
+            ],
+            "birthError": 0,
+            "floorError": 0,
+            "inkPixels": 20,
+            "nearestInk": 0.548331178471879,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 28,
+            "socket": "pillar0",
+            "kind": "floor",
+            "socketXY": [
+              84,
+              174
+            ],
+            "birthXY": [
+              84,
+              174
+            ],
+            "birthError": 0,
+            "floorError": 0,
+            "inkPixels": 39,
+            "nearestInk": 0,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 32,
+            "socket": "pillar1",
+            "kind": "floor",
+            "socketXY": [
+              139,
+              145
+            ],
+            "birthXY": [
+              139,
+              145
+            ],
+            "birthError": 0,
+            "floorError": 0,
+            "inkPixels": 43,
+            "nearestInk": 0,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 36,
+            "socket": "pillar2",
+            "kind": "floor",
+            "socketXY": [
+              202,
+              132
+            ],
+            "birthXY": [
+              202,
+              132
+            ],
+            "birthError": 0,
+            "floorError": 0,
+            "inkPixels": 47,
+            "nearestInk": 0,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 1663,
+        "trailFrames": 7,
+        "trailMax": 1.8466379507872546,
+        "worstTrailFrame": 23,
+        "limits": {
+          "comRatio": 0.38081169827958333,
+          "iou": 0.35405516673528203,
+          "tipRatio": 1.29118720959553
+        },
+        "issues": []
+      }
+    ],
+    "pairs": [
+      {
+        "a": "tech_eruption",
+        "b": "tech_fist",
+        "iou": 0.3350147120638924
+      },
+      {
+        "a": "tech_eruption",
+        "b": "tech_sweep",
+        "iou": 0.2547222892050478
+      },
+      {
+        "a": "tech_fist",
+        "b": "tech_sweep",
+        "iou": 0.380764163372859
+      },
+      {
+        "a": "tech_eruption",
+        "b": "tech_quake",
+        "iou": 0.4448466374547533
+      },
+      {
+        "a": "tech_fist",
+        "b": "tech_quake",
+        "iou": 0.46384116860405306
+      },
+      {
+        "a": "tech_sweep",
+        "b": "tech_quake",
+        "iou": 0.2212404863966407
+      },
+      {
+        "a": "tech_eruption",
+        "b": "tech_ash",
+        "iou": 0.28337874659400547
+      },
+      {
+        "a": "tech_fist",
+        "b": "tech_ash",
+        "iou": 0.19017920581037343
+      },
+      {
+        "a": "tech_sweep",
+        "b": "tech_ash",
+        "iou": 0.05081618168914123
+      },
+      {
+        "a": "tech_quake",
+        "b": "tech_ash",
+        "iou": 0.40561698796359724
+      },
+      {
+        "a": "tech_eruption",
+        "b": "tech_pillar",
+        "iou": 0.0845771144278607
+      },
+      {
+        "a": "tech_fist",
+        "b": "tech_pillar",
+        "iou": 0.061395202020202023
+      },
+      {
+        "a": "tech_sweep",
+        "b": "tech_pillar",
+        "iou": 0.0004554425383330803
+      },
+      {
+        "a": "tech_quake",
+        "b": "tech_pillar",
+        "iou": 0.18559195830230826
+      },
+      {
+        "a": "tech_ash",
+        "b": "tech_pillar",
+        "iou": 0.3038971011710501
+      }
+    ]
+  },
+  {
+    "id": "coin_dragon",
+    "bodyHeight": 131,
+    "techniques": [
+      {
+        "anim": "tech_breath",
+        "reference": "guardian-strike",
+        "weapon": "mouth",
+        "bodyHeight": 131,
+        "prep": 17,
+        "strike": 20,
+        "hit": 23,
+        "follow": 31,
+        "comRatio": 0.4104311703202531,
+        "iou": 0.0629686810763123,
+        "tipRatio": 1.6373060222982778,
+        "prepFraction": 0.3953488372093023,
+        "strikeFraction": 0.46511627906976744,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 16.210519466681614,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 23,
+            "socket": "mouth",
+            "kind": "air",
+            "socketXY": [
+              151.18110170502536,
+              126.2319628820747
+            ],
+            "birthXY": [
+              151.18110170502536,
+              126.2319628820747
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 44,
+            "nearestInk": 0.29428660557947695,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [
+          {
+            "id": "breath-0-0",
+            "socket": "mouth",
+            "release": 0.9583333333333334,
+            "hit": 1.2916666666666667,
+            "origin": [
+              151.18110170502536,
+              126.2319628820747
+            ],
+            "landing": [
+              208.0337320376795,
+              133.8
+            ],
+            "observations": 10,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "breath-0-1",
+            "socket": "mouth",
+            "release": 0.9583333333333334,
+            "hit": 1.29875,
+            "origin": [
+              151.18110170502536,
+              126.2319628820747
+            ],
+            "landing": [
+              218.56872423989654,
+              138.6
+            ],
+            "observations": 10,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "breath-0-2",
+            "socket": "mouth",
+            "release": 0.9583333333333334,
+            "hit": 1.3058333333333334,
+            "origin": [
+              151.18110170502536,
+              126.2319628820747
+            ],
+            "landing": [
+              229.1037164421136,
+              143.4
+            ],
+            "observations": 10,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "breath-0-3",
+            "socket": "mouth",
+            "release": 0.9583333333333334,
+            "hit": 1.3129166666666667,
+            "origin": [
+              151.18110170502536,
+              126.2319628820747
+            ],
+            "landing": [
+              239.63870864433068,
+              148.2
+            ],
+            "observations": 10,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "breath-1-0",
+            "socket": "mouth",
+            "release": 1.0416666666666667,
+            "hit": 1.4375,
+            "origin": [
+              157.61736596219026,
+              134.9648005694662
+            ],
+            "landing": [
+              195.2520207430534,
+              153.8
+            ],
+            "observations": 11,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "breath-1-1",
+            "socket": "mouth",
+            "release": 1.0416666666666667,
+            "hit": 1.4445833333333333,
+            "origin": [
+              157.61736596219026,
+              134.9648005694662
+            ],
+            "landing": [
+              205.04040629143933,
+              158.6
+            ],
+            "observations": 11,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "breath-1-2",
+            "socket": "mouth",
+            "release": 1.0416666666666667,
+            "hit": 1.4516666666666667,
+            "origin": [
+              157.61736596219026,
+              134.9648005694662
+            ],
+            "landing": [
+              214.82879183982527,
+              163.4
+            ],
+            "observations": 11,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "breath-1-3",
+            "socket": "mouth",
+            "release": 1.0416666666666667,
+            "hit": 1.45875,
+            "origin": [
+              157.61736596219026,
+              134.9648005694662
+            ],
+            "landing": [
+              224.6171773882112,
+              168.2
+            ],
+            "observations": 12,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "breath-2-0",
+            "socket": "mouth",
+            "release": 1.125,
+            "hit": 1.5833333333333333,
+            "origin": [
+              162.20674743427764,
+              140.79505848442864
+            ],
+            "landing": [
+              183.43175261675978,
+              175.8
+            ],
+            "observations": 13,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "breath-2-1",
+            "socket": "mouth",
+            "release": 1.125,
+            "hit": 1.5904166666666666,
+            "origin": [
+              162.20674743427764,
+              140.79505848442864
+            ],
+            "landing": [
+              192.68776991438358,
+              180.6
+            ],
+            "observations": 13,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "breath-2-2",
+            "socket": "mouth",
+            "release": 1.125,
+            "hit": 1.5975,
+            "origin": [
+              162.20674743427764,
+              140.79505848442864
+            ],
+            "landing": [
+              201.94378721200738,
+              185.4
+            ],
+            "observations": 13,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "breath-2-3",
+            "socket": "mouth",
+            "release": 1.125,
+            "hit": 1.6045833333333333,
+            "origin": [
+              162.20674743427764,
+              140.79505848442864
+            ],
+            "landing": [
+              211.19980450963118,
+              190.2
+            ],
+            "observations": 13,
+            "launchError": 0,
+            "arrivalError": 0
+          }
+        ],
+        "trailPixels": 473,
+        "trailFrames": 6,
+        "trailMax": 1.3082863260678996,
+        "worstTrailFrame": 23,
+        "limits": {
+          "comRatio": 0.38081169827958333,
+          "iou": 0.35405516673528203,
+          "tipRatio": 1.29118720959553
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_tail",
+        "reference": "hourlord-hour",
+        "weapon": "tail",
+        "bodyHeight": 131,
+        "prep": 10,
+        "strike": 11,
+        "hit": 14,
+        "follow": 19,
+        "comRatio": 0.681239141201214,
+        "iou": 0,
+        "tipRatio": 1.28585867803747,
+        "prepFraction": 0.38461538461538464,
+        "strikeFraction": 0.4230769230769231,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 8.29477955261192,
+        "stop": 0.06,
+        "contacts": [
+          {
+            "frame": 14,
+            "socket": "tail",
+            "kind": "floor",
+            "socketXY": [
+              91.86178422085783,
+              193.81294016773907
+            ],
+            "birthXY": [
+              91.86178422085783,
+              193.81294016773907
+            ],
+            "birthError": 0,
+            "floorError": 0.13311295680190938,
+            "inkPixels": 172,
+            "nearestInk": 0.23258328067460965,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 868,
+        "trailFrames": 6,
+        "trailMax": 1.8100603178698513,
+        "worstTrailFrame": 13,
+        "limits": {
+          "comRatio": 0.10811542697159329,
+          "iou": 0.5541845493562232,
+          "tipRatio": 1.1478972997926988
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_chest",
+        "reference": "guardian-strike",
+        "weapon": "chest",
+        "bodyHeight": 131,
+        "prep": 17,
+        "strike": 19,
+        "hit": 22,
+        "follow": 28,
+        "comRatio": 0.5167318769999399,
+        "iou": 0.06110236220472441,
+        "tipRatio": 1.365911467917513,
+        "prepFraction": 0.4473684210526316,
+        "strikeFraction": 0.5,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 9.86130311328515,
+        "stop": 0.06,
+        "contacts": [
+          {
+            "frame": 22,
+            "socket": "chest",
+            "kind": "body",
+            "socketXY": [
+              149.22476137028792,
+              151.42004253427427
+            ],
+            "birthXY": [
+              149.22476137028792,
+              151.42004253427427
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 26,
+            "nearestInk": 0.4763962680093732,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 974,
+        "trailFrames": 6,
+        "trailMax": 1.7235589651507115,
+        "worstTrailFrame": 22,
+        "limits": {
+          "comRatio": 0.38081169827958333,
+          "iou": 0.35405516673528203,
+          "tipRatio": 1.29118720959553
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_claw",
+        "reference": "puppeteer-cut",
+        "weapon": "claw",
+        "bodyHeight": 131,
+        "prep": 9,
+        "strike": 10,
+        "hit": 13,
+        "follow": 16,
+        "comRatio": 0.2634543014926211,
+        "iou": 0.23303890246194325,
+        "tipRatio": 1.0788644765584123,
+        "prepFraction": 0.4090909090909091,
+        "strikeFraction": 0.45454545454545453,
+        "heldFrames": 1,
+        "attackFrames": 3,
+        "followPx": 17.37905514571778,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 13,
+            "socket": "claw",
+            "kind": "floor",
+            "socketXY": [
+              127.77826801549922,
+              186.4065346254447
+            ],
+            "birthXY": [
+              127.77826801549922,
+              186.4065346254447
+            ],
+            "birthError": 0,
+            "floorError": 0.25984062900644744,
+            "inkPixels": 10,
+            "nearestInk": 0.6335347060317414,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 1280,
+        "trailFrames": 6,
+        "trailMax": 1.5395374061981568,
+        "worstTrailFrame": 10,
+        "limits": {
+          "comRatio": 0.1,
+          "iou": 0.6212653778558875,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_rain",
+        "reference": "guardian-strike",
+        "weapon": "claw",
+        "bodyHeight": 131,
+        "prep": 21,
+        "strike": 23,
+        "hit": 26,
+        "follow": 37,
+        "comRatio": 0.7469228605069156,
+        "iou": 0,
+        "tipRatio": 1.3923321806627442,
+        "prepFraction": 0.39622641509433965,
+        "strikeFraction": 0.4339622641509434,
+        "heldFrames": 0,
+        "attackFrames": 3,
+        "followPx": 4.751223781027585,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 26,
+            "socket": "claw",
+            "kind": "air",
+            "socketXY": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "birthXY": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 63,
+            "nearestInk": 0.03886600642722131,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 32,
+            "socket": "claw",
+            "kind": "projectile",
+            "socketXY": [
+              69,
+              169
+            ],
+            "birthXY": [
+              69,
+              169
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 12,
+            "nearestInk": 0,
+            "launchError": 0,
+            "landingError": 0
+          },
+          {
+            "frame": 37,
+            "socket": "claw",
+            "kind": "projectile",
+            "socketXY": [
+              167,
+              156
+            ],
+            "birthXY": [
+              167,
+              156
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 12,
+            "nearestInk": 0,
+            "launchError": 0,
+            "landingError": 0
+          },
+          {
+            "frame": 42,
+            "socket": "claw",
+            "kind": "projectile",
+            "socketXY": [
+              139,
+              184
+            ],
+            "birthXY": [
+              139,
+              184
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 12,
+            "nearestInk": 0,
+            "launchError": 0,
+            "landingError": 0
+          }
+        ],
+        "projectiles": [
+          {
+            "id": "rain1",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.3333333333333333,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              69,
+              169
+            ],
+            "observations": 8,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain1-1",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.3333333333333333,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              60.43818945903331,
+              172.34345610742457
+            ],
+            "observations": 8,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain1-2",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.3333333333333333,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              74.98234550282359,
+              164.5980756180361
+            ],
+            "observations": 8,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain1-3",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.3333333333333333,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              63.028955903835595,
+              171.66944210301153
+            ],
+            "observations": 8,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain1-4",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.3333333333333333,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              64.3110552765429,
+              166.97555797779933
+            ],
+            "observations": 8,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain1-5",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.3333333333333333,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              66.62573325959966,
+              169.3258087320719
+            ],
+            "observations": 8,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain1-6",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.3333333333333333,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              76.45128741161898,
+              171.73137219855562
+            ],
+            "observations": 8,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain2",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.5416666666666667,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              167,
+              156
+            ],
+            "observations": 13,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain2-1",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.5416666666666667,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              175.7218939019367,
+              153.66128596034832
+            ],
+            "observations": 13,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain2-2",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.5416666666666667,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              177.47229478741065,
+              151.08652196195908
+            ],
+            "observations": 13,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain2-3",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.5416666666666667,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              162.3053978323005,
+              155.95847255643457
+            ],
+            "observations": 13,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain2-4",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.5416666666666667,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              175.24401131365448,
+              151.31632437277585
+            ],
+            "observations": 13,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain2-5",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.5416666666666667,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              171.32889987295493,
+              156.82682477729395
+            ],
+            "observations": 13,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain2-6",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.5416666666666667,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              170.58629878098145,
+              157.15990435122512
+            ],
+            "observations": 13,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain3",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.75,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              139,
+              184
+            ],
+            "observations": 18,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain3-1",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.75,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              137.81744398362935,
+              182.1267008970026
+            ],
+            "observations": 18,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain3-2",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.75,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              131.65610352996737,
+              178.84602688346058
+            ],
+            "observations": 18,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain3-3",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.75,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              137.5528367254883,
+              182.7686462814454
+            ],
+            "observations": 18,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain3-4",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.75,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              129.19495860952884,
+              187.90164587670006
+            ],
+            "observations": 18,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain3-5",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.75,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              131.19274696335196,
+              188.93291534413584
+            ],
+            "observations": 18,
+            "launchError": 0,
+            "arrivalError": 0
+          },
+          {
+            "id": "rain3-6",
+            "socket": "claw",
+            "release": 1.0833333333333333,
+            "hit": 1.75,
+            "origin": [
+              122.96120229181906,
+              37.002303105622346
+            ],
+            "landing": [
+              148.44041597191244,
+              177.77284164330922
+            ],
+            "observations": 18,
+            "launchError": 0,
+            "arrivalError": 0
+          }
+        ],
+        "trailPixels": 875,
+        "trailFrames": 6,
+        "trailMax": 1.5201818231548088,
+        "worstTrailFrame": 24,
+        "limits": {
+          "comRatio": 0.38081169827958333,
+          "iou": 0.35405516673528203,
+          "tipRatio": 1.29118720959553
+        },
+        "issues": []
+      },
+      {
+        "anim": "tech_dive",
+        "reference": "mammoth-tusks",
+        "weapon": "mouth",
+        "bodyHeight": 131,
+        "prep": 18,
+        "strike": 19,
+        "hit": 22,
+        "follow": 34,
+        "comRatio": 0.18425521868736308,
+        "iou": 0.4274816722805627,
+        "tipRatio": 1.2124575292696715,
+        "prepFraction": 0.375,
+        "strikeFraction": 0.3958333333333333,
+        "heldFrames": 0,
+        "attackFrames": 3,
+        "followPx": 84.68761744709974,
+        "stop": 0.04,
+        "contacts": [
+          {
+            "frame": 22,
+            "socket": "mouth",
+            "kind": "body",
+            "socketXY": [
+              145.36752195140284,
+              175.43933275159625
+            ],
+            "birthXY": [
+              145.36752195140284,
+              175.43933275159625
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 39,
+            "nearestInk": 0.5727876145554163,
+            "launchError": null,
+            "landingError": null
+          },
+          {
+            "frame": 34,
+            "socket": "mouth",
+            "kind": "body",
+            "socketXY": [
+              100.46915535045437,
+              163.66184614282977
+            ],
+            "birthXY": [
+              100.46915535045437,
+              163.66184614282977
+            ],
+            "birthError": 0,
+            "floorError": null,
+            "inkPixels": 36,
+            "nearestInk": 0.5783206497947886,
+            "launchError": null,
+            "landingError": null
+          }
+        ],
+        "projectiles": [],
+        "trailPixels": 1007,
+        "trailFrames": 8,
+        "trailMax": 1.751969511195278,
+        "worstTrailFrame": 22,
+        "limits": {
+          "comRatio": 0.1,
+          "iou": 0.75,
+          "tipRatio": 0.6
+        },
+        "issues": []
+      }
+    ],
+    "pairs": [
+      {
+        "a": "tech_breath",
+        "b": "tech_tail",
+        "iou": 0.1781699758377981
+      },
+      {
+        "a": "tech_breath",
+        "b": "tech_chest",
+        "iou": 0.46547911547911547
+      },
+      {
+        "a": "tech_tail",
+        "b": "tech_chest",
+        "iou": 0.22259262786932088
+      },
+      {
+        "a": "tech_breath",
+        "b": "tech_claw",
+        "iou": 0.44490698582021593
+      },
+      {
+        "a": "tech_tail",
+        "b": "tech_claw",
+        "iou": 0.11343836886005561
+      },
+      {
+        "a": "tech_chest",
+        "b": "tech_claw",
+        "iou": 0.4393305439330544
+      },
+      {
+        "a": "tech_breath",
+        "b": "tech_rain",
+        "iou": 0.07242820792439113
+      },
+      {
+        "a": "tech_tail",
+        "b": "tech_rain",
+        "iou": 0.2973966309341501
+      },
+      {
+        "a": "tech_chest",
+        "b": "tech_rain",
+        "iou": 0.1083402146985962
+      },
+      {
+        "a": "tech_claw",
+        "b": "tech_rain",
+        "iou": 0.06481872728809263
+      },
+      {
+        "a": "tech_breath",
+        "b": "tech_dive",
+        "iou": 0.26700626127560223
+      },
+      {
+        "a": "tech_tail",
+        "b": "tech_dive",
+        "iou": 0.3795103092783505
+      },
+      {
+        "a": "tech_chest",
+        "b": "tech_dive",
+        "iou": 0.25254018104563086
+      },
+      {
+        "a": "tech_claw",
+        "b": "tech_dive",
+        "iou": 0.18196158485663913
+      },
+      {
+        "a": "tech_rain",
+        "b": "tech_dive",
+        "iou": 0.40619765494137355
+      }
+    ]
+  }
+]
