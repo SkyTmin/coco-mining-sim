@@ -57,7 +57,9 @@ function walkingDemo(c: Creature): ReelPart[] {
   const frames = Math.round(c.animations.prepare_walk.seconds * 24), middle = Math.ceil(frames / 2);
   const turnFrames = Math.round(c.animations.turn.seconds * 24), { yaw, stride } = c.motion!;
   const bearings = c.animations.turn.bearings ?? Array.from({ length: turnFrames }, (_, i) => yaw + i * 2 * Math.PI / turnFrames);
-  const route: Direction[] = ['se', 's', 'w', 'nw', 'ne', 'n', 'e', 'sw'];
+  const route: readonly Direction[] = c.reelWalkRoute ?? ['se', 's', 'w', 'nw', 'ne', 'n', 'e', 'sw'];
+  if (route.length !== directions.length || directions.some(d => !route.includes(d)))
+    throw new Error(c.id + ': the showreel walk must visit all eight headings once');
   const bearing = (d: Direction) => (directions.indexOf(d) - 2) * Math.PI / 4;
   const still: XY = [0, 0];
   const parts: ReelPart[] = [

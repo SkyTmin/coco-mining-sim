@@ -170,7 +170,10 @@ function weighted(options, random) {
 const angleDelta = (from, to) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
 export function turnFramesFor(bearings, from, to) {
   const delta = angleDelta(from, to);
-  const steps = Math.ceil(Math.abs(delta) / (Math.PI / 12));
+  // The chord gives the unsigned short arc. Node and Chromium can round atan2
+  // to opposite sides of a 15° boundary, inserting a frame in the browser.
+  const halfChord = Math.abs(Math.sin((to - from) / 2));
+  const steps = Math.ceil(2 * Math.asin(halfChord) / (Math.PI / 12));
   const frames = [];
   for (let step = 1; step <= steps; step++) {
     const want = from + delta * step / steps;

@@ -29,6 +29,8 @@ const works = [
   ['zephyr_whorl', 'Вихрёнок Фью', '#53a998'],
   ['lunar_plush', 'Лунный Плюш', '#ba95ad'],
   ['opal_skater', 'Скользик', '#54899a'],
+  ['apricot_bubbler', 'Бульк', '#bd7a79'],
+  ['velvet_tabor', 'Тукки', '#836c93'],
   ['tuft_owlet', 'Совёнок Ушастик', '#5a4636'],
   ['ember_panda', 'Красная панда Огонёк', '#7a2a12'],
   ['puff_kit', 'Ветрёнок Пушинка', '#4e6a2c'],
@@ -90,7 +92,7 @@ const labels: Record<string, string> = {
 };
 const titles: Record<string, Record<string, string>> = {};
 // These transitions play inside the walk in Life and in the showreel.
-const sequenceOnly: Record<string, string[]> = { zephyr_whorl: ['prepare_walk'], lunar_plush: ['prepare_walk'], opal_skater: ['prepare_walk'] };
+const sequenceOnly: Record<string, string[]> = { zephyr_whorl: ['prepare_walk'], lunar_plush: ['prepare_walk'], opal_skater: ['prepare_walk'], apricot_bubbler: ['prepare_walk'], velvet_tabor: ['prepare_walk'] };
 type Clip = { id: string; name: string; frames?: number; sequenceOnly?: boolean };
 type Entry = {
   id: string;

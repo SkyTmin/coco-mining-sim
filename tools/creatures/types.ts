@@ -1,5 +1,6 @@
 import type { Rig, V3 } from './rig/f15-rig';
 import type { Px } from './rig/px';
+import type { Direction } from './motion';
 import type { Pen } from './fx/pen';
 import type { JointPose, TechniqueBook } from './technique';
 import type { TechniqueTrace } from './technique-fx';
@@ -89,6 +90,8 @@ export interface Creature {
   portraitOrigin?: XY;
   /** Chapters inside a group cut directly to the next pose, for authored continuous showreels. */
   reelGroups?: string[][];
+  /** Order of the eight walking headings in this scene's continuous showreel. */
+  reelWalkRoute?: readonly Direction[];
   animations: Record<string, Animation>;
   frame: (
     anim: string,

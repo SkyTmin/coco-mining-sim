@@ -186,3 +186,11 @@ test('live pivots use the authored bearing on approach to all eight walks, inclu
     last = here;
   }
 });
+test('a 135-degree compass pivot takes nine ticks in both directions', () => {
+  const bearings = Array.from({length: 96}, (_, i) => i * Math.PI / 48);
+  for (const [from, to] of [[5, 0], [0, 5], [6, 1], [1, 6], [7, 2], [2, 7]]) {
+    const frames = turnFramesFor(bearings, from * Math.PI / 4, to * Math.PI / 4);
+    assert.equal(frames.length, 9);
+    assert.equal(frames.at(-1), to * 12);
+  }
+});
