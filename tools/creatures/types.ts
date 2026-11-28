@@ -58,6 +58,8 @@ export interface FxInput {
   /** Effects anchored to the field rather than to the performer. */
   readonly backdrop: Pen;
   sceneryRay(from: XY, to: XY, color: string, alpha: number): void;
+  /** Linear additive RGB energy, composited over the ordinary effect ink. */
+  readonly light: Pen;
   under: Pen;
   above: Pen;
   anim: string;

@@ -58,6 +58,7 @@ def fixture(root):
             if name == 'idle':
                 sample['waterContacts'] = [[14, 16, 0, 0, 4]]
             if name == 'trick':
+                png(clip / 'light' / file, [((14, 17), '#407060'), ((0, 13), '#ffffff')])
                 png(clip / 'backdrop' / file, [((8, 9), VIOLET)])
                 sample['sceneryRays'] = [[12, 14, 28, 4, BLUE, 1]]
             if name == 'showreel' and n == 1:
@@ -132,6 +133,9 @@ def run(root):
                 for image in (seated, moved):
                     check(image, 8, 9, VIOLET)  # fixed wall ornament
                     check(image, 30, 6, BLUE)  # fixed endpoint
+                check(seated, 14, 17, '#f08a79')  # light adds to red body ink
+                check(moved, 8, 7, '#f08a79')
+                check(seated, 0, 13, '#000000')  # additive light remains inside the frame
                 check(seated, 14, 16, GOLD)
                 check(seated, 17, 6, BLACK)
                 check(moved, 8, 6, GOLD)  # hand and dust/glint translate

@@ -138,6 +138,12 @@ def pack_actor(source, dest, ident, meta, scene, rarity, border=None):
             if backdrop.is_file():
                 with Image.open(backdrop) as image:
                     row.append(sprites.trim(image.convert('RGBA')))
+            light = directory / 'light' / filename
+            if light.is_file():
+                # Slots 9 and 10 already belong to the over-rail and backdrop sprites.
+                row.extend([None] * (11 - len(row)))
+                with Image.open(light) as image:
+                    row.append(sprites.trim(image.convert('RGBA')))
             if sample.get('waterContacts'):
                 water.setdefault(name, {})[n] = sample['waterContacts']
             if sample.get('sceneryRays'):

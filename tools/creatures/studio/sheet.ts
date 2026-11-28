@@ -108,7 +108,7 @@ export function actionBox(frames: { layers: Record<string, Img> }[], W: number, 
     x1 = -1,
     y1 = -1;
   for (const f of frames)
-    for (const name of ['body', 'lit', 'fxu', 'fxo', 'over']) {
+    for (const name of ['body', 'lit', 'fxu', 'fxo', 'light', 'over']) {
       const p = f.layers[name];
       if (!p) continue;
       for (let y = 0; y < p.h; y++)

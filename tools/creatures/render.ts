@@ -125,6 +125,7 @@ function writePainting(
   const dir = join(output, 'frames', suffix),
     movedFrames = new Set<string>(),
     backdropFrames = new Set<string>(),
+    lightFrames = new Set<string>(),
     overFrames = new Set<string>();
   const track = [];
   for (let f = 0; f < frames; f++) {
@@ -152,7 +153,6 @@ function writePainting(
       'body',
       'lit',
       'fxo',
-
     ] as const) {
       savePNG(
         join(output, 'frames', suffix, layer, file),
@@ -162,6 +162,10 @@ function writePainting(
     if (overAllowed(c, name) || (r.body.over && overAllowed(c, r.motion.anim))) {
       savePNG(join(dir, 'over', file), r.layers.over);
       overFrames.add(file);
+    }
+    if (r.light?.data.some((v, i) => i % 4 === 3 && v > 0)) {
+      savePNG(join(dir, 'light', file), r.light);
+      lightFrames.add(file);
     }
     if (r.backdrop) {
       savePNG(join(dir, 'backdrop', file), r.backdrop);
@@ -191,6 +195,7 @@ function writePainting(
       if (
         parseInt(file, 10) >= frames ||
         (layer.name === 'bg' && !movedFrames.has(file)) ||
+        (layer.name === 'light' && !lightFrames.has(file)) ||
         (layer.name === 'backdrop' && !backdropFrames.has(file)) ||
         (layer.name === 'over' && !overFrames.has(file))
       )

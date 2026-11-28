@@ -36,6 +36,7 @@ export const layerNames = [
   'body',
   'lit',
   'fxo',
+  'light',
   'bgf',
   'frame',
   'over',
@@ -76,9 +77,24 @@ export function blit(
     }
   }
 }
-export function stack(layers: Layers) {
+/** Porter-Duff plus in premultiplied RGB, with straight RGBA storage on either side. */
+export function addLight(dst: Px, light: Px) {
+  for (let i = 0; i < light.data.length; i += 4) {
+    const sa = light.data[i + 3];
+    if (!sa) continue;
+    const da = dst.data[i + 3], a = Math.min(255, da + sa);
+    for (let ch = i; ch < i + 3; ch++)
+      dst.data[ch] = Math.min(255, Math.round((dst.data[ch] * da + light.data[ch] * sa) / a));
+    dst.data[i + 3] = a;
+  }
+}
+export function stack(layers: Layers, hasLight = true) {
   const p = new Px(layers.bg.w, layers.bg.h);
-  for (const key of layerNames) blit(p, layers[key]);
+  for (const key of layerNames) {
+    if (key === 'light') {
+      if (hasLight && layers.light) addLight(p, layers.light);
+    } else blit(p, layers[key]);
+  }
   return p;
 }
 export function screenPoint(fr: BodyFrame, p: XY, feet: XY): XY {
@@ -324,9 +340,10 @@ export function compose(
   const dx = Math.round(Math.sin(n * 2.3) * 10 * env) || 0,
     dy = Math.round(Math.cos(n * 2.1) * 6 * env) || 0;
   const fullFeet: XY = [feet[0] + b + dx, feet[1] + b + dy];
-  const layers = {} as Layers;
+  let lightPixels: Px | undefined;
+  const layers = { get light() { return lightPixels ??= new Px(W, H); } } as Layers;
   for (const key of layerNames)
-    layers[key] = key === 'frame' ? frame : new Px(W, H);
+    if (key !== 'light') layers[key] = key === 'frame' ? frame : new Px(W, H);
   const clip: [number, number, number, number] = [b, b, b + w, b + h];
   // Edge-clamp the backdrop during shake so the field never reveals a transparent seam.
   blit(layers.bg, bg, b, b);
@@ -399,7 +416,17 @@ export function compose(
     fxJournal.pose?.(n, points);
     let field: Canvas | undefined;
     let fieldPen: Pen | undefined;
+    let lightCanvas: Canvas | undefined, lightPen: Pen | undefined;
     const fx: FxInput = {
+      get light() {
+        if (!lightPen) {
+          lightCanvas = fieldCanvas(w, h, 'light');
+          const g = lightCanvas.getContext('2d');
+          g.globalCompositeOperation = 'lighter';
+          lightPen = new Pen(g, 0, 0, 0, 0);
+        }
+        return lightPen;
+      },
       get backdrop() {
         if (!fieldPen) {
           field = fieldCanvas(w, h, 'backdrop');
@@ -443,6 +470,7 @@ export function compose(
     };
     c.props?.(fx);
     c.effects?.(fx);
+    if (lightCanvas) blit(layers.light, asPx(lightCanvas), b + dx, b + dy, clip);
     if (field) {
       const fieldPixels = asPx(field);
       if (fieldPixels.data.some((value, index) => index % 4 === 3 && value > 0)) {
@@ -491,7 +519,8 @@ export function compose(
   clipFloor(layers.fxu, b, w, h);
   return {
     layers,
-    picture: stack(layers),
+    picture: stack(layers, !!lightPixels),
+    light: lightPixels,
     backdrop,
     sceneryRays,
     waterContacts,

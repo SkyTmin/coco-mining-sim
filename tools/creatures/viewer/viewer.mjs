@@ -436,6 +436,13 @@ class Painting {
       pad + dx + fieldX, pad + dy + fieldY, x - fieldX, y - fieldY);
     for (const sprite of row.slice(5, 9))
       if (sprite) actor.stamp(ctx, sprite[0], sprite[1] + x, sprite[2] + y);
+    const light = row[11];
+    if (light) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      actor.stamp(ctx, light[0], light[1] + x, light[2] + y);
+      ctx.restore();
+    }
     if (touches) paintWater(ctx, river.rows, touches, true, pad + dx + fieldX, pad + dy + fieldY, x - fieldX, y - fieldY);
     props(true);
     ctx.restore();
