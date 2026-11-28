@@ -51,6 +51,14 @@ test('the render key follows shared rig and palette code, not the checker; the c
   assert.match(checkerFingerprint(), /^[0-9a-f]{16}$/);
 });
 
+test('a study follows the source painting and its card; the source excludes the study', () => {
+  const study = inputsOf('pocket_magnet_fx', 'sunlit_bench_fx', 'common');
+  const original = inputsOf('pocket_magnet', 'sunlit_bench', 'common');
+  for (const file of ['pocket_magnet.ts', 'pocket_magnet-poses.ts', 'pocket_magnet.card.json'])
+    assert.ok(study.includes(join(tools, 'c', file)), file);
+  assert.ok(!original.includes(join(tools, 'c', 'pocket_magnet_fx.ts')));
+});
+
 test('a miss names the files; a deleted or shortened output is found while the inputs stay the same', () => {
   assert.equal(explainMiss({ 'a.ts': '1', 'b.ts': '2' }, { 'a.ts': '1', 'b.ts': '3', 'c.ts': '4' }), 'changed b.ts; new c.ts');
   assert.match(explainMiss(undefined, {}), /no earlier stamp/);
