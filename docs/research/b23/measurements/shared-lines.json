@@ -1,0 +1,292 @@
+{
+  "golden_files": 41,
+  "rows": [
+    {
+      "id": "apricot_bubbler",
+      "reachable_files": 27,
+      "reachable_lines": 5285,
+      "shared_lines": 4396,
+      "shared_pct": 83.2
+    },
+    {
+      "id": "astral_seer",
+      "reachable_files": 31,
+      "reachable_lines": 7817,
+      "shared_lines": 5511,
+      "shared_pct": 70.5
+    },
+    {
+      "id": "ball_pangolin",
+      "reachable_files": 27,
+      "reachable_lines": 6465,
+      "shared_lines": 4706,
+      "shared_pct": 72.8
+    },
+    {
+      "id": "bell_magpie",
+      "reachable_files": 27,
+      "reachable_lines": 5905,
+      "shared_lines": 4622,
+      "shared_pct": 78.3
+    },
+    {
+      "id": "bramble_warden",
+      "reachable_files": 32,
+      "reachable_lines": 6283,
+      "shared_lines": 5504,
+      "shared_pct": 87.6
+    },
+    {
+      "id": "bun_panda",
+      "reachable_files": 27,
+      "reachable_lines": 9176,
+      "shared_lines": 4569,
+      "shared_pct": 49.8
+    },
+    {
+      "id": "coin_dragon",
+      "reachable_files": 27,
+      "reachable_lines": 7378,
+      "shared_lines": 7053,
+      "shared_pct": 95.6
+    },
+    {
+      "id": "crater_titan",
+      "reachable_files": 27,
+      "reachable_lines": 7221,
+      "shared_lines": 6863,
+      "shared_pct": 95
+    },
+    {
+      "id": "dream_sneak",
+      "reachable_files": 30,
+      "reachable_lines": 8418,
+      "shared_lines": 5476,
+      "shared_pct": 65.1
+    },
+    {
+      "id": "eclipse_drake",
+      "reachable_files": 28,
+      "reachable_lines": 9593,
+      "shared_lines": 4864,
+      "shared_pct": 50.7
+    },
+    {
+      "id": "ember_panda",
+      "reachable_files": 28,
+      "reachable_lines": 7023,
+      "shared_lines": 4739,
+      "shared_pct": 67.5
+    },
+    {
+      "id": "frost_fox",
+      "reachable_files": 33,
+      "reachable_lines": 6466,
+      "shared_lines": 5707,
+      "shared_pct": 88.3
+    },
+    {
+      "id": "frost_yeti",
+      "reachable_files": 33,
+      "reachable_lines": 6668,
+      "shared_lines": 5974,
+      "shared_pct": 89.6
+    },
+    {
+      "id": "garden_chameleon",
+      "reachable_files": 26,
+      "reachable_lines": 5852,
+      "shared_lines": 4622,
+      "shared_pct": 79
+    },
+    {
+      "id": "gem_beetle",
+      "reachable_files": 28,
+      "reachable_lines": 5573,
+      "shared_lines": 5450,
+      "shared_pct": 97.8
+    },
+    {
+      "id": "grove_lord",
+      "reachable_files": 34,
+      "reachable_lines": 7300,
+      "shared_lines": 5084,
+      "shared_pct": 69.6
+    },
+    {
+      "id": "herald_griffin",
+      "reachable_files": 36,
+      "reachable_lines": 7134,
+      "shared_lines": 5826,
+      "shared_pct": 81.7
+    },
+    {
+      "id": "ink_admiral",
+      "reachable_files": 35,
+      "reachable_lines": 6512,
+      "shared_lines": 5265,
+      "shared_pct": 80.9
+    },
+    {
+      "id": "kettle_crab",
+      "reachable_files": 27,
+      "reachable_lines": 6381,
+      "shared_lines": 4706,
+      "shared_pct": 73.8
+    },
+    {
+      "id": "lunar_plush",
+      "reachable_files": 28,
+      "reachable_lines": 5891,
+      "shared_lines": 4673,
+      "shared_pct": 79.3
+    },
+    {
+      "id": "meadow_colossus",
+      "reachable_files": 36,
+      "reachable_lines": 6761,
+      "shared_lines": 5050,
+      "shared_pct": 74.7
+    },
+    {
+      "id": "moon_magician",
+      "reachable_files": 31,
+      "reachable_lines": 7735,
+      "shared_lines": 5511,
+      "shared_pct": 71.2
+    },
+    {
+      "id": "moon_warden",
+      "reachable_files": 33,
+      "reachable_lines": 6858,
+      "shared_lines": 6016,
+      "shared_pct": 87.7
+    },
+    {
+      "id": "nebula_squid",
+      "reachable_files": 33,
+      "reachable_lines": 7153,
+      "shared_lines": 5498,
+      "shared_pct": 76.9
+    },
+    {
+      "id": "opal_skater",
+      "reachable_files": 27,
+      "reachable_lines": 5626,
+      "shared_lines": 4622,
+      "shared_pct": 82.2
+    },
+    {
+      "id": "penguin_marshal",
+      "reachable_files": 36,
+      "reachable_lines": 7303,
+      "shared_lines": 6852,
+      "shared_pct": 93.8
+    },
+    {
+      "id": "pocket_magnet",
+      "reachable_files": 26,
+      "reachable_lines": 5321,
+      "shared_lines": 4396,
+      "shared_pct": 82.6
+    },
+    {
+      "id": "prism_serpent",
+      "reachable_files": 25,
+      "reachable_lines": 6636,
+      "shared_lines": 4450,
+      "shared_pct": 67.1
+    },
+    {
+      "id": "puff_kit",
+      "reachable_files": 27,
+      "reachable_lines": 6975,
+      "shared_lines": 4715,
+      "shared_pct": 67.6
+    },
+    {
+      "id": "rat_king",
+      "reachable_files": 39,
+      "reachable_lines": 8547,
+      "shared_lines": 6580,
+      "shared_pct": 77
+    },
+    {
+      "id": "river_otter",
+      "reachable_files": 27,
+      "reachable_lines": 5514,
+      "shared_lines": 4622,
+      "shared_pct": 83.8
+    },
+    {
+      "id": "root_stag",
+      "reachable_files": 32,
+      "reachable_lines": 6787,
+      "shared_lines": 5513,
+      "shared_pct": 81.2
+    },
+    {
+      "id": "sand_scorpion",
+      "reachable_files": 34,
+      "reachable_lines": 6966,
+      "shared_lines": 5476,
+      "shared_pct": 78.6
+    },
+    {
+      "id": "silk_dragon",
+      "reachable_files": 25,
+      "reachable_lines": 5753,
+      "shared_lines": 5753,
+      "shared_pct": 100
+    },
+    {
+      "id": "sky_whale",
+      "reachable_files": 33,
+      "reachable_lines": 7312,
+      "shared_lines": 5687,
+      "shared_pct": 77.8
+    },
+    {
+      "id": "storm_lord",
+      "reachable_files": 30,
+      "reachable_lines": 9374,
+      "shared_lines": 5476,
+      "shared_pct": 58.4
+    },
+    {
+      "id": "storm_ram",
+      "reachable_files": 82,
+      "reachable_lines": 18467,
+      "shared_lines": 16647,
+      "shared_pct": 90.1
+    },
+    {
+      "id": "threshold_keeper",
+      "reachable_files": 30,
+      "reachable_lines": 7227,
+      "shared_lines": 4305,
+      "shared_pct": 59.6
+    },
+    {
+      "id": "toad_shaman",
+      "reachable_files": 31,
+      "reachable_lines": 6953,
+      "shared_lines": 6581,
+      "shared_pct": 94.6
+    },
+    {
+      "id": "tuft_owlet",
+      "reachable_files": 27,
+      "reachable_lines": 6824,
+      "shared_lines": 4711,
+      "shared_pct": 69
+    },
+    {
+      "id": "zephyr_whorl",
+      "reachable_files": 27,
+      "reachable_lines": 6098,
+      "shared_lines": 4622,
+      "shared_pct": 75.8
+    }
+  ]
+}

@@ -1,0 +1,224 @@
+строка_CI	картина	класс	сообщение
+238	ball_pangolin	нет листа/ключа	! ball_pangolin pet: idle has no registered sheet
+239	ball_pangolin	нет листа/ключа	! ball_pangolin pet: look has no registered sheet
+240	ball_pangolin	нет листа/ключа	! ball_pangolin pet: happy has no registered sheet
+241	ball_pangolin	нет листа/ключа	! ball_pangolin pet: hatch has no registered sheet
+242	ball_pangolin	нет листа/ключа	! ball_pangolin pet: fidget_a has no registered sheet
+243	ball_pangolin	нет листа/ключа	! ball_pangolin pet: fidget_b has no registered sheet
+244	ball_pangolin	нет листа/ключа	! ball_pangolin pet: trick has no registered sheet
+245	ball_pangolin	нет листа/ключа	! ball_pangolin pet: trick_b has no registered sheet
+246	ball_pangolin	нет листа/ключа	! ball_pangolin pet: sleep_in has no registered sheet
+247	ball_pangolin	нет листа/ключа	! ball_pangolin pet: sleep_out has no registered sheet
+248	ball_pangolin	нет листа/ключа	! ball_pangolin pet: wake_startled has no registered sheet
+249	ball_pangolin	нет листа/ключа	! ball_pangolin pet: hatch frame 0 birth pose needs its own registered sheet key
+288	astral_seer	проникновение	! trick          clip           65–77 — worst 73: torc in armR @0.06
+291	astral_seer	проникновение	! trick_b        clip           6–8 — worst 6: torc in armR @0.50
+294	astral_seer	проникновение	! phase          clip           6–12, 15–19 — worst 16: torc in cheekL @0.06
+301	astral_seer	нет листа/ключа	! astral_seer pet: idle has no registered sheet
+302	astral_seer	нет листа/ключа	! astral_seer pet: look has no registered sheet
+303	astral_seer	нет листа/ключа	! astral_seer pet: happy has no registered sheet
+304	astral_seer	нет листа/ключа	! astral_seer pet: hatch has no registered sheet
+305	astral_seer	нет листа/ключа	! astral_seer pet: fidget_a has no registered sheet
+306	astral_seer	нет листа/ключа	! astral_seer pet: fidget_b has no registered sheet
+307	astral_seer	нет листа/ключа	! astral_seer pet: happy-f2 has no registered sheet
+308	astral_seer	нет листа/ключа	! astral_seer pet: trick has no registered sheet
+309	astral_seer	нет листа/ключа	! astral_seer pet: trick_b has no registered sheet
+310	astral_seer	нет листа/ключа	! astral_seer pet: phase has no registered sheet
+311	astral_seer	нет листа/ключа	! astral_seer pet: idle-f2 has no registered sheet
+312	astral_seer	нет листа/ключа	! astral_seer pet: trick-f2 has no registered sheet
+313	astral_seer	нет листа/ключа	! astral_seer pet: trick_b-f2 has no registered sheet
+314	astral_seer	нет листа/ключа	! astral_seer pet: show has no registered sheet
+315	astral_seer	нет листа/ключа	! astral_seer pet: peek has no registered sheet
+316	astral_seer	нет листа/ключа	! astral_seer pet: sleep_in has no registered sheet
+317	astral_seer	нет листа/ключа	! astral_seer pet: sleep_out has no registered sheet
+318	astral_seer	нет листа/ключа	! astral_seer pet: wake_startled has no registered sheet
+319	astral_seer	нет листа/ключа	! astral_seer pet: hatch frame 0 birth pose needs its own registered sheet key
+322	coin_dragon	перекрытие	! tech_claw      part-gone      15 — 15: coinSlot 100% → 0% visible, hidden by head
+326	crater_titan	перекрытие	! show           part-gone      76–79 — 76: shell 100% → 17% visible, hidden by head
+344	bun_panda	нет листа/ключа	! bun_panda pet: idle has no registered sheet
+345	bun_panda	нет листа/ключа	! bun_panda pet: look has no registered sheet
+346	bun_panda	нет листа/ключа	! bun_panda pet: happy has no registered sheet
+347	bun_panda	нет листа/ключа	! bun_panda pet: hatch has no registered sheet
+348	bun_panda	нет листа/ключа	! bun_panda pet: fidget_a has no registered sheet
+349	bun_panda	нет листа/ключа	! bun_panda pet: fidget_b has no registered sheet
+350	bun_panda	нет листа/ключа	! bun_panda pet: happy-f2 has no registered sheet
+351	bun_panda	нет листа/ключа	! bun_panda pet: trick has no registered sheet
+352	bun_panda	нет листа/ключа	! bun_panda pet: trick_b has no registered sheet
+353	bun_panda	нет листа/ключа	! bun_panda pet: trick_c has no registered sheet
+354	bun_panda	нет листа/ключа	! bun_panda pet: phase has no registered sheet
+355	bun_panda	нет листа/ключа	! bun_panda pet: idle-f2 has no registered sheet
+356	bun_panda	нет листа/ключа	! bun_panda pet: trick-f2 has no registered sheet
+357	bun_panda	нет листа/ключа	! bun_panda pet: trick_b-f2 has no registered sheet
+358	bun_panda	нет листа/ключа	! bun_panda pet: trick_c-f2 has no registered sheet
+359	bun_panda	нет листа/ключа	! bun_panda pet: show has no registered sheet
+360	bun_panda	нет листа/ключа	! bun_panda pet: peek has no registered sheet
+361	bun_panda	нет листа/ключа	! bun_panda pet: sleep_in has no registered sheet
+362	bun_panda	нет листа/ключа	! bun_panda pet: sleep_out has no registered sheet
+363	bun_panda	нет листа/ключа	! bun_panda pet: wake_startled has no registered sheet
+364	bun_panda	нет листа/ключа	! bun_panda pet: hatch frame 0 birth pose needs its own registered sheet key
+365	bun_panda	детализация	✗ bun_panda detail: 1171 primitives, 51 colours, edge 0.50, flat 14.0% — colours 51 < 70; edge 0.50 < 0.85; flat 14.0% > 3%; extent 154 not in 80–90% of 288; height 154 not in 55–65% of field 312; no single scale fits both: the silhouette is too wide for the frame
+376	dream_sneak	проникновение	! trick_b        clip           204–213, 216, 220–235 — worst 216: armL in head @0.10
+383	dream_sneak	проникновение	! show           clip           117, 129 — worst 129: armR in chest @0.44
+391	dream_sneak	нет листа/ключа	! dream_sneak pet: idle has no registered sheet
+392	dream_sneak	нет листа/ключа	! dream_sneak pet: look has no registered sheet
+393	dream_sneak	нет листа/ключа	! dream_sneak pet: happy has no registered sheet
+394	dream_sneak	нет листа/ключа	! dream_sneak pet: hatch has no registered sheet
+395	dream_sneak	нет листа/ключа	! dream_sneak pet: fidget_a has no registered sheet
+396	dream_sneak	нет листа/ключа	! dream_sneak pet: fidget_b has no registered sheet
+397	dream_sneak	нет листа/ключа	! dream_sneak pet: happy-f2 has no registered sheet
+398	dream_sneak	нет листа/ключа	! dream_sneak pet: trick has no registered sheet
+399	dream_sneak	нет листа/ключа	! dream_sneak pet: trick_b has no registered sheet
+400	dream_sneak	нет листа/ключа	! dream_sneak pet: phase has no registered sheet
+401	dream_sneak	нет листа/ключа	! dream_sneak pet: idle-f2 has no registered sheet
+402	dream_sneak	нет листа/ключа	! dream_sneak pet: trick-f2 has no registered sheet
+403	dream_sneak	нет листа/ключа	! dream_sneak pet: trick_b-f2 has no registered sheet
+404	dream_sneak	нет листа/ключа	! dream_sneak pet: show has no registered sheet
+405	dream_sneak	нет листа/ключа	! dream_sneak pet: peek has no registered sheet
+406	dream_sneak	нет листа/ключа	! dream_sneak pet: sleep_in has no registered sheet
+407	dream_sneak	нет листа/ключа	! dream_sneak pet: sleep_out has no registered sheet
+408	dream_sneak	нет листа/ключа	! dream_sneak pet: wake_startled has no registered sheet
+409	dream_sneak	нет листа/ключа	! dream_sneak pet: hatch frame 0 birth pose needs its own registered sheet key
+431	ember_panda	проникновение	! trick          clip           79–87, 89–98 — worst 79: legLF in body @0.48
+435	ember_panda	проникновение	! fidget_c       clip           13–43 — worst 43: legLF in body @0.48
+441	ember_panda	нет листа/ключа	! ember_panda pet: idle has no registered sheet
+442	ember_panda	нет листа/ключа	! ember_panda pet: look has no registered sheet
+443	ember_panda	нет листа/ключа	! ember_panda pet: happy has no registered sheet
+444	ember_panda	нет листа/ключа	! ember_panda pet: hatch has no registered sheet
+445	ember_panda	нет листа/ключа	! ember_panda pet: fidget_a has no registered sheet
+446	ember_panda	нет листа/ключа	! ember_panda pet: fidget_b has no registered sheet
+447	ember_panda	нет листа/ключа	! ember_panda pet: trick has no registered sheet
+448	ember_panda	нет листа/ключа	! ember_panda pet: trick_b has no registered sheet
+449	ember_panda	нет листа/ключа	! ember_panda pet: trick_c has no registered sheet
+450	ember_panda	нет листа/ключа	! ember_panda pet: fidget_c has no registered sheet
+451	ember_panda	нет листа/ключа	! ember_panda pet: sleep_in has no registered sheet
+452	ember_panda	нет листа/ключа	! ember_panda pet: sleep_out has no registered sheet
+453	ember_panda	нет листа/ключа	! ember_panda pet: wake_startled has no registered sheet
+454	ember_panda	нет листа/ключа	! ember_panda pet: hatch frame 0 birth pose needs its own registered sheet key
+559	kettle_crab	нет листа/ключа	! kettle_crab pet: idle has no registered sheet
+560	kettle_crab	нет листа/ключа	! kettle_crab pet: look has no registered sheet
+561	kettle_crab	нет листа/ключа	! kettle_crab pet: happy has no registered sheet
+562	kettle_crab	нет листа/ключа	! kettle_crab pet: hatch has no registered sheet
+563	kettle_crab	нет листа/ключа	! kettle_crab pet: fidget_a has no registered sheet
+564	kettle_crab	нет листа/ключа	! kettle_crab pet: fidget_b has no registered sheet
+565	kettle_crab	нет листа/ключа	! kettle_crab pet: trick has no registered sheet
+566	kettle_crab	нет листа/ключа	! kettle_crab pet: trick_b has no registered sheet
+567	kettle_crab	нет листа/ключа	! kettle_crab pet: sleep_in has no registered sheet
+568	kettle_crab	нет листа/ключа	! kettle_crab pet: sleep_out has no registered sheet
+569	kettle_crab	нет листа/ключа	! kettle_crab pet: wake_startled has no registered sheet
+570	kettle_crab	нет листа/ключа	! kettle_crab pet: hatch frame 0 birth pose needs its own registered sheet key
+644	moon_magician	проникновение	! trick          clip           19, 34–38, 43–46, 48–54, 57, 60–118 — worst 116: handL in hat @0.24
+654	moon_magician	нет листа/ключа	! moon_magician pet: idle has no registered sheet
+655	moon_magician	нет листа/ключа	! moon_magician pet: look has no registered sheet
+656	moon_magician	нет листа/ключа	! moon_magician pet: happy has no registered sheet
+657	moon_magician	нет листа/ключа	! moon_magician pet: hatch has no registered sheet
+658	moon_magician	нет листа/ключа	! moon_magician pet: fidget_a has no registered sheet
+659	moon_magician	нет листа/ключа	! moon_magician pet: fidget_b has no registered sheet
+660	moon_magician	нет листа/ключа	! moon_magician pet: happy-f2 has no registered sheet
+661	moon_magician	нет листа/ключа	! moon_magician pet: trick has no registered sheet
+662	moon_magician	нет листа/ключа	! moon_magician pet: trick_b has no registered sheet
+663	moon_magician	нет листа/ключа	! moon_magician pet: phase has no registered sheet
+664	moon_magician	нет листа/ключа	! moon_magician pet: idle-f2 has no registered sheet
+665	moon_magician	нет листа/ключа	! moon_magician pet: trick-f2 has no registered sheet
+666	moon_magician	нет листа/ключа	! moon_magician pet: trick_b-f2 has no registered sheet
+667	moon_magician	нет листа/ключа	! moon_magician pet: show has no registered sheet
+668	moon_magician	нет листа/ключа	! moon_magician pet: peek has no registered sheet
+669	moon_magician	нет листа/ключа	! moon_magician pet: sleep_in has no registered sheet
+670	moon_magician	нет листа/ключа	! moon_magician pet: sleep_out has no registered sheet
+671	moon_magician	нет листа/ключа	! moon_magician pet: wake_startled has no registered sheet
+672	moon_magician	нет листа/ключа	! moon_magician pet: hatch frame 0 birth pose needs its own registered sheet key
+761	prism_serpent	нет листа/ключа	! prism_serpent pet: idle has no registered sheet
+762	prism_serpent	нет листа/ключа	! prism_serpent pet: look has no registered sheet
+763	prism_serpent	нет листа/ключа	! prism_serpent pet: happy has no registered sheet
+764	prism_serpent	нет листа/ключа	! prism_serpent pet: hatch has no registered sheet
+765	prism_serpent	нет листа/ключа	! prism_serpent pet: fidget_a has no registered sheet
+766	prism_serpent	нет листа/ключа	! prism_serpent pet: fidget_b has no registered sheet
+767	prism_serpent	нет листа/ключа	! prism_serpent pet: fidget_c has no registered sheet
+768	prism_serpent	нет листа/ключа	! prism_serpent pet: trick has no registered sheet
+769	prism_serpent	нет листа/ключа	! prism_serpent pet: trick_b has no registered sheet
+770	prism_serpent	нет листа/ключа	! prism_serpent pet: trick_c has no registered sheet
+771	prism_serpent	нет листа/ключа	! prism_serpent pet: trick_d has no registered sheet
+772	prism_serpent	нет листа/ключа	! prism_serpent pet: sleep_in has no registered sheet
+773	prism_serpent	нет листа/ключа	! prism_serpent pet: sleep_out has no registered sheet
+774	prism_serpent	нет листа/ключа	! prism_serpent pet: wake_startled has no registered sheet
+775	prism_serpent	нет листа/ключа	! prism_serpent pet: hatch frame 0 birth pose needs its own registered sheet key
+780	puff_kit	проникновение	! fidget_b       clip           23 — worst 23: fur in head @0.49
+781	puff_kit	проникновение	! trick          clip           25, 27–46, 65–67 — worst 29: seeds in neck @0.35
+783	puff_kit	проникновение	! trick_c        clip           22–93 — worst 28: seeds in neck @0.05
+785	puff_kit	проникновение	! trick_d        clip           6–7 — worst 6: seeds in head @0.25
+786	puff_kit	проникновение	! sleep_out      clip           8 — worst 8: mane in body @0.39
+787	puff_kit	проникновение	! wake_startled  clip           1 — worst 1: mane in body @0.34
+790	puff_kit	нет листа/ключа	! puff_kit pet: idle has no registered sheet
+791	puff_kit	нет листа/ключа	! puff_kit pet: look has no registered sheet
+792	puff_kit	нет листа/ключа	! puff_kit pet: happy has no registered sheet
+793	puff_kit	нет листа/ключа	! puff_kit pet: hatch has no registered sheet
+794	puff_kit	нет листа/ключа	! puff_kit pet: fidget_a has no registered sheet
+795	puff_kit	нет листа/ключа	! puff_kit pet: fidget_b has no registered sheet
+796	puff_kit	нет листа/ключа	! puff_kit pet: fidget_c has no registered sheet
+797	puff_kit	нет листа/ключа	! puff_kit pet: trick has no registered sheet
+798	puff_kit	нет листа/ключа	! puff_kit pet: trick_b has no registered sheet
+799	puff_kit	нет листа/ключа	! puff_kit pet: trick_c has no registered sheet
+800	puff_kit	нет листа/ключа	! puff_kit pet: trick_d has no registered sheet
+801	puff_kit	нет листа/ключа	! puff_kit pet: sleep_in has no registered sheet
+802	puff_kit	нет листа/ключа	! puff_kit pet: sleep_out has no registered sheet
+803	puff_kit	нет листа/ключа	! puff_kit pet: wake_startled has no registered sheet
+804	puff_kit	нет листа/ключа	! puff_kit pet: hatch frame 0 birth pose needs its own registered sheet key
+888	eclipse_drake	нет листа/ключа	! eclipse_drake pet: idle has no registered sheet
+889	eclipse_drake	нет листа/ключа	! eclipse_drake pet: look has no registered sheet
+890	eclipse_drake	нет листа/ключа	! eclipse_drake pet: happy has no registered sheet
+891	eclipse_drake	нет листа/ключа	! eclipse_drake pet: hatch has no registered sheet
+892	eclipse_drake	нет листа/ключа	! eclipse_drake pet: fidget_a has no registered sheet
+893	eclipse_drake	нет листа/ключа	! eclipse_drake pet: fidget_b has no registered sheet
+894	eclipse_drake	нет листа/ключа	! eclipse_drake pet: happy-f2 has no registered sheet
+895	eclipse_drake	нет листа/ключа	! eclipse_drake pet: trick has no registered sheet
+896	eclipse_drake	нет листа/ключа	! eclipse_drake pet: trick_b has no registered sheet
+897	eclipse_drake	нет листа/ключа	! eclipse_drake pet: trick_c has no registered sheet
+898	eclipse_drake	нет листа/ключа	! eclipse_drake pet: phase has no registered sheet
+899	eclipse_drake	нет листа/ключа	! eclipse_drake pet: idle-f2 has no registered sheet
+900	eclipse_drake	нет листа/ключа	! eclipse_drake pet: trick-f2 has no registered sheet
+901	eclipse_drake	нет листа/ключа	! eclipse_drake pet: trick_b-f2 has no registered sheet
+902	eclipse_drake	нет листа/ключа	! eclipse_drake pet: trick_c-f2 has no registered sheet
+903	eclipse_drake	нет листа/ключа	! eclipse_drake pet: show has no registered sheet
+904	eclipse_drake	нет листа/ключа	! eclipse_drake pet: peek has no registered sheet
+905	eclipse_drake	нет листа/ключа	! eclipse_drake pet: sleep_in has no registered sheet
+906	eclipse_drake	нет листа/ключа	! eclipse_drake pet: sleep_out has no registered sheet
+907	eclipse_drake	нет листа/ключа	! eclipse_drake pet: wake_startled has no registered sheet
+908	eclipse_drake	нет листа/ключа	! eclipse_drake pet: hatch frame 0 birth pose needs its own registered sheet key
+909	eclipse_drake	шов	! eclipse_drake pet: happy-f2 frame 47 vs idle-f2 IoU 0.805 < 0.900
+910	eclipse_drake	шов	! eclipse_drake pet: phase frame 119 vs idle-f2 IoU 0.806 < 0.900
+911	eclipse_drake	шов	! eclipse_drake pet: trick-f2 frame 287 vs idle-f2 IoU 0.806 < 0.900
+912	eclipse_drake	шов	! eclipse_drake pet: trick_b-f2 frame 275 vs idle-f2 IoU 0.798 < 0.900
+913	eclipse_drake	шов	! eclipse_drake pet: trick_c-f2 frame 287 vs idle-f2 IoU 0.806 < 0.900
+979	tuft_owlet	проникновение	! trick          clip           29 — worst 29: legR in body @0.46
+986	tuft_owlet	нет листа/ключа	! tuft_owlet pet: idle has no registered sheet
+987	tuft_owlet	нет листа/ключа	! tuft_owlet pet: look has no registered sheet
+988	tuft_owlet	нет листа/ключа	! tuft_owlet pet: happy has no registered sheet
+989	tuft_owlet	нет листа/ключа	! tuft_owlet pet: hatch has no registered sheet
+990	tuft_owlet	нет листа/ключа	! tuft_owlet pet: fidget_a has no registered sheet
+991	tuft_owlet	нет листа/ключа	! tuft_owlet pet: fidget_b has no registered sheet
+992	tuft_owlet	нет листа/ключа	! tuft_owlet pet: trick has no registered sheet
+993	tuft_owlet	нет листа/ключа	! tuft_owlet pet: trick_b has no registered sheet
+994	tuft_owlet	нет листа/ключа	! tuft_owlet pet: sleep_in has no registered sheet
+995	tuft_owlet	нет листа/ключа	! tuft_owlet pet: sleep_out has no registered sheet
+996	tuft_owlet	нет листа/ключа	! tuft_owlet pet: wake_startled has no registered sheet
+997	tuft_owlet	нет листа/ключа	! tuft_owlet pet: hatch frame 0 birth pose needs its own registered sheet key
+1052	storm_lord	нет листа/ключа	! storm_lord pet: idle has no registered sheet
+1053	storm_lord	нет листа/ключа	! storm_lord pet: look has no registered sheet
+1054	storm_lord	нет листа/ключа	! storm_lord pet: happy has no registered sheet
+1055	storm_lord	нет листа/ключа	! storm_lord pet: hatch has no registered sheet
+1056	storm_lord	нет листа/ключа	! storm_lord pet: fidget_a has no registered sheet
+1057	storm_lord	нет листа/ключа	! storm_lord pet: fidget_b has no registered sheet
+1058	storm_lord	нет листа/ключа	! storm_lord pet: happy-f2 has no registered sheet
+1059	storm_lord	нет листа/ключа	! storm_lord pet: trick has no registered sheet
+1060	storm_lord	нет листа/ключа	! storm_lord pet: trick_b has no registered sheet
+1061	storm_lord	нет листа/ключа	! storm_lord pet: trick_c has no registered sheet
+1062	storm_lord	нет листа/ключа	! storm_lord pet: phase has no registered sheet
+1063	storm_lord	нет листа/ключа	! storm_lord pet: idle-f2 has no registered sheet
+1064	storm_lord	нет листа/ключа	! storm_lord pet: trick-f2 has no registered sheet
+1065	storm_lord	нет листа/ключа	! storm_lord pet: trick_b-f2 has no registered sheet
+1066	storm_lord	нет листа/ключа	! storm_lord pet: trick_c-f2 has no registered sheet
+1067	storm_lord	нет листа/ключа	! storm_lord pet: show has no registered sheet
+1068	storm_lord	нет листа/ключа	! storm_lord pet: peek has no registered sheet
+1069	storm_lord	нет листа/ключа	! storm_lord pet: sleep_in has no registered sheet
+1070	storm_lord	нет листа/ключа	! storm_lord pet: sleep_out has no registered sheet
+1071	storm_lord	нет листа/ключа	! storm_lord pet: wake_startled has no registered sheet
+1072	storm_lord	нет листа/ключа	! storm_lord pet: hatch frame 0 birth pose needs its own registered sheet key

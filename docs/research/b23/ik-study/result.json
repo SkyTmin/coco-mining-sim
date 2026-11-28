@@ -1,0 +1,68 @@
+{
+  "seed": 465701,
+  "eps": 1e-7,
+  "results": {
+    "IK reachable, general orientation": {
+      "tested": 2000,
+      "failed": 0
+    },
+    "IK translated, general orientation": {
+      "tested": 2000,
+      "failed": 0
+    },
+    "IK reachable, vertical collinear pole": {
+      "tested": 128,
+      "failed": 128,
+      "first": {
+        "a": [
+          0,
+          0,
+          0
+        ],
+        "b": [
+          0,
+          0,
+          2.4574944511316694
+        ],
+        "l1": 2.958530105650425,
+        "l2": 2.958530105650425,
+        "pole": [
+          0,
+          0,
+          1
+        ],
+        "knee": [
+          0,
+          0,
+          1.2287472255658347
+        ],
+        "actual": [
+          1.2287472255658347,
+          1.2287472255658347
+        ],
+        "error": 1.7297828800845902
+      }
+    },
+    "IK reachable, horizontal collinear pole": {
+      "tested": 128,
+      "failed": 0
+    },
+    "IK reachable, vertical perpendicular pole": {
+      "tested": 128,
+      "failed": 0
+    },
+    "Particles cached seek equals independent uncached seek": {
+      "tested": 576,
+      "failed": 0
+    },
+    "Particles center on or above flat floor": {
+      "tested": 2155,
+      "failed": 0
+    }
+  },
+  "verticalExample": [
+    0,
+    0,
+    2
+  ]
+}

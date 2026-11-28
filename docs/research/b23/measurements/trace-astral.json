@@ -1,0 +1,419 @@
+{
+  "id": "astral_seer",
+  "animation": "trick",
+  "frame": 57,
+  "node": "v24.22.3",
+  "tree": "802379ea59f2275d34d7ab1fbcb6e949dbf63d61",
+  "rgba_sha256": "a22487ea93f35051ab93617f08e3a031c3c817933c3e2addcef3db361d2b81fd",
+  "width": 292,
+  "height": 244,
+  "modules": [
+    {
+      "filename": "bodies/armed-biped.ts",
+      "called": [
+        "__name",
+        "armedFrame"
+      ],
+      "zero_named_ranges": 2
+    },
+    {
+      "filename": "bodies/armed-keys.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 3
+    },
+    {
+      "filename": "bodies/card-data.ts",
+      "called": [
+        "__name",
+        "cardPath",
+        "readCreatureCard"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "bodies/goals.ts",
+      "called": [
+        "__name",
+        "goal",
+        "goalAt",
+        "toLocal"
+      ],
+      "zero_named_ranges": 7
+    },
+    {
+      "filename": "bodies/grip.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 4
+    },
+    {
+      "filename": "bodies/kits/tailoring.ts",
+      "called": [
+        "__name",
+        "furLock"
+      ],
+      "zero_named_ranges": 8
+    },
+    {
+      "filename": "c/astral_seer-fx.ts",
+      "called": [
+        "__name",
+        "burst",
+        "pt",
+        "seerEffects",
+        "sparkle",
+        "stoneIntoStar"
+      ],
+      "zero_named_ranges": 9
+    },
+    {
+      "filename": "c/astral_seer-life.ts",
+      "called": [],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "c/astral_seer-poses.ts",
+      "called": [
+        "__name",
+        "doubleOrbit",
+        "gesture"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "c/astral_seer-skin.ts",
+      "called": [
+        "__name",
+        "arm",
+        "axisFrame",
+        "catmull",
+        "ear",
+        "head",
+        "leg",
+        "limb",
+        "m.pat",
+        "orbit",
+        "prism",
+        "rock",
+        "seerFigure",
+        "tail",
+        "torc",
+        "torso"
+      ],
+      "zero_named_ranges": 3
+    },
+    {
+      "filename": "c/astral_seer.ts",
+      "called": [],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "c/surface-work.ts",
+      "called": [
+        "__name",
+        "finishSurfaces",
+        "mark",
+        "pat"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "engine.ts",
+      "called": [
+        "__name",
+        "asPx",
+        "blit",
+        "cached",
+        "clipFloor",
+        "compose",
+        "compositeSceneryRays",
+        "foregroundObjects",
+        "getFxCanvases",
+        "loopSample",
+        "screenPoint",
+        "splitForeground",
+        "sprite",
+        "stack"
+      ],
+      "zero_named_ranges": 9
+    },
+    {
+      "filename": "frame-kit.ts",
+      "called": [
+        "__name",
+        "frameImage"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "frames/astral_seer.ts",
+      "called": [
+        "__name",
+        "crescent",
+        "decorate",
+        "eyeClasp",
+        "floatingCrystal",
+        "rune"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "fx/field.ts",
+      "called": [
+        "__name",
+        "ellFill",
+        "shard"
+      ],
+      "zero_named_ranges": 4
+    },
+    {
+      "filename": "fx/palette.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 2
+    },
+    {
+      "filename": "fx/pen.ts",
+      "called": [
+        "<instance_members_initializer>",
+        "<static_initializer>",
+        "Pen",
+        "__name",
+        "col",
+        "fillPoly",
+        "flare",
+        "line",
+        "rect",
+        "span",
+        "star"
+      ],
+      "zero_named_ranges": 23
+    },
+    {
+      "filename": "fx/presets/materials.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 15
+    },
+    {
+      "filename": "kit/f11-mobkit.ts",
+      "called": [
+        "__name",
+        "fill2",
+        "ik"
+      ],
+      "zero_named_ranges": 3
+    },
+    {
+      "filename": "kit/impact-clock.ts",
+      "called": [
+        "__name",
+        "stepPose",
+        "timedAnimation",
+        "withImpactTiming"
+      ],
+      "zero_named_ranges": 2
+    },
+    {
+      "filename": "motion.ts",
+      "called": [
+        "__name",
+        "attachPetBehavior",
+        "lifeCycleCount",
+        "petPreview",
+        "placement",
+        "reelChapters",
+        "routePlacement"
+      ],
+      "zero_named_ranges": 7
+    },
+    {
+      "filename": "render-io.ts",
+      "called": [
+        "<static_initializer>",
+        "__name"
+      ],
+      "zero_named_ranges": 8
+    },
+    {
+      "filename": "render.ts",
+      "called": [
+        "__name",
+        "hasCustomFrame",
+        "loadPainting",
+        "safeID"
+      ],
+      "zero_named_ranges": 5
+    },
+    {
+      "filename": "rig/collision.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 3
+    },
+    {
+      "filename": "rig/f15-rig.ts",
+      "called": [
+        "<instance_members_initializer>",
+        "<static_initializer>",
+        "F3",
+        "__name",
+        "at",
+        "ball",
+        "cap",
+        "dot",
+        "ell",
+        "get size",
+        "line",
+        "markEye",
+        "p",
+        "pitch",
+        "poly",
+        "proj",
+        "renderRig",
+        "roll",
+        "scale",
+        "turn",
+        "v",
+        "vnorm",
+        "yaw"
+      ],
+      "zero_named_ranges": 2
+    },
+    {
+      "filename": "rig/figure.ts",
+      "called": [
+        "__name",
+        "life",
+        "p.m.pat",
+        "projectFigure",
+        "scaleFigure",
+        "touchesEdge",
+        "withPointsOnly"
+      ],
+      "zero_named_ranges": 4
+    },
+    {
+      "filename": "rig/px.ts",
+      "called": [
+        "<instance_members_initializer>",
+        "<static_initializer>",
+        "Px",
+        "__name",
+        "ell",
+        "get",
+        "line",
+        "rect",
+        "set",
+        "solid"
+      ],
+      "zero_named_ranges": 5
+    },
+    {
+      "filename": "rig/stats.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 1
+    },
+    {
+      "filename": "scenes/relief.ts",
+      "called": [
+        "__name",
+        "face"
+      ],
+      "zero_named_ranges": 1
+    },
+    {
+      "filename": "scenes/star_meadow.ts",
+      "called": [
+        "__name",
+        "bellFlowers",
+        "boulder",
+        "cloverPatch",
+        "fallenStone",
+        "fireflies",
+        "hills",
+        "meadow",
+        "moon",
+        "moonlight",
+        "paint",
+        "pebble",
+        "shade",
+        "skyDome",
+        "standingStone",
+        "stoneCircle",
+        "tallGrass",
+        "tuft"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "technique-fx.ts",
+      "called": [
+        "__name",
+        "emptyTechniqueTrace"
+      ],
+      "zero_named_ranges": 8
+    },
+    {
+      "filename": "types.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "viewer/behavior.mjs",
+      "called": [
+        "advance",
+        "angleDelta",
+        "between",
+        "clipAt",
+        "createPetBehavior",
+        "current",
+        "dispatch",
+        "duration",
+        "fillIdle",
+        "handoff",
+        "interruptFrames",
+        "interval",
+        "isAmbient",
+        "length",
+        "pair",
+        "planCycle",
+        "play",
+        "positive",
+        "randomSource",
+        "rest",
+        "sample",
+        "sampleAt",
+        "step",
+        "ticks",
+        "trickPlan",
+        "turnBearings",
+        "turnFramesFor",
+        "validateBehavior",
+        "walk",
+        "walkingLeg"
+      ],
+      "zero_named_ranges": 17
+    },
+    {
+      "filename": "viewer/scenery.mjs",
+      "called": [],
+      "zero_named_ranges": 1
+    },
+    {
+      "filename": "viewer/water.mjs",
+      "called": [],
+      "zero_named_ranges": 1
+    }
+  ]
+}

@@ -1,0 +1,220 @@
+{
+  "ts_lines_by_area": {
+    "(корень)": 4332,
+    "bodies": 4494,
+    "c": 60532,
+    "frames": 1579,
+    "fx": 1956,
+    "katorga": 21604,
+    "kit": 755,
+    "moves": 623,
+    "rig": 1137,
+    "scenes": 11769,
+    "studio": 5582,
+    "test": 6462
+  },
+  "c_lines_by_owner": {
+    "(shared)": 1148,
+    "apricot_bubbler": 738,
+    "astral_seer": 1786,
+    "ball_pangolin": 1446,
+    "bell_magpie": 1032,
+    "bramble_warden": 605,
+    "bun_panda": 4015,
+    "coin_dragon": 2159,
+    "crater_titan": 1953,
+    "dream_sneak": 2351,
+    "eclipse_drake": 4074,
+    "ember_panda": 1933,
+    "frost_fox": 657,
+    "frost_yeti": 694,
+    "garden_chameleon": 965,
+    "gem_beetle": 689,
+    "grove_lord": 1904,
+    "herald_griffin": 1129,
+    "ink_admiral": 1009,
+    "kettle_crab": 1361,
+    "lunar_plush": 1072,
+    "meadow_colossus": 1377,
+    "moon_magician": 1493,
+    "moon_warden": 842,
+    "nebula_squid": 1358,
+    "opal_skater": 770,
+    "penguin_marshal": 409,
+    "pocket_magnet": 765,
+    "prism_serpent": 1677,
+    "puff_kit": 1761,
+    "rat_king": 1557,
+    "river_otter": 662,
+    "root_stag": 1156,
+    "sand_scorpion": 1213,
+    "silk_dragon": 765,
+    "sky_whale": 1328,
+    "storm_lord": 3032,
+    "storm_ram": 449,
+    "threshold_keeper": 2716,
+    "toad_shaman": 1674,
+    "tuft_owlet": 1592,
+    "zephyr_whorl": 1216
+  },
+  "katorga_source_lines": {
+    ".mjs": 1609,
+    ".py": 601,
+    ".ts": 21604
+  },
+  "cross_owner_unique_windows": 407,
+  "cross_owner_covered_lines": 2108,
+  "repetitions": [
+    {
+      "family": [
+        "ember_panda",
+        "puff_kit"
+      ],
+      "windows": 41,
+      "first": [
+        [
+          "c/ember_panda-fx.ts",
+          169
+        ],
+        [
+          "c/puff_kit-fx.ts",
+          88
+        ]
+      ]
+    },
+    {
+      "family": [
+        "eclipse_drake",
+        "storm_lord"
+      ],
+      "windows": 38,
+      "first": [
+        [
+          "c/eclipse_drake-fx.ts",
+          147
+        ],
+        [
+          "c/storm_lord-fx.ts",
+          122
+        ]
+      ]
+    },
+    {
+      "family": [
+        "prism_serpent",
+        "puff_kit"
+      ],
+      "windows": 38,
+      "first": [
+        [
+          "c/prism_serpent-fx.ts",
+          35
+        ],
+        [
+          "c/puff_kit-fx.ts",
+          66
+        ]
+      ]
+    },
+    {
+      "family": [
+        "ember_panda",
+        "tuft_owlet"
+      ],
+      "windows": 33,
+      "first": [
+        [
+          "c/ember_panda-fx.ts",
+          33
+        ],
+        [
+          "c/tuft_owlet-fx.ts",
+          31
+        ]
+      ]
+    },
+    {
+      "family": [
+        "dream_sneak",
+        "storm_lord"
+      ],
+      "windows": 32,
+      "first": [
+        [
+          "c/dream_sneak-poses.ts",
+          599
+        ],
+        [
+          "c/storm_lord-poses.ts",
+          679
+        ]
+      ]
+    },
+    {
+      "family": [
+        "ember_panda",
+        "prism_serpent",
+        "puff_kit"
+      ],
+      "windows": 24,
+      "first": [
+        [
+          "c/ember_panda-fx.ts",
+          24
+        ],
+        [
+          "c/prism_serpent-fx.ts",
+          22
+        ],
+        [
+          "c/puff_kit-fx.ts",
+          22
+        ]
+      ]
+    },
+    {
+      "family": [
+        "nebula_squid",
+        "sky_whale"
+      ],
+      "windows": 19,
+      "first": [
+        [
+          "c/nebula_squid-poses.ts",
+          1
+        ],
+        [
+          "c/sky_whale-poses.ts",
+          1
+        ]
+      ]
+    },
+    {
+      "family": [
+        "ember_panda",
+        "prism_serpent",
+        "puff_kit",
+        "tuft_owlet"
+      ],
+      "windows": 17,
+      "first": [
+        [
+          "c/ember_panda-fx.ts",
+          58
+        ],
+        [
+          "c/prism_serpent-fx.ts",
+          56
+        ],
+        [
+          "c/puff_kit-fx.ts",
+          56
+        ],
+        [
+          "c/tuft_owlet-fx.ts",
+          56
+        ]
+      ]
+    }
+  ]
+}

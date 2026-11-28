@@ -1,0 +1,23 @@
+{
+  "trcik": {
+    "command": "npm run ws -- snap pocket_magnet trcik --check --jobs 1",
+    "returncode": 0,
+    "summary": [
+      "✓ pocket_magnet: 0 frames identical (0 s)"
+    ]
+  },
+  "trick": {
+    "command": "npm run ws -- snap pocket_magnet trick --check --jobs 1",
+    "returncode": 0,
+    "summary": [
+      "✓ pocket_magnet: 166 frames identical (3 s)"
+    ]
+  },
+  "trick trcik": {
+    "command": "npm run ws -- snap pocket_magnet trick trcik --check --jobs 1",
+    "returncode": 0,
+    "summary": [
+      "✓ pocket_magnet: 166 frames identical (3 s)"
+    ]
+  }
+}

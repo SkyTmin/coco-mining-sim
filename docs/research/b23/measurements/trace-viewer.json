@@ -1,0 +1,55 @@
+{
+  "chromium": "156.0.8078.79",
+  "rows": [
+    {
+      "id": "pocket_magnet",
+      "size": [
+        176,
+        144
+      ],
+      "mood": "Переносит вес на лапку",
+      "at_least_five_hero_paints": true,
+      "page_errors": [],
+      "ok": [
+        "/atlases/frames/common/atlas.json",
+        "/atlases/pocket_magnet/atlas.json",
+        "/atlases/pocket_magnet/behavior.json",
+        "/atlases/pocket_magnet/p-0.webp",
+        "/atlases/pocket_magnet/tiles-0.png",
+        "/atlases/posters/posters.json",
+        "/behavior.mjs",
+        "/catalog.json",
+        "/material.mjs",
+        "/scenery.mjs",
+        "/viewer.mjs",
+        "/water.mjs"
+      ],
+      "bad": {}
+    },
+    {
+      "id": "rat_king",
+      "size": [
+        675,
+        564
+      ],
+      "mood": "Отдыхает",
+      "at_least_five_hero_paints": true,
+      "page_errors": [],
+      "ok": [
+        "/atlases/frames/secret/atlas.json",
+        "/atlases/posters/posters.json",
+        "/atlases/rat_king/scene.json",
+        "/atlases/rat_king/tiles-0.png",
+        "/behavior.mjs",
+        "/catalog.json",
+        "/f1-native.mjs",
+        "/king-painting.mjs",
+        "/material.mjs",
+        "/scenery.mjs",
+        "/viewer.mjs",
+        "/water.mjs"
+      ],
+      "bad": {}
+    }
+  ]
+}

@@ -1,0 +1,590 @@
+{
+  "tree": "802379ea59f2275d34d7ab1fbcb6e949dbf63d61",
+  "owned_files": 241,
+  "excluded_files": [
+    "c/beetle-cut.ts",
+    "c/bramble-bark.ts",
+    "c/engraving.ts",
+    "c/painted-toys.ts",
+    "c/pocket_magnet_fx-beats.ts",
+    "c/pocket_magnet_fx-life.ts",
+    "c/pocket_magnet_fx.ts",
+    "c/relief-material.ts",
+    "c/strike-brush.ts",
+    "c/surface-work.ts"
+  ],
+  "minimum_tokens": 60,
+  "considered_named_functions": 936,
+  "cross_owner_groups": 21,
+  "group_instances": 62,
+  "only_name_occurrence_private_candidates": [
+    {
+      "owner": "astral_seer",
+      "file": "c/astral_seer-skin.ts",
+      "line": 63,
+      "end": 68,
+      "name": "band"
+    },
+    {
+      "owner": "eclipse_drake",
+      "file": "c/eclipse_drake-skin.ts",
+      "line": 154,
+      "end": 157,
+      "name": "limb"
+    },
+    {
+      "owner": "eclipse_drake",
+      "file": "c/eclipse_drake-skin.ts",
+      "line": 177,
+      "end": 189,
+      "name": "scutes"
+    },
+    {
+      "owner": "tuft_owlet",
+      "file": "c/tuft_owlet-skin.ts",
+      "line": 33,
+      "end": 38,
+      "name": "rotate"
+    }
+  ],
+  "groups": [
+    [
+      {
+        "owner": "ember_panda",
+        "file": "c/ember_panda-poses.ts",
+        "line": 438,
+        "end": 472,
+        "name": "gesture",
+        "tokens": 388
+      },
+      {
+        "owner": "prism_serpent",
+        "file": "c/prism_serpent-poses.ts",
+        "line": 339,
+        "end": 372,
+        "name": "gesture",
+        "tokens": 388
+      },
+      {
+        "owner": "puff_kit",
+        "file": "c/puff_kit-poses.ts",
+        "line": 313,
+        "end": 346,
+        "name": "gesture",
+        "tokens": 388
+      }
+    ],
+    [
+      {
+        "owner": "astral_seer",
+        "file": "c/astral_seer-skin.ts",
+        "line": 69,
+        "end": 82,
+        "name": "catmull",
+        "tokens": 214
+      },
+      {
+        "owner": "dream_sneak",
+        "file": "c/dream_sneak-skin.ts",
+        "line": 133,
+        "end": 146,
+        "name": "catmull",
+        "tokens": 214
+      },
+      {
+        "owner": "eclipse_drake",
+        "file": "c/eclipse_drake-skin.ts",
+        "line": 158,
+        "end": 171,
+        "name": "catmull",
+        "tokens": 214
+      },
+      {
+        "owner": "frost_fox",
+        "file": "c/frost_fox-skin.ts",
+        "line": 64,
+        "end": 82,
+        "name": "curved",
+        "tokens": 214
+      },
+      {
+        "owner": "storm_lord",
+        "file": "c/storm_lord-skin.ts",
+        "line": 123,
+        "end": 136,
+        "name": "catmull",
+        "tokens": 214
+      }
+    ],
+    [
+      {
+        "owner": "ember_panda",
+        "file": "c/ember_panda-fx.ts",
+        "line": 54,
+        "end": 66,
+        "name": "spray",
+        "tokens": 227
+      },
+      {
+        "owner": "prism_serpent",
+        "file": "c/prism_serpent-fx.ts",
+        "line": 52,
+        "end": 64,
+        "name": "spray",
+        "tokens": 227
+      },
+      {
+        "owner": "puff_kit",
+        "file": "c/puff_kit-fx.ts",
+        "line": 52,
+        "end": 64,
+        "name": "spray",
+        "tokens": 227
+      },
+      {
+        "owner": "tuft_owlet",
+        "file": "c/tuft_owlet-fx.ts",
+        "line": 52,
+        "end": 64,
+        "name": "spray",
+        "tokens": 227
+      }
+    ],
+    [
+      {
+        "owner": "ball_pangolin",
+        "file": "c/ball_pangolin-fx.ts",
+        "line": 66,
+        "end": 73,
+        "name": "sparkle",
+        "tokens": 120
+      },
+      {
+        "owner": "dream_sneak",
+        "file": "c/dream_sneak-fx.ts",
+        "line": 36,
+        "end": 43,
+        "name": "sparkle",
+        "tokens": 120
+      },
+      {
+        "owner": "ember_panda",
+        "file": "c/ember_panda-fx.ts",
+        "line": 144,
+        "end": 151,
+        "name": "sparkle",
+        "tokens": 120
+      },
+      {
+        "owner": "kettle_crab",
+        "file": "c/kettle_crab-fx.ts",
+        "line": 81,
+        "end": 88,
+        "name": "sparkle",
+        "tokens": 120
+      },
+      {
+        "owner": "prism_serpent",
+        "file": "c/prism_serpent-fx.ts",
+        "line": 34,
+        "end": 41,
+        "name": "sparkle",
+        "tokens": 120
+      },
+      {
+        "owner": "puff_kit",
+        "file": "c/puff_kit-fx.ts",
+        "line": 65,
+        "end": 72,
+        "name": "sparkle",
+        "tokens": 120
+      },
+      {
+        "owner": "tuft_owlet",
+        "file": "c/tuft_owlet-fx.ts",
+        "line": 97,
+        "end": 104,
+        "name": "sparkle",
+        "tokens": 120
+      }
+    ],
+    [
+      {
+        "owner": "ball_pangolin",
+        "file": "c/ball_pangolin-fx.ts",
+        "line": 121,
+        "end": 133,
+        "name": "heart",
+        "tokens": 159
+      },
+      {
+        "owner": "ember_panda",
+        "file": "c/ember_panda-fx.ts",
+        "line": 163,
+        "end": 175,
+        "name": "heart",
+        "tokens": 159
+      },
+      {
+        "owner": "puff_kit",
+        "file": "c/puff_kit-fx.ts",
+        "line": 82,
+        "end": 94,
+        "name": "heart",
+        "tokens": 159
+      },
+      {
+        "owner": "tuft_owlet",
+        "file": "c/tuft_owlet-fx.ts",
+        "line": 116,
+        "end": 128,
+        "name": "heart",
+        "tokens": 159
+      }
+    ],
+    [
+      {
+        "owner": "dream_sneak",
+        "file": "c/dream_sneak-poses.ts",
+        "line": 610,
+        "end": 630,
+        "name": "gesture",
+        "tokens": 288
+      },
+      {
+        "owner": "storm_lord",
+        "file": "c/storm_lord-poses.ts",
+        "line": 690,
+        "end": 710,
+        "name": "gesture",
+        "tokens": 288
+      }
+    ],
+    [
+      {
+        "owner": "ball_pangolin",
+        "file": "c/ball_pangolin-fx.ts",
+        "line": 49,
+        "end": 65,
+        "name": "spray",
+        "tokens": 276
+      },
+      {
+        "owner": "kettle_crab",
+        "file": "c/kettle_crab-fx.ts",
+        "line": 48,
+        "end": 64,
+        "name": "spray",
+        "tokens": 276
+      }
+    ],
+    [
+      {
+        "owner": "ember_panda",
+        "file": "c/ember_panda-fx.ts",
+        "line": 197,
+        "end": 208,
+        "name": "bang",
+        "tokens": 131
+      },
+      {
+        "owner": "prism_serpent",
+        "file": "c/prism_serpent-fx.ts",
+        "line": 117,
+        "end": 128,
+        "name": "bang",
+        "tokens": 131
+      },
+      {
+        "owner": "puff_kit",
+        "file": "c/puff_kit-fx.ts",
+        "line": 114,
+        "end": 125,
+        "name": "bang",
+        "tokens": 131
+      },
+      {
+        "owner": "tuft_owlet",
+        "file": "c/tuft_owlet-fx.ts",
+        "line": 141,
+        "end": 152,
+        "name": "bang",
+        "tokens": 131
+      }
+    ],
+    [
+      {
+        "owner": "nebula_squid",
+        "file": "c/nebula_squid-poses.ts",
+        "line": 245,
+        "end": 261,
+        "name": "gesture",
+        "tokens": 221
+      },
+      {
+        "owner": "sky_whale",
+        "file": "c/sky_whale-poses.ts",
+        "line": 227,
+        "end": 243,
+        "name": "gesture",
+        "tokens": 221
+      }
+    ],
+    [
+      {
+        "owner": "ball_pangolin",
+        "file": "c/ball_pangolin-fx.ts",
+        "line": 31,
+        "end": 36,
+        "name": "puff",
+        "tokens": 106
+      },
+      {
+        "owner": "ember_panda",
+        "file": "c/ember_panda-fx.ts",
+        "line": 36,
+        "end": 41,
+        "name": "puff",
+        "tokens": 106
+      },
+      {
+        "owner": "puff_kit",
+        "file": "c/puff_kit-fx.ts",
+        "line": 35,
+        "end": 40,
+        "name": "puff",
+        "tokens": 106
+      },
+      {
+        "owner": "tuft_owlet",
+        "file": "c/tuft_owlet-fx.ts",
+        "line": 34,
+        "end": 39,
+        "name": "puff",
+        "tokens": 106
+      }
+    ],
+    [
+      {
+        "owner": "ball_pangolin",
+        "file": "c/ball_pangolin-skin.ts",
+        "line": 519,
+        "end": 524,
+        "name": "rotate",
+        "tokens": 73
+      },
+      {
+        "owner": "ember_panda",
+        "file": "c/ember_panda-skin.ts",
+        "line": 30,
+        "end": 35,
+        "name": "rotate",
+        "tokens": 73
+      },
+      {
+        "owner": "prism_serpent",
+        "file": "c/prism_serpent-skin.ts",
+        "line": 38,
+        "end": 43,
+        "name": "rotate",
+        "tokens": 73
+      },
+      {
+        "owner": "puff_kit",
+        "file": "c/puff_kit-skin.ts",
+        "line": 31,
+        "end": 36,
+        "name": "rotate",
+        "tokens": 73
+      },
+      {
+        "owner": "tuft_owlet",
+        "file": "c/tuft_owlet-skin.ts",
+        "line": 33,
+        "end": 38,
+        "name": "rotate",
+        "tokens": 73
+      }
+    ],
+    [
+      {
+        "owner": "dream_sneak",
+        "file": "c/dream_sneak-poses.ts",
+        "line": 599,
+        "end": 609,
+        "name": "laneValue",
+        "tokens": 153
+      },
+      {
+        "owner": "storm_lord",
+        "file": "c/storm_lord-poses.ts",
+        "line": 679,
+        "end": 689,
+        "name": "laneValue",
+        "tokens": 153
+      }
+    ],
+    [
+      {
+        "owner": "prism_serpent",
+        "file": "c/prism_serpent-fx.ts",
+        "line": 130,
+        "end": 139,
+        "name": "burst",
+        "tokens": 152
+      },
+      {
+        "owner": "puff_kit",
+        "file": "c/puff_kit-fx.ts",
+        "line": 127,
+        "end": 136,
+        "name": "burst",
+        "tokens": 152
+      }
+    ],
+    [
+      {
+        "owner": "ember_panda",
+        "file": "c/ember_panda-fx.ts",
+        "line": 43,
+        "end": 52,
+        "name": "dustCloud",
+        "tokens": 146
+      },
+      {
+        "owner": "tuft_owlet",
+        "file": "c/tuft_owlet-fx.ts",
+        "line": 41,
+        "end": 50,
+        "name": "dustCloud",
+        "tokens": 146
+      }
+    ],
+    [
+      {
+        "owner": "prism_serpent",
+        "file": "c/prism_serpent-fx.ts",
+        "line": 42,
+        "end": 50,
+        "name": "sparkleRing",
+        "tokens": 131
+      },
+      {
+        "owner": "puff_kit",
+        "file": "c/puff_kit-fx.ts",
+        "line": 73,
+        "end": 81,
+        "name": "sparkleRing",
+        "tokens": 131
+      }
+    ],
+    [
+      {
+        "owner": "ember_panda",
+        "file": "c/ember_panda-fx.ts",
+        "line": 153,
+        "end": 161,
+        "name": "sparkleRing",
+        "tokens": 129
+      },
+      {
+        "owner": "tuft_owlet",
+        "file": "c/tuft_owlet-fx.ts",
+        "line": 106,
+        "end": 114,
+        "name": "sparkleRing",
+        "tokens": 129
+      }
+    ],
+    [
+      {
+        "owner": "ember_panda",
+        "file": "c/ember_panda-fx.ts",
+        "line": 177,
+        "end": 184,
+        "name": "hearts",
+        "tokens": 129
+      },
+      {
+        "owner": "puff_kit",
+        "file": "c/puff_kit-fx.ts",
+        "line": 95,
+        "end": 102,
+        "name": "hearts",
+        "tokens": 129
+      }
+    ],
+    [
+      {
+        "owner": "prism_serpent",
+        "file": "c/prism_serpent-fx.ts",
+        "line": 106,
+        "end": 115,
+        "name": "zed",
+        "tokens": 105
+      },
+      {
+        "owner": "puff_kit",
+        "file": "c/puff_kit-fx.ts",
+        "line": 103,
+        "end": 112,
+        "name": "zed",
+        "tokens": 105
+      }
+    ],
+    [
+      {
+        "owner": "astral_seer",
+        "file": "c/astral_seer-skin.ts",
+        "line": 59,
+        "end": 62,
+        "name": "limb",
+        "tokens": 66
+      },
+      {
+        "owner": "dream_sneak",
+        "file": "c/dream_sneak-skin.ts",
+        "line": 129,
+        "end": 132,
+        "name": "limb",
+        "tokens": 66
+      }
+    ],
+    [
+      {
+        "owner": "eclipse_drake",
+        "file": "c/eclipse_drake-skin.ts",
+        "line": 154,
+        "end": 157,
+        "name": "limb",
+        "tokens": 66
+      },
+      {
+        "owner": "storm_lord",
+        "file": "c/storm_lord-skin.ts",
+        "line": 119,
+        "end": 122,
+        "name": "limb",
+        "tokens": 66
+      }
+    ],
+    [
+      {
+        "owner": "moon_magician",
+        "file": "c/moon_magician-skin.ts",
+        "line": 78,
+        "end": 81,
+        "name": "taperedLimb",
+        "tokens": 66
+      },
+      {
+        "owner": "moon_warden",
+        "file": "c/moon_warden-skin.ts",
+        "line": 59,
+        "end": 62,
+        "name": "taperedLimb",
+        "tokens": 66
+      }
+    ]
+  ]
+}

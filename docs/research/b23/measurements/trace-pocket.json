@@ -1,0 +1,350 @@
+{
+  "id": "pocket_magnet",
+  "animation": "trick",
+  "frame": 79,
+  "node": "v24.22.3",
+  "tree": "802379ea59f2275d34d7ab1fbcb6e949dbf63d61",
+  "rgba_sha256": "338a463a46b5ef9d334c36ba4699d09a6af5ce4af911e59237ba6c3c60b6d007",
+  "width": 176,
+  "height": 144,
+  "modules": [
+    {
+      "filename": "bodies/card-data.ts",
+      "called": [
+        "__name",
+        "cardPath",
+        "readCreatureCard"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "c/painted-toys.ts",
+      "called": [
+        "__name",
+        "ease",
+        "mat.pat",
+        "toyPaint"
+      ],
+      "zero_named_ranges": 2
+    },
+    {
+      "filename": "c/pocket_magnet-fx.ts",
+      "called": [
+        "__name",
+        "benchToys",
+        "starSprite",
+        "tinFish"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "c/pocket_magnet-life.ts",
+      "called": [],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "c/pocket_magnet-poses.ts",
+      "called": [
+        "__name",
+        "cordAngle",
+        "fishAt",
+        "frames",
+        "groundOffset",
+        "magnetFrame",
+        "pose",
+        "starAt"
+      ],
+      "zero_named_ranges": 1
+    },
+    {
+      "filename": "c/pocket_magnet-skin.ts",
+      "called": [
+        "__name",
+        "cheekAndEyes",
+        "facingShift",
+        "horseshoe",
+        "soles"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "c/pocket_magnet.ts",
+      "called": [],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "engine.ts",
+      "called": [
+        "__name",
+        "asPx",
+        "blit",
+        "cached",
+        "clipFloor",
+        "compose",
+        "compositeSceneryRays",
+        "fieldCanvas",
+        "foregroundObjects",
+        "get backdrop",
+        "getFxCanvases",
+        "loopSample",
+        "screenPoint",
+        "splitForeground",
+        "sprite",
+        "stack"
+      ],
+      "zero_named_ranges": 7
+    },
+    {
+      "filename": "frame-kit.ts",
+      "called": [
+        "__name",
+        "frameImage"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "frames/common.ts",
+      "called": [
+        "decorate"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "fx/field.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 6
+    },
+    {
+      "filename": "fx/palette.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 2
+    },
+    {
+      "filename": "fx/pen.ts",
+      "called": [
+        "<instance_members_initializer>",
+        "<static_initializer>",
+        "Pen",
+        "__name",
+        "col",
+        "dot",
+        "img",
+        "line",
+        "rect"
+      ],
+      "zero_named_ranges": 25
+    },
+    {
+      "filename": "fx/presets/materials.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 15
+    },
+    {
+      "filename": "kit/f11-mobkit.ts",
+      "called": [
+        "__name",
+        "fill2"
+      ],
+      "zero_named_ranges": 4
+    },
+    {
+      "filename": "kit/impact-clock.ts",
+      "called": [
+        "__name",
+        "stepPose",
+        "timedAnimation",
+        "withImpactTiming"
+      ],
+      "zero_named_ranges": 2
+    },
+    {
+      "filename": "kit/pet-moves.ts",
+      "called": [
+        "__name",
+        "gesture",
+        "keyframer"
+      ],
+      "zero_named_ranges": 6
+    },
+    {
+      "filename": "motion.ts",
+      "called": [
+        "__name",
+        "attachPetBehavior",
+        "directionVector",
+        "lifeCycleCount",
+        "petPreview",
+        "placement",
+        "reelChapters",
+        "routePlacement",
+        "walkingDemo"
+      ],
+      "zero_named_ranges": 5
+    },
+    {
+      "filename": "render-io.ts",
+      "called": [
+        "<static_initializer>",
+        "__name"
+      ],
+      "zero_named_ranges": 8
+    },
+    {
+      "filename": "render.ts",
+      "called": [
+        "__name",
+        "hasCustomFrame",
+        "loadPainting",
+        "safeID"
+      ],
+      "zero_named_ranges": 5
+    },
+    {
+      "filename": "rig/f15-rig.ts",
+      "called": [
+        "<instance_members_initializer>",
+        "<static_initializer>",
+        "F3",
+        "__name",
+        "at",
+        "ball",
+        "cap",
+        "ell",
+        "get size",
+        "line",
+        "markEye",
+        "p",
+        "pitch",
+        "poly",
+        "proj",
+        "renderRig",
+        "roll",
+        "turn",
+        "v",
+        "vnorm",
+        "yaw"
+      ],
+      "zero_named_ranges": 4
+    },
+    {
+      "filename": "rig/figure.ts",
+      "called": [
+        "__name",
+        "cropOrigin",
+        "cut",
+        "projectFigure",
+        "touchesEdge"
+      ],
+      "zero_named_ranges": 4
+    },
+    {
+      "filename": "rig/px.ts",
+      "called": [
+        "<instance_members_initializer>",
+        "<static_initializer>",
+        "Px",
+        "__name",
+        "canvas",
+        "ell",
+        "get",
+        "line",
+        "outline",
+        "rect",
+        "set",
+        "solid"
+      ],
+      "zero_named_ranges": 3
+    },
+    {
+      "filename": "rig/stats.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 1
+    },
+    {
+      "filename": "scenes/relief.ts",
+      "called": [
+        "__name",
+        "face"
+      ],
+      "zero_named_ranges": 1
+    },
+    {
+      "filename": "scenes/sunlit_bench.ts",
+      "called": [
+        "__name",
+        "paint"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "technique-fx.ts",
+      "called": [
+        "__name",
+        "emptyTechniqueTrace"
+      ],
+      "zero_named_ranges": 8
+    },
+    {
+      "filename": "types.ts",
+      "called": [
+        "__name"
+      ],
+      "zero_named_ranges": 0
+    },
+    {
+      "filename": "viewer/behavior.mjs",
+      "called": [
+        "advance",
+        "angleDelta",
+        "between",
+        "clipAt",
+        "createPetBehavior",
+        "current",
+        "dispatch",
+        "duration",
+        "fillIdle",
+        "handoff",
+        "interruptFrames",
+        "interval",
+        "isAmbient",
+        "length",
+        "pair",
+        "planCycle",
+        "play",
+        "positive",
+        "randomSource",
+        "rest",
+        "sample",
+        "sampleAt",
+        "step",
+        "ticks",
+        "trickPlan",
+        "turnBearings",
+        "turnFramesFor",
+        "validateBehavior",
+        "walk",
+        "walkingLeg",
+        "weighted"
+      ],
+      "zero_named_ranges": 16
+    },
+    {
+      "filename": "viewer/scenery.mjs",
+      "called": [],
+      "zero_named_ranges": 1
+    },
+    {
+      "filename": "viewer/water.mjs",
+      "called": [],
+      "zero_named_ranges": 1
+    }
+  ]
+}
