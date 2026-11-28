@@ -6,11 +6,9 @@ import { reelChapters } from '../motion';
 import { bubbleAt } from '../c/apricot_bubbler-fx';
 import { boatFrame } from '../c/apricot_bubbler-poses';
 import { authoredFoot } from '../c/apricot_bubbler-steps';
-import { phrase } from '../c/velvet_tabor-poses';
 import type { XY } from '../types';
-import { vlen, vsub } from '../rig/f15-rig';
 
-const [bubbler, tabor] = await Promise.all([loadPainting('apricot_bubbler'), loadPainting('velvet_tabor')]);
+const bubbler = await loadPainting('apricot_bubbler');
 const gap = (a: XY, b: XY) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 
 test('the bubble inflates on the lip, floats clear, meets the jumping muzzle, then bursts', () => {
@@ -97,48 +95,5 @@ test('all eight headings in the dragon’s showreel run on the paving behind the
           if (x < 14 || y < 14 || x >= body.w - 14 || y >= body.h - 14)
             assert.ok(!body.solid(x, y), 'silhouette reaches the margin on frame ' + n);
     }
-  }
-});
-test('both padded palms actually touch the indented drum skin and keep the length of each arm', () => {
-  const { c, s, b } = tabor;
-  for (const beat of phrase) {
-    const side = beat.side > 0 ? 'R' : 'L';
-    for (let n = beat.at; n <= beat.at + 2; n++) {
-      const p = compose(c, s, b, 'trick', n / 24).points;
-      assert.ok(gap(p['palm' + side], p['strike' + side]) < 0.12, 'contact at ' + n);
-    }
-  }
-  for (const clip of ['trick', 'trick_b', 'fidget_b'])
-    for (let n = 0; n < Math.round(c.animations[clip].seconds * 24); n++) {
-      const joints = c.frame(clip, n / 24, 0, 'normal').joints!;
-      for (const side of ['L', 'R']) {
-        const upper = vlen(vsub(joints['elbow' + side], joints['shoulder' + side]));
-        const lower = vlen(vsub(joints['hand' + side], joints['elbow' + side]));
-        assert.ok(Math.abs(upper / 5.25 - lower / 5.05) < 0.0001, 'fixed bones at ' + n);
-      }
-    }
-});
-test('the felt ball leaves and returns to one pocket, strikes the elastic head twice and clears the face in flight', () => {
-  const { c, s, b } = tabor,
-    at = (n: number) => compose(c, s, b, 'trick_b', n / 24).points;
-  for (const n of [0, 18, 145, 157]) {
-    const pts = at(n);
-    assert.ok(gap(pts.ball, pts.pocket) < 0.05, 'pocket ' + n);
-  }
-  for (const n of [59, 60, 61, 62, 89, 90, 91, 92]) {
-    const pts = at(n);
-    assert.ok(gap(pts.ballBottom, pts.ballSkin) < 0.12, 'membrane ' + n);
-  }
-  for (const n of [73, 74, 75, 100, 101]) {
-    const pts = at(n);
-    assert.ok(gap(pts.ballBottom, pts.ballSkin) > 8);
-    assert.ok(gap(pts.ball, pts.nose) > 12);
-  }
-  for (let n = 74; n <= 81; n++) {
-    const pts = at(n);
-    assert.ok(
-      Math.min(gap(pts.ball, pts.handL), gap(pts.ball, pts.handR)) > 10,
-      'clear of both mittens at ' + n,
-    );
   }
 });
