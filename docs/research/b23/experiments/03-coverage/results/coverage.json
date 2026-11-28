@@ -1,0 +1,2051 @@
+{
+  "revision": "d6ebb3145d47d6bed85b088ec30b0b2faa82da6f",
+  "node": "v24.22.3",
+  "ids": [
+    "astral_seer",
+    "pocket_magnet",
+    "eclipse_drake",
+    "ember_panda",
+    "bun_panda",
+    "crater_titan",
+    "kettle_crab",
+    "moon_magician"
+  ],
+  "prep_ms": 1230.452514,
+  "metadata_inputs": 8,
+  "cases": [
+    {
+      "id": "astral_seer",
+      "kind": "valid",
+      "request": [
+        "idle"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 7979.964789,
+        "confirmed": 72,
+        "log": "✓ astral_seer: 72 frames identical (7 s)"
+      },
+      "candidate": {
+        "milliseconds": 6843.706562000001,
+        "render_calls": 1,
+        "ok": true,
+        "issues": [],
+        "completed": [
+          {
+            "id": "astral_seer",
+            "clip": "idle",
+            "count": 72
+          }
+        ],
+        "calls": 1
+      }
+    },
+    {
+      "id": "astral_seer",
+      "kind": "typo",
+      "request": [
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 971.5525129999987,
+        "confirmed": 0,
+        "log": "✓ astral_seer: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.056646000000910135,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "astral_seer",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "astral_seer",
+      "kind": "mixed",
+      "request": [
+        "idle",
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 7345.371771000002,
+        "confirmed": 72,
+        "log": "✓ astral_seer: 72 frames identical (7 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.07108199999856879,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "astral_seer",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "astral_seer",
+      "kind": "empty_argument",
+      "request": [
+        ""
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 1062.7589130000015,
+        "confirmed": 0,
+        "log": "✓ astral_seer: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.04289000000062515,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "empty-clip-name",
+            "id": "astral_seer"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "pocket_magnet",
+      "kind": "valid",
+      "request": [
+        "idle"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 2953.6062999999995,
+        "confirmed": 72,
+        "log": "✓ pocket_magnet: 72 frames identical (2 s)"
+      },
+      "candidate": {
+        "milliseconds": 2162.5069750000002,
+        "render_calls": 1,
+        "ok": true,
+        "issues": [],
+        "completed": [
+          {
+            "id": "pocket_magnet",
+            "clip": "idle",
+            "count": 72
+          }
+        ],
+        "calls": 1
+      }
+    },
+    {
+      "id": "pocket_magnet",
+      "kind": "typo",
+      "request": [
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 1277.8161149999978,
+        "confirmed": 0,
+        "log": "✓ pocket_magnet: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.0543519999991986,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "pocket_magnet",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "pocket_magnet",
+      "kind": "mixed",
+      "request": [
+        "idle",
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 3485.712531000001,
+        "confirmed": 72,
+        "log": "✓ pocket_magnet: 72 frames identical (3 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.05073499999707565,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "pocket_magnet",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "pocket_magnet",
+      "kind": "empty_argument",
+      "request": [
+        ""
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 1192.870225999999,
+        "confirmed": 0,
+        "log": "✓ pocket_magnet: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.04515499999979511,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "empty-clip-name",
+            "id": "pocket_magnet"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "eclipse_drake",
+      "kind": "valid",
+      "request": [
+        "idle"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 15681.392391000001,
+        "confirmed": 72,
+        "log": "✓ eclipse_drake: 72 frames identical (15 s)"
+      },
+      "candidate": {
+        "milliseconds": 13856.218151999994,
+        "render_calls": 1,
+        "ok": true,
+        "issues": [],
+        "completed": [
+          {
+            "id": "eclipse_drake",
+            "clip": "idle",
+            "count": 72
+          }
+        ],
+        "calls": 1
+      }
+    },
+    {
+      "id": "eclipse_drake",
+      "kind": "typo",
+      "request": [
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 1008.0991110000032,
+        "confirmed": 0,
+        "log": "✓ eclipse_drake: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.050844999990658835,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "eclipse_drake",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "eclipse_drake",
+      "kind": "mixed",
+      "request": [
+        "idle",
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 15594.282930999994,
+        "confirmed": 72,
+        "log": "✓ eclipse_drake: 72 frames identical (14 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.06148500001290813,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "eclipse_drake",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "eclipse_drake",
+      "kind": "empty_argument",
+      "request": [
+        ""
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 1045.8571730000112,
+        "confirmed": 0,
+        "log": "✓ eclipse_drake: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.052798999997321516,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "empty-clip-name",
+            "id": "eclipse_drake"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "ember_panda",
+      "kind": "valid",
+      "request": [
+        "idle"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 4692.149122999996,
+        "confirmed": 72,
+        "log": "✓ ember_panda: 72 frames identical (4 s)"
+      },
+      "candidate": {
+        "milliseconds": 3784.7626979999914,
+        "render_calls": 1,
+        "ok": true,
+        "issues": [],
+        "completed": [
+          {
+            "id": "ember_panda",
+            "clip": "idle",
+            "count": 72
+          }
+        ],
+        "calls": 1
+      }
+    },
+    {
+      "id": "ember_panda",
+      "kind": "typo",
+      "request": [
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 1239.0276400000002,
+        "confirmed": 0,
+        "log": "✓ ember_panda: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.04060499998740852,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "ember_panda",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "ember_panda",
+      "kind": "mixed",
+      "request": [
+        "idle",
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 4503.316579999999,
+        "confirmed": 72,
+        "log": "✓ ember_panda: 72 frames identical (4 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.046977999998489395,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "ember_panda",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "ember_panda",
+      "kind": "empty_argument",
+      "request": [
+        ""
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 843.4172259999905,
+        "confirmed": 0,
+        "log": "✓ ember_panda: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.04596499999752268,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "empty-clip-name",
+            "id": "ember_panda"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "bun_panda",
+      "kind": "valid",
+      "request": [
+        "idle"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 12355.041733999999,
+        "confirmed": 72,
+        "log": "✓ bun_panda: 72 frames identical (11 s)"
+      },
+      "candidate": {
+        "milliseconds": 11195.255003999991,
+        "render_calls": 1,
+        "ok": true,
+        "issues": [],
+        "completed": [
+          {
+            "id": "bun_panda",
+            "clip": "idle",
+            "count": 72
+          }
+        ],
+        "calls": 1
+      }
+    },
+    {
+      "id": "bun_panda",
+      "kind": "typo",
+      "request": [
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 1237.6363980000024,
+        "confirmed": 0,
+        "log": "✓ bun_panda: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.048689999995986,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "bun_panda",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "bun_panda",
+      "kind": "mixed",
+      "request": [
+        "idle",
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 12637.148641000007,
+        "confirmed": 72,
+        "log": "✓ bun_panda: 72 frames identical (12 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.0385320000059437,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "bun_panda",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "bun_panda",
+      "kind": "empty_argument",
+      "request": [
+        ""
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 1113.2023779999872,
+        "confirmed": 0,
+        "log": "✓ bun_panda: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.03181900002527982,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "empty-clip-name",
+            "id": "bun_panda"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "crater_titan",
+      "kind": "valid",
+      "request": [
+        "idle"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 6301.13287999999,
+        "confirmed": 72,
+        "log": "✓ crater_titan: 72 frames identical (6 s)"
+      },
+      "candidate": {
+        "milliseconds": 5586.298716000019,
+        "render_calls": 1,
+        "ok": true,
+        "issues": [],
+        "completed": [
+          {
+            "id": "crater_titan",
+            "clip": "idle",
+            "count": 72
+          }
+        ],
+        "calls": 1
+      }
+    },
+    {
+      "id": "crater_titan",
+      "kind": "typo",
+      "request": [
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 924.3352200000081,
+        "confirmed": 0,
+        "log": "✓ crater_titan: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.03657799999928102,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "crater_titan",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "crater_titan",
+      "kind": "mixed",
+      "request": [
+        "idle",
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 7141.806333000015,
+        "confirmed": 72,
+        "log": "✓ crater_titan: 72 frames identical (6 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.039493000018410385,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "crater_titan",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "crater_titan",
+      "kind": "empty_argument",
+      "request": [
+        ""
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 866.0800530000124,
+        "confirmed": 0,
+        "log": "✓ crater_titan: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.03477499997825362,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "empty-clip-name",
+            "id": "crater_titan"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "kettle_crab",
+      "kind": "valid",
+      "request": [
+        "idle"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 4337.494945000013,
+        "confirmed": 72,
+        "log": "✓ kettle_crab: 72 frames identical (3 s)"
+      },
+      "candidate": {
+        "milliseconds": 3372.7508950000047,
+        "render_calls": 1,
+        "ok": true,
+        "issues": [],
+        "completed": [
+          {
+            "id": "kettle_crab",
+            "clip": "idle",
+            "count": 72
+          }
+        ],
+        "calls": 1
+      }
+    },
+    {
+      "id": "kettle_crab",
+      "kind": "typo",
+      "request": [
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 959.7320239999972,
+        "confirmed": 0,
+        "log": "✓ kettle_crab: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.037530000001424924,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "kettle_crab",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "kettle_crab",
+      "kind": "mixed",
+      "request": [
+        "idle",
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 4598.560811000003,
+        "confirmed": 72,
+        "log": "✓ kettle_crab: 72 frames identical (4 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.03732999999192543,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "kettle_crab",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "kettle_crab",
+      "kind": "empty_argument",
+      "request": [
+        ""
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 1076.6568609999958,
+        "confirmed": 0,
+        "log": "✓ kettle_crab: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.033722000021953136,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "empty-clip-name",
+            "id": "kettle_crab"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "moon_magician",
+      "kind": "valid",
+      "request": [
+        "idle"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 9611.651711000013,
+        "confirmed": 72,
+        "log": "✓ moon_magician: 72 frames identical (9 s)"
+      },
+      "candidate": {
+        "milliseconds": 7786.851919000008,
+        "render_calls": 1,
+        "ok": true,
+        "issues": [],
+        "completed": [
+          {
+            "id": "moon_magician",
+            "clip": "idle",
+            "count": 72
+          }
+        ],
+        "calls": 1
+      }
+    },
+    {
+      "id": "moon_magician",
+      "kind": "typo",
+      "request": [
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 884.6718560000008,
+        "confirmed": 0,
+        "log": "✓ moon_magician: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.045113999978639185,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "moon_magician",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "moon_magician",
+      "kind": "mixed",
+      "request": [
+        "idle",
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 8397.14994599999,
+        "confirmed": 72,
+        "log": "✓ moon_magician: 72 frames identical (7 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.036238000000594184,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "moon_magician",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "moon_magician",
+      "kind": "empty_argument",
+      "request": [
+        ""
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 863.4972830000042,
+        "confirmed": 0,
+        "log": "✓ moon_magician: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.031719000020530075,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "empty-clip-name",
+            "id": "moon_magician"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    }
+  ],
+  "whole": [
+    {
+      "id": "astral_seer",
+      "clips": 32,
+      "frames": 4878,
+      "declarations": [
+        [
+          "idle",
+          72
+        ],
+        [
+          "walk",
+          24
+        ],
+        [
+          "look",
+          36
+        ],
+        [
+          "sleep",
+          84
+        ],
+        [
+          "turn",
+          96
+        ],
+        [
+          "happy",
+          48
+        ],
+        [
+          "tired",
+          36
+        ],
+        [
+          "hatch",
+          48
+        ],
+        [
+          "fidget_a",
+          48
+        ],
+        [
+          "fidget_b",
+          48
+        ],
+        [
+          "happy-f2",
+          48
+        ],
+        [
+          "trick",
+          132
+        ],
+        [
+          "trick_b",
+          120
+        ],
+        [
+          "phase",
+          60
+        ],
+        [
+          "idle-f2",
+          36
+        ],
+        [
+          "trick-f2",
+          132
+        ],
+        [
+          "trick_b-f2",
+          120
+        ],
+        [
+          "show",
+          120
+        ],
+        [
+          "peek",
+          60
+        ],
+        [
+          "sleep_in",
+          30
+        ],
+        [
+          "sleep_out",
+          30
+        ],
+        [
+          "wake_startled",
+          24
+        ],
+        [
+          "walk_n",
+          24
+        ],
+        [
+          "walk_ne",
+          24
+        ],
+        [
+          "walk_e",
+          24
+        ],
+        [
+          "walk_se",
+          24
+        ],
+        [
+          "walk_s",
+          24
+        ],
+        [
+          "walk_sw",
+          24
+        ],
+        [
+          "walk_w",
+          24
+        ],
+        [
+          "walk_nw",
+          24
+        ],
+        [
+          "life",
+          1440
+        ],
+        [
+          "showreel",
+          1794
+        ]
+      ]
+    },
+    {
+      "id": "pocket_magnet",
+      "clips": 26,
+      "frames": 4079,
+      "declarations": [
+        [
+          "idle",
+          72
+        ],
+        [
+          "walk",
+          24
+        ],
+        [
+          "look",
+          36
+        ],
+        [
+          "sleep",
+          72
+        ],
+        [
+          "turn",
+          96
+        ],
+        [
+          "happy",
+          46
+        ],
+        [
+          "tired",
+          36
+        ],
+        [
+          "hatch",
+          54
+        ],
+        [
+          "prepare_walk",
+          32
+        ],
+        [
+          "fidget_a",
+          60
+        ],
+        [
+          "fidget_b",
+          62
+        ],
+        [
+          "sleep_in",
+          34
+        ],
+        [
+          "sleep_out",
+          36
+        ],
+        [
+          "wake_startled",
+          28
+        ],
+        [
+          "trick",
+          166
+        ],
+        [
+          "trick_b",
+          178
+        ],
+        [
+          "walk_n",
+          24
+        ],
+        [
+          "walk_ne",
+          24
+        ],
+        [
+          "walk_e",
+          24
+        ],
+        [
+          "walk_se",
+          24
+        ],
+        [
+          "walk_s",
+          24
+        ],
+        [
+          "walk_sw",
+          24
+        ],
+        [
+          "walk_w",
+          24
+        ],
+        [
+          "walk_nw",
+          24
+        ],
+        [
+          "life",
+          1440
+        ],
+        [
+          "showreel",
+          1415
+        ]
+      ]
+    },
+    {
+      "id": "eclipse_drake",
+      "clips": 34,
+      "frames": 10828,
+      "declarations": [
+        [
+          "idle",
+          72
+        ],
+        [
+          "walk",
+          24
+        ],
+        [
+          "look",
+          36
+        ],
+        [
+          "sleep",
+          72
+        ],
+        [
+          "turn",
+          96
+        ],
+        [
+          "happy",
+          48
+        ],
+        [
+          "tired",
+          36
+        ],
+        [
+          "hatch",
+          72
+        ],
+        [
+          "fidget_a",
+          60
+        ],
+        [
+          "fidget_b",
+          60
+        ],
+        [
+          "happy-f2",
+          48
+        ],
+        [
+          "trick",
+          264
+        ],
+        [
+          "trick_b",
+          276
+        ],
+        [
+          "trick_c",
+          276
+        ],
+        [
+          "phase",
+          120
+        ],
+        [
+          "idle-f2",
+          48
+        ],
+        [
+          "trick-f2",
+          288
+        ],
+        [
+          "trick_b-f2",
+          276
+        ],
+        [
+          "trick_c-f2",
+          288
+        ],
+        [
+          "show",
+          168
+        ],
+        [
+          "peek",
+          108
+        ],
+        [
+          "sleep_in",
+          36
+        ],
+        [
+          "sleep_out",
+          36
+        ],
+        [
+          "wake_startled",
+          29
+        ],
+        [
+          "walk_n",
+          24
+        ],
+        [
+          "walk_ne",
+          24
+        ],
+        [
+          "walk_e",
+          24
+        ],
+        [
+          "walk_se",
+          24
+        ],
+        [
+          "walk_s",
+          24
+        ],
+        [
+          "walk_sw",
+          24
+        ],
+        [
+          "walk_w",
+          24
+        ],
+        [
+          "walk_nw",
+          24
+        ],
+        [
+          "life",
+          4608
+        ],
+        [
+          "showreel",
+          3191
+        ]
+      ]
+    },
+    {
+      "id": "ember_panda",
+      "clips": 27,
+      "frames": 4626,
+      "declarations": [
+        [
+          "idle",
+          72
+        ],
+        [
+          "walk",
+          24
+        ],
+        [
+          "look",
+          36
+        ],
+        [
+          "sleep",
+          72
+        ],
+        [
+          "turn",
+          96
+        ],
+        [
+          "happy",
+          42
+        ],
+        [
+          "tired",
+          36
+        ],
+        [
+          "hatch",
+          48
+        ],
+        [
+          "fidget_a",
+          48
+        ],
+        [
+          "fidget_b",
+          48
+        ],
+        [
+          "trick",
+          120
+        ],
+        [
+          "trick_b",
+          108
+        ],
+        [
+          "trick_c",
+          120
+        ],
+        [
+          "fidget_c",
+          60
+        ],
+        [
+          "sleep_in",
+          30
+        ],
+        [
+          "sleep_out",
+          30
+        ],
+        [
+          "wake_startled",
+          24
+        ],
+        [
+          "walk_n",
+          24
+        ],
+        [
+          "walk_ne",
+          24
+        ],
+        [
+          "walk_e",
+          24
+        ],
+        [
+          "walk_se",
+          24
+        ],
+        [
+          "walk_s",
+          24
+        ],
+        [
+          "walk_sw",
+          24
+        ],
+        [
+          "walk_w",
+          24
+        ],
+        [
+          "walk_nw",
+          24
+        ],
+        [
+          "life",
+          2160
+        ],
+        [
+          "showreel",
+          1260
+        ]
+      ]
+    },
+    {
+      "id": "bun_panda",
+      "clips": 34,
+      "frames": 10852,
+      "declarations": [
+        [
+          "idle",
+          72
+        ],
+        [
+          "walk",
+          24
+        ],
+        [
+          "look",
+          36
+        ],
+        [
+          "sleep",
+          72
+        ],
+        [
+          "turn",
+          96
+        ],
+        [
+          "happy",
+          48
+        ],
+        [
+          "tired",
+          36
+        ],
+        [
+          "hatch",
+          72
+        ],
+        [
+          "fidget_a",
+          60
+        ],
+        [
+          "fidget_b",
+          60
+        ],
+        [
+          "happy-f2",
+          48
+        ],
+        [
+          "trick",
+          276
+        ],
+        [
+          "trick_b",
+          276
+        ],
+        [
+          "trick_c",
+          264
+        ],
+        [
+          "phase",
+          120
+        ],
+        [
+          "idle-f2",
+          48
+        ],
+        [
+          "trick-f2",
+          288
+        ],
+        [
+          "trick_b-f2",
+          288
+        ],
+        [
+          "trick_c-f2",
+          276
+        ],
+        [
+          "show",
+          168
+        ],
+        [
+          "peek",
+          120
+        ],
+        [
+          "sleep_in",
+          36
+        ],
+        [
+          "sleep_out",
+          36
+        ],
+        [
+          "wake_startled",
+          29
+        ],
+        [
+          "walk_n",
+          24
+        ],
+        [
+          "walk_ne",
+          24
+        ],
+        [
+          "walk_e",
+          24
+        ],
+        [
+          "walk_se",
+          24
+        ],
+        [
+          "walk_s",
+          24
+        ],
+        [
+          "walk_sw",
+          24
+        ],
+        [
+          "walk_w",
+          24
+        ],
+        [
+          "walk_nw",
+          24
+        ],
+        [
+          "life",
+          4608
+        ],
+        [
+          "showreel",
+          3203
+        ]
+      ]
+    },
+    {
+      "id": "crater_titan",
+      "clips": 30,
+      "frames": 1889,
+      "declarations": [
+        [
+          "idle",
+          72
+        ],
+        [
+          "idle-f2",
+          72
+        ],
+        [
+          "walk",
+          24
+        ],
+        [
+          "sleep",
+          72
+        ],
+        [
+          "turn",
+          96
+        ],
+        [
+          "look",
+          36
+        ],
+        [
+          "tech_eruption",
+          58
+        ],
+        [
+          "tech_fist",
+          29
+        ],
+        [
+          "tech_sweep",
+          34
+        ],
+        [
+          "tech_quake",
+          38
+        ],
+        [
+          "tech_ash",
+          48
+        ],
+        [
+          "tech_pillar",
+          43
+        ],
+        [
+          "happy",
+          26
+        ],
+        [
+          "tired",
+          36
+        ],
+        [
+          "hatch",
+          36
+        ],
+        [
+          "phase",
+          48
+        ],
+        [
+          "show",
+          120
+        ],
+        [
+          "away",
+          36
+        ],
+        [
+          "back",
+          36
+        ],
+        [
+          "peek",
+          43
+        ],
+        [
+          "life",
+          408
+        ],
+        [
+          "showreel",
+          286
+        ],
+        [
+          "walk_n",
+          24
+        ],
+        [
+          "walk_ne",
+          24
+        ],
+        [
+          "walk_e",
+          24
+        ],
+        [
+          "walk_se",
+          24
+        ],
+        [
+          "walk_s",
+          24
+        ],
+        [
+          "walk_sw",
+          24
+        ],
+        [
+          "walk_w",
+          24
+        ],
+        [
+          "walk_nw",
+          24
+        ]
+      ]
+    },
+    {
+      "id": "kettle_crab",
+      "clips": 25,
+      "frames": 3600,
+      "declarations": [
+        [
+          "idle",
+          72
+        ],
+        [
+          "walk",
+          24
+        ],
+        [
+          "look",
+          36
+        ],
+        [
+          "sleep",
+          72
+        ],
+        [
+          "turn",
+          96
+        ],
+        [
+          "happy",
+          42
+        ],
+        [
+          "tired",
+          36
+        ],
+        [
+          "hatch",
+          48
+        ],
+        [
+          "fidget_a",
+          48
+        ],
+        [
+          "fidget_b",
+          48
+        ],
+        [
+          "trick",
+          120
+        ],
+        [
+          "trick_b",
+          108
+        ],
+        [
+          "sleep_in",
+          30
+        ],
+        [
+          "sleep_out",
+          30
+        ],
+        [
+          "wake_startled",
+          24
+        ],
+        [
+          "walk_n",
+          24
+        ],
+        [
+          "walk_ne",
+          24
+        ],
+        [
+          "walk_e",
+          24
+        ],
+        [
+          "walk_se",
+          24
+        ],
+        [
+          "walk_s",
+          24
+        ],
+        [
+          "walk_sw",
+          24
+        ],
+        [
+          "walk_w",
+          24
+        ],
+        [
+          "walk_nw",
+          24
+        ],
+        [
+          "life",
+          1440
+        ],
+        [
+          "showreel",
+          1134
+        ]
+      ]
+    },
+    {
+      "id": "moon_magician",
+      "clips": 32,
+      "frames": 4974,
+      "declarations": [
+        [
+          "idle",
+          72
+        ],
+        [
+          "walk",
+          24
+        ],
+        [
+          "look",
+          36
+        ],
+        [
+          "sleep",
+          84
+        ],
+        [
+          "turn",
+          96
+        ],
+        [
+          "happy",
+          48
+        ],
+        [
+          "tired",
+          36
+        ],
+        [
+          "hatch",
+          48
+        ],
+        [
+          "fidget_a",
+          48
+        ],
+        [
+          "fidget_b",
+          48
+        ],
+        [
+          "happy-f2",
+          48
+        ],
+        [
+          "trick",
+          132
+        ],
+        [
+          "trick_b",
+          144
+        ],
+        [
+          "phase",
+          48
+        ],
+        [
+          "idle-f2",
+          36
+        ],
+        [
+          "trick-f2",
+          132
+        ],
+        [
+          "trick_b-f2",
+          144
+        ],
+        [
+          "show",
+          132
+        ],
+        [
+          "peek",
+          60
+        ],
+        [
+          "sleep_in",
+          30
+        ],
+        [
+          "sleep_out",
+          30
+        ],
+        [
+          "wake_startled",
+          24
+        ],
+        [
+          "walk_n",
+          24
+        ],
+        [
+          "walk_ne",
+          24
+        ],
+        [
+          "walk_e",
+          24
+        ],
+        [
+          "walk_se",
+          24
+        ],
+        [
+          "walk_s",
+          24
+        ],
+        [
+          "walk_sw",
+          24
+        ],
+        [
+          "walk_w",
+          24
+        ],
+        [
+          "walk_nw",
+          24
+        ],
+        [
+          "life",
+          1440
+        ],
+        [
+          "showreel",
+          1842
+        ]
+      ]
+    }
+  ],
+  "negative_controls": [
+    {
+      "kind": "zero-paintings",
+      "issues": [
+        {
+          "kind": "empty-painting-set"
+        }
+      ]
+    },
+    {
+      "kind": "one-known-plus-one-unknown-id",
+      "issues": [
+        {
+          "kind": "unknown-painting",
+          "id": "nonexistent_subject_b25"
+        }
+      ]
+    },
+    {
+      "kind": "one-empty-declaration",
+      "issues": [
+        {
+          "kind": "empty-clip-set",
+          "id": "blank"
+        }
+      ]
+    },
+    {
+      "kind": "real-clip-absent-on-some-actual-ids",
+      "issues": [
+        {
+          "kind": "unknown-clip",
+          "id": "crater_titan",
+          "clip": "fidget_a"
+        }
+      ]
+    },
+    {
+      "kind": "missing-record",
+      "issues": [
+        {
+          "kind": "missing-result",
+          "id": "moon_magician",
+          "clip": "B",
+          "count": 9
+        }
+      ]
+    },
+    {
+      "kind": "short-record",
+      "issues": [
+        {
+          "kind": "incomplete-count",
+          "id": "moon_magician",
+          "clip": "B",
+          "count": 8,
+          "want": 9
+        }
+      ]
+    },
+    {
+      "kind": "same-total-wrong-distribution",
+      "issues": [
+        {
+          "kind": "incomplete-count",
+          "id": "astral_seer",
+          "clip": "A",
+          "count": 9,
+          "want": 5
+        },
+        {
+          "kind": "incomplete-count",
+          "id": "moon_magician",
+          "clip": "B",
+          "count": 5,
+          "want": 9
+        }
+      ]
+    },
+    {
+      "kind": "duplicate-record",
+      "issues": [
+        {
+          "kind": "duplicate-result",
+          "id": "astral_seer",
+          "clip": "A",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "kind": "new-removed-and-resized-clips",
+      "issues": [
+        {
+          "kind": "new-clip",
+          "id": "fixture",
+          "clip": "newOnly"
+        },
+        {
+          "kind": "length-changed",
+          "id": "fixture",
+          "clip": "changed",
+          "want": 7,
+          "count": 4
+        },
+        {
+          "kind": "removed-clip",
+          "id": "fixture",
+          "clip": "oldOnly"
+        }
+      ]
+    }
+  ],
+  "timing": {
+    "one_valid": {
+      "batches": 31,
+      "per_batch": 100,
+      "median_ms": 0.0006748600001446902,
+      "p95_ms": 0.023459839999850372,
+      "min_ms": 0.00030357000010553745,
+      "max_ms": 0.02374937000015052,
+      "checked": 3200
+    },
+    "all_idles": {
+      "batches": 31,
+      "per_batch": 100,
+      "median_ms": 0.0040871200000401585,
+      "p95_ms": 0.0448863799998071,
+      "min_ms": 0.0024683100002584977,
+      "max_ms": 0.06106884999986505,
+      "checked": 25600
+    },
+    "all_clips": {
+      "batches": 31,
+      "per_batch": 100,
+      "median_ms": 0.03147588000021642,
+      "p95_ms": 0.06456406000012066,
+      "min_ms": 0.029671519999974406,
+      "max_ms": 0.06782975000009174,
+      "checked": 768000
+    },
+    "mixed": {
+      "batches": 31,
+      "per_batch": 100,
+      "median_ms": 0.0016905500000575558,
+      "p95_ms": 0.0036178400000790134,
+      "min_ms": 0.0015975799999432638,
+      "max_ms": 0.004631029999873135,
+      "checked": 25600
+    }
+  }
+}

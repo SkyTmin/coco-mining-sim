@@ -1,0 +1,44 @@
+{
+  "hypothesisBeforeRun": "До запуска: при 1024×1366 CSS, 2 колонках и том же запасе в одну строку ожидаю свыше 20 выделенных холстов в одной из пяти позиций при 41 и 100 записях. Условие — все видимые индексы и SHA RGBA по-прежнему совпадают. Проводится на d6ebb31, изолированный Chromium; это проверка зависимости счёта от высоты viewport.",
+  "tool": "audit",
+  "source": "d6ebb3145d47d6bed85b088ec30b0b2faa82da6f",
+  "browser": "156.0.8078.79",
+  "viewport": [
+    1024,
+    1366
+  ],
+  "dpr": 2,
+  "changes": "В src/run.py ограничить n парой (41,100) и задать viewport 1024×1366, в src/wall.html изменить соответствующую проверку innerWidth/innerHeight. Два столбца, высота строк, запас, холсты и пять положений исходного опыта неизменны.",
+  "nativePhone": false,
+  "rawSHA256": "5deba30a543fec937102eaa82f765df8abbb82767b6e9a0c5b811a47251a17eb",
+  "cases": [
+    {
+      "n": 41,
+      "matches": 103,
+      "allFiveVisibleListsMatched": true,
+      "tileCounts": [
+        22,
+        26,
+        21,
+        26,
+        22
+      ],
+      "drawsAll": 41,
+      "drawsWindow": 61
+    },
+    {
+      "n": 100,
+      "matches": 100,
+      "allFiveVisibleListsMatched": true,
+      "tileCounts": [
+        22,
+        24,
+        22,
+        24,
+        22
+      ],
+      "drawsAll": 100,
+      "drawsWindow": 110
+    }
+  ]
+}

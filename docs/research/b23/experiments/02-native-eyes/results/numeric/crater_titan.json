@@ -1,0 +1,337 @@
+{
+  "key": "G",
+  "id": "crater_titan",
+  "anim": "tech_eruption",
+  "w": 292,
+  "h": 244,
+  "total": 58,
+  "side": 0,
+  "variant": "normal",
+  "uniform": [
+    0,
+    7,
+    14,
+    21,
+    29,
+    36,
+    43,
+    50,
+    57
+  ],
+  "phases": [
+    0,
+    25,
+    27,
+    29,
+    30,
+    31,
+    41,
+    46,
+    57
+  ],
+  "focus": 30,
+  "source": "c/crater_titan-keys.ts:12; authored indices, impact clock can hold rendered poses",
+  "effects": [
+    {
+      "frame": 0,
+      "rect": [
+        91,
+        67,
+        199,
+        213
+      ],
+      "roiArea": 16023,
+      "full": 0,
+      "near": 0,
+      "outside": 0,
+      "rgba": "d3dea93f8b12fb1d191a0891455e32fb28eb95319461f139c94f6e199091d671"
+    },
+    {
+      "frame": 7,
+      "rect": [
+        85,
+        78,
+        197,
+        211
+      ],
+      "roiArea": 15142,
+      "full": 0,
+      "near": 0,
+      "outside": 0,
+      "rgba": "97e1d71b09577792c2a438327255922d8f02a456b73ee4c92e8be87d5cb4837a"
+    },
+    {
+      "frame": 14,
+      "rect": [
+        82,
+        101,
+        194,
+        209
+      ],
+      "roiArea": 12317,
+      "full": 0,
+      "near": 0,
+      "outside": 0,
+      "rgba": "7ad0adc0857bba8272db9c28c11643b3a933987cf41606660e3450ae319709c4"
+    },
+    {
+      "frame": 21,
+      "rect": [
+        85,
+        118,
+        200,
+        206
+      ],
+      "roiArea": 10324,
+      "full": 0,
+      "near": 0,
+      "outside": 0,
+      "rgba": "9568594442071a586ac30781c5b0b879869ac77ecf35b0d1307aaee2f89d64f1"
+    },
+    {
+      "frame": 25,
+      "rect": [
+        86,
+        120,
+        201,
+        206
+      ],
+      "roiArea": 10092,
+      "full": 23,
+      "near": 0,
+      "outside": 23,
+      "rgba": "77a81d9bd6d5ff19362a416b1907ecb6b5759bc4b9442eeb1e0b3fd5e73f3dc6"
+    },
+    {
+      "frame": 27,
+      "rect": [
+        81,
+        105,
+        197,
+        215
+      ],
+      "roiArea": 12987,
+      "full": 75,
+      "near": 14,
+      "outside": 61,
+      "rgba": "9b930762fdc33804168b36a3043a5c55ea1b115cd22877a5abf2067c82add98d"
+    },
+    {
+      "frame": 29,
+      "rect": [
+        78,
+        81,
+        202,
+        198
+      ],
+      "roiArea": 14750,
+      "full": 137,
+      "near": 40,
+      "outside": 97,
+      "rgba": "07187cb6573f96052c7256f5296b4207521af17ea2870ba6fe9667349eac20b5"
+    },
+    {
+      "frame": 30,
+      "rect": [
+        78,
+        52,
+        209,
+        196
+      ],
+      "roiArea": 19140,
+      "full": 218,
+      "near": 107,
+      "outside": 111,
+      "rgba": "6e54c3a6898d61b9aec45eecb58a7360b864db7e8f5f79d19ff9a50426c33e00"
+    },
+    {
+      "frame": 31,
+      "rect": [
+        79,
+        50,
+        210,
+        194
+      ],
+      "roiArea": 19140,
+      "full": 269,
+      "near": 147,
+      "outside": 122,
+      "rgba": "d8c2668b17f8bf5a145ee7522fb4d70bb33675a17388426ea4b86c37f9c05061"
+    },
+    {
+      "frame": 36,
+      "rect": [
+        80,
+        47,
+        210,
+        192
+      ],
+      "roiArea": 19126,
+      "full": 304,
+      "near": 140,
+      "outside": 164,
+      "rgba": "4a75072ef7a79cf2a9db7712b64b95d8695aebe53c9a4d2d7c09099f63c05183"
+    },
+    {
+      "frame": 41,
+      "rect": [
+        78,
+        44,
+        208,
+        189
+      ],
+      "roiArea": 19126,
+      "full": 418,
+      "near": 57,
+      "outside": 361,
+      "rgba": "ba56297ac627c5f53dd080c2692eaee6c561ed325f1c8de573e29b37f895dd23"
+    },
+    {
+      "frame": 43,
+      "rect": [
+        77,
+        43,
+        207,
+        188
+      ],
+      "roiArea": 19126,
+      "full": 724,
+      "near": 5,
+      "outside": 719,
+      "rgba": "1d79ab3939388006aed9d74577e395ebcee64c9570359a7d524f55d4f20ee5de"
+    },
+    {
+      "frame": 46,
+      "rect": [
+        76,
+        44,
+        205,
+        189
+      ],
+      "roiArea": 18980,
+      "full": 624,
+      "near": 6,
+      "outside": 618,
+      "rgba": "3345a346734ad89fcf0d3014525a5683e4b19ddd83c23c6cc8880ac73300c719"
+    },
+    {
+      "frame": 50,
+      "rect": [
+        80,
+        53,
+        205,
+        195
+      ],
+      "roiArea": 18018,
+      "full": 956,
+      "near": 1,
+      "outside": 955,
+      "rgba": "b93b18b874ec47772469be559b17ad41d347cd20428d43575e3dc74e09f5ce3b"
+    },
+    {
+      "frame": 57,
+      "rect": [
+        91,
+        67,
+        199,
+        213
+      ],
+      "roiArea": 16023,
+      "full": 0,
+      "near": 0,
+      "outside": 0,
+      "rgba": "55778afff4374eabaef353120e4ddcc213415abd054d437017704bf2843c6ba2"
+    }
+  ],
+  "dynamics": [
+    {
+      "frame": 30,
+      "before": {
+        "full": 19286,
+        "near": 12167,
+        "outside": 7119
+      },
+      "after": {
+        "full": 22339,
+        "near": 10656,
+        "outside": 11683
+      }
+    }
+  ],
+  "mutations": [
+    {
+      "kind": "authored neighbour",
+      "frame": 31,
+      "pixelDelta": {
+        "full": 22339,
+        "near": 10656,
+        "outside": 11683
+      },
+      "uniform": false,
+      "phase": true
+    },
+    {
+      "kind": "uniform only",
+      "frame": 7,
+      "pixelDelta": {
+        "full": 5957,
+        "near": 5595,
+        "outside": 362
+      },
+      "uniform": true,
+      "phase": false
+    },
+    {
+      "kind": "unseen",
+      "frame": 1,
+      "pixelDelta": {
+        "full": 2364,
+        "near": 2012,
+        "outside": 352
+      },
+      "uniform": false,
+      "phase": false
+    }
+  ],
+  "negativeRepeated": {
+    "full": 0,
+    "near": 0,
+    "outside": 0
+  },
+  "playback": {
+    "start": 18,
+    "end": 41,
+    "frames": 24,
+    "fps": 24,
+    "width": 292,
+    "height": 244,
+    "rgbaSequenceSha256": "4fe69a7408becf4dfae97dc23d22c498117f760f9716b02a4cfcb240f27089b5",
+    "videoSha256": "d48771463dfa8f76fd468195652dc848bc02650001a2eb456992ead94a73f846"
+  },
+  "uniformArea": {
+    "frames": 9,
+    "withEffect": 4,
+    "full": 2121,
+    "near": 186,
+    "outside": 1935,
+    "roiArea": 140849,
+    "canvasArea": 641232,
+    "completelyMissed": []
+  },
+  "phaseArea": {
+    "frames": 9,
+    "withEffect": 7,
+    "full": 1764,
+    "near": 371,
+    "outside": 1393,
+    "roiArea": 146261,
+    "canvasArea": 641232,
+    "completelyMissed": [
+      25
+    ]
+  },
+  "renderedOriginalFrames": 34,
+  "renderedAblations": 15,
+  "computationMs": 7231,
+  "maxRssKiB": 401868
+}

@@ -1,0 +1,11 @@
+{
+  "frozenSource": "c1eaf999c09d53ff72385721ddb09eaff1949b62",
+  "f0Source": "d6ebb3145d47d6bed85b088ec30b0b2faa82da6f",
+  "sourceDiffOfTrackedToolsAndAssets": "empty",
+  "node": "v24.22.3",
+  "ffmpeg": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers",
+  "linux": "Linux 6.18.57 x86_64 GNU/Linux",
+  "affinity": "CPU4; FFmpeg output encode/decode threads=1",
+  "otherLoad": "Ф0 выполнялась на CPU2; на CPU4 могла пересечься другая подготовка около 2 с. Полный независимый замер Ф3-06 запущен затем.",
+  "failedFirstInput": "Ранний run01 использовал рабочую ревизию 60affec, в которой изменён Полюсик, и был исключён. Вся серия пересчитана в чистом checkout, в программе введён preflight перед первым кадром."
+}

@@ -1,0 +1,373 @@
+{
+  "revision": "cced294da2ebed3a0db5a5f9e6100903a849a739",
+  "node": "v24.22.3",
+  "ids": [
+    "pocket_magnet"
+  ],
+  "prep_ms": 812.093525,
+  "metadata_inputs": 1,
+  "cases": [
+    {
+      "id": "pocket_magnet",
+      "kind": "valid",
+      "request": [
+        "idle"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 3519.5552259999995,
+        "confirmed": 72,
+        "log": "✓ pocket_magnet: 72 frames identical (3 s)"
+      },
+      "candidate": {
+        "milliseconds": 2145.0414389999996,
+        "render_calls": 1,
+        "ok": true,
+        "issues": [],
+        "completed": [
+          {
+            "id": "pocket_magnet",
+            "clip": "idle",
+            "count": 72
+          }
+        ],
+        "calls": 1
+      }
+    },
+    {
+      "id": "pocket_magnet",
+      "kind": "typo",
+      "request": [
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 1023.2246779999996,
+        "confirmed": 0,
+        "log": "✓ pocket_magnet: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.05236799999966024,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "pocket_magnet",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "pocket_magnet",
+      "kind": "mixed",
+      "request": [
+        "idle",
+        "idlee"
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 2925.3243,
+        "confirmed": 72,
+        "log": "✓ pocket_magnet: 72 frames identical (2 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.05272799999875133,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "unknown-clip",
+            "id": "pocket_magnet",
+            "clip": "idlee"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    },
+    {
+      "id": "pocket_magnet",
+      "kind": "empty_argument",
+      "request": [
+        ""
+      ],
+      "legacy": {
+        "exit": 0,
+        "milliseconds": 928.9929079999984,
+        "confirmed": 0,
+        "log": "✓ pocket_magnet: 0 frames identical (0 s)"
+      },
+      "candidate": {
+        "milliseconds": 0.6458739999998215,
+        "render_calls": 0,
+        "ok": false,
+        "issues": [
+          {
+            "kind": "empty-clip-name",
+            "id": "pocket_magnet"
+          }
+        ],
+        "completed": [],
+        "calls": 0
+      }
+    }
+  ],
+  "whole": [
+    {
+      "id": "pocket_magnet",
+      "clips": 26,
+      "frames": 4083,
+      "declarations": [
+        [
+          "idle",
+          72
+        ],
+        [
+          "walk",
+          24
+        ],
+        [
+          "look",
+          36
+        ],
+        [
+          "sleep",
+          72
+        ],
+        [
+          "turn",
+          96
+        ],
+        [
+          "happy",
+          46
+        ],
+        [
+          "tired",
+          36
+        ],
+        [
+          "hatch",
+          54
+        ],
+        [
+          "prepare_walk",
+          32
+        ],
+        [
+          "fidget_a",
+          60
+        ],
+        [
+          "fidget_b",
+          62
+        ],
+        [
+          "sleep_in",
+          34
+        ],
+        [
+          "sleep_out",
+          36
+        ],
+        [
+          "wake_startled",
+          28
+        ],
+        [
+          "trick",
+          166
+        ],
+        [
+          "trick_b",
+          180
+        ],
+        [
+          "walk_n",
+          24
+        ],
+        [
+          "walk_ne",
+          24
+        ],
+        [
+          "walk_e",
+          24
+        ],
+        [
+          "walk_se",
+          24
+        ],
+        [
+          "walk_s",
+          24
+        ],
+        [
+          "walk_sw",
+          24
+        ],
+        [
+          "walk_w",
+          24
+        ],
+        [
+          "walk_nw",
+          24
+        ],
+        [
+          "life",
+          1440
+        ],
+        [
+          "showreel",
+          1417
+        ]
+      ]
+    }
+  ],
+  "negative_controls": [
+    {
+      "kind": "zero-paintings",
+      "issues": [
+        {
+          "kind": "empty-painting-set"
+        }
+      ]
+    },
+    {
+      "kind": "one-known-plus-one-unknown-id",
+      "issues": [
+        {
+          "kind": "unknown-painting",
+          "id": "nonexistent_subject_b25"
+        }
+      ]
+    },
+    {
+      "kind": "one-empty-declaration",
+      "issues": [
+        {
+          "kind": "empty-clip-set",
+          "id": "blank"
+        }
+      ]
+    },
+    {
+      "kind": "missing-record",
+      "issues": [
+        {
+          "kind": "missing-result",
+          "id": "pocket_magnet",
+          "clip": "B",
+          "count": 9
+        }
+      ]
+    },
+    {
+      "kind": "short-record",
+      "issues": [
+        {
+          "kind": "incomplete-count",
+          "id": "pocket_magnet",
+          "clip": "B",
+          "count": 8,
+          "want": 9
+        }
+      ]
+    },
+    {
+      "kind": "same-total-wrong-distribution",
+      "issues": [
+        {
+          "kind": "incomplete-count",
+          "id": "pocket_magnet",
+          "clip": "A",
+          "count": 9,
+          "want": 5
+        },
+        {
+          "kind": "incomplete-count",
+          "id": "pocket_magnet",
+          "clip": "B",
+          "count": 5,
+          "want": 9
+        }
+      ]
+    },
+    {
+      "kind": "duplicate-record",
+      "issues": [
+        {
+          "kind": "duplicate-result",
+          "id": "pocket_magnet",
+          "clip": "A",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "kind": "new-removed-and-resized-clips",
+      "issues": [
+        {
+          "kind": "new-clip",
+          "id": "fixture",
+          "clip": "newOnly"
+        },
+        {
+          "kind": "length-changed",
+          "id": "fixture",
+          "clip": "changed",
+          "want": 7,
+          "count": 4
+        },
+        {
+          "kind": "removed-clip",
+          "id": "fixture",
+          "clip": "oldOnly"
+        }
+      ]
+    }
+  ],
+  "timing": {
+    "one_valid": {
+      "batches": 31,
+      "per_batch": 100,
+      "median_ms": 0.0006741499999952794,
+      "p95_ms": 0.0023683100000016564,
+      "min_ms": 0.0002654900000015914,
+      "max_ms": 0.032356110000000625,
+      "checked": 3200
+    },
+    "all_idles": {
+      "batches": 31,
+      "per_batch": 100,
+      "median_ms": 0.0008533900000111316,
+      "p95_ms": 0.0020859899999959453,
+      "min_ms": 0.000250770000002376,
+      "max_ms": 0.0029674399999930754,
+      "checked": 3200
+    },
+    "all_clips": {
+      "batches": 31,
+      "per_batch": 100,
+      "median_ms": 0.0035542299999906392,
+      "p95_ms": 0.0472415699999874,
+      "min_ms": 0.0026518399999986286,
+      "max_ms": 0.06023648999998841,
+      "checked": 83200
+    },
+    "mixed": {
+      "batches": 31,
+      "per_batch": 100,
+      "median_ms": 0.00027631000000837957,
+      "p95_ms": 0.000705019999986689,
+      "min_ms": 0.0002665000000160944,
+      "max_ms": 0.0017180999999982305,
+      "checked": 3200
+    }
+  }
+}

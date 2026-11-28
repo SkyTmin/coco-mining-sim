@@ -1,0 +1,530 @@
+{
+  "revision": "60affec40c74f81e8ce886400ea3b07c0d8f5911",
+  "browser": "156.0.8078.79",
+  "css": {
+    "width": 176,
+    "height": 144,
+    "dpr": 1
+  },
+  "scenario": {
+    "seed": 7319,
+    "before": {
+      "anim": "trick_b",
+      "frame": 110,
+      "at": [
+        0.49375,
+        0.734375
+      ],
+      "direction": "se",
+      "elapsed": 4.583333333333333,
+      "form": "f1",
+      "tick": 503
+    },
+    "hit": {
+      "sample": {
+        "anim": "trick_b",
+        "frame": 111,
+        "at": [
+          0.49375,
+          0.734375
+        ],
+        "direction": "se",
+        "elapsed": 4.625,
+        "form": "f1",
+        "tick": 504
+      },
+      "epoch": 13
+    },
+    "after": {
+      "anim": "idle",
+      "frame": 0,
+      "at": [
+        0.49375,
+        0.734375
+      ],
+      "direction": "se",
+      "elapsed": 0,
+      "form": "f1",
+      "tick": 573
+    },
+    "rule": {
+      "version": 1,
+      "painting": "pocket_magnet",
+      "id": "close-star-circuit",
+      "clip": "trick_b",
+      "hitIndex": 0,
+      "cost": 1,
+      "initialCharge": 1,
+      "landmark": "star-socket",
+      "frame": 111
+    },
+    "states": {
+      "funded": {
+        "start": {
+          "version": 1,
+          "painting": "pocket_magnet",
+          "charge": 1,
+          "changed": [],
+          "applied": []
+        },
+        "end": {
+          "version": 1,
+          "painting": "pocket_magnet",
+          "charge": 0,
+          "changed": [
+            "star-socket"
+          ],
+          "applied": [
+            13
+          ]
+        },
+        "repeat": {
+          "version": 1,
+          "painting": "pocket_magnet",
+          "charge": 0,
+          "changed": [
+            "star-socket"
+          ],
+          "applied": [
+            13
+          ]
+        }
+      },
+      "empty": {
+        "start": {
+          "version": 1,
+          "painting": "pocket_magnet",
+          "charge": 0,
+          "changed": [],
+          "applied": []
+        },
+        "end": {
+          "version": 1,
+          "painting": "pocket_magnet",
+          "charge": 0,
+          "changed": [],
+          "applied": []
+        },
+        "repeat": {
+          "version": 1,
+          "painting": "pocket_magnet",
+          "charge": 0,
+          "changed": [],
+          "applied": []
+        }
+      }
+    },
+    "statuses": {
+      "funded": [
+        "applied",
+        "duplicate"
+      ],
+      "empty": [
+        "insufficient",
+        "insufficient"
+      ]
+    }
+  },
+  "captures": {
+    "funded_start": {
+      "options": {
+        "branch": "funded",
+        "moment": "start",
+        "visible": true,
+        "sample": "after"
+      },
+      "pngSHA": "bec759617a9ef8572efa0d24c32dc73c5001f8f9380e175193b78610475becb0",
+      "screenRGB": "b48795a4eee5e16d7f04815b90ef5c98f923f418fc8a5c668b7ee5154807b91a",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 1,
+        "changed": [],
+        "applied": []
+      },
+      "nativeRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c",
+      "outputRGBA": "97a28385eb8b13e545ba0075468daf96fb5c1176f16cee1d591a2ff348bf0dcc"
+    },
+    "funded_end": {
+      "options": {
+        "branch": "funded",
+        "moment": "end",
+        "visible": true,
+        "sample": "after"
+      },
+      "pngSHA": "3be93004a985feb8892228fa3d14165a9913bfdbb0781e6d73c91186e673773e",
+      "screenRGB": "5691bff1dc3ae5da9a50e645dd2f23d67a44ed02b73300ff67fccb5a5c974efa",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 0,
+        "changed": [
+          "star-socket"
+        ],
+        "applied": [
+          13
+        ]
+      },
+      "nativeRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c",
+      "outputRGBA": "4eac43e93fd870507b28230ed4382e910ea83d624e7e3d08c91b38e3ad5332ec"
+    },
+    "funded_repeat": {
+      "options": {
+        "branch": "funded",
+        "moment": "repeat",
+        "visible": true,
+        "sample": "after"
+      },
+      "pngSHA": "3be93004a985feb8892228fa3d14165a9913bfdbb0781e6d73c91186e673773e",
+      "screenRGB": "5691bff1dc3ae5da9a50e645dd2f23d67a44ed02b73300ff67fccb5a5c974efa",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 0,
+        "changed": [
+          "star-socket"
+        ],
+        "applied": [
+          13
+        ]
+      },
+      "nativeRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c",
+      "outputRGBA": "4eac43e93fd870507b28230ed4382e910ea83d624e7e3d08c91b38e3ad5332ec"
+    },
+    "funded_hidden": {
+      "options": {
+        "branch": "funded",
+        "moment": "end",
+        "visible": false,
+        "sample": "after"
+      },
+      "pngSHA": "eb3d779db4d06da9c6f9fe594d9f6fb0049122a21b834c8e6172e860c1182d4b",
+      "screenRGB": "1208ca4780d6b0306cff77e1b69953d2718f41099dec2de77682715b11c18505",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 0,
+        "changed": [
+          "star-socket"
+        ],
+        "applied": [
+          13
+        ]
+      },
+      "nativeRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c",
+      "outputRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c"
+    },
+    "empty_start": {
+      "options": {
+        "branch": "empty",
+        "moment": "start",
+        "visible": true,
+        "sample": "after"
+      },
+      "pngSHA": "dbad172109e1d9d91a85ca73a438d41f9037c271b89660587c88dca4e3ff334b",
+      "screenRGB": "550ceefc13ffcb65261ca2df4b7595a584c44e6714176b917107605c710ba255",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 0,
+        "changed": [],
+        "applied": []
+      },
+      "nativeRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c",
+      "outputRGBA": "ad990f0bb313ccd0dca7ba87d78004d459648d586dc7deaf72de7efbdf225d38"
+    },
+    "empty_end": {
+      "options": {
+        "branch": "empty",
+        "moment": "end",
+        "visible": true,
+        "sample": "after"
+      },
+      "pngSHA": "dbad172109e1d9d91a85ca73a438d41f9037c271b89660587c88dca4e3ff334b",
+      "screenRGB": "550ceefc13ffcb65261ca2df4b7595a584c44e6714176b917107605c710ba255",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 0,
+        "changed": [],
+        "applied": []
+      },
+      "nativeRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c",
+      "outputRGBA": "ad990f0bb313ccd0dca7ba87d78004d459648d586dc7deaf72de7efbdf225d38"
+    },
+    "empty_repeat": {
+      "options": {
+        "branch": "empty",
+        "moment": "repeat",
+        "visible": true,
+        "sample": "after"
+      },
+      "pngSHA": "dbad172109e1d9d91a85ca73a438d41f9037c271b89660587c88dca4e3ff334b",
+      "screenRGB": "550ceefc13ffcb65261ca2df4b7595a584c44e6714176b917107605c710ba255",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 0,
+        "changed": [],
+        "applied": []
+      },
+      "nativeRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c",
+      "outputRGBA": "ad990f0bb313ccd0dca7ba87d78004d459648d586dc7deaf72de7efbdf225d38"
+    },
+    "empty_hidden": {
+      "options": {
+        "branch": "empty",
+        "moment": "end",
+        "visible": false,
+        "sample": "after"
+      },
+      "pngSHA": "eb3d779db4d06da9c6f9fe594d9f6fb0049122a21b834c8e6172e860c1182d4b",
+      "screenRGB": "1208ca4780d6b0306cff77e1b69953d2718f41099dec2de77682715b11c18505",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 0,
+        "changed": [],
+        "applied": []
+      },
+      "nativeRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c",
+      "outputRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c"
+    },
+    "before_native": {
+      "options": {
+        "branch": "funded",
+        "moment": "start",
+        "visible": false,
+        "sample": "before"
+      },
+      "pngSHA": "a87b529672290f4d5d27df610852b949fa77d68139bd82f01032ebe0dddf3536",
+      "screenRGB": "33388782c87bca1f791ae2224b5103ff6da6845f973b6b448adf6472ba5ac181",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 1,
+        "changed": [],
+        "applied": []
+      },
+      "nativeRGBA": "ae245d6cead7481f41c3c42f57df4531e26c46110a20cffb294e8b5909e13294",
+      "outputRGBA": "ae245d6cead7481f41c3c42f57df4531e26c46110a20cffb294e8b5909e13294"
+    },
+    "hit_native": {
+      "options": {
+        "branch": "funded",
+        "moment": "end",
+        "visible": false,
+        "sample": "hit"
+      },
+      "pngSHA": "366e5438f6bd42bca24f78883c69a579b2f37abfd90ad14cf700251efe3761c2",
+      "screenRGB": "76bf073813ec543e12cbf05027a8307b81a7dc1910202b27fe55c2072fecd9dc",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 0,
+        "changed": [
+          "star-socket"
+        ],
+        "applied": [
+          13
+        ]
+      },
+      "nativeRGBA": "8563f81137796001b235fb929db990291b6bf2b4c8ccfe3eb88df19d46bef639",
+      "outputRGBA": "8563f81137796001b235fb929db990291b6bf2b4c8ccfe3eb88df19d46bef639"
+    },
+    "funded_restored": {
+      "options": {
+        "branch": "funded",
+        "moment": "restored",
+        "visible": true,
+        "sample": "after"
+      },
+      "pngSHA": "3be93004a985feb8892228fa3d14165a9913bfdbb0781e6d73c91186e673773e",
+      "screenRGB": "5691bff1dc3ae5da9a50e645dd2f23d67a44ed02b73300ff67fccb5a5c974efa",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 0,
+        "changed": [
+          "star-socket"
+        ],
+        "applied": [
+          13
+        ]
+      },
+      "nativeRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c",
+      "outputRGBA": "4eac43e93fd870507b28230ed4382e910ea83d624e7e3d08c91b38e3ad5332ec"
+    },
+    "empty_restored": {
+      "options": {
+        "branch": "empty",
+        "moment": "restored",
+        "visible": true,
+        "sample": "after"
+      },
+      "pngSHA": "dbad172109e1d9d91a85ca73a438d41f9037c271b89660587c88dca4e3ff334b",
+      "screenRGB": "550ceefc13ffcb65261ca2df4b7595a584c44e6714176b917107605c710ba255",
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 0,
+        "changed": [],
+        "applied": []
+      },
+      "nativeRGBA": "3367ea4146db912c83e75b8f2eeaf519b6a8ea36af214dcb114fbde8026ca78c",
+      "outputRGBA": "ad990f0bb313ccd0dca7ba87d78004d459648d586dc7deaf72de7efbdf225d38"
+    }
+  },
+  "comparisons": {
+    "price-and-mark": {
+      "left": "funded_start",
+      "right": "funded_end",
+      "count": 35,
+      "charge": 20,
+      "trace": 15,
+      "outside": 0,
+      "box": [
+        12,
+        12,
+        149,
+        120
+      ]
+    },
+    "denied": {
+      "left": "empty_start",
+      "right": "empty_end",
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0,
+      "box": null
+    },
+    "visible-branches": {
+      "left": "funded_end",
+      "right": "empty_end",
+      "count": 15,
+      "charge": 0,
+      "trace": 15,
+      "outside": 0,
+      "box": [
+        145,
+        118,
+        149,
+        120
+      ]
+    },
+    "blind-hidden-branches": {
+      "left": "funded_hidden",
+      "right": "empty_hidden",
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0,
+      "box": null
+    },
+    "funded-repeat": {
+      "left": "funded_end",
+      "right": "funded_repeat",
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0,
+      "box": null
+    },
+    "funded-restored": {
+      "left": "funded_end",
+      "right": "funded_restored",
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0,
+      "box": null
+    },
+    "empty-repeat": {
+      "left": "empty_end",
+      "right": "empty_repeat",
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0,
+      "box": null
+    },
+    "empty-restored": {
+      "left": "empty_end",
+      "right": "empty_restored",
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0,
+      "box": null
+    }
+  },
+  "upstreamViewerSHA": "e1ecbfd6d0ea8a2dbba44211bedc0aed035c17b8d51c0074c4256748e834c95d",
+  "upstreamDrawBodySHA": "923fcb5a58f967b93514587d793ec5693938648965c4ceec771af883cc32063f",
+  "sources": {
+    "/exp/rule.json": {
+      "bytes": 182,
+      "sha256": "4e86cd3cc596921574c2844eb6b550cdd1ee13161a4d7b618160eea46aeef5bd"
+    },
+    "/exp/stand.mjs": {
+      "bytes": 3790,
+      "sha256": "e002d3de89ee24a5cbc09322bdc22b7bf8067c772253e993eb71e9ca5d122a32"
+    },
+    "/exp/world.mjs": {
+      "bytes": 2581,
+      "sha256": "3e6048bc2a30eaeca78cf40cbe5249d356894a8d77d1ee318c18861ab0b5494e"
+    },
+    "/viewer/atlases/frames/common/atlas.json": {
+      "bytes": 632,
+      "sha256": "fd9df65d6027b08a1b8d2b8417ec8564348698150965f67349fd2260019b83b3"
+    },
+    "/viewer/atlases/frames/common/tiles-0.png": {
+      "bytes": 737,
+      "sha256": "d3a3de47f799beb62753375efc30d6404395498aeee9c2b0d03493859e5698ef"
+    },
+    "/viewer/atlases/pocket_magnet/atlas.json": {
+      "bytes": 282148,
+      "sha256": "a5e2a530c5cdc7e836cf5068240cb47d0804c971aa0e8ed00074566219060c30"
+    },
+    "/viewer/atlases/pocket_magnet/behavior.json": {
+      "bytes": 1081,
+      "sha256": "3ecac5b887674b883d3fd7c2b9769e31820bdae04a8c8a320f9eefe570985177"
+    },
+    "/viewer/atlases/pocket_magnet/p-0.webp": {
+      "bytes": 1849702,
+      "sha256": "0b968e364a68c9cc226cea1389a8214579786d1c2623ccade086b5a55314ee4c"
+    },
+    "/viewer/atlases/pocket_magnet/p-1.webp": {
+      "bytes": 1640714,
+      "sha256": "da2128e68592e839db440a2ff11a1ae5f66eb1ae145e8e146545077b636570d7"
+    },
+    "/viewer/atlases/pocket_magnet/tiles-0.png": {
+      "bytes": 47145,
+      "sha256": "721c339b22b338ee602f53e77c653f3de75b9791c8f70d17c48c6c67714d4241"
+    },
+    "/viewer/behavior.mjs": {
+      "bytes": 30457,
+      "sha256": "3b54d401f4e55810648b3fb90c4f153c8a0deccae10298d9756bcb501e41d0a3"
+    },
+    "/viewer/material.mjs": {
+      "bytes": 4531,
+      "sha256": "21791b6aa02fcaa7df58547b8b9891d785446e1a6df3cd6a71c900c76286bc7b"
+    },
+    "/viewer/native-sample.mjs": {
+      "bytes": 7987,
+      "sha256": "327ed39c92d50210b0d918e75226688897d6a7ad02976c5d13676ecc6dba976e"
+    },
+    "/viewer/scenery.mjs": {
+      "bytes": 1164,
+      "sha256": "dcd671f0e35537325bce9beed6763b68c4f1a79cd3061fbab17a9c719f718a33"
+    },
+    "/viewer/stand.html": {
+      "bytes": 360,
+      "sha256": "a942e8fe9fbd9649e4520ef5ac4703d4753fe281056513cbd0d195ccfeab3ee0"
+    },
+    "/viewer/water.mjs": {
+      "bytes": 4115,
+      "sha256": "4b9cb2a72ba71be10efa240985f2343b428caa191f6c22c4cd38d76cf67464b8"
+    }
+  }
+}

@@ -1,0 +1,335 @@
+{
+  "key": "D",
+  "id": "kettle_crab",
+  "anim": "trick",
+  "w": 176,
+  "h": 144,
+  "total": 120,
+  "side": 0,
+  "variant": "normal",
+  "uniform": [
+    0,
+    15,
+    30,
+    45,
+    60,
+    74,
+    89,
+    104,
+    119
+  ],
+  "phases": [
+    0,
+    14,
+    26,
+    51,
+    52,
+    53,
+    76,
+    100,
+    119
+  ],
+  "focus": 52,
+  "source": "c/kettle_crab-poses.ts:40",
+  "effects": [
+    {
+      "frame": 0,
+      "rect": [
+        49,
+        44,
+        132,
+        134
+      ],
+      "roiArea": 7644,
+      "full": 0,
+      "near": 0,
+      "outside": 0,
+      "rgba": "ec8a1fd7c6dafc876d0bfc662268ce49ef281b82c87436b24863eca685cf0e9b"
+    },
+    {
+      "frame": 14,
+      "rect": [
+        48,
+        45,
+        133,
+        134
+      ],
+      "roiArea": 7740,
+      "full": 99,
+      "near": 99,
+      "outside": 0,
+      "rgba": "eb75893ee9fda87d4e093022d2b2828697640747dc79da1c0f305d122916e615"
+    },
+    {
+      "frame": 15,
+      "rect": [
+        48,
+        46,
+        133,
+        134
+      ],
+      "roiArea": 7654,
+      "full": 97,
+      "near": 97,
+      "outside": 0,
+      "rgba": "2d5a08f6eedec34bd645f37c48b9747cea95f6391b51f9344e29bec0a421d21c"
+    },
+    {
+      "frame": 26,
+      "rect": [
+        49,
+        49,
+        111,
+        127
+      ],
+      "roiArea": 4977,
+      "full": 416,
+      "near": 284,
+      "outside": 132,
+      "rgba": "75f2fc8480f1cabccc934e361d34363f64b762d492a3c78c0c04b3a9e9dd9750"
+    },
+    {
+      "frame": 30,
+      "rect": [
+        50,
+        49,
+        112,
+        128
+      ],
+      "roiArea": 5040,
+      "full": 657,
+      "near": 377,
+      "outside": 280,
+      "rgba": "a01db1fbdbbf76aaf7504b02b819a9867088ede989743b6b7171e504842d4cb2"
+    },
+    {
+      "frame": 45,
+      "rect": [
+        47,
+        56,
+        114,
+        128
+      ],
+      "roiArea": 4964,
+      "full": 58,
+      "near": 58,
+      "outside": 0,
+      "rgba": "1cfabd48ecd2d44bb7f1998e33cd63d839f223a800ad44ba49ec28a26932d5af"
+    },
+    {
+      "frame": 51,
+      "rect": [
+        45,
+        58,
+        115,
+        133
+      ],
+      "roiArea": 5396,
+      "full": 102,
+      "near": 102,
+      "outside": 0,
+      "rgba": "f28d6be297626378374c77f8d38ddf3234d4cc370672afe963b2f254171dafea"
+    },
+    {
+      "frame": 52,
+      "rect": null,
+      "roiArea": 0,
+      "full": 324,
+      "near": 0,
+      "outside": 324,
+      "rgba": "0fae28256f2676c992dea03e9a422ad2cbb04ee7da1b4370f079ef93e861aa3f"
+    },
+    {
+      "frame": 53,
+      "rect": null,
+      "roiArea": 0,
+      "full": 600,
+      "near": 0,
+      "outside": 600,
+      "rgba": "0ef5d63fbe465d9db26545065fa98599462b7ee1bd5a572e2fa00219ec3c81c6"
+    },
+    {
+      "frame": 60,
+      "rect": null,
+      "roiArea": 0,
+      "full": 1952,
+      "near": 0,
+      "outside": 1952,
+      "rgba": "f0aae9e7408a6f8f4e7285e64a16063785ec29116a17785dcc837c6ba98d9bf8"
+    },
+    {
+      "frame": 74,
+      "rect": null,
+      "roiArea": 0,
+      "full": 1619,
+      "near": 0,
+      "outside": 1619,
+      "rgba": "ad9ad10f8d2f7787ca625a06d5d4b4d273d523809b66dfee11a196791eb97021"
+    },
+    {
+      "frame": 76,
+      "rect": [
+        41,
+        63,
+        115,
+        125
+      ],
+      "roiArea": 4725,
+      "full": 2013,
+      "near": 756,
+      "outside": 1257,
+      "rgba": "9f7c3473a2533902dd6d305fdd937a1dbb8d3fa2355743cfb433dc96607686a8"
+    },
+    {
+      "frame": 89,
+      "rect": [
+        50,
+        45,
+        132,
+        135
+      ],
+      "roiArea": 7553,
+      "full": 80,
+      "near": 80,
+      "outside": 0,
+      "rgba": "81d74b155aad06264ee875db2f3bf3c74e51ad8067defc6febc257f21a3e72d2"
+    },
+    {
+      "frame": 100,
+      "rect": [
+        51,
+        37,
+        128,
+        131
+      ],
+      "roiArea": 7410,
+      "full": 35,
+      "near": 35,
+      "outside": 0,
+      "rgba": "2c673205e0ecfda062da1a749a27b71f3026b795acc59ef4cc7eaba0a8e84d28"
+    },
+    {
+      "frame": 104,
+      "rect": [
+        49,
+        40,
+        130,
+        132
+      ],
+      "roiArea": 7626,
+      "full": 17,
+      "near": 17,
+      "outside": 0,
+      "rgba": "351610787a4e82c1e6ff5d3e52aff42058226cd4f04a842d61fb6129fcd25a91"
+    },
+    {
+      "frame": 119,
+      "rect": [
+        49,
+        44,
+        132,
+        134
+      ],
+      "roiArea": 7644,
+      "full": 0,
+      "near": 0,
+      "outside": 0,
+      "rgba": "f5a1e2755e186dec46dbf1b372ae2bada7d85bd6b3f30a1fba802212a10c6696"
+    }
+  ],
+  "dynamics": [
+    {
+      "frame": 52,
+      "before": {
+        "full": 4890,
+        "near": 0,
+        "outside": 4890
+      },
+      "after": {
+        "full": 4740,
+        "near": 0,
+        "outside": 4740
+      }
+    }
+  ],
+  "mutations": [
+    {
+      "kind": "authored neighbour",
+      "frame": 53,
+      "pixelDelta": {
+        "full": 4740,
+        "near": 0,
+        "outside": 4740
+      },
+      "uniform": false,
+      "phase": true
+    },
+    {
+      "kind": "uniform only",
+      "frame": 15,
+      "pixelDelta": {
+        "full": 1603,
+        "near": 1535,
+        "outside": 68
+      },
+      "uniform": true,
+      "phase": false
+    },
+    {
+      "kind": "unseen",
+      "frame": 1,
+      "pixelDelta": {
+        "full": 1965,
+        "near": 1827,
+        "outside": 138
+      },
+      "uniform": false,
+      "phase": false
+    }
+  ],
+  "negativeRepeated": {
+    "full": 0,
+    "near": 0,
+    "outside": 0
+  },
+  "playback": {
+    "start": 40,
+    "end": 63,
+    "frames": 24,
+    "fps": 24,
+    "width": 176,
+    "height": 144,
+    "rgbaSequenceSha256": "9e5c86ff72b4a83c6980859017c74bf71afe888d76aaa685ef268e7ecc46052d",
+    "videoSha256": "f72e8d4bbc2c4c6daaf4c92338380df22f3dad750a6318963fbe83313b66d117"
+  },
+  "uniformArea": {
+    "frames": 9,
+    "withEffect": 7,
+    "full": 4480,
+    "near": 629,
+    "outside": 3851,
+    "roiArea": 48125,
+    "canvasArea": 228096,
+    "completelyMissed": [
+      60,
+      74
+    ]
+  },
+  "phaseArea": {
+    "frames": 9,
+    "withEffect": 7,
+    "full": 3589,
+    "near": 1276,
+    "outside": 2313,
+    "roiArea": 45536,
+    "canvasArea": 228096,
+    "completelyMissed": [
+      52,
+      53
+    ]
+  },
+  "renderedOriginalFrames": 37,
+  "renderedAblations": 16,
+  "computationMs": 4112,
+  "maxRssKiB": 287952
+}

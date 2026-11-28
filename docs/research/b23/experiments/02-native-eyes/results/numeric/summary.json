@@ -1,0 +1,622 @@
+{
+  "controlRevision": "c1eaf999c09d53ff72385721ddb09eaff1949b62",
+  "source": "c1eaf999c09d53ff72385721ddb09eaff1949b62",
+  "frozenManifest": "b05af115fa56b36b3c04dadcb4b6859e7c471da7cc2813060ca22f41afc0d4d1",
+  "node": "v24.22.3",
+  "elapsedMs": 88085,
+  "records": [
+    {
+      "id": "astral_seer",
+      "clip": "trick",
+      "uniform": {
+        "frames": 9,
+        "withEffect": 7,
+        "full": 3210,
+        "near": 1116,
+        "outside": 2094,
+        "roiArea": 115231,
+        "canvasArea": 641232,
+        "completelyMissed": [
+          16,
+          98
+        ]
+      },
+      "phase": {
+        "frames": 9,
+        "withEffect": 7,
+        "full": 2187,
+        "near": 788,
+        "outside": 1399,
+        "roiArea": 117711,
+        "canvasArea": 641232,
+        "completelyMissed": [
+          8,
+          96
+        ]
+      },
+      "mutations": [
+        {
+          "kind": "authored neighbour",
+          "frame": 58,
+          "pixelDelta": {
+            "full": 2829,
+            "near": 2199,
+            "outside": 630
+          },
+          "uniform": false,
+          "phase": true
+        },
+        {
+          "kind": "uniform only",
+          "frame": 16,
+          "pixelDelta": {
+            "full": 3537,
+            "near": 3009,
+            "outside": 528
+          },
+          "uniform": true,
+          "phase": false
+        },
+        {
+          "kind": "unseen",
+          "frame": 1,
+          "pixelDelta": {
+            "full": 2106,
+            "near": 1690,
+            "outside": 416
+          },
+          "uniform": false,
+          "phase": false
+        }
+      ],
+      "unchanged": 0,
+      "playback": {
+        "start": 0,
+        "end": 131,
+        "frames": 132,
+        "fps": 24,
+        "width": 292,
+        "height": 244,
+        "rgbaSequenceSha256": "0daf2a6fed70b38d56dc42e1e7f91a6ed1043c54e9ff03e89d54d837a7f247a2",
+        "videoSha256": "13f2e47f81cb5e1661be056d9877ebd853ae57171a106830ae1a8a6a348cee12"
+      },
+      "renderedOriginalFrames": 133,
+      "renderedAblations": 16,
+      "ms": 18657,
+      "maxRssKiB": 705988
+    },
+    {
+      "id": "pocket_magnet",
+      "clip": "trick",
+      "uniform": {
+        "frames": 9,
+        "withEffect": 9,
+        "full": 3648,
+        "near": 989,
+        "outside": 2659,
+        "roiArea": 66635,
+        "canvasArea": 228096,
+        "completelyMissed": []
+      },
+      "phase": {
+        "frames": 9,
+        "withEffect": 9,
+        "full": 3594,
+        "near": 890,
+        "outside": 2704,
+        "roiArea": 64759,
+        "canvasArea": 228096,
+        "completelyMissed": []
+      },
+      "mutations": [
+        {
+          "kind": "authored neighbour",
+          "frame": 45,
+          "pixelDelta": {
+            "full": 2,
+            "near": 0,
+            "outside": 2
+          },
+          "uniform": false,
+          "phase": true
+        },
+        {
+          "kind": "uniform only",
+          "frame": 21,
+          "pixelDelta": {
+            "full": 1541,
+            "near": 1537,
+            "outside": 4
+          },
+          "uniform": true,
+          "phase": false
+        },
+        {
+          "kind": "unseen",
+          "frame": 1,
+          "pixelDelta": {
+            "full": 2,
+            "near": 1,
+            "outside": 1
+          },
+          "uniform": false,
+          "phase": false
+        }
+      ],
+      "unchanged": 0,
+      "playback": {
+        "start": 32,
+        "end": 55,
+        "frames": 24,
+        "fps": 24,
+        "width": 176,
+        "height": 144,
+        "rgbaSequenceSha256": "24b59173812740599bbcffc5bd7cdd63953c6ad4313593ee88a4757667609c83",
+        "videoSha256": "30e4cd95dd15ee2ece3b095e6522a5bb30549bbdb848635d10e08d849c741300"
+      },
+      "renderedOriginalFrames": 39,
+      "renderedAblations": 16,
+      "ms": 2232,
+      "maxRssKiB": 201344
+    },
+    {
+      "id": "eclipse_drake",
+      "clip": "trick",
+      "uniform": {
+        "frames": 9,
+        "withEffect": 9,
+        "full": 63252,
+        "near": 50841,
+        "outside": 12411,
+        "roiArea": 463415,
+        "canvasArea": 1442772,
+        "completelyMissed": []
+      },
+      "phase": {
+        "frames": 9,
+        "withEffect": 9,
+        "full": 388899,
+        "near": 167330,
+        "outside": 221569,
+        "roiArea": 434082,
+        "canvasArea": 1442772,
+        "completelyMissed": []
+      },
+      "mutations": [
+        {
+          "kind": "authored neighbour",
+          "frame": 63,
+          "pixelDelta": {
+            "full": 115240,
+            "near": 42446,
+            "outside": 72794
+          },
+          "uniform": false,
+          "phase": true
+        },
+        {
+          "kind": "uniform only",
+          "frame": 33,
+          "pixelDelta": {
+            "full": 16980,
+            "near": 12877,
+            "outside": 4103
+          },
+          "uniform": true,
+          "phase": false
+        },
+        {
+          "kind": "unseen",
+          "frame": 1,
+          "pixelDelta": {
+            "full": 5892,
+            "near": 5082,
+            "outside": 810
+          },
+          "uniform": false,
+          "phase": false
+        }
+      ],
+      "unchanged": 0,
+      "playback": {
+        "start": 50,
+        "end": 73,
+        "frames": 24,
+        "fps": 24,
+        "width": 438,
+        "height": 366,
+        "rgbaSequenceSha256": "bccc3290f3631602a0e8baca246236f14fa33825051c2c7631dbebc13e8d47de",
+        "videoSha256": "d36abb941a184594b14defb51077ebb0262e4802b8f3cc602f27138a00bf94ff"
+      },
+      "renderedOriginalFrames": 39,
+      "renderedAblations": 16,
+      "ms": 14603,
+      "maxRssKiB": 601788
+    },
+    {
+      "id": "kettle_crab",
+      "clip": "trick",
+      "uniform": {
+        "frames": 9,
+        "withEffect": 7,
+        "full": 4480,
+        "near": 629,
+        "outside": 3851,
+        "roiArea": 48125,
+        "canvasArea": 228096,
+        "completelyMissed": [
+          60,
+          74
+        ]
+      },
+      "phase": {
+        "frames": 9,
+        "withEffect": 7,
+        "full": 3589,
+        "near": 1276,
+        "outside": 2313,
+        "roiArea": 45536,
+        "canvasArea": 228096,
+        "completelyMissed": [
+          52,
+          53
+        ]
+      },
+      "mutations": [
+        {
+          "kind": "authored neighbour",
+          "frame": 53,
+          "pixelDelta": {
+            "full": 4740,
+            "near": 0,
+            "outside": 4740
+          },
+          "uniform": false,
+          "phase": true
+        },
+        {
+          "kind": "uniform only",
+          "frame": 15,
+          "pixelDelta": {
+            "full": 1603,
+            "near": 1535,
+            "outside": 68
+          },
+          "uniform": true,
+          "phase": false
+        },
+        {
+          "kind": "unseen",
+          "frame": 1,
+          "pixelDelta": {
+            "full": 1965,
+            "near": 1827,
+            "outside": 138
+          },
+          "uniform": false,
+          "phase": false
+        }
+      ],
+      "unchanged": 0,
+      "playback": {
+        "start": 40,
+        "end": 63,
+        "frames": 24,
+        "fps": 24,
+        "width": 176,
+        "height": 144,
+        "rgbaSequenceSha256": "9e5c86ff72b4a83c6980859017c74bf71afe888d76aaa685ef268e7ecc46052d",
+        "videoSha256": "f72e8d4bbc2c4c6daaf4c92338380df22f3dad750a6318963fbe83313b66d117"
+      },
+      "renderedOriginalFrames": 37,
+      "renderedAblations": 16,
+      "ms": 4112,
+      "maxRssKiB": 287952
+    },
+    {
+      "id": "bun_panda",
+      "clip": "trick",
+      "uniform": {
+        "frames": 9,
+        "withEffect": 9,
+        "full": 145524,
+        "near": 22986,
+        "outside": 122538,
+        "roiArea": 146984,
+        "canvasArea": 1442772,
+        "completelyMissed": []
+      },
+      "phase": {
+        "frames": 9,
+        "withEffect": 9,
+        "full": 146345,
+        "near": 24523,
+        "outside": 121822,
+        "roiArea": 145783,
+        "canvasArea": 1442772,
+        "completelyMissed": []
+      },
+      "mutations": [
+        {
+          "kind": "authored neighbour",
+          "frame": 191,
+          "pixelDelta": {
+            "full": 10106,
+            "near": 7944,
+            "outside": 2162
+          },
+          "uniform": false,
+          "phase": true
+        },
+        {
+          "kind": "uniform only",
+          "frame": 34,
+          "pixelDelta": {
+            "full": 6019,
+            "near": 4662,
+            "outside": 1357
+          },
+          "uniform": true,
+          "phase": false
+        },
+        {
+          "kind": "unseen",
+          "frame": 1,
+          "pixelDelta": {
+            "full": 2333,
+            "near": 936,
+            "outside": 1397
+          },
+          "uniform": false,
+          "phase": false
+        }
+      ],
+      "unchanged": 0,
+      "playback": {
+        "start": 178,
+        "end": 201,
+        "frames": 24,
+        "fps": 24,
+        "width": 438,
+        "height": 366,
+        "rgbaSequenceSha256": "d781673a8237c79c80e356e98d88b2c4ee9b2bf9db9b5b4bed425bb13213d6b2",
+        "videoSha256": "9c675a4a6ad520e55d1cc8b151cd309a3c57c54938d8fadcb978cad9734b5466"
+      },
+      "renderedOriginalFrames": 40,
+      "renderedAblations": 16,
+      "ms": 13754,
+      "maxRssKiB": 523296
+    },
+    {
+      "id": "moon_magician",
+      "clip": "trick",
+      "uniform": {
+        "frames": 9,
+        "withEffect": 6,
+        "full": 3002,
+        "near": 1986,
+        "outside": 1016,
+        "roiArea": 123238,
+        "canvasArea": 641232,
+        "completelyMissed": []
+      },
+      "phase": {
+        "frames": 9,
+        "withEffect": 7,
+        "full": 2744,
+        "near": 2384,
+        "outside": 360,
+        "roiArea": 131186,
+        "canvasArea": 641232,
+        "completelyMissed": []
+      },
+      "mutations": [
+        {
+          "kind": "authored neighbour",
+          "frame": 85,
+          "pixelDelta": {
+            "full": 3278,
+            "near": 2911,
+            "outside": 367
+          },
+          "uniform": false,
+          "phase": true
+        },
+        {
+          "kind": "uniform only",
+          "frame": 16,
+          "pixelDelta": {
+            "full": 1482,
+            "near": 1099,
+            "outside": 383
+          },
+          "uniform": true,
+          "phase": false
+        },
+        {
+          "kind": "unseen",
+          "frame": 1,
+          "pixelDelta": {
+            "full": 1637,
+            "near": 1299,
+            "outside": 338
+          },
+          "uniform": false,
+          "phase": false
+        }
+      ],
+      "unchanged": 0,
+      "playback": {
+        "start": 72,
+        "end": 95,
+        "frames": 24,
+        "fps": 24,
+        "width": 292,
+        "height": 244,
+        "rgbaSequenceSha256": "d044da9f3bc6ccb85209249ba58566ca674b4dafb77cb8c2c505a622bbf0e523",
+        "videoSha256": "aa824d811ecaa81689ec8abe3ee7cf139d0ab646431db2286ca0bc1919758017"
+      },
+      "renderedOriginalFrames": 39,
+      "renderedAblations": 16,
+      "ms": 7587,
+      "maxRssKiB": 436572
+    },
+    {
+      "id": "crater_titan",
+      "clip": "tech_eruption",
+      "uniform": {
+        "frames": 9,
+        "withEffect": 4,
+        "full": 2121,
+        "near": 186,
+        "outside": 1935,
+        "roiArea": 140849,
+        "canvasArea": 641232,
+        "completelyMissed": []
+      },
+      "phase": {
+        "frames": 9,
+        "withEffect": 7,
+        "full": 1764,
+        "near": 371,
+        "outside": 1393,
+        "roiArea": 146261,
+        "canvasArea": 641232,
+        "completelyMissed": [
+          25
+        ]
+      },
+      "mutations": [
+        {
+          "kind": "authored neighbour",
+          "frame": 31,
+          "pixelDelta": {
+            "full": 22339,
+            "near": 10656,
+            "outside": 11683
+          },
+          "uniform": false,
+          "phase": true
+        },
+        {
+          "kind": "uniform only",
+          "frame": 7,
+          "pixelDelta": {
+            "full": 5957,
+            "near": 5595,
+            "outside": 362
+          },
+          "uniform": true,
+          "phase": false
+        },
+        {
+          "kind": "unseen",
+          "frame": 1,
+          "pixelDelta": {
+            "full": 2364,
+            "near": 2012,
+            "outside": 352
+          },
+          "uniform": false,
+          "phase": false
+        }
+      ],
+      "unchanged": 0,
+      "playback": {
+        "start": 18,
+        "end": 41,
+        "frames": 24,
+        "fps": 24,
+        "width": 292,
+        "height": 244,
+        "rgbaSequenceSha256": "4fe69a7408becf4dfae97dc23d22c498117f760f9716b02a4cfcb240f27089b5",
+        "videoSha256": "d48771463dfa8f76fd468195652dc848bc02650001a2eb456992ead94a73f846"
+      },
+      "renderedOriginalFrames": 34,
+      "renderedAblations": 15,
+      "ms": 7231,
+      "maxRssKiB": 401868
+    },
+    {
+      "id": "ember_panda",
+      "clip": "trick",
+      "uniform": {
+        "frames": 9,
+        "withEffect": 8,
+        "full": 411,
+        "near": 293,
+        "outside": 118,
+        "roiArea": 91428,
+        "canvasArea": 384192,
+        "completelyMissed": [
+          0,
+          60
+        ]
+      },
+      "phase": {
+        "frames": 9,
+        "withEffect": 8,
+        "full": 529,
+        "near": 446,
+        "outside": 83,
+        "roiArea": 81046,
+        "canvasArea": 384192,
+        "completelyMissed": [
+          0,
+          56,
+          65
+        ]
+      },
+      "mutations": [
+        {
+          "kind": "authored neighbour",
+          "frame": 67,
+          "pixelDelta": {
+            "full": 6253,
+            "near": 4928,
+            "outside": 1325
+          },
+          "uniform": false,
+          "phase": true
+        },
+        {
+          "kind": "uniform only",
+          "frame": 15,
+          "pixelDelta": {
+            "full": 1365,
+            "near": 638,
+            "outside": 727
+          },
+          "uniform": true,
+          "phase": false
+        },
+        {
+          "kind": "unseen",
+          "frame": 1,
+          "pixelDelta": {
+            "full": 3288,
+            "near": 2380,
+            "outside": 908
+          },
+          "uniform": false,
+          "phase": false
+        }
+      ],
+      "unchanged": 0,
+      "playback": {
+        "start": 54,
+        "end": 77,
+        "frames": 24,
+        "fps": 24,
+        "width": 232,
+        "height": 184,
+        "rgbaSequenceSha256": "6aeafcc36432b89f47565dbd26bae24f9111461f4f7a53a33dc803c5356ffc31",
+        "videoSha256": "85dc87e1e8899ece9876516cb5cf6de54b877ea2a892cdf331ff2dd2bc0c6205"
+      },
+      "renderedOriginalFrames": 36,
+      "renderedAblations": 16,
+      "ms": 6039,
+      "maxRssKiB": 409556
+    }
+  ]
+}

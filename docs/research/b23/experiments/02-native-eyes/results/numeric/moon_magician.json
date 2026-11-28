@@ -1,0 +1,349 @@
+{
+  "key": "F",
+  "id": "moon_magician",
+  "anim": "trick",
+  "w": 292,
+  "h": 244,
+  "total": 132,
+  "side": 0,
+  "variant": "normal",
+  "uniform": [
+    0,
+    16,
+    33,
+    49,
+    66,
+    82,
+    98,
+    115,
+    131
+  ],
+  "phases": [
+    0,
+    38,
+    54,
+    83,
+    84,
+    85,
+    118,
+    124,
+    131
+  ],
+  "focus": 84,
+  "source": "c/moon_magician-poses.ts:39",
+  "effects": [
+    {
+      "frame": 0,
+      "rect": [
+        100,
+        60,
+        195,
+        203
+      ],
+      "roiArea": 13824,
+      "full": 0,
+      "near": 0,
+      "outside": 0,
+      "rgba": "1f650b8b7f3f77f323cff49e931c817f8c8cfa07f542a7c0c60009c89c04f2e2"
+    },
+    {
+      "frame": 16,
+      "rect": [
+        100,
+        69,
+        195,
+        203
+      ],
+      "roiArea": 12960,
+      "full": 0,
+      "near": 0,
+      "outside": 0,
+      "rgba": "4bafe51d1ec44cbd7ea061d5d158a698d55321a9028f3ceb6342e68abb407444"
+    },
+    {
+      "frame": 33,
+      "rect": [
+        100,
+        67,
+        182,
+        203
+      ],
+      "roiArea": 11371,
+      "full": 0,
+      "near": 0,
+      "outside": 0,
+      "rgba": "6c6b294cb43ed0cc8e31e60572e04207ce7ae1375a3be4ede892d4c8323ef774"
+    },
+    {
+      "frame": 38,
+      "rect": [
+        100,
+        67,
+        181,
+        203
+      ],
+      "roiArea": 11234,
+      "full": 23,
+      "near": 23,
+      "outside": 0,
+      "rgba": "c92d093f64d645020f4ea881bb68fce9b2c9cb5dea96b581f8e5e7981b91c806"
+    },
+    {
+      "frame": 49,
+      "rect": [
+        101,
+        74,
+        181,
+        205
+      ],
+      "roiArea": 10692,
+      "full": 16,
+      "near": 16,
+      "outside": 0,
+      "rgba": "8f86890dbb8b731f891a28ecf5b989a384c6ca5e5b9c46096dc777913b88f277"
+    },
+    {
+      "frame": 54,
+      "rect": [
+        100,
+        74,
+        181,
+        204
+      ],
+      "roiArea": 10742,
+      "full": 86,
+      "near": 86,
+      "outside": 0,
+      "rgba": "82a55b9cec31ff157bd54cbb162942c755842a83ea0a5a787ef683e769f3c94e"
+    },
+    {
+      "frame": 66,
+      "rect": [
+        100,
+        59,
+        197,
+        203
+      ],
+      "roiArea": 14210,
+      "full": 309,
+      "near": 309,
+      "outside": 0,
+      "rgba": "d2f4a3fb35f48d38870d8f8c7a445591ce7d1bc6b062399a58e2c038c5cf1793"
+    },
+    {
+      "frame": 82,
+      "rect": [
+        101,
+        30,
+        211,
+        204
+      ],
+      "roiArea": 19425,
+      "full": 667,
+      "near": 667,
+      "outside": 0,
+      "rgba": "dd3a7c898969bddea5c1cdff1ab9f782224153e1c062f68bf62a7eaf74f2b791"
+    },
+    {
+      "frame": 83,
+      "rect": [
+        101,
+        31,
+        210,
+        204
+      ],
+      "roiArea": 19140,
+      "full": 665,
+      "near": 665,
+      "outside": 0,
+      "rgba": "d7ba577271622b1880a18f1dcfaa68997b75771d1ea155a4f709bb84e783213c"
+    },
+    {
+      "frame": 84,
+      "rect": [
+        100,
+        36,
+        208,
+        204
+      ],
+      "roiArea": 18421,
+      "full": 366,
+      "near": 366,
+      "outside": 0,
+      "rgba": "74f6704a5da874216ff7632328fa0a635f410a16a84081753c1b0b5fc7d212b7"
+    },
+    {
+      "frame": 85,
+      "rect": [
+        100,
+        43,
+        207,
+        204
+      ],
+      "roiArea": 17496,
+      "full": 870,
+      "near": 870,
+      "outside": 0,
+      "rgba": "9f72e13a7f1b380d293e19d7a88bc511a552cc38dc911ae0da538400c211d72b"
+    },
+    {
+      "frame": 98,
+      "rect": [
+        100,
+        66,
+        199,
+        203
+      ],
+      "roiArea": 13800,
+      "full": 1079,
+      "near": 423,
+      "outside": 656,
+      "rgba": "14e309d07bd1c7ff5252142ab6b04861ac0004144e098be92ca162961cd31bad"
+    },
+    {
+      "frame": 115,
+      "rect": [
+        100,
+        70,
+        197,
+        203
+      ],
+      "roiArea": 13132,
+      "full": 483,
+      "near": 483,
+      "outside": 0,
+      "rgba": "c981c907f04c72f8158e6c800eb36bfc0942103bed718250e9dde6988980f83d"
+    },
+    {
+      "frame": 118,
+      "rect": [
+        100,
+        71,
+        195,
+        205
+      ],
+      "roiArea": 12960,
+      "full": 0,
+      "near": 0,
+      "outside": 0,
+      "rgba": "4dc1ab69959db38c64a976944e1ec095b822e8e4c9edff803c727b65e81fb71c"
+    },
+    {
+      "frame": 124,
+      "rect": [
+        96,
+        75,
+        200,
+        203
+      ],
+      "roiArea": 13545,
+      "full": 286,
+      "near": 286,
+      "outside": 0,
+      "rgba": "c0d5f3163e108a19c878674de25159635af662233cb2725cd32b01b956b7900f"
+    },
+    {
+      "frame": 131,
+      "rect": [
+        100,
+        60,
+        195,
+        203
+      ],
+      "roiArea": 13824,
+      "full": 448,
+      "near": 88,
+      "outside": 360,
+      "rgba": "8395120a76657815ec0b97501a96995586d985f0a2edad991503b02fd7026180"
+    }
+  ],
+  "dynamics": [
+    {
+      "frame": 84,
+      "before": {
+        "full": 3011,
+        "near": 2690,
+        "outside": 321
+      },
+      "after": {
+        "full": 3278,
+        "near": 2911,
+        "outside": 367
+      }
+    }
+  ],
+  "mutations": [
+    {
+      "kind": "authored neighbour",
+      "frame": 85,
+      "pixelDelta": {
+        "full": 3278,
+        "near": 2911,
+        "outside": 367
+      },
+      "uniform": false,
+      "phase": true
+    },
+    {
+      "kind": "uniform only",
+      "frame": 16,
+      "pixelDelta": {
+        "full": 1482,
+        "near": 1099,
+        "outside": 383
+      },
+      "uniform": true,
+      "phase": false
+    },
+    {
+      "kind": "unseen",
+      "frame": 1,
+      "pixelDelta": {
+        "full": 1637,
+        "near": 1299,
+        "outside": 338
+      },
+      "uniform": false,
+      "phase": false
+    }
+  ],
+  "negativeRepeated": {
+    "full": 0,
+    "near": 0,
+    "outside": 0
+  },
+  "playback": {
+    "start": 72,
+    "end": 95,
+    "frames": 24,
+    "fps": 24,
+    "width": 292,
+    "height": 244,
+    "rgbaSequenceSha256": "d044da9f3bc6ccb85209249ba58566ca674b4dafb77cb8c2c505a622bbf0e523",
+    "videoSha256": "aa824d811ecaa81689ec8abe3ee7cf139d0ab646431db2286ca0bc1919758017"
+  },
+  "uniformArea": {
+    "frames": 9,
+    "withEffect": 6,
+    "full": 3002,
+    "near": 1986,
+    "outside": 1016,
+    "roiArea": 123238,
+    "canvasArea": 641232,
+    "completelyMissed": []
+  },
+  "phaseArea": {
+    "frames": 9,
+    "withEffect": 7,
+    "full": 2744,
+    "near": 2384,
+    "outside": 360,
+    "roiArea": 131186,
+    "canvasArea": 641232,
+    "completelyMissed": []
+  },
+  "renderedOriginalFrames": 39,
+  "renderedAblations": 16,
+  "computationMs": 7587,
+  "maxRssKiB": 436572
+}

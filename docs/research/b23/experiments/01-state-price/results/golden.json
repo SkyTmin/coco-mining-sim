@@ -1,0 +1,119 @@
+{
+  "revision": "60affec40c74f81e8ce886400ea3b07c0d8f5911",
+  "node": "v22.14.0",
+  "trackedChanges": [],
+  "results": [
+    {
+      "id": "astral_seer",
+      "clip": "idle",
+      "frame": 0,
+      "actual": "5623e556c7",
+      "expected": "5623e556c7"
+    },
+    {
+      "id": "astral_seer",
+      "clip": "walk",
+      "frame": 0,
+      "actual": "889d5c5fda",
+      "expected": "889d5c5fda"
+    },
+    {
+      "id": "pocket_magnet",
+      "clip": "idle",
+      "frame": 0,
+      "actual": "3418a927bb",
+      "expected": "3418a927bb"
+    },
+    {
+      "id": "pocket_magnet",
+      "clip": "walk",
+      "frame": 0,
+      "actual": "9df8d6c614",
+      "expected": "9df8d6c614"
+    },
+    {
+      "id": "eclipse_drake",
+      "clip": "idle",
+      "frame": 0,
+      "actual": "c48bf360b9",
+      "expected": "c48bf360b9"
+    },
+    {
+      "id": "eclipse_drake",
+      "clip": "walk",
+      "frame": 0,
+      "actual": "e4e1f80927",
+      "expected": "e4e1f80927"
+    },
+    {
+      "id": "ember_panda",
+      "clip": "idle",
+      "frame": 0,
+      "actual": "e53db2d9db",
+      "expected": "e53db2d9db"
+    },
+    {
+      "id": "ember_panda",
+      "clip": "walk",
+      "frame": 0,
+      "actual": "0394f4d77b",
+      "expected": "0394f4d77b"
+    },
+    {
+      "id": "bun_panda",
+      "clip": "idle",
+      "frame": 0,
+      "actual": "c3539a17d0",
+      "expected": "c3539a17d0"
+    },
+    {
+      "id": "bun_panda",
+      "clip": "walk",
+      "frame": 0,
+      "actual": "456200e589",
+      "expected": "456200e589"
+    },
+    {
+      "id": "crater_titan",
+      "clip": "idle",
+      "frame": 0,
+      "actual": "b09dd5209c",
+      "expected": "b09dd5209c"
+    },
+    {
+      "id": "crater_titan",
+      "clip": "walk",
+      "frame": 0,
+      "actual": "b36fd10d18",
+      "expected": "b36fd10d18"
+    },
+    {
+      "id": "kettle_crab",
+      "clip": "idle",
+      "frame": 0,
+      "actual": "d4d3a60da2",
+      "expected": "d4d3a60da2"
+    },
+    {
+      "id": "kettle_crab",
+      "clip": "walk",
+      "frame": 0,
+      "actual": "55a484aad5",
+      "expected": "55a484aad5"
+    },
+    {
+      "id": "moon_magician",
+      "clip": "idle",
+      "frame": 0,
+      "actual": "947949463b",
+      "expected": "947949463b"
+    },
+    {
+      "id": "moon_magician",
+      "clip": "walk",
+      "frame": 0,
+      "actual": "f6ab522b49",
+      "expected": "f6ab522b49"
+    }
+  ]
+}

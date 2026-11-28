@@ -1,0 +1,417 @@
+{
+  "revision": "d6ebb3145d47d6bed85b088ec30b0b2faa82da6f",
+  "posterSha256": "94ce941a9e4ef73f189be5445d82319b45c46c753b5c8b98fb57c65a24c9463d",
+  "eight": [
+    "astral_seer",
+    "pocket_magnet",
+    "eclipse_drake",
+    "ember_panda",
+    "bun_panda",
+    "crater_titan",
+    "kettle_crab",
+    "moon_magician"
+  ],
+  "cases": [
+    {
+      "n": 8,
+      "history": {
+        "all": [
+          {
+            "y": 0,
+            "count": 8,
+            "bytes": 1771704,
+            "updateMs": 6.7999999998137355,
+            "draws": 8,
+            "visibleCount": 8,
+            "visibleDigest": "6e6c8c52f208a83fc1a85d9eea93fdf469710a27567f4eddc3ed68fbd0a1e29f"
+          },
+          {
+            "y": 0,
+            "count": 8,
+            "bytes": 1771704,
+            "updateMs": 0,
+            "draws": 8,
+            "visibleCount": 8,
+            "visibleDigest": "6e6c8c52f208a83fc1a85d9eea93fdf469710a27567f4eddc3ed68fbd0a1e29f"
+          },
+          {
+            "y": 0,
+            "count": 8,
+            "bytes": 1771704,
+            "updateMs": 0.20000000018626451,
+            "draws": 8,
+            "visibleCount": 8,
+            "visibleDigest": "6e6c8c52f208a83fc1a85d9eea93fdf469710a27567f4eddc3ed68fbd0a1e29f"
+          },
+          {
+            "y": 0,
+            "count": 8,
+            "bytes": 1771704,
+            "updateMs": 0.10000000009313226,
+            "draws": 8,
+            "visibleCount": 8,
+            "visibleDigest": "6e6c8c52f208a83fc1a85d9eea93fdf469710a27567f4eddc3ed68fbd0a1e29f"
+          },
+          {
+            "y": 0,
+            "count": 8,
+            "bytes": 1771704,
+            "updateMs": 0.09999999962747097,
+            "draws": 8,
+            "visibleCount": 8,
+            "visibleDigest": "6e6c8c52f208a83fc1a85d9eea93fdf469710a27567f4eddc3ed68fbd0a1e29f"
+          }
+        ],
+        "window": [
+          {
+            "y": 0,
+            "count": 8,
+            "bytes": 1771704,
+            "updateMs": 12.299999999813735,
+            "draws": 8,
+            "visibleCount": 8,
+            "visibleDigest": "6e6c8c52f208a83fc1a85d9eea93fdf469710a27567f4eddc3ed68fbd0a1e29f"
+          },
+          {
+            "y": 0,
+            "count": 8,
+            "bytes": 1771704,
+            "updateMs": 0.19999999972060323,
+            "draws": 8,
+            "visibleCount": 8,
+            "visibleDigest": "6e6c8c52f208a83fc1a85d9eea93fdf469710a27567f4eddc3ed68fbd0a1e29f"
+          },
+          {
+            "y": 0,
+            "count": 8,
+            "bytes": 1771704,
+            "updateMs": 0,
+            "draws": 8,
+            "visibleCount": 8,
+            "visibleDigest": "6e6c8c52f208a83fc1a85d9eea93fdf469710a27567f4eddc3ed68fbd0a1e29f"
+          },
+          {
+            "y": 0,
+            "count": 8,
+            "bytes": 1771704,
+            "updateMs": 0,
+            "draws": 8,
+            "visibleCount": 8,
+            "visibleDigest": "6e6c8c52f208a83fc1a85d9eea93fdf469710a27567f4eddc3ed68fbd0a1e29f"
+          },
+          {
+            "y": 0,
+            "count": 8,
+            "bytes": 1771704,
+            "updateMs": 0,
+            "draws": 8,
+            "visibleCount": 8,
+            "visibleDigest": "6e6c8c52f208a83fc1a85d9eea93fdf469710a27567f4eddc3ed68fbd0a1e29f"
+          }
+        ]
+      },
+      "visibleComparisons": 40
+    },
+    {
+      "n": 41,
+      "history": {
+        "all": [
+          {
+            "y": 0,
+            "count": 41,
+            "bytes": 8693336,
+            "updateMs": 49.10000000009313,
+            "draws": 41,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          },
+          {
+            "y": 1157,
+            "count": 41,
+            "bytes": 8693336,
+            "updateMs": 0.09999999962747097,
+            "draws": 41,
+            "visibleCount": 14,
+            "visibleDigest": "b9c13b57ece499d19f659b33001d0b7357fdb732943cd7101746826572856561"
+          },
+          {
+            "y": 2314,
+            "count": 41,
+            "bytes": 8693336,
+            "updateMs": 0.10000000009313226,
+            "draws": 41,
+            "visibleCount": 11,
+            "visibleDigest": "8eada5509f764a69f4330858f0b02ca443974b77f20c0eb967a3f3140f1263b9"
+          },
+          {
+            "y": 579,
+            "count": 41,
+            "bytes": 8693336,
+            "updateMs": 0.2999999998137355,
+            "draws": 41,
+            "visibleCount": 14,
+            "visibleDigest": "d350fd32fdbf7b01186377e13540eecdf5f5c07613f469e240e61468ec5d115f"
+          },
+          {
+            "y": 0,
+            "count": 41,
+            "bytes": 8693336,
+            "updateMs": 0.19999999972060323,
+            "draws": 41,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          }
+        ],
+        "window": [
+          {
+            "y": 0,
+            "count": 14,
+            "bytes": 3310016,
+            "updateMs": 15.899999999906868,
+            "draws": 14,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          },
+          {
+            "y": 1157,
+            "count": 18,
+            "bytes": 3164648,
+            "updateMs": 20,
+            "draws": 30,
+            "visibleCount": 14,
+            "visibleDigest": "b9c13b57ece499d19f659b33001d0b7357fdb732943cd7101746826572856561"
+          },
+          {
+            "y": 2314,
+            "count": 13,
+            "bytes": 3107112,
+            "updateMs": 10.399999999906868,
+            "draws": 41,
+            "visibleCount": 11,
+            "visibleDigest": "8eada5509f764a69f4330858f0b02ca443974b77f20c0eb967a3f3140f1263b9"
+          },
+          {
+            "y": 579,
+            "count": 18,
+            "bytes": 3430760,
+            "updateMs": 41,
+            "draws": 59,
+            "visibleCount": 14,
+            "visibleDigest": "d350fd32fdbf7b01186377e13540eecdf5f5c07613f469e240e61468ec5d115f"
+          },
+          {
+            "y": 0,
+            "count": 14,
+            "bytes": 3310016,
+            "updateMs": 8.200000000186265,
+            "draws": 63,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          }
+        ]
+      },
+      "visibleComparisons": 63
+    },
+    {
+      "n": 100,
+      "history": {
+        "all": [
+          {
+            "y": 0,
+            "count": 100,
+            "bytes": 21380736,
+            "updateMs": 127.20000000018626,
+            "draws": 100,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          },
+          {
+            "y": 3332,
+            "count": 100,
+            "bytes": 21380736,
+            "updateMs": 0.20000000018626451,
+            "draws": 100,
+            "visibleCount": 12,
+            "visibleDigest": "be64d7c22af69e1fb78adcfacfcfdd3a33ad0145f6ac1fbd1d465758bfd5cdc3"
+          },
+          {
+            "y": 6664,
+            "count": 100,
+            "bytes": 21380736,
+            "updateMs": 0.30000000074505806,
+            "draws": 100,
+            "visibleCount": 12,
+            "visibleDigest": "66ab32db6c198b6e599566ea2eaec5fa36af058ec795289d8deb0e0123f7cb5d"
+          },
+          {
+            "y": 1666,
+            "count": 100,
+            "bytes": 21380736,
+            "updateMs": 0.2999999998137355,
+            "draws": 100,
+            "visibleCount": 12,
+            "visibleDigest": "51efdb38ba49dcd70599fcda557b0d07ac91798546ee8e7d4f39d3ec19ab9412"
+          },
+          {
+            "y": 0,
+            "count": 100,
+            "bytes": 21380736,
+            "updateMs": 0.30000000074505806,
+            "draws": 100,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          }
+        ],
+        "window": [
+          {
+            "y": 0,
+            "count": 14,
+            "bytes": 3310016,
+            "updateMs": 19.200000000186265,
+            "draws": 14,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          },
+          {
+            "y": 3332,
+            "count": 16,
+            "bytes": 3652928,
+            "updateMs": 25.09999999962747,
+            "draws": 30,
+            "visibleCount": 12,
+            "visibleDigest": "be64d7c22af69e1fb78adcfacfcfdd3a33ad0145f6ac1fbd1d465758bfd5cdc3"
+          },
+          {
+            "y": 6664,
+            "count": 14,
+            "bytes": 3025256,
+            "updateMs": 24,
+            "draws": 44,
+            "visibleCount": 12,
+            "visibleDigest": "66ab32db6c198b6e599566ea2eaec5fa36af058ec795289d8deb0e0123f7cb5d"
+          },
+          {
+            "y": 1666,
+            "count": 16,
+            "bytes": 3303936,
+            "updateMs": 17.299999999813735,
+            "draws": 60,
+            "visibleCount": 12,
+            "visibleDigest": "51efdb38ba49dcd70599fcda557b0d07ac91798546ee8e7d4f39d3ec19ab9412"
+          },
+          {
+            "y": 0,
+            "count": 14,
+            "bytes": 3310016,
+            "updateMs": 13.5,
+            "draws": 74,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          }
+        ]
+      },
+      "visibleComparisons": 60
+    },
+    {
+      "n": 300,
+      "history": {
+        "all": [
+          {
+            "y": 0,
+            "count": 300,
+            "bytes": 63983552,
+            "updateMs": 498.29999999981374,
+            "draws": 300,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          },
+          {
+            "y": 10832,
+            "count": 300,
+            "bytes": 63983552,
+            "updateMs": 1.7999999998137355,
+            "draws": 300,
+            "visibleCount": 12,
+            "visibleDigest": "938aca4f65a5608267e4d0dadf37923cb1f180d6237e294a46b813897bd5b62f"
+          },
+          {
+            "y": 21664,
+            "count": 300,
+            "bytes": 63983552,
+            "updateMs": 0.900000000372529,
+            "draws": 300,
+            "visibleCount": 12,
+            "visibleDigest": "0605aa859a6feb31db50a5cc23077359ad4de601d6d8ed2ffe63860640e0708e"
+          },
+          {
+            "y": 5416,
+            "count": 300,
+            "bytes": 63983552,
+            "updateMs": 0.7000000001862645,
+            "draws": 300,
+            "visibleCount": 12,
+            "visibleDigest": "0cace45e70560be52277d55d51539799f065bdbc4fef478406157035af5240f1"
+          },
+          {
+            "y": 0,
+            "count": 300,
+            "bytes": 63983552,
+            "updateMs": 8.5,
+            "draws": 300,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          }
+        ],
+        "window": [
+          {
+            "y": 0,
+            "count": 14,
+            "bytes": 3310016,
+            "updateMs": 38.90000000037253,
+            "draws": 14,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          },
+          {
+            "y": 10832,
+            "count": 16,
+            "bytes": 3156672,
+            "updateMs": 41,
+            "draws": 30,
+            "visibleCount": 12,
+            "visibleDigest": "938aca4f65a5608267e4d0dadf37923cb1f180d6237e294a46b813897bd5b62f"
+          },
+          {
+            "y": 21664,
+            "count": 14,
+            "bytes": 3366408,
+            "updateMs": 45.60000000055879,
+            "draws": 44,
+            "visibleCount": 12,
+            "visibleDigest": "0605aa859a6feb31db50a5cc23077359ad4de601d6d8ed2ffe63860640e0708e"
+          },
+          {
+            "y": 5416,
+            "count": 16,
+            "bytes": 3839712,
+            "updateMs": 20.799999999813735,
+            "draws": 60,
+            "visibleCount": 12,
+            "visibleDigest": "0cace45e70560be52277d55d51539799f065bdbc4fef478406157035af5240f1"
+          },
+          {
+            "y": 0,
+            "count": 14,
+            "bytes": 3310016,
+            "updateMs": 21.399999999441206,
+            "draws": 74,
+            "visibleCount": 12,
+            "visibleDigest": "71dfb9948a0e8112b1a28dacb59ca720090d855b5029a90b8b4fa5eccf9093bb"
+          }
+        ]
+      },
+      "visibleComparisons": 60
+    }
+  ],
+  "browser": "156.0.8078.79"
+}

@@ -1,0 +1,139 @@
+{
+  "archive": "native-eyes-media.zip",
+  "bytes": 35232728,
+  "sha256": "80d2e8fe1aea8db93c787cb59cf244ad88129bd1ec2a26472bb8dace19a6e06d",
+  "items": {
+    "astral_seer-adjacent.png": {
+      "bytes": 411133,
+      "sha256": "26505e71b8e0872efa20187f83434d23675587bcaf8d7b2cce3f610b7e140826"
+    },
+    "astral_seer-native.mkv": {
+      "bytes": 12403780,
+      "sha256": "13f2e47f81cb5e1661be056d9877ebd853ae57171a106830ae1a8a6a348cee12"
+    },
+    "astral_seer-phases.png": {
+      "bytes": 317764,
+      "sha256": "b1bedb94bdb7d5a4e86e01f97dc0f28442c866f71c1cc0aa994f7bd99dd7b639"
+    },
+    "astral_seer-uniform.png": {
+      "bytes": 327453,
+      "sha256": "9f31052f3bd90dc85a12166ada150f4e68e46fe4cf46e1674e5e60a02e83817f"
+    },
+    "bun_panda-adjacent.png": {
+      "bytes": 115482,
+      "sha256": "c7d9a5fe23fd5665c8fb02962ccfcd9f0c92870d730e83225a08f70cef1d2b14"
+    },
+    "bun_panda-native.mkv": {
+      "bytes": 4973399,
+      "sha256": "9c675a4a6ad520e55d1cc8b151cd309a3c57c54938d8fadcb978cad9734b5466"
+    },
+    "bun_panda-phases.png": {
+      "bytes": 361125,
+      "sha256": "06f65967c717ef52d3160382249257ca932b21feecfcfe049ccbcd866f94c235"
+    },
+    "bun_panda-uniform.png": {
+      "bytes": 356338,
+      "sha256": "080ec74d0d04841fd9790523937e32e06f9941ead27e5cb26f54bdb948bb1034"
+    },
+    "crater_titan-adjacent.png": {
+      "bytes": 64285,
+      "sha256": "f0c36bc9ada71a12521a3e7ffc5a34c9eebe09ab7c9f6a1c8e135a69513ed2c6"
+    },
+    "crater_titan-native.mkv": {
+      "bytes": 1325528,
+      "sha256": "d48771463dfa8f76fd468195652dc848bc02650001a2eb456992ead94a73f846"
+    },
+    "crater_titan-phases.png": {
+      "bytes": 209307,
+      "sha256": "6a968c022a70fb77ee23c59e3cd2f18dbae696d47d1d8d931ec71fe291fbb9e5"
+    },
+    "crater_titan-uniform.png": {
+      "bytes": 222006,
+      "sha256": "c9ebce5c63d2a804d2a7bdc622c8a919850852f48cb59829cd79db8ada1d8c2a"
+    },
+    "eclipse_drake-adjacent.png": {
+      "bytes": 237642,
+      "sha256": "0eb802934d166d6f4673736e2c4b861b8cd15d72dece30d9304aacabf32a82b5"
+    },
+    "eclipse_drake-native.mkv": {
+      "bytes": 5848690,
+      "sha256": "d36abb941a184594b14defb51077ebb0262e4802b8f3cc602f27138a00bf94ff"
+    },
+    "eclipse_drake-phases.png": {
+      "bytes": 663966,
+      "sha256": "2c187821c20d12b0cbbaa1275fe7736524afa61566822e7cca8ab520f7740b5d"
+    },
+    "eclipse_drake-uniform.png": {
+      "bytes": 571183,
+      "sha256": "a5a4c2c7169962386bb39052fdcbfd6629ee4e5089154748f22d9d342c939189"
+    },
+    "ember_panda-adjacent.png": {
+      "bytes": 54157,
+      "sha256": "f2d388dbd8a2d11400be1139ebeae9c81fdfc21bdc0b83ac7a124ce34a6872de"
+    },
+    "ember_panda-native.mkv": {
+      "bytes": 1447755,
+      "sha256": "85dc87e1e8899ece9876516cb5cf6de54b877ea2a892cdf331ff2dd2bc0c6205"
+    },
+    "ember_panda-phases.png": {
+      "bytes": 166064,
+      "sha256": "6dab89f2cf4d96aae4a2cdeea68cc90319aa281c09b110429c31e9a080a238d2"
+    },
+    "ember_panda-uniform.png": {
+      "bytes": 164788,
+      "sha256": "5ee15fc2f93c979c367ded587bf86614b54fdb058ac7367698748ec050f9d8c5"
+    },
+    "kettle_crab-adjacent.png": {
+      "bytes": 33272,
+      "sha256": "8f7df83adb2a5756bb05ddb68f2ccfd939385193bcc5277980d9d07bd8e5e016"
+    },
+    "kettle_crab-native.mkv": {
+      "bytes": 834251,
+      "sha256": "f72e8d4bbc2c4c6daaf4c92338380df22f3dad750a6318963fbe83313b66d117"
+    },
+    "kettle_crab-phases.png": {
+      "bytes": 101097,
+      "sha256": "9d42e179042601555a8f9deed973fb05b7b2e6be609afafc7268b0d81d2a3c3b"
+    },
+    "kettle_crab-uniform.png": {
+      "bytes": 101682,
+      "sha256": "e8e3394e4ff89a6e9ac6a0e310ec3414540d834b2f354e847b7b2344319bc4ea"
+    },
+    "moon_magician-adjacent.png": {
+      "bytes": 85457,
+      "sha256": "d3cc35b4b1e2d651e7e7159624679c056c0d9dfbb292f9dd2bf1e8bff0af521e"
+    },
+    "moon_magician-native.mkv": {
+      "bytes": 1981495,
+      "sha256": "aa824d811ecaa81689ec8abe3ee7cf139d0ab646431db2286ca0bc1919758017"
+    },
+    "moon_magician-phases.png": {
+      "bytes": 266366,
+      "sha256": "02a3928973d4390f940f14413234fd76905fcb6441ccba601b2032d034027997"
+    },
+    "moon_magician-uniform.png": {
+      "bytes": 272764,
+      "sha256": "828131ffe0a6123e04393635058ed4c4c2d74b7aa48cfbb74f782ae2031b4359"
+    },
+    "negative-intended-exit.png": {
+      "bytes": 29739,
+      "sha256": "b736a09b4259950c231dcf7f8e8711ef72648cf0d18c90dad2e4774611ecdd04"
+    },
+    "pocket_magnet-adjacent.png": {
+      "bytes": 39879,
+      "sha256": "7fece8e08f541c6ac269e756614c5ff3256f7ee093c9cc672d27c63d41f9ec50"
+    },
+    "pocket_magnet-native.mkv": {
+      "bytes": 937562,
+      "sha256": "30e4cd95dd15ee2ece3b095e6522a5bb30549bbdb848635d10e08d849c741300"
+    },
+    "pocket_magnet-phases.png": {
+      "bytes": 146340,
+      "sha256": "49f0a3316059a9480adfae90ad6497651882083a0689e24c35c6272af3a6b359"
+    },
+    "pocket_magnet-uniform.png": {
+      "bytes": 152226,
+      "sha256": "ea2b7eb882f78823cbceed7174e07936f9dc0513775cc70ed34b735e74b174ac"
+    }
+  }
+}

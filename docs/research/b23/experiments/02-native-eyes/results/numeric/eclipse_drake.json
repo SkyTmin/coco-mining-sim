@@ -1,0 +1,349 @@
+{
+  "key": "C",
+  "id": "eclipse_drake",
+  "anim": "trick",
+  "w": 438,
+  "h": 366,
+  "total": 264,
+  "side": 0,
+  "variant": "normal",
+  "uniform": [
+    0,
+    33,
+    66,
+    99,
+    132,
+    164,
+    197,
+    230,
+    263
+  ],
+  "phases": [
+    0,
+    20,
+    40,
+    61,
+    62,
+    63,
+    88,
+    112,
+    263
+  ],
+  "focus": 62,
+  "source": "c/eclipse_drake-poses.ts:87",
+  "effects": [
+    {
+      "frame": 0,
+      "rect": [
+        68,
+        132,
+        325,
+        323
+      ],
+      "roiArea": 49536,
+      "full": 4092,
+      "near": 4092,
+      "outside": 0,
+      "rgba": "0e7c62bc8844121a9d9f5a1510f4c942f5882efa3e0469d993567cb0c5ef1bda"
+    },
+    {
+      "frame": 20,
+      "rect": [
+        86,
+        21,
+        294,
+        301
+      ],
+      "roiArea": 58729,
+      "full": 11722,
+      "near": 8568,
+      "outside": 3154,
+      "rgba": "02f149d6d4c0413beba3c468e2b74fb37032e6a2e1f8553850aa973f44bafc60"
+    },
+    {
+      "frame": 33,
+      "rect": [
+        89,
+        21,
+        293,
+        301
+      ],
+      "roiArea": 57605,
+      "full": 11546,
+      "near": 8163,
+      "outside": 3383,
+      "rgba": "cc181682d4665d665db8ed6331dd3eb33b1a984e4aa6954e8694012ad9150d49"
+    },
+    {
+      "frame": 40,
+      "rect": [
+        86,
+        21,
+        298,
+        301
+      ],
+      "roiArea": 59853,
+      "full": 10461,
+      "near": 6134,
+      "outside": 4327,
+      "rgba": "30680b3709911fb0bdcaea357a1e8b17f8bd80c9b66a0f89bc8f6baf22fe96c9"
+    },
+    {
+      "frame": 61,
+      "rect": [
+        67,
+        151,
+        311,
+        322
+      ],
+      "roiArea": 42140,
+      "full": 6584,
+      "near": 6584,
+      "outside": 0,
+      "rgba": "aedf781c41dc83926f9726d896cc2192bdb9e9acdb076c66d9880e5b4b4dd4da"
+    },
+    {
+      "frame": 62,
+      "rect": [
+        65,
+        160,
+        325,
+        321
+      ],
+      "roiArea": 42282,
+      "full": 115071,
+      "near": 42175,
+      "outside": 72896,
+      "rgba": "e1436024de68d0298e96d2aaa3545d5beaf1c10f377540ad27494ae0beee4198"
+    },
+    {
+      "frame": 63,
+      "rect": [
+        65,
+        157,
+        321,
+        322
+      ],
+      "roiArea": 42662,
+      "full": 115071,
+      "near": 42537,
+      "outside": 72534,
+      "rgba": "02f7a6bfc33756dbe6012c3496d3a0d9376e74b9e426541c32d764990d7c1cb8"
+    },
+    {
+      "frame": 66,
+      "rect": [
+        68,
+        151,
+        323,
+        323
+      ],
+      "roiArea": 44288,
+      "full": 5961,
+      "near": 5961,
+      "outside": 0,
+      "rgba": "569822f2f2296cb70c399a0a49c269a05d2583836688bd204ee0b2403e67e395"
+    },
+    {
+      "frame": 88,
+      "rect": [
+        65,
+        158,
+        320,
+        323
+      ],
+      "roiArea": 42496,
+      "full": 6736,
+      "near": 6353,
+      "outside": 383,
+      "rgba": "47708d46aca562dfaaae02590819b8de70f5cb9414e7a319e0af3a96179241e7"
+    },
+    {
+      "frame": 99,
+      "rect": [
+        68,
+        146,
+        333,
+        323
+      ],
+      "roiArea": 47348,
+      "full": 9070,
+      "near": 7213,
+      "outside": 1857,
+      "rgba": "3308babf3092fcf50d75ddb1c0a0e265c6e2aaf9841f5333702abf29f617609d"
+    },
+    {
+      "frame": 112,
+      "rect": [
+        69,
+        132,
+        312,
+        323
+      ],
+      "roiArea": 46848,
+      "full": 115071,
+      "near": 46796,
+      "outside": 68275,
+      "rgba": "83ec9b5a529582e7ff87690dd6c2ba59bf6607561de80b712f095fc32d8d1585"
+    },
+    {
+      "frame": 132,
+      "rect": [
+        43,
+        134,
+        294,
+        323
+      ],
+      "roiArea": 47880,
+      "full": 7960,
+      "near": 5574,
+      "outside": 2386,
+      "rgba": "31ec3882480f6b8ca3a44df32df7315ea9aa2a5eff505abe5a327ee6ce45ce84"
+    },
+    {
+      "frame": 164,
+      "rect": [
+        32,
+        134,
+        292,
+        323
+      ],
+      "roiArea": 49590,
+      "full": 7944,
+      "near": 5467,
+      "outside": 2477,
+      "rgba": "64087c246d27448797bd021c5c79b5dffdbdd1c1923d11a5902f5a2c1dd931a6"
+    },
+    {
+      "frame": 197,
+      "rect": [
+        48,
+        111,
+        346,
+        307
+      ],
+      "roiArea": 58903,
+      "full": 6529,
+      "near": 5995,
+      "outside": 534,
+      "rgba": "d2859013b03e21a7089e8aaed4ba4cce7685a06502950452fe420d4d8823afd5"
+    },
+    {
+      "frame": 230,
+      "rect": [
+        86,
+        21,
+        294,
+        301
+      ],
+      "roiArea": 58729,
+      "full": 6059,
+      "near": 4285,
+      "outside": 1774,
+      "rgba": "ec717a50c9cb4587d407f21310e550020a85cc8b429b0b9ec05ff619e30c0e75"
+    },
+    {
+      "frame": 263,
+      "rect": [
+        68,
+        132,
+        325,
+        323
+      ],
+      "roiArea": 49536,
+      "full": 4091,
+      "near": 4091,
+      "outside": 0,
+      "rgba": "cbd154ae419c0ddd8363b562d115e9be38a81e441ea905831dc84c11d9034cde"
+    }
+  ],
+  "dynamics": [
+    {
+      "frame": 62,
+      "before": {
+        "full": 115330,
+        "near": 42175,
+        "outside": 73155
+      },
+      "after": {
+        "full": 115240,
+        "near": 42446,
+        "outside": 72794
+      }
+    }
+  ],
+  "mutations": [
+    {
+      "kind": "authored neighbour",
+      "frame": 63,
+      "pixelDelta": {
+        "full": 115240,
+        "near": 42446,
+        "outside": 72794
+      },
+      "uniform": false,
+      "phase": true
+    },
+    {
+      "kind": "uniform only",
+      "frame": 33,
+      "pixelDelta": {
+        "full": 16980,
+        "near": 12877,
+        "outside": 4103
+      },
+      "uniform": true,
+      "phase": false
+    },
+    {
+      "kind": "unseen",
+      "frame": 1,
+      "pixelDelta": {
+        "full": 5892,
+        "near": 5082,
+        "outside": 810
+      },
+      "uniform": false,
+      "phase": false
+    }
+  ],
+  "negativeRepeated": {
+    "full": 0,
+    "near": 0,
+    "outside": 0
+  },
+  "playback": {
+    "start": 50,
+    "end": 73,
+    "frames": 24,
+    "fps": 24,
+    "width": 438,
+    "height": 366,
+    "rgbaSequenceSha256": "bccc3290f3631602a0e8baca246236f14fa33825051c2c7631dbebc13e8d47de",
+    "videoSha256": "d36abb941a184594b14defb51077ebb0262e4802b8f3cc602f27138a00bf94ff"
+  },
+  "uniformArea": {
+    "frames": 9,
+    "withEffect": 9,
+    "full": 63252,
+    "near": 50841,
+    "outside": 12411,
+    "roiArea": 463415,
+    "canvasArea": 1442772,
+    "completelyMissed": []
+  },
+  "phaseArea": {
+    "frames": 9,
+    "withEffect": 9,
+    "full": 388899,
+    "near": 167330,
+    "outside": 221569,
+    "roiArea": 434082,
+    "canvasArea": 1442772,
+    "completelyMissed": []
+  },
+  "renderedOriginalFrames": 39,
+  "renderedAblations": 16,
+  "computationMs": 14603,
+  "maxRssKiB": 601788
+}

@@ -1,0 +1,70 @@
+name: Б25 — родные пиксельные кадры Ф3
+on:
+  push:
+    branches: [chatgpt/b25-research]
+    paths:
+      - '.github/workflows/b25-draft-experiments.yml'
+permissions:
+  contents: write
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.22.3'
+      - name: Render original material and validate decoded bytes
+        shell: bash
+        run: |
+          set -eu
+          code=b2ff6123576c7c14b97ff30534f3c31f1ceddc8b
+          base=d6ebb3145d47d6bed85b088ec30b0b2faa82da6f
+          study=docs/research/b23/experiments/02-native-eyes
+          dest="$RUNNER_TEMP/eye-evidence"
+          git worktree add --detach "$RUNNER_TEMP/exp" "$code"
+          git worktree add --detach "$RUNNER_TEMP/frozen" "$base"
+          npm ci --prefix "$RUNNER_TEMP/frozen/tools/creatures" --no-audit --no-fund
+          command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y ffmpeg; }
+          cd "$RUNNER_TEMP/frozen/tools/creatures"
+          node --import tsx "$RUNNER_TEMP/exp/$study/src/run.mjs" "$dest"
+          node --import tsx "$GITHUB_WORKSPACE/docs/research/b23/temporal-audit/see.mjs" "$dest/temporal"
+          python3 - "$dest" "$GITHUB_WORKSPACE/$study/results/numeric/summary.json" <<'PY'
+          import json, sys
+          from pathlib import Path
+          dest=Path(sys.argv[1])
+          expected=json.loads(Path(sys.argv[2]).read_text())
+          actual=json.loads((dest/'summary.json').read_text())
+          def proof(study):
+              return sorted((r['id'],r['clip'],r['playback']['frames'],r['playback']['rgbaSequenceSha256']) for r in study['records'])
+          assert len(actual['records'])==8 and proof(expected)==proof(actual)
+          assert sum(r['playback']['frames'] for r in actual['records'])==300
+          PY
+          expbase="$RUNNER_TEMP/exp/docs/research/b23/experiments"
+          python3 -m venv "$RUNNER_TEMP/proof-env"
+          py="$RUNNER_TEMP/proof-env/bin/python"
+          "$py" -m pip install numpy==2.3.5 Pillow==13.0.0 playwright==1.62.0
+          "$py" "$expbase/07-browser-state/src/run.py" --repo "$GITHUB_WORKSPACE" --state-src "$expbase/01-state-price/src" --chromium "$(command -v google-chrome)" --results "$dest/browser-state/results.json" --images "$dest/browser-state/images"
+          python3 - "$dest/browser-state/results.json" "$GITHUB_WORKSPACE/docs/research/b23/experiments/07-browser-state/results/browser.json" <<'PYDATA'
+          import json, sys
+          from pathlib import Path
+          def pixels(path):
+              comp=json.loads(Path(path).read_text())['comparisons']
+              return {name:(v['count'],v['charge'],v['trace'],v['outside']) for name,v in comp.items()}
+          assert pixels(sys.argv[1])==pixels(sys.argv[2])
+          PYDATA
+          cd "$dest"
+          zip -q -r "$RUNNER_TEMP/b23-f3-native-${GITHUB_SHA:0:7}.zip" .
+      - name: Attach verified archive to the existing draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          name="$RUNNER_TEMP/b23-f3-native-${GITHUB_SHA:0:7}.zip"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/461736899" --jq '[.draft,.tag_name]|@tsv')" = "$(printf 'true\tb25-research-evidence')"
+          if gh api "repos/$GITHUB_REPOSITORY/releases/461736899/assets?per_page=100" --jq '.[].name' | grep -Fxq "$(basename "$name")"; then exit 0; fi
+          gh release upload b25-research-evidence "$name"

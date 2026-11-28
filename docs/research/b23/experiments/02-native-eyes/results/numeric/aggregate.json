@@ -1,0 +1,23 @@
+{
+  "fxObservations": 127,
+  "full": 733628,
+  "near": 263645,
+  "outside": 469983,
+  "controls": {
+    "authored neighbour": {
+      "eligible": 8,
+      "uniform": 0,
+      "phase": 8
+    },
+    "uniform only": {
+      "eligible": 8,
+      "uniform": 8,
+      "phase": 0
+    },
+    "unseen": {
+      "eligible": 8,
+      "uniform": 0,
+      "phase": 0
+    }
+  }
+}

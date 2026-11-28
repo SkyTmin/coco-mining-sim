@@ -1,0 +1,94 @@
+[
+  {
+    "label": "omitted-clips-means-all",
+    "ok": true,
+    "calls": 1,
+    "issues": [],
+    "rows": [
+      {
+        "id": "a",
+        "clip": "idle",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "label": "explicit-empty-string",
+    "ok": false,
+    "calls": 0,
+    "issues": [
+      {
+        "kind": "empty-clip-name",
+        "id": "a"
+      }
+    ],
+    "rows": []
+  },
+  {
+    "label": "empty-set-of-paintings",
+    "ok": false,
+    "calls": 0,
+    "issues": [
+      {
+        "kind": "empty-painting-set"
+      }
+    ],
+    "rows": []
+  },
+  {
+    "label": "empty-painting-alone",
+    "ok": false,
+    "calls": 0,
+    "issues": [
+      {
+        "kind": "empty-clip-set"
+      }
+    ],
+    "rows": []
+  },
+  {
+    "label": "empty-painting-with-valid-neighbour",
+    "ok": true,
+    "calls": 1,
+    "issues": [],
+    "rows": [
+      {
+        "id": "a",
+        "clip": "idle",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "label": "reordered-with-duplicate",
+    "ok": true,
+    "calls": 1,
+    "issues": [],
+    "rows": [
+      {
+        "id": "a",
+        "clip": "idle",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "label": "typo-and-valid",
+    "ok": false,
+    "calls": 0,
+    "issues": [
+      {
+        "kind": "unknown-clip",
+        "id": "a",
+        "clip": "typo"
+      }
+    ],
+    "rows": [
+      {
+        "id": "a",
+        "clip": "idle",
+        "count": 1
+      }
+    ]
+  }
+]

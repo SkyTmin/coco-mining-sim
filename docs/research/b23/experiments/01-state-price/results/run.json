@@ -1,0 +1,463 @@
+{
+  "revision": "60affec40c74f81e8ce886400ea3b07c0d8f5911",
+  "node": "v22.14.0",
+  "painting": "pocket_magnet",
+  "seed": 7319,
+  "binding": {
+    "clip": "trick_b",
+    "frame": 111,
+    "sourceRowSHA256": "1fdc5d3f80f63865f09d50e41dbc8274f5b6845644a0f12e7985d774ea35535a"
+  },
+  "native": {
+    "beforeArc": [
+      [
+        "trick",
+        1
+      ],
+      [
+        "idle",
+        166
+      ],
+      [
+        "prepare_walk",
+        167
+      ],
+      [
+        "turn",
+        183
+      ],
+      [
+        "walk_nw",
+        191
+      ]
+    ],
+    "impact": {
+      "anim": "trick_b",
+      "frame": 111,
+      "at": [
+        0.49375,
+        0.734375
+      ],
+      "direction": "se",
+      "elapsed": 4.625,
+      "form": "f1",
+      "tick": 504
+    },
+    "nextClip": {
+      "anim": "idle",
+      "frame": 0,
+      "at": [
+        0.49375,
+        0.734375
+      ],
+      "direction": "se",
+      "elapsed": 0,
+      "form": "f1",
+      "tick": 573
+    }
+  },
+  "preflight": [
+    {
+      "available": 0,
+      "status": "insufficient",
+      "chargeBeforeContact": 0
+    },
+    {
+      "available": 1,
+      "status": "eligible",
+      "chargeBeforeContact": 1
+    },
+    {
+      "available": 3,
+      "status": "eligible",
+      "chargeBeforeContact": 3
+    }
+  ],
+  "outcomes": [
+    {
+      "label": "native impact",
+      "status": "applied",
+      "before": 1,
+      "after": 0,
+      "marks": [
+        "star-socket"
+      ]
+    },
+    {
+      "label": "same occurrence drawn again",
+      "status": "duplicate",
+      "before": 0,
+      "after": 0,
+      "marks": [
+        "star-socket"
+      ]
+    },
+    {
+      "label": "different occurrence, empty resource",
+      "status": "insufficient",
+      "before": 0,
+      "after": 0,
+      "marks": [
+        "star-socket"
+      ]
+    },
+    {
+      "label": "empty resource at start",
+      "status": "insufficient",
+      "before": 0,
+      "after": 0,
+      "marks": []
+    },
+    {
+      "label": "forged negative price",
+      "status": "invalid",
+      "before": 1,
+      "after": 1,
+      "marks": []
+    },
+    {
+      "label": "unknown action",
+      "status": "invalid",
+      "before": 1,
+      "after": 1,
+      "marks": []
+    },
+    {
+      "label": "fractional occurrence",
+      "status": "invalid",
+      "before": 1,
+      "after": 1,
+      "marks": []
+    },
+    {
+      "label": "one tick before actual hit",
+      "status": "invalid",
+      "before": 1,
+      "after": 1,
+      "marks": []
+    },
+    {
+      "label": "event on a different actual clip",
+      "status": "invalid",
+      "before": 1,
+      "after": 1,
+      "marks": []
+    },
+    {
+      "label": "already changed landmark, funds still sufficient",
+      "status": "already-changed",
+      "before": 2,
+      "after": 2,
+      "marks": [
+        "star-socket"
+      ]
+    },
+    {
+      "label": "repeat after save and reopen",
+      "status": "duplicate",
+      "before": 0,
+      "after": 0,
+      "marks": [
+        "star-socket"
+      ]
+    }
+  ],
+  "invalidData": [
+    "invalid save version",
+    "foreign painting save",
+    "negative charge in save",
+    "unpaired marker in save",
+    "invalid source frame",
+    "negative price in declaration"
+  ],
+  "presentation": {
+    "currentAtlasRowWithNoRule": "acd71e54514d9edc7056bba7b184b3822730236ccf06fe86d173d68d502f4b2c",
+    "currentAtlasRowWithChangedWorld": "acd71e54514d9edc7056bba7b184b3822730236ccf06fe86d173d68d502f4b2c",
+    "visiblyChangedByCurrentAtlas": false
+  },
+  "scheduling": {
+    "singleTick": {
+      "world": {
+        "version": 1,
+        "painting": "pocket_magnet",
+        "charge": 0,
+        "changed": [
+          "star-socket"
+        ],
+        "applied": [
+          13
+        ]
+      },
+      "accepted": [
+        {
+          "tick": 503,
+          "epoch": 13
+        }
+      ],
+      "lastTick": 573
+    },
+    "batchedTicks": [
+      7,
+      1,
+      6,
+      3,
+      11
+    ],
+    "sameAfterBatches": true,
+    "sampledEveryFourthTickAtResidue": 0,
+    "missedByDisplayOnly": true,
+    "coarseAdvance": {
+      "seconds": 0.16666666666666666,
+      "from": 109,
+      "to": 113,
+      "crossed": 111,
+      "returnedSampleKeys": [
+        "anim",
+        "frame",
+        "at",
+        "direction",
+        "elapsed",
+        "form",
+        "tick"
+      ],
+      "sampleOnlyStatus": "invalid",
+      "sampleOnlyCharge": 1,
+      "visitedTickCharge": 0
+    }
+  },
+  "migrationControls": {
+    "oldSaveAcceptedUnderNewRule": true,
+    "changedRuleId": "new-rule-version",
+    "changedRuleCost": 2,
+    "originalHit": 111,
+    "afterInsertingEarlierValidHit": 110
+  },
+  "persistence": {
+    "saveBytes": 92,
+    "restored": {
+      "version": 1,
+      "painting": "pocket_magnet",
+      "charge": 0,
+      "changed": [
+        "star-socket"
+      ],
+      "applied": [
+        13
+      ]
+    },
+    "next": {
+      "charge": 0,
+      "changed": [
+        "star-socket"
+      ]
+    }
+  },
+  "inputs": [
+    {
+      "file": "tools/creatures/viewer/atlases/astral_seer/atlas.json",
+      "sha256": "ab4aee441a779c1f01d97e60d756dd7f8fdbdd32a8149256c5f1d91221a59a26"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/astral_seer/behavior.json",
+      "sha256": "22685e6a627c350f77cc26db2637522766d28734f7e2e45e8cfd8bf1abedc07f"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/pocket_magnet/atlas.json",
+      "sha256": "a5e2a530c5cdc7e836cf5068240cb47d0804c971aa0e8ed00074566219060c30"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/pocket_magnet/behavior.json",
+      "sha256": "3ecac5b887674b883d3fd7c2b9769e31820bdae04a8c8a320f9eefe570985177"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/eclipse_drake/atlas.json",
+      "sha256": "533fbd801cf89e238eaa95efcaa1a89309c60268e3bc11fe6b26784d6b582ef0"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/eclipse_drake/behavior.json",
+      "sha256": "27cd23712f1c21088c41eddc1d9aa3c709afb517704bcf9c599e6f95d12daf18"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/ember_panda/atlas.json",
+      "sha256": "314a614743ec755ef4a3f4cf89a3959252edb0bb8f748443aed2da75ce141d79"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/ember_panda/behavior.json",
+      "sha256": "2adc75f3b0c52c330d62f93f5309d1aae499715168ad58e7926f9e29f5f888ed"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/bun_panda/atlas.json",
+      "sha256": "425ad2c2b28cc2a286f5454d12d304b245403fe3c9a2dcb69773d30badb1c31b"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/bun_panda/behavior.json",
+      "sha256": "2a3650484f662ee0dd77b3421c01109745302a4a03d2eae74d777b3450fb3d58"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/crater_titan/atlas.json",
+      "sha256": "3c061b6299713bf0d7c80f697a7fa1b0825ce8511878007040f7eb85b7f10293"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/kettle_crab/atlas.json",
+      "sha256": "98494c49932abde240ffd5f26ebd02e71e77b8ccdb7b0403a15dbafd78c116e7"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/kettle_crab/behavior.json",
+      "sha256": "7b2a456ada79dffd6db002dec5906d338abd54dcc070be629d24dae6778fd160"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/moon_magician/atlas.json",
+      "sha256": "215533813adf671c3d2649e2c6c4105cc30542c48782c8ff1cd03a003374c5ae"
+    },
+    {
+      "file": "tools/creatures/viewer/atlases/moon_magician/behavior.json",
+      "sha256": "2ca3b2a0679c672d9dac57b0be183eb2cd3b43f1e0d26c524b9e57c47a7039aa"
+    }
+  ],
+  "legacy": [
+    {
+      "id": "astral_seer",
+      "mode": "native behavior.mjs",
+      "runs": [
+        {
+          "seed": 3,
+          "ticks": 1440,
+          "clipCount": 11,
+          "sha256": "3a1b2f90b42c4fd259f66d143944579b1b2877296276efae73c5d46610b86089"
+        },
+        {
+          "seed": 7319,
+          "ticks": 1440,
+          "clipCount": 11,
+          "sha256": "58ff7de18aa115e921cd040af160dfda97c83078a9ebe9b727d1653cab25c315"
+        }
+      ]
+    },
+    {
+      "id": "pocket_magnet",
+      "mode": "native behavior.mjs",
+      "runs": [
+        {
+          "seed": 3,
+          "ticks": 1440,
+          "clipCount": 10,
+          "sha256": "90cbe4751854b3f5de7d7904136acd61392a5f4c11b3ab07afdb4690f764251f"
+        },
+        {
+          "seed": 7319,
+          "ticks": 1440,
+          "clipCount": 11,
+          "sha256": "595a4c24ed544918d3cd5985766aff5ad3c0f35eeb00dcaddb280e3902158452"
+        }
+      ]
+    },
+    {
+      "id": "eclipse_drake",
+      "mode": "native behavior.mjs",
+      "runs": [
+        {
+          "seed": 3,
+          "ticks": 1440,
+          "clipCount": 9,
+          "sha256": "d86b9f2a9c7f2ce81a1d90cc88cd0e2d7ffa0245e255bfb1551971f71214b838"
+        },
+        {
+          "seed": 7319,
+          "ticks": 1440,
+          "clipCount": 8,
+          "sha256": "cd1945d9be63427a19b03ea2f7cde11615baf59457d3be317a64e7865e0f1742"
+        }
+      ]
+    },
+    {
+      "id": "ember_panda",
+      "mode": "native behavior.mjs",
+      "runs": [
+        {
+          "seed": 3,
+          "ticks": 1440,
+          "clipCount": 10,
+          "sha256": "8839ecf7749f173cd12f4509428fbfdf88c9bbbf610e2c7d95d39a7c99902c74"
+        },
+        {
+          "seed": 7319,
+          "ticks": 1440,
+          "clipCount": 10,
+          "sha256": "79f3d6dfe87f9d4637debc1e9a433c216e8876a6f9a748d6211c4700f00a0e49"
+        }
+      ]
+    },
+    {
+      "id": "bun_panda",
+      "mode": "native behavior.mjs",
+      "runs": [
+        {
+          "seed": 3,
+          "ticks": 1440,
+          "clipCount": 9,
+          "sha256": "cb241e74b9cf996f880a86f8331d8605efe150279ee5623502b725b0439534f9"
+        },
+        {
+          "seed": 7319,
+          "ticks": 1440,
+          "clipCount": 8,
+          "sha256": "ce0d55670a17083aa012ae95d4ff699ba42eb02f3e5e8f6847e93056838081fe"
+        }
+      ]
+    },
+    {
+      "id": "crater_titan",
+      "mode": "atlas life frame clock",
+      "runs": [
+        {
+          "seed": 3,
+          "ticks": 1440,
+          "clipCount": 1,
+          "sha256": "34c083da841b9b79116e5ed000815af4337bf6c85a25cef08f85f09aacfb1ed2"
+        },
+        {
+          "seed": 7319,
+          "ticks": 1440,
+          "clipCount": 1,
+          "sha256": "34c083da841b9b79116e5ed000815af4337bf6c85a25cef08f85f09aacfb1ed2"
+        }
+      ]
+    },
+    {
+      "id": "kettle_crab",
+      "mode": "native behavior.mjs",
+      "runs": [
+        {
+          "seed": 3,
+          "ticks": 1440,
+          "clipCount": 9,
+          "sha256": "f522105fc5a341bcf29700fd90dc708f102c451c1f83948ec4c7154c86ba457b"
+        },
+        {
+          "seed": 7319,
+          "ticks": 1440,
+          "clipCount": 10,
+          "sha256": "11d0a794b964d11e8cd8f3c9d74a1a1ae1c74434fef791b1f704d36d9031309c"
+        }
+      ]
+    },
+    {
+      "id": "moon_magician",
+      "mode": "native behavior.mjs",
+      "runs": [
+        {
+          "seed": 3,
+          "ticks": 1440,
+          "clipCount": 11,
+          "sha256": "f166c6731ff0aa012c42bf3d01978e7ca16bc3faa38d5cbae1656d36bb136f4c"
+        },
+        {
+          "seed": 7319,
+          "ticks": 1440,
+          "clipCount": 11,
+          "sha256": "d09e996f608f397a9cf93de05e952dd2cd9897ae6d36c186e41a2caba0135003"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+[
+  {
+    "id": "zero-paintings",
+    "args": [
+      "--input-type=module",
+      "-e",
+      "import {snapCommand} from './studio/snap.ts';await snapCommand(['all','--check','--force','--jobs','1'],[])"
+    ],
+    "exit": 0,
+    "milliseconds": 879.8978609999999,
+    "lines": [
+      "0/0 identical in 0 s with 0 jobs"
+    ]
+  },
+  {
+    "id": "one-known-plus-one-unknown-id",
+    "args": [
+      "studio/ws.ts",
+      "snap",
+      "astral_seer,nonexistent_subject_b25",
+      "idle",
+      "--check",
+      "--force",
+      "--jobs",
+      "1"
+    ],
+    "exit": 1,
+    "milliseconds": 10472.961718,
+    "lines": [
+      "✓ astral_seer: 72 frames identical (8 s)",
+      "Error [ERR_MODULE_NOT_FOUND]: Cannot find module '<tools/creatures>/c/nonexistent_subject_b25.ts' imported from <tools/creatures>/render.ts",
+      "1/2 identical in 9 s with 1 jobs"
+    ]
+  },
+  {
+    "id": "real-clip-absent-on-one-actual-id",
+    "args": [
+      "studio/ws.ts",
+      "snap",
+      "astral_seer,pocket_magnet",
+      "happy-f2",
+      "--check",
+      "--force",
+      "--jobs",
+      "1"
+    ],
+    "exit": 0,
+    "milliseconds": 10680.416271,
+    "lines": [
+      "✓ astral_seer: 48 frames identical (7 s)",
+      "✓ pocket_magnet: 0 frames identical (0 s)",
+      "2/2 identical in 10 s with 1 jobs"
+    ]
+  }
+]

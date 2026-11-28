@@ -1,0 +1,80 @@
+[
+  {
+    "id": "astral_seer",
+    "decodedFrames": 132,
+    "rgba": "0daf2a6fed70b38d56dc42e1e7f91a6ed1043c54e9ff03e89d54d837a7f247a2",
+    "rgbaMatches": true,
+    "actualTransitions": [
+      6343,
+      2829
+    ],
+    "spot": 57,
+    "encodedEqualsSource": true,
+    "rect": [
+      100,
+      42,
+      197,
+      184
+    ],
+    "inside": 86,
+    "full": 336,
+    "roiAgrees": true
+  },
+  {
+    "id": "bun_panda",
+    "decodedFrames": 24,
+    "rgba": "d781673a8237c79c80e356e98d88b2c4ee9b2bf9db9b5b4bed425bb13213d6b2",
+    "rgbaMatches": true
+  },
+  {
+    "id": "crater_titan",
+    "decodedFrames": 24,
+    "rgba": "4fe69a7408becf4dfae97dc23d22c498117f760f9716b02a4cfcb240f27089b5",
+    "rgbaMatches": true
+  },
+  {
+    "id": "eclipse_drake",
+    "decodedFrames": 24,
+    "rgba": "bccc3290f3631602a0e8baca246236f14fa33825051c2c7631dbebc13e8d47de",
+    "rgbaMatches": true
+  },
+  {
+    "id": "ember_panda",
+    "decodedFrames": 24,
+    "rgba": "6aeafcc36432b89f47565dbd26bae24f9111461f4f7a53a33dc803c5356ffc31",
+    "rgbaMatches": true
+  },
+  {
+    "id": "kettle_crab",
+    "decodedFrames": 24,
+    "rgba": "9e5c86ff72b4a83c6980859017c74bf71afe888d76aaa685ef268e7ecc46052d",
+    "rgbaMatches": true
+  },
+  {
+    "id": "moon_magician",
+    "decodedFrames": 24,
+    "rgba": "d044da9f3bc6ccb85209249ba58566ca674b4dafb77cb8c2c505a622bbf0e523",
+    "rgbaMatches": true
+  },
+  {
+    "id": "pocket_magnet",
+    "decodedFrames": 24,
+    "rgba": "24b59173812740599bbcffc5bd7cdd63953c6ad4313593ee88a4757667609c83",
+    "rgbaMatches": true,
+    "actualTransitions": [
+      654,
+      2
+    ],
+    "spot": 44,
+    "encodedEqualsSource": true,
+    "rect": [
+      66,
+      37,
+      150,
+      119
+    ],
+    "inside": 118,
+    "full": 384,
+    "roiAgrees": true
+  }
+]
