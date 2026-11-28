@@ -1,14 +1,18 @@
-// The failing paintings in the last gate before B22, job 141010703342 (27 of 41 passed).
-// Only the new rules have this compatibility policy. The original gate still reports its errors.
+// Paintings accepted before B22 (golden/ at commit 2290aea3), except Polyusik, which B22 checked strictly.
+// The owner already accepted them, so the new B22 rules only warn on them. New paintings get errors.
+// The original gate still reports its own errors.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { SourceMap } from 'node:module';
 import { transformSync } from 'esbuild';
 
 export const legacyFxWarnings = new Set([
-  'astral_seer', 'ball_pangolin', 'bun_panda', 'coin_dragon', 'crater_titan', 'dream_sneak',
-  'eclipse_drake', 'ember_panda', 'kettle_crab', 'moon_magician', 'prism_serpent', 'puff_kit',
-  'storm_lord', 'tuft_owlet',
+  'apricot_bubbler', 'astral_seer', 'ball_pangolin', 'bell_magpie', 'bramble_warden', 'bun_panda', 'coin_dragon',
+  'crater_titan', 'dream_sneak', 'eclipse_drake', 'ember_panda', 'frost_fox', 'frost_yeti', 'garden_chameleon',
+  'gem_beetle', 'grove_lord', 'herald_griffin', 'ink_admiral', 'kettle_crab', 'lunar_plush', 'meadow_colossus',
+  'moon_magician', 'moon_warden', 'nebula_squid', 'opal_skater', 'penguin_marshal', 'prism_serpent', 'puff_kit',
+  'rat_king', 'river_otter', 'root_stag', 'sand_scorpion', 'silk_dragon', 'sky_whale', 'storm_lord', 'storm_ram',
+  'threshold_keeper', 'toad_shaman', 'tuft_owlet', 'zephyr_whorl',
 ]);
 
 const scopes = ['c', 'fx', 'scenes', 'bodies', 'kit'];

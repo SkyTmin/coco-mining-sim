@@ -72,7 +72,9 @@ test('scanner reports global TS references with source lines, including bracket 
 });
 
 test('all four new errors downgrade only for the exact 14 known failing paintings, timing always warns', () => {
-  assert.equal(legacyFxWarnings.size, 14);
+  assert.equal(legacyFxWarnings.size, 40);
+  assert.ok(legacyFxWarnings.has('river_otter'));
+  assert.ok(!legacyFxWarnings.has('pocket_magnet') && !legacyFxWarnings.has('pocket_magnet_fx'));
   for (const kind of ['fx-end', 'fx-bounds', 'socket-teleport', 'unseeded'] as const) {
     assert.equal(fxFinding('astral_seer', 'trick', kind, [2], '').level, 'warn');
     assert.equal(fxFinding('pocket_magnet_fx', 'trick', kind, [2], '').level, 'error');
