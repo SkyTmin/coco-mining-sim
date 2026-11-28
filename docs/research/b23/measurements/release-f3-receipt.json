@@ -1,0 +1,182 @@
+{
+  "asset": "b23-f3-native-70dceb0.zip",
+  "githubActions": "https://github.com/SkyTmin/coco-mining-sim/actions/runs/46178241380",
+  "archiveSha256": "7017d8f2cd22806f3e655c579159d7b6881c0533e810b80850c893b8f9d6b28f",
+  "bytes": 34348279,
+  "native": [
+    {
+      "id": "astral_seer",
+      "frames": 132,
+      "width": 292,
+      "height": 244,
+      "rgbaSha256": "0daf2a6fed70b38d56dc42e1e7f91a6ed1043c54e9ff03e89d54d837a7f247a2"
+    },
+    {
+      "id": "pocket_magnet",
+      "frames": 24,
+      "width": 176,
+      "height": 144,
+      "rgbaSha256": "24b59173812740599bbcffc5bd7cdd63953c6ad4313593ee88a4757667609c83"
+    },
+    {
+      "id": "eclipse_drake",
+      "frames": 24,
+      "width": 438,
+      "height": 366,
+      "rgbaSha256": "bccc3290f3631602a0e8baca246236f14fa33825051c2c7631dbebc13e8d47de"
+    },
+    {
+      "id": "kettle_crab",
+      "frames": 24,
+      "width": 176,
+      "height": 144,
+      "rgbaSha256": "9e5c86ff72b4a83c6980859017c74bf71afe888d76aaa685ef268e7ecc46052d"
+    },
+    {
+      "id": "bun_panda",
+      "frames": 24,
+      "width": 438,
+      "height": 366,
+      "rgbaSha256": "d781673a8237c79c80e356e98d88b2c4ee9b2bf9db9b5b4bed425bb13213d6b2"
+    },
+    {
+      "id": "moon_magician",
+      "frames": 24,
+      "width": 292,
+      "height": 244,
+      "rgbaSha256": "d044da9f3bc6ccb85209249ba58566ca674b4dafb77cb8c2c505a622bbf0e523"
+    },
+    {
+      "id": "crater_titan",
+      "frames": 24,
+      "width": 292,
+      "height": 244,
+      "rgbaSha256": "4fe69a7408becf4dfae97dc23d22c498117f760f9716b02a4cfcb240f27089b5"
+    },
+    {
+      "id": "ember_panda",
+      "frames": 24,
+      "width": 232,
+      "height": 184,
+      "rgbaSha256": "6aeafcc36432b89f47565dbd26bae24f9111461f4f7a53a33dc803c5356ffc31"
+    }
+  ],
+  "browser": {
+    "before_native.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    },
+    "empty_end.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    },
+    "empty_hidden.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    },
+    "empty_repeat.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    },
+    "empty_restored.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    },
+    "empty_start.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    },
+    "funded_end.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    },
+    "funded_hidden.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    },
+    "funded_repeat.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    },
+    "funded_restored.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    },
+    "funded_start.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    },
+    "hit_native.png": {
+      "pixelsDifferentBetweenRunners": 0,
+      "width": 176,
+      "height": 144
+    }
+  },
+  "browserComparisons": {
+    "price-and-mark": {
+      "count": 35,
+      "charge": 20,
+      "trace": 15,
+      "outside": 0
+    },
+    "denied": {
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0
+    },
+    "visible-branches": {
+      "count": 15,
+      "charge": 0,
+      "trace": 15,
+      "outside": 0
+    },
+    "blind-hidden-branches": {
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0
+    },
+    "funded-repeat": {
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0
+    },
+    "funded-restored": {
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0
+    },
+    "empty-repeat": {
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0
+    },
+    "empty-restored": {
+      "count": 0,
+      "charge": 0,
+      "trace": 0,
+      "outside": 0
+    }
+  },
+  "pngs": 40,
+  "framesVerified": 300,
+  "checks": {
+    "native": "Decoded every FFV1 sequence to raw RGBA and compared SHA-256 and length to the independently reviewed F3-02 results.",
+    "browser": "Rechecked the eight regional comparisons against the reviewed F3-07 results. Cross-run absolute screen differences are reported separately."
+  }
+}

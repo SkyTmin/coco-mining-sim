@@ -1,0 +1,390 @@
+{
+  "browser": "156.0.8078.79",
+  "moduleSha256": "3e6048bc2a30eaeca78cf40cbe5249d356894a8d77d1ee318c18861ab0b5494e",
+  "cases": [
+    {
+      "round": 0,
+      "mode": "stale",
+      "ids": [
+        1,
+        2
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        2
+      ]
+    },
+    {
+      "round": 0,
+      "mode": "serial",
+      "ids": [
+        1,
+        2
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        1
+      ]
+    },
+    {
+      "round": 1,
+      "mode": "stale",
+      "ids": [
+        3,
+        4
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        3
+      ]
+    },
+    {
+      "round": 1,
+      "mode": "serial",
+      "ids": [
+        3,
+        4
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        3
+      ]
+    },
+    {
+      "round": 2,
+      "mode": "stale",
+      "ids": [
+        5,
+        6
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        6
+      ]
+    },
+    {
+      "round": 2,
+      "mode": "serial",
+      "ids": [
+        5,
+        6
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        5
+      ]
+    },
+    {
+      "round": 3,
+      "mode": "stale",
+      "ids": [
+        7,
+        8
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        7
+      ]
+    },
+    {
+      "round": 3,
+      "mode": "serial",
+      "ids": [
+        7,
+        8
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        7
+      ]
+    },
+    {
+      "round": 4,
+      "mode": "stale",
+      "ids": [
+        9,
+        10
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        10
+      ]
+    },
+    {
+      "round": 4,
+      "mode": "serial",
+      "ids": [
+        9,
+        10
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        9
+      ]
+    },
+    {
+      "round": 5,
+      "mode": "stale",
+      "ids": [
+        11,
+        12
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        11
+      ]
+    },
+    {
+      "round": 5,
+      "mode": "serial",
+      "ids": [
+        11,
+        12
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        11
+      ]
+    },
+    {
+      "round": 6,
+      "mode": "stale",
+      "ids": [
+        13,
+        14
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        14
+      ]
+    },
+    {
+      "round": 6,
+      "mode": "serial",
+      "ids": [
+        13,
+        14
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        13
+      ]
+    },
+    {
+      "round": 7,
+      "mode": "stale",
+      "ids": [
+        15,
+        16
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        15
+      ]
+    },
+    {
+      "round": 7,
+      "mode": "serial",
+      "ids": [
+        15,
+        16
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        15
+      ]
+    },
+    {
+      "round": 8,
+      "mode": "stale",
+      "ids": [
+        17,
+        18
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        18
+      ]
+    },
+    {
+      "round": 8,
+      "mode": "serial",
+      "ids": [
+        17,
+        18
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        17
+      ]
+    },
+    {
+      "round": 9,
+      "mode": "stale",
+      "ids": [
+        19,
+        20
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        19
+      ]
+    },
+    {
+      "round": 9,
+      "mode": "serial",
+      "ids": [
+        19,
+        20
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        19
+      ]
+    },
+    {
+      "round": 10,
+      "mode": "stale",
+      "ids": [
+        21,
+        22
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        22
+      ]
+    },
+    {
+      "round": 10,
+      "mode": "serial",
+      "ids": [
+        21,
+        22
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        21
+      ]
+    },
+    {
+      "round": 11,
+      "mode": "stale",
+      "ids": [
+        23,
+        24
+      ],
+      "status": [
+        "applied",
+        "applied"
+      ],
+      "charge": 0,
+      "applied": [
+        23
+      ]
+    },
+    {
+      "round": 11,
+      "mode": "serial",
+      "ids": [
+        23,
+        24
+      ],
+      "status": [
+        "applied",
+        "insufficient"
+      ],
+      "charge": 0,
+      "applied": [
+        23
+      ]
+    }
+  ]
+}

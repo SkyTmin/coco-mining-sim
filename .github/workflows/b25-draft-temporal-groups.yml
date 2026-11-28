@@ -1,0 +1,52 @@
+name: Б25 — 27 групп однокадровых возвратов
+on:
+  push:
+    branches: [chatgpt/b25-research]
+    paths:
+      - '.github/workflows/b25-draft-temporal-groups.yml'
+      - 'docs/research/b23/temporal-audit/groups.mjs'
+permissions:
+  contents: write
+jobs:
+  reproduce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: research
+          persist-credentials: false
+          sparse-checkout: docs/research/b23/temporal-audit
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: d6ebb3145d47d6bed85b088ec30b0b2faa82da6f
+          path: control
+          persist-credentials: false
+          sparse-checkout: |
+            tools/creatures
+            assets/creatures
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.22.3'
+      - name: Verify native frame hashes and export contact sheets
+        working-directory: control/tools/creatures
+        shell: bash
+        run: |
+          set -eu
+          npm ci --no-audit --no-fund
+          src="$GITHUB_WORKSPACE/research/docs/research/b23/temporal-audit"
+          node --import tsx "$src/groups.mjs" "$src/confirm.json" "$RUNNER_TEMP/views"
+          cmp "$src/groups.json" "$RUNNER_TEMP/views/index.json"
+          cd "$RUNNER_TEMP/views"
+          test "$(ls -1 -- *.png | wc -l)" -eq 27
+          zip -q "$RUNNER_TEMP/b23-temporal-groups-${GITHUB_SHA:0:7}.zip" -- *.png index.json
+      - name: Attach to the existing research draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -eu
+          archive="$RUNNER_TEMP/b23-temporal-groups-${GITHUB_SHA:0:7}.zip"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/461736899" --jq '[.draft,.tag_name]|@tsv')" = "$(printf 'true\tb25-research-evidence')"
+          if gh api "repos/$GITHUB_REPOSITORY/releases/461736899/assets?per_page=100" --jq '.[].name' | grep -Fxq "$(basename "$archive")"; then exit 0; fi
+          gh release upload b25-research-evidence "$archive" --repo "$GITHUB_REPOSITORY"

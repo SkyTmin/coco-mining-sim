@@ -1,0 +1,407 @@
+[
+  {
+    "sheet": "01-bell_magpie.png",
+    "id": "bell_magpie",
+    "clip": "sleep",
+    "frame": 18,
+    "filled": 28,
+    "box": [
+      28,
+      78,
+      85,
+      103
+    ],
+    "key": "176/144/286f088c47/36146c1ec6",
+    "instances": 2
+  },
+  {
+    "sheet": "02-bell_magpie.png",
+    "id": "bell_magpie",
+    "clip": "sleep",
+    "frame": 54,
+    "filled": 35,
+    "box": [
+      26,
+      73,
+      96,
+      104
+    ],
+    "key": "176/144/cce841220b/66730cbd00",
+    "instances": 2
+  },
+  {
+    "sheet": "03-bramble_warden.png",
+    "id": "bramble_warden",
+    "clip": "look",
+    "frame": 18,
+    "filled": 69,
+    "box": [
+      91,
+      83,
+      114,
+      113
+    ],
+    "key": "176/144/155b1dc627/72a49e8272",
+    "instances": 1
+  },
+  {
+    "sheet": "04-bramble_warden.png",
+    "id": "bramble_warden",
+    "clip": "life",
+    "frame": 102,
+    "filled": 68,
+    "box": [
+      75,
+      95,
+      104,
+      123
+    ],
+    "key": "176/144/0681645505/ca21e62dfb",
+    "instances": 1
+  },
+  {
+    "sheet": "05-garden_chameleon.png",
+    "id": "garden_chameleon",
+    "clip": "idle",
+    "frame": 18,
+    "filled": 26,
+    "box": [
+      47,
+      56,
+      114,
+      92
+    ],
+    "key": "176/144/3a1086bd23/f4f6778bf4",
+    "instances": 2
+  },
+  {
+    "sheet": "06-garden_chameleon.png",
+    "id": "garden_chameleon",
+    "clip": "idle",
+    "frame": 54,
+    "filled": 14,
+    "box": [
+      43,
+      53,
+      105,
+      83
+    ],
+    "key": "176/144/e7572e0746/e283aec8ef",
+    "instances": 3
+  },
+  {
+    "sheet": "07-garden_chameleon.png",
+    "id": "garden_chameleon",
+    "clip": "sleep",
+    "frame": 18,
+    "filled": 16,
+    "box": [
+      47,
+      67,
+      106,
+      95
+    ],
+    "key": "176/144/94703ed744/c97158f0fc",
+    "instances": 2
+  },
+  {
+    "sheet": "08-garden_chameleon.png",
+    "id": "garden_chameleon",
+    "clip": "sleep",
+    "frame": 54,
+    "filled": 17,
+    "box": [
+      50,
+      69,
+      108,
+      90
+    ],
+    "key": "176/144/2b3fba0645/8028e31066",
+    "instances": 2
+  },
+  {
+    "sheet": "09-garden_chameleon.png",
+    "id": "garden_chameleon",
+    "clip": "life",
+    "frame": 455,
+    "filled": 26,
+    "box": [
+      47,
+      56,
+      114,
+      92
+    ],
+    "key": "176/144/006973d196/5e2d2510ee",
+    "instances": 1
+  },
+  {
+    "sheet": "10-garden_chameleon.png",
+    "id": "garden_chameleon",
+    "clip": "life",
+    "frame": 1210,
+    "filled": 26,
+    "box": [
+      47,
+      56,
+      114,
+      92
+    ],
+    "key": "176/144/5159e001b6/e6dcab9a1a",
+    "instances": 1
+  },
+  {
+    "sheet": "11-lunar_plush.png",
+    "id": "lunar_plush",
+    "clip": "idle",
+    "frame": 18,
+    "filled": 15,
+    "box": [
+      42,
+      45,
+      111,
+      102
+    ],
+    "key": "176/144/11611c6a22/794fd7aafe",
+    "instances": 5
+  },
+  {
+    "sheet": "12-lunar_plush.png",
+    "id": "lunar_plush",
+    "clip": "idle",
+    "frame": 54,
+    "filled": 16,
+    "box": [
+      41,
+      49,
+      113,
+      101
+    ],
+    "key": "176/144/1bc404ee25/131894274c",
+    "instances": 4
+  },
+  {
+    "sheet": "13-lunar_plush.png",
+    "id": "lunar_plush",
+    "clip": "sleep",
+    "frame": 18,
+    "filled": 9,
+    "box": [
+      38,
+      57,
+      101,
+      110
+    ],
+    "key": "176/144/f446a5436f/ca237ca936",
+    "instances": 2
+  },
+  {
+    "sheet": "14-lunar_plush.png",
+    "id": "lunar_plush",
+    "clip": "sleep",
+    "frame": 54,
+    "filled": 11,
+    "box": [
+      41,
+      59,
+      102,
+      110
+    ],
+    "key": "176/144/6132bdab19/6cefda3962",
+    "instances": 2
+  },
+  {
+    "sheet": "15-lunar_plush.png",
+    "id": "lunar_plush",
+    "clip": "fidget_a",
+    "frame": 16,
+    "filled": 83,
+    "box": [
+      96,
+      82,
+      108,
+      95
+    ],
+    "key": "176/144/d6bc0fad2a/5ba296dd7f",
+    "instances": 3
+  },
+  {
+    "sheet": "16-lunar_plush.png",
+    "id": "lunar_plush",
+    "clip": "fidget_a",
+    "frame": 21,
+    "filled": 86,
+    "box": [
+      96,
+      77,
+      108,
+      89
+    ],
+    "key": "176/144/8cb42d3397/6a0b99bd82",
+    "instances": 3
+  },
+  {
+    "sheet": "17-lunar_plush.png",
+    "id": "lunar_plush",
+    "clip": "fidget_b",
+    "frame": 16,
+    "filled": 111,
+    "box": [
+      57,
+      92,
+      70,
+      103
+    ],
+    "key": "176/144/79477b4c57/d23ef63323",
+    "instances": 3
+  },
+  {
+    "sheet": "18-lunar_plush.png",
+    "id": "lunar_plush",
+    "clip": "fidget_b",
+    "frame": 36,
+    "filled": 101,
+    "box": [
+      84,
+      90,
+      96,
+      102
+    ],
+    "key": "176/144/8e55ef09f9/9ae5c45349",
+    "instances": 3
+  },
+  {
+    "sheet": "19-lunar_plush.png",
+    "id": "lunar_plush",
+    "clip": "life",
+    "frame": 578,
+    "filled": 354,
+    "box": [
+      34,
+      40,
+      115,
+      108
+    ],
+    "key": "176/144/a0bfb956ad/a4ac67f6af",
+    "instances": 1
+  },
+  {
+    "sheet": "20-opal_skater.png",
+    "id": "opal_skater",
+    "clip": "idle",
+    "frame": 18,
+    "filled": 52,
+    "box": [
+      50,
+      38,
+      107,
+      100
+    ],
+    "key": "176/144/2d4fc1e6e6/59cd480bc4",
+    "instances": 7
+  },
+  {
+    "sheet": "21-opal_skater.png",
+    "id": "opal_skater",
+    "clip": "sleep",
+    "frame": 18,
+    "filled": 16,
+    "box": [
+      61,
+      54,
+      108,
+      108
+    ],
+    "key": "176/144/d8ac12f7e3/3679395f6d",
+    "instances": 3
+  },
+  {
+    "sheet": "22-opal_skater.png",
+    "id": "opal_skater",
+    "clip": "sleep",
+    "frame": 54,
+    "filled": 12,
+    "box": [
+      60,
+      54,
+      105,
+      105
+    ],
+    "key": "176/144/9f3ecac053/fb75f94310",
+    "instances": 3
+  },
+  {
+    "sheet": "23-zephyr_whorl.png",
+    "id": "zephyr_whorl",
+    "clip": "idle",
+    "frame": 18,
+    "filled": 20,
+    "box": [
+      51,
+      53,
+      84,
+      97
+    ],
+    "key": "176/144/13e86ad650/e1c702bff7",
+    "instances": 1
+  },
+  {
+    "sheet": "24-zephyr_whorl.png",
+    "id": "zephyr_whorl",
+    "clip": "sleep",
+    "frame": 18,
+    "filled": 4,
+    "box": [
+      55,
+      67,
+      70,
+      99
+    ],
+    "key": "176/144/9662976417/dc5a322fd9",
+    "instances": 2
+  },
+  {
+    "sheet": "25-zephyr_whorl.png",
+    "id": "zephyr_whorl",
+    "clip": "sleep",
+    "frame": 54,
+    "filled": 10,
+    "box": [
+      47,
+      62,
+      76,
+      103
+    ],
+    "key": "176/144/e5e590f497/fe337e6f66",
+    "instances": 2
+  },
+  {
+    "sheet": "26-zephyr_whorl.png",
+    "id": "zephyr_whorl",
+    "clip": "life",
+    "frame": 1279,
+    "filled": 20,
+    "box": [
+      51,
+      53,
+      84,
+      97
+    ],
+    "key": "176/144/fa29bcb4dd/dd7c148466",
+    "instances": 1
+  },
+  {
+    "sheet": "27-zephyr_whorl.png",
+    "id": "zephyr_whorl",
+    "clip": "showreel",
+    "frame": 80,
+    "filled": 20,
+    "box": [
+      51,
+      53,
+      84,
+      97
+    ],
+    "key": "176/144/33c8d74988/b61fed8303",
+    "instances": 1
+  }
+]

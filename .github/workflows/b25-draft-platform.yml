@@ -1,0 +1,123 @@
+name: Б25 — нативный рендер каталога на трёх ОС
+on:
+  push:
+    branches: [chatgpt/b25-research]
+    paths:
+      - '.github/workflows/b25-draft-platform.yml'
+      - 'docs/research/b23/measurements/platform/probe.mjs'
+      - 'docs/research/b23/measurements/platform/compare.mjs'
+      - 'docs/research/b23/measurements/scale/sample-diversity.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  sample:
+    name: Native sample (${{ matrix.id }})
+    runs-on: ${{ matrix.host }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {id: linux, host: ubuntu-24.04}
+          - {id: macos, host: macos-15}
+          - {id: windows, host: windows-2025}
+    steps:
+      - name: Check out the exact measuring scripts
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: study
+          persist-credentials: false
+          sparse-checkout: |
+            docs/research/b23/measurements/platform
+            docs/research/b23/measurements/scale
+      - name: Check out the unchanged F0 source and its golden arrays
+        id: source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: control
+          ref: d6ebb3145d47d6bed85b088ec30b0b2faa82da6f
+          persist-credentials: false
+      - name: Select the same Node release
+        id: setup
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        continue-on-error: true
+        with:
+          node-version: '22.14.0'
+      - name: Install the native optional modules from the frozen lockfile
+        id: install
+        if: steps.setup.outcome == 'success' && steps.source.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        working-directory: control/tools/creatures
+        run: |
+          echo "B25_NPM_VERSION=$(npm --version)" >> "$GITHUB_ENV"
+          npm ci --include=optional --no-audit --no-fund
+      - name: Sample existing native phases and retain mismatches
+        id: measure
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          B25_OS: ${{ matrix.id }}
+          B25_SETUP: ${{ steps.setup.outcome }}
+          B25_INSTALL: ${{ steps.install.outcome }}
+          B25_OUTPUT: ${{ runner.temp }}/${{ matrix.id }}.json
+        run: |
+          node study/docs/research/b23/measurements/platform/probe.mjs control/tools/creatures study/docs/research/b23/measurements/scale/sample-diversity.mjs "$B25_OUTPUT"
+      - name: Preserve an infrastructure failure as its own result
+        if: always()
+        shell: bash
+        env:
+          B25_OS: ${{ matrix.id }}
+          B25_SETUP: ${{ steps.setup.outcome }}
+          B25_INSTALL: ${{ steps.install.outcome }}
+          B25_MEASURE: ${{ steps.measure.outcome }}
+          B25_OUTPUT: ${{ runner.temp }}/${{ matrix.id }}.json
+        run: |
+          if [ ! -s "$B25_OUTPUT" ] || [ "$B25_MEASURE" != success ]; then
+            printf '{"schema":1,"runner":"%s","status":"not-comparable","setup":"%s","install":"%s","errors":[{"stage":"infrastructure","detail":"measure step %s"}]}\n' "$B25_OS" "$B25_SETUP" "$B25_INSTALL" "$B25_MEASURE" > "$B25_OUTPUT"
+            printf 'B25_PLATFORM_RESULT '
+            cat "$B25_OUTPUT"
+          fi
+      - name: Pass the small JSON to the comparison
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: b25-platform-${{ matrix.id }}
+          path: ${{ runner.temp }}/${{ matrix.id }}.json
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+
+  compare:
+    name: Pairwise coverage, hashes, draft attachment
+    needs: sample
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          sparse-checkout: docs/research/b23/measurements/platform
+      - name: Collect all available platform reports
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        continue-on-error: true
+        with:
+          pattern: b25-platform-*
+          path: reports
+          merge-multiple: true
+      - name: Compare matched slots and attach the JSON to the existing draft
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          dest="$RUNNER_TEMP/b23-platform-${GITHUB_SHA:0:7}-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT.json"
+          node docs/research/b23/measurements/platform/compare.mjs reports "$dest"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/461736899" --jq '[.draft,.tag_name]|@tsv')" = "$(printf 'true\tb25-research-evidence')"
+          gh release upload b25-research-evidence "$dest"
