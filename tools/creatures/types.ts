@@ -87,6 +87,8 @@ export interface Creature {
   size?: PaintingSize;
   /** Standing position in field pixels for standalone clips and showreel chapters. */
   portraitOrigin?: XY;
+  /** Chapters inside a group cut directly to the next pose, for authored continuous showreels. */
+  reelGroups?: string[][];
   animations: Record<string, Animation>;
   frame: (
     anim: string,

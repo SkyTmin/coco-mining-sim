@@ -10,6 +10,7 @@ export interface BehaviorConfig {
   weights?: Record<string, number>;
   /** Whole ambient acts performed at home before each automatic trick cycle, in place of a floor excursion. */
   lifeProgram?: string[];
+  finishBeforeEvent?: string[];
   attackInterval?: [number, number];
   attacks?: string[];
   tricks?: { f1: string[]; f2?: string[] };

@@ -44,6 +44,7 @@ interface ReelPart {
   name: string;
   frames: number;
   offset?: number;
+  joined?: boolean;
   at?: XY;
   pivot?: { at: XY; frames: number[] };
 }
@@ -89,11 +90,14 @@ export function reelChapters(c: Creature) {
        ...['phase', 'idle-f2'].filter(name => c.animations[name]),
        ...(tricks ? (tricks.f2 ? ['happy-f2', ...tricks.f2] : []) : ['show'].filter(name => c.animations[name]))]
     : Object.keys(c.animations).filter(name => name.startsWith('tech_'));
-  const parts = names.flatMap((name): ReelPart[] =>
-    name === 'prepare_walk' && demo ? demo : [{ name, frames: Math.round(c.animations[name].seconds * 24) }]);
+  const programme = c.reelGroups?.flatMap(group =>
+    group.map((name, i) => ({ name, joined: i < group.length - 1 })),
+  ) ?? names.map(name => ({ name, joined: false }));
+  const parts = programme.flatMap(({ name, joined }): ReelPart[] =>
+    name === 'prepare_walk' && demo ? demo : [{ name, frames: Math.round(c.animations[name].seconds * 24), joined }]);
   return parts.map(part => {
     const start = cursor;
-    cursor += part.frames + (part.pivot?.frames.length ?? 6);
+    cursor += part.frames + (part.pivot?.frames.length ?? (part.joined ? 0 : 6));
     return { ...part, start, end: cursor };
   });
 }

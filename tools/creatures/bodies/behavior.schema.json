@@ -54,6 +54,9 @@
   }],
   "additionalProperties": false,
   "properties": {
+    "finishBeforeEvent": {
+      "type": "array", "uniqueItems": true, "items": { "type": "string" }
+    },
     "lifeProgram": {
       "type": "array", "minItems": 1,
       "items": { "type": "string", "pattern": "^(idle|look|fidget_[a-h])$" }
