@@ -1,7 +1,7 @@
 import { createCanvas, type Canvas } from '@napi-rs/canvas';
 import { Px } from './rig/px';
 import { placement } from './motion';
-import { impactClock, displayFrame, timedAnimation } from './kit/impact-clock';
+import { impactClock, displayFrame, timedAnimation, stepPose } from './kit/impact-clock';
 import { paintWater } from './viewer/water.mjs';
 import { paintSceneryRays } from './viewer/scenery.mjs';
 import { Pen } from './fx/pen';
@@ -328,14 +328,16 @@ export function compose(
   const poseTime = finalFrame ? (anim === 'away' ? spec.seconds : 0) : sample;
   // Earlier poses serve effects only through their sockets: they are built without a picture.
   const projected = (time: number, position = at, pointsOnly = false): BodyFrame => {
+    const bodyTime = finalFrame ? time : stepPose(time, spec);
+    const gaitPhase = spec.poseStep ? bodyTime : position.t;
     const pose = () => c.frame(
       poseAnim,
-      time,
+      bodyTime,
       position === at ? dir : position.side,
       variant,
-      pointsOnly
-        ? { headSide: position.headSide, gaitPhase: position.t, pointsOnly }
-        : { headSide: position.headSide, gaitPhase: position.t },
+      { headSide: position.headSide, gaitPhase,
+        ...(pointsOnly ? { pointsOnly } : {}),
+        ...(spec.poseStep ? { secondaryTime: time } : {}) },
     );
     const body = pointsOnly ? withPointsOnly(pose) : pose();
     return position.lift
@@ -549,6 +551,7 @@ export function compose(
     techniqueTrace,
     contact,
     motion: at,
+    poseTime: spec.poseStep ? stepPose(poseTime, spec) : at.t,
     sceneDelay: Math.round(sceneDelay),
     backgroundFrame: loopFrame,
     points,

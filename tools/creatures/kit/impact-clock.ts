@@ -58,3 +58,18 @@ export function withImpactTiming(c: Creature): Creature {
   if (!Object.values(c.animations).some(a => a.contacts?.length)) return c;
   return { ...c, animations: Object.fromEntries(Object.entries(c.animations).map(([k, a]) => [k, timedAnimation(a)])) };
 }
+
+/** Re-anchor the two-frame cadence on a contact, including odd-numbered hits. The return key lands exactly. */
+export function stepPose(t: number, spec: Animation) {
+  if (spec.poseStep !== 2) return t;
+  const tick = Math.max(0, Math.floor(t * 24 + 1e-8));
+  const last = Math.round((spec.authoredSeconds ?? spec.seconds) * 24) - 1;
+  if (tick >= last) return last / 24;
+  let anchor = 0;
+  for (const hit of spec.authoredHits ?? spec.hits ?? []) {
+    const frame = Math.round(hit * 24);
+    if (frame > tick) break;
+    anchor = frame;
+  }
+  return (tick - (tick - anchor) % 2) / 24;
+}

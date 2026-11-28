@@ -147,7 +147,7 @@ function writePainting(
       side: r.motion.side,
       headSide: r.motion.headSide,
       pose: r.motion.anim,
-      poseTime: r.motion.t,
+      poseTime: r.poseTime,
       lift: r.motion.lift,
       planted: r.body.planted ?? [],
       contacts: r.contact,

@@ -35,6 +35,7 @@ export interface Technique {
   contacts?: readonly TechniqueContact[];
   floorSocket?: string;
   seconds?: number;
+  poseStep?: 2;
   stop?: number;
   shake?: number;
   /** The director switches this on after the critic has seen the held keys. */
@@ -147,6 +148,7 @@ export function withTechniques(c: Creature, book: TechniqueBook): Creature {
       seconds,
       ...(contacts.length || spec.contacts ? { hits: contacts.map((hit) => hit.frame / 24) } : {}),
       ...(contacts.some(h => h.freeze || h.shake || h.amp) ? { contacts } : {}),
+      ...(spec.poseStep ? { poseStep: spec.poseStep } : {}),
       ...(spec.shake === undefined ? {} : { shake: spec.shake }),
       ...(spec.stop === undefined ? {} : { stop: spec.stop }),
     };
@@ -159,6 +161,7 @@ export function withTechniques(c: Creature, book: TechniqueBook): Creature {
       const spec = book[anim];
       if (!spec) return c.frame(anim, t, side, variant, motion);
       return c.frame(anim, t, side, variant, {
+        ...motion,
         headSide: motion?.headSide ?? side,
         gaitPhase: motion?.gaitPhase ?? t,
         techniquePose: techniquePoseAt(spec, t),

@@ -33,7 +33,7 @@ function reuseTrickPoses(c: Creature): Creature {
     ...c,
     frame(anim, time, side, variant, motion) {
       if (motion?.techniquePose) return c.frame(anim, time, side, variant, motion);
-      const key = [anim, time, side, variant, motion?.headSide, motion?.gaitPhase, motion?.pointsOnly ? 'p' : ''].join('/');
+      const key = [anim, time, side, variant, motion?.headSide, motion?.gaitPhase, motion?.secondaryTime, motion?.pointsOnly ? 'p' : ''].join('/');
       const existing = poses.get(key);
       if (existing) {
         poses.delete(key); // least recently used goes first
@@ -276,6 +276,14 @@ export async function pool(cmd: string, ids: string[], rest: string[], jobs: num
 export async function snapCommand(args: string[], ids: string[]) {
   const check = args.includes('--check');
   const force = args.includes('--force');
+  if (args[0] === 'all') {
+    // A workshop experiment must never acquire or require a golden until explicitly accepted.
+    // An ordinary painting with a missing reference remains a failing comparison.
+    ids = ids.filter(id => {
+      const config = join(tools, 'c', id + '.studio.json');
+      return !existsSync(config) || JSON.parse(readFileSync(config, 'utf8')).experimental !== true;
+    });
+  }
   const jobsArg = args.indexOf('--jobs');
   const { defaultJobs, heavyLock } = await import('./lock');
   const jobs = jobsArg >= 0 ? Number(args[jobsArg + 1]) : defaultJobs();

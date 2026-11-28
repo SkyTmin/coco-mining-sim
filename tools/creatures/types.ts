@@ -22,6 +22,8 @@ export interface ImpactContact {
   amp?: number; // peak camera excursion in field pixels
 }
 export interface Animation {
+  /** Experimental 12 Hz primary pose on the 24 Hz picture clock. */
+  poseStep?: 2;
   contacts?: readonly ImpactContact[];
   /** Internal clocks retained when the workshop inserts contact holds. */
   authoredSeconds?: number;
@@ -118,7 +120,7 @@ export interface Creature {
     t: number,
     side: number,
     variant: Variant,
-    motion?: { headSide: number; gaitPhase: number; techniquePose?: JointPose; pointsOnly?: boolean },
+    motion?: { headSide: number; gaitPhase: number; techniquePose?: JointPose; pointsOnly?: boolean; secondaryTime?: number },
   ) => BodyFrame; // side 0..15; default 0 = artist's 3/4
   props?: (input: FxInput) => void; // physical targets shown during both held keys and playback
   effects?: (input: FxInput) => void;
