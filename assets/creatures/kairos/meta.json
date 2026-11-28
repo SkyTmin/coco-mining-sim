@@ -1,0 +1,475 @@
+{
+  "id": "kairos",
+  "rarity": "secret",
+  "theme": "kairos_orchard",
+  "fps": 24,
+  "scale": 3,
+  "field": [
+    256,
+    208
+  ],
+  "thickness": 18,
+  "bodySize": 160,
+  "canvas": [
+    292,
+    244
+  ],
+  "anchor": [
+    80,
+    150
+  ],
+  "eye": null,
+  "primitives": 176,
+  "feet": [
+    110,
+    196
+  ],
+  "points": {
+    "footL": [
+      89.1343623741434,
+      148.26352867964366
+    ],
+    "footR": [
+      73.56714915519731,
+      154.26088427478
+    ],
+    "gear": [
+      75.47766969988368,
+      52.64613271429475
+    ],
+    "eyeL": [
+      94.9119393991958,
+      65.40169696288817
+    ],
+    "eyeR": [
+      84.13269608380664,
+      69.55446048579068
+    ],
+    "head": [
+      81.08060461173628,
+      60.809765181769464
+    ],
+    "muzzle": [
+      90.63855240254367,
+      73.64513821452049
+    ],
+    "earL": [
+      90.65918496274851,
+      24.115744463457105
+    ],
+    "earR": [
+      64.89193694375793,
+      34.04272027502253
+    ],
+    "pawL": [
+      97.5691765515669,
+      98.71641161155793
+    ],
+    "elbowL": [
+      95.0592716380688,
+      82.16367079329709
+    ],
+    "pawR": [
+      69.07882393885787,
+      109.69247863434944
+    ],
+    "elbowR": [
+      60.71475226872228,
+      95.39508816421969
+    ],
+    "pendulum": [
+      68.92380272970314,
+      115.44990688686288
+    ],
+    "tail": [
+      68.92380272970314,
+      104.24990688686287
+    ],
+    "chest": [
+      80.67537788233517,
+      89.63110323860593
+    ],
+    "belly": [
+      80.67537788233517,
+      110.43110323860593
+    ],
+    "waist": [
+      80.54030230586814,
+      99.90488259088474
+    ],
+    "footLGround": [
+      89.1343623741434,
+      148.26352867964366
+    ],
+    "footRGround": [
+      73.56714915519731,
+      154.26088427478
+    ],
+    "gearGround": [
+      75.47766969988368,
+      145.77413271429475
+    ],
+    "eyeLGround": [
+      94.9119393991958,
+      156.82169696288818
+    ],
+    "eyeRGround": [
+      84.13269608380664,
+      160.9744604857907
+    ],
+    "headGround": [
+      81.08060461173628,
+      151.00976518176947
+    ],
+    "muzzleGround": [
+      90.63855240254367,
+      159.9411382145205
+    ],
+    "earLGround": [
+      90.65918496274851,
+      142.95789696156083
+    ],
+    "earRGround": [
+      64.89193694375793,
+      152.88487277312626
+    ],
+    "pawLGround": [
+      97.5691765515669,
+      147.61806068379337
+    ],
+    "elbowLGround": [
+      95.0592716380688,
+      141.40982097100755
+    ],
+    "pawRGround": [
+      69.07882393885787,
+      158.59412770658489
+    ],
+    "elbowRGround": [
+      60.71475226872228,
+      154.64123834193015
+    ],
+    "pendulumGround": [
+      68.92380272970314,
+      139.64990688686288
+    ],
+    "tailGround": [
+      68.92380272970314,
+      139.64990688686288
+    ],
+    "chestGround": [
+      80.67537788233517,
+      150.63110323860593
+    ],
+    "bellyGround": [
+      80.67537788233517,
+      150.63110323860593
+    ],
+    "waistGround": [
+      80.54030230586814,
+      150.50488259088473
+    ]
+  },
+  "motion": {
+    "life": {
+      "stride": 22,
+      "yaw": 1,
+      "beats": [
+        {
+          "at": [
+            0.36,
+            0.856
+          ],
+          "seconds": 2,
+          "anim": "idle",
+          "side": 0
+        },
+        {
+          "at": [
+            0.36,
+            0.856
+          ],
+          "seconds": 3,
+          "anim": "fidget_a",
+          "side": 0
+        },
+        {
+          "at": [
+            0.36,
+            0.856
+          ],
+          "seconds": 15,
+          "anim": "trick",
+          "side": 0
+        }
+      ]
+    },
+    "track": "frames/<anim>/motion.json",
+    "directions": {
+      "walk_n": {
+        "velocity": [
+          0,
+          -13.2
+        ],
+        "pixelsPerSecond": 13.2,
+        "worldStride": 22,
+        "feet": [
+          92,
+          184.6
+        ]
+      },
+      "walk_ne": {
+        "velocity": [
+          15.556349186104047,
+          -9.333809511662425
+        ],
+        "pixelsPerSecond": 18.141664752717706,
+        "worldStride": 22,
+        "feet": [
+          84.22182540694797,
+          182.6669047558312
+        ]
+      },
+      "walk_e": {
+        "velocity": [
+          22,
+          0
+        ],
+        "pixelsPerSecond": 22,
+        "worldStride": 22,
+        "feet": [
+          81,
+          178
+        ]
+      },
+      "walk_se": {
+        "velocity": [
+          15.556349186104047,
+          9.333809511662425
+        ],
+        "pixelsPerSecond": 18.141664752717706,
+        "worldStride": 22,
+        "feet": [
+          84.22182540694797,
+          173.3330952441688
+        ]
+      },
+      "walk_s": {
+        "velocity": [
+          0,
+          13.2
+        ],
+        "pixelsPerSecond": 13.2,
+        "worldStride": 22,
+        "feet": [
+          92,
+          171.4
+        ]
+      },
+      "walk_sw": {
+        "velocity": [
+          -15.556349186104043,
+          9.333809511662428
+        ],
+        "pixelsPerSecond": 18.141664752717706,
+        "worldStride": 22,
+        "feet": [
+          99.77817459305203,
+          173.3330952441688
+        ]
+      },
+      "walk_w": {
+        "velocity": [
+          -22,
+          0
+        ],
+        "pixelsPerSecond": 22,
+        "worldStride": 22,
+        "feet": [
+          103,
+          178
+        ]
+      },
+      "walk_nw": {
+        "velocity": [
+          -15.556349186104049,
+          -9.333809511662425
+        ],
+        "pixelsPerSecond": 18.14166475271771,
+        "worldStride": 22,
+        "feet": [
+          99.77817459305203,
+          182.6669047558312
+        ]
+      }
+    }
+  },
+  "layers": [
+    "bg",
+    "bgfBack",
+    "fxu",
+    "body",
+    "lit",
+    "fxo",
+    "light",
+    "bgf",
+    "frame",
+    "over"
+  ],
+  "foreground": "Use bg/front-depth.json and bg/front/<id>.png sorted by depth. Objects with depth > motion.feet[1] go into bgf; the rest into bgfBack. Apply motion.camera to all field layers.",
+  "background": "use frames/<anim>/bg/NNN.png when present, otherwise use bg/loop/<motion.backgroundFrame>.png",
+  "animations": {
+    "idle": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "look": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "sleep": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "turn": {
+      "seconds": 4,
+      "frames": 96,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "happy": {
+      "seconds": 2,
+      "frames": 48,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "tired": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "hatch": {
+      "seconds": 1.5,
+      "frames": 36,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "fidget_a": {
+      "seconds": 3,
+      "frames": 72,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "trick": {
+      "seconds": 15,
+      "frames": 360,
+      "loop": false,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "life": {
+      "seconds": 20,
+      "frames": 480,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_n": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_ne": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_e": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_se": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_s": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_sw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_w": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    },
+    "walk_nw": {
+      "seconds": 1,
+      "frames": 24,
+      "loop": true,
+      "hit": [],
+      "shake": 0,
+      "stop": 0
+    }
+  }
+}
