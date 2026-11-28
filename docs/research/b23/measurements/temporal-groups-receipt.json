@@ -1,0 +1,170 @@
+{
+  "asset": "b23-temporal-groups-b1a4898.zip",
+  "size": 724401,
+  "sha256": "8747aa8db2e46529384fca8ba271af9b358400aebb5fca0df92e000b52e72813",
+  "job": "https://github.com/SkyTmin/coco-mining-sim/actions/runs/46179079904",
+  "sheets": [
+    {
+      "sheet": "01-bell_magpie.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "02-bell_magpie.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "03-bramble_warden.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "04-bramble_warden.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "05-garden_chameleon.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "06-garden_chameleon.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "07-garden_chameleon.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "08-garden_chameleon.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "09-garden_chameleon.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "10-garden_chameleon.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "11-lunar_plush.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "12-lunar_plush.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "13-lunar_plush.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "14-lunar_plush.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "15-lunar_plush.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "16-lunar_plush.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "17-lunar_plush.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "18-lunar_plush.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "19-lunar_plush.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "20-opal_skater.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "21-opal_skater.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "22-opal_skater.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "23-zephyr_whorl.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "24-zephyr_whorl.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "25-zephyr_whorl.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "26-zephyr_whorl.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    },
+    {
+      "sheet": "27-zephyr_whorl.png",
+      "nativeDifferentPixels": 0,
+      "enlargementDifferentPixels": 0,
+      "labelsDiffer": true
+    }
+  ]
+}

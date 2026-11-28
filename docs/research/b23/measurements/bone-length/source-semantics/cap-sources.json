@@ -1,0 +1,860 @@
+[
+  {
+    "file": "c/ball_pangolin-skin.ts",
+    "line": 610,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "ball_pangolin"
+  },
+  {
+    "file": "c/ball_pangolin-skin.ts",
+    "line": 615,
+    "part": "arm[LR]",
+    "roles": [
+      "elbow-wrist"
+    ],
+    "condition": "direct",
+    "painting": "ball_pangolin"
+  },
+  {
+    "file": "c/ball_pangolin-skin.ts",
+    "line": 597,
+    "part": "leg[LR]",
+    "roles": [
+      "knee-ankle"
+    ],
+    "condition": "direct",
+    "painting": "ball_pangolin"
+  },
+  {
+    "file": "c/bell_magpie-skin.ts",
+    "line": 302,
+    "part": "leg[LR]",
+    "roles": [
+      "hip-heel"
+    ],
+    "condition": "direct",
+    "painting": "bell_magpie"
+  },
+  {
+    "file": "c/bell_magpie-skin.ts",
+    "line": 303,
+    "part": "leg[LR]",
+    "roles": [
+      "heel-pad"
+    ],
+    "condition": "direct",
+    "painting": "bell_magpie"
+  },
+  {
+    "file": "c/bun_panda-skin.ts",
+    "line": 580,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "bun_panda"
+  },
+  {
+    "file": "c/bun_panda-skin.ts",
+    "line": 583,
+    "part": "fore[LR]",
+    "roles": [
+      "elbow-hand"
+    ],
+    "condition": "direct",
+    "painting": "bun_panda"
+  },
+  {
+    "file": "c/bun_panda-skin.ts",
+    "line": 819,
+    "part": "mArm[LR]",
+    "roles": [
+      "companion.shoulder-elbow"
+    ],
+    "condition": "separate actor",
+    "painting": "bun_panda"
+  },
+  {
+    "file": "c/bun_panda-skin.ts",
+    "line": 820,
+    "part": "mArm[LR]",
+    "roles": [
+      "companion.elbow-hand"
+    ],
+    "condition": "separate actor",
+    "painting": "bun_panda"
+  },
+  {
+    "file": "c/bun_panda-skin.ts",
+    "line": 831,
+    "part": "mLeg[LR]",
+    "roles": [
+      "companion.hip-knee"
+    ],
+    "condition": "separate actor",
+    "painting": "bun_panda"
+  },
+  {
+    "file": "c/bun_panda-skin.ts",
+    "line": 832,
+    "part": "mLeg[LR]",
+    "roles": [
+      "companion.knee-foot"
+    ],
+    "condition": "separate actor",
+    "painting": "bun_panda"
+  },
+  {
+    "file": "c/coin_dragon.ts",
+    "line": 768,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow",
+      "elbow-hand"
+    ],
+    "condition": "two direct calls on the same source line; use lexical column",
+    "painting": "coin_dragon"
+  },
+  {
+    "file": "c/coin_dragon.ts",
+    "line": 383,
+    "part": "leg[LR]",
+    "roles": [
+      "hip-knee",
+      "knee-toe"
+    ],
+    "condition": "two direct calls on the same source line; use lexical column",
+    "painting": "coin_dragon"
+  },
+  {
+    "file": "c/coin_dragon.ts",
+    "line": 702,
+    "part": "wing[LR]",
+    "roles": [
+      "shoulder-elbow",
+      "elbow-wingtip"
+    ],
+    "condition": "two direct calls on the same source line; use lexical column",
+    "painting": "coin_dragon"
+  },
+  {
+    "file": "c/crater_titan.ts",
+    "line": 336,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow",
+      "elbow-hand"
+    ],
+    "condition": "two direct calls on the same source line; use lexical column",
+    "painting": "crater_titan"
+  },
+  {
+    "file": "c/crater_titan.ts",
+    "line": 225,
+    "part": "leg[LR]",
+    "roles": [
+      "hip-knee",
+      "knee-toe"
+    ],
+    "condition": "two direct calls on the same source line; use lexical column",
+    "painting": "crater_titan"
+  },
+  {
+    "file": "c/eclipse_drake-skin.ts",
+    "line": 603,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "eclipse_drake"
+  },
+  {
+    "file": "c/eclipse_drake-skin.ts",
+    "line": 607,
+    "part": "arm[LR]",
+    "roles": [
+      "elbow-hand"
+    ],
+    "condition": "direct",
+    "painting": "eclipse_drake"
+  },
+  {
+    "file": "c/ember_panda-skin.ts",
+    "line": 455,
+    "part": "leg[LR][FH]",
+    "roles": [
+      "knee-ankle"
+    ],
+    "condition": "direct",
+    "painting": "ember_panda"
+  },
+  {
+    "file": "c/frost_fox-skin.ts",
+    "line": 309,
+    "part": "(?:fore|hind)[LR]",
+    "roles": [
+      "hip-knee"
+    ],
+    "condition": "direct",
+    "painting": "frost_fox"
+  },
+  {
+    "file": "c/frost_fox-skin.ts",
+    "line": 312,
+    "part": "(?:fore|hind)[LR]",
+    "roles": [
+      "hock-foot"
+    ],
+    "condition": "direct",
+    "painting": "frost_fox"
+  },
+  {
+    "file": "bodies/armed-biped.ts",
+    "line": 450,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "frost_yeti"
+  },
+  {
+    "file": "bodies/armed-biped.ts",
+    "line": 451,
+    "part": "arm[LR]",
+    "roles": [
+      "elbow-hand"
+    ],
+    "condition": "direct",
+    "painting": "frost_yeti"
+  },
+  {
+    "file": "bodies/armed-biped.ts",
+    "line": 201,
+    "part": "leg[LR]",
+    "roles": [
+      "hip-knee"
+    ],
+    "condition": "direct",
+    "painting": "frost_yeti"
+  },
+  {
+    "file": "bodies/armed-biped.ts",
+    "line": 202,
+    "part": "leg[LR]",
+    "roles": [
+      "knee-heel"
+    ],
+    "condition": "direct",
+    "painting": "frost_yeti"
+  },
+  {
+    "file": "c/garden_chameleon-skin.ts",
+    "line": 323,
+    "part": "(?:paw|foot)[LR]",
+    "roles": [
+      "hip-joint"
+    ],
+    "condition": "direct",
+    "painting": "garden_chameleon"
+  },
+  {
+    "file": "c/garden_chameleon-skin.ts",
+    "line": 325,
+    "part": "(?:paw|foot)[LR]",
+    "roles": [
+      "joint-pad"
+    ],
+    "condition": "direct",
+    "painting": "garden_chameleon"
+  },
+  {
+    "file": "c/gem_beetle.ts",
+    "line": 149,
+    "part": "leg[LR][012]",
+    "roles": [
+      "hip-knee"
+    ],
+    "condition": "direct",
+    "painting": "gem_beetle"
+  },
+  {
+    "file": "c/gem_beetle.ts",
+    "line": 150,
+    "part": "leg[LR][012]",
+    "roles": [
+      "knee-toe"
+    ],
+    "condition": "direct",
+    "painting": "gem_beetle"
+  },
+  {
+    "file": "bodies/kits/bark-moss.ts",
+    "line": 35,
+    "part": "leg[LR]",
+    "roles": [
+      "hip-knee",
+      "knee-ankle"
+    ],
+    "condition": "shared barkLimb helper; separate successive calls in c/grove_lord-skin.ts:209-210",
+    "painting": "grove_lord"
+  },
+  {
+    "file": "bodies/kits/bark-moss.ts",
+    "line": 35,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow",
+      "elbow-hand"
+    ],
+    "condition": "shared barkLimb helper; separate successive calls in c/grove_lord-skin.ts:227-228",
+    "painting": "grove_lord"
+  },
+  {
+    "file": "c/herald_griffin-skin.ts",
+    "line": 119,
+    "part": "hind[LR]",
+    "roles": [
+      "hip-knee"
+    ],
+    "condition": "direct",
+    "painting": "herald_griffin"
+  },
+  {
+    "file": "c/herald_griffin-skin.ts",
+    "line": 120,
+    "part": "hind[LR]",
+    "roles": [
+      "knee-hock"
+    ],
+    "condition": "direct",
+    "painting": "herald_griffin"
+  },
+  {
+    "file": "c/herald_griffin-skin.ts",
+    "line": 121,
+    "part": "hind[LR]",
+    "roles": [
+      "hock-hoof"
+    ],
+    "condition": "direct",
+    "painting": "herald_griffin"
+  },
+  {
+    "file": "c/herald_griffin-skin.ts",
+    "line": 137,
+    "part": "fore[LR]",
+    "roles": [
+      "hip-knee"
+    ],
+    "condition": "direct",
+    "painting": "herald_griffin"
+  },
+  {
+    "file": "c/herald_griffin-skin.ts",
+    "line": 138,
+    "part": "fore[LR]",
+    "roles": [
+      "knee-hock"
+    ],
+    "condition": "direct",
+    "painting": "herald_griffin"
+  },
+  {
+    "file": "c/herald_griffin-skin.ts",
+    "line": 139,
+    "part": "fore[LR]",
+    "roles": [
+      "hock-hoof"
+    ],
+    "condition": "direct",
+    "painting": "herald_griffin"
+  },
+  {
+    "file": "c/herald_griffin-skin.ts",
+    "line": 62,
+    "part": "wing[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "herald_griffin"
+  },
+  {
+    "file": "c/herald_griffin-skin.ts",
+    "line": 63,
+    "part": "wing[LR]",
+    "roles": [
+      "elbow-wrist"
+    ],
+    "condition": "direct",
+    "painting": "herald_griffin"
+  },
+  {
+    "file": "c/kettle_crab-skin.ts",
+    "line": 514,
+    "part": "leg[LR][012]",
+    "roles": [
+      "hip-knee"
+    ],
+    "condition": "direct",
+    "painting": "kettle_crab"
+  },
+  {
+    "file": "c/kettle_crab-skin.ts",
+    "line": 515,
+    "part": "leg[LR][012]",
+    "roles": [
+      "knee-ankle"
+    ],
+    "condition": "direct",
+    "painting": "kettle_crab"
+  },
+  {
+    "file": "c/kettle_crab-skin.ts",
+    "line": 516,
+    "part": "leg[LR][012]",
+    "roles": [
+      "ankle-toe"
+    ],
+    "condition": "direct",
+    "painting": "kettle_crab"
+  },
+  {
+    "file": "c/kettle_crab-skin.ts",
+    "line": 536,
+    "part": "claw[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "kettle_crab"
+  },
+  {
+    "file": "c/kettle_crab-skin.ts",
+    "line": 537,
+    "part": "claw[LR]",
+    "roles": [
+      "elbow-wrist"
+    ],
+    "condition": "direct",
+    "painting": "kettle_crab"
+  },
+  {
+    "file": "c/lunar_plush-skin.ts",
+    "line": 377,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "lunar_plush"
+  },
+  {
+    "file": "c/lunar_plush-skin.ts",
+    "line": 378,
+    "part": "arm[LR]",
+    "roles": [
+      "elbow-hand"
+    ],
+    "condition": "direct",
+    "painting": "lunar_plush"
+  },
+  {
+    "file": "c/moon_magician-skin.ts",
+    "line": 451,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "moon_magician"
+  },
+  {
+    "file": "c/moon_warden-skin.ts",
+    "line": 318,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "moon_warden"
+  },
+  {
+    "file": "c/moon_warden-skin.ts",
+    "line": 319,
+    "part": "arm[LR]",
+    "roles": [
+      "elbow-hand"
+    ],
+    "condition": "direct",
+    "painting": "moon_warden"
+  },
+  {
+    "file": "c/penguin_marshal-skin.ts",
+    "line": 206,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "penguin_marshal"
+  },
+  {
+    "file": "c/penguin_marshal-skin.ts",
+    "line": 207,
+    "part": "arm[LR]",
+    "roles": [
+      "elbow-wrist"
+    ],
+    "condition": "direct",
+    "painting": "penguin_marshal"
+  },
+  {
+    "file": "c/prism_serpent-skin.ts",
+    "line": 582,
+    "part": "wing[LR]",
+    "roles": [
+      "wingbase-elbow"
+    ],
+    "condition": "direct",
+    "painting": "prism_serpent"
+  },
+  {
+    "file": "c/prism_serpent-skin.ts",
+    "line": 583,
+    "part": "wing[LR]",
+    "roles": [
+      "elbow-wrist"
+    ],
+    "condition": "direct",
+    "painting": "prism_serpent"
+  },
+  {
+    "file": "c/puff_kit-skin.ts",
+    "line": 456,
+    "part": "leg[LR][FH]",
+    "roles": [
+      "knee-ankle"
+    ],
+    "condition": "direct",
+    "painting": "puff_kit"
+  },
+  {
+    "file": "c/rat_king-skin.ts",
+    "line": 127,
+    "part": "leg[LR]",
+    "roles": [
+      "hip-knee"
+    ],
+    "condition": "direct",
+    "painting": "rat_king"
+  },
+  {
+    "file": "c/rat_king-skin.ts",
+    "line": 128,
+    "part": "leg[LR]",
+    "roles": [
+      "knee-foot"
+    ],
+    "condition": "direct",
+    "painting": "rat_king"
+  },
+  {
+    "file": "c/rat_king-skin.ts",
+    "line": 177,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "rat_king"
+  },
+  {
+    "file": "c/rat_king-skin.ts",
+    "line": 178,
+    "part": "arm[LR]",
+    "roles": [
+      "elbow-hand"
+    ],
+    "condition": "direct",
+    "painting": "rat_king"
+  },
+  {
+    "file": "c/river_otter-skin.ts",
+    "line": 226,
+    "part": "paw[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "primary body only; steering.pointsOnly turns off drawLimbs; keep it false even under withPointsOnly",
+    "painting": "river_otter"
+  },
+  {
+    "file": "c/river_otter-skin.ts",
+    "line": 227,
+    "part": "paw[LR]",
+    "roles": [
+      "elbow-paw"
+    ],
+    "condition": "primary body only; steering.pointsOnly turns off drawLimbs; keep it false even under withPointsOnly",
+    "painting": "river_otter"
+  },
+  {
+    "file": "c/root_stag-skin.ts",
+    "line": 54,
+    "part": "(?:fore|hind)[LR]",
+    "roles": [
+      "hip-knee"
+    ],
+    "condition": "direct",
+    "painting": "root_stag"
+  },
+  {
+    "file": "c/root_stag-skin.ts",
+    "line": 56,
+    "part": "(?:fore|hind)[LR]",
+    "roles": [
+      "knee-hock"
+    ],
+    "condition": "direct",
+    "painting": "root_stag"
+  },
+  {
+    "file": "c/root_stag-skin.ts",
+    "line": 59,
+    "part": "(?:fore|hind)[LR]",
+    "roles": [
+      "hock-hoof"
+    ],
+    "condition": "direct",
+    "painting": "root_stag"
+  },
+  {
+    "file": "c/sand_scorpion-skin.ts",
+    "line": 37,
+    "part": "leg[LR][0123]",
+    "roles": [
+      "hip-knee",
+      "knee-ankle"
+    ],
+    "condition": "shared segment helper; first and second calls per leg via lines 58-59, exclude other tags",
+    "painting": "sand_scorpion"
+  },
+  {
+    "file": "c/sand_scorpion-skin.ts",
+    "line": 63,
+    "part": "leg[LR][0123]",
+    "roles": [
+      "ankle-toe"
+    ],
+    "condition": "direct",
+    "painting": "sand_scorpion"
+  },
+  {
+    "file": "c/storm_ram-skin.ts",
+    "line": 81,
+    "part": "(?:fore|hind)[LR]",
+    "roles": [
+      "hip-knee"
+    ],
+    "condition": "direct",
+    "painting": "storm_ram"
+  },
+  {
+    "file": "c/storm_ram-skin.ts",
+    "line": 82,
+    "part": "(?:fore|hind)[LR]",
+    "roles": [
+      "knee-foot"
+    ],
+    "condition": "direct",
+    "painting": "storm_ram"
+  },
+  {
+    "file": "c/threshold_keeper-beast.ts",
+    "line": 301,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "threshold_keeper"
+  },
+  {
+    "file": "c/threshold_keeper-beast.ts",
+    "line": 302,
+    "part": "arm[LR]",
+    "roles": [
+      "elbow-palm"
+    ],
+    "condition": "direct",
+    "painting": "threshold_keeper"
+  },
+  {
+    "file": "c/toad_shaman.ts",
+    "line": 455,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "toad_shaman"
+  },
+  {
+    "file": "c/toad_shaman.ts",
+    "line": 456,
+    "part": "arm[LR]",
+    "roles": [
+      "elbow-hand"
+    ],
+    "condition": "direct",
+    "painting": "toad_shaman"
+  },
+  {
+    "file": "c/tuft_owlet-skin.ts",
+    "line": 497,
+    "part": "wing[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "tuft_owlet"
+  },
+  {
+    "file": "c/tuft_owlet-skin.ts",
+    "line": 498,
+    "part": "wing[LR]",
+    "roles": [
+      "elbow-wrist"
+    ],
+    "condition": "direct",
+    "painting": "tuft_owlet"
+  },
+  {
+    "file": "c/tuft_owlet-skin.ts",
+    "line": 521,
+    "part": "leg[LR]",
+    "roles": [
+      "knee-ankle"
+    ],
+    "condition": "direct",
+    "painting": "tuft_owlet"
+  },
+  {
+    "file": "c/zephyr_whorl-skin.ts",
+    "line": 305,
+    "part": "arm[LR]",
+    "roles": [
+      "shoulder-elbow"
+    ],
+    "condition": "direct",
+    "painting": "zephyr_whorl"
+  },
+  {
+    "file": "c/zephyr_whorl-skin.ts",
+    "line": 306,
+    "part": "arm[LR]",
+    "roles": [
+      "elbow-palm"
+    ],
+    "condition": "direct",
+    "painting": "zephyr_whorl"
+  },
+  {
+    "file": "c/zephyr_whorl-skin.ts",
+    "line": 363,
+    "part": "leg[LR]",
+    "roles": [
+      "hip-knee"
+    ],
+    "condition": "only the articulated branch; rest shaft at line 365 is not either of these bones",
+    "painting": "zephyr_whorl"
+  },
+  {
+    "file": "c/zephyr_whorl-skin.ts",
+    "line": 364,
+    "part": "leg[LR]",
+    "roles": [
+      "knee-foot"
+    ],
+    "condition": "only the articulated branch; rest shaft at line 365 is not either of these bones",
+    "painting": "zephyr_whorl"
+  },
+  {
+    "file": "c/apricot_bubbler-skin.ts",
+    "line": 139,
+    "part": "leg[HF][LR]",
+    "roles": [
+      "body-foot"
+    ],
+    "condition": "single drawn shaft; separate from articulated bone",
+    "painting": "apricot_bubbler"
+  },
+  {
+    "file": "c/bramble_warden.ts",
+    "line": 55,
+    "part": "(?:fore|hind)[LR]",
+    "roles": [
+      "hip-foot"
+    ],
+    "condition": "single drawn shaft; separate from articulated bone",
+    "painting": "bramble_warden"
+  },
+  {
+    "file": "c/lunar_plush-skin.ts",
+    "line": 298,
+    "part": "leg[LR]",
+    "roles": [
+      "body-toe"
+    ],
+    "condition": "single drawn shaft; separate from articulated bone",
+    "painting": "lunar_plush"
+  },
+  {
+    "file": "c/opal_skater-skin.ts",
+    "line": 212,
+    "part": "hand[LR]",
+    "roles": [
+      "arm-shaft"
+    ],
+    "condition": "two prescribed ends of one hand shaft",
+    "painting": "opal_skater"
+  },
+  {
+    "file": "c/opal_skater-skin.ts",
+    "line": 220,
+    "part": "leg[LR]",
+    "roles": [
+      "body-boot"
+    ],
+    "condition": "single drawn shaft; separate from articulated bone",
+    "painting": "opal_skater"
+  },
+  {
+    "file": "c/pocket_magnet-skin.ts",
+    "line": 244,
+    "part": "paw[LR]",
+    "roles": [
+      "shoulder-paw"
+    ],
+    "condition": "single drawn shaft; author interpolates tip toward head at lines 235-241",
+    "painting": "pocket_magnet"
+  },
+  {
+    "file": "c/zephyr_whorl-skin.ts",
+    "line": 365,
+    "part": "leg[LR]",
+    "roles": [
+      "hip-foot"
+    ],
+    "condition": "single drawn shaft in alternate branch; never compare with 363/364",
+    "painting": "zephyr_whorl"
+  }
+]

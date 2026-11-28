@@ -1,0 +1,1854 @@
+{
+  "samples": [
+    "idle, t0 side0",
+    "idle, t0 side4",
+    "trick or first tech/walk, half duration side0"
+  ],
+  "controls": {
+    "rigid translation": {
+      "3d": [
+        8.0,
+        8.0
+      ],
+      "screen": [
+        8.0,
+        8.0
+      ],
+      "alert": false
+    },
+    "rigid yaw": {
+      "3d": [
+        8.0,
+        8.0
+      ],
+      "screen": [
+        8.0,
+        4.8
+      ],
+      "alert": false
+    },
+    "direction along optical axis": {
+      "3d": [
+        8.0,
+        8.0
+      ],
+      "screen": [
+        8.0,
+        2.1316282072803005e-16
+      ],
+      "alert": false
+    },
+    "tolerance exactly +1": {
+      "3d": [
+        8.0,
+        9.0
+      ],
+      "screen": [
+        8.0,
+        9.0
+      ],
+      "alert": false
+    },
+    "tolerance exactly -1": {
+      "3d": [
+        8.0,
+        7.0
+      ],
+      "screen": [
+        8.0,
+        7.0
+      ],
+      "alert": false
+    },
+    "just too long": {
+      "3d": [
+        8.0,
+        9.00001
+      ],
+      "screen": [
+        8.0,
+        9.00001
+      ],
+      "alert": true
+    },
+    "just too short": {
+      "3d": [
+        8.0,
+        6.99999
+      ],
+      "screen": [
+        8.0,
+        6.99999
+      ],
+      "alert": true
+    },
+    "two rigid bones extend the reach": {
+      "segmentsRest": [
+        5.0,
+        5.0
+      ],
+      "segmentsNow": [
+        5.0,
+        5.0
+      ],
+      "reach": [
+        6.0,
+        10.0
+      ]
+    },
+    "uniform parent": {
+      "local": [
+        8.0,
+        8.0
+      ],
+      "placed": [
+        8.0,
+        12.0
+      ],
+      "screen": [
+        8.0,
+        9.600000000000001
+      ]
+    },
+    "anisotropic parent + pitch": {
+      "local": [
+        8.0,
+        8.0
+      ],
+      "placed": [
+        8.0,
+        12.0
+      ],
+      "screen": [
+        8.0,
+        9.600000000000001
+      ]
+    },
+    "camera zoom after projection": {
+      "model": [
+        8,
+        8
+      ],
+      "screen": [
+        8,
+        12
+      ],
+      "cameraZoom": [
+        1,
+        1.5
+      ]
+    }
+  },
+  "rows": [
+    {
+      "id": "apricot_bubbler",
+      "sourceMove": "trick",
+      "restSegments": 4,
+      "comparisons": 8,
+      "missing": {},
+      "overOne": {
+        "pre": 3,
+        "placed": 3,
+        "screen": 4
+      },
+      "projectionOnly": 0,
+      "afterPlacementOnly": 0,
+      "exampleProjection": null,
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "legFR/c/apricot_bubbler-skin.ts:139/body-foot",
+        "mode": "move",
+        "pre": [
+          5.44641166273722,
+          8.571898410871523
+        ],
+        "placed": [
+          11.11067979198393,
+          17.48667275817791
+        ],
+        "screen": [
+          10.385851109963927,
+          16.62253339542725
+        ]
+      }
+    },
+    {
+      "id": "astral_seer",
+      "sourceMove": "trick",
+      "restSegments": 0,
+      "comparisons": 0,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 0
+      },
+      "projectionOnly": 0,
+      "afterPlacementOnly": 0,
+      "exampleProjection": null,
+      "exampleAfterPlacement": null,
+      "largestPlaced": null
+    },
+    {
+      "id": "ball_pangolin",
+      "sourceMove": "trick",
+      "restSegments": 6,
+      "comparisons": 6,
+      "missing": {
+        "move": 6
+      },
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 5
+      },
+      "projectionOnly": 5,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/c/ball_pangolin-skin.ts:610/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          5.000000000000002,
+          5.000000000000002
+        ],
+        "placed": [
+          10.250000000000004,
+          10.250000000000004
+        ],
+        "screen": [
+          7.434430699947592,
+          10.101721964852526
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "armL/c/ball_pangolin-skin.ts:615/elbow-wrist",
+        "mode": "idleQuarter",
+        "pre": [
+          4.800000000000001,
+          4.800000000000001
+        ],
+        "placed": [
+          9.84,
+          9.840000000000002
+        ],
+        "screen": [
+          6.068120429245997,
+          7.628041299169308
+        ]
+      }
+    },
+    {
+      "id": "bell_magpie",
+      "sourceMove": "trick",
+      "restSegments": 4,
+      "comparisons": 8,
+      "missing": {},
+      "overOne": {
+        "pre": 4,
+        "placed": 4,
+        "screen": 6
+      },
+      "projectionOnly": 2,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "legL/c/bell_magpie-skin.ts:302/hip-heel",
+        "mode": "idleQuarter",
+        "pre": [
+          7.436943087560347,
+          7.436943087560347
+        ],
+        "placed": [
+          20.631970357320018,
+          20.63197035732002
+        ],
+        "screen": [
+          15.108185147161404,
+          13.597782862926435
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "legR/c/bell_magpie-skin.ts:302/hip-heel",
+        "mode": "move",
+        "pre": [
+          7.436943087560348,
+          3.7579864930409346
+        ],
+        "placed": [
+          20.63197035732002,
+          9.243765502927312
+        ],
+        "screen": [
+          15.491150963725937,
+          8.862722703614365
+        ]
+      }
+    },
+    {
+      "id": "bramble_warden",
+      "sourceMove": "tech_ram",
+      "restSegments": 4,
+      "comparisons": 8,
+      "missing": {},
+      "overOne": {
+        "pre": 4,
+        "placed": 4,
+        "screen": 7
+      },
+      "projectionOnly": 3,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "foreL/c/bramble_warden.ts:55/hip-foot",
+        "mode": "idleQuarter",
+        "pre": [
+          12.297967311714567,
+          12.297967311714567
+        ],
+        "placed": [
+          16.631144398387022,
+          16.631144398387022
+        ],
+        "screen": [
+          12.971920006742923,
+          14.940667879691642
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "hindL/c/bramble_warden.ts:55/hip-foot",
+        "mode": "move",
+        "pre": [
+          12.297967311714567,
+          4.476605857119878
+        ],
+        "placed": [
+          16.631144398387022,
+          5.578845163816367
+        ],
+        "screen": [
+          11.302833911252565,
+          5.469034507377106
+        ]
+      }
+    },
+    {
+      "id": "bun_panda",
+      "sourceMove": "trick",
+      "restSegments": 12,
+      "comparisons": 24,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 16
+      },
+      "projectionOnly": 16,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/c/bun_panda-skin.ts:580/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          4.1,
+          4.1
+        ],
+        "placed": [
+          15.17,
+          15.17
+        ],
+        "screen": [
+          9.239889248221127,
+          15.134891885703102
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "foreR/c/bun_panda-skin.ts:583/elbow-hand",
+        "mode": "move",
+        "pre": [
+          3.9,
+          3.8999999999999977
+        ],
+        "placed": [
+          14.430000000000003,
+          14.429999999999986
+        ],
+        "screen": [
+          12.486776167390802,
+          9.171869989875916
+        ]
+      }
+    },
+    {
+      "id": "coin_dragon",
+      "sourceMove": "tech_breath",
+      "restSegments": 12,
+      "comparisons": 24,
+      "missing": {},
+      "overOne": {
+        "pre": 3,
+        "placed": 4,
+        "screen": 17
+      },
+      "projectionOnly": 10,
+      "afterPlacementOnly": 1,
+      "exampleProjection": {
+        "id": "armL/c/coin_dragon.ts:768/elbow-hand",
+        "mode": "idleQuarter",
+        "pre": [
+          17.999999999999996,
+          18.0
+        ],
+        "placed": [
+          20.34130974501295,
+          20.341309745012957
+        ],
+        "screen": [
+          14.541044202199757,
+          18.4131903032904
+        ]
+      },
+      "exampleAfterPlacement": {
+        "id": "armL/c/coin_dragon.ts:768/shoulder-elbow",
+        "mode": "move",
+        "pre": [
+          18.0,
+          18.0
+        ],
+        "placed": [
+          21.626206743898585,
+          20.546833651732186
+        ],
+        "screen": [
+          20.567250770690798,
+          16.6855713575084
+        ]
+      },
+      "largestPlaced": {
+        "id": "wingL/c/coin_dragon.ts:702/shoulder-elbow",
+        "mode": "move",
+        "pre": [
+          20.73644135332772,
+          23.84601227112341
+        ],
+        "placed": [
+          26.29387381121313,
+          30.609060812117367
+        ],
+        "screen": [
+          25.84379697071285,
+          25.962789379879982
+        ]
+      }
+    },
+    {
+      "id": "crater_titan",
+      "sourceMove": "tech_eruption",
+      "restSegments": 8,
+      "comparisons": 16,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 4,
+        "screen": 10
+      },
+      "projectionOnly": 4,
+      "afterPlacementOnly": 4,
+      "exampleProjection": {
+        "id": "armL/c/crater_titan.ts:336/elbow-hand",
+        "mode": "idleQuarter",
+        "pre": [
+          26.999999999999996,
+          26.999999999999996
+        ],
+        "placed": [
+          34.053941917752624,
+          34.053941917752624
+        ],
+        "screen": [
+          30.256354320774932,
+          32.3228315802252
+        ]
+      },
+      "exampleAfterPlacement": {
+        "id": "armL/c/crater_titan.ts:336/elbow-hand",
+        "mode": "move",
+        "pre": [
+          26.999999999999996,
+          27.000000000000004
+        ],
+        "placed": [
+          34.053941917752624,
+          32.88718741313397
+        ],
+        "screen": [
+          30.256354320774932,
+          32.83850895890796
+        ]
+      },
+      "largestPlaced": {
+        "id": "armR/c/crater_titan.ts:336/shoulder-elbow",
+        "mode": "move",
+        "pre": [
+          27.999999999999996,
+          28.0
+        ],
+        "placed": [
+          35.17265793568701,
+          32.673614358970816
+        ],
+        "screen": [
+          33.260627720919466,
+          32.18422767702746
+        ]
+      }
+    },
+    {
+      "id": "dream_sneak",
+      "sourceMove": "trick",
+      "restSegments": 0,
+      "comparisons": 0,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 0
+      },
+      "projectionOnly": 0,
+      "afterPlacementOnly": 0,
+      "exampleProjection": null,
+      "exampleAfterPlacement": null,
+      "largestPlaced": null
+    },
+    {
+      "id": "eclipse_drake",
+      "sourceMove": "trick",
+      "restSegments": 4,
+      "comparisons": 8,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 4
+      },
+      "projectionOnly": 4,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/c/eclipse_drake-skin.ts:603/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          7.400000000000001,
+          7.400000000000001
+        ],
+        "placed": [
+          34.04,
+          34.04
+        ],
+        "screen": [
+          22.071376755455134,
+          27.238706932822378
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "armL/c/eclipse_drake-skin.ts:603/shoulder-elbow",
+        "mode": "move",
+        "pre": [
+          7.400000000000001,
+          7.3999999999999995
+        ],
+        "placed": [
+          34.04,
+          34.03999999999999
+        ],
+        "screen": [
+          22.071376755455134,
+          19.95619820653215
+        ]
+      }
+    },
+    {
+      "id": "ember_panda",
+      "sourceMove": "trick",
+      "restSegments": 4,
+      "comparisons": 4,
+      "missing": {
+        "move": 4
+      },
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 2
+      },
+      "projectionOnly": 2,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "legLH/c/ember_panda-skin.ts:455/knee-ankle",
+        "mode": "idleQuarter",
+        "pre": [
+          3.7000000000000006,
+          3.7000000000000006
+        ],
+        "placed": [
+          15.540000000000004,
+          15.540000000000004
+        ],
+        "screen": [
+          12.728061591850443,
+          3.7359378068786153
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "legRF/c/ember_panda-skin.ts:455/knee-ankle",
+        "mode": "idleQuarter",
+        "pre": [
+          3.4,
+          3.4
+        ],
+        "placed": [
+          14.280000000000003,
+          14.280000000000001
+        ],
+        "screen": [
+          14.110427520032767,
+          13.846507570349806
+        ]
+      }
+    },
+    {
+      "id": "frost_fox",
+      "sourceMove": "trick",
+      "restSegments": 8,
+      "comparisons": 16,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 3
+      },
+      "projectionOnly": 3,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "foreR/c/frost_fox-skin.ts:309/hip-knee",
+        "mode": "idleQuarter",
+        "pre": [
+          11.092000000000002,
+          11.092000000000002
+        ],
+        "placed": [
+          14.863280000000003,
+          14.863280000000003
+        ],
+        "screen": [
+          11.143447719014064,
+          6.500531875332115
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "hindL/c/frost_fox-skin.ts:309/hip-knee",
+        "mode": "move",
+        "pre": [
+          10.057999999999998,
+          10.057999999999998
+        ],
+        "placed": [
+          13.47772,
+          13.477719999999998
+        ],
+        "screen": [
+          11.708314987893464,
+          11.877683814063566
+        ]
+      }
+    },
+    {
+      "id": "frost_yeti",
+      "sourceMove": "tech_snowball",
+      "restSegments": 8,
+      "comparisons": 16,
+      "missing": {},
+      "overOne": {
+        "pre": 6,
+        "placed": 6,
+        "screen": 13
+      },
+      "projectionOnly": 6,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/bodies/armed-biped.ts:451/elbow-hand",
+        "mode": "idleQuarter",
+        "pre": [
+          27.993874724678374,
+          27.993874724678374
+        ],
+        "placed": [
+          34.448300459419706,
+          34.448300459419706
+        ],
+        "screen": [
+          27.521952924834746,
+          29.919357645499172
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "legR/bodies/armed-biped.ts:202/knee-heel",
+        "mode": "move",
+        "pre": [
+          10.954451150103322,
+          24.77359682470545
+        ],
+        "placed": [
+          13.885982140273692,
+          30.57656268403594
+        ],
+        "screen": [
+          9.506625138704502,
+          30.472716512378078
+        ]
+      }
+    },
+    {
+      "id": "garden_chameleon",
+      "sourceMove": "trick",
+      "restSegments": 8,
+      "comparisons": 16,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 2,
+        "screen": 9
+      },
+      "projectionOnly": 4,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "footL/c/garden_chameleon-skin.ts:325/joint-pad",
+        "mode": "idleQuarter",
+        "pre": [
+          8.889485841782355,
+          8.889485841782355
+        ],
+        "placed": [
+          20.61664844332182,
+          20.61664844332182
+        ],
+        "screen": [
+          13.635492477822577,
+          11.264715979166876
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "footL/c/garden_chameleon-skin.ts:325/joint-pad",
+        "mode": "move",
+        "pre": [
+          8.889485841782355,
+          8.19958311872924
+        ],
+        "placed": [
+          20.61664844332182,
+          19.044071371292763
+        ],
+        "screen": [
+          13.635492477822577,
+          14.95408398289866
+        ]
+      }
+    },
+    {
+      "id": "gem_beetle",
+      "sourceMove": "tech_horn",
+      "restSegments": 12,
+      "comparisons": 24,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 20
+      },
+      "projectionOnly": 10,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "legL0/c/gem_beetle.ts:149/hip-knee",
+        "mode": "idleQuarter",
+        "pre": [
+          15.4,
+          15.4
+        ],
+        "placed": [
+          18.17335941210226,
+          18.17335941210226
+        ],
+        "screen": [
+          16.52212700978135,
+          13.35236634036733
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "legR0/c/gem_beetle.ts:150/knee-toe",
+        "mode": "move",
+        "pre": [
+          13.299999999999995,
+          13.299999999999999
+        ],
+        "placed": [
+          20.684875270305636,
+          19.775395426921037
+        ],
+        "screen": [
+          16.939547521725064,
+          13.851446884506917
+        ]
+      }
+    },
+    {
+      "id": "grove_lord",
+      "sourceMove": "trick",
+      "restSegments": 8,
+      "comparisons": 16,
+      "missing": {},
+      "overOne": {
+        "pre": 2,
+        "placed": 2,
+        "screen": 11
+      },
+      "projectionOnly": 7,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/bodies/kits/bark-moss.ts:35/elbow-hand",
+        "mode": "idleQuarter",
+        "pre": [
+          18.13,
+          18.13
+        ],
+        "placed": [
+          19.942999999999994,
+          19.942999999999998
+        ],
+        "screen": [
+          19.87035570035437,
+          18.36776730761048
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "armL/bodies/kits/bark-moss.ts:35/shoulder-elbow",
+        "mode": "move",
+        "pre": [
+          18.5,
+          19.59363454239971
+        ],
+        "placed": [
+          20.349999999999998,
+          21.552997996639686
+        ],
+        "screen": [
+          15.036212188979782,
+          18.272967703755086
+        ]
+      }
+    },
+    {
+      "id": "herald_griffin",
+      "sourceMove": "trick",
+      "restSegments": 16,
+      "comparisons": 32,
+      "missing": {},
+      "overOne": {
+        "pre": 4,
+        "placed": 4,
+        "screen": 18
+      },
+      "projectionOnly": 16,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "foreR/c/herald_griffin-skin.ts:137/hip-knee",
+        "mode": "idleQuarter",
+        "pre": [
+          11.8,
+          11.8
+        ],
+        "placed": [
+          17.464000000000002,
+          17.464000000000002
+        ],
+        "screen": [
+          13.409217594613832,
+          7.428501093378217
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "wingL/c/herald_griffin-skin.ts:63/elbow-wrist",
+        "mode": "move",
+        "pre": [
+          12.100497729307678,
+          10.833132613894314
+        ],
+        "placed": [
+          17.908736639375366,
+          16.033036268563585
+        ],
+        "screen": [
+          15.513035685538041,
+          15.873533386095318
+        ]
+      }
+    },
+    {
+      "id": "ink_admiral",
+      "sourceMove": "trick",
+      "restSegments": 0,
+      "comparisons": 0,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 0
+      },
+      "projectionOnly": 0,
+      "afterPlacementOnly": 0,
+      "exampleProjection": null,
+      "exampleAfterPlacement": null,
+      "largestPlaced": null
+    },
+    {
+      "id": "kettle_crab",
+      "sourceMove": "trick",
+      "restSegments": 22,
+      "comparisons": 22,
+      "missing": {
+        "move": 22
+      },
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 20
+      },
+      "projectionOnly": 20,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "clawL/c/kettle_crab-skin.ts:536/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          6.06,
+          6.06
+        ],
+        "placed": [
+          9.999,
+          9.998999999999999
+        ],
+        "screen": [
+          9.92589027484158,
+          6.719556645053082
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "legR0/c/kettle_crab-skin.ts:515/knee-ankle",
+        "mode": "idleQuarter",
+        "pre": [
+          8.599999999999998,
+          8.600000000000001
+        ],
+        "placed": [
+          14.189999999999994,
+          14.190000000000001
+        ],
+        "screen": [
+          13.858305763571945,
+          12.019039531458889
+        ]
+      }
+    },
+    {
+      "id": "lunar_plush",
+      "sourceMove": "trick",
+      "restSegments": 6,
+      "comparisons": 12,
+      "missing": {},
+      "overOne": {
+        "pre": 2,
+        "placed": 2,
+        "screen": 5
+      },
+      "projectionOnly": 3,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/c/lunar_plush-skin.ts:377/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          3.923512456970157,
+          3.923512456970157
+        ],
+        "placed": [
+          7.847024913940314,
+          7.847024913940314
+        ],
+        "screen": [
+          6.743038447036574,
+          7.827218596431345
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "legL/c/lunar_plush-skin.ts:298/body-toe",
+        "mode": "move",
+        "pre": [
+          5.591511423577707,
+          6.776947467440118
+        ],
+        "placed": [
+          11.183022847155414,
+          13.553894934880235
+        ],
+        "screen": [
+          9.591886269126011,
+          11.583930900592922
+        ]
+      }
+    },
+    {
+      "id": "meadow_colossus",
+      "sourceMove": "trick",
+      "restSegments": 0,
+      "comparisons": 0,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 0
+      },
+      "projectionOnly": 0,
+      "afterPlacementOnly": 0,
+      "exampleProjection": null,
+      "exampleAfterPlacement": null,
+      "largestPlaced": null
+    },
+    {
+      "id": "moon_magician",
+      "sourceMove": "trick",
+      "restSegments": 2,
+      "comparisons": 4,
+      "missing": {},
+      "overOne": {
+        "pre": 1,
+        "placed": 1,
+        "screen": 3
+      },
+      "projectionOnly": 2,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/c/moon_magician-skin.ts:451/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          12.273373619343621,
+          12.273373619343621
+        ],
+        "placed": [
+          19.023729109982607,
+          19.023729109982607
+        ],
+        "screen": [
+          17.805740903858105,
+          5.487020321945599
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "armR/c/moon_magician-skin.ts:451/shoulder-elbow",
+        "mode": "move",
+        "pre": [
+          12.46260181503044,
+          14.572921991642085
+        ],
+        "placed": [
+          19.31703281329718,
+          22.58802908704524
+        ],
+        "screen": [
+          10.477256498570185,
+          16.260750205054393
+        ]
+      }
+    },
+    {
+      "id": "moon_warden",
+      "sourceMove": "trick",
+      "restSegments": 4,
+      "comparisons": 8,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 5
+      },
+      "projectionOnly": 5,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/c/moon_warden-skin.ts:318/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          12.520872054293983,
+          12.520872054293983
+        ],
+        "placed": [
+          11.018367407778703,
+          11.018367407778703
+        ],
+        "screen": [
+          5.163572423544328,
+          10.702352132974093
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "armR/c/moon_warden-skin.ts:318/shoulder-elbow",
+        "mode": "move",
+        "pre": [
+          12.632479249933482,
+          13.591074945985337
+        ],
+        "placed": [
+          11.116581739941465,
+          11.960145952467093
+        ],
+        "screen": [
+          10.854245116957683,
+          10.781546817556682
+        ]
+      }
+    },
+    {
+      "id": "nebula_squid",
+      "sourceMove": "trick",
+      "restSegments": 0,
+      "comparisons": 0,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 0
+      },
+      "projectionOnly": 0,
+      "afterPlacementOnly": 0,
+      "exampleProjection": null,
+      "exampleAfterPlacement": null,
+      "largestPlaced": null
+    },
+    {
+      "id": "opal_skater",
+      "sourceMove": "trick",
+      "restSegments": 4,
+      "comparisons": 8,
+      "missing": {},
+      "overOne": {
+        "pre": 2,
+        "placed": 2,
+        "screen": 7
+      },
+      "projectionOnly": 5,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "handL/c/opal_skater-skin.ts:212/arm-shaft",
+        "mode": "idleQuarter",
+        "pre": [
+          3.321806737304263,
+          3.321806737304263
+        ],
+        "placed": [
+          5.647071453417245,
+          5.6470714534172455
+        ],
+        "screen": [
+          3.2201433604722296,
+          5.418953956435154
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "legL/c/opal_skater-skin.ts:220/body-boot",
+        "mode": "move",
+        "pre": [
+          4.823992122713304,
+          3.4936693553155016
+        ],
+        "placed": [
+          8.200786608612617,
+          5.939237904036352
+        ],
+        "screen": [
+          6.398310845481486,
+          3.6046743266258656
+        ]
+      }
+    },
+    {
+      "id": "penguin_marshal",
+      "sourceMove": "trick",
+      "restSegments": 4,
+      "comparisons": 8,
+      "missing": {},
+      "overOne": {
+        "pre": 2,
+        "placed": 4,
+        "screen": 7
+      },
+      "projectionOnly": 3,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/c/penguin_marshal-skin.ts:206/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          14.585952145814822,
+          14.585952145814822
+        ],
+        "placed": [
+          16.35090517372051,
+          16.35090517372051
+        ],
+        "screen": [
+          9.739582273301272,
+          14.70120562235776
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "armR/c/penguin_marshal-skin.ts:207/elbow-wrist",
+        "mode": "move",
+        "pre": [
+          13.738631664034086,
+          9.027735042633894
+        ],
+        "placed": [
+          15.599746792816862,
+          9.250703499854824
+        ],
+        "screen": [
+          11.384977136237234,
+          9.203374645151099
+        ]
+      }
+    },
+    {
+      "id": "pocket_magnet",
+      "sourceMove": "trick",
+      "restSegments": 2,
+      "comparisons": 4,
+      "missing": {},
+      "overOne": {
+        "pre": 2,
+        "placed": 2,
+        "screen": 4
+      },
+      "projectionOnly": 2,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "pawL/c/pocket_magnet-skin.ts:244/shoulder-paw",
+        "mode": "idleQuarter",
+        "pre": [
+          8.14186710773395,
+          8.14186710773395
+        ],
+        "placed": [
+          8.14186710773395,
+          8.14186710773395
+        ],
+        "screen": [
+          8.126607161207621,
+          7.013346792967825
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "pawR/c/pocket_magnet-skin.ts:244/shoulder-paw",
+        "mode": "move",
+        "pre": [
+          8.141867107733951,
+          6.637770710110436
+        ],
+        "placed": [
+          8.141867107733951,
+          6.637770710110436
+        ],
+        "screen": [
+          7.963103632877115,
+          6.6309119726408206
+        ]
+      }
+    },
+    {
+      "id": "prism_serpent",
+      "sourceMove": "trick",
+      "restSegments": 4,
+      "comparisons": 4,
+      "missing": {
+        "move": 4
+      },
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 3
+      },
+      "projectionOnly": 3,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "wingL/c/prism_serpent-skin.ts:582/wingbase-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          2.8,
+          2.8
+        ],
+        "placed": [
+          13.999999999999998,
+          13.999999999999998
+        ],
+        "screen": [
+          13.994246620749879,
+          12.821951391312238
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "wingL/c/prism_serpent-skin.ts:583/elbow-wrist",
+        "mode": "idleQuarter",
+        "pre": [
+          2.999999999999999,
+          2.999999999999999
+        ],
+        "placed": [
+          15.000000000000004,
+          15.000000000000002
+        ],
+        "screen": [
+          14.4257473489812,
+          13.964597494057083
+        ]
+      }
+    },
+    {
+      "id": "puff_kit",
+      "sourceMove": "trick",
+      "restSegments": 4,
+      "comparisons": 8,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 4
+      },
+      "projectionOnly": 4,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "legLH/c/puff_kit-skin.ts:456/knee-ankle",
+        "mode": "idleQuarter",
+        "pre": [
+          2.9999999999999996,
+          3.0
+        ],
+        "placed": [
+          13.799999999999997,
+          13.799999999999997
+        ],
+        "screen": [
+          11.253306387623638,
+          3.4009787055458407
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "legRF/c/puff_kit-skin.ts:456/knee-ankle",
+        "mode": "move",
+        "pre": [
+          2.8,
+          2.799999999999998
+        ],
+        "placed": [
+          12.879999999999999,
+          12.879999999999983
+        ],
+        "screen": [
+          12.757551059532894,
+          6.264630788387504
+        ]
+      }
+    },
+    {
+      "id": "rat_king",
+      "sourceMove": "trick",
+      "restSegments": 8,
+      "comparisons": 16,
+      "missing": {},
+      "overOne": {
+        "pre": 3,
+        "placed": 5,
+        "screen": 8
+      },
+      "projectionOnly": 5,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/c/rat_king-skin.ts:177/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          6.893149298397648,
+          6.893149298397648
+        ],
+        "placed": [
+          11.44262783534009,
+          11.44262783534009
+        ],
+        "screen": [
+          8.243727446276331,
+          11.438826614570358
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "legR/c/rat_king-skin.ts:127/hip-knee",
+        "mode": "move",
+        "pre": [
+          9.802325273335986,
+          16.737316569360544
+        ],
+        "placed": [
+          16.27185995373774,
+          27.783945505138504
+        ],
+        "screen": [
+          16.25608477741996,
+          17.590878710320606
+        ]
+      }
+    },
+    {
+      "id": "river_otter",
+      "sourceMove": "trick",
+      "restSegments": 4,
+      "comparisons": 8,
+      "missing": {},
+      "overOne": {
+        "pre": 2,
+        "placed": 2,
+        "screen": 6
+      },
+      "projectionOnly": 2,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "pawL/c/river_otter-skin.ts:227/elbow-paw",
+        "mode": "idleQuarter",
+        "pre": [
+          4.507564253563115,
+          4.507564253563115
+        ],
+        "placed": [
+          9.91664135783885,
+          9.916641357838854
+        ],
+        "screen": [
+          7.226701039713333,
+          9.878761371318522
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "pawR/c/river_otter-skin.ts:226/shoulder-elbow",
+        "mode": "move",
+        "pre": [
+          4.373332310721427,
+          3.054509617083699
+        ],
+        "placed": [
+          9.621331083587139,
+          6.719921157584136
+        ],
+        "screen": [
+          9.27662591195591,
+          6.716862511012524
+        ]
+      }
+    },
+    {
+      "id": "root_stag",
+      "sourceMove": "trick",
+      "restSegments": 12,
+      "comparisons": 24,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 4
+      },
+      "projectionOnly": 4,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "foreL/c/root_stag-skin.ts:54/hip-knee",
+        "mode": "idleQuarter",
+        "pre": [
+          13.334000000000001,
+          13.334000000000001
+        ],
+        "placed": [
+          15.467439999999998,
+          15.467439999999998
+        ],
+        "screen": [
+          7.856533782511369,
+          10.529366493071677
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "foreR/c/root_stag-skin.ts:56/knee-hock",
+        "mode": "move",
+        "pre": [
+          12.65599999999999,
+          12.656000000000002
+        ],
+        "placed": [
+          14.680959999999988,
+          14.680960000000002
+        ],
+        "screen": [
+          14.267630999546295,
+          14.582250649587877
+        ]
+      }
+    },
+    {
+      "id": "sand_scorpion",
+      "sourceMove": "trick",
+      "restSegments": 24,
+      "comparisons": 48,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 25
+      },
+      "projectionOnly": 25,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "legL0/c/sand_scorpion-skin.ts:37/hip-knee",
+        "mode": "idleQuarter",
+        "pre": [
+          17.499999999999996,
+          17.499999999999996
+        ],
+        "placed": [
+          25.199999999999996,
+          25.199999999999996
+        ],
+        "screen": [
+          24.40001858857063,
+          13.492430444113598
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "legL0/c/sand_scorpion-skin.ts:37/knee-ankle",
+        "mode": "move",
+        "pre": [
+          16.999999999999996,
+          17.0
+        ],
+        "placed": [
+          24.479999999999993,
+          24.48
+        ],
+        "screen": [
+          20.145909277680616,
+          20.18063756998048
+        ]
+      }
+    },
+    {
+      "id": "silk_dragon",
+      "sourceMove": "tech_loop",
+      "restSegments": 0,
+      "comparisons": 0,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 0
+      },
+      "projectionOnly": 0,
+      "afterPlacementOnly": 0,
+      "exampleProjection": null,
+      "exampleAfterPlacement": null,
+      "largestPlaced": null
+    },
+    {
+      "id": "sky_whale",
+      "sourceMove": "trick",
+      "restSegments": 0,
+      "comparisons": 0,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 0
+      },
+      "projectionOnly": 0,
+      "afterPlacementOnly": 0,
+      "exampleProjection": null,
+      "exampleAfterPlacement": null,
+      "largestPlaced": null
+    },
+    {
+      "id": "storm_lord",
+      "sourceMove": "trick",
+      "restSegments": 0,
+      "comparisons": 0,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 0
+      },
+      "projectionOnly": 0,
+      "afterPlacementOnly": 0,
+      "exampleProjection": null,
+      "exampleAfterPlacement": null,
+      "largestPlaced": null
+    },
+    {
+      "id": "storm_ram",
+      "sourceMove": "tech_ram",
+      "restSegments": 8,
+      "comparisons": 16,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 9
+      },
+      "projectionOnly": 4,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "foreL/c/storm_ram-skin.ts:81/hip-knee",
+        "mode": "idleQuarter",
+        "pre": [
+          11.55,
+          11.55
+        ],
+        "placed": [
+          15.855097846862076,
+          15.855097846862076
+        ],
+        "screen": [
+          4.362921842630175,
+          12.96803131337016
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "foreL/c/storm_ram-skin.ts:81/hip-knee",
+        "mode": "move",
+        "pre": [
+          11.55,
+          11.549999999999999
+        ],
+        "placed": [
+          15.855097846862076,
+          16.462377981902115
+        ],
+        "screen": [
+          4.362921842630175,
+          5.110089838048864
+        ]
+      }
+    },
+    {
+      "id": "threshold_keeper",
+      "sourceMove": "trick",
+      "restSegments": 4,
+      "comparisons": 8,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 4
+      },
+      "projectionOnly": 2,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/c/threshold_keeper-beast.ts:301/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          15.714961024450556,
+          15.714961024450556
+        ],
+        "placed": [
+          17.52218154226237,
+          17.52218154226237
+        ],
+        "screen": [
+          14.657485712311898,
+          16.507018785948933
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "armR/c/threshold_keeper-beast.ts:301/shoulder-elbow",
+        "mode": "move",
+        "pre": [
+          15.714961024450558,
+          15.318372509862986
+        ],
+        "placed": [
+          17.522181542262373,
+          17.079985348497225
+        ],
+        "screen": [
+          16.454170809167778,
+          13.232614815453404
+        ]
+      }
+    },
+    {
+      "id": "toad_shaman",
+      "sourceMove": "tech_croak",
+      "restSegments": 4,
+      "comparisons": 8,
+      "missing": {},
+      "overOne": {
+        "pre": 3,
+        "placed": 3,
+        "screen": 8
+      },
+      "projectionOnly": 4,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/c/toad_shaman.ts:455/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          15.73696603542118,
+          15.73696603542118
+        ],
+        "placed": [
+          20.29419134623016,
+          20.294191346230157
+        ],
+        "screen": [
+          18.622663428821326,
+          19.7063546711771
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "armR/c/toad_shaman.ts:456/elbow-hand",
+        "mode": "move",
+        "pre": [
+          7.2250851985485065,
+          27.240617191610898
+        ],
+        "placed": [
+          9.650033020535878,
+          33.87177178339872
+        ],
+        "screen": [
+          6.741069208317975,
+          9.703806195301391
+        ]
+      }
+    },
+    {
+      "id": "tuft_owlet",
+      "sourceMove": "trick",
+      "restSegments": 6,
+      "comparisons": 12,
+      "missing": {},
+      "overOne": {
+        "pre": 0,
+        "placed": 0,
+        "screen": 3
+      },
+      "projectionOnly": 3,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "legR/c/tuft_owlet-skin.ts:521/knee-ankle",
+        "mode": "idleQuarter",
+        "pre": [
+          2.400000000000001,
+          2.400000000000001
+        ],
+        "placed": [
+          6.000000000000001,
+          6.000000000000001
+        ],
+        "screen": [
+          2.9506923140138475,
+          4.10203532229102
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "wingR/c/tuft_owlet-skin.ts:498/elbow-wrist",
+        "mode": "move",
+        "pre": [
+          3.1496031496047245,
+          3.078773744111687
+        ],
+        "placed": [
+          7.874007874011811,
+          7.6969343602792195
+        ],
+        "screen": [
+          7.873723736498532,
+          7.695548172661416
+        ]
+      }
+    },
+    {
+      "id": "zephyr_whorl",
+      "sourceMove": "trick",
+      "restSegments": 6,
+      "comparisons": 12,
+      "missing": {},
+      "overOne": {
+        "pre": 6,
+        "placed": 6,
+        "screen": 9
+      },
+      "projectionOnly": 3,
+      "afterPlacementOnly": 0,
+      "exampleProjection": {
+        "id": "armL/c/zephyr_whorl-skin.ts:305/shoulder-elbow",
+        "mode": "idleQuarter",
+        "pre": [
+          4.556759100501144,
+          4.556759100501143
+        ],
+        "placed": [
+          9.175059635168587,
+          9.175059635168587
+        ],
+        "screen": [
+          6.843054683496171,
+          9.14956499333648
+        ]
+      },
+      "exampleAfterPlacement": null,
+      "largestPlaced": {
+        "id": "armL/c/zephyr_whorl-skin.ts:305/shoulder-elbow",
+        "mode": "move",
+        "pre": [
+          4.556759100501144,
+          6.551279207147258
+        ],
+        "placed": [
+          9.175059635168587,
+          13.22833214013014
+        ],
+        "screen": [
+          6.843054683496171,
+          10.67657860706295
+        ]
+      }
+    }
+  ]
+}

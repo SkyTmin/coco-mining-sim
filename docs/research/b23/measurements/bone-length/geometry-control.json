@@ -1,0 +1,83 @@
+{
+  "source": "rig/f15-rig.ts#proj",
+  "turn": [
+    {
+      "intrinsic": 10,
+      "screen": 10
+    },
+    {
+      "intrinsic": 10,
+      "screen": 8.881784197001252e-16
+    }
+  ],
+  "folded": [
+    {
+      "segments": [
+        {
+          "intrinsic": 10,
+          "screen": 10
+        },
+        {
+          "intrinsic": 10,
+          "screen": 10
+        }
+      ],
+      "shoulderToWrist": {
+        "intrinsic": 20,
+        "screen": 20
+      }
+    },
+    {
+      "segments": [
+        {
+          "intrinsic": 10,
+          "screen": 10
+        },
+        {
+          "intrinsic": 10,
+          "screen": 6
+        }
+      ],
+      "shoulderToWrist": {
+        "intrinsic": 14.142135623730951,
+        "screen": 11.6619037896906
+      }
+    }
+  ],
+  "thresholds": [
+    {
+      "delta": -1.01,
+      "measured": 8.99,
+      "flag": true
+    },
+    {
+      "delta": -1,
+      "measured": 9,
+      "flag": false
+    },
+    {
+      "delta": -0.99,
+      "measured": 9.01,
+      "flag": false
+    },
+    {
+      "delta": 0.99,
+      "measured": 10.99,
+      "flag": false
+    },
+    {
+      "delta": 1,
+      "measured": 11,
+      "flag": false
+    },
+    {
+      "delta": 1.01,
+      "measured": 11.01,
+      "flag": true
+    }
+  ],
+  "translated": {
+    "intrinsic": 10,
+    "screen": 10
+  }
+}
