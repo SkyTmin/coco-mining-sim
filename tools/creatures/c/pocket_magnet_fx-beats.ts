@@ -1,4 +1,4 @@
-import { oval } from '../fx/field';
+import { fit } from '../fx/palette';
 import { flash, glow, glowLine, glowRing, pointLight } from '../fx/light';
 import { drawSim, simulate } from '../fx/sim';
 import type { FxInput, XY } from '../types';
@@ -14,12 +14,22 @@ function fish(f: FxInput, n: number, spread: number) {
   const age = (n - fishLatch) / 24;
   if (age >= 0 && age < 0.4) {
     const [x, y] = pin;
-    const k = Math.max(0, 1 - age / 0.24);
-    const arm = 5 * spread * k;
+    const k = Math.max(0, 1 - age / 0.28);
+    const [shadow, enamel, silver, tip] = fit(f.palette, 4);
     const ink = f.above;
-    ink.col('#b5eae0', k);
-    ink.line(x - arm, y, x + arm, y);
-    ink.line(x, y - arm, x, y + arm);
+    // The pole comes down from the right. Give the cold leading ray the open wood to its left.
+    for (const [dx, dy] of [[-13, -4], [5, 1.5], [2.4, -8], [-1.1, 3.8]]) {
+      const length = spread * (0.2 + 0.8 * k);
+      const ex = x + dx * length, ey = y + dy * length;
+      ink.col(shadow, 0.62 * k);
+      ink.line(x, y + 1, ex, ey + 1);
+      ink.col(enamel, 0.93 * k);
+      ink.line(x, y, ex, ey);
+      ink.col(silver, k);
+      ink.line(x, y, x + dx * length * 0.68, y + dy * length * 0.68);
+      ink.col(tip, k);
+      ink.line(x, y, x + dx * length * 0.22, y + dy * length * 0.22);
+    }
     flash(f.light, x, y, 11 * spread, f.palette, age, 0.29, 0.55);
     pointLight(f.light, x, y, f.palette, k);
   }
@@ -41,14 +51,30 @@ function star(f: FxInput, n: number, spread: number) {
   const [cx, cy] = caught.contact;
   flash(f.light, cx, cy, 13 * spread, brass, age, 0.24, 0.7);
   const current = starAt(n);
-  const u = age / 0.42;
-  if (u < 1) {
+  if (age < 0.52) {
+    // The pulse encircles the cord. Its far arc passes behind the fibres.
+    const u = Math.min(1, age / 0.40);
     const x = current.ring[0] + (hook[0] - current.ring[0]) * u;
     const y = current.ring[1] + (hook[1] - current.ring[1]) * u;
-    const r = 5.4 * spread * (1 - 0.45 * u), k = 1 - u;
-    oval(f.above, [x, y], r, r * 0.66, '#f8d98a', 0.9 * k);
-    glowRing(f.light, x, y, r, 2, brass, 0.43 * k, 0.66);
-    glowLine(f.light, x, y, x + 1, y + 3, 2.8, f.palette, 0.24 * k);
+    const fade = Math.min(1, (0.52 - age) / 0.14);
+    const radius = (5.6 - 2.15 * u) * spread * (0.62 + 0.38 * fade);
+    const ca = Math.cos(current.a), sa = Math.sin(current.a);
+    const at = (t: number): XY => [
+      x + radius * (Math.cos(t) * ca + 0.46 * Math.sin(t) * sa),
+      y + radius * (-Math.cos(t) * sa + 0.46 * Math.sin(t) * ca),
+    ];
+    for (let i = 0; i < 20; i++) {
+      const t = i * Math.PI / 10, near = i < 10;
+      if (i === 14 || i === 15) continue;
+      const start = at(t), end = at(t + Math.PI / 10);
+      f.above.col(near ? '#296374' : '#78b1ac', (near ? 0.95 : 0.68) * fade);
+      f.above.line(start[0], start[1] + 1, end[0], end[1] + 1);
+      f.above.col(near ? '#ffe2a0' : '#b6d9c2', (near ? 1 : 0.75) * fade);
+      f.above.line(...start, ...end);
+    }
+    glowRing(f.light, x, y, radius, 1.7, brass, 0.28 * fade, 0.53);
+    const crest = at(Math.PI * 0.72);
+    pointLight(f.light, ...crest, brass, fade);
   }
   const embers = [-1, 0, 1, 2].map((i) => ({
     kind: 'ember' as const, x: cx, y: cy + 1,
