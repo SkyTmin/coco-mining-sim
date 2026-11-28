@@ -48,6 +48,10 @@ export function validateBehavior(data, animations) {
     issues.push('seed/previewSeconds');
   if (!pair(data.field, n => Number.isInteger(n) && n > 0) || !positive(data.stride) ||
       !Number.isFinite(data.yaw) || !positive(data.depthScale)) issues.push('field/stride/depthScale');
+  const complete = data.finishBeforeEvent;
+  if (complete !== undefined && (!Array.isArray(complete) ||
+      complete.some(name => typeof name !== 'string' || !animations?.[name]) ||
+      new Set(complete).size !== complete.length)) issues.push('invalid finishBeforeEvent clips');
   const program = data.lifeProgram;
   if (program === undefined) {
     if (!interval(data.walkShare, 0.35, 0.50)) issues.push('walkShare must be within 35–50%');
@@ -522,6 +526,8 @@ export function createPetBehavior(config, animations, seed = config.seed) {
     // This performer's scene props move with the action. Finish a staged gesture before answering a tap.
     if (config.lifeProgram && !['idle', 'idle-f2', 'sleep'].includes(state.anim) &&
         state.frame !== 0) return false;
+    // Let the skater land or retrieve the puck before answering a queued gesture.
+    if (config.finishBeforeEvent?.includes(state.anim) && state.frame > 0) return false;
     if (!animations[state.anim].interrupt.includes(state.frame)) return false;
     const event = pending;
     pending = undefined;
